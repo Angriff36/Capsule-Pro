@@ -10,7 +10,7 @@ entity Proposal {
   property leadId: string = ""
   property eventId: string = ""
   property title: string = ""
-  property eventDate: datetime = now()
+  property eventDate: datetime
   property eventType: string = ""
   property guestCount: int = 0
   property venueName: string = ""
@@ -22,10 +22,10 @@ entity Proposal {
   property total: money = 0
   property status: string = "draft"
   property validUntil: datetime
-  property sentAt: datetime = now()
-  property viewedAt: datetime = now()
-  property acceptedAt: datetime = now()
-  property rejectedAt: datetime = now()
+  property sentAt: datetime
+  property viewedAt: datetime
+  property acceptedAt: datetime
+  property rejectedAt: datetime
   property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
@@ -38,7 +38,7 @@ entity Proposal {
   computed isAccepted: boolean = self.status == "accepted"
   computed isRejected: boolean = self.status == "rejected"
   computed isWithdrawn: boolean = self.status == "withdrawn"
-  computed isExpired: boolean = self.validUntil > 0 and self.validUntil < now()
+  computed isExpired: boolean = self.validUntil != null and self.validUntil < now()
   computed isFinalized: boolean = self.status in ["accepted", "rejected", "withdrawn", "expired"]
   computed hasLineItems: boolean = self.lineItemCount > 0
   computed hasDiscount: boolean = self.discountAmount > 0
@@ -50,7 +50,7 @@ entity Proposal {
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
 
-  constraint warnExpiringSoon:warn self.validUntil > 0 and self.validUntil > now() and self.status == "sent" {
+  constraint warnExpiringSoon:warn self.validUntil != null and self.validUntil > now() and self.status == "sent" {
     messageTemplate: "Proposal '{proposalNumber}' is sent and approaching expiration"
     details: {
       proposalNumber: self.proposalNumber
@@ -144,7 +144,7 @@ entity Proposal {
       }
     }
 
-    constraint warnNoValidUntil:warn self.validUntil == 0 {
+    constraint warnNoValidUntil:warn self.validUntil == null {
       messageTemplate: "Sending proposal '{proposalNumber}' with no expiration date"
       details: {
         proposalNumber: self.proposalNumber

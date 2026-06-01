@@ -836,13 +836,43 @@
   },
   {
     "entity": "Deal",
+    "command": "abandon",
+    "commandId": "Deal.abandon"
+  },
+  {
+    "entity": "Deal",
+    "command": "assign",
+    "commandId": "Deal.assign"
+  },
+  {
+    "entity": "Deal",
     "command": "close",
     "commandId": "Deal.close"
   },
   {
     "entity": "Deal",
+    "command": "create",
+    "commandId": "Deal.create"
+  },
+  {
+    "entity": "Deal",
+    "command": "reopen",
+    "commandId": "Deal.reopen"
+  },
+  {
+    "entity": "Deal",
+    "command": "updateProbability",
+    "commandId": "Deal.updateProbability"
+  },
+  {
+    "entity": "Deal",
     "command": "updateStage",
     "commandId": "Deal.updateStage"
+  },
+  {
+    "entity": "Deal",
+    "command": "updateValue",
+    "commandId": "Deal.updateValue"
   },
   {
     "entity": "DeliveryRoute",

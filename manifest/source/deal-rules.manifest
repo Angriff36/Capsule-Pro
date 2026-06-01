@@ -1,5 +1,6 @@
 // CRM Deal Rules
-// Manifest spec for deal pipeline management
+// Manifest spec for deal pipeline management.
+// A deal is a qualified sales opportunity moving through stages toward won/lost.
 
 entity Deal {
   key [tenantId, id]
@@ -12,8 +13,8 @@ entity Deal {
   property stage: string = "new"
   property status: string = "open"
   property probability: decimal = 0
-  property expectedCloseDate: datetime = now()
-  property actualCloseDate: datetime = now()
+  property expectedCloseDate: datetime
+  property actualCloseDate: datetime
   property assignedTo: string = ""
   property notes: string = ""
   property createdAt: datetime = now()
@@ -21,11 +22,38 @@ entity Deal {
 
   computed isWon: boolean = self.status == "won"
   computed isLost: boolean = self.status == "lost"
+  computed isAbandoned: boolean = self.status == "abandoned"
   computed isActive: boolean = self.status == "open"
+  computed isClosed: boolean = self.status != "open"
+  computed weightedValue: number = self.value * self.probability / 100
+  computed isUnassigned: boolean = self.assignedTo == ""
 
   constraint validStage: self.stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
   constraint validStatus: self.status in ["open", "won", "lost", "abandoned"] "Invalid deal status"
   constraint positiveValue: self.value >= 0 "Deal value cannot be negative"
+  constraint validProbability: self.probability >= 0 and self.probability <= 100 "Probability must be between 0 and 100"
+
+  command create(leadId: string, title: string, value: number, currency: string, stage: string, probability: number, expectedCloseDate: number, assignedTo: string, notes: string) {
+    guard leadId != null and leadId != "" "Lead ID is required"
+    guard title != null and title != "" "Deal title is required"
+    guard value >= 0 "Deal value cannot be negative"
+    guard probability >= 0 and probability <= 100 "Probability must be between 0 and 100"
+
+    mutate leadId = leadId
+    mutate title = title
+    mutate value = value
+    mutate currency = currency
+    mutate stage = stage
+    mutate probability = probability
+    mutate expectedCloseDate = expectedCloseDate
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate status = "open"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit DealCreated
+  }
 
   command updateStage(stage: string, notes: string) {
     guard stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
@@ -38,20 +66,85 @@ entity Deal {
     emit DealStageUpdated
   }
 
+  command updateValue(value: number) {
+    guard self.status == "open" "Cannot change value of a closed deal"
+    guard value >= 0 "Deal value cannot be negative"
+
+    mutate value = value
+    mutate updatedAt = now()
+
+    emit DealValueUpdated
+  }
+
+  command updateProbability(probability: number) {
+    guard self.status == "open" "Cannot change probability of a closed deal"
+    guard probability >= 0 and probability <= 100 "Probability must be between 0 and 100"
+
+    mutate probability = probability
+    mutate updatedAt = now()
+
+    emit DealProbabilityUpdated
+  }
+
+  command assign(assignedTo: string, assignedBy: string) {
+    guard self.status == "open" "Cannot reassign a closed deal"
+    guard assignedTo != null and assignedTo != "" "Assignee is required"
+
+    mutate assignedTo = assignedTo
+    mutate updatedAt = now()
+
+    emit DealAssigned
+  }
+
   command close(status: string) {
     guard status in ["won", "lost"] "Status must be won or lost"
     guard self.status == "open" "Cannot close an already closed deal"
 
     mutate status = status
+    mutate stage = "closed"
     mutate actualCloseDate = now()
     mutate updatedAt = now()
 
     emit DealClosed
   }
+
+  command abandon(reason: string) {
+    guard self.status == "open" "Only an open deal can be abandoned"
+
+    mutate status = "abandoned"
+    mutate notes = reason
+    mutate actualCloseDate = now()
+    mutate updatedAt = now()
+
+    emit DealAbandoned
+  }
+
+  command reopen(reason: string) {
+    guard self.status in ["lost", "abandoned"] "Only a lost or abandoned deal can be reopened"
+
+    mutate status = "open"
+    mutate stage = "negotiation"
+    mutate actualCloseDate = null
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit DealReopened
+  }
+
   store Deal in durable
 }
 
 policy SalesCanManageDeals execute: user.role in ["sales_rep", "sales_manager", "manager", "admin"] "Only sales team can manage deals"
+
+event DealCreated: "crm.deal.created" {
+  dealId: string
+  tenantId: string
+  leadId: string
+  title: string
+  value: number
+  assignedTo: string
+  createdAt: number
+}
 
 event DealStageUpdated: "crm.deal.stage.updated" {
   dealId: string
@@ -62,10 +155,43 @@ event DealStageUpdated: "crm.deal.stage.updated" {
   updatedAt: number
 }
 
+event DealValueUpdated: "crm.deal.value.updated" {
+  dealId: string
+  value: number
+  updatedAt: number
+}
+
+event DealProbabilityUpdated: "crm.deal.probability.updated" {
+  dealId: string
+  probability: number
+  updatedAt: number
+}
+
+event DealAssigned: "crm.deal.assigned" {
+  dealId: string
+  assignedTo: string
+  assignedBy: string
+  assignedAt: number
+}
+
 event DealClosed: "crm.deal.closed" {
   dealId: string
   leadId: string
   status: string
   actualCloseDate: number
   closedAt: number
+}
+
+event DealAbandoned: "crm.deal.abandoned" {
+  dealId: string
+  leadId: string
+  reason: string
+  abandonedAt: number
+}
+
+event DealReopened: "crm.deal.reopened" {
+  dealId: string
+  leadId: string
+  reason: string
+  reopenedAt: number
 }
