@@ -1,6 +1,7 @@
 // Logistics Domain — Driver, Vehicle, Route, Dispatch Rules
 
 entity Driver {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required firstName: string
@@ -77,6 +78,7 @@ entity Driver {
 }
 
 entity Vehicle {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
@@ -146,6 +148,7 @@ entity Vehicle {
 }
 
 entity LogisticsRoute {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
@@ -241,6 +244,7 @@ entity LogisticsRoute {
 }
 
 entity LogisticsDispatch {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required routeId: string

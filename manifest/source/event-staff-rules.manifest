@@ -2,6 +2,7 @@
 // Manifest spec for event staff assignment and scheduling
 
 entity EventStaff {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string

@@ -2,6 +2,7 @@
 // Manifest spec for proposal lifecycle and line item management
 
 entity Proposal {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property proposalNumber: string = ""
@@ -237,6 +238,7 @@ entity Proposal {
 }
 
 entity ProposalLineItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required proposalId: string

@@ -3,6 +3,7 @@
 // Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)
 
 entity KitchenTask {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required title: string

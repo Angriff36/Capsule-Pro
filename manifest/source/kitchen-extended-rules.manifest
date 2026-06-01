@@ -1,0 +1,1166 @@
+// Kitchen / Food-Safety Extended Rules
+// Manifest spec for IoT temperature monitoring, HACCP logging, corrective actions,
+// quality checks, task management extensions, prep tooling, and import provenance.
+
+// ---------------------------------------------------------------------------
+// TemperatureProbe — physical IoT sensor mounted in a fridge / freezer
+// ---------------------------------------------------------------------------
+entity TemperatureProbe {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property required equipmentId: string
+  property required location: string
+  property required minThreshold: decimal
+  property required maxThreshold: decimal
+  property isActive: boolean = true
+  property lastCalibratedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt != now()
+  computed rangeSpan: decimal = self.maxThreshold - self.minThreshold
+
+  constraint thresholdOrder: self.minThreshold < self.maxThreshold "minThreshold must be less than maxThreshold"
+  constraint requireName: self.name != "" "Probe name is required"
+  constraint requireLocation: self.location != "" "Probe location is required"
+
+  command create(name: string, equipmentId: string, location: string, minThreshold: number, maxThreshold: number) {
+    guard name != null and name != "" "Probe name is required"
+    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
+    guard location != null and location != "" "Location is required"
+    guard minThreshold < maxThreshold "minThreshold must be less than maxThreshold"
+
+    mutate name = name
+    mutate equipmentId = equipmentId
+    mutate location = location
+    mutate minThreshold = minThreshold
+    mutate maxThreshold = maxThreshold
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TemperatureProbeCreated
+  }
+
+  command calibrate(calibratedBy: string) {
+    guard self.isActive "Cannot calibrate an inactive probe"
+    guard calibratedBy != null and calibratedBy != "" "Calibrator ID is required"
+
+    mutate lastCalibratedAt = now()
+    mutate updatedAt = now()
+
+    emit TemperatureProbeCalibrated
+  }
+
+  command updateThresholds(minThreshold: number, maxThreshold: number) {
+    guard self.isActive "Cannot update thresholds on an inactive probe"
+    guard minThreshold < maxThreshold "minThreshold must be less than maxThreshold"
+
+    mutate minThreshold = minThreshold
+    mutate maxThreshold = maxThreshold
+    mutate updatedAt = now()
+
+    emit TemperatureProbeThresholdsUpdated
+  }
+
+  command deactivate(reason: string, deactivatedBy: string) {
+    guard self.isActive "Probe is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit TemperatureProbeDeactivated
+  }
+
+  store TemperatureProbe in durable
+}
+
+// ---------------------------------------------------------------------------
+// TemperatureLog — manual HACCP temperature entry by staff
+// ---------------------------------------------------------------------------
+entity TemperatureLog {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required equipmentId: string
+  property required recordedBy: string
+  property required temperature: decimal
+  property required recordedAt: datetime
+  property required withinRange: boolean
+  property notes: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
+  constraint requireRecordedBy: self.recordedBy != "" "Recorder employee ID is required"
+
+  constraint warnOutOfRange:warn self.withinRange == false {
+    messageTemplate: "Manual temperature log for equipment '{equipmentId}' is out of safe range"
+    details: {
+      equipmentId: self.equipmentId
+      temperature: self.temperature
+      recordedBy: self.recordedBy
+    }
+  }
+
+  command create(equipmentId: string, recordedBy: string, temperature: number, recordedAt: number, withinRange: boolean, notes: string) {
+    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
+    guard recordedBy != null and recordedBy != "" "Recorder employee ID is required"
+
+    mutate equipmentId = equipmentId
+    mutate recordedBy = recordedBy
+    mutate temperature = temperature
+    mutate recordedAt = recordedAt
+    mutate withinRange = withinRange
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TemperatureLogCreated
+  }
+
+  store TemperatureLog in durable
+}
+
+// ---------------------------------------------------------------------------
+// TemperatureReading — automated timeseries reading from an IoT probe
+// ---------------------------------------------------------------------------
+entity TemperatureReading {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required probeId: string
+  property required temperature: decimal
+  property required recordedAt: datetime
+  property required withinRange: boolean
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireProbe: self.probeId != "" "Probe ID is required"
+
+  constraint warnOutOfRange:warn self.withinRange == false {
+    messageTemplate: "Automated reading from probe '{probeId}' is out of safe range"
+    details: {
+      probeId: self.probeId
+      temperature: self.temperature
+    }
+  }
+
+  command create(probeId: string, temperature: number, recordedAt: number, withinRange: boolean) {
+    guard probeId != null and probeId != "" "Probe ID is required"
+
+    mutate probeId = probeId
+    mutate temperature = temperature
+    mutate recordedAt = recordedAt
+    mutate withinRange = withinRange
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TemperatureReadingCreated
+  }
+
+  store TemperatureReading in durable
+}
+
+// ---------------------------------------------------------------------------
+// IotAlertRule — configuration for when to fire an alert on a probe/equipment
+// ---------------------------------------------------------------------------
+entity IotAlertRule {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required equipmentId: string
+  property required metric: string
+  property required threshold: decimal
+  property required comparison: string
+  property required severity: string
+  property isActive: boolean = true
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
+  constraint requireMetric: self.metric != "" "Metric is required"
+  constraint requireComparison: self.comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
+  constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
+
+  command create(equipmentId: string, metric: string, threshold: number, comparison: string, severity: string) {
+    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
+    guard metric != null and metric != "" "Metric is required"
+    guard comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
+    guard severity in ["info", "warning", "critical"] "Invalid severity level"
+
+    mutate equipmentId = equipmentId
+    mutate metric = metric
+    mutate threshold = threshold
+    mutate comparison = comparison
+    mutate severity = severity
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit IotAlertRuleCreated
+  }
+
+  command update(metric: string, threshold: number, comparison: string, severity: string) {
+    guard self.isActive "Cannot update an inactive alert rule"
+    guard metric != null and metric != "" "Metric is required"
+    guard comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
+    guard severity in ["info", "warning", "critical"] "Invalid severity level"
+
+    mutate metric = metric
+    mutate threshold = threshold
+    mutate comparison = comparison
+    mutate severity = severity
+    mutate updatedAt = now()
+
+    emit IotAlertRuleUpdated
+  }
+
+  command deactivate(reason: string, deactivatedBy: string) {
+    guard self.isActive "Alert rule is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit IotAlertRuleDeactivated
+  }
+
+  store IotAlertRule in durable
+}
+
+// ---------------------------------------------------------------------------
+// IoTAlert — a fired alert from a probe breaching a rule
+// ---------------------------------------------------------------------------
+entity IoTAlert {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required probeId: string
+  property required ruleId: string
+  property required severity: string
+  property required message: string
+  property required value: decimal
+  property required status: string = "active"
+  property required triggeredAt: datetime
+  property acknowledgedBy: string = ""
+  property resolvedBy: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isActive: boolean = self.status == "active"
+  computed isAcknowledged: boolean = self.status == "acknowledged"
+  computed isResolved: boolean = self.status == "resolved"
+
+  constraint validStatus: self.status in ["active", "acknowledged", "resolved"] "Invalid alert status"
+  constraint validSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
+  constraint requireMessage: self.message != "" "Alert message is required"
+
+  command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: number) {
+    guard probeId != null and probeId != "" "Probe ID is required"
+    guard ruleId != null and ruleId != "" "Rule ID is required"
+    guard severity in ["info", "warning", "critical"] "Invalid severity level"
+    guard message != null and message != "" "Alert message is required"
+
+    mutate probeId = probeId
+    mutate ruleId = ruleId
+    mutate severity = severity
+    mutate message = message
+    mutate value = value
+    mutate status = "active"
+    mutate triggeredAt = triggeredAt
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit IoTAlertCreated
+  }
+
+  command acknowledge(acknowledgedBy: string) {
+    guard self.status == "active" "Only active alerts can be acknowledged"
+    guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledger employee ID is required"
+
+    mutate status = "acknowledged"
+    mutate acknowledgedBy = acknowledgedBy
+    mutate updatedAt = now()
+
+    emit IoTAlertAcknowledged
+  }
+
+  command resolve(resolvedBy: string) {
+    guard self.status in ["active", "acknowledged"] "Only active or acknowledged alerts can be resolved"
+    guard resolvedBy != null and resolvedBy != "" "Resolver employee ID is required"
+
+    mutate status = "resolved"
+    mutate resolvedBy = resolvedBy
+    mutate updatedAt = now()
+
+    emit IoTAlertResolved
+  }
+
+  store IoTAlert in durable
+}
+
+// ---------------------------------------------------------------------------
+// CorrectiveAction — food-safety corrective action after a quality/temp failure
+// ---------------------------------------------------------------------------
+entity CorrectiveAction {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required sourceType: string
+  property required sourceId: string
+  property required description: string
+  property assignedTo: string = ""
+  property required status: string = "open"
+  property dueAt: datetime = now()
+  property resolvedAt: datetime = now()
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isOpen: boolean = self.status == "open"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isClosed: boolean = self.status == "closed"
+
+  transition status from "open" to ["in_progress", "closed"]
+  transition status from "in_progress" to ["closed"]
+
+  constraint validStatus: self.status in ["open", "in_progress", "closed"] "Invalid corrective action status"
+  constraint requireSourceType: self.sourceType != "" "Source type is required"
+  constraint requireSourceId: self.sourceId != "" "Source ID is required"
+  constraint requireDescription: self.description != "" "Description is required"
+
+  command create(sourceType: string, sourceId: string, description: string, dueAt: number) {
+    guard sourceType != null and sourceType != "" "Source type is required"
+    guard sourceId != null and sourceId != "" "Source ID is required"
+    guard description != null and description != "" "Description is required"
+
+    mutate sourceType = sourceType
+    mutate sourceId = sourceId
+    mutate description = description
+    mutate status = "open"
+    mutate dueAt = dueAt
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit CorrectiveActionCreated
+  }
+
+  command assign(assignedTo: string, assignedBy: string) {
+    guard self.status != "closed" "Cannot assign a closed corrective action"
+    guard assignedTo != null and assignedTo != "" "Assignee employee ID is required"
+
+    mutate assignedTo = assignedTo
+    mutate updatedAt = now()
+
+    emit CorrectiveActionAssigned
+  }
+
+  command startProgress(startedBy: string) {
+    guard self.status == "open" "Corrective action must be open to start progress"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit CorrectiveActionStarted
+  }
+
+  command close(resolvedBy: string, resolutionNotes: string) {
+    guard self.status in ["open", "in_progress"] "Cannot close an already-closed corrective action"
+    guard resolvedBy != null and resolvedBy != "" "Resolver employee ID is required"
+
+    mutate status = "closed"
+    mutate resolvedAt = now()
+    mutate updatedAt = now()
+
+    emit CorrectiveActionClosed
+  }
+
+  store CorrectiveAction in durable
+}
+
+// ---------------------------------------------------------------------------
+// QualityCheck — a food-safety quality check (receiving, cooling, etc.)
+// ---------------------------------------------------------------------------
+entity QualityCheck {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required checkType: string
+  property required performedBy: string
+  property required status: string = "pending"
+  property performedAt: datetime = now()
+  property notes: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isPassed: boolean = self.status == "passed"
+  computed isFailed: boolean = self.status == "failed"
+
+  transition status from "pending" to ["passed", "failed"]
+
+  constraint validStatus: self.status in ["pending", "passed", "failed"] "Invalid quality check status"
+  constraint requireCheckType: self.checkType != "" "Check type is required"
+  constraint requirePerformedBy: self.performedBy != "" "Performer employee ID is required"
+
+  command create(checkType: string, performedBy: string, notes: string) {
+    guard checkType != null and checkType != "" "Check type is required"
+    guard performedBy != null and performedBy != "" "Performer employee ID is required"
+
+    mutate checkType = checkType
+    mutate performedBy = performedBy
+    mutate notes = notes
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit QualityCheckCreated
+  }
+
+  command pass(passedBy: string, notes: string) {
+    guard self.status == "pending" "Quality check must be pending to pass"
+
+    mutate status = "passed"
+    mutate performedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit QualityCheckPassed
+  }
+
+  command fail(failedBy: string, notes: string) {
+    guard self.status == "pending" "Quality check must be pending to fail"
+    guard notes != null and notes != "" "Failure notes are required"
+
+    mutate status = "failed"
+    mutate performedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit QualityCheckFailed
+  }
+
+  store QualityCheck in durable
+}
+
+// ---------------------------------------------------------------------------
+// QualityCheckItem — an individual criterion within a QualityCheck
+// ---------------------------------------------------------------------------
+entity QualityCheckItem {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required qualityCheckId: string
+  property required criterion: string
+  property passed: boolean = false
+  property notes: string = ""
+  property sortOrder: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireQualityCheckId: self.qualityCheckId != "" "Quality check ID is required"
+  constraint requireCriterion: self.criterion != "" "Criterion description is required"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
+
+  command create(qualityCheckId: string, criterion: string, sortOrder: number) {
+    guard qualityCheckId != null and qualityCheckId != "" "Quality check ID is required"
+    guard criterion != null and criterion != "" "Criterion description is required"
+    guard sortOrder >= 0 "Sort order cannot be negative"
+
+    mutate qualityCheckId = qualityCheckId
+    mutate criterion = criterion
+    mutate passed = false
+    mutate sortOrder = sortOrder
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit QualityCheckItemCreated
+  }
+
+  command recordResult(passed: boolean, notes: string, recordedBy: string) {
+    guard recordedBy != null and recordedBy != "" "Recorder employee ID is required"
+
+    mutate passed = passed
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit QualityCheckItemResultRecorded
+  }
+
+  store QualityCheckItem in durable
+}
+
+// ---------------------------------------------------------------------------
+// KitchenTaskClaim — an employee claiming a kitchen task
+// ---------------------------------------------------------------------------
+entity KitchenTaskClaim {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required kitchenTaskId: string
+  property required employeeId: string
+  property required claimedAt: datetime
+  property required status: string = "active"
+  property releasedAt: datetime = now()
+  property releaseReason: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isActive: boolean = self.status == "active"
+  computed isReleased: boolean = self.status == "released"
+
+  transition status from "active" to ["released"]
+
+  constraint validStatus: self.status in ["active", "released"] "Invalid claim status"
+  constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
+  constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
+
+  command claim(kitchenTaskId: string, employeeId: string, claimedAt: number) {
+    guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+
+    mutate kitchenTaskId = kitchenTaskId
+    mutate employeeId = employeeId
+    mutate claimedAt = claimedAt
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit KitchenTaskClaimCreated
+  }
+
+  command release(releasedBy: string, reason: string) {
+    guard self.status == "active" "Only an active claim can be released"
+    guard releasedBy != null and releasedBy != "" "Releaser employee ID is required"
+
+    mutate status = "released"
+    mutate releasedAt = now()
+    mutate releaseReason = reason
+    mutate updatedAt = now()
+
+    emit KitchenTaskClaimReleased
+  }
+
+  store KitchenTaskClaim in durable
+}
+
+// ---------------------------------------------------------------------------
+// KitchenTaskProgress — a progress / status update snapshot on a kitchen task
+// ---------------------------------------------------------------------------
+entity KitchenTaskProgress {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required kitchenTaskId: string
+  property required employeeId: string
+  property required status: string
+  property required progressPct: decimal
+  property note: string = ""
+  property required recordedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
+  constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
+  constraint validProgressPct: self.progressPct >= 0 and self.progressPct <= 100 "Progress percentage must be between 0 and 100"
+
+  command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: number) {
+    guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard status != null and status != "" "Status is required"
+    guard progressPct >= 0 and progressPct <= 100 "Progress percentage must be between 0 and 100"
+
+    mutate kitchenTaskId = kitchenTaskId
+    mutate employeeId = employeeId
+    mutate status = status
+    mutate progressPct = progressPct
+    mutate note = note
+    mutate recordedAt = recordedAt
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit KitchenTaskProgressRecorded
+  }
+
+  store KitchenTaskProgress in durable
+}
+
+// ---------------------------------------------------------------------------
+// TaskBundle — a named grouping of kitchen tasks, optionally event-scoped
+// ---------------------------------------------------------------------------
+entity TaskBundle {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property eventId: string = ""
+  property description: string = ""
+  property required status: string = "active"
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isArchived: boolean = self.status == "archived"
+  computed isActive: boolean = self.status == "active"
+
+  transition status from "active" to ["archived"]
+
+  constraint validStatus: self.status in ["active", "archived"] "Invalid bundle status"
+  constraint requireName: self.name != "" "Task bundle name is required"
+
+  command create(name: string, eventId: string, description: string) {
+    guard name != null and name != "" "Task bundle name is required"
+
+    mutate name = name
+    mutate eventId = eventId
+    mutate description = description
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TaskBundleCreated
+  }
+
+  command update(name: string, description: string) {
+    guard self.status == "active" "Cannot update an archived task bundle"
+    guard name != null and name != "" "Task bundle name is required"
+
+    mutate name = name
+    mutate description = description
+    mutate updatedAt = now()
+
+    emit TaskBundleUpdated
+  }
+
+  command archive(archivedBy: string, reason: string) {
+    guard self.status == "active" "Task bundle is already archived"
+
+    mutate status = "archived"
+    mutate updatedAt = now()
+
+    emit TaskBundleArchived
+  }
+
+  store TaskBundle in durable
+}
+
+// ---------------------------------------------------------------------------
+// TaskBundleItem — a kitchen task within a bundle
+// ---------------------------------------------------------------------------
+entity TaskBundleItem {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required taskBundleId: string
+  property required kitchenTaskId: string
+  property sortOrder: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireTaskBundleId: self.taskBundleId != "" "Task bundle ID is required"
+  constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
+
+  command addItem(taskBundleId: string, kitchenTaskId: string, sortOrder: number) {
+    guard taskBundleId != null and taskBundleId != "" "Task bundle ID is required"
+    guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
+    guard sortOrder >= 0 "Sort order cannot be negative"
+
+    mutate taskBundleId = taskBundleId
+    mutate kitchenTaskId = kitchenTaskId
+    mutate sortOrder = sortOrder
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TaskBundleItemAdded
+  }
+
+  command removeItem(removedBy: string, reason: string) {
+    guard removedBy != null and removedBy != "" "Remover employee ID is required"
+
+    mutate updatedAt = now()
+
+    emit TaskBundleItemRemoved
+  }
+
+  store TaskBundleItem in durable
+}
+
+// ---------------------------------------------------------------------------
+// BulkCombineRule — rule to auto-combine similar prep tasks into a single job
+// ---------------------------------------------------------------------------
+entity BulkCombineRule {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property required matchCriteria: string
+  property isActive: boolean = true
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requireName: self.name != "" "Bulk combine rule name is required"
+  constraint requireMatchCriteria: self.matchCriteria != "" "Match criteria is required"
+
+  command create(name: string, matchCriteria: string) {
+    guard name != null and name != "" "Bulk combine rule name is required"
+    guard matchCriteria != null and matchCriteria != "" "Match criteria is required"
+
+    mutate name = name
+    mutate matchCriteria = matchCriteria
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit BulkCombineRuleCreated
+  }
+
+  command update(name: string, matchCriteria: string) {
+    guard self.isActive "Cannot update an inactive bulk combine rule"
+    guard name != null and name != "" "Bulk combine rule name is required"
+    guard matchCriteria != null and matchCriteria != "" "Match criteria is required"
+
+    mutate name = name
+    mutate matchCriteria = matchCriteria
+    mutate updatedAt = now()
+
+    emit BulkCombineRuleUpdated
+  }
+
+  command deactivate(reason: string, deactivatedBy: string) {
+    guard self.isActive "Bulk combine rule is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit BulkCombineRuleDeactivated
+  }
+
+  store BulkCombineRule in durable
+}
+
+// ---------------------------------------------------------------------------
+// MethodVideo — instructional video attached to a prep method
+// ---------------------------------------------------------------------------
+entity MethodVideo {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required prepMethodId: string
+  property required title: string
+  property required url: string
+  property durationSeconds: int = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  constraint requirePrepMethodId: self.prepMethodId != "" "Prep method ID is required"
+  constraint requireTitle: self.title != "" "Video title is required"
+  constraint requireUrl: self.url != "" "Video URL is required"
+  constraint positiveDuration: self.durationSeconds >= 0 "Duration cannot be negative"
+
+  command create(prepMethodId: string, title: string, url: string, durationSeconds: number) {
+    guard prepMethodId != null and prepMethodId != "" "Prep method ID is required"
+    guard title != null and title != "" "Video title is required"
+    guard url != null and url != "" "Video URL is required"
+    guard durationSeconds >= 0 "Duration cannot be negative"
+
+    mutate prepMethodId = prepMethodId
+    mutate title = title
+    mutate url = url
+    mutate durationSeconds = durationSeconds
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit MethodVideoCreated
+  }
+
+  command update(title: string, url: string, durationSeconds: number) {
+    guard title != null and title != "" "Video title is required"
+    guard url != null and url != "" "Video URL is required"
+    guard durationSeconds >= 0 "Duration cannot be negative"
+
+    mutate title = title
+    mutate url = url
+    mutate durationSeconds = durationSeconds
+    mutate updatedAt = now()
+
+    emit MethodVideoUpdated
+  }
+
+  command remove(removedBy: string, reason: string) {
+    guard removedBy != null and removedBy != "" "Remover employee ID is required"
+
+    mutate updatedAt = now()
+
+    emit MethodVideoRemoved
+  }
+
+  store MethodVideo in durable
+}
+
+// ---------------------------------------------------------------------------
+// PrepListImport — provenance record for an imported prep list
+// ---------------------------------------------------------------------------
+entity PrepListImport {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required source: string
+  property required fileName: string
+  property required status: string = "pending"
+  property importedAt: datetime = now()
+  property errorMessage: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isComplete: boolean = self.status == "complete"
+  computed isFailed: boolean = self.status == "failed"
+
+  transition status from "pending" to ["complete", "failed"]
+
+  constraint validStatus: self.status in ["pending", "complete", "failed"] "Invalid import status"
+  constraint requireSource: self.source != "" "Import source is required"
+  constraint requireFileName: self.fileName != "" "File name is required"
+
+  command create(source: string, fileName: string) {
+    guard source != null and source != "" "Import source is required"
+    guard fileName != null and fileName != "" "File name is required"
+
+    mutate source = source
+    mutate fileName = fileName
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PrepListImportCreated
+  }
+
+  command complete(rowsImported: number) {
+    guard self.status == "pending" "Import must be pending to complete"
+
+    mutate status = "complete"
+    mutate importedAt = now()
+    mutate updatedAt = now()
+
+    emit PrepListImportCompleted
+  }
+
+  command fail(errorMessage: string) {
+    guard self.status == "pending" "Import must be pending to fail"
+    guard errorMessage != null and errorMessage != "" "Error message is required"
+
+    mutate status = "failed"
+    mutate errorMessage = errorMessage
+    mutate updatedAt = now()
+
+    emit PrepListImportFailed
+  }
+
+  store PrepListImport in durable
+}
+
+// ---------------------------------------------------------------------------
+// Policies
+// ---------------------------------------------------------------------------
+policy KitchenStaffCanViewReadings execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can view temperature readings"
+policy ManagersCanManageProbes execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage temperature probes"
+policy ManagersCanManageAlertRules execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage IoT alert rules"
+policy KitchenStaffCanLogTemperature execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can log manual temperature readings"
+policy KitchenStaffCanPerformQualityChecks execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can perform quality checks"
+policy ManagersCanManageCorrectiveActions execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage corrective actions"
+policy KitchenStaffCanUpdateProgress execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can record task progress"
+policy ManagersCanManageBundles execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage task bundles"
+policy ManagersCanManageCombineRules execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage bulk combine rules"
+policy ManagersCanManageMethodVideos execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage method videos"
+policy ManagersCanManageImports execute: user.role in ["kitchen_lead", "manager", "admin"] "Managers can manage prep list imports"
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+event TemperatureProbeCreated: "kitchen.temperatureprobe.created" {
+  probeId: string
+  tenantId: string
+  name: string
+  equipmentId: string
+  location: string
+  createdAt: number
+}
+
+event TemperatureProbeCalibrated: "kitchen.temperatureprobe.calibrated" {
+  probeId: string
+  calibratedBy: string
+  calibratedAt: number
+}
+
+event TemperatureProbeThresholdsUpdated: "kitchen.temperatureprobe.thresholds.updated" {
+  probeId: string
+  minThreshold: number
+  maxThreshold: number
+  updatedAt: number
+}
+
+event TemperatureProbeDeactivated: "kitchen.temperatureprobe.deactivated" {
+  probeId: string
+  reason: string
+  deactivatedBy: string
+  deactivatedAt: number
+}
+
+event TemperatureLogCreated: "kitchen.temperaturelog.created" {
+  logId: string
+  tenantId: string
+  equipmentId: string
+  recordedBy: string
+  temperature: number
+  withinRange: boolean
+  recordedAt: number
+}
+
+event TemperatureReadingCreated: "kitchen.temperaturereading.created" {
+  readingId: string
+  tenantId: string
+  probeId: string
+  temperature: number
+  withinRange: boolean
+  recordedAt: number
+}
+
+event IotAlertRuleCreated: "kitchen.iotalertrule.created" {
+  ruleId: string
+  tenantId: string
+  equipmentId: string
+  metric: string
+  severity: string
+  createdAt: number
+}
+
+event IotAlertRuleUpdated: "kitchen.iotalertrule.updated" {
+  ruleId: string
+  metric: string
+  threshold: number
+  severity: string
+  updatedAt: number
+}
+
+event IotAlertRuleDeactivated: "kitchen.iotalertrule.deactivated" {
+  ruleId: string
+  reason: string
+  deactivatedBy: string
+  deactivatedAt: number
+}
+
+event IoTAlertCreated: "kitchen.iotalert.created" {
+  alertId: string
+  tenantId: string
+  probeId: string
+  ruleId: string
+  severity: string
+  value: number
+  triggeredAt: number
+}
+
+event IoTAlertAcknowledged: "kitchen.iotalert.acknowledged" {
+  alertId: string
+  acknowledgedBy: string
+  acknowledgedAt: number
+}
+
+event IoTAlertResolved: "kitchen.iotalert.resolved" {
+  alertId: string
+  resolvedBy: string
+  resolvedAt: number
+}
+
+event CorrectiveActionCreated: "kitchen.correctiveaction.created" {
+  actionId: string
+  tenantId: string
+  sourceType: string
+  sourceId: string
+  createdAt: number
+}
+
+event CorrectiveActionAssigned: "kitchen.correctiveaction.assigned" {
+  actionId: string
+  assignedTo: string
+  assignedBy: string
+  assignedAt: number
+}
+
+event CorrectiveActionStarted: "kitchen.correctiveaction.started" {
+  actionId: string
+  startedBy: string
+  startedAt: number
+}
+
+event CorrectiveActionClosed: "kitchen.correctiveaction.closed" {
+  actionId: string
+  resolvedBy: string
+  resolvedAt: number
+}
+
+event QualityCheckCreated: "kitchen.qualitycheck.created" {
+  checkId: string
+  tenantId: string
+  checkType: string
+  performedBy: string
+  createdAt: number
+}
+
+event QualityCheckPassed: "kitchen.qualitycheck.passed" {
+  checkId: string
+  passedBy: string
+  passedAt: number
+}
+
+event QualityCheckFailed: "kitchen.qualitycheck.failed" {
+  checkId: string
+  failedBy: string
+  notes: string
+  failedAt: number
+}
+
+event QualityCheckItemCreated: "kitchen.qualitycheckitem.created" {
+  itemId: string
+  tenantId: string
+  qualityCheckId: string
+  criterion: string
+  createdAt: number
+}
+
+event QualityCheckItemResultRecorded: "kitchen.qualitycheckitem.result.recorded" {
+  itemId: string
+  qualityCheckId: string
+  passed: boolean
+  recordedBy: string
+  recordedAt: number
+}
+
+event KitchenTaskClaimCreated: "kitchen.kitchentaskclaim.created" {
+  claimId: string
+  tenantId: string
+  kitchenTaskId: string
+  employeeId: string
+  claimedAt: number
+}
+
+event KitchenTaskClaimReleased: "kitchen.kitchentaskclaim.released" {
+  claimId: string
+  kitchenTaskId: string
+  employeeId: string
+  releasedBy: string
+  reason: string
+  releasedAt: number
+}
+
+event KitchenTaskProgressRecorded: "kitchen.kitchentaskprogress.created" {
+  progressId: string
+  tenantId: string
+  kitchenTaskId: string
+  employeeId: string
+  status: string
+  progressPct: number
+  recordedAt: number
+}
+
+event TaskBundleCreated: "kitchen.taskbundle.created" {
+  bundleId: string
+  tenantId: string
+  name: string
+  eventId: string
+  createdAt: number
+}
+
+event TaskBundleUpdated: "kitchen.taskbundle.updated" {
+  bundleId: string
+  name: string
+  updatedAt: number
+}
+
+event TaskBundleArchived: "kitchen.taskbundle.archived" {
+  bundleId: string
+  archivedBy: string
+  reason: string
+  archivedAt: number
+}
+
+event TaskBundleItemAdded: "kitchen.taskbundleitem.added" {
+  itemId: string
+  tenantId: string
+  taskBundleId: string
+  kitchenTaskId: string
+  sortOrder: number
+  addedAt: number
+}
+
+event TaskBundleItemRemoved: "kitchen.taskbundleitem.removed" {
+  itemId: string
+  taskBundleId: string
+  kitchenTaskId: string
+  removedBy: string
+  reason: string
+  removedAt: number
+}
+
+event BulkCombineRuleCreated: "kitchen.bulkcombinerule.created" {
+  ruleId: string
+  tenantId: string
+  name: string
+  createdAt: number
+}
+
+event BulkCombineRuleUpdated: "kitchen.bulkcombinerule.updated" {
+  ruleId: string
+  name: string
+  updatedAt: number
+}
+
+event BulkCombineRuleDeactivated: "kitchen.bulkcombinerule.deactivated" {
+  ruleId: string
+  reason: string
+  deactivatedBy: string
+  deactivatedAt: number
+}
+
+event MethodVideoCreated: "kitchen.methodvideo.created" {
+  videoId: string
+  tenantId: string
+  prepMethodId: string
+  title: string
+  createdAt: number
+}
+
+event MethodVideoUpdated: "kitchen.methodvideo.updated" {
+  videoId: string
+  title: string
+  url: string
+  updatedAt: number
+}
+
+event MethodVideoRemoved: "kitchen.methodvideo.removed" {
+  videoId: string
+  prepMethodId: string
+  removedBy: string
+  reason: string
+  removedAt: number
+}
+
+event PrepListImportCreated: "kitchen.preplistimport.created" {
+  importId: string
+  tenantId: string
+  source: string
+  fileName: string
+  createdAt: number
+}
+
+event PrepListImportCompleted: "kitchen.preplistimport.completed" {
+  importId: string
+  rowsImported: number
+  importedAt: number
+}
+
+event PrepListImportFailed: "kitchen.preplistimport.failed" {
+  importId: string
+  errorMessage: string
+  failedAt: number
+}

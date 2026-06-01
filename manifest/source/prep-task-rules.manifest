@@ -2,6 +2,7 @@
 // Manifest spec for prep task operations with constraints, guards, and events
 
 entity PrepTask {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string

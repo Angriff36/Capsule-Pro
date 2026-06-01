@@ -1,0 +1,772 @@
+// Events Extended - Venue, assignments, timeline, tasks, import, followup, board projections, annotations, notes
+// Business-logic entities for the catering-company Events cluster.
+
+entity Venue {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required name: string = ""
+  property address: string = ""
+  property capacity: int = 0
+  property contactName: string = ""
+  property contactPhone: string = ""
+  property notes: string = ""
+  property isActive: boolean = true
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isLargeVenue: boolean = self.capacity > 500
+
+  constraint requireName: self.name != "" "Venue name is required"
+  constraint positiveCapacity: self.capacity >= 0 "Capacity cannot be negative"
+
+  command create(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
+    guard name != null and name != "" "Venue name is required"
+    guard capacity >= 0 "Capacity cannot be negative"
+    mutate name = name
+    mutate address = address
+    mutate capacity = capacity
+    mutate contactName = contactName
+    mutate contactPhone = contactPhone
+    mutate notes = notes
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit VenueCreated
+  }
+  command update(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
+    guard self.isActive "Cannot update a deactivated venue"
+    guard name != null and name != "" "Venue name is required"
+    guard capacity >= 0 "Capacity cannot be negative"
+    mutate name = name
+    mutate address = address
+    mutate capacity = capacity
+    mutate contactName = contactName
+    mutate contactPhone = contactPhone
+    mutate notes = notes
+    mutate updatedAt = now()
+    emit VenueUpdated
+  }
+  command deactivate(reason: string) {
+    guard self.isActive "Venue is already deactivated"
+    mutate isActive = false
+    mutate updatedAt = now()
+    emit VenueDeactivated
+  }
+  store Venue in durable
+}
+
+policy VenueManagement execute: user.role in ["manager", "admin"] "Managers can manage venues"
+
+event VenueCreated: "events.venue.created" {
+  venueId: string
+  tenantId: string
+  name: string
+  capacity: number
+  createdAt: number
+}
+event VenueUpdated: "events.venue.updated" {
+  venueId: string
+  tenantId: string
+  name: string
+  updatedAt: number
+}
+event VenueDeactivated: "events.venue.deactivated" {
+  venueId: string
+  tenantId: string
+  name: string
+  reason: string
+  deactivatedAt: number
+}
+
+entity EventStaffAssignment {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required staffMemberId: string
+  property role: string = ""
+  property shiftStart: datetime = now()
+  property shiftEnd: datetime = now()
+  property status: string = "assigned"
+  property notes: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isAssigned: boolean = self.status == "assigned"
+  computed isConfirmed: boolean = self.status == "confirmed"
+  computed isCancelled: boolean = self.status == "cancelled"
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireStaff: self.staffMemberId != "" "Staff member ID is required"
+  constraint validStatus: self.status in ["assigned", "confirmed", "cancelled"] "Status must be assigned, confirmed, or cancelled"
+
+  command assign(eventId: string, staffMemberId: string, role: string, shiftStart: datetime, shiftEnd: datetime, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
+    guard role != null and role != "" "Role is required"
+    mutate eventId = eventId
+    mutate staffMemberId = staffMemberId
+    mutate role = role
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate notes = notes
+    mutate status = "assigned"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit EventStaffAssignmentAssigned
+  }
+  command confirm(userId: string) {
+    guard self.status == "assigned" "Only assigned staff can confirm"
+    mutate status = "confirmed"
+    mutate updatedAt = now()
+    emit EventStaffAssignmentConfirmed
+  }
+  command cancel(reason: string) {
+    guard self.status != "cancelled" "Assignment is already cancelled"
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+    emit EventStaffAssignmentCancelled
+  }
+  command updateShift(shiftStart: datetime, shiftEnd: datetime, notes: string) {
+    guard self.status != "cancelled" "Cannot update shift on a cancelled assignment"
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate notes = notes
+    mutate updatedAt = now()
+    emit EventStaffAssignmentShiftUpdated
+  }
+  store EventStaffAssignment in durable
+}
+
+policy EventStaffAssignmentManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage staff assignments"
+
+event EventStaffAssignmentAssigned: "events.staff_assignment.assigned" {
+  assignmentId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  role: string
+  assignedAt: number
+}
+event EventStaffAssignmentConfirmed: "events.staff_assignment.confirmed" {
+  assignmentId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  confirmedAt: number
+}
+event EventStaffAssignmentCancelled: "events.staff_assignment.cancelled" {
+  assignmentId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  reason: string
+  cancelledAt: number
+}
+event EventStaffAssignmentShiftUpdated: "events.staff_assignment.shift_updated" {
+  assignmentId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  updatedAt: number
+}
+
+entity EventTimeline {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required title: string = ""
+  property scheduledAt: datetime = now()
+  property durationMinutes: int = 0
+  property notes: string = ""
+  property sortOrder: int = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isShortEntry: boolean = self.durationMinutes > 0 and self.durationMinutes < 15
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireTitle: self.title != "" "Timeline entry title is required"
+  constraint positiveDuration: self.durationMinutes >= 0 "Duration cannot be negative"
+
+  command create(eventId: string, title: string, scheduledAt: datetime, durationMinutes: int, notes: string, sortOrder: int) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard title != null and title != "" "Title is required"
+    guard durationMinutes >= 0 "Duration cannot be negative"
+    mutate eventId = eventId
+    mutate title = title
+    mutate scheduledAt = scheduledAt
+    mutate durationMinutes = durationMinutes
+    mutate notes = notes
+    mutate sortOrder = sortOrder
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit EventTimelineCreated
+  }
+  command update(title: string, scheduledAt: datetime, durationMinutes: int, notes: string) {
+    guard title != null and title != "" "Title is required"
+    guard durationMinutes >= 0 "Duration cannot be negative"
+    mutate title = title
+    mutate scheduledAt = scheduledAt
+    mutate durationMinutes = durationMinutes
+    mutate notes = notes
+    mutate updatedAt = now()
+    emit EventTimelineUpdated
+  }
+  command reorder(newSortOrder: int) {
+    guard newSortOrder >= 0 "Sort order cannot be negative"
+    mutate sortOrder = newSortOrder
+    mutate updatedAt = now()
+    emit EventTimelineReordered
+  }
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit EventTimelineRemoved
+  }
+  store EventTimeline in durable
+}
+
+policy EventTimelineManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage event timelines"
+
+event EventTimelineCreated: "events.timeline.created" {
+  timelineId: string
+  tenantId: string
+  eventId: string
+  title: string
+  scheduledAt: number
+  createdAt: number
+}
+event EventTimelineUpdated: "events.timeline.updated" {
+  timelineId: string
+  tenantId: string
+  eventId: string
+  title: string
+  updatedAt: number
+}
+event EventTimelineReordered: "events.timeline.reordered" {
+  timelineId: string
+  tenantId: string
+  eventId: string
+  newSortOrder: number
+  updatedAt: number
+}
+event EventTimelineRemoved: "events.timeline.removed" {
+  timelineId: string
+  tenantId: string
+  eventId: string
+  title: string
+  removedAt: number
+}
+
+entity TimelineTask {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required title: string = ""
+  property dueAt: datetime = now()
+  property status: string = "pending"
+  property assignedTo: string = ""
+  property sortOrder: int = 0
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isPending: boolean = self.status == "pending"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isDone: boolean = self.status == "done"
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireTitle: self.title != "" "Task title is required"
+  constraint validStatus: self.status in ["pending", "in_progress", "done"] "Status must be pending, in_progress, or done"
+
+  command create(eventId: string, title: string, dueAt: datetime, assignedTo: string, sortOrder: int) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard title != null and title != "" "Task title is required"
+    mutate eventId = eventId
+    mutate title = title
+    mutate dueAt = dueAt
+    mutate status = "pending"
+    mutate assignedTo = assignedTo
+    mutate sortOrder = sortOrder
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit TimelineTaskCreated
+  }
+  command start(userId: string) {
+    guard self.status == "pending" "Can only start pending tasks"
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+    emit TimelineTaskStarted
+  }
+  command complete(userId: string) {
+    guard self.status == "in_progress" "Can only complete in-progress tasks"
+    mutate status = "done"
+    mutate updatedAt = now()
+    emit TimelineTaskCompleted
+  }
+  command reassign(newAssignedTo: string) {
+    guard self.status != "done" "Cannot reassign a completed task"
+    guard newAssignedTo != null and newAssignedTo != "" "Assignee is required"
+    mutate assignedTo = newAssignedTo
+    mutate updatedAt = now()
+    emit TimelineTaskReassigned
+  }
+  command remove(userId: string) {
+    guard self.status != "in_progress" "Cannot remove a task that is in progress"
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit TimelineTaskRemoved
+  }
+  store TimelineTask in durable
+}
+
+policy TimelineTaskManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage timeline tasks"
+
+event TimelineTaskCreated: "events.timeline_task.created" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  title: string
+  assignedTo: string
+  createdAt: number
+}
+event TimelineTaskStarted: "events.timeline_task.started" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  title: string
+  userId: string
+  startedAt: number
+}
+event TimelineTaskCompleted: "events.timeline_task.completed" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  title: string
+  userId: string
+  completedAt: number
+}
+event TimelineTaskReassigned: "events.timeline_task.reassigned" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  newAssignedTo: string
+  updatedAt: number
+}
+event TimelineTaskRemoved: "events.timeline_task.removed" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  title: string
+  removedAt: number
+}
+
+entity EventImport {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required source: string = ""
+  property required fileName: string = ""
+  property status: string = "pending"
+  property totalRows: int = 0
+  property importedRows: int = 0
+  property errorMessage: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isPending: boolean = self.status == "pending"
+  computed isProcessing: boolean = self.status == "processing"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isFailed: boolean = self.status == "failed"
+
+  constraint requireSource: self.source != "" "Import source is required"
+  constraint requireFileName: self.fileName != "" "File name is required"
+  constraint validStatus: self.status in ["pending", "processing", "completed", "failed"] "Status must be pending, processing, completed, or failed"
+  constraint nonNegativeRows: self.totalRows >= 0 "Total rows cannot be negative"
+  constraint nonNegativeImportedRows: self.importedRows >= 0 "Imported rows cannot be negative"
+
+  command create(source: string, fileName: string, totalRows: int) {
+    guard source != null and source != "" "Import source is required"
+    guard fileName != null and fileName != "" "File name is required"
+    guard totalRows >= 0 "Total rows cannot be negative"
+    mutate source = source
+    mutate fileName = fileName
+    mutate totalRows = totalRows
+    mutate importedRows = 0
+    mutate status = "pending"
+    mutate errorMessage = ""
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit EventImportCreated
+  }
+  command startProcessing(userId: string) {
+    guard self.status == "pending" "Can only start processing pending imports"
+    mutate status = "processing"
+    mutate updatedAt = now()
+    emit EventImportProcessingStarted
+  }
+  command complete(importedRows: int) {
+    guard self.status == "processing" "Can only complete an import that is processing"
+    guard importedRows >= 0 "Imported rows cannot be negative"
+    mutate status = "completed"
+    mutate importedRows = importedRows
+    mutate updatedAt = now()
+    emit EventImportCompleted
+  }
+  command fail(errorMessage: string) {
+    guard self.status == "processing" "Can only fail an import that is processing"
+    mutate status = "failed"
+    mutate errorMessage = errorMessage
+    mutate updatedAt = now()
+    emit EventImportFailed
+  }
+  store EventImport in durable
+}
+
+policy EventImportManagement execute: user.role in ["manager", "admin"] "Managers can manage event imports"
+
+event EventImportCreated: "events.import.created" {
+  importId: string
+  tenantId: string
+  source: string
+  fileName: string
+  totalRows: number
+  createdAt: number
+}
+event EventImportProcessingStarted: "events.import.processing_started" {
+  importId: string
+  tenantId: string
+  source: string
+  startedAt: number
+}
+event EventImportCompleted: "events.import.completed" {
+  importId: string
+  tenantId: string
+  source: string
+  totalRows: number
+  importedRows: number
+  completedAt: number
+}
+event EventImportFailed: "events.import.failed" {
+  importId: string
+  tenantId: string
+  source: string
+  errorMessage: string
+  failedAt: number
+}
+
+entity EventFollowup {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required type: string = ""
+  property dueAt: datetime = now()
+  property status: string = "pending"
+  property assignedTo: string = ""
+  property notes: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isPending: boolean = self.status == "pending"
+  computed isDone: boolean = self.status == "done"
+  computed isCancelled: boolean = self.status == "cancelled"
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireType: self.type != "" "Followup type is required"
+  constraint validStatus: self.status in ["pending", "done", "cancelled"] "Status must be pending, done, or cancelled"
+
+  command create(eventId: string, type: string, dueAt: datetime, assignedTo: string, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard type != null and type != "" "Followup type is required"
+    mutate eventId = eventId
+    mutate type = type
+    mutate dueAt = dueAt
+    mutate status = "pending"
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit EventFollowupCreated
+  }
+  command complete(userId: string, notes: string) {
+    guard self.status == "pending" "Can only complete a pending followup"
+    mutate status = "done"
+    mutate notes = notes
+    mutate updatedAt = now()
+    emit EventFollowupCompleted
+  }
+  command cancel(reason: string) {
+    guard self.status == "pending" "Can only cancel a pending followup"
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+    emit EventFollowupCancelled
+  }
+  store EventFollowup in durable
+}
+
+policy EventFollowupManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage event followups"
+
+event EventFollowupCreated: "events.followup.created" {
+  followupId: string
+  tenantId: string
+  eventId: string
+  type: string
+  assignedTo: string
+  createdAt: number
+}
+event EventFollowupCompleted: "events.followup.completed" {
+  followupId: string
+  tenantId: string
+  eventId: string
+  type: string
+  userId: string
+  completedAt: number
+}
+event EventFollowupCancelled: "events.followup.cancelled" {
+  followupId: string
+  tenantId: string
+  eventId: string
+  type: string
+  reason: string
+  cancelledAt: number
+}
+
+entity BoardProjection {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property required entityType: string = ""
+  property required entityId: string = ""
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property width: decimal = 200
+  property height: decimal = 150
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  constraint requireBoard: self.boardId != "" "Board ID is required"
+  constraint requireEntityType: self.entityType != "" "Entity type is required"
+  constraint requireEntityId: self.entityId != "" "Entity ID is required"
+  constraint positiveWidth: self.width > 0 "Width must be positive"
+  constraint positiveHeight: self.height > 0 "Height must be positive"
+
+  command create(boardId: string, entityType: string, entityId: string, positionX: decimal, positionY: decimal, width: decimal, height: decimal) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    guard entityType != null and entityType != "" "Entity type is required"
+    guard entityId != null and entityId != "" "Entity ID is required"
+    guard width > 0 "Width must be positive"
+    guard height > 0 "Height must be positive"
+    mutate boardId = boardId
+    mutate entityType = entityType
+    mutate entityId = entityId
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate width = width
+    mutate height = height
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit BoardProjectionCreated
+  }
+  command move(positionX: decimal, positionY: decimal) {
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate updatedAt = now()
+    emit BoardProjectionMoved
+  }
+  command resize(width: decimal, height: decimal) {
+    guard width > 0 "Width must be positive"
+    guard height > 0 "Height must be positive"
+    mutate width = width
+    mutate height = height
+    mutate updatedAt = now()
+    emit BoardProjectionResized
+  }
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit BoardProjectionRemoved
+  }
+  store BoardProjection in durable
+}
+
+policy BoardProjectionManagement execute: user.role in ["kitchen_lead", "event_coordinator", "manager", "admin"] "Leads and above can manage board projections"
+
+event BoardProjectionCreated: "board.projection.created" {
+  projectionId: string
+  tenantId: string
+  boardId: string
+  entityType: string
+  entityId: string
+  createdAt: number
+}
+event BoardProjectionMoved: "board.projection.moved" {
+  projectionId: string
+  tenantId: string
+  boardId: string
+  positionX: number
+  positionY: number
+  updatedAt: number
+}
+event BoardProjectionResized: "board.projection.resized" {
+  projectionId: string
+  tenantId: string
+  boardId: string
+  width: number
+  height: number
+  updatedAt: number
+}
+event BoardProjectionRemoved: "board.projection.removed" {
+  projectionId: string
+  tenantId: string
+  boardId: string
+  entityType: string
+  entityId: string
+  removedAt: number
+}
+
+entity BoardAnnotation {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required boardId: string
+  property text: string = ""
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property color: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  constraint requireBoard: self.boardId != "" "Board ID is required"
+
+  command create(boardId: string, text: string, positionX: decimal, positionY: decimal, color: string) {
+    guard boardId != null and boardId != "" "Board ID is required"
+    mutate boardId = boardId
+    mutate text = text
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate color = color
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit BoardAnnotationCreated
+  }
+  command update(text: string, positionX: decimal, positionY: decimal, color: string) {
+    mutate text = text
+    mutate positionX = positionX
+    mutate positionY = positionY
+    mutate color = color
+    mutate updatedAt = now()
+    emit BoardAnnotationUpdated
+  }
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit BoardAnnotationRemoved
+  }
+  store BoardAnnotation in durable
+}
+
+policy BoardAnnotationManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Staff can manage board annotations"
+
+event BoardAnnotationCreated: "board.annotation.created" {
+  annotationId: string
+  tenantId: string
+  boardId: string
+  text: string
+  createdAt: number
+}
+event BoardAnnotationUpdated: "board.annotation.updated" {
+  annotationId: string
+  tenantId: string
+  boardId: string
+  text: string
+  updatedAt: number
+}
+event BoardAnnotationRemoved: "board.annotation.removed" {
+  annotationId: string
+  tenantId: string
+  boardId: string
+  removedAt: number
+}
+
+entity Note {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required title: string = ""
+  property content: string = ""
+  property color: string = ""
+  property tags: array<string> = []
+  property entityType: string = ""
+  property entityId: string = ""
+  property required createdAt: datetime = now()
+  property required updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  constraint requireTitle: self.title != "" "Note title is required"
+
+  command create(title: string, content: string, color: string, tags: array<string>, entityType: string, entityId: string) {
+    guard title != null and title != "" "Note title is required"
+    mutate title = title
+    mutate content = content
+    mutate color = color
+    mutate tags = tags
+    mutate entityType = entityType
+    mutate entityId = entityId
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit NoteCreated
+  }
+  command update(title: string, content: string, color: string, tags: array<string>) {
+    guard title != null and title != "" "Note title is required"
+    mutate title = title
+    mutate content = content
+    mutate color = color
+    mutate tags = tags
+    mutate updatedAt = now()
+    emit NoteUpdated
+  }
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit NoteRemoved
+  }
+  store Note in durable
+}
+
+policy NoteManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Staff can manage notes"
+
+event NoteCreated: "tenant.note.created" {
+  noteId: string
+  tenantId: string
+  title: string
+  entityType: string
+  entityId: string
+  createdAt: number
+}
+event NoteUpdated: "tenant.note.updated" {
+  noteId: string
+  tenantId: string
+  title: string
+  updatedAt: number
+}
+event NoteRemoved: "tenant.note.removed" {
+  noteId: string
+  tenantId: string
+  title: string
+  removedAt: number
+}

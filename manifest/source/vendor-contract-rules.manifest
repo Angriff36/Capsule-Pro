@@ -7,6 +7,7 @@
 // Contracts must be approved before becoming active.
 
 entity VendorContract {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required contractNumber: string

@@ -2,6 +2,7 @@
 // Manifest spec for event contract management and signature tracking
 
 entity EventContract {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -120,6 +121,7 @@ entity EventContract {
 }
 
 entity ContractSignature {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required contractId: string

@@ -2,6 +2,7 @@
 // Manifest spec for event budget management and line item tracking
 
 entity EventBudget {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -20,7 +21,7 @@ entity EventBudget {
   computed isApproved: boolean = self.status == "approved"
   computed isFinalized: boolean = self.status == "finalized"
   computed isOverBudget: boolean = self.totalActualAmount > self.totalBudgetAmount
-  relationship belongsTo linkedEvent: Event with eventId
+  relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   computed hasVariance: boolean = self.varianceAmount != 0
   computed varianceExceedsThreshold: boolean = self.variancePercentage > 10 or self.variancePercentage < -10
 
@@ -132,6 +133,7 @@ entity EventBudget {
 }
 
 entity BudgetLineItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required budgetId: string

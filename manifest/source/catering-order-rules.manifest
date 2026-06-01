@@ -2,6 +2,7 @@
 // Manifest spec for catering order lifecycle and delivery management
 
 entity CateringOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required orderNumber: string

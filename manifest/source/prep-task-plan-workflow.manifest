@@ -3,6 +3,7 @@
 // Provides structured workflow for AI-assisted task generation with human review
 
 entity PrepTaskPlanWorkflow {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""

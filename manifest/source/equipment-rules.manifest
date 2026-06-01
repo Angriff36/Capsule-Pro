@@ -2,6 +2,7 @@
 // Manifest spec for equipment management, maintenance tracking, and predictive failure alerts
 
 entity Equipment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required locationId: string
@@ -204,6 +205,7 @@ entity Equipment {
 }
 
 entity MaintenanceWorkOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required equipmentId: string

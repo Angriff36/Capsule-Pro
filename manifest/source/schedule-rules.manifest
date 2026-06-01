@@ -2,6 +2,7 @@
 // Manifest spec for schedule and shift management
 
 entity Schedule {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property locationId: string = ""
@@ -88,6 +89,7 @@ entity Schedule {
 }
 
 entity ScheduleShift {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required scheduleId: string

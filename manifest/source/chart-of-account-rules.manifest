@@ -2,6 +2,7 @@
 // Manifest spec for managing chart of accounts (general ledger account definitions)
 
 entity ChartOfAccount {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property accountNumber: string = ""

@@ -2,6 +2,7 @@
 // Manifest spec for managing employee certifications and credentials
 
 entity EmployeeCertification {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property employeeId: string = ""

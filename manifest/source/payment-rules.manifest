@@ -2,6 +2,7 @@
 // Defines payment processing, tracking, and reconciliation rules
 
 entity Payment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -44,8 +45,8 @@ entity Payment {
   computed isRefundable: boolean = self.status == "COMPLETED" and self.refundedAt == 0
   computed isFinal: boolean = self.status in ["COMPLETED", "FAILED", "REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK", "VOID"]
 
-  relationship belongsTo invoice: Invoice with invoiceId
-  relationship belongsTo linkedEvent: Event with eventId
+  relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
+  relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   // Constraints
   constraint amount_positive: self.amount > 0 "Payment amount must be positive"
   constraint valid_currency: self.currency in ["USD", "EUR", "GBP", "CAD"] "Currency must be supported"

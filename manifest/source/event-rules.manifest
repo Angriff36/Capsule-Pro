@@ -2,6 +2,7 @@
 // Manifest spec for event lifecycle, profitability tracking, and summary management
 
 entity Event {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property clientId: string = ""
@@ -227,6 +228,7 @@ entity Event {
 }
 
 entity EventProfitability {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -331,6 +333,7 @@ entity EventProfitability {
 }
 
 entity EventSummary {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string

@@ -1,6 +1,7 @@
 // Kitchen QA Rules — Quality Checks, Corrective Actions, Temperature Logs
 
 entity QACheck {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property location: string = ""
@@ -44,6 +45,7 @@ entity QACheck {
 }
 
 entity QACorrectiveAction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required checkId: string
@@ -90,6 +92,7 @@ entity QACorrectiveAction {
 }
 
 entity QATemperatureLog {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required location: string

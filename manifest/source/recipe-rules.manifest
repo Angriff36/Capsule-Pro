@@ -2,6 +2,7 @@
 // Manifest spec for recipe operations with constraints, guards, and events
 
 entity Recipe {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
@@ -70,6 +71,7 @@ entity Recipe {
 }
 
 entity RecipeVersion {
+  key [tenantId, id]
   property required id: string
   property required recipeId: string
   property required tenantId: string
@@ -167,6 +169,7 @@ entity RecipeVersion {
 }
 
 entity RecipeIngredient {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipeVersionId: string
@@ -244,6 +247,7 @@ entity RecipeIngredient {
 }
 
 entity RecipeStep {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipeVersionId: string

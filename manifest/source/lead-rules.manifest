@@ -2,6 +2,7 @@
 // Manifest spec for lead tracking, qualification, and conversion
 
 entity Lead {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property source: string = ""

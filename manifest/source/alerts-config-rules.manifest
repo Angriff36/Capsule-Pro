@@ -2,6 +2,7 @@
 // Manifest spec for alert configuration channels and destinations
 
 entity AlertsConfig {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property channel: string = ""

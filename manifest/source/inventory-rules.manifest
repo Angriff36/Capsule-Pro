@@ -2,6 +2,7 @@
 // Manifest spec for inventory operations with constraints, guards, and events
 
 entity InventoryItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required item_number: string

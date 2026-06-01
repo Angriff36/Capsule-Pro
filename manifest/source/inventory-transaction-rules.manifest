@@ -2,6 +2,7 @@
 // Manifest spec for immutable inventory transaction log entries
 
 entity InventoryTransaction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required itemId: string

@@ -2,6 +2,7 @@
 // Defines payment method storage and tokenization rules
 
 entity PaymentMethod {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 

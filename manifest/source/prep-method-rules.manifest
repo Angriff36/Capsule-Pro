@@ -2,6 +2,7 @@
 // Manifest spec for preparation method catalog, duration estimates, and certification requirements
 
 entity PrepMethod {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string

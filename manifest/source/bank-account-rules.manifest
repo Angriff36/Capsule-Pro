@@ -2,6 +2,7 @@
 // Manifest spec for payroll banking destinations
 
 entity BankAccount {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required employeeId: string

@@ -2,6 +2,7 @@
 // Manifest spec for user/employee lifecycle management
 
 entity User {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required email: string

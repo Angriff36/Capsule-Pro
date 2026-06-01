@@ -2,6 +2,7 @@
 // Manifest spec for event guest management, dietary tracking, and meal preferences
 
 entity EventGuest {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""

@@ -2,6 +2,7 @@
 // Manifest spec for ingredient catalog management, allergen tracking, and shelf life
 
 entity Ingredient {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string

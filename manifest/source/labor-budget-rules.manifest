@@ -2,6 +2,7 @@
 // Manifest spec for labor budgets and budget alerts
 
 entity LaborBudget {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property locationId: string = ""
@@ -60,6 +61,7 @@ entity LaborBudget {
 }
 
 entity BudgetAlert {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property budgetId: string = ""

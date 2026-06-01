@@ -2,6 +2,7 @@
 // Manifest spec for notification delivery, read tracking, and dismissal
 
 entity Notification {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipientEmployeeId: string

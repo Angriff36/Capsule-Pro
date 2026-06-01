@@ -2,6 +2,7 @@
 // Defines collections workflows, aging, and dunning management
 
 entity CollectionCase {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -216,6 +217,7 @@ entity CollectionCase {
 }
 
 entity CollectionAction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required caseId: string = ""
@@ -301,6 +303,7 @@ entity CollectionAction {
 
 // Payment plan entity for installment arrangements
 entity CollectionPaymentPlan {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required caseId: string = ""

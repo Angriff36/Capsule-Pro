@@ -2,6 +2,7 @@
 // Manifest spec for AI-powered workforce optimization features
 
 entity WorkforceOptimization {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property locationId: string = ""
@@ -62,6 +63,7 @@ entity WorkforceOptimization {
 }
 
 entity PerformancePrediction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property employeeId: string = ""

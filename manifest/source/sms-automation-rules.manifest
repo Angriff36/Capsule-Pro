@@ -2,6 +2,7 @@
 // Manifest spec for event-triggered SMS automation rules
 
 entity SmsAutomationRule {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string = ""

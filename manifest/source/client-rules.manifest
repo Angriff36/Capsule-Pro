@@ -2,6 +2,7 @@
 // Manifest spec for client, contact, and preference management
 
 entity Client {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required clientType: string = "company"
@@ -143,6 +144,7 @@ entity Client {
 }
 
 entity ClientContact {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required clientId: string
@@ -242,6 +244,7 @@ entity ClientContact {
 }
 
 entity ClientPreference {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required clientId: string

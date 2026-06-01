@@ -1,6 +1,7 @@
 // Event Automation Rules — Followups, Timeline Items, Waitlist Entries
 
 entity AutomatedFollowup {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -68,6 +69,7 @@ entity AutomatedFollowup {
 }
 
 entity EventTimelineItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -138,6 +140,7 @@ entity EventTimelineItem {
 }
 
 entity EventWaitlistEntry {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string

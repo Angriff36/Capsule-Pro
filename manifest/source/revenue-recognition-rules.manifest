@@ -2,6 +2,7 @@
 // Manifest spec for revenue recognition schedules and accrual accounting
 
 entity RevenueRecognitionSchedule {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -191,6 +192,7 @@ entity RevenueRecognitionSchedule {
 }
 
 entity RevenueRecognitionLine {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required scheduleId: string

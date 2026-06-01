@@ -2,6 +2,7 @@
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 
 entity Facility {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
@@ -72,6 +73,7 @@ entity Facility {
 }
 
 entity FacilityArea {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property venueId: string = ""
@@ -128,6 +130,7 @@ entity FacilityArea {
 }
 
 entity FacilityAsset {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property facilityId: string = ""
@@ -188,6 +191,7 @@ entity FacilityAsset {
 }
 
 entity FacilitySchedule {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property facilityId: string = ""
@@ -261,6 +265,7 @@ entity FacilitySchedule {
 }
 
 entity FacilityWorkOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property facilityId: string = ""

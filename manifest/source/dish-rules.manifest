@@ -2,6 +2,7 @@
 // Manifest spec for dish catalog management, pricing, lead times, and menu integration
 
 entity Dish {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipeId: string

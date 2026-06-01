@@ -2,6 +2,7 @@
 // Manifest spec for document versioning and restore operations
 
 entity DocumentVersion {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required documentId: string

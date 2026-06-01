@@ -2,6 +2,7 @@
 // Manifest spec for equipment maintenance work orders
 
 entity WorkOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required equipmentId: string

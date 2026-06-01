@@ -3,6 +3,7 @@
 // SECURITY: All commands require admin/owner role (adminOnly policy)
 
 entity RolePolicy {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required roleId: string

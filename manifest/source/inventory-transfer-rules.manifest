@@ -2,6 +2,7 @@
 // Manifest spec for inter-location inventory movements
 
 entity InventoryTransfer {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property fromLocationId: string = ""

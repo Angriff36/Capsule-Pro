@@ -2,6 +2,7 @@
 // Manifest spec for shipment tracking and receiving
 
 entity Shipment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required shipmentNumber: string
@@ -156,6 +157,7 @@ entity Shipment {
 }
 
 entity ShipmentItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required shipmentId: string

@@ -2,6 +2,7 @@
 // Manifest spec for container inventory, capacity tracking, and storage management
 
 entity Container {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string

@@ -2,6 +2,7 @@
 // Manifest spec for command board operations with cards, groups, layouts, and connections
 
 entity CommandBoard {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""
@@ -87,6 +88,7 @@ entity CommandBoard {
 }
 
 entity CommandBoardCard {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -210,6 +212,7 @@ entity CommandBoardCard {
 }
 
 entity CommandBoardGroup {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -279,6 +282,7 @@ entity CommandBoardGroup {
 }
 
 entity CommandBoardConnection {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -330,6 +334,7 @@ entity CommandBoardConnection {
 }
 
 entity CommandBoardLayout {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string

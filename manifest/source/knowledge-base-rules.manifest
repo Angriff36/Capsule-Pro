@@ -2,6 +2,7 @@
 // Manifest spec for internal knowledge base articles and documentation
 
 entity KnowledgeBaseEntry {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required title: string

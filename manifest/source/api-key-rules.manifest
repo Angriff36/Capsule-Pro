@@ -3,6 +3,7 @@
 // SECURITY: All commands require admin/manager role. Keys are hashed before storage.
 
 entity ApiKey {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string = ""

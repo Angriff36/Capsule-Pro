@@ -3,6 +3,7 @@
 // with change history, rollback capabilities, and approval workflows
 
 entity VersionedEntity {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required entityType: string
@@ -84,6 +85,7 @@ entity VersionedEntity {
 }
 
 entity EntityVersion {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required versionedEntityId: string
@@ -161,6 +163,7 @@ entity EntityVersion {
 }
 
 entity VersionApproval {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required entityVersionId: string

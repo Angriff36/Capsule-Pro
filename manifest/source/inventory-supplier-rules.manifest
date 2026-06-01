@@ -2,6 +2,7 @@
 // Manifest spec for inventory supplier management
 
 entity InventorySupplier {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string

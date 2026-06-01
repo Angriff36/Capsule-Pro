@@ -3,6 +3,7 @@
 // Version: @angriff36/manifest v0.3.35
 
 entity PricingTier {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required catalogEntryId: string

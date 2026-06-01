@@ -1,0 +1,1164 @@
+// HR/Staff + Logistics Extended Rules
+// Manifest spec for TimecardApproval, PayrollLineItem, TipPool, DisciplinaryAction,
+// ActionMilestone, PerformanceReview, TrainingCompletion, OnboardingTask,
+// OnboardingCompletion, OpenShift, DeliveryRoute, RouteStop,
+// PaymentRefundAttempt, PreventiveMaintenanceSchedule
+
+// ── HR / STAFF cluster ────────────────────────────────────────────────────────
+
+entity TimecardApproval {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property required payrollPeriodId: string
+  property status: string = "pending"
+  property approvedBy: string = ""
+  property approvedAt: datetime
+  property notes: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isApproved: boolean = self.status == "approved"
+  computed isRejected: boolean = self.status == "rejected"
+
+  constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid timecard approval status"
+
+  command create(employeeId: string, payrollPeriodId: string, notes: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard payrollPeriodId != null and payrollPeriodId != "" "Payroll period ID is required"
+
+    mutate employeeId = employeeId
+    mutate payrollPeriodId = payrollPeriodId
+    mutate notes = notes
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TimecardApprovalCreated
+  }
+
+  command approve(approvedBy: string, notes: string) {
+    guard self.status == "pending" "Only pending approvals can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit TimecardApproved
+  }
+
+  command reject(approvedBy: string, notes: string) {
+    guard self.status == "pending" "Only pending approvals can be rejected"
+    guard approvedBy != null and approvedBy != "" "Reviewer ID is required"
+    guard notes != null and notes != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate approvedBy = approvedBy
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit TimecardRejected
+  }
+
+  store TimecardApproval in durable
+}
+
+entity PayrollLineItem {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required payrollRunId: string
+  property required employeeId: string
+  property grossPay: money = 0
+  property netPay: money = 0
+  property totalDeductions: money = 0
+  property hoursWorked: decimal = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed deductionRate: decimal = self.grossPay > 0 ? self.totalDeductions / self.grossPay : 0
+
+  constraint grossPayPositive: self.grossPay >= 0 "Gross pay cannot be negative"
+  constraint netPayPositive: self.netPay >= 0 "Net pay cannot be negative"
+  constraint hoursWorkedPositive: self.hoursWorked >= 0 "Hours worked cannot be negative"
+
+  command create(payrollRunId: string, employeeId: string, grossPay: number, netPay: number, totalDeductions: number, hoursWorked: number) {
+    guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard grossPay >= 0 "Gross pay cannot be negative"
+    guard netPay >= 0 "Net pay cannot be negative"
+
+    mutate payrollRunId = payrollRunId
+    mutate employeeId = employeeId
+    mutate grossPay = grossPay
+    mutate netPay = netPay
+    mutate totalDeductions = totalDeductions
+    mutate hoursWorked = hoursWorked
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PayrollLineItemCreated
+  }
+
+  command update(grossPay: number, netPay: number, totalDeductions: number, hoursWorked: number) {
+    guard grossPay >= 0 "Gross pay cannot be negative"
+    guard netPay >= 0 "Net pay cannot be negative"
+
+    mutate grossPay = grossPay
+    mutate netPay = netPay
+    mutate totalDeductions = totalDeductions
+    mutate hoursWorked = hoursWorked
+    mutate updatedAt = now()
+
+    emit PayrollLineItemUpdated
+  }
+
+  store PayrollLineItem in durable
+}
+
+entity TipPool {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property periodStart: datetime
+  property periodEnd: datetime
+  property eventId: string = ""
+  property totalTips: money = 0
+  property status: string = "open"
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isOpen: boolean = self.status == "open"
+  computed isAllocated: boolean = self.status == "allocated"
+  computed isClosed: boolean = self.status == "closed"
+
+  constraint validStatus: self.status in ["open", "allocated", "closed"] "Invalid tip pool status"
+  constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
+
+  command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
+    guard periodStart != null and periodStart > 0 "Period start is required"
+    guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
+    guard totalTips >= 0 "Total tips cannot be negative"
+
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate eventId = eventId
+    mutate totalTips = totalTips
+    mutate status = "open"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TipPoolCreated
+  }
+
+  command allocate(totalTips: number) {
+    guard self.status == "open" "Only open tip pools can be allocated"
+    guard totalTips >= 0 "Total tips cannot be negative"
+
+    mutate totalTips = totalTips
+    mutate status = "allocated"
+    mutate updatedAt = now()
+
+    emit TipPoolAllocated
+  }
+
+  command close() {
+    guard self.status == "allocated" "Only allocated tip pools can be closed"
+
+    mutate status = "closed"
+    mutate updatedAt = now()
+
+    emit TipPoolClosed
+  }
+
+  store TipPool in durable
+}
+
+entity DisciplinaryAction {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property actionType: string = ""
+  property reason: string = ""
+  property severity: string = "low"
+  property status: string = "open"
+  property issuedBy: string = ""
+  property issuedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isOpen: boolean = self.status == "open"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isClosed: boolean = self.status == "closed"
+
+  constraint validSeverity: self.severity in ["low", "medium", "high", "termination"] "Invalid disciplinary action severity"
+  constraint validStatus: self.status in ["open", "in_progress", "closed"] "Invalid disciplinary action status"
+  constraint requireActionType: self.actionType != "" "Action type is required"
+  constraint requireReason: self.reason != "" "Reason is required"
+
+  command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard actionType != null and actionType != "" "Action type is required"
+    guard reason != null and reason != "" "Reason is required"
+    guard severity in ["low", "medium", "high", "termination"] "Invalid severity"
+    guard issuedBy != null and issuedBy != "" "Issuer ID is required"
+
+    mutate employeeId = employeeId
+    mutate actionType = actionType
+    mutate reason = reason
+    mutate severity = severity
+    mutate status = "open"
+    mutate issuedBy = issuedBy
+    mutate issuedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit DisciplinaryActionCreated
+  }
+
+  command acknowledge(employeeId: string) {
+    guard self.status == "open" "Only open actions can be acknowledged"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit DisciplinaryActionAcknowledged
+  }
+
+  command close(issuedBy: string) {
+    guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be closed"
+
+    mutate status = "closed"
+    mutate updatedAt = now()
+
+    emit DisciplinaryActionClosed
+  }
+
+  store DisciplinaryAction in durable
+}
+
+entity ActionMilestone {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required disciplinaryActionId: string
+  property title: string = ""
+  property dueAt: datetime
+  property status: string = "pending"
+  property completedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isMet: boolean = self.status == "met"
+  computed isMissed: boolean = self.status == "missed"
+
+  constraint validStatus: self.status in ["pending", "met", "missed"] "Invalid milestone status"
+  constraint requireTitle: self.title != "" "Milestone title is required"
+
+  command create(disciplinaryActionId: string, title: string, dueAt: number) {
+    guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
+    guard title != null and title != "" "Milestone title is required"
+    guard dueAt != null and dueAt > 0 "Due date is required"
+
+    mutate disciplinaryActionId = disciplinaryActionId
+    mutate title = title
+    mutate dueAt = dueAt
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ActionMilestoneCreated
+  }
+
+  command complete() {
+    guard self.status == "pending" "Only pending milestones can be completed"
+
+    mutate status = "met"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit ActionMilestoneMet
+  }
+
+  command miss() {
+    guard self.status == "pending" "Only pending milestones can be marked missed"
+
+    mutate status = "missed"
+    mutate updatedAt = now()
+
+    emit ActionMilestoneMissed
+  }
+
+  store ActionMilestone in durable
+}
+
+entity PerformanceReview {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property required reviewerId: string
+  property reviewPeriod: string = ""
+  property overallRating: decimal = 0
+  property status: string = "draft"
+  property submittedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isSubmitted: boolean = self.status == "submitted"
+  computed isAcknowledged: boolean = self.status == "acknowledged"
+
+  constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
+  constraint validRating: self.overallRating >= 0 and self.overallRating <= 5 "Rating must be between 0 and 5"
+
+  command create(employeeId: string, reviewerId: string, reviewPeriod: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard reviewerId != null and reviewerId != "" "Reviewer ID is required"
+    guard reviewPeriod != null and reviewPeriod != "" "Review period is required"
+
+    mutate employeeId = employeeId
+    mutate reviewerId = reviewerId
+    mutate reviewPeriod = reviewPeriod
+    mutate overallRating = 0
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PerformanceReviewCreated
+  }
+
+  command submit(overallRating: number) {
+    guard self.status == "draft" "Only draft reviews can be submitted"
+    guard overallRating >= 0 and overallRating <= 5 "Rating must be between 0 and 5"
+
+    mutate overallRating = overallRating
+    mutate status = "submitted"
+    mutate submittedAt = now()
+    mutate updatedAt = now()
+
+    emit PerformanceReviewSubmitted
+  }
+
+  command acknowledge() {
+    guard self.status == "submitted" "Only submitted reviews can be acknowledged"
+
+    mutate status = "acknowledged"
+    mutate updatedAt = now()
+
+    emit PerformanceReviewAcknowledged
+  }
+
+  store PerformanceReview in durable
+}
+
+entity TrainingCompletion {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property required trainingModuleId: string
+  property completedAt: datetime
+  property score: decimal = 0
+  property passed: boolean = false
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed hasPassed: boolean = self.passed == true
+  computed hasScore: boolean = self.score > 0
+
+  constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
+
+  command create(employeeId: string, trainingModuleId: string, completedAt: number, score: number, passed: boolean) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard trainingModuleId != null and trainingModuleId != "" "Training module ID is required"
+    guard score >= 0 and score <= 100 "Score must be between 0 and 100"
+
+    mutate employeeId = employeeId
+    mutate trainingModuleId = trainingModuleId
+    mutate completedAt = completedAt
+    mutate score = score
+    mutate passed = passed
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingCompletionRecorded
+  }
+
+  store TrainingCompletion in durable
+}
+
+entity OnboardingTask {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property title: string = ""
+  property description: string = ""
+  property sortOrder: int = 0
+  property isRequired: boolean = true
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isActive: boolean = self.deletedAt == 0
+
+  constraint requireTitle: self.title != "" "Onboarding task title is required"
+
+  command create(title: string, description: string, sortOrder: number, isRequired: boolean) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate sortOrder = sortOrder
+    mutate isRequired = isRequired
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit OnboardingTaskCreated
+  }
+
+  command update(title: string, description: string, sortOrder: number, isRequired: boolean) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate sortOrder = sortOrder
+    mutate isRequired = isRequired
+    mutate updatedAt = now()
+
+    emit OnboardingTaskUpdated
+  }
+
+  command remove() {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit OnboardingTaskRemoved
+  }
+
+  store OnboardingTask in durable
+}
+
+entity OnboardingCompletion {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required employeeId: string
+  property required onboardingTaskId: string
+  property completedAt: datetime
+  property status: string = "pending"
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isComplete: boolean = self.status == "completed"
+
+  constraint validStatus: self.status in ["pending", "completed"] "Invalid onboarding completion status"
+
+  command create(employeeId: string, onboardingTaskId: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard onboardingTaskId != null and onboardingTaskId != "" "Onboarding task ID is required"
+
+    mutate employeeId = employeeId
+    mutate onboardingTaskId = onboardingTaskId
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit OnboardingCompletionCreated
+  }
+
+  command complete() {
+    guard self.status == "pending" "Only pending completions can be completed"
+
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit OnboardingCompletionCompleted
+  }
+
+  store OnboardingCompletion in durable
+}
+
+entity OpenShift {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required scheduleId: string
+  property role: string = ""
+  property shiftStart: datetime
+  property shiftEnd: datetime
+  property status: string = "open"
+  property claimedBy: string = ""
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isOpen: boolean = self.status == "open"
+  computed isClaimed: boolean = self.status == "claimed"
+  computed isCancelled: boolean = self.status == "cancelled"
+
+  constraint validStatus: self.status in ["open", "claimed", "cancelled"] "Invalid open shift status"
+  constraint requireRole: self.role != "" "Role is required for an open shift"
+
+  command create(scheduleId: string, role: string, shiftStart: number, shiftEnd: number) {
+    guard scheduleId != null and scheduleId != "" "Schedule ID is required"
+    guard role != null and role != "" "Role is required"
+    guard shiftStart != null and shiftStart > 0 "Shift start is required"
+    guard shiftEnd != null and shiftEnd > shiftStart "Shift end must be after shift start"
+
+    mutate scheduleId = scheduleId
+    mutate role = role
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate status = "open"
+    mutate claimedBy = ""
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit OpenShiftCreated
+  }
+
+  command claim(claimedBy: string) {
+    guard self.status == "open" "Only open shifts can be claimed"
+    guard claimedBy != null and claimedBy != "" "Employee ID is required to claim shift"
+
+    mutate status = "claimed"
+    mutate claimedBy = claimedBy
+    mutate updatedAt = now()
+
+    emit OpenShiftClaimed
+  }
+
+  command cancel() {
+    guard self.status == "open" "Only open shifts can be cancelled"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit OpenShiftCancelled
+  }
+
+  store OpenShift in durable
+}
+
+// ── LOGISTICS cluster ─────────────────────────────────────────────────────────
+
+entity DeliveryRoute {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property driverId: string = ""
+  property routeDate: datetime
+  property status: string = "planned"
+  property totalStops: int = 0
+  property distanceMiles: decimal = 0
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPlanned: boolean = self.status == "planned"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+
+  constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid delivery route status"
+  constraint requireName: self.name != "" "Route name is required"
+  constraint distancePositive: self.distanceMiles >= 0 "Distance cannot be negative"
+
+  command create(name: string, driverId: string, routeDate: number, totalStops: number, distanceMiles: number) {
+    guard name != null and name != "" "Route name is required"
+    guard routeDate != null and routeDate > 0 "Route date is required"
+
+    mutate name = name
+    mutate driverId = driverId
+    mutate routeDate = routeDate
+    mutate totalStops = totalStops
+    mutate distanceMiles = distanceMiles
+    mutate status = "planned"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit DeliveryRouteCreated
+  }
+
+  command start() {
+    guard self.status == "planned" "Only planned routes can be started"
+    guard self.driverId != "" "A driver must be assigned before starting the route"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit DeliveryRouteStarted
+  }
+
+  command complete() {
+    guard self.status == "in_progress" "Only in-progress routes can be completed"
+
+    mutate status = "completed"
+    mutate updatedAt = now()
+
+    emit DeliveryRouteCompleted
+  }
+
+  command assignDriver(driverId: string) {
+    guard self.status in ["planned"] "Can only assign a driver to a planned route"
+    guard driverId != null and driverId != "" "Driver ID is required"
+
+    mutate driverId = driverId
+    mutate updatedAt = now()
+
+    emit DeliveryRouteDriverAssigned
+  }
+
+  store DeliveryRoute in durable
+}
+
+entity RouteStop {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required deliveryRouteId: string
+  property eventId: string = ""
+  property address: string = ""
+  property sequence: int = 0
+  property scheduledAt: datetime
+  property status: string = "pending"
+  property arrivedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed hasArrived: boolean = self.status == "arrived"
+  computed isComplete: boolean = self.status == "completed"
+
+  constraint validStatus: self.status in ["pending", "arrived", "completed"] "Invalid route stop status"
+  constraint requireAddress: self.address != "" "Address is required"
+  constraint sequencePositive: self.sequence >= 0 "Sequence must be non-negative"
+
+  command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: number) {
+    guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"
+    guard address != null and address != "" "Address is required"
+    guard scheduledAt != null and scheduledAt > 0 "Scheduled arrival time is required"
+
+    mutate deliveryRouteId = deliveryRouteId
+    mutate eventId = eventId
+    mutate address = address
+    mutate sequence = sequence
+    mutate scheduledAt = scheduledAt
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit RouteStopCreated
+  }
+
+  command markArrived() {
+    guard self.status == "pending" "Only pending stops can be marked arrived"
+
+    mutate status = "arrived"
+    mutate arrivedAt = now()
+    mutate updatedAt = now()
+
+    emit RouteStopArrived
+  }
+
+  command complete() {
+    guard self.status == "arrived" "Stop must be in arrived state before completing"
+
+    mutate status = "completed"
+    mutate updatedAt = now()
+
+    emit RouteStopCompleted
+  }
+
+  command reorder(sequence: number) {
+    guard self.status == "pending" "Only pending stops can be reordered"
+    guard sequence >= 0 "Sequence must be non-negative"
+
+    mutate sequence = sequence
+    mutate updatedAt = now()
+
+    emit RouteStopReordered
+  }
+
+  store RouteStop in durable
+}
+
+entity PaymentRefundAttempt {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required paymentId: string
+  property amount: money = 0
+  property reason: string = ""
+  property status: string = "pending"
+  property attemptedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isSucceeded: boolean = self.status == "succeeded"
+  computed isFailed: boolean = self.status == "failed"
+
+  constraint validStatus: self.status in ["pending", "succeeded", "failed"] "Invalid refund attempt status"
+  constraint amountPositive: self.amount > 0 "Refund amount must be positive"
+
+  command create(paymentId: string, amount: number, reason: string) {
+    guard paymentId != null and paymentId != "" "Payment ID is required"
+    guard amount > 0 "Refund amount must be positive"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate paymentId = paymentId
+    mutate amount = amount
+    mutate reason = reason
+    mutate status = "pending"
+    mutate attemptedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PaymentRefundAttemptCreated
+  }
+
+  command markSucceeded() {
+    guard self.status == "pending" "Only pending refund attempts can be marked succeeded"
+
+    mutate status = "succeeded"
+    mutate updatedAt = now()
+
+    emit PaymentRefundAttemptSucceeded
+  }
+
+  command markFailed() {
+    guard self.status == "pending" "Only pending refund attempts can be marked failed"
+
+    mutate status = "failed"
+    mutate updatedAt = now()
+
+    emit PaymentRefundAttemptFailed
+  }
+
+  store PaymentRefundAttempt in durable
+}
+
+entity PreventiveMaintenanceSchedule {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required equipmentId: string
+  property name: string = ""
+  property frequency: string = ""
+  property nextDueAt: datetime
+  property isActive: boolean = true
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+
+  computed isDue: boolean = self.nextDueAt > 0 and now() >= self.nextDueAt
+  computed isActiveSchedule: boolean = self.isActive == true
+
+  constraint requireName: self.name != "" "Schedule name is required"
+  constraint requireFrequency: self.frequency != "" "Frequency is required"
+
+  command create(equipmentId: string, name: string, frequency: string, nextDueAt: number) {
+    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
+    guard name != null and name != "" "Schedule name is required"
+    guard frequency != null and frequency != "" "Frequency is required"
+    guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
+
+    mutate equipmentId = equipmentId
+    mutate name = name
+    mutate frequency = frequency
+    mutate nextDueAt = nextDueAt
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit MaintenanceScheduleCreated
+  }
+
+  command update(name: string, frequency: string, nextDueAt: number) {
+    guard self.isActive "Cannot update an inactive maintenance schedule"
+    guard name != null and name != "" "Schedule name is required"
+    guard frequency != null and frequency != "" "Frequency is required"
+    guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
+
+    mutate name = name
+    mutate frequency = frequency
+    mutate nextDueAt = nextDueAt
+    mutate updatedAt = now()
+
+    emit MaintenanceScheduleUpdated
+  }
+
+  command complete(nextDueAt: number) {
+    guard self.isActive "Cannot complete an inactive maintenance schedule"
+    guard nextDueAt != null and nextDueAt > 0 "Next due date is required for recurrence"
+
+    mutate nextDueAt = nextDueAt
+    mutate updatedAt = now()
+
+    emit MaintenanceScheduleCompleted
+  }
+
+  command deactivate() {
+    guard self.isActive "Schedule is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit MaintenanceScheduleDeactivated
+  }
+
+  store PreventiveMaintenanceSchedule in durable
+}
+
+// ── Policies ──────────────────────────────────────────────────────────────────
+
+policy ManagersCanManageTimecards execute: user.role in ["manager", "hr_admin", "admin", "payroll_admin"] "Managers can approve or reject timecards"
+policy ManagersCanManagePayroll execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll line items"
+policy ManagersCanManageTipPools execute: user.role in ["manager", "admin"] "Managers can manage tip pools"
+policy HRCanManageDisciplinary execute: user.role in ["hr_admin", "manager", "admin"] "HR and managers can manage disciplinary actions"
+policy ManagersCanManageReviews execute: user.role in ["manager", "hr_admin", "admin"] "Managers can manage performance reviews"
+policy HRCanManageOnboarding execute: user.role in ["hr_admin", "manager", "admin"] "HR and managers can manage onboarding tasks"
+policy StaffCanCompleteOnboarding execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "hr_admin", "admin"] "All staff can complete their onboarding tasks"
+policy StaffCanClaimOpenShifts execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can claim open shifts"
+policy ManagersCanManageOpenShifts execute: user.role in ["manager", "admin"] "Managers can create and cancel open shifts"
+policy LogisticsCanManageRoutes execute: user.role in ["logistics_manager", "manager", "admin"] "Logistics managers can manage delivery routes"
+policy ManagersCanManageRefunds execute: user.role in ["manager", "admin", "billing_admin"] "Managers can manage refund attempts"
+policy ManagersCanManageMaintenance execute: user.role in ["facilities_manager", "manager", "admin"] "Managers can manage maintenance schedules"
+
+// ── Events ────────────────────────────────────────────────────────────────────
+
+event TimecardApprovalCreated: "hr.timecard.approval.created" {
+  approvalId: string
+  tenantId: string
+  employeeId: string
+  payrollPeriodId: string
+  createdAt: number
+}
+
+event TimecardApproved: "hr.timecard.approved" {
+  approvalId: string
+  tenantId: string
+  employeeId: string
+  payrollPeriodId: string
+  approvedBy: string
+  approvedAt: number
+}
+
+event TimecardRejected: "hr.timecard.rejected" {
+  approvalId: string
+  tenantId: string
+  employeeId: string
+  payrollPeriodId: string
+  rejectedBy: string
+  notes: string
+  rejectedAt: number
+}
+
+event PayrollLineItemCreated: "payroll.lineitem.created" {
+  lineItemId: string
+  tenantId: string
+  payrollRunId: string
+  employeeId: string
+  grossPay: number
+  netPay: number
+  createdAt: number
+}
+
+event PayrollLineItemUpdated: "payroll.lineitem.updated" {
+  lineItemId: string
+  tenantId: string
+  payrollRunId: string
+  employeeId: string
+  grossPay: number
+  netPay: number
+  updatedAt: number
+}
+
+event TipPoolCreated: "hr.tippool.created" {
+  tipPoolId: string
+  tenantId: string
+  eventId: string
+  totalTips: number
+  createdAt: number
+}
+
+event TipPoolAllocated: "hr.tippool.allocated" {
+  tipPoolId: string
+  tenantId: string
+  totalTips: number
+  allocatedAt: number
+}
+
+event TipPoolClosed: "hr.tippool.closed" {
+  tipPoolId: string
+  tenantId: string
+  closedAt: number
+}
+
+event DisciplinaryActionCreated: "hr.disciplinary.created" {
+  actionId: string
+  tenantId: string
+  employeeId: string
+  actionType: string
+  severity: string
+  issuedBy: string
+  createdAt: number
+}
+
+event DisciplinaryActionAcknowledged: "hr.disciplinary.acknowledged" {
+  actionId: string
+  tenantId: string
+  employeeId: string
+  acknowledgedAt: number
+}
+
+event DisciplinaryActionClosed: "hr.disciplinary.closed" {
+  actionId: string
+  tenantId: string
+  employeeId: string
+  closedAt: number
+}
+
+event ActionMilestoneCreated: "hr.milestone.created" {
+  milestoneId: string
+  tenantId: string
+  disciplinaryActionId: string
+  title: string
+  dueAt: number
+  createdAt: number
+}
+
+event ActionMilestoneMet: "hr.milestone.met" {
+  milestoneId: string
+  tenantId: string
+  disciplinaryActionId: string
+  completedAt: number
+}
+
+event ActionMilestoneMissed: "hr.milestone.missed" {
+  milestoneId: string
+  tenantId: string
+  disciplinaryActionId: string
+  missedAt: number
+}
+
+event PerformanceReviewCreated: "hr.review.created" {
+  reviewId: string
+  tenantId: string
+  employeeId: string
+  reviewerId: string
+  reviewPeriod: string
+  createdAt: number
+}
+
+event PerformanceReviewSubmitted: "hr.review.submitted" {
+  reviewId: string
+  tenantId: string
+  employeeId: string
+  overallRating: number
+  submittedAt: number
+}
+
+event PerformanceReviewAcknowledged: "hr.review.acknowledged" {
+  reviewId: string
+  tenantId: string
+  employeeId: string
+  acknowledgedAt: number
+}
+
+event TrainingCompletionRecorded: "hr.training.completion.recorded" {
+  completionId: string
+  tenantId: string
+  employeeId: string
+  trainingModuleId: string
+  score: number
+  passed: boolean
+  completedAt: number
+}
+
+event OnboardingTaskCreated: "hr.onboarding.task.created" {
+  taskId: string
+  tenantId: string
+  title: string
+  sortOrder: number
+  createdAt: number
+}
+
+event OnboardingTaskUpdated: "hr.onboarding.task.updated" {
+  taskId: string
+  tenantId: string
+  title: string
+  updatedAt: number
+}
+
+event OnboardingTaskRemoved: "hr.onboarding.task.removed" {
+  taskId: string
+  tenantId: string
+  removedAt: number
+}
+
+event OnboardingCompletionCreated: "hr.onboarding.completion.created" {
+  completionId: string
+  tenantId: string
+  employeeId: string
+  onboardingTaskId: string
+  createdAt: number
+}
+
+event OnboardingCompletionCompleted: "hr.onboarding.completion.completed" {
+  completionId: string
+  tenantId: string
+  employeeId: string
+  onboardingTaskId: string
+  completedAt: number
+}
+
+event OpenShiftCreated: "schedule.openshift.created" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  role: string
+  shiftStart: number
+  shiftEnd: number
+  createdAt: number
+}
+
+event OpenShiftClaimed: "schedule.openshift.claimed" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  claimedBy: string
+  claimedAt: number
+}
+
+event OpenShiftCancelled: "schedule.openshift.cancelled" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  cancelledAt: number
+}
+
+event DeliveryRouteCreated: "logistics.deliveryroute.created" {
+  routeId: string
+  tenantId: string
+  name: string
+  driverId: string
+  routeDate: number
+  createdAt: number
+}
+
+event DeliveryRouteStarted: "logistics.deliveryroute.started" {
+  routeId: string
+  tenantId: string
+  startedAt: number
+}
+
+event DeliveryRouteCompleted: "logistics.deliveryroute.completed" {
+  routeId: string
+  tenantId: string
+  completedAt: number
+}
+
+event DeliveryRouteDriverAssigned: "logistics.deliveryroute.driver.assigned" {
+  routeId: string
+  tenantId: string
+  driverId: string
+  assignedAt: number
+}
+
+event RouteStopCreated: "logistics.routestop.created" {
+  stopId: string
+  tenantId: string
+  deliveryRouteId: string
+  address: string
+  sequence: number
+  createdAt: number
+}
+
+event RouteStopArrived: "logistics.routestop.arrived" {
+  stopId: string
+  tenantId: string
+  deliveryRouteId: string
+  arrivedAt: number
+}
+
+event RouteStopCompleted: "logistics.routestop.completed" {
+  stopId: string
+  tenantId: string
+  deliveryRouteId: string
+  completedAt: number
+}
+
+event RouteStopReordered: "logistics.routestop.reordered" {
+  stopId: string
+  tenantId: string
+  deliveryRouteId: string
+  sequence: number
+  updatedAt: number
+}
+
+event PaymentRefundAttemptCreated: "payments.refund.attempt.created" {
+  attemptId: string
+  tenantId: string
+  paymentId: string
+  amount: number
+  reason: string
+  attemptedAt: number
+}
+
+event PaymentRefundAttemptSucceeded: "payments.refund.attempt.succeeded" {
+  attemptId: string
+  tenantId: string
+  paymentId: string
+  amount: number
+  succeededAt: number
+}
+
+event PaymentRefundAttemptFailed: "payments.refund.attempt.failed" {
+  attemptId: string
+  tenantId: string
+  paymentId: string
+  amount: number
+  failedAt: number
+}
+
+event MaintenanceScheduleCreated: "facilities.maintenance.schedule.created" {
+  scheduleId: string
+  tenantId: string
+  equipmentId: string
+  name: string
+  frequency: string
+  nextDueAt: number
+  createdAt: number
+}
+
+event MaintenanceScheduleUpdated: "facilities.maintenance.schedule.updated" {
+  scheduleId: string
+  tenantId: string
+  equipmentId: string
+  nextDueAt: number
+  updatedAt: number
+}
+
+event MaintenanceScheduleCompleted: "facilities.maintenance.schedule.completed" {
+  scheduleId: string
+  tenantId: string
+  equipmentId: string
+  nextDueAt: number
+  completedAt: number
+}
+
+event MaintenanceScheduleDeactivated: "facilities.maintenance.schedule.deactivated" {
+  scheduleId: string
+  tenantId: string
+  equipmentId: string
+  deactivatedAt: number
+}

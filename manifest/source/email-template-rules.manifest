@@ -2,6 +2,7 @@
 // Manifest spec for email template CRUD
 
 entity EmailTemplate {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property name: string = ""

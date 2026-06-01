@@ -2,6 +2,7 @@
 // Manifest spec for training assignment creation and management
 
 entity TrainingAssignment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property moduleId: string = ""
