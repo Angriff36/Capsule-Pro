@@ -9,19 +9,45 @@
 > begins by WebFetching the relevant https://manifest-b1e8623f.mintlify.app/ page. Do not reason from
 > dist/*.js or greps alone. If unsure whether the official method exists, fetch the doc — it does.
 
-## Goal (success state)
-`manifest build` (config-driven) regenerates: (1) the full Prisma schema, (2) all CRUD routes, (3)
-types/client, (4) validation — and the app compiles, validates, and runs on that generated output,
-with hand-authored schema/stores/routes RETIRED. No remote push until the branch is proven.
+## ★ FIRST PRINCIPLE — Manifest is the source of truth (do not violate this)
+The `.manifest` source files define what entities/commands/relations/policies SHOULD be. The Prisma
+projection GENERATES whatever the database needs FROM that source. The database schema is downstream
+OUTPUT, never a target to reproduce.
 
-## Why this stalled before (the real blocker — confront it first)
-notes.md §14 / §15c: the Prisma projection emits ONLY `durable` entities (19 of 132). The other ~207
-live Prisma models have NO IR source. A full generate-replaces-hand failed `prisma validate` because
-generated models lacked the back-relations the hand models point at, and `number`-typed props error
-(`PRISMA_AMBIGUOUS_NUMBER`). **So "100% official generate" is fundamentally an IR-COMPLETION project:
-the IR must model every entity (relations both sides, durable stores, real money/int/float types,
-@map/@@map/@@schema via options) before the projection can emit a schema that validates and covers
-what the 226 hand models cover.** This plan's bulk of effort is IR authoring, not codegen plumbing.
+- The current 226 hand-authored Prisma models / live DB are **LEGACY**. They are REFERENCE-ONLY — used
+  solely to spot intent that isn't yet expressed in `.manifest` source. They are NOT a parity target.
+- When the generated schema is "missing" something, the fix is ALWAYS to **rewrite/add to the
+  `.manifest` files** to express that intent, then regenerate. NEVER reconcile the IR backwards to
+  match existing table/column names, and NEVER pair entities to current tables to preserve them.
+- Dev data + the current schema are expendable. We regenerate and reset; we do not protect them.
+If you find yourself trying to make generated output "match the existing 226 models," STOP — that is
+the rejected backwards approach.
+
+## Goal (success state)
+`manifest build` (config-driven) regenerates the full Prisma schema, all CRUD routes, types/client,
+and validation FROM the `.manifest` source — and the app compiles, validates, and runs on that
+generated output, with hand-authored schema/stores/routes RETIRED. No remote push until proven.
+
+## The real shape of the work (corrected — not what prior notes implied)
+The classifier buckets the 226 live models as: **A=16** durable→projected today; **B=78** real Manifest
+entities with FULL `.manifest` source, just classified `store … in memory` (73 already have a `create`
+command); **C=14** real entities missing only a `store` line; **D=118** legacy child/junction/integration
+tables (audit_log, task_claims, NowstaConfig, …) with no IR entity.
+
+**So the gap is STORE CLASSIFICATION, not missing source.** 92 entities (B+C) are essentially one
+`store … in durable` line away from projecting. The heavy "model every entity from scratch" fear in
+prior notes (§14) was wrong for the bulk of them — their source already exists.
+
+The one real authoring task is RELATIONS. The earlier emit stayed additive because, e.g., Event
+(durable) → EventBudget relation was DROPPED since EventBudget was memory; the projection only emits a
+relation when BOTH sides are durable. Flipping has **cluster effects**: making an entity durable can
+require modeling the back-relation on each durable neighbor. That back-relation modeling is just
+AUTHORING INTENT IN `.manifest` source (the right thing) — not reconciling to the old DB. Flip clusters
+together (e.g. the whole Event cluster), add the relations both sides in source, regenerate.
+
+D (118 legacy tables) are NOT a goal to preserve. If any represents real domain intent, that intent
+gets authored as a proper `.manifest` entity; otherwise it's legacy to be dropped. Do not model the IR
+around keeping them.
 
 ## Official tooling to ADOPT (doc-confirmed; we currently reinvent these)
 - `manifest build [src]` — compile+generate in one step, config-driven (the official path).
@@ -49,18 +75,28 @@ what the 226 hand models cover.** This plan's bulk of effort is IR authoring, no
 - [ ] **Phase 1 — Adopt config-driven generation.** WebFetch /cli/configuration. Write a CORRECT,
       COMPLETE `manifest.config.yaml` (nextjs + prisma projection blocks, all real options). Decide
       `manifest build` vs keep `generate.mjs` wrapper for domain routing. Prove identical route output.
-- [ ] **Phase 2 — IR completion: types + stores.** WebFetch /language/*. Flip every entity that has a
-      real table to `durable`; fix all `number` props → money/decimal/int/float; add missing props the
-      hand schema has. Recompile; `manifest:try-prisma` each until no drop diagnostics.
-- [ ] **Phase 3 — IR completion: relations.** Model every relation BOTH sides in `.manifest` so the
-      Prisma projection emits valid `@relation` + FKs. This is the largest sub-task (the §14 blocker).
-- [ ] **Phase 4 — Prisma schema projection → live.** WebFetch /integration/prisma. Build the options
-      bag (tableMappings/columnMappings/precision/foreignKeys) + Capsule post-process (@@schema,
-      composite @@id) to reproduce/replace the live schema. `prisma validate` GREEN on generated output.
-      `prisma generate`. Dev DB reset OK (per user, dev data expendable).
-- [ ] **Phase 5 — Routes + stores from IR.** Generate all CRUD routes; wire stores (generic provider
-      or per-entity) so all 132 entities persist to real tables (kill the 37 JSON-blob fallbacks).
-      Retire hand-written routes/stores per phase-out-registry.md, replacement proven first.
+- [ ] **Phase 2 — Store classification + types (the bulk of the gap).** WebFetch /language/*. For the
+      B (78) + C (14) entities whose `.manifest` source already exists: set/flip `store … in durable`,
+      and fix `number` props → money/decimal/int/float (projection errors on bare number). This alone
+      moves ~92 entities into projection. Recompile; `manifest:try-prisma` per entity until no
+      PRISMA_SKIPPED/AMBIGUOUS diagnostics. NOT reconciling to old columns — just declaring durable +
+      correct types in source.
+- [ ] **Phase 3 — Relations, authored in source (cluster by cluster).** WebFetch /integration/prisma
+      relations section. Where the projection drops a relation because the target was memory, the fix
+      is to author BOTH sides of the relation in `.manifest` source and flip the cluster durable
+      together (e.g. Event + EventBudget + EventGuest + … ). Add any genuinely-needed back-relations as
+      INTENT in source. This is authoring what the domain SHOULD be, not matching the old DB.
+- [ ] **Phase 4 — Generate the schema FROM source → make it live.** WebFetch /integration/prisma.
+      Run the Prisma projection (`manifest generate -p prisma` / `manifest build`) to emit the schema
+      from IR. Supply only the projection options that express INTENT (provider, precision, intentional
+      @map/@@map physical names, @@schema/composite-key post-process). The generated schema is the new
+      truth — do NOT diff-to-match the legacy 226 models; only consult them to catch missing intent to
+      add to SOURCE. `prisma validate` GREEN on generated output → `prisma generate` → reset/recreate
+      dev DB from it (data expendable).
+- [ ] **Phase 5 — Routes + stores from IR.** Generate all CRUD routes; wire stores so every durable
+      entity persists to its generated table (kill the JSON-blob fallbacks). Retire hand-written
+      routes/stores per phase-out-registry.md, replacement proven first. D (118 legacy tables): drop
+      unless the underlying intent has been authored as a proper `.manifest` entity.
 - [ ] **Phase 6 — Replace custom audits with official CLI.** WebFetch /cli/overview. Evaluate
       `manifest doctor`/`audit-governance`/`enforce-surface` vs our custom `audit-*` scripts; adopt
       official where it covers our needs. Add drift gates (generated == committed) to CI.
@@ -74,7 +110,12 @@ what the 226 hand models cover.** This plan's bulk of effort is IR authoring, no
 - Migrations only via `pnpm db:dev --create-only` (CLAUDE.md DB rules).
 
 ## Status
-**Phase 0 — not started.** This file created 2026-06-01; about to create the branch.
+**Phase 0 — not started.** On branch `manifest/full-official-generation` (created 2026-06-01).
+Plan corrected 2026-06-01 after user correction: the gap is STORE CLASSIFICATION (B=78 memory + C=14
+no-store entities already have full `.manifest` source — 92 entities one `store … durable` line from
+projecting), NOT missing source. Manifest source is the source of truth; the 226 legacy models are
+reference-only, never a parity target. Fix gaps by authoring `.manifest` source + regenerating, never
+by reconciling IR to existing tables. (Reverses the parity framing this file shipped with.)
 
 ## Decisions / open questions
 1. Domain route tree (95+ frontend URLs) vs flat entity URLs — keep wrapper, migrate FE, or shims?
