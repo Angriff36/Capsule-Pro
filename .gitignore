@@ -578,7 +578,6 @@ SLOPSCOPE_RULE_IMPLEMENTATION_PLAN.md
 # of this. Restoring it as a tracked config.
 # .secretlintrc.json
 biome.autofix.jsonc
-manifest.config.yaml
 
 # Declaration source maps (not needed for typechecking or production)
 **/*.d.ts.map

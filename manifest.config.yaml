@@ -1,0 +1,44 @@
+# Manifest CLI configuration — https://manifest-b1e8623f.mintlify.app/cli/configuration
+#
+# Config is OPTIONAL: the CLI has built-in defaults and Capsule's wrapper scripts
+# pass explicit flags (which OVERRIDE this file). This file documents and centralizes
+# the project's canonical paths + nextjs projection options so the values live in ONE
+# place instead of being implicit in scripts.
+#
+# IMPORTANT — current reality (do not assume this file alone drives generation):
+#  - `pnpm manifest:compile` (manifest/scripts/compile.mjs) imports the IR compiler
+#    DIRECTLY and hand-rolls .manifest discovery to dodge a CLI `--glob` "last file wins"
+#    bug — it does NOT read this config.
+#  - `pnpm manifest:generate` (manifest/scripts/generate.mjs) shells `pnpm exec manifest
+#    generate <ir> --projection nextjs --surface route --output <staging>` with EXPLICIT
+#    flags, then post-processes (domain remap + accessor resolution) and writes a singular
+#    dispatcher. Those explicit flags override `src`/`output`/projection settings here.
+#  So today this config is descriptive/forward-looking; wiring the scripts to consume it
+#  is tracked in manifest/task_plan.md §Phase-7. Values below mirror the scripts exactly.
+
+$schema: https://manifest.dev/config.schema.json
+
+# Capsule-owned .manifest sources (manifest/source/*.manifest). compile.mjs reads this dir.
+src: manifest/source/**/*.manifest
+
+# Compiled merged IR output dir. The canonical merged IR is manifest/ir/kitchen.ir.json.
+output: manifest/ir/
+
+# Prisma schema used for validation / accessor cross-checks.
+prismaSchema: packages/database/prisma/schema.prisma
+
+projections:
+  nextjs:
+    # Generated read routes land under apps/api/app/api/ (after generate.mjs domain remap).
+    output: apps/api/app/api/
+    options:
+      # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
+      authProvider: clerk
+      # App-local DB + runtime + response import paths used by generated routes.
+      databaseImportPath: "@repo/database"
+      # Tenant scoping + soft-delete are enforced on read surfaces.
+      includeTenantFilter: true
+      includeSoftDeleteFilter: true
+      # Governed command writes go through the SINGULAR dispatcher (constitution §6),
+      # never concrete per-command routes:
+      dispatcher: apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
