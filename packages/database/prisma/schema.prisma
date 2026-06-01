@@ -2879,7 +2879,7 @@ model Recipe {
   category String? @default("")
   cuisineType String? @default("")
   description String? @default("")
-  tags String @default("")
+  tags String[]
   isActive Boolean @default(true)
 
   @@id([tenantId, id])

@@ -474,7 +474,7 @@ export class RecipePrismaStore implements Store<EntityInstance> {
         category: (data.category as string) || null,
         cuisineType: (data.cuisineType as string) || null,
         description: (data.description as string) || null,
-        tags: (data.tags as string) || "",
+        tags: (data.tags as string[]) || [],
         isActive: (data.isActive as boolean) ?? true,
       },
     });
@@ -493,7 +493,7 @@ export class RecipePrismaStore implements Store<EntityInstance> {
           category: data.category as string | null | undefined,
           cuisineType: data.cuisineType as string | null | undefined,
           description: data.description as string | null | undefined,
-          tags: data.tags as string | undefined,
+          tags: data.tags as string[] | undefined,
           isActive: data.isActive as boolean | undefined,
         },
       });
