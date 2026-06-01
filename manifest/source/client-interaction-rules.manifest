@@ -12,15 +12,20 @@ entity ClientInteraction {
   property interactionDate: datetime = now()
   property subject: string = ""
   property description: string = ""
-  property followUpDate: datetime = now()
+  property followUpDate: datetime
   property followUpCompleted: boolean = false
+  property status: string = "open"
+  property priority: string = "normal"
+  property escalatedAt: datetime
+  property escalatedTo: string = ""
   property correlationId: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
-  computed hasFollowUp: boolean = self.followUpDate > 0
-  computed isFollowUpOverdue: boolean = self.followUpDate > 0 and self.followUpDate < now() and self.followUpCompleted == false
+  computed hasFollowUp: boolean = self.followUpDate != null
+  computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false
+  computed isEscalated: boolean = self.escalatedAt != null
   computed isCompleted: boolean = self.followUpCompleted == true
   computed hasSubject: boolean = self.subject != null and self.subject != ""
 
@@ -37,6 +42,9 @@ entity ClientInteraction {
     }
   }
 
+  constraint validStatus: self.status in ["open", "scheduled", "overdue", "completed", "escalated"] "Invalid interaction status"
+  constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority level"
+
   constraint warnOverdueFollowUp:warn self.isFollowUpOverdue {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
     details: {
@@ -52,7 +60,7 @@ entity ClientInteraction {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard interactionType != null and interactionType != "" "Interaction type is required"
 
-    constraint warnPastFollowUp:warn followUpDate > 0 and followUpDate < now() {
+    constraint warnPastFollowUp:warn followUpDate != null and followUpDate < now() {
       messageTemplate: "Creating interaction with a follow-up date in the past ({followUpDate})"
       details: {
         subject: subject
@@ -64,11 +72,12 @@ entity ClientInteraction {
     mutate leadId = leadId
     mutate employeeId = employeeId
     mutate interactionType = interactionType
-    mutate interactionDate = interactionDate > 0 ? interactionDate : now()
+    mutate interactionDate = interactionDate != null ? interactionDate : now()
     mutate subject = subject
     mutate description = description
     mutate followUpDate = followUpDate
     mutate followUpCompleted = false
+    mutate status = "open"
     mutate correlationId = correlationId
     mutate createdAt = now()
     mutate updatedAt = now()
@@ -80,7 +89,7 @@ entity ClientInteraction {
     guard self.deletedAt == null "Cannot update a deleted interaction"
     guard subject != null and subject != "" "Subject is required"
 
-    constraint warnPastFollowUp:warn followUpDate > 0 and followUpDate < now() {
+    constraint warnPastFollowUp:warn followUpDate != null and followUpDate < now() {
       messageTemplate: "Updating interaction with a follow-up date in the past ({followUpDate})"
       details: {
         subject: subject
@@ -112,9 +121,52 @@ entity ClientInteraction {
     }
 
     mutate followUpCompleted = true
+    mutate status = "completed"
     mutate updatedAt = now()
 
     emit ClientInteractionCompleted
+  }
+
+  command schedule(followUpDate: number, assignedTo: string) {
+    guard self.deletedAt == null "Cannot schedule a deleted interaction"
+    guard self.status in ["open", "overdue"] "Can only schedule open or overdue interactions"
+    guard followUpDate != null "Follow-up date is required"
+    guard followUpDate > now() "Follow-up date must be in the future"
+
+    mutate followUpDate = followUpDate
+    mutate employeeId = assignedTo
+    mutate status = "scheduled"
+    mutate followUpCompleted = false
+    mutate updatedAt = now()
+
+    emit ClientInteractionScheduled
+  }
+
+  command markOverdue() {
+    guard self.deletedAt == null "Cannot mark a deleted interaction overdue"
+    guard self.status in ["open", "scheduled"] "Can only mark open or scheduled interactions overdue"
+    guard self.followUpDate != null "Interaction has no follow-up date"
+    guard self.followUpDate < now() "Follow-up date has not yet passed"
+
+    mutate status = "overdue"
+    mutate updatedAt = now()
+
+    emit ClientInteractionMarkedOverdue
+  }
+
+  command escalate(escalatedTo: string, reason: string) {
+    guard self.deletedAt == null "Cannot escalate a deleted interaction"
+    guard self.status != "completed" "Cannot escalate a completed interaction"
+    guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
+    guard reason != null and reason != "" "Escalation reason is required"
+
+    mutate escalatedAt = now()
+    mutate escalatedTo = escalatedTo
+    mutate status = "escalated"
+    mutate priority = "urgent"
+    mutate updatedAt = now()
+
+    emit ClientInteractionEscalated
   }
 
   store ClientInteraction in durable
@@ -159,4 +211,36 @@ event ClientInteractionCompleted: "crm.interaction.completed" {
   completionNotes: string
   userId: string
   completedAt: number
+}
+
+event ClientInteractionScheduled: "crm.interaction.scheduled" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  employeeId: string
+  subject: string
+  followUpDate: number
+  scheduledAt: number
+}
+
+event ClientInteractionMarkedOverdue: "crm.interaction.marked_overdue" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  followUpDate: number
+  markedAt: number
+}
+
+event ClientInteractionEscalated: "crm.interaction.escalated" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  escalatedTo: string
+  reason: string
+  escalatedAt: number
 }

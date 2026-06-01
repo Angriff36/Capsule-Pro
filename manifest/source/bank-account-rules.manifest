@@ -13,12 +13,17 @@ entity BankAccount {
   property bankName: string = ""
   property isDefault: boolean = false
   property status: string = "active"
-  property verifiedAt: datetime = now()
+  property verifiedAt: datetime
+  property verificationFailedAt: datetime
+  property verificationFailureReason: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isVerified: boolean = self.verifiedAt != null
+  computed isPendingVerification: boolean = self.status == "pending_verification"
+
   constraint validAccountType: self.accountType in ["checking", "savings"] "Invalid account type"
-  constraint validStatus: self.status in ["active", "inactive", "pending_verification"] "Invalid bank account status"
+  constraint validStatus: self.status in ["active", "inactive", "pending_verification", "verification_failed"] "Invalid bank account status"
 
   command create(employeeId: string, accountHolderName: string, accountNumber: string, routingNumber: string, accountType: string, bankName: string, isDefault: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -34,7 +39,6 @@ entity BankAccount {
     mutate bankName = bankName
     mutate isDefault = isDefault
     mutate status = "pending_verification"
-    mutate verifiedAt = 0
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -50,6 +54,7 @@ entity BankAccount {
 
   command markDefault() {
     guard self.status == "active" "Cannot set inactive account as default"
+    guard self.verifiedAt != null "Account must be verified before setting as default"
 
     mutate isDefault = true
     mutate updatedAt = now()
@@ -77,6 +82,29 @@ entity BankAccount {
 
     emit BankAccountVerified
   }
+
+  command verifyFailed(reason: string) {
+    guard self.status == "pending_verification" "Account is not pending verification"
+    guard reason != null and reason != "" "Failure reason is required"
+
+    mutate status = "verification_failed"
+    mutate verificationFailedAt = now()
+    mutate verificationFailureReason = reason
+    mutate updatedAt = now()
+
+    emit BankAccountVerificationFailed
+  }
+
+  command retryVerification() {
+    guard self.status == "verification_failed" "Can only retry verification on a failed account"
+
+    mutate status = "pending_verification"
+    mutate verificationFailureReason = ""
+    mutate updatedAt = now()
+
+    emit BankAccountVerificationRetried
+  }
+
   store BankAccount in durable
 }
 
@@ -109,4 +137,17 @@ event BankAccountUpdated: "payroll.bankaccount.updated" {
 event BankAccountVerified: "payroll.bankaccount.verified" {
   accountId: string
   verifiedAt: number
+}
+
+event BankAccountVerificationFailed: "payroll.bankaccount.verification_failed" {
+  accountId: string
+  employeeId: string
+  reason: string
+  failedAt: number
+}
+
+event BankAccountVerificationRetried: "payroll.bankaccount.verification_retried" {
+  accountId: string
+  employeeId: string
+  retriedAt: number
 }

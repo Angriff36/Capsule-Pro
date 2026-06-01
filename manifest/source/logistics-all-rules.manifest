@@ -33,7 +33,7 @@ entity Driver {
     }
   }
 
-  constraint blockExpiredLicense:block self.licenseExpired and self.status == "active" {
+  constraint warnExpiredLicense:warn self.licenseExpired and self.status == "active" {
     messageTemplate: "Driver '{driverName}' has an expired license — suspend or renew before dispatching"
     details: {
       driverName: self.fullName

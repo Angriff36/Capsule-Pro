@@ -261,6 +261,11 @@
   },
   {
     "entity": "BankAccount",
+    "command": "retryVerification",
+    "commandId": "BankAccount.retryVerification"
+  },
+  {
+    "entity": "BankAccount",
     "command": "update",
     "commandId": "BankAccount.update"
   },
@@ -268,6 +273,11 @@
     "entity": "BankAccount",
     "command": "verify",
     "commandId": "BankAccount.verify"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "verifyFailed",
+    "commandId": "BankAccount.verifyFailed"
   },
   {
     "entity": "BattleBoard",
@@ -563,6 +573,21 @@
     "entity": "ClientInteraction",
     "command": "create",
     "commandId": "ClientInteraction.create"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "escalate",
+    "commandId": "ClientInteraction.escalate"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "markOverdue",
+    "commandId": "ClientInteraction.markOverdue"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "schedule",
+    "commandId": "ClientInteraction.schedule"
   },
   {
     "entity": "ClientInteraction",
@@ -2751,6 +2776,11 @@
   },
   {
     "entity": "PaymentMethod",
+    "command": "create",
+    "commandId": "PaymentMethod.create"
+  },
+  {
+    "entity": "PaymentMethod",
     "command": "flagForFraud",
     "commandId": "PaymentMethod.flagForFraud"
   },
@@ -2773,6 +2803,11 @@
     "entity": "PaymentMethod",
     "command": "markNotDefault",
     "commandId": "PaymentMethod.markNotDefault"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markVerificationFailed",
+    "commandId": "PaymentMethod.markVerificationFailed"
   },
   {
     "entity": "PaymentMethod",

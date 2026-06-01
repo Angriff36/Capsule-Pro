@@ -134,7 +134,8 @@ entity Client {
   command reactivate(userId: string) {
     guard self.deletedAt != null "Client is not archived"
 
-    mutate deletedAt = 0
+    mutate deletedAt = null
+    mutate isActive = true
     mutate updatedAt = now()
 
     emit ClientReactivated

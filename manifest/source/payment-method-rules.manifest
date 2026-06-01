@@ -44,6 +44,7 @@ entity PaymentMethod {
 
   // Timestamps
   property required createdAt: datetime = now()
+  property updatedAt: datetime = now()
   property expiresAt: datetime
 
   // Computed properties
@@ -54,27 +55,59 @@ entity PaymentMethod {
   constraint default_for_active_only: self.isDefault == false or self.status == "ACTIVE" "Only active payment methods can be default"
 
   // Commands
+  command create(clientId: string, type: string, externalMethodId: string, cardLastFour: string, cardNetwork: string, cardExpiryMonth: number, cardExpiryYear: number, cardHolderName: string, bankAccountLastFour: string, bankAccountType: string, bankRoutingNumber: string, walletProvider: string, walletEmail: string, nickname: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard type in ["CREDIT_CARD", "DEBIT_CARD", "ACH", "WIRE", "DIGITAL_WALLET", "CHECK"] "Invalid payment method type"
+
+    mutate clientId = clientId
+    mutate type = type
+    mutate externalMethodId = externalMethodId
+    mutate cardLastFour = cardLastFour
+    mutate cardNetwork = cardNetwork
+    mutate cardExpiryMonth = cardExpiryMonth
+    mutate cardExpiryYear = cardExpiryYear
+    mutate cardHolderName = cardHolderName
+    mutate bankAccountLastFour = bankAccountLastFour
+    mutate bankAccountType = bankAccountType
+    mutate bankRoutingNumber = bankRoutingNumber
+    mutate walletProvider = walletProvider
+    mutate walletEmail = walletEmail
+    mutate nickname = nickname
+    mutate status = "ACTIVE"
+    mutate isDefault = false
+    mutate fraudFlagged = false
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PaymentMethodCreated
+  }
+
   command markAsDefault() {
     guard self.isUsable "Payment method must be usable to be set as default"
-    guard self.isExpired == false "Cannot set expired card as default"
     mutate isDefault = true
+    mutate updatedAt = now()
     emit PaymentMethodSetDefault
   }
 
   command markNotDefault() {
     mutate isDefault = false
+    mutate updatedAt = now()
     emit PaymentMethodUnsetDefault
   }
 
   command markExpired() {
     guard self.type in ["CREDIT_CARD", "DEBIT_CARD"] "Only cards can expire"
+    guard self.status == "ACTIVE" "Can only expire an active payment method"
     mutate status = "EXPIRED"
     mutate expiresAt = now()
+    mutate updatedAt = now()
     emit PaymentMethodExpired
   }
 
   command markInvalid(reason: string) {
+    guard self.status != "FRAUDULENT" "Cannot invalidate a fraudulent payment method"
     mutate status = "INVALID"
+    mutate updatedAt = now()
     emit PaymentMethodInvalidated
   }
 
@@ -82,19 +115,32 @@ entity PaymentMethod {
     guard self.fraudFlagged == false "Already flagged for fraud"
     mutate fraudFlagged = true
     mutate status = "FRAUDULENT"
+    mutate isDefault = false
+    mutate updatedAt = now()
     emit PaymentMethodFraudFlagged
   }
 
   command verify(method: string) {
     guard self.status == "ACTIVE" "Can only verify active payment methods"
+    guard self.fraudFlagged == false "Cannot verify a fraud-flagged payment method"
     mutate verifiedAt = now()
     mutate verificationMethod = method
+    mutate updatedAt = now()
     emit PaymentMethodVerified
+  }
+
+  command markVerificationFailed(reason: string) {
+    guard self.status == "ACTIVE" "Can only fail verification on an active payment method"
+    mutate status = "INVALID"
+    mutate updatedAt = now()
+    emit PaymentMethodVerificationFailed
   }
 
   command updateToken(newToken: string) {
     guard self.status == "ACTIVE" "Can only update active payment methods"
+    guard newToken != null and newToken != "" "New token is required"
     mutate externalMethodId = newToken
+    mutate updatedAt = now()
     emit PaymentMethodTokenUpdated
   }
 }
@@ -102,6 +148,13 @@ entity PaymentMethod {
 store PaymentMethod in durable
 
 // Events
+event PaymentMethodCreated: "payment-method.created" {
+  paymentMethodId: string
+  clientId: string
+  type: string
+  createdAt: number
+}
+
 event PaymentMethodSetDefault: "payment-method.set-default" {
   paymentMethodId: string
   clientId: string
@@ -138,4 +191,10 @@ event PaymentMethodVerified: "payment-method.verified" {
 event PaymentMethodTokenUpdated: "payment-method.token-updated" {
   paymentMethodId: string
   clientId: string
+}
+
+event PaymentMethodVerificationFailed: "payment-method.verification-failed" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
 }

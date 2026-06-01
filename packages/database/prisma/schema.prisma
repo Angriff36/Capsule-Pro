@@ -141,6 +141,8 @@ model BankAccount {
   isDefault Boolean? @default(false)
   status String? @default("active")
   verifiedAt DateTime?
+  verificationFailedAt DateTime?
+  verificationFailureReason String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -282,6 +284,10 @@ model ClientInteraction {
   description String? @default("")
   followUpDate DateTime?
   followUpCompleted Boolean? @default(false)
+  status String? @default("open")
+  priority String? @default("normal")
+  escalatedAt DateTime?
+  escalatedTo String? @default("")
   correlationId String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -2366,6 +2372,7 @@ model PaymentMethod {
   nickname String? @default("")
   metadata String? @default("{}")
   createdAt DateTime
+  updatedAt DateTime?
   expiresAt DateTime?
 
   @@id([tenantId, id])
