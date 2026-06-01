@@ -8,7 +8,6 @@
 
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
-import { randomUUID } from "node:crypto";
 import { resolveCommand } from "./command-resolver";
 
 export interface ManifestUserContext {
@@ -67,66 +66,6 @@ export type RunManifestCommandCoreResult =
   | RunManifestCommandCoreSuccess
   | RunManifestCommandCoreFailure;
 
-function resolveCreateInstanceId(
-  body: Record<string, unknown>,
-  explicitInstanceId?: string
-): string {
-  if (explicitInstanceId) {
-    return explicitInstanceId;
-  }
-  if (typeof body.id === "string" && body.id.length > 0) {
-    return body.id;
-  }
-  return randomUUID();
-}
-
-async function bootstrapCreateCommand(
-  runtime: RuntimeEngine,
-  entity: string,
-  body: Record<string, unknown>,
-  explicitInstanceId?: string
-): Promise<
-  | { body: Record<string, unknown>; instanceId: string }
-  | RunManifestCommandCoreFailure
-> {
-  const instanceId = resolveCreateInstanceId(body, explicitInstanceId);
-  const seeded = await runtime.createInstance(entity, { id: instanceId });
-  if (!seeded) {
-    return {
-      ok: false,
-      entity,
-      command: "create",
-      kind: "bootstrap_failed",
-      httpStatus: 500,
-      message: "Failed to initialize entity instance for create",
-    };
-  }
-  return {
-    body: { ...body, id: instanceId },
-    instanceId,
-  };
-}
-
-async function normalizeCreateResult(
-  runtime: RuntimeEngine,
-  entity: string,
-  instanceId: string,
-  result: unknown
-): Promise<Record<string, unknown>> {
-  if (
-    typeof result === "object" &&
-    result !== null &&
-    typeof (result as Record<string, unknown>).id === "string"
-  ) {
-    return result as Record<string, unknown>;
-  }
-  const instance = await runtime.getInstance(entity, instanceId);
-  if (instance) {
-    return instance as Record<string, unknown>;
-  }
-  return { id: instanceId };
-}
-
 export async function runManifestCommandCore(
   deps: RunManifestCommandCoreDeps,
   params: RunManifestCommandCoreParams
@@ -149,26 +88,15 @@ export async function runManifestCommandCore(
     const command = resolved.command;
     const runtime = await deps.createRuntime({ user, entityName: entity });
 
-    let commandBody = body;
-    let effectiveInstanceId = instanceId;
-
-    if (command === "create" && !effectiveInstanceId) {
-      const bootstrapped = await bootstrapCreateCommand(
-        runtime,
-        entity,
-        commandBody,
-        instanceId
-      );
-      if (!("body" in bootstrapped)) {
-        return bootstrapped;
-      }
-      commandBody = bootstrapped.body;
-      effectiveInstanceId = bootstrapped.instanceId;
-    }
-
-    const result = await runtime.runCommand(command, commandBody, {
+    // For `create` with no caller-supplied instance, let the engine auto-create:
+    // @angriff36/manifest >=1.7 detects `commandName === "create" && entityName &&
+    // !instanceId` and persists a constraint-validated instance from the command
+    // body BEFORE running the command's mutate actions (runtime-engine
+    // `shouldAutoCreateInstance`). Passing an instanceId here would DISABLE that
+    // path, so we omit it for create and let the engine own instantiation.
+    const result = await runtime.runCommand(command, body, {
       entityName: entity,
-      ...(effectiveInstanceId ? { instanceId: effectiveInstanceId } : {}),
+      ...(instanceId ? { instanceId } : {}),
     });
 
     if (!result.success) {
@@ -227,14 +155,20 @@ export async function runManifestCommandCore(
       };
     }
 
+    // For create, the engine returns the auto-created instance as `result.result`
+    // (>=1.7). If a create result ever lacks a top-level id, fall back to the
+    // explicitly-supplied instanceId so callers still receive `{ id }`.
     let successResult: unknown = result.result;
-    if (command === "create" && effectiveInstanceId) {
-      successResult = await normalizeCreateResult(
-        runtime,
-        entity,
-        effectiveInstanceId,
-        result.result
-      );
+    if (
+      command === "create" &&
+      instanceId &&
+      !(
+        typeof successResult === "object" &&
+        successResult !== null &&
+        typeof (successResult as Record<string, unknown>).id === "string"
+      )
+    ) {
+      successResult = { id: instanceId };
     }
 
     return {
