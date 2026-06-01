@@ -15,7 +15,7 @@ entity CateringOrder {
   property taxAmount: money = 0
   property discountAmount: money = 0
   property serviceChargeAmount: money = 0
-  property totalAmount: number = 0
+  property totalAmount: money = 0
   property depositRequired: boolean = false
   property depositAmount: money = 0
   property depositPaid: boolean = false
@@ -196,7 +196,7 @@ entity CateringOrder {
     emit CateringOrderCompleted
   }
 
-  store CateringOrder in memory
+  store CateringOrder in durable
 }
 
 // Policy definitions

@@ -14,13 +14,13 @@ entity Proposal {
   property guestCount: int = 0
   property venueName: string = ""
   property venueAddress: string = ""
-  property subtotal: number = 0
-  property taxRate: number = 0
-  property taxAmount: number = 0
-  property discountAmount: number = 0
-  property total: number = 0
+  property subtotal: money = 0
+  property taxRate: decimal = 0
+  property taxAmount: money = 0
+  property discountAmount: money = 0
+  property total: money = 0
   property status: string = "draft"
-  property validUntil: number = 0
+  property validUntil: datetime
   property sentAt: datetime = now()
   property viewedAt: datetime = now()
   property acceptedAt: datetime = now()
@@ -233,7 +233,7 @@ entity Proposal {
     emit ProposalWithdrawn
   }
 
-  store Proposal in memory
+  store Proposal in durable
 }
 
 entity ProposalLineItem {
@@ -243,11 +243,11 @@ entity ProposalLineItem {
   property itemType: string = ""
   property category: string = ""
   property description: string = ""
-  property quantity: number = 0
+  property quantity: int = 0
   property unitOfMeasure: string = ""
-  property unitPrice: number = 0
-  property total: number = 0
-  property totalPrice: number = 0
+  property unitPrice: money = 0
+  property total: money = 0
+  property totalPrice: money = 0
   property sortOrder: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
@@ -324,7 +324,7 @@ entity ProposalLineItem {
     emit ProposalLineItemRemoved
   }
 
-  store ProposalLineItem in memory
+  store ProposalLineItem in durable
 }
 
 // Policy definitions

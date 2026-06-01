@@ -12,8 +12,8 @@ entity User {
   property employeeNumber: string = ""
   property phone: string = ""
   property employmentType: string = "full_time"
-  property hourlyRate: number = 0
-  property salaryAnnual: number = 0
+  property hourlyRate: money = 0
+  property salaryAnnual: decimal = 0
   property required hireDate: datetime = now()
   property terminationDate: datetime
   property required isActive: boolean = true

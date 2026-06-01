@@ -89,7 +89,7 @@ entity TimeOffRequest {
     emit TimeOffRequestDeleted
   }
 
-  store TimeOffRequest in memory
+  store TimeOffRequest in durable
 }
 
 policy TimeOffRequestManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create time-off requests"

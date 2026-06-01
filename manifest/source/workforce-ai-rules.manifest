@@ -58,7 +58,7 @@ entity WorkforceOptimization {
     emit WorkforceOptimizationFailed
   }
 
-  store WorkforceOptimization in memory
+  store WorkforceOptimization in durable
 }
 
 entity PerformancePrediction {
@@ -97,7 +97,7 @@ entity PerformancePrediction {
     emit PerformancePredictionCreated
   }
 
-  store PerformancePrediction in memory
+  store PerformancePrediction in durable
 }
 
 // Policies for workforce AI operations

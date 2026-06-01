@@ -7,10 +7,10 @@ entity StaffPerformance {
   property required employeeId: string
   property reviewType: string = "quarterly"
   property status: string = "draft"
-  property rating: number = 0
+  property rating: decimal = 0
   property reviewerId: string = ""
-  property periodStart: number = 0
-  property periodEnd: number = 0
+  property periodStart: datetime
+  property periodEnd: datetime
   property strengths: string = ""
   property improvements: string = ""
   property goals: string = ""
@@ -82,6 +82,7 @@ entity StaffPerformance {
 
     emit PerformanceReviewCompleted
   }
+  store StaffPerformance in durable
 }
 
 policy ManagersCanManagePerformance execute: user.role in ["manager", "hr_admin", "admin"] "Only managers can manage performance reviews"

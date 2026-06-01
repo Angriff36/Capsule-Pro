@@ -64,6 +64,7 @@ entity AutomatedFollowup {
 
     emit FollowupSkipped
   }
+  store AutomatedFollowup in durable
 }
 
 entity EventTimelineItem {
@@ -77,7 +78,7 @@ entity EventTimelineItem {
   property assignedTo: string = ""
   property dueDate: datetime = now()
   property completedAt: datetime = now()
-  property sortOrder: number = 0
+  property sortOrder: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -133,6 +134,7 @@ entity EventTimelineItem {
 
     emit TimelineItemUpdated
   }
+  store EventTimelineItem in durable
 }
 
 entity EventWaitlistEntry {
@@ -142,7 +144,7 @@ entity EventWaitlistEntry {
   property required guestName: string
   property email: string = ""
   property phone: string = ""
-  property partySize: number = 1
+  property partySize: int = 1
   property status: string = "waiting"
   property notes: string = ""
   property joinedAt: datetime = now()
@@ -187,6 +189,7 @@ entity EventWaitlistEntry {
 
     emit WaitlistRsvpUpdated
   }
+  store EventWaitlistEntry in durable
 }
 
 policy EventManagersCanManageAutomation execute: user.role in ["event_manager", "manager", "admin"] "Only event managers can manage automation"

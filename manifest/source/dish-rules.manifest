@@ -11,13 +11,13 @@ entity Dish {
   property serviceStyle: string = ""
   property defaultContainerId: string = ""
   property presentationImageUrl: string = ""
-  property minPrepLeadDays: number = 0
-  property maxPrepLeadDays: number = 0
+  property minPrepLeadDays: int = 0
+  property maxPrepLeadDays: int = 0
   property portionSizeDescription: string = ""
   property dietaryTags: string = ""
   property allergens: string = ""
-  property pricePerPerson: number = 0
-  property costPerPerson: number = 0
+  property pricePerPerson: money = 0
+  property costPerPerson: money = 0
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -186,7 +186,7 @@ entity Dish {
     emit DishLeadTimeUpdated
   }
 
-  store Dish in memory
+  store Dish in durable
 }
 
 policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage dishes"

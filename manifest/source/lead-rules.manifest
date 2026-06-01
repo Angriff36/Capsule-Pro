@@ -11,8 +11,8 @@ entity Lead {
   property contactPhone: string = ""
   property eventType: string = ""
   property eventDate: datetime = now()
-  property estimatedGuests: number = 0
-  property estimatedValue: number = 0
+  property estimatedGuests: int = 0
+  property estimatedValue: decimal = 0
   property status: string = "new"
   property assignedTo: string = ""
   property notes: string = ""
@@ -176,7 +176,7 @@ entity Lead {
     emit LeadArchived
   }
 
-  store Lead in memory
+  store Lead in durable
 }
 
 // Policy definitions

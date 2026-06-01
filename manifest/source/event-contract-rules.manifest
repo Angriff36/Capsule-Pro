@@ -116,7 +116,7 @@ entity EventContract {
     emit ContractDeleted
   }
 
-  store EventContract in memory
+  store EventContract in durable
 }
 
 entity ContractSignature {
@@ -163,7 +163,7 @@ entity ContractSignature {
     emit SignatureDeleted
   }
 
-  store ContractSignature in memory
+  store ContractSignature in durable
 }
 
 // Policy definitions

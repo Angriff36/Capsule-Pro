@@ -61,7 +61,7 @@ entity EmployeeCertification {
     emit EmployeeCertificationDeleted
   }
 
-  store EmployeeCertification in memory
+  store EmployeeCertification in durable
 }
 
 policy CertificationManagement execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can manage certifications"

@@ -17,13 +17,13 @@ entity VendorContract {
   property startDate: datetime = now()
   property endDate: datetime = now()
   property autoRenew: boolean = false
-  property renewalTermDays: number = 0
-  property noticeDaysBeforeRenewal: number = 30
+  property renewalTermDays: int = 0
+  property noticeDaysBeforeRenewal: int = 30
   property paymentTerms: string = "NET_30"
   property deliveryTerms: string = ""
-  property minimumOrderQuantity: number = 0
-  property annualSpendCommitment: number = 0
-  property spendToPeriod: number = 0
+  property minimumOrderQuantity: int = 0
+  property annualSpendCommitment: money = 0
+  property spendToPeriod: decimal = 0
   property currencyCode: string = "USD"
   property approvedBy: string = ""
   property approvedAt: datetime = now()
@@ -32,11 +32,11 @@ entity VendorContract {
   property terminationReason: string = ""
   property contractUrl: string = ""
   property notes: string = ""
-  property complianceScore: number = 100
-  property lastComplianceReview: number = 0
+  property complianceScore: decimal = 100
+  property lastComplianceReview: decimal = 0
   property slaBreachCount: int = 0
-  property onTimeDeliveryRate: number = 0
-  property qualityRating: number = 0
+  property onTimeDeliveryRate: decimal = 0
+  property qualityRating: decimal = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()
@@ -216,7 +216,7 @@ entity VendorContract {
     emit VendorContractSlaBreachRecorded
   }
 
-  store VendorContract in memory
+  store VendorContract in durable
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

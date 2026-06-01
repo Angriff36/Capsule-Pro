@@ -7,12 +7,12 @@ entity PricingTier {
   property required tenantId: string
   property required catalogEntryId: string
   property tierName: string = ""
-  property required minQuantity: number = 1
-  property maxQuantity: number = 0
-  property required unitCost: number = 0
-  property discountPercent: number = 0
-  property effectiveFrom: number = 0
-  property effectiveTo: number = 0
+  property required minQuantity: int = 1
+  property maxQuantity: int = 0
+  property required unitCost: money = 0
+  property discountPercent: decimal = 0
+  property effectiveFrom: datetime
+  property effectiveTo: datetime
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -80,7 +80,7 @@ entity PricingTier {
     emit PricingTierDeactivated
   }
 
-  store PricingTier in memory
+  store PricingTier in durable
 }
 
 event PricingTierCreated: "inventory.pricing-tier.created" {

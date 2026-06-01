@@ -6,11 +6,11 @@ entity Deal {
   property required tenantId: string
   property required leadId: string
   property required title: string
-  property value: number = 0
+  property value: decimal = 0
   property currency: string = "USD"
   property stage: string = "new"
   property status: string = "open"
-  property probability: number = 0
+  property probability: decimal = 0
   property expectedCloseDate: datetime = now()
   property actualCloseDate: datetime = now()
   property assignedTo: string = ""
@@ -47,6 +47,7 @@ entity Deal {
 
     emit DealClosed
   }
+  store Deal in durable
 }
 
 policy SalesCanManageDeals execute: user.role in ["sales_rep", "sales_manager", "manager", "admin"] "Only sales team can manage deals"

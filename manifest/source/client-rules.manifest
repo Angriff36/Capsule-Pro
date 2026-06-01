@@ -17,7 +17,7 @@ entity Client {
   property stateProvince: string = ""
   property postalCode: string = ""
   property countryCode: string = ""
-  property defaultPaymentTerms: number = 30
+  property defaultPaymentTerms: decimal = 30
   property required taxExempt: boolean = false
   property taxId: string = ""
   property notes: string = ""
@@ -238,7 +238,7 @@ entity ClientContact {
     emit ClientContactSetPrimary
   }
 
-  store ClientContact in memory
+  store ClientContact in durable
 }
 
 entity ClientPreference {
@@ -292,7 +292,7 @@ entity ClientPreference {
     emit ClientPreferenceRemoved
   }
 
-  store ClientPreference in memory
+  store ClientPreference in durable
 }
 
 // Policy definitions

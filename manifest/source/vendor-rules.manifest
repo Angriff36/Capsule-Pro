@@ -16,8 +16,8 @@ entity Vendor {
   property zip: string = ""
   property taxId: string = ""
   property paymentTerms: string = "net30"
-  property rating: number = 0
-  property ratingCount: number = 0
+  property rating: decimal = 0
+  property ratingCount: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -94,6 +94,7 @@ entity Vendor {
 
     emit VendorRated
   }
+  store Vendor in durable
 }
 
 policy ProcurementManagersCanManageVendors execute: user.role in ["procurement_manager", "manager", "admin"] "Only procurement managers can manage vendors"

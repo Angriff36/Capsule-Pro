@@ -99,6 +99,7 @@ entity InventoryTransfer {
 
     emit TransferCancelled
   }
+  store InventoryTransfer in durable
 }
 
 policy InventoryManagersCanTransfer execute: user.role in ["inventory_manager", "manager", "admin"] "Only inventory managers can manage transfers"

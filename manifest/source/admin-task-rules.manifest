@@ -110,7 +110,7 @@ entity AdminTask {
     emit AdminTaskDeleted
   }
 
-  store AdminTask in memory
+  store AdminTask in durable
 }
 
 policy AdminTaskManagement execute: user.role in ["manager", "admin"] "Managers can manage admin tasks"

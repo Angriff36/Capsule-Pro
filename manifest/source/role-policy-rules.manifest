@@ -49,7 +49,7 @@ entity RolePolicy {
     emit RolePolicyPermissionRevoked
   }
 
-  store RolePolicy in memory
+  store RolePolicy in durable
 }
 
 // SECURITY REQUIREMENT: Every RolePolicy command MUST be admin/owner only.

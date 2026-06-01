@@ -7,9 +7,9 @@ entity TimeEntry {
   property required employeeId: string
   property locationId: string = ""
   property shiftId: string = ""
-  property clockIn: number = 0
-  property clockOut: number = 0
-  property breakMinutes: number = 0
+  property clockIn: datetime
+  property clockOut: datetime
+  property breakMinutes: int = 0
   property notes: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime = now()
@@ -111,7 +111,7 @@ entity TimeEntry {
     emit TimeEntryDeleted
   }
 
-  store TimeEntry in memory
+  store TimeEntry in durable
 }
 
 entity TimecardEditRequest {
@@ -119,9 +119,9 @@ entity TimecardEditRequest {
   property required tenantId: string
   property required timeEntryId: string
   property required employeeId: string
-  property requestedClockIn: number = 0
-  property requestedClockOut: number = 0
-  property requestedBreakMinutes: number = 0
+  property requestedClockIn: datetime
+  property requestedClockOut: datetime
+  property requestedBreakMinutes: int = 0
   property required reason: string
   property status: string = "pending"
   property createdAt: datetime = now()
@@ -188,7 +188,7 @@ entity TimecardEditRequest {
     emit TimecardEditRejected
   }
 
-  store TimecardEditRequest in memory
+  store TimecardEditRequest in durable
 }
 
 policy StaffCanClockInOut execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can clock in and out"

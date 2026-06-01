@@ -26,7 +26,7 @@ entity PayrollPeriod {
     emit PayrollPeriodCreated
   }
 
-  store PayrollPeriod in memory
+  store PayrollPeriod in durable
 }
 
 entity EmployeeDeduction {
@@ -35,12 +35,12 @@ entity EmployeeDeduction {
   property employeeId: string = ""
   property type: string = ""
   property name: string = ""
-  property amount: number = 0
-  property percentage: number = 0
+  property amount: money = 0
+  property percentage: decimal = 0
   property isPreTax: boolean = false
   property effectiveDate: string = ""
   property endDate: string = ""
-  property maxAnnualAmount: number = 0
+  property maxAnnualAmount: money = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()
@@ -71,7 +71,7 @@ entity EmployeeDeduction {
     emit EmployeeDeductionCreated
   }
 
-  store EmployeeDeduction in memory
+  store EmployeeDeduction in durable
 }
 
 entity PayrollApprovalHistory {
@@ -101,7 +101,7 @@ entity PayrollApprovalHistory {
     emit PayrollApprovalRequested
   }
 
-  store PayrollApprovalHistory in memory
+  store PayrollApprovalHistory in durable
 }
 
 entity PayrollRun {
@@ -110,9 +110,9 @@ entity PayrollRun {
   property payrollPeriodId: string = ""
   property runDate: string = ""
   property status: string = "pending"
-  property totalGross: number = 0
-  property totalDeductions: number = 0
-  property totalNet: number = 0
+  property totalGross: money = 0
+  property totalDeductions: money = 0
+  property totalNet: money = 0
   property approvedBy: string = ""
   property approvedAt: datetime = now()
   property paidAt: datetime = now()
@@ -134,7 +134,7 @@ entity PayrollRun {
     emit PayrollRunStatusChanged
   }
 
-  store PayrollRun in memory
+  store PayrollRun in durable
 }
 
 policy PayrollManagement execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll"

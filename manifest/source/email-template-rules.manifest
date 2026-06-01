@@ -62,6 +62,7 @@ entity EmailTemplate {
 
     emit EmailTemplateDeleted
   }
+  store EmailTemplate in durable
 }
 
 // Policy definitions

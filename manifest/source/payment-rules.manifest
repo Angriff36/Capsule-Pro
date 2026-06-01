@@ -6,7 +6,7 @@ entity Payment {
   property required tenantId: string
 
   // Payment details
-  property required amount: number = 0
+  property required amount: money = 0
   property required currency: string = "USD"
   property required status: string = "PENDING"
   property required methodType: string = "CREDIT_CARD"

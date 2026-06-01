@@ -11,7 +11,7 @@ entity Driver {
   property licenseExpiry: datetime = now()
   property status: string = "active"
   property currentVehicleId: string = ""
-  property rating: number = 0
+  property rating: decimal = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -73,6 +73,7 @@ entity Driver {
 
     emit DriverUpdated
   }
+  store Driver in durable
 }
 
 entity Vehicle {
@@ -84,7 +85,7 @@ entity Vehicle {
   property vin: string = ""
   property make: string = ""
   property model: string = ""
-  property year: number = 0
+  property year: int = 0
   property capacity: string = ""
   property status: string = "available"
   property currentDriverId: string = ""
@@ -141,6 +142,7 @@ entity Vehicle {
 
     emit VehicleUpdated
   }
+  store Vehicle in durable
 }
 
 entity LogisticsRoute {
@@ -152,14 +154,14 @@ entity LogisticsRoute {
   property driverId: string = ""
   property startLocation: string = ""
   property endLocation: string = ""
-  property distance: number = 0
-  property estimatedDuration: number = 0
+  property distance: decimal = 0
+  property estimatedDuration: decimal = 0
   property scheduledStart: datetime = now()
   property scheduledEnd: datetime = now()
   property actualStart: datetime = now()
   property actualEnd: datetime = now()
-  property stops: number = 0
-  property completedStops: number = 0
+  property stops: decimal = 0
+  property completedStops: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -235,6 +237,7 @@ entity LogisticsRoute {
 
     emit LogisticsRouteOptimized
   }
+  store LogisticsRoute in durable
 }
 
 entity LogisticsDispatch {
@@ -269,6 +272,7 @@ entity LogisticsDispatch {
 
     emit LogisticsDispatchAssigned
   }
+  store LogisticsDispatch in durable
 }
 
 policy LogisticsManagersCanManage execute: user.role in ["logistics_manager", "manager", "admin"] "Only managers can manage logistics"

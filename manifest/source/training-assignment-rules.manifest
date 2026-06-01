@@ -44,7 +44,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentDeleted
   }
 
-  store TrainingAssignment in memory
+  store TrainingAssignment in durable
 }
 
 policy TrainingAssignmentManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training assignments"

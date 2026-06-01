@@ -80,13 +80,14 @@ entity VersionedEntity {
 
     emit VersionedEntityRenamed
   }
+  store VersionedEntity in durable
 }
 
 entity EntityVersion {
   property required id: string
   property required tenantId: string
   property required versionedEntityId: string
-  property required versionNumber: number
+  property required versionNumber: int
   property changeReason: string = ""
   property changeSummary: string = ""
   property required changeType: string
@@ -156,6 +157,7 @@ entity EntityVersion {
 
     emit EntityVersionRestored
   }
+  store EntityVersion in durable
 }
 
 entity VersionApproval {
@@ -224,6 +226,7 @@ entity VersionApproval {
 
     emit VersionApprovalCancelled
   }
+  store VersionApproval in durable
 }
 
 // Policy definitions

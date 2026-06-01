@@ -56,7 +56,7 @@ entity EmailWorkflow {
     emit EmailWorkflowDeleted
   }
 
-  store EmailWorkflow in memory
+  store EmailWorkflow in durable
 }
 
 policy EmailWorkflowManagement execute: user.role in ["manager", "admin"] "Managers can manage email workflows"

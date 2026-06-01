@@ -6,9 +6,9 @@ entity InventoryTransaction {
   property required tenantId: string
   property required itemId: string
   property required transactionType: string
-  property quantity: number = 0
-  property unitCost: number = 0
-  property totalCost: number = 0
+  property quantity: int = 0
+  property unitCost: money = 0
+  property totalCost: money = 0
   property reference: string = ""
   property referenceType: string = ""
   property referenceId: string = ""
@@ -84,7 +84,7 @@ entity InventoryTransaction {
     emit InventoryTransactionCreated
   }
 
-  store InventoryTransaction in memory
+  store InventoryTransaction in durable
 }
 
 policy StaffCanCreateTransaction execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create inventory transactions"

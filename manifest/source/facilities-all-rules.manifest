@@ -12,7 +12,7 @@ entity Facility {
   property zip: string = ""
   property phone: string = ""
   property status: string = "active"
-  property capacity: number = 0
+  property capacity: int = 0
   property description: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -68,6 +68,7 @@ entity Facility {
 
     emit FacilityUpdated
   }
+  store Facility in durable
 }
 
 entity FacilityArea {
@@ -79,7 +80,7 @@ entity FacilityArea {
   property areaType: string = "other"
   property floor: string = ""
   property description: string = ""
-  property squareFeet: number = 0
+  property squareFeet: decimal = 0
   property status: string = "active"
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -123,6 +124,7 @@ entity FacilityArea {
 
     emit FacilityAreaUpdated
   }
+  store FacilityArea in durable
 }
 
 entity FacilityAsset {
@@ -135,9 +137,9 @@ entity FacilityAsset {
   property assetClass: string = "fixed"
   property status: string = "operational"
   property purchaseDate: datetime = now()
-  property purchasePrice: number = 0
-  property currentValue: number = 0
-  property depreciationRate: number = 0
+  property purchasePrice: money = 0
+  property currentValue: decimal = 0
+  property depreciationRate: decimal = 0
   property serialNumber: string = ""
   property notes: string = ""
   property createdAt: datetime = now()
@@ -182,6 +184,7 @@ entity FacilityAsset {
 
     emit FacilityAssetUpdated
   }
+  store FacilityAsset in durable
 }
 
 entity FacilitySchedule {
@@ -254,6 +257,7 @@ entity FacilitySchedule {
 
     emit FacilityScheduleCompleted
   }
+  store FacilitySchedule in durable
 }
 
 entity FacilityWorkOrder {
@@ -269,8 +273,8 @@ entity FacilityWorkOrder {
   property category: string = "repair"
   property requestedBy: string = ""
   property assignedTo: string = ""
-  property estimatedCost: number = 0
-  property actualCost: number = 0
+  property estimatedCost: money = 0
+  property actualCost: money = 0
   property scheduledDate: datetime = now()
   property completedDate: datetime = now()
   property notes: string = ""
@@ -312,6 +316,7 @@ entity FacilityWorkOrder {
 
     emit FacilityWorkOrderStatusUpdated
   }
+  store FacilityWorkOrder in durable
 }
 
 policy ManagersCanManageFacilities execute: user.role in ["facility_manager", "manager", "admin"] "Only managers can manage facilities"

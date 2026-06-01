@@ -12,13 +12,13 @@ entity PrepTask {
   property stationId: string = ""
   property claimedBy: string = ""
   property claimedAt: datetime = now()
-  property quantityTotal: number = 0
-  property quantityCompleted: number = 0
+  property quantityTotal: int = 0
+  property quantityCompleted: int = 0
   property quantityUnitId: string = ""
   property servingsTotal: int = 0
   property startByDate: datetime = now()
   property dueByDate: datetime = now()
-  property priority: number = 5
+  property priority: int = 5
   property notes: string = ""
   property ingredients: string = ""
   property createdAt: datetime = now()
@@ -255,7 +255,7 @@ entity PrepTask {
     emit PrepTaskDueDateUpdated
   }
 
-  store PrepTask in memory
+  store PrepTask in durable
 }
 
 policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can claim prep tasks for their tenant"

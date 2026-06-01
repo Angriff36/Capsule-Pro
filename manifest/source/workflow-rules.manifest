@@ -90,7 +90,7 @@ entity Workflow {
     emit WorkflowDeactivated
   }
 
-  store Workflow in memory
+  store Workflow in durable
 }
 
 // Policy definitions

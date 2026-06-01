@@ -91,7 +91,7 @@ entity AiEventSetupSession {
     emit AiEventSetupSessionUpdated
   }
 
-  store AiEventSetupSession in memory
+  store AiEventSetupSession in durable
 }
 
 policy AiEventSetupExecute execute: user.role in ["event_coordinator", "manager", "admin", "staff"] "Staff and above can use AI event setup"

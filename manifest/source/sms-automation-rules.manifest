@@ -98,7 +98,7 @@ entity SmsAutomationRule {
     emit SmsAutomationRuleDeleted
   }
 
-  store SmsAutomationRule in memory
+  store SmsAutomationRule in durable
 }
 
 // Policy definitions

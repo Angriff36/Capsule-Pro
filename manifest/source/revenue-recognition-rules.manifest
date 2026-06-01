@@ -12,9 +12,9 @@ entity RevenueRecognitionSchedule {
   property required clientId: string
 
   // Revenue details
-  property required totalAmount: number = 0
-  property required recognizedAmount: number = 0
-  property required remainingAmount: number = 0
+  property required totalAmount: money = 0
+  property required recognizedAmount: money = 0
+  property required remainingAmount: money = 0
 
   // Recognition configuration
   property required method: string = "IMMEDIATE"
@@ -23,7 +23,7 @@ entity RevenueRecognitionSchedule {
   // Timing
   property required startDate: datetime = now()
   property required endDate: datetime = now()
-  property recognitionPeriod: number = 0
+  property recognitionPeriod: int = 0
 
   // Service period (for SERVICE_PERIOD method)
   property serviceStartDate: datetime = now()
@@ -187,7 +187,7 @@ entity RevenueRecognitionSchedule {
     emit ScheduleAdjusted
   }
 
-  store RevenueRecognitionSchedule in memory
+  store RevenueRecognitionSchedule in durable
 }
 
 entity RevenueRecognitionLine {
@@ -197,8 +197,8 @@ entity RevenueRecognitionLine {
 
   // Line details
   property required sequence: int = 0
-  property required amount: number = 0
-  property required recognizedAmount: number = 0
+  property required amount: money = 0
+  property required recognizedAmount: money = 0
   property required status: string = "PENDING"
 
   // Timing
@@ -279,7 +279,7 @@ entity RevenueRecognitionLine {
     emit LineCancelled
   }
 
-  store RevenueRecognitionLine in memory
+  store RevenueRecognitionLine in durable
 }
 
 // Policy definitions

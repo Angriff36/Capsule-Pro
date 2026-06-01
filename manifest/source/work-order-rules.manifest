@@ -108,7 +108,7 @@ entity WorkOrder {
     emit WorkOrderRescheduled
   }
 
-  store WorkOrder in memory
+  store WorkOrder in durable
 }
 
 policy KitchenStaffCanManageWorkOrders execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage work orders"

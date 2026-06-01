@@ -98,7 +98,7 @@ entity AllergenWarning {
     emit AllergenWarningDeleted
   }
 
-  store AllergenWarning in memory
+  store AllergenWarning in durable
 }
 
 policy AllergenStaffCanView execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can view allergen warnings"

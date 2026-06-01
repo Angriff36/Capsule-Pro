@@ -11,7 +11,7 @@ entity KnowledgeBaseEntry {
   property status: string = "draft"
   property authorId: string = ""
   property publishedAt: datetime = now()
-  property viewCount: number = 0
+  property viewCount: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -68,6 +68,7 @@ entity KnowledgeBaseEntry {
 
     emit KnowledgeBaseEntryPublished
   }
+  store KnowledgeBaseEntry in durable
 }
 
 policy EditorsCanManageKB execute: user.role in ["editor", "manager", "admin"] "Editors can manage knowledge base"

@@ -83,7 +83,7 @@ entity CommandBoard {
     emit CommandBoardDeactivated
   }
 
-  store CommandBoard in memory
+  store CommandBoard in durable
 }
 
 entity CommandBoardCard {
@@ -94,10 +94,10 @@ entity CommandBoardCard {
   property content: string = ""
   property cardType: string = "task"
   property status: string = "pending"
-  property positionX: number = 0
-  property positionY: number = 0
-  property width: number = 200
-  property height: number = 150
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property width: decimal = 200
+  property height: decimal = 150
   property zIndex: int = 0
   property color: string = ""
   property metadata: string = "{}"
@@ -206,7 +206,7 @@ entity CommandBoardCard {
     emit CommandBoardCardDeleted
   }
 
-  store CommandBoardCard in memory
+  store CommandBoardCard in durable
 }
 
 entity CommandBoardGroup {
@@ -216,10 +216,10 @@ entity CommandBoardGroup {
   property name: string = ""
   property color: string = ""
   property collapsed: boolean = false
-  property positionX: number = 0
-  property positionY: number = 0
-  property width: number = 300
-  property height: number = 200
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property width: decimal = 300
+  property height: decimal = 200
   property zIndex: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -275,7 +275,7 @@ entity CommandBoardGroup {
     emit CommandBoardGroupDeleted
   }
 
-  store CommandBoardGroup in memory
+  store CommandBoardGroup in durable
 }
 
 entity CommandBoardConnection {
@@ -326,7 +326,7 @@ entity CommandBoardConnection {
     emit CommandBoardConnectionDeleted
   }
 
-  store CommandBoardConnection in memory
+  store CommandBoardConnection in durable
 }
 
 entity CommandBoardLayout {
@@ -391,7 +391,7 @@ entity CommandBoardLayout {
     emit CommandBoardLayoutDeleted
   }
 
-  store CommandBoardLayout in memory
+  store CommandBoardLayout in durable
 }
 
 // Policy definitions

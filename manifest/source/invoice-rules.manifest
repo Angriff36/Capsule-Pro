@@ -13,12 +13,12 @@ entity Invoice {
   property required eventId: string = ""
 
   // Amounts
-  property required subtotal: number = 0
-  property required taxAmount: number = 0
-  property required discountAmount: number = 0
-  property required total: number = 0
-  property required amountPaid: number = 0
-  property required amountDue: number = 0
+  property required subtotal: money = 0
+  property required taxAmount: money = 0
+  property required discountAmount: money = 0
+  property required total: money = 0
+  property required amountPaid: money = 0
+  property required amountDue: money = 0
 
   // Payment terms
   property required paymentTerms: int = 30
@@ -27,8 +27,8 @@ entity Invoice {
 
   // Deposit specific
   property depositPercentage: decimal = 0
-  property depositRequired: number = 0
-  property depositPaid: number = 0
+  property depositRequired: decimal = 0
+  property depositPaid: money = 0
 
   // Timestamps
   property required issuedAt: datetime = now()

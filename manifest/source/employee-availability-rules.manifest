@@ -5,7 +5,7 @@ entity EmployeeAvailability {
   property required id: string
   property required tenantId: string
   property employeeId: string = ""
-  property dayOfWeek: number = 0
+  property dayOfWeek: int = 0
   property startTime: string = ""
   property endTime: string = ""
   property isAvailable: boolean = true
@@ -64,7 +64,7 @@ entity EmployeeAvailability {
     emit EmployeeAvailabilityDeleted
   }
 
-  store EmployeeAvailability in memory
+  store EmployeeAvailability in durable
 }
 
 policy AvailabilityManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can manage availability"

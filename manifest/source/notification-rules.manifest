@@ -72,7 +72,7 @@ entity Notification {
     emit NotificationDeleted
   }
 
-  store Notification in memory
+  store Notification in durable
 }
 
 // Policy definitions

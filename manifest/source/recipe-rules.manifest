@@ -79,19 +79,19 @@ entity RecipeVersion {
   property cuisineType: string = ""
   property description: string = ""
   property required tags: string = ""
-  property yieldQuantity: number = 1
-  property yieldUnitId: number = 1
+  property yieldQuantity: int = 1
+  property yieldUnitId: int = 1
   property yieldDescription: string = ""
   property prepTimeMinutes: int = 0
   property cookTimeMinutes: int = 0
   property restTimeMinutes: int = 0
-  property difficultyLevel: number = 1
+  property difficultyLevel: int = 1
   property instructions: string = ""
   property notes: string = ""
   property ingredientCount: int = 0
   property stepCount: int = 0
-  property totalCost: number = 0
-  property costPerYield: number = 0
+  property totalCost: money = 0
+  property costPerYield: money = 0
   property createdAt: datetime = now()
 
   computed totalTimeMinutes: number = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
@@ -163,7 +163,7 @@ entity RecipeVersion {
     emit RecipeVersionCostUpdated
   }
 
-  store RecipeVersion in memory
+  store RecipeVersion in durable
 }
 
 entity RecipeIngredient {
@@ -171,12 +171,12 @@ entity RecipeIngredient {
   property required tenantId: string
   property required recipeVersionId: string
   property required ingredientId: string
-  property required quantity: number
-  property required unitId: number
-  property required sortOrder: number
+  property required quantity: int
+  property required unitId: int
+  property required sortOrder: int
   property preparationNotes: string = ""
   property isOptional: boolean = false
-  property wasteFactor: number = 1.0
+  property wasteFactor: decimal = 1.0
   property deletedAt: datetime = now()
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
@@ -240,17 +240,17 @@ entity RecipeIngredient {
     emit RecipeIngredientRemoved
   }
 
-  store RecipeIngredient in memory
+  store RecipeIngredient in durable
 }
 
 entity RecipeStep {
   property required id: string
   property required tenantId: string
   property required recipeVersionId: string
-  property required stepNumber: number
+  property required stepNumber: int
   property required instruction: string
   property durationMinutes: decimal = 0
-  property temperatureValue: number = 0
+  property temperatureValue: decimal = 0
   property temperatureUnit: string = ""
   property equipmentNeeded: string = ""
   property tips: string = ""
@@ -296,7 +296,7 @@ entity RecipeStep {
     emit RecipeStepRemoved
   }
 
-  store RecipeStep in memory
+  store RecipeStep in durable
 }
 
 // Policy definitions

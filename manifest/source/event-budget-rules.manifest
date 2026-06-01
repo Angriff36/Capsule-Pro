@@ -5,12 +5,12 @@ entity EventBudget {
   property required id: string
   property required tenantId: string
   property required eventId: string
-  property version: number = 1
+  property version: int = 1
   property status: string = "draft"
-  property totalBudgetAmount: number = 0
-  property totalActualAmount: number = 0
-  property varianceAmount: number = 0
-  property variancePercentage: number = 0
+  property totalBudgetAmount: money = 0
+  property totalActualAmount: money = 0
+  property varianceAmount: money = 0
+  property variancePercentage: decimal = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -128,7 +128,7 @@ entity EventBudget {
     emit EventBudgetFinalized
   }
 
-  store EventBudget in memory
+  store EventBudget in durable
 }
 
 entity BudgetLineItem {
@@ -138,10 +138,10 @@ entity BudgetLineItem {
   property required category: string
   property required name: string
   property description: string = ""
-  property budgetedAmount: number = 0
-  property actualAmount: number = 0
-  property varianceAmount: number = 0
-  property sortOrder: number = 0
+  property budgetedAmount: money = 0
+  property actualAmount: money = 0
+  property varianceAmount: money = 0
+  property sortOrder: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -218,7 +218,7 @@ entity BudgetLineItem {
     emit BudgetLineItemRemoved
   }
 
-  store BudgetLineItem in memory
+  store BudgetLineItem in durable
 }
 
 // Policy definitions

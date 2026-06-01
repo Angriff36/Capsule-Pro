@@ -186,7 +186,7 @@ entity PurchaseOrderItem {
 
   key [tenantId, id]
 
-  belongsTo purchaseOrder: PurchaseOrder fields [purchaseOrderId] references [id] onDelete cascade
+  belongsTo purchaseOrder: PurchaseOrder fields [tenantId, purchaseOrderId] references [tenantId, id] onDelete cascade
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityOrdered
   computed isPartiallyReceived: boolean = self.quantityReceived > 0 and self.quantityReceived < self.quantityOrdered

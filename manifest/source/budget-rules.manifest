@@ -6,10 +6,10 @@ entity Budget {
   property required tenantId: string
   property required name: string
   property description: string = ""
-  property fiscalYear: number = 0
-  property totalAmount: number = 0
-  property allocatedAmount: number = 0
-  property spentAmount: number = 0
+  property fiscalYear: int = 0
+  property totalAmount: money = 0
+  property allocatedAmount: money = 0
+  property spentAmount: money = 0
   property status: string = "draft"
   property category: string = "general"
   property departmentId: string = ""
@@ -83,6 +83,7 @@ entity Budget {
 
     emit BudgetRefreshed
   }
+  store Budget in durable
 }
 
 policy FinanceCanManageBudgets execute: user.role in ["finance_manager", "manager", "admin"] "Only finance managers can manage budgets"

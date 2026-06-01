@@ -8,14 +8,14 @@ entity EventImportWorkflow {
   property eventId: string = ""
   property idempotencyKey: string = ""
   property status: string = "created"
-  property currentStep: number = 0
-  property totalSteps: number = 6
+  property currentStep: int = 0
+  property totalSteps: int = 6
   property inputData: string = "{}"
   property outputData: string = "{}"
   property stepResults: string = "{}"
   property errors: string = "[]"
   property warnings: string = "[]"
-  property confidence: number = 0
+  property confidence: decimal = 0
   property startedAt: datetime = now()
   property completedAt: datetime = now()
   property createdAt: datetime = now()
@@ -234,7 +234,7 @@ entity EventImportWorkflow {
     emit EventImportWorkflowRetried
   }
 
-  store EventImportWorkflow in memory
+  store EventImportWorkflow in durable
 }
 
 // Policy definitions

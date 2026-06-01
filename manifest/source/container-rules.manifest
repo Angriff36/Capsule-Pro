@@ -8,8 +8,8 @@ entity Container {
   property required containerType: string
   property locationId: string = ""
   property sizeDescription: string = ""
-  property capacityVolumeMl: number = 0
-  property capacityWeightG: number = 0
+  property capacityVolumeMl: decimal = 0
+  property capacityWeightG: decimal = 0
   property capacityPortions: int = 0
   property isReusable: boolean = true
   property isActive: boolean = true

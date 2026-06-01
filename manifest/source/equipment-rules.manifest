@@ -12,12 +12,12 @@ entity Equipment {
   property manufacturer: string = ""
   property model: string = ""
   property purchaseDate: datetime = now()
-  property warrantyExpiry: number = 0
+  property warrantyExpiry: datetime
   property lastMaintenanceDate: datetime = now()
   property nextMaintenanceDate: datetime = now()
-  property maintenanceIntervalDays: number = 90
-  property usageHours: number = 0
-  property maxUsageHours: number = 1000
+  property maintenanceIntervalDays: int = 90
+  property usageHours: int = 0
+  property maxUsageHours: int = 1000
   property condition: string = "good"
   property notes: string = ""
   property isActive: boolean = true
@@ -200,6 +200,7 @@ entity Equipment {
     emit EquipmentRetired
   }
 
+  store Equipment in durable
 }
 
 entity MaintenanceWorkOrder {
@@ -213,8 +214,8 @@ entity MaintenanceWorkOrder {
   property required status: string = "open"
   property description: string = ""
   property assignedTo: string = ""
-  property estimatedCost: number = 0
-  property actualCost: number = 0
+  property estimatedCost: money = 0
+  property actualCost: money = 0
   property scheduledDate: datetime = now()
   property completedDate: datetime = now()
   property partsUsed: string = ""
@@ -325,6 +326,7 @@ entity MaintenanceWorkOrder {
 
     emit MaintenanceWorkOrderCreated
   }
+  store MaintenanceWorkOrder in durable
 }
 
 policy ManagersCanManageEquipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage equipment"

@@ -271,7 +271,7 @@ entity PrepTaskPlanWorkflow {
     emit PrepTaskPlanWorkflowQuickApproved
   }
 
-  store PrepTaskPlanWorkflow in memory
+  store PrepTaskPlanWorkflow in durable
 }
 
 // Policy definitions

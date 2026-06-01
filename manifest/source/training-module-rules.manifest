@@ -8,7 +8,7 @@ entity TrainingModule {
   property description: string = ""
   property contentUrl: string = ""
   property contentType: string = "document"
-  property durationMinutes: number = 0
+  property durationMinutes: int = 0
   property category: string = ""
   property isRequired: boolean = false
   property isActive: boolean = true
@@ -64,7 +64,7 @@ entity TrainingModule {
     emit TrainingModuleDeleted
   }
 
-  store TrainingModule in memory
+  store TrainingModule in durable
 }
 
 policy TrainingModuleManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training modules"

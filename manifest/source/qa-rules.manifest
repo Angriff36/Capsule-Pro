@@ -40,6 +40,7 @@ entity QACheck {
 
     emit QACheckCompleted
   }
+  store QACheck in durable
 }
 
 entity QACorrectiveAction {
@@ -85,13 +86,14 @@ entity QACorrectiveAction {
 
     emit CorrectiveActionResolved
   }
+  store QACorrectiveAction in durable
 }
 
 entity QATemperatureLog {
   property required id: string
   property required tenantId: string
   property required location: string
-  property required temperature: number
+  property required temperature: decimal
   property unit: string = "fahrenheit"
   property equipment: string = ""
   property recordedBy: string = ""
@@ -127,6 +129,7 @@ entity QATemperatureLog {
 
     emit TemperatureLogged
   }
+  store QATemperatureLog in durable
 }
 
 policy KitchenStaffCanManageQA execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage QA"

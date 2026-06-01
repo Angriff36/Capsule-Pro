@@ -110,12 +110,52 @@ around keeping them.
 - Migrations only via `pnpm db:dev --create-only` (CLAUDE.md DB rules).
 
 ## Status
-**Phase 0 — not started.** On branch `manifest/full-official-generation` (created 2026-06-01).
-Plan corrected 2026-06-01 after user correction: the gap is STORE CLASSIFICATION (B=78 memory + C=14
-no-store entities already have full `.manifest` source — 92 entities one `store … durable` line from
-projecting), NOT missing source. Manifest source is the source of truth; the 226 legacy models are
-reference-only, never a parity target. Fix gaps by authoring `.manifest` source + regenerating, never
-by reconciling IR to existing tables. (Reverses the parity framing this file shipped with.)
+**Phases 2–4 schema-generation MILESTONE HIT 2026-06-01: full IR-derived schema VALIDATES + Prisma
+Client generates.** On branch `manifest/full-official-generation`.
+
+### What was done (all source edits + regenerate — NO reconciling to legacy DB)
+1. Flipped ALL `store … in memory` → `durable` across `manifest/source/*.manifest` (81 lines).
+2. Added `store <Name> in durable` to the 32 entities that had no store line (`.tmp/add-store-lines.cjs`).
+3. Typed all 231 `PRISMA_AMBIGUOUS_NUMBER` props in source via heuristic (`.tmp/fix-number-types.cjs`):
+   14 datetime (timestamps), 77 int (counts/ids), 74 money (amounts), 66 decimal (rates/measures).
+4. Fixed 14 `datetime = <number>` defaults (invalid Prisma `@default(0)` on DateTime) → required=now(),
+   optional=no default (`.tmp/fix-datetime-defaults.cjs`).
+5. Added missing `id` to `SampleData` (PRISMA_NO_ID_PROPERTY).
+6. Fixed `PurchaseOrderItem → PurchaseOrder` belongsTo to composite FK
+   `fields [tenantId, purchaseOrderId] references [tenantId, id]` (target has `key [tenantId,id]`;
+   single-col ref was invalid). Matched its working `PurchaseRequisitionItem` sibling. Per docs
+   /language/entities composite-FK syntax.
+
+### Result (verified)
+- `pnpm manifest:compile` → 132 entities, 593 commands. Projection diagnostics: **0** (was 232).
+- Full schema emitted FROM IR via `PrismaProjection` (programmatic — installed CLI only supports
+  `nextjs`, "Unknown projection: prisma"; emit script `.tmp/emit-schema-full.mjs`, minimal options
+  `{provider: postgresql}`, natural entity/property names, NO legacy reconciliation): **132 models**,
+  datasource+generator+`prisma.config.ts`, 66KB.
+- `prisma validate` → **"is valid 🚀"** (exit 0). `prisma generate` → Client generated (exit 0).
+- Only 6 `@relation`s emit (the declared belongsTo/hasMany); the rest use flat string FKs — CONSISTENT
+  with Capsule's "no FKs, flat keys" convention (AGENTS.md). Relations are opt-in via source.
+
+### Note on CLI: prisma projection not exposed by installed CLI bin
+`pnpm exec manifest generate -p prisma` fails ("Unknown projection: prisma (supported: nextjs)") even
+though the package ships `projections/prisma`. So schema gen uses the programmatic `PrismaProjection`
+API (docs sanction this: "call the projection API programmatically in a build script"). A committed
+emit script is needed (the `.tmp` one is scratch). nextjs routes still go via `generate.mjs`.
+
+### RESUME / remaining (Phases 4→5→6)
+- [ ] Promote generated schema → live `packages/database/prisma/schema.prisma` (dev DB reset OK).
+      Decide @@schema multi-schema placement (projection emits none; current DB uses tenant_* schemas)
+      — author via IR or post-process; OR go single-schema for the regenerated DB (data expendable).
+- [ ] Commit a real emit script under `manifest/scripts/` (replace `.tmp/emit-schema-full.mjs`).
+- [ ] `prisma migrate`/`db push` to recreate dev DB from generated schema; `pnpm --filter api typecheck`.
+- [ ] Wire stores so all 132 durable entities persist to real tables; retire JSON-blob fallbacks.
+- [ ] Routes: regenerate; retire hand-written where covered.
+- [ ] Adopt official `manifest doctor`/audit CLI; add drift gates.
+
+### Framing (unchanged, reaffirmed)
+Manifest source is the source of truth; the 226 legacy models are reference-only, never a parity
+target. Fix gaps by authoring `.manifest` source + regenerating, never by reconciling IR to existing
+tables. (Original plan's parity framing was reversed per user correction.)
 
 ## Decisions / open questions
 1. Domain route tree (95+ frontend URLs) vs flat entity URLs — keep wrapper, migrate FE, or shims?

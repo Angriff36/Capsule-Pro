@@ -8,8 +8,8 @@ entity KitchenTask {
   property required title: string
   property required summary: string
   property required status: string = "pending"
-  property priority: number = 5
-  property complexity: number = 5
+  property priority: int = 5
+  property complexity: decimal = 5
   property tags: string = ""
   property dueDate: datetime = now()
   property completedAt: datetime = now()
@@ -186,7 +186,7 @@ entity KitchenTask {
     emit KitchenTaskCreated
   }
 
-  store KitchenTask in memory
+  store KitchenTask in durable
 }
 
 policy KitchenStaffCanClaim execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim kitchen tasks"

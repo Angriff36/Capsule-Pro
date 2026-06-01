@@ -96,7 +96,7 @@ entity PrepComment {
     emit PrepCommentDeleted
   }
 
-  store PrepComment in memory
+  store PrepComment in durable
 }
 
 policy KitchenStaffCanComment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can create and manage comments"

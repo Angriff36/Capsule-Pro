@@ -7,7 +7,7 @@ entity LaborBudget {
   property locationId: string = ""
   property periodStart: string = ""
   property periodEnd: string = ""
-  property budgetAmount: number = 0
+  property budgetAmount: money = 0
   property budgetType: string = "weekly"
   property notes: string = ""
   property createdBy: string = ""
@@ -56,7 +56,7 @@ entity LaborBudget {
     emit LaborBudgetDeleted
   }
 
-  store LaborBudget in memory
+  store LaborBudget in durable
 }
 
 entity BudgetAlert {
@@ -93,7 +93,7 @@ entity BudgetAlert {
     emit BudgetAlertResolved
   }
 
-  store BudgetAlert in memory
+  store BudgetAlert in durable
 }
 
 policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Managers can manage labor budgets"

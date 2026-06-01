@@ -76,6 +76,7 @@ entity BankAccount {
 
     emit BankAccountVerified
   }
+  store BankAccount in durable
 }
 
 policy PayrollAdminsCanManageBankAccounts execute: user.role in ["payroll_admin", "manager", "admin"] "Only payroll admins can manage bank accounts"

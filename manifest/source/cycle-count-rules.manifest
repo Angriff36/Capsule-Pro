@@ -15,8 +15,8 @@ entity CycleCountSession {
   property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
-  property totalVariance: number = 0
-  property variancePercentage: number = 0
+  property totalVariance: decimal = 0
+  property variancePercentage: decimal = 0
   property notes: string = ""
   property createdById: string = ""
   property approvedById: string = ""
@@ -115,7 +115,7 @@ entity CycleCountSession {
     emit CycleCountSessionCancelled
   }
 
-  store CycleCountSession in memory
+  store CycleCountSession in durable
 }
 
 entity CycleCountRecord {
@@ -126,10 +126,10 @@ entity CycleCountRecord {
   property required itemNumber: string
   property required itemName: string
   property required storageLocationId: string
-  property expectedQuantity: number = 0
-  property countedQuantity: number = 0
-  property variance: number = 0
-  property variancePct: number = 0
+  property expectedQuantity: int = 0
+  property countedQuantity: int = 0
+  property variance: decimal = 0
+  property variancePct: decimal = 0
   property countDate: datetime = now()
   property countedById: string = ""
   property barcode: string = ""
@@ -221,7 +221,7 @@ entity CycleCountRecord {
     emit CycleCountRecordRemoved
   }
 
-  store CycleCountRecord in memory
+  store CycleCountRecord in durable
 }
 
 entity VarianceReport {
@@ -232,14 +232,14 @@ entity VarianceReport {
   property required itemId: string
   property required itemNumber: string
   property required itemName: string
-  property expectedQuantity: number = 0
-  property countedQuantity: number = 0
-  property variance: number = 0
-  property variancePct: number = 0
-  property accuracyScore: number = 0
+  property expectedQuantity: int = 0
+  property countedQuantity: int = 0
+  property variance: decimal = 0
+  property variancePct: decimal = 0
+  property accuracyScore: decimal = 0
   property status: string = "pending"
   property adjustmentType: string = ""
-  property adjustmentAmount: number = 0
+  property adjustmentAmount: money = 0
   property adjustmentDate: datetime = now()
   property notes: string = ""
   property generatedAt: datetime = now()
@@ -311,7 +311,7 @@ entity VarianceReport {
     emit VarianceReportApproved
   }
 
-  store VarianceReport in memory
+  store VarianceReport in durable
 }
 
 policy StaffCanCount execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can perform cycle counts"

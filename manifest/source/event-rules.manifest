@@ -230,25 +230,25 @@ entity EventProfitability {
   property required id: string
   property required tenantId: string
   property required eventId: string
-  property budgetedRevenue: number = 0
-  property budgetedFoodCost: number = 0
-  property budgetedLaborCost: number = 0
-  property budgetedOverhead: number = 0
-  property budgetedTotalCost: number = 0
-  property budgetedGrossMargin: number = 0
-  property budgetedGrossMarginPct: number = 0
-  property actualRevenue: number = 0
-  property actualFoodCost: number = 0
-  property actualLaborCost: number = 0
-  property actualOverhead: number = 0
-  property actualTotalCost: number = 0
-  property actualGrossMargin: number = 0
-  property actualGrossMarginPct: number = 0
-  property revenueVariance: number = 0
-  property foodCostVariance: number = 0
-  property laborCostVariance: number = 0
-  property totalCostVariance: number = 0
-  property marginVariancePct: number = 0
+  property budgetedRevenue: money = 0
+  property budgetedFoodCost: money = 0
+  property budgetedLaborCost: money = 0
+  property budgetedOverhead: decimal = 0
+  property budgetedTotalCost: money = 0
+  property budgetedGrossMargin: decimal = 0
+  property budgetedGrossMarginPct: decimal = 0
+  property actualRevenue: money = 0
+  property actualFoodCost: money = 0
+  property actualLaborCost: money = 0
+  property actualOverhead: decimal = 0
+  property actualTotalCost: money = 0
+  property actualGrossMargin: decimal = 0
+  property actualGrossMarginPct: decimal = 0
+  property revenueVariance: decimal = 0
+  property foodCostVariance: decimal = 0
+  property laborCostVariance: decimal = 0
+  property totalCostVariance: decimal = 0
+  property marginVariancePct: decimal = 0
   property calculatedAt: datetime = now()
   property calculationMethod: string = "auto"
   property notes: string = ""
@@ -327,7 +327,7 @@ entity EventProfitability {
     emit EventProfitabilityRecalculated
   }
 
-  store EventProfitability in memory
+  store EventProfitability in durable
 }
 
 entity EventSummary {
@@ -341,7 +341,7 @@ entity EventSummary {
   property insights: string = "[]"
   property overallSummary: string = ""
   property generatedAt: datetime = now()
-  property generationDurationMs: number = 0
+  property generationDurationMs: int = 0
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
   property deletedAt: datetime = now()
@@ -388,7 +388,7 @@ entity EventSummary {
     emit EventSummaryRefreshed
   }
 
-  store EventSummary in memory
+  store EventSummary in durable
 }
 
 // Policy definitions

@@ -15,8 +15,8 @@ entity Shipment {
   property estimatedDeliveryDate: datetime = now()
   property actualDeliveryDate: datetime = now()
   property totalItems: int = 0
-  property shippingCost: number = 0
-  property totalValue: number = 0
+  property shippingCost: money = 0
+  property totalValue: decimal = 0
   property trackingNumber: string = ""
   property carrier: string = ""
   property shippingMethod: string = ""
@@ -152,7 +152,7 @@ entity Shipment {
     emit ShipmentCancelled
   }
 
-  store Shipment in memory
+  store Shipment in durable
 }
 
 entity ShipmentItem {
@@ -160,12 +160,12 @@ entity ShipmentItem {
   property required tenantId: string
   property required shipmentId: string
   property required itemId: string
-  property quantityShipped: number = 0
-  property quantityReceived: number = 0
-  property quantityDamaged: number = 0
-  property unitId: number = 0
-  property unitCost: number = 0
-  property totalCost: number = 0
+  property quantityShipped: int = 0
+  property quantityReceived: int = 0
+  property quantityDamaged: int = 0
+  property unitId: int = 0
+  property unitCost: money = 0
+  property totalCost: money = 0
   property condition: string = "good"
   property conditionNotes: string = ""
   property lotNumber: string = ""
@@ -233,7 +233,7 @@ entity ShipmentItem {
     emit ShipmentItemReceived
   }
 
-  store ShipmentItem in memory
+  store ShipmentItem in durable
 }
 
 policy ManagersCanCreateShipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can create shipments"

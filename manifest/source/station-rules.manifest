@@ -178,7 +178,7 @@ entity Station {
     emit StationCreated
   }
 
-  store Station in memory
+  store Station in durable
 }
 
 policy ManagersCanModifyStation execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can modify station settings"

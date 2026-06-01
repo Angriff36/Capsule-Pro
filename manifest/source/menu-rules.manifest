@@ -8,10 +8,10 @@ entity Menu {
   property description: string = ""
   property category: string = ""
   property isActive: boolean = true
-  property basePrice: number = 0
-  property pricePerPerson: number = 0
-  property minGuests: number = 0
-  property maxGuests: number = 0
+  property basePrice: money = 0
+  property pricePerPerson: money = 0
+  property minGuests: int = 0
+  property maxGuests: int = 0
 
   computed hasPricePerPerson: boolean = self.pricePerPerson > 0
   computed hasGuestConstraints: boolean = self.minGuests > 0 or self.maxGuests > 0
@@ -107,7 +107,7 @@ entity Menu {
     emit MenuCreated
   }
 
-  store Menu in memory
+  store Menu in durable
 }
 
 entity MenuDish {
@@ -116,7 +116,7 @@ entity MenuDish {
   property required menuId: string
   property required dishId: string
   property course: string = ""
-  property sortOrder: number = 0
+  property sortOrder: int = 0
   property isOptional: boolean = false
   property deletedAt: datetime = now()
 
@@ -151,7 +151,7 @@ entity MenuDish {
     emit MenuDishRemoved
   }
 
-  store MenuDish in memory
+  store MenuDish in durable
 }
 
 // Policy definitions

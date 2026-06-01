@@ -132,7 +132,7 @@ entity BattleBoard {
     emit BattleBoardFinalized
   }
 
-  store BattleBoard in memory
+  store BattleBoard in durable
 }
 
 // Policy definitions

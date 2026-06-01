@@ -80,7 +80,7 @@ entity EventGuest {
     emit EventGuestDeleted
   }
 
-  store EventGuest in memory
+  store EventGuest in durable
 }
 
 policy EventStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Event staff can manage guests"

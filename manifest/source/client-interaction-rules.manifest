@@ -116,7 +116,7 @@ entity ClientInteraction {
     emit ClientInteractionCompleted
   }
 
-  store ClientInteraction in memory
+  store ClientInteraction in durable
 }
 
 // Policy definitions

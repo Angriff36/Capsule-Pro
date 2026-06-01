@@ -8,11 +8,11 @@ entity EventReport {
   property required name: string
   property version: string = "2025-01-01"
   property status: string = "draft"
-  property completion: number = 0
+  property completion: decimal = 0
   property checklistData: string = "{}"
   property parsedEventData: string = ""
   property reportConfig: string = ""
-  property autoFillScore: number = 0
+  property autoFillScore: decimal = 0
   property reviewNotes: string = ""
   property reviewedBy: string = ""
   property reviewedAt: datetime = now()
@@ -119,7 +119,7 @@ entity EventReport {
     emit EventReportCompleted
   }
 
-  store EventReport in memory
+  store EventReport in durable
 }
 
 // Policy definitions

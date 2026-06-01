@@ -13,9 +13,9 @@ entity CollectionCase {
   property required clientName: string = ""
 
   // Amount details
-  property required originalAmount: number = 0
-  property required outstandingAmount: number = 0
-  property required collectedAmount: number = 0
+  property required originalAmount: money = 0
+  property required outstandingAmount: money = 0
+  property required collectedAmount: money = 0
 
   // Collection status
   property required status: string = "ACTIVE"
@@ -23,7 +23,7 @@ entity CollectionCase {
   property required dunningStage: string = "CURRENT"
 
   // Aging
-  property required daysOverdue: number = 0
+  property required daysOverdue: int = 0
   property agingBucket: string = ""
 
   // Assignment
@@ -33,7 +33,7 @@ entity CollectionCase {
   // Payment plan
   property hasPaymentPlan: boolean = false
   property paymentPlanId: string = ""
-  property nextPaymentDue: number = 0
+  property nextPaymentDue: datetime
 
   // Dispute handling
   property isDisputed: boolean = false
@@ -212,6 +212,7 @@ entity CollectionCase {
     mutate updatedAt = now()
     emit CollectionClosed
   }
+  store CollectionCase in durable
 }
 
 entity CollectionAction {
@@ -236,7 +237,7 @@ entity CollectionAction {
   property nextActionDate: datetime = now()
 
   // Promise to pay
-  property promiseAmount: number = 0
+  property promiseAmount: money = 0
   property promiseDate: datetime = now()
 
   // Metadata
@@ -244,7 +245,7 @@ entity CollectionAction {
   property metadata: string = "{}"
 
   // Timestamps
-  property required scheduledFor: number = 0
+  property required scheduledFor: datetime = now()
   property completedAt: datetime = now()
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
@@ -295,6 +296,7 @@ entity CollectionAction {
     mutate updatedAt = now()
     emit ActionRescheduled
   }
+  store CollectionAction in durable
 }
 
 // Payment plan entity for installment arrangements
@@ -304,10 +306,10 @@ entity CollectionPaymentPlan {
   property required caseId: string = ""
 
   // Plan details
-  property required totalAmount: number = 0
-  property required installmentAmount: number = 0
-  property required installmentCount: number = 1
-  property required completedInstallments: number = 0
+  property required totalAmount: money = 0
+  property required installmentAmount: money = 0
+  property required installmentCount: int = 1
+  property required completedInstallments: int = 0
 
   // Status
   property required status: string = "ACTIVE"
@@ -379,6 +381,7 @@ entity CollectionPaymentPlan {
     mutate updatedAt = now()
     emit PaymentPlanModified
   }
+  store CollectionPaymentPlan in durable
 }
 
 // Events

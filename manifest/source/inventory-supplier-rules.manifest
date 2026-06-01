@@ -13,7 +13,7 @@ entity InventorySupplier {
   property notes: string = ""
   property tags: string = ""
   property isActive: boolean = true
-  property openPOCount: number = 0
+  property openPOCount: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime = now()
@@ -82,7 +82,7 @@ entity InventorySupplier {
     emit InventorySupplierDeactivated
   }
 
-  store InventorySupplier in memory
+  store InventorySupplier in durable
 }
 
 policy ManagersCanCreateSupplier execute: user.role in ["manager", "admin"] "Only managers can create suppliers"

@@ -5,7 +5,7 @@ entity DocumentVersion {
   property required id: string
   property required tenantId: string
   property required documentId: string
-  property required versionNumber: number
+  property required versionNumber: int
   property required content: string
   property changeDescription: string = ""
   property createdBy: string = ""
@@ -36,6 +36,7 @@ entity DocumentVersion {
 
     emit DocumentVersionRestored
   }
+  store DocumentVersion in durable
 }
 
 policy EditorsCanManageDocuments execute: user.role in ["editor", "manager", "admin"] "Editors can manage documents"

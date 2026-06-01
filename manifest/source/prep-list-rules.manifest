@@ -6,11 +6,11 @@ entity PrepList {
   property required tenantId: string
   property required eventId: string
   property required name: string
-  property batchMultiplier: number = 1
+  property batchMultiplier: decimal = 1
   property dietaryRestrictions: string = ""
   property status: string = "draft"
   property totalItems: int = 0
-  property totalEstimatedTime: number = 0
+  property totalEstimatedTime: decimal = 0
   property notes: string = ""
   property generatedAt: datetime = now()
   property finalizedAt: datetime = now()
@@ -191,7 +191,7 @@ entity PrepList {
     emit PrepListReopened
   }
 
-  store PrepList in memory
+  store PrepList in durable
 }
 
 entity PrepListItem {
@@ -203,9 +203,9 @@ entity PrepListItem {
   property required ingredientId: string
   property required ingredientName: string
   property category: string = ""
-  property baseQuantity: number = 0
+  property baseQuantity: int = 0
   property baseUnit: string = ""
-  property scaledQuantity: number = 0
+  property scaledQuantity: int = 0
   property scaledUnit: string = ""
   property isOptional: boolean = false
   property preparationNotes: string = ""
@@ -343,7 +343,7 @@ entity PrepListItem {
     emit PrepListItemCreated
   }
 
-  store PrepListItem in memory
+  store PrepListItem in durable
 }
 
 // Policy definitions

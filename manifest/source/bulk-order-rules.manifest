@@ -7,16 +7,16 @@ entity BulkOrderRule {
   property required tenantId: string
   property required catalogEntryId: string
   property ruleName: string = ""
-  property required minimumQuantity: number = 1
+  property required minimumQuantity: int = 1
   property required ruleType: string = "discount"
-  property thresholdQuantity: number = 0
+  property thresholdQuantity: int = 0
   property action: string = "discount"
-  property discountPercent: number = 0
+  property discountPercent: decimal = 0
   property freeItemQuantity: int = 0
   property shippingIncluded: boolean = false
   property priority: int = 0
-  property effectiveFrom: number = 0
-  property effectiveTo: number = 0
+  property effectiveFrom: datetime
+  property effectiveTo: datetime
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -94,7 +94,7 @@ entity BulkOrderRule {
     emit BulkOrderRuleDeactivated
   }
 
-  store BulkOrderRule in memory
+  store BulkOrderRule in durable
 }
 
 event BulkOrderRuleCreated: "inventory.bulk-order-rule.created" {

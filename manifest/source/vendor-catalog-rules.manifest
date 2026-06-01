@@ -10,14 +10,14 @@ entity VendorCatalog {
   property required itemName: string = ""
   property description: string = ""
   property category: string = ""
-  property required baseUnitCost: number = 0
+  property required baseUnitCost: money = 0
   property required currency: string = "USD"
   property required unitOfMeasure: string = "each"
   property leadTimeDays: int = 0
   property leadTimeMinDays: int = 0
   property leadTimeMaxDays: int = 0
-  property minimumOrderQuantity: number = 0
-  property orderMultiple: number = 0
+  property minimumOrderQuantity: int = 0
+  property orderMultiple: int = 0
   property required isActive: boolean = true
   property effectiveFrom: datetime
   property effectiveTo: datetime

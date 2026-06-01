@@ -9,10 +9,10 @@ entity InventoryItem {
   property description: string = ""
   property required category: string
   property unitOfMeasure: string = "each"
-  property unitCost: number = 0
-  property quantityOnHand: number = 0
-  property parLevel: number = 0
-  property reorder_level: number = 0
+  property unitCost: money = 0
+  property quantityOnHand: int = 0
+  property parLevel: decimal = 0
+  property reorder_level: decimal = 0
   property supplierId: string = ""
   property tags: string = ""
   property fsa_status: string = "unknown"
@@ -235,7 +235,7 @@ entity InventoryItem {
     emit InventoryItemCreated
   }
 
-  store InventoryItem in memory
+  store InventoryItem in durable
 }
 
 policy InventoryStaffCanReserve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can reserve inventory"

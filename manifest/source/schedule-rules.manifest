@@ -84,7 +84,7 @@ entity Schedule {
     emit ScheduleClosed
   }
 
-  store Schedule in memory
+  store Schedule in durable
 }
 
 entity ScheduleShift {
@@ -157,7 +157,7 @@ entity ScheduleShift {
     emit ScheduleShiftRemoved
   }
 
-  store ScheduleShift in memory
+  store ScheduleShift in durable
 }
 
 policy ManagersCanCreateSchedule execute: user.role in ["manager", "admin"] "Only managers can create schedules"
