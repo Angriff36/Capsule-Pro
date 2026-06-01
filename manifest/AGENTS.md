@@ -2,6 +2,41 @@ AGENTS.md
 
 AI agents developing or coding in the Capsule-pro app must read this and use the planning with files skill and its accompanying files in this directory before proceeding with any Manifest or Capsule-pro work.
 
+---
+
+## ⛔ STOP — READ THE OFFICIAL DOCS. THIS IS THE #1 REPEATED FAILURE.
+
+Agents in this repo have, OVER AND OVER, given confident answers about Manifest based on
+codebase greps + context7 (the GitHub repo mirror) WITHOUT reading the actual official docs the
+user links or that govern the feature. This wastes the user's time and produces WRONG answers.
+It has happened across multiple sessions. Do not be the next one.
+
+**The official Manifest docs are at: https://manifest-b1e8623f.mintlify.app/**
+Key pages: `/cli/configuration`, `/integration/prisma`, `/integration/nextjs`,
+`/language/*`, `/adapters/*`, `/cli/overview`.
+
+HARD RULES (non-negotiable):
+1. Before answering ANY question about how Manifest works (config, projections, CLI, store
+   wiring, create/command semantics, tenancy), or before editing Manifest-related code, you MUST
+   `WebFetch` the relevant mintlify doc page(s). Codebase greps and context7 are SUPPLEMENTARY, not
+   a substitute. If the user links a specific doc URL, FETCH THAT EXACT URL before responding.
+2. Do NOT assert "Manifest can't do X" or "Manifest doesn't do Y" until you have read the doc page
+   for X/Y. The default assumption is that the OFFICIAL METHOD EXISTS and we should be using it —
+   if the repo isn't, find out WHY from the planning files, don't invent a justification.
+3. If you catch yourself reasoning from `node_modules/@angriff36/manifest/dist/*.js` alone, STOP and
+   fetch the doc — the dist code tells you WHAT it does, the docs tell you the INTENDED usage.
+4. When the repo diverges from the official method (e.g. a hand-rolled wrapper, hand-authored
+   schema instead of the Prisma projection), treat that divergence as SUSPECT/legacy until the
+   planning files prove it's required. The bias is toward the official generate path.
+
+Lessons logged (do not repeat): (a) answered config/projection questions 3x from greps before
+reading the linked `/cli/configuration` + `/integration/prisma` pages — was wrong about the
+dispatcher (it IS config-native) and under-credited the Prisma projection. (b) The Prisma schema
+projection IS the official Prisma method; the repo not using it is a STALLED MIGRATION (IR
+incompleteness — see notes.md §14), not a deliberate rejection. Know the difference before you speak.
+
+---
+
 Route strategy 
 Capsule-Pro should prefer one generic Manifest command route: POST /api/manifest/[entity]/commands/[command] In Next.js App Router terms, this belongs under an app route handler file such as:
  apps/api/app/api/manifest/[entity]/commands/[command]/route.ts 
