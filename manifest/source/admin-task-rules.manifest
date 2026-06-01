@@ -15,9 +15,9 @@ entity AdminTask {
   property createdBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireTitle: self.title != "" "Title is required"
 
@@ -39,7 +39,7 @@ entity AdminTask {
   }
 
   command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted task"
+    guard self.deletedAt == null "Cannot update a deleted task"
 
     mutate title = title
     mutate description = description
@@ -53,7 +53,7 @@ entity AdminTask {
   }
 
   command moveToTodo() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
     guard self.status == "backlog" or self.status == "in_progress" "Can only move to todo from backlog or in_progress"
 
     mutate status = "todo"
@@ -63,7 +63,7 @@ entity AdminTask {
   }
 
   command startProgress() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
     guard self.status == "todo" "Can only start progress from todo"
 
     mutate status = "in_progress"
@@ -73,7 +73,7 @@ entity AdminTask {
   }
 
   command complete() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
     guard self.status == "in_progress" "Can only complete from in_progress"
 
     mutate status = "done"
@@ -83,7 +83,7 @@ entity AdminTask {
   }
 
   command cancel() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
     guard self.status != "done" "Cannot cancel a completed task"
 
     mutate status = "cancelled"
@@ -93,7 +93,7 @@ entity AdminTask {
   }
 
   command reopen() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
     guard self.status == "cancelled" "Can only reopen a cancelled task"
 
     mutate status = "backlog"
@@ -103,7 +103,7 @@ entity AdminTask {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Task is already deleted"
+    guard self.deletedAt == null "Task is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

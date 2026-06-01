@@ -16,9 +16,9 @@ entity TrainingModule {
   property createdBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireTitle: self.title != "" "Title is required"
 
@@ -41,7 +41,7 @@ entity TrainingModule {
   }
 
   command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted training module"
+    guard self.deletedAt == null "Cannot update a deleted training module"
 
     mutate title = title
     mutate description = description
@@ -57,7 +57,7 @@ entity TrainingModule {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Training module is already deleted"
+    guard self.deletedAt == null "Training module is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

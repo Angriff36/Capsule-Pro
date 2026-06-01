@@ -22,7 +22,7 @@ entity PurchaseOrder {
   property receivedAt: datetime = now()
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -182,7 +182,7 @@ entity PurchaseOrderItem {
   property notes: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   key [tenantId, id]
 

@@ -13,7 +13,7 @@ entity CommandBoard {
   property tags: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isActive: boolean = self.status == "active"
@@ -109,12 +109,12 @@ entity CommandBoardCard {
   property version: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isDone: boolean = self.status == "done"
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validTitle: self.title != null and self.title != "" "Card title is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
@@ -200,7 +200,7 @@ entity CommandBoardCard {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Card is already deleted"
+    guard self.deletedAt == null "Card is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()
@@ -226,9 +226,9 @@ entity CommandBoardGroup {
   property zIndex: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validName: self.name != null and self.name != "" "Group name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
@@ -270,7 +270,7 @@ entity CommandBoardGroup {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Group is already deleted"
+    guard self.deletedAt == null "Group is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()
@@ -293,9 +293,9 @@ entity CommandBoardConnection {
   property visible: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
   constraint validFromCardId: self.fromCardId != null and self.fromCardId != "" "Source card ID is required"
@@ -322,7 +322,7 @@ entity CommandBoardConnection {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Connection is already deleted"
+    guard self.deletedAt == null "Connection is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()
@@ -347,7 +347,7 @@ entity CommandBoardLayout {
   property snapToGrid: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   constraint validName: self.name != null and self.name != "" "Layout name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
@@ -388,7 +388,7 @@ entity CommandBoardLayout {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Layout is already deleted"
+    guard self.deletedAt == null "Layout is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

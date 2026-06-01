@@ -28,11 +28,11 @@ entity Client {
   property isActive: boolean = true
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
   computed hasEmail: boolean = self.email != null and self.email != ""
-  computed isArchived: boolean = self.deletedAt > 0
+  computed isArchived: boolean = self.deletedAt != null
 
   constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
   constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"
@@ -88,7 +88,7 @@ entity Client {
   }
 
   command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: string, source: string, assignedTo: string) {
-    guard self.deletedAt == 0 "Cannot update an archived client"
+    guard self.deletedAt == null "Cannot update an archived client"
 
     mutate companyName = companyName
     mutate firstName = firstName
@@ -115,7 +115,7 @@ entity Client {
   }
 
   command archive(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Client is already archived"
+    guard self.deletedAt == null "Client is already archived"
 
     constraint warnArchiveWithAssignment:warn self.assignedTo != "" {
       messageTemplate: "Archiving client '{clientName}' who is assigned to a sales rep"
@@ -132,7 +132,7 @@ entity Client {
   }
 
   command reactivate(userId: string) {
-    guard self.deletedAt > 0 "Client is not archived"
+    guard self.deletedAt != null "Client is not archived"
 
     mutate deletedAt = 0
     mutate updatedAt = now()
@@ -159,7 +159,7 @@ entity ClientContact {
   property notes: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed hasContactInfo: boolean = self.email != "" or self.phone != "" or self.phoneMobile != ""
@@ -198,7 +198,7 @@ entity ClientContact {
   }
 
   command update(firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isBillingContact: boolean, notes: string) {
-    guard self.deletedAt == 0 "Cannot update a removed contact"
+    guard self.deletedAt == null "Cannot update a removed contact"
 
     mutate firstName = firstName
     mutate lastName = lastName
@@ -214,7 +214,7 @@ entity ClientContact {
   }
 
   command remove(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Contact is already removed"
+    guard self.deletedAt == null "Contact is already removed"
 
     constraint warnRemovePrimary:warn self.isPrimary {
       messageTemplate: "Removing primary contact '{contactName}' from client"
@@ -231,7 +231,7 @@ entity ClientContact {
   }
 
   command setPrimary(userId: string) {
-    guard self.deletedAt == 0 "Cannot set a removed contact as primary"
+    guard self.deletedAt == null "Cannot set a removed contact as primary"
     guard self.isPrimary == false "Contact is already primary"
 
     mutate isPrimary = true
@@ -254,7 +254,7 @@ entity ClientPreference {
   property notes: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"
@@ -277,7 +277,7 @@ entity ClientPreference {
   }
 
   command update(preferenceValue: string, notes: string) {
-    guard self.deletedAt == 0 "Cannot update a removed preference"
+    guard self.deletedAt == null "Cannot update a removed preference"
 
     mutate preferenceValue = preferenceValue
     mutate notes = notes
@@ -287,7 +287,7 @@ entity ClientPreference {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Preference is already removed"
+    guard self.deletedAt == null "Preference is already removed"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

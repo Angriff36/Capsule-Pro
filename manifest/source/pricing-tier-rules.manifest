@@ -17,9 +17,9 @@ entity PricingTier {
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
 
   constraint requireTierName: self.tierName != null and self.tierName != "" "Tier name is required"
@@ -47,7 +47,7 @@ entity PricingTier {
   }
 
   command update(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted pricing tier"
+    guard self.deletedAt == null "Cannot update a deleted pricing tier"
 
     mutate catalogEntryId = catalogEntryId
     mutate tierName = tierName
@@ -64,7 +64,7 @@ entity PricingTier {
   }
 
   command softDelete(reason: string) {
-    guard self.deletedAt == 0 "Pricing tier is already deleted"
+    guard self.deletedAt == null "Pricing tier is already deleted"
 
     constraint warnActiveTier:warn self.isActive {
       messageTemplate: "Deleting active pricing tier '{tierName}'"

@@ -180,7 +180,7 @@ entity RecipeIngredient {
   property preparationNotes: string = ""
   property isOptional: boolean = false
   property wasteFactor: decimal = 1.0
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
@@ -260,7 +260,7 @@ entity RecipeStep {
   property tips: string = ""
   property videoUrl: string = ""
   property imageUrl: string = ""
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"

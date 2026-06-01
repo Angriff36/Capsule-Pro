@@ -13,9 +13,9 @@ entity EmailWorkflow {
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireName: self.name != "" "Workflow name is required"
 
@@ -35,7 +35,7 @@ entity EmailWorkflow {
   }
 
   command update(name: string, triggerConfig: string, emailTemplateId: string, recipientConfig: string, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted workflow"
+    guard self.deletedAt == null "Cannot update a deleted workflow"
 
     mutate name = name
     mutate triggerConfig = triggerConfig
@@ -48,7 +48,7 @@ entity EmailWorkflow {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Workflow is already deleted"
+    guard self.deletedAt == null "Workflow is already deleted"
 
     mutate deletedAt = now()
     mutate isActive = false

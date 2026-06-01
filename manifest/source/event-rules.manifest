@@ -256,7 +256,7 @@ entity EventProfitability {
   property notes: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isProfitable: boolean = self.actualGrossMargin > 0
   computed hasVariance: boolean = self.totalCostVariance != 0 or self.revenueVariance != 0
@@ -347,7 +347,7 @@ entity EventSummary {
   property generationDurationMs: int = 0
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
   computed hasIssues: boolean = self.issues != "[]" and self.issues != ""

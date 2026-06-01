@@ -10,9 +10,9 @@ entity PayrollPeriod {
   property status: string = "open"
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   command create(periodStart: string, periodEnd: string) {
     guard periodStart != null and periodStart != "" "Period start date is required"
@@ -45,9 +45,9 @@ entity EmployeeDeduction {
   property maxAnnualAmount: money = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
   constraint requireType: self.type != "" "Deduction type is required"
@@ -123,12 +123,12 @@ entity PayrollRun {
   property rejectReason: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   command updateStatus(status: string, approvedBy: string, rejectReason: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted payroll run"
+    guard self.deletedAt == null "Cannot update a deleted payroll run"
 
     mutate status = status
     mutate approvedBy = approvedBy

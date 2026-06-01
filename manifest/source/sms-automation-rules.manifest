@@ -17,13 +17,13 @@ entity SmsAutomationRule {
   property priority: int = 100
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed hasTemplate: boolean = self.templateId != null and self.templateId != ""
   computed hasCustomMessage: boolean = self.customMessage != null and self.customMessage != ""
   computed hasTriggerConfig: boolean = self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}"
-  computed isEnabled: boolean = self.isActive == true and self.deletedAt == 0
+  computed isEnabled: boolean = self.isActive == true and self.deletedAt == null
 
   constraint requireName: self.name != null and self.name != "" "Rule name is required"
   constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
@@ -51,7 +51,7 @@ entity SmsAutomationRule {
   }
 
   command update(name: string, description: string, triggerConfig: string, templateId: string, customMessage: string, recipientType: string, recipientConfig: string, isActive: boolean, priority: number) {
-    guard self.deletedAt == 0 "Cannot update a deleted rule"
+    guard self.deletedAt == null "Cannot update a deleted rule"
     guard name != null and name != "" "Rule name is required"
     guard (templateId != null and templateId != "") or (customMessage != null and customMessage != "") "Either template or custom message is required"
 
@@ -70,7 +70,7 @@ entity SmsAutomationRule {
   }
 
   command activate() {
-    guard self.deletedAt == 0 "Cannot activate a deleted rule"
+    guard self.deletedAt == null "Cannot activate a deleted rule"
     guard self.isActive == false "Rule is already active"
 
     mutate isActive = true
@@ -80,7 +80,7 @@ entity SmsAutomationRule {
   }
 
   command deactivate() {
-    guard self.deletedAt == 0 "Cannot deactivate a deleted rule"
+    guard self.deletedAt == null "Cannot deactivate a deleted rule"
     guard self.isActive == true "Rule is already inactive"
 
     mutate isActive = false
@@ -90,7 +90,7 @@ entity SmsAutomationRule {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Rule is already deleted"
+    guard self.deletedAt == null "Rule is already deleted"
 
     mutate deletedAt = now()
     mutate isActive = false

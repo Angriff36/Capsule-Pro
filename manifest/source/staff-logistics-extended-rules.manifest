@@ -407,7 +407,7 @@ entity OnboardingTask {
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
-  computed isActive: boolean = self.deletedAt == 0
+  computed isActive: boolean = self.deletedAt == null
 
   constraint requireTitle: self.title != "" "Onboarding task title is required"
 

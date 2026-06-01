@@ -16,9 +16,9 @@ entity TimeOffRequest {
   property rejectionReason: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed isPending: boolean = self.status == "PENDING"
   computed isApproved: boolean = self.status == "APPROVED"
 
@@ -46,7 +46,7 @@ entity TimeOffRequest {
   }
 
   command approve(processedBy: string) {
-    guard self.deletedAt == 0 "Cannot approve a deleted request"
+    guard self.deletedAt == null "Cannot approve a deleted request"
     guard self.status == "PENDING" "Can only approve pending requests"
 
     mutate status = "APPROVED"
@@ -58,7 +58,7 @@ entity TimeOffRequest {
   }
 
   command reject(processedBy: string, rejectionReason: string) {
-    guard self.deletedAt == 0 "Cannot reject a deleted request"
+    guard self.deletedAt == null "Cannot reject a deleted request"
     guard self.status == "PENDING" "Can only reject pending requests"
 
     mutate status = "REJECTED"
@@ -71,7 +71,7 @@ entity TimeOffRequest {
   }
 
   command cancel() {
-    guard self.deletedAt == 0 "Cannot cancel a deleted request"
+    guard self.deletedAt == null "Cannot cancel a deleted request"
     guard self.status == "PENDING" or self.status == "APPROVED" "Can only cancel pending or approved requests"
 
     mutate status = "CANCELLED"
@@ -81,7 +81,7 @@ entity TimeOffRequest {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Request is already deleted"
+    guard self.deletedAt == null "Request is already deleted"
     guard self.status == "PENDING" or self.status == "CANCELLED" "Can only delete pending or cancelled requests"
 
     mutate deletedAt = now()

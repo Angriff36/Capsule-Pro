@@ -21,12 +21,12 @@ entity Lead {
   property convertedAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt > 0
   computed isHighValue: boolean = self.estimatedValue >= 10000
   computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
-  computed isArchived: boolean = self.deletedAt > 0
+  computed isArchived: boolean = self.deletedAt != null
 
   constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
   constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
@@ -81,7 +81,7 @@ entity Lead {
   }
 
   command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, status: string, assignedTo: string, notes: string) {
-    guard self.deletedAt == 0 "Cannot update an archived lead"
+    guard self.deletedAt == null "Cannot update an archived lead"
     guard self.isConverted == false "Cannot update a converted lead"
     guard contactName != null and contactName != "" "Contact name is required"
 
@@ -110,7 +110,7 @@ entity Lead {
   }
 
   command convertToClient(clientId: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot convert an archived lead"
+    guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
     constraint blockAlreadyConverted:block self.isConverted {
@@ -139,7 +139,7 @@ entity Lead {
   }
 
   command disqualify(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot disqualify an archived lead"
+    guard self.deletedAt == null "Cannot disqualify an archived lead"
     guard self.isConverted == false "Cannot disqualify a converted lead"
 
     constraint warnHighValueDisqualify:warn self.isHighValue {
@@ -159,7 +159,7 @@ entity Lead {
   }
 
   command archive(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Lead is already archived"
+    guard self.deletedAt == null "Lead is already archived"
 
     constraint warnArchiveOpenLead:warn self.isOpen {
       messageTemplate: "Archiving open lead '{contactName}' with status '{status}'"

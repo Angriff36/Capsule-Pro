@@ -40,7 +40,7 @@ entity VendorContract {
   property qualityRating: decimal = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
   computed isPending: boolean = self.status == "pending_approval"

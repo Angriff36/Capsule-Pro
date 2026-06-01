@@ -16,7 +16,7 @@ entity TimeEntry {
   property approvedAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isClockedIn: boolean = self.clockIn > 0 and self.clockOut == 0
   computed isCompleted: boolean = self.clockIn > 0 and self.clockOut > 0
@@ -104,7 +104,7 @@ entity TimeEntry {
   }
 
   command softDelete(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Time entry is already deleted"
+    guard self.deletedAt == null "Time entry is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

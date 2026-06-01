@@ -18,12 +18,12 @@ entity WasteEntry {
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed hasLocation: boolean = self.locationId != ""
   computed hasEvent: boolean = self.eventId != ""
   computed hasCost: boolean = self.unitCost > 0
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireInventoryItem: self.inventoryItemId != "" "Inventory item is required"
   constraint requireReason: self.reasonId > 0 "Waste reason is required"
@@ -54,7 +54,7 @@ entity WasteEntry {
   }
 
   command update(quantity: number, unitId: number, locationId: string, notes: string, unitCost: number) {
-    guard self.deletedAt == 0 "Cannot update a deleted waste entry"
+    guard self.deletedAt == null "Cannot update a deleted waste entry"
     guard quantity != null and quantity > 0 "Quantity must be positive"
     guard unitCost >= 0 "Unit cost cannot be negative"
 
@@ -70,7 +70,7 @@ entity WasteEntry {
   }
 
   command softDelete(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Waste entry is already deleted"
+    guard self.deletedAt == null "Waste entry is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

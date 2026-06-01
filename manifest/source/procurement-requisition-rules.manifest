@@ -36,7 +36,7 @@ entity PurchaseRequisition {
   property required priority: string = "normal"
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -194,7 +194,7 @@ entity PurchaseRequisitionItem {
   property notes: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   key [tenantId, id]
 

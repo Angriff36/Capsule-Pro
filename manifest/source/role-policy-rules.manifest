@@ -13,15 +13,15 @@ entity RolePolicy {
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed hasPermissions: boolean = self.permissions != "[]" and self.permissions != ""
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 
   command update(roleName: string, permissions: string, description: string, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted role policy"
+    guard self.deletedAt == null "Cannot update a deleted role policy"
 
     mutate roleName = roleName
     mutate permissions = permissions
@@ -33,7 +33,7 @@ entity RolePolicy {
   }
 
   command grant(permission: string, grantedBy: string) {
-    guard self.deletedAt == 0 "Cannot grant permissions on a deleted role policy"
+    guard self.deletedAt == null "Cannot grant permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
     mutate updatedAt = now()
@@ -42,7 +42,7 @@ entity RolePolicy {
   }
 
   command revoke(permission: string, revokedBy: string) {
-    guard self.deletedAt == 0 "Cannot revoke permissions on a deleted role policy"
+    guard self.deletedAt == null "Cannot revoke permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
     mutate updatedAt = now()

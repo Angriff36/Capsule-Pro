@@ -19,12 +19,12 @@ entity EventGuest {
   property mealPreference: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
   computed hasAllergenRestrictions: boolean = self.allergenRestrictions != ""
   computed needsSpecialMeal: boolean = self.specialMealRequired == true
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed hasTableAssignment: boolean = self.tableAssignment != ""
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
@@ -54,7 +54,7 @@ entity EventGuest {
 
   command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard guestName != null and guestName != "" "Guest name is required"
-    guard self.deletedAt == 0 "Cannot update a deleted guest"
+    guard self.deletedAt == null "Cannot update a deleted guest"
 
     mutate guestName = guestName
     mutate guestEmail = guestEmail
@@ -73,7 +73,7 @@ entity EventGuest {
   }
 
   command softDelete(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Guest is already deleted"
+    guard self.deletedAt == null "Guest is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

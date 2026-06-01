@@ -31,7 +31,7 @@ entity Proposal {
   property lineItemCount: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent" or self.status == "viewed"
@@ -109,7 +109,7 @@ entity Proposal {
   }
 
   command update(title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted proposal"
+    guard self.deletedAt == null "Cannot update a deleted proposal"
     guard self.isDraft "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
 
@@ -133,7 +133,7 @@ entity Proposal {
   }
 
   command send(userId: string) {
-    guard self.deletedAt == 0 "Cannot send a deleted proposal"
+    guard self.deletedAt == null "Cannot send a deleted proposal"
     guard self.isDraft "Can only send proposals in draft status"
 
     constraint blockNoLineItems:block self.hasLineItems == false {
@@ -179,7 +179,7 @@ entity Proposal {
   }
 
   command accept(userId: string) {
-    guard self.deletedAt == 0 "Cannot accept a deleted proposal"
+    guard self.deletedAt == null "Cannot accept a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only accept sent or viewed proposals"
 
     constraint blockExpired:block self.isExpired {
@@ -199,7 +199,7 @@ entity Proposal {
   }
 
   command reject(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot reject a deleted proposal"
+    guard self.deletedAt == null "Cannot reject a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only reject sent or viewed proposals"
 
     mutate status = "rejected"
@@ -210,7 +210,7 @@ entity Proposal {
   }
 
   command withdraw(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot withdraw a deleted proposal"
+    guard self.deletedAt == null "Cannot withdraw a deleted proposal"
 
     constraint blockAlreadyAccepted:block self.isAccepted {
       messageTemplate: "Cannot withdraw accepted proposal '{proposalNumber}'"
@@ -254,7 +254,7 @@ entity ProposalLineItem {
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
 
@@ -297,7 +297,7 @@ entity ProposalLineItem {
   }
 
   command update(itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
-    guard self.deletedAt == 0 "Cannot update a removed line item"
+    guard self.deletedAt == null "Cannot update a removed line item"
     guard description != null and description != "" "Description is required"
     guard quantity > 0 "Quantity must be positive"
     guard unitPrice >= 0 "Unit price must be non-negative"
@@ -318,7 +318,7 @@ entity ProposalLineItem {
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Line item is already removed"
+    guard self.deletedAt == null "Line item is already removed"
 
     mutate deletedAt = now()
     mutate updatedAt = now()

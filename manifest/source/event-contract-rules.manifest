@@ -16,7 +16,7 @@ entity EventContract {
   property expiresAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -132,7 +132,7 @@ entity ContractSignature {
   property ipAddress: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed hasEmail: boolean = self.signerEmail != ""
   computed hasIpAddress: boolean = self.ipAddress != ""

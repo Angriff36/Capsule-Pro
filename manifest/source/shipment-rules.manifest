@@ -29,7 +29,7 @@ entity Shipment {
   property reference: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isScheduled: boolean = self.status == "scheduled"
@@ -174,7 +174,7 @@ entity ShipmentItem {
   property expirationDate: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
   computed hasDamage: boolean = self.quantityDamaged > 0

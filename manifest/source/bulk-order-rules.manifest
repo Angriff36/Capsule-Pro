@@ -21,9 +21,9 @@ entity BulkOrderRule {
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
 
   constraint requireRuleName: self.ruleName != null and self.ruleName != "" "Rule name is required"
@@ -57,7 +57,7 @@ entity BulkOrderRule {
   }
 
   command update(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted rule"
+    guard self.deletedAt == null "Cannot update a deleted rule"
 
     mutate catalogEntryId = catalogEntryId
     mutate ruleName = ruleName
@@ -78,7 +78,7 @@ entity BulkOrderRule {
   }
 
   command softDelete(reason: string) {
-    guard self.deletedAt == 0 "Rule is already deleted"
+    guard self.deletedAt == null "Rule is already deleted"
 
     constraint warnActiveRule:warn self.isActive {
       messageTemplate: "Deleting active bulk order rule '{ruleName}'"

@@ -23,7 +23,7 @@ entity CycleCountSession {
   property approvedById: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -143,7 +143,7 @@ entity CycleCountRecord {
   property offlineId: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed hasVariance: boolean = self.variance != 0
   computed isOvercount: boolean = self.variance > 0
@@ -215,7 +215,7 @@ entity CycleCountRecord {
 
   command remove(userId: string) {
     guard not self.isVerified "Cannot remove verified records"
-    guard self.deletedAt == 0 "Record is already removed"
+    guard self.deletedAt == null "Record is already removed"
 
     mutate deletedAt = now()
     mutate updatedAt = now()
@@ -248,7 +248,7 @@ entity VarianceReport {
   property generatedAt: datetime = now()
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isReviewed: boolean = self.status == "reviewed"

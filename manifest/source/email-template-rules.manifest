@@ -14,9 +14,9 @@ entity EmailTemplate {
   property isDefault: boolean = false
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireName: self.name != "" "Template name is required"
   constraint requireSubject: self.subject != "" "Template subject is required"
@@ -39,7 +39,7 @@ entity EmailTemplate {
   }
 
   command update(name: string, templateType: string, subject: string, body: string, mergeFields: string, isActive: boolean, isDefault: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted template"
+    guard self.deletedAt == null "Cannot update a deleted template"
     guard name != null and name != "" "Template name is required"
     guard subject != null and subject != "" "Template subject is required"
 
@@ -56,7 +56,7 @@ entity EmailTemplate {
   }
 
   command softDelete() {
-    guard self.deletedAt == 0 "Template is already deleted"
+    guard self.deletedAt == null "Template is already deleted"
 
     mutate deletedAt = now()
     mutate updatedAt = now()
