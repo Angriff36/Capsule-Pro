@@ -39,16 +39,25 @@ regressions (count held at 96 across every batch). Pre-existing ~96 runtime stor
   fixed restock 'mutate unitCost' (was undeclared costPerUnit) — these were runtime-breaking undefined refs.
 - `50e2fe2b3` CRM/Sales: proposal lifecycle-timestamp + validUntil(!=null) fixes; lead convertedAt/isConverted
   fixes; Deal enriched THIN→full pipeline (create/assign/updateValue/updateProbability/abandon/reopen).
-IR now 189 ent / **780 cmds** (was 760).
+- `11a530251` Payroll/Finance: PayrollRun pending→processing→approved→paid (+reject), replacing the
+  unguarded updateStatus(rawString); PayrollPeriod close/reopen/lock; EmployeeDeduction update/deactivate;
+  PurchaseOrder REMOVED blockEditAfterSubmit (block-when-true entity invariant that rejected every
+  non-draft state → broke submit/approve/receive); lifecycle now() fixes.
+IR now 189 ent / **789 cmds** (was 760).
 
-### Remaining backlog (from the triage, NOT yet done) — by domain priority
-- **Payroll/Finance correctness (NEXT):** payroll PayrollRun.updateStatus(raw string) → explicit guarded
-  commands; EmployeeDeduction/PayrollPeriod thin; purchase-order blockEditAfterSubmit entity-constraint
-  fires on create. revenue-recognition uses `timestamp` param type (compiles+validates today — verify
-  before touching; repo convention is datetime).
-- **THIN→rich enrichment** across Staffing (schedule conflict, training complete/fail, certification
-  expire/renew), Inventory/procurement (transaction reverse/adjust, transfer discrepancy, forecast publish),
-  Facilities/logistics (LogisticsDispatch depart/deliver, FacilityWorkOrder status), Finance (budget approve).
+### ✅ MILESTONE: every triage-flagged CORRECTNESS BUG is resolved or disproven.
+- deletedAt, KitchenTask no-op reassign, InventoryItem undeclared props, proposal/lead lifecycle,
+  PayrollRun raw status, PO block invariant — all FIXED.
+- revenue-recognition `timestamp`: DISPROVEN — used only as command-PARAMETER types (3 spots), never a
+  property; all entity columns render as DateTime, nothing dropped. Left as-is (don't fix what isn't broken).
+
+### Remaining backlog = THIN→rich enrichment (additive, lower priority; bugs are done)
+- **Staffing (NEXT):** schedule/scheduleShift conflict detection; training-assignment complete/fail/extend;
+  employee-certification expire/renew/notify; staff-member reactivate/role-change; time-off accrual.
+- **Inventory/procurement:** InventoryTransaction reverse/adjust; InventoryTransfer discrepancy/partialReceive;
+  InventoryForecast publish/approve; VarianceReport reject; VendorCatalog price-change guard.
+- **Facilities/logistics:** LogisticsDispatch depart/deliver/fail; FacilityWorkOrder explicit status cmds.
+- **Finance/CRM:** Budget approve/lock; Menu/Dish lifecycle; ClientInteraction schedule/escalate.
 - Remaining lifecycle `= now()` defaults on event-time fields in other files — fix per-entity in context.
 
 ## ✅ DONE & COMMITTED (11 commits this branch, each verified)
