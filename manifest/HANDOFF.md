@@ -51,14 +51,38 @@ IR now 189 ent / **789 cmds** (was 760).
 - revenue-recognition `timestamp`: DISPROVEN — used only as command-PARAMETER types (3 spots), never a
   property; all entity columns render as DateTime, nothing dropped. Left as-is (don't fix what isn't broken).
 
-### Remaining backlog = THIN→rich enrichment (additive, lower priority; bugs are done)
-- **Staffing (NEXT):** schedule/scheduleShift conflict detection; training-assignment complete/fail/extend;
-  employee-certification expire/renew/notify; staff-member reactivate/role-change; time-off accrual.
-- **Inventory/procurement:** InventoryTransaction reverse/adjust; InventoryTransfer discrepancy/partialReceive;
-  InventoryForecast publish/approve; VarianceReport reject; VendorCatalog price-change guard.
-- **Facilities/logistics:** LogisticsDispatch depart/deliver/fail; FacilityWorkOrder explicit status cmds.
-- **Finance/CRM:** Budget approve/lock; Menu/Dish lifecycle; ClientInteraction schedule/escalate.
-- Remaining lifecycle `= now()` defaults on event-time fields in other files — fix per-entity in context.
+### ✅✅ ENRICHMENT INITIATIVE COMPLETE (2026-06-01)
+Every THIN/STUB domain entity enriched + every correctness bug fixed. **IR 189 ent / 952 cmds**
+(was 760 → +192). All batches verified compile→build-live-schema→prisma validate→generate→runtime
+typecheck **96 (held flat the entire time — every new column was nullable/additive)**.
+
+Domains done (Staffing, Inventory/procurement, Kitchen/recipe/menu, QA, Facilities/logistics,
+Finance/CRM, Events) via a 6-agent parallel fan-out + my own batches. Commits: 79908db0a, 11a530251,
+50e2fe2b3, bb9c0b35e, 6a27839b1, 492447c22, 0ad727f61 (fan-out), 90bfff24a, ad9a71cfd, 4c9454623, 79bb8840e.
+
+Central DSL fixes applied during integration (lessons for future authoring):
+- Reserved command names (compile-error): publish, version, block, unblock, void → renamed.
+- `x not in [...]` is INVALID → `not (x in [...])`.
+- Intent collisions: one command per canonical intent (no archive+deactivate or activate+reactivate
+  on the same entity).
+- Entity-level `:block <expr>` is an INVARIANT (fires every command when expr true) → never use it to
+  gate a transition; it bricks the lifecycle (removed from PurchaseOrder + Driver).
+- datetime is epoch-numbered at runtime; `self.dt > 0`/`== 0` "works" but combined with a `= now()`
+  default permanently pins computeds (payment.isRefundable etc.) → use nullable + `== null`/`!= null`.
+- Completion/event timestamps must be nullable (no `= now()` default) — only createdAt/updatedAt/issuedAt default.
+
+### ⬜ FINAL STEP — DB baseline regen (per user "regenerate baseline at end" decision)
+Schema columns run AHEAD of the committed baseline migration. `pnpm db:check` shows drift that is
+**100% additive** (`ADD COLUMN IF NOT EXISTS`, all nullable/defaulted — zero data loss). To finish:
+EITHER (a) regenerate the single baseline migration from the 250-model schema + `prisma migrate reset`
+(destructive reset — needs PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION token), OR (b) the non-destructive
+path: one additive migration via `pnpm db:dev --create-only` (or `pnpm db:repair`) applying the drift.
+NOT yet executed — destructive/consequential DB op left for explicit user go-ahead.
+
+### Still-out-of-scope (untouched, appropriately simple): email-template/workflow, sms-automation,
+override-audit (audit log), sample-data, command-board/battle-board (internal tools), workflow,
+workforce-ai, ai-event-setup. Pre-existing ~96 runtime-store errors in `prisma-stores/broken-read-*`
+(store-field-shape / call-site track) remain SEPARATE and untouched.
 
 ## ✅ DONE & COMMITTED (11 commits this branch, each verified)
 1. `35f5bb7e7` adopt @angriff36/manifest 1.7 engine auto-create; remove create bootstrap.
