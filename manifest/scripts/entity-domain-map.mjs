@@ -258,6 +258,14 @@ export const ENTITY_ACCESSOR_OVERRIDES = {
   EventImportWorkflow: "eventImport",
 };
 
+// Detail-route segment names for domain routes that already use a resource-specific
+// slug. This keeps regenerated read routes from colliding with handcrafted sibling
+// routes at the same URL shape.
+export const ENTITY_DETAIL_SEGMENT_OVERRIDES = {
+  AdminChatThread: "threadId",
+  EventImport: "importId",
+};
+
 // Reverse map: flat entity path segment (entityName.toLowerCase(), as the upstream CLI emits)
 // → original entity name. Lets the producer recover the entity for a staged route path.
 export const FLAT_SEGMENT_TO_ENTITY = {};
@@ -284,4 +292,8 @@ export function resolveAccessor(entityName) {
     return { naive, accessor: null, drop: true, overridden: false };
   }
   return { naive, accessor: override, drop: false, overridden: override !== naive };
+}
+
+export function resolveDetailSegment(entityName) {
+  return ENTITY_DETAIL_SEGMENT_OVERRIDES[entityName] ?? "id";
 }

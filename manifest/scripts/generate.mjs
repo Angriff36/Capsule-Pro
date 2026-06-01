@@ -14,6 +14,7 @@ import {
   ENTITY_DOMAIN_MAP,
   FLAT_SEGMENT_TO_ENTITY,
   resolveAccessor,
+  resolveDetailSegment,
 } from "./entity-domain-map.mjs";
 
 const repoRoot = resolve(process.cwd());
@@ -83,6 +84,7 @@ function remapToDomainPath(relativePath) {
 
   const entitySegment = parts[0];
   const domain = FLAT_SEGMENT_TO_DOMAIN[entitySegment];
+  const entity = FLAT_SEGMENT_TO_ENTITY[entitySegment] ?? null;
   if (!domain) {
     console.warn(
       `[manifest/generate] No domain mapping for entity segment "${entitySegment}" — skipping`
@@ -92,7 +94,14 @@ function remapToDomainPath(relativePath) {
 
   const rest = parts.slice(1); // e.g. ["create", "route.ts"] or ["list", "route.ts"]
   const routeFile = rest[rest.length - 1]; // "route.ts"
-  const commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
+  let commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
+
+  if (
+    entity &&
+    (commandOrAction === ":id" || commandOrAction === "[id]")
+  ) {
+    commandOrAction = `[${resolveDetailSegment(entity)}]`;
+  }
 
   // Command routes (non-list, non-detail) go under commands/
   const isReadRoute =
