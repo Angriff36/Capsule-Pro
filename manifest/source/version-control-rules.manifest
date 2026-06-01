@@ -96,7 +96,7 @@ entity EntityVersion {
   property snapshotData: string = {}
   property metadata: string = {}
   property isApproved: boolean = false
-  property approvedAt: datetime = now()
+  property approvedAt: datetime
   property approvedBy: string = ""
   property createdAt: datetime = now()
   property createdBy: string = ""
@@ -170,7 +170,7 @@ entity VersionApproval {
   property required approverId: string
   property required status: string
   property comments: string = ""
-  property reviewedAt: datetime = now()
+  property reviewedAt: datetime
   property createdAt: datetime = now()
 
   computed isPending: boolean = self.status == "pending"

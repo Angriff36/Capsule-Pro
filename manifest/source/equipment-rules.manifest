@@ -14,7 +14,7 @@ entity Equipment {
   property model: string = ""
   property purchaseDate: datetime = now()
   property warrantyExpiry: datetime
-  property lastMaintenanceDate: datetime = now()
+  property lastMaintenanceDate: datetime
   property nextMaintenanceDate: datetime
   property maintenanceIntervalDays: int = 90
   property usageHours: int = 0
@@ -219,7 +219,7 @@ entity MaintenanceWorkOrder {
   property estimatedCost: money = 0
   property actualCost: money = 0
   property scheduledDate: datetime
-  property completedDate: datetime = now()
+  property completedDate: datetime
   property partsUsed: string = ""
   property vendorId: string = ""
   property createdAt: datetime = now()

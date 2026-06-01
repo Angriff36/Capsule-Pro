@@ -80,7 +80,7 @@ entity InventoryStock {
   property required storageLocationId: string
   property required quantityOnHand: decimal = 0
   property required unitId: string
-  property lastCountedAt: datetime = now()
+  property lastCountedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -518,7 +518,7 @@ entity VendorRating {
   property required category: string
   property required score: decimal = 0
   property comment: string = ""
-  property ratedAt: datetime = now()
+  property ratedAt: datetime
   property ratedBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()

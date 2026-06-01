@@ -22,7 +22,7 @@ entity AiEventSetupSession {
   property createdEventId: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  property completedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isParsed: boolean = self.status == "parsed"

@@ -12,9 +12,9 @@ entity Shipment {
   property supplierId: string = ""
   property locationId: string = ""
   property scheduledDate: datetime
-  property shippedDate: datetime = now()
+  property shippedDate: datetime
   property estimatedDeliveryDate: datetime = now()
-  property actualDeliveryDate: datetime = now()
+  property actualDeliveryDate: datetime
   property totalItems: int = 0
   property shippingCost: money = 0
   property totalValue: decimal = 0

@@ -12,7 +12,7 @@ entity PrepTask {
   property required status: string = "open"
   property stationId: string = ""
   property claimedBy: string = ""
-  property claimedAt: datetime = now()
+  property claimedAt: datetime
   property quantityTotal: int = 0
   property quantityCompleted: int = 0
   property quantityUnitId: string = ""

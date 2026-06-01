@@ -27,9 +27,9 @@ entity VendorContract {
   property spendToPeriod: decimal = 0
   property currencyCode: string = "USD"
   property approvedBy: string = ""
-  property approvedAt: datetime = now()
+  property approvedAt: datetime
   property terminatedBy: string = ""
-  property terminatedAt: datetime = now()
+  property terminatedAt: datetime
   property terminationReason: string = ""
   property contractUrl: string = ""
   property notes: string = ""

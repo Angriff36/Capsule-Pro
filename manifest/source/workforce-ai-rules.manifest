@@ -10,7 +10,7 @@ entity WorkforceOptimization {
   property status: string = "pending" // "pending", "in_progress", "completed", "failed"
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  property completedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"

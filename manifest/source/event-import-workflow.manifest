@@ -17,8 +17,8 @@ entity EventImportWorkflow {
   property errors: string = "[]"
   property warnings: string = "[]"
   property confidence: decimal = 0
-  property startedAt: datetime = now()
-  property completedAt: datetime = now()
+  property startedAt: datetime
+  property completedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 

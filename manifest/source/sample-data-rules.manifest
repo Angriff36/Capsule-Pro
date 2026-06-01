@@ -20,7 +20,7 @@ entity SampleData {
   
   // Timestamps for tracking
   property seededAt: datetime = now()
-  property clearedAt: datetime = now()
+  property clearedAt: datetime
   
   // Status tracking
   property isSeeded: boolean = false

@@ -251,7 +251,7 @@ entity EventProfitability {
   property laborCostVariance: decimal = 0
   property totalCostVariance: decimal = 0
   property marginVariancePct: decimal = 0
-  property calculatedAt: datetime = now()
+  property calculatedAt: datetime
   property calculationMethod: string = "auto"
   property notes: string = ""
   property required createdAt: datetime = now()
@@ -343,7 +343,7 @@ entity EventSummary {
   property clientFeedback: string = "[]"
   property insights: string = "[]"
   property overallSummary: string = ""
-  property generatedAt: datetime = now()
+  property generatedAt: datetime
   property generationDurationMs: int = 0
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()

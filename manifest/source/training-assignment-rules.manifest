@@ -14,7 +14,7 @@ entity TrainingAssignment {
   property status: string = "assigned"
   property score: int = 0
   property waiveReason: string = ""
-  property assignedAt: datetime = now()
+  property assignedAt: datetime
   property startedAt: datetime
   property completedAt: datetime
   property createdAt: datetime = now()

@@ -25,11 +25,11 @@ entity PrepTaskPlanWorkflow {
   property approvedCount: int = 0
   property instantiatedCount: int = 0
   property reviewedBy: string = ""
-  property reviewedAt: datetime = now()
+  property reviewedAt: datetime
   property approvedBy: string = ""
-  property approvedAt: datetime = now()
-  property startedAt: datetime = now()
-  property completedAt: datetime = now()
+  property approvedAt: datetime
+  property startedAt: datetime
+  property completedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 

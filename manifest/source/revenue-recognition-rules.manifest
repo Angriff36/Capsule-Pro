@@ -42,7 +42,7 @@ entity RevenueRecognitionSchedule {
   // Timestamps
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  property completedAt: datetime
 
   // Computed properties
   computed recognitionPercentage: number = self.totalAmount > 0 ? (self.recognizedAmount / self.totalAmount) * 100 : 0
@@ -205,7 +205,7 @@ entity RevenueRecognitionLine {
 
   // Timing
   property required dueDate: datetime = now()
-  property recognizedAt: datetime = now()
+  property recognizedAt: datetime
 
   // Milestone info (for milestone-based recognition)
   property milestoneId: string = ""

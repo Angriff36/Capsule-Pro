@@ -463,7 +463,7 @@ entity AdminChatMessage {
   property adminChatThreadId: string = ""
   property senderId: string = ""
   property body: string = ""
-  property sentAt: datetime = now()
+  property sentAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime

@@ -29,7 +29,7 @@ entity CollectionCase {
 
   // Assignment
   property assignedTo: string = ""
-  property assignedAt: datetime = now()
+  property assignedAt: datetime
 
   // Payment plan
   property hasPaymentPlan: boolean = false
@@ -39,7 +39,7 @@ entity CollectionCase {
   // Dispute handling
   property isDisputed: boolean = false
   property disputeReason: string = ""
-  property disputeResolvedAt: datetime = now()
+  property disputeResolvedAt: datetime
 
   // Legal escalation
   property isEscalatedToLegal: boolean = false
@@ -55,8 +55,8 @@ entity CollectionCase {
   // Timestamps
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property resolvedAt: datetime = now()
-  property closedAt: datetime = now()
+  property resolvedAt: datetime
+  property closedAt: datetime
 
   // Computed properties
   computed collectionPercentage: number = self.originalAmount > 0 ? (self.collectedAmount / self.originalAmount) * 100 : 0
@@ -248,7 +248,7 @@ entity CollectionAction {
 
   // Timestamps
   property required scheduledFor: datetime = now()
-  property completedAt: datetime = now()
+  property completedAt: datetime
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
 
@@ -330,8 +330,8 @@ entity CollectionPaymentPlan {
   // Timestamps
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
-  property completedAt: datetime = now()
-  property defaultedAt: datetime = now()
+  property completedAt: datetime
+  property defaultedAt: datetime
 
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"
