@@ -2895,6 +2895,11 @@
     "commandId": "QualityCheck.pass"
   },
   {
+    "entity": "QualityCheck",
+    "command": "reinspect",
+    "commandId": "QualityCheck.reinspect"
+  },
+  {
     "entity": "QualityCheckItem",
     "command": "create",
     "commandId": "QualityCheckItem.create"

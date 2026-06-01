@@ -12,17 +12,19 @@ entity KitchenTask {
   property priority: int = 5
   property complexity: decimal = 5
   property tags: string = ""
-  property dueDate: datetime = now()
-  property completedAt: datetime = now()
+  property assignedTo: string = ""
+  property dueDate: datetime
+  property completedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
-  computed isOverdue: boolean = self.dueDate != 0 and now() > self.dueDate and self.status != "done"
+  computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
+  computed isAssigned: boolean = self.assignedTo != ""
 
   // State transitions
   transition status from "pending" to ["in_progress", "done", "cancelled"]
@@ -46,6 +48,7 @@ entity KitchenTask {
     guard self.status == "pending" or self.status == "in_progress"
 
     mutate status = "in_progress"
+    mutate assignedTo = userId
     mutate updatedAt = now()
 
     emit KitchenTaskClaimed
@@ -56,6 +59,7 @@ entity KitchenTask {
     guard self.status == "pending"
 
     mutate status = "in_progress"
+    mutate assignedTo = userId
     mutate updatedAt = now()
 
     emit KitchenTaskStarted
@@ -77,6 +81,7 @@ entity KitchenTask {
     guard self.status == "in_progress"
 
     mutate status = "pending"
+    mutate assignedTo = ""
     mutate updatedAt = now()
 
     emit KitchenTaskReleased
@@ -87,6 +92,7 @@ entity KitchenTask {
     guard requestedBy != null and requestedBy != ""
     guard self.status in ["pending", "in_progress"]
 
+    mutate assignedTo = newUserId
     mutate updatedAt = now()
 
     emit KitchenTaskReassigned

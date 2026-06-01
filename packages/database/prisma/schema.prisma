@@ -2024,6 +2024,7 @@ model KitchenTask {
   priority Int? @default(5)
   complexity Decimal? @db.Decimal(12, 2) @default(5)
   tags String? @default("")
+  assignedTo String? @default("")
   dueDate DateTime?
   completedAt DateTime?
   createdAt DateTime?

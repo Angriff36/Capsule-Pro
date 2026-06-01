@@ -15,11 +15,12 @@ entity TemperatureProbe {
   property required minThreshold: decimal
   property required maxThreshold: decimal
   property isActive: boolean = true
-  property lastCalibratedAt: datetime = now()
+  property lastCalibratedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
-  computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt != now()
+  // A probe that has never been calibrated needs attention before it can be trusted.
+  computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt == null
   computed rangeSpan: decimal = self.maxThreshold - self.minThreshold
 
   constraint thresholdOrder: self.minThreshold < self.maxThreshold "minThreshold must be less than maxThreshold"
@@ -313,8 +314,8 @@ entity CorrectiveAction {
   property required description: string
   property assignedTo: string = ""
   property required status: string = "open"
-  property dueAt: datetime = now()
-  property resolvedAt: datetime = now()
+  property dueAt: datetime
+  property resolvedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -399,6 +400,8 @@ entity QualityCheck {
   computed isFailed: boolean = self.status == "failed"
 
   transition status from "pending" to ["passed", "failed"]
+  transition status from "passed" to ["pending"]
+  transition status from "failed" to ["pending"]
 
   constraint validStatus: self.status in ["pending", "passed", "failed"] "Invalid quality check status"
   constraint requireCheckType: self.checkType != "" "Check type is required"
@@ -439,6 +442,17 @@ entity QualityCheck {
     mutate updatedAt = now()
 
     emit QualityCheckFailed
+  }
+
+  command reinspect(requestedBy: string, reason: string) {
+    guard self.status in ["passed", "failed"] "Only a completed quality check can be re-inspected"
+    guard requestedBy != null and requestedBy != "" "Requester employee ID is required"
+
+    mutate status = "pending"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit QualityCheckReinspected
   }
 
   store QualityCheck in durable
@@ -502,7 +516,7 @@ entity KitchenTaskClaim {
   property required employeeId: string
   property required claimedAt: datetime
   property required status: string = "active"
-  property releasedAt: datetime = now()
+  property releasedAt: datetime
   property releaseReason: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -808,7 +822,7 @@ entity PrepListImport {
   property required source: string
   property required fileName: string
   property required status: string = "pending"
-  property importedAt: datetime = now()
+  property importedAt: datetime
   property errorMessage: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -1018,6 +1032,13 @@ event QualityCheckFailed: "kitchen.qualitycheck.failed" {
   failedBy: string
   notes: string
   failedAt: number
+}
+
+event QualityCheckReinspected: "kitchen.qualitycheck.reinspected" {
+  checkId: string
+  requestedBy: string
+  reason: string
+  reinspectedAt: number
 }
 
 event QualityCheckItemCreated: "kitchen.qualitycheckitem.created" {

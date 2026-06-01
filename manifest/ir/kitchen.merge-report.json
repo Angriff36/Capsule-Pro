@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-01T12:23:50.674Z",
+  "generatedAt": "2026-06-01T19:51:17.735Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -100,8 +100,8 @@
     "modules": 0,
     "entities": 189,
     "stores": 189,
-    "events": 757,
-    "commands": 773,
+    "events": 758,
+    "commands": 774,
     "policies": 239,
     "enums": 0,
     "values": 0
