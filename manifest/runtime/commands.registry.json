@@ -1045,6 +1045,16 @@
     "commandId": "EmployeeDeduction.create"
   },
   {
+    "entity": "EmployeeDeduction",
+    "command": "deactivate",
+    "commandId": "EmployeeDeduction.deactivate"
+  },
+  {
+    "entity": "EmployeeDeduction",
+    "command": "update",
+    "commandId": "EmployeeDeduction.update"
+  },
+  {
     "entity": "EntityVersion",
     "command": "approve",
     "commandId": "EntityVersion.approve"
@@ -2341,13 +2351,48 @@
   },
   {
     "entity": "PayrollPeriod",
+    "command": "close",
+    "commandId": "PayrollPeriod.close"
+  },
+  {
+    "entity": "PayrollPeriod",
     "command": "create",
     "commandId": "PayrollPeriod.create"
   },
   {
+    "entity": "PayrollPeriod",
+    "command": "lock",
+    "commandId": "PayrollPeriod.lock"
+  },
+  {
+    "entity": "PayrollPeriod",
+    "command": "reopen",
+    "commandId": "PayrollPeriod.reopen"
+  },
+  {
     "entity": "PayrollRun",
-    "command": "updateStatus",
-    "commandId": "PayrollRun.updateStatus"
+    "command": "approve",
+    "commandId": "PayrollRun.approve"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "create",
+    "commandId": "PayrollRun.create"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "markPaid",
+    "commandId": "PayrollRun.markPaid"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "process",
+    "commandId": "PayrollRun.process"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "reject",
+    "commandId": "PayrollRun.reject"
   },
   {
     "entity": "PerformancePrediction",

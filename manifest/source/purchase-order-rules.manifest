@@ -8,8 +8,8 @@ entity PurchaseOrder {
   property required vendorId: string
   property required locationId: string
   property required orderDate: datetime = now()
-  property expectedDeliveryDate: datetime = now()
-  property actualDeliveryDate: datetime = now()
+  property expectedDeliveryDate: datetime
+  property actualDeliveryDate: datetime
   property required status: string = "draft"
   property required subtotal: money = 0
   property required taxAmount: money = 0
@@ -17,9 +17,9 @@ entity PurchaseOrder {
   property required total: money = 0
   property notes: string = ""
   property submittedBy: string = ""
-  property submittedAt: datetime = now()
+  property submittedAt: datetime
   property receivedBy: string = ""
-  property receivedAt: datetime = now()
+  property receivedAt: datetime
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
   property deletedAt: datetime
@@ -40,13 +40,9 @@ entity PurchaseOrder {
 
   constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "ordered", "partially_received", "received", "cancelled"] "Invalid purchase order status"
 
-  constraint blockEditAfterSubmit:block self.status != "draft" {
-    messageTemplate: "Purchase order '{poNumber}' cannot be edited in status '{status}'"
-    details: {
-      poNumber: self.poNumber
-      status: self.status
-    }
-  }
+  // NOTE: "no header edits after submit" is expressed via the isEditable computed and
+  // enforced per-edit-command, NOT as an entity-level block invariant — the latter would
+  // (block-when-true semantics) reject every non-draft state and break submit/approve/receive.
 
   command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
     guard poNumber != null and poNumber != "" "PO number is required"
