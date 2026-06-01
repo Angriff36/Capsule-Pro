@@ -16,7 +16,7 @@ entity VendorContract {
   property contractType: string = "purchase"
   property status: string = "draft"
   property startDate: datetime = now()
-  property endDate: datetime = now()
+  property endDate: datetime
   property autoRenew: boolean = false
   property renewalTermDays: int = 0
   property noticeDaysBeforeRenewal: int = 30
@@ -44,10 +44,10 @@ entity VendorContract {
 
   computed isActive: boolean = self.status == "active"
   computed isPending: boolean = self.status == "pending_approval"
-  computed isExpired: boolean = self.endDate > 0 and now() > self.endDate
-  computed isExpiringSoon: boolean = self.endDate > 0 and (self.endDate - now()) < (self.noticeDaysBeforeRenewal * 86400000)
+  computed isExpired: boolean = self.endDate != null and now() > self.endDate
+  computed isExpiringSoon: boolean = self.endDate != null and (self.endDate - now()) < (self.noticeDaysBeforeRenewal * 86400000)
   computed requiresComplianceReview: boolean = (now() - self.lastComplianceReview) > 7776000000
-  computed daysUntilExpiry: number = self.endDate > 0 ? (self.endDate - now()) / 86400000 : -1
+  computed daysUntilExpiry: number = self.endDate != null ? (self.endDate - now()) / 86400000 : -1
   computed hasPerformanceIssues: boolean = self.complianceScore < 80 or self.slaBreachCount > 3
   computed isEditable: boolean = self.status == "draft"
 

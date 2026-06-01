@@ -11,7 +11,7 @@ entity Shipment {
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
-  property scheduledDate: datetime = now()
+  property scheduledDate: datetime
   property shippedDate: datetime = now()
   property estimatedDeliveryDate: datetime = now()
   property actualDeliveryDate: datetime = now()

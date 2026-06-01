@@ -854,7 +854,7 @@ entity PreventiveMaintenanceSchedule {
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
-  computed isDue: boolean = self.nextDueAt > 0 and now() >= self.nextDueAt
+  computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt
   computed isActiveSchedule: boolean = self.isActive == true
 
   constraint requireName: self.name != "" "Schedule name is required"
