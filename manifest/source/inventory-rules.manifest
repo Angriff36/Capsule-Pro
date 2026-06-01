@@ -12,6 +12,7 @@ entity InventoryItem {
   property unitOfMeasure: string = "each"
   property unitCost: money = 0
   property quantityOnHand: int = 0
+  property quantityReserved: int = 0
   property parLevel: decimal = 0
   property reorder_level: decimal = 0
   property supplierId: string = ""
@@ -28,6 +29,8 @@ entity InventoryItem {
   computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level
   computed totalValue: number = self.quantityOnHand * self.unitCost
   computed needsReorder: boolean = self.isBelowReorderPoint
+  // Stock not already promised to an event/reservation.
+  computed quantityAvailable: int = self.quantityOnHand - self.quantityReserved
 
   constraint warnBelowPar:warn self.isBelowPar {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
@@ -50,7 +53,7 @@ entity InventoryItem {
         requested: quantity
         available: self.quantityAvailable
         shortfall: quantity - self.quantityAvailable
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -80,7 +83,7 @@ entity InventoryItem {
         requested: quantity
         onHand: self.quantityOnHand
         shortfall: quantity - self.quantityOnHand
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -99,7 +102,7 @@ entity InventoryItem {
       details: {
         itemName: self.name
         quantity: quantity
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
         lotId: lotId
       }
     }
@@ -122,7 +125,7 @@ entity InventoryItem {
         requested: quantity
         onHand: self.quantityOnHand
         shortfall: quantity - self.quantityOnHand
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -173,14 +176,14 @@ entity InventoryItem {
       details: {
         itemName: self.name
         quantity: quantity
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
         unitCost: costPerUnit
         totalCost: quantity * costPerUnit
       }
     }
 
     mutate quantityOnHand = self.quantityOnHand + quantity
-    mutate costPerUnit = costPerUnit
+    mutate unitCost = costPerUnit
     mutate updatedAt = now()
 
     emit InventoryRestocked
