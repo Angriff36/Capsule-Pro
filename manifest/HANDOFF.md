@@ -22,22 +22,34 @@ all 189 entities RICH/THIN/STUB/BUGGY (invoice/event-budget = the RICH calibrati
   `== null`/`!= null` (api-key/rate-limit/crm-admin/vendor-catalog). proposal-rules was fully bricked
   (every mutation guard `deletedAt == 0` permanently false). Generated schema **byte-identical** → the
   bug was IR/runtime-guard only, NO DB impact. IR 189 ent/760 cmds; no new typecheck errors.
-- **UNCOMMITTED — Events day-of-ops enrichment (3 entities):** event-staff (lifecycle assigned→
-  confirmed→checked_in→checked_out + no_show/unassign; +confirmedAt/checkedInAt/checkedOutAt/noShowReason
-  cols), event-guest (RSVP pending/confirmed/declined + check-in; +rsvpStatus/rsvpAt/checkedInAt cols),
-  event-dish (+updateQuantity/updateCourse/updateNotes). IR 189 ent/**773 cmds**; schema valid; client
-  generates; runtime typecheck **96 errors (was ~98 — NO regression; new cols are nullable/additive)**.
-  **OPEN: needs an additive migration** (`db:dev --create-only` for the new event cols) — the create-only
-  run was backgrounded/stalled; not yet committed. Pre-existing runtime store errors (~96 across 37
-  `prisma-stores/broken-read-*` files, the store-field-shape class) are SEPARATE and pre-date this work.
+**MIGRATION POLICY (user decision):** during the enrichment sprint, DO NOT run incremental migrations.
+Keep source+IR+schema in sync and commit each batch (schema columns run ahead of the baseline; `db:check`
+drift is expected/fine pre-merge). Regenerate the SINGLE baseline migration + reset dev DB at the END of
+the sprint (dev data expendable). New columns are always added NULLABLE/defaulted → no runtime-store
+regressions (count held at 96 across every batch). Pre-existing ~96 runtime store errors in
+`prisma-stores/broken-read-*` (store-field-shape class) are SEPARATE and pre-date this work.
 
-### Pending bugs still to fix during enrichment (from the triage, NOT yet done)
-- Other lifecycle timestamps wrongly `= now()` (sentAt/viewedAt/acceptedAt in proposal; convertedAt in
-  lead; PO/payroll dates) — fix per-entity (NOT a blanket sweep; a few like nextRunAt are legit).
-- inventory-rules InventoryItem: guards reference UNDECLARED props quantityAvailable/quantityReserved/
-  baseUnit. revenue-recognition: `timestamp` param type → datetime. payroll PayrollRun.updateStatus(raw
-  string) → explicit guarded commands. kitchen-task reassign is a no-op (never mutates claimedBy).
-  purchase-order blockEditAfterSubmit entity-constraint fires on create.
+**COMMITTED enrichment batches (each: compile→build-live-schema→validate→generate→runtime typecheck 96):**
+- `492447c22` Events day-of-ops: EventStaff (assigned→confirmed→checked_in→checked_out + no_show/unassign),
+  EventGuest (RSVP + check-in), EventDish (updateQuantity/Course/Notes).
+- `6a27839b1` Kitchen: KitchenTask assignee tracking (reassign was a no-op) + dueDate/completedAt fixes;
+  kitchen-extended lifecycle-now() fixes (TemperatureProbe/CorrectiveAction/KitchenTaskClaim/PrepListImport)
+  + QualityCheck.reinspect.
+- `bb9c0b35e` InventoryItem: declared quantityReserved + quantityAvailable computed; baseUnit→unitOfMeasure;
+  fixed restock 'mutate unitCost' (was undeclared costPerUnit) — these were runtime-breaking undefined refs.
+- `50e2fe2b3` CRM/Sales: proposal lifecycle-timestamp + validUntil(!=null) fixes; lead convertedAt/isConverted
+  fixes; Deal enriched THIN→full pipeline (create/assign/updateValue/updateProbability/abandon/reopen).
+IR now 189 ent / **780 cmds** (was 760).
+
+### Remaining backlog (from the triage, NOT yet done) — by domain priority
+- **Payroll/Finance correctness (NEXT):** payroll PayrollRun.updateStatus(raw string) → explicit guarded
+  commands; EmployeeDeduction/PayrollPeriod thin; purchase-order blockEditAfterSubmit entity-constraint
+  fires on create. revenue-recognition uses `timestamp` param type (compiles+validates today — verify
+  before touching; repo convention is datetime).
+- **THIN→rich enrichment** across Staffing (schedule conflict, training complete/fail, certification
+  expire/renew), Inventory/procurement (transaction reverse/adjust, transfer discrepancy, forecast publish),
+  Facilities/logistics (LogisticsDispatch depart/deliver, FacilityWorkOrder status), Finance (budget approve).
+- Remaining lifecycle `= now()` defaults on event-time fields in other files — fix per-entity in context.
 
 ## ✅ DONE & COMMITTED (11 commits this branch, each verified)
 1. `35f5bb7e7` adopt @angriff36/manifest 1.7 engine auto-create; remove create bootstrap.
