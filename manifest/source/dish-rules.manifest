@@ -1,5 +1,7 @@
 // Kitchen Ops - Dish Rules
 // Manifest spec for dish catalog management, pricing, lead times, and menu integration
+// Lifecycle: active | seasonal | eighty_six (out-of-stock/pulled)
+// "eighty_six" = kitchen term for "we're out / not serving this today"
 
 entity Dish {
   key [tenantId, id]
@@ -20,6 +22,15 @@ entity Dish {
   property pricePerPerson: money = 0
   property costPerPerson: money = 0
   property isActive: boolean = true
+  // Seasonal flag: dish is only offered during certain seasons/periods
+  property isSeasonal: boolean = false
+  property seasonLabel: string = ""
+  property seasonStartMonth: int = 0
+  property seasonEndMonth: int = 0
+  // 86'd: temporarily pulled from service (out of stock or unavailable)
+  property isEightySix: boolean = false
+  property eightySixReason: string = ""
+  property eightySixAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
@@ -30,6 +41,7 @@ entity Dish {
   computed marginPercent: number = self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0
   computed hasLeadTime: boolean = self.minPrepLeadDays > 0
   computed isDeactivated: boolean = self.isActive == false
+  computed isAvailable: boolean = self.isActive and self.isEightySix == false
 
   constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
@@ -37,6 +49,7 @@ entity Dish {
   constraint positiveMinLeadDays: self.minPrepLeadDays >= 0 "Minimum prep lead days cannot be negative"
   constraint positiveMaxLeadDays: self.maxPrepLeadDays >= 0 "Maximum prep lead days cannot be negative"
   constraint leadDaysOrder: self.maxPrepLeadDays == 0 or self.maxPrepLeadDays >= self.minPrepLeadDays "Max prep lead days must be >= min prep lead days"
+  constraint validSeasonMonths: self.seasonStartMonth >= 0 and self.seasonStartMonth <= 12 and self.seasonEndMonth >= 0 and self.seasonEndMonth <= 12 "Season months must be between 0 and 12"
 
   constraint warnCostExceedsPrice:warn self.costPerPerson > self.pricePerPerson and self.pricePerPerson > 0 {
     messageTemplate: "Dish cost ({cost}) exceeds price ({price})"
@@ -93,6 +106,8 @@ entity Dish {
     mutate pricePerPerson = pricePerPerson
     mutate costPerPerson = costPerPerson
     mutate isActive = true
+    mutate isSeasonal = false
+    mutate isEightySix = false
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -115,6 +130,15 @@ entity Dish {
     mutate updatedAt = now()
 
     emit DishUpdated
+  }
+
+  command activate() {
+    guard self.isActive == false "Dish is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit DishActivated
   }
 
   command deactivate(reason: string, userId: string) {
@@ -187,6 +211,61 @@ entity Dish {
     emit DishLeadTimeUpdated
   }
 
+  // Mark dish as seasonal — only offered during a specific period of the year.
+  command markSeasonal(seasonLabel: string, seasonStartMonth: number, seasonEndMonth: number) {
+    guard self.isActive "Cannot mark a deactivated dish as seasonal"
+    guard seasonLabel != null and seasonLabel != "" "Season label is required"
+    guard seasonStartMonth >= 1 and seasonStartMonth <= 12 "Season start month must be 1–12"
+    guard seasonEndMonth >= 1 and seasonEndMonth <= 12 "Season end month must be 1–12"
+
+    mutate isSeasonal = true
+    mutate seasonLabel = seasonLabel
+    mutate seasonStartMonth = seasonStartMonth
+    mutate seasonEndMonth = seasonEndMonth
+    mutate updatedAt = now()
+
+    emit DishMarkedSeasonal
+  }
+
+  // Remove seasonal flag — dish is available year-round again.
+  command unmarkSeasonal() {
+    guard self.isSeasonal "Dish is not marked seasonal"
+
+    mutate isSeasonal = false
+    mutate seasonLabel = ""
+    mutate seasonStartMonth = 0
+    mutate seasonEndMonth = 0
+    mutate updatedAt = now()
+
+    emit DishUnmarkedSeasonal
+  }
+
+  // 86 a dish: temporarily pull it from service (out of stock or unavailable today).
+  command eightySix(reason: string, userId: string) {
+    guard self.isActive "Cannot 86 a deactivated dish"
+    guard self.isEightySix == false "Dish is already 86'd"
+    guard reason != null and reason != "" "Reason is required when 86ing a dish"
+
+    mutate isEightySix = true
+    mutate eightySixReason = reason
+    mutate eightySixAt = now()
+    mutate updatedAt = now()
+
+    emit DishEightySixed
+  }
+
+  // Reinstate an 86'd dish — back in service.
+  command reinstate(userId: string) {
+    guard self.isEightySix "Dish is not currently 86'd"
+
+    mutate isEightySix = false
+    mutate eightySixReason = ""
+    mutate eightySixAt = null
+    mutate updatedAt = now()
+
+    emit DishReinstated
+  }
+
   store Dish in durable
 }
 
@@ -209,6 +288,12 @@ event DishUpdated: "kitchen.dish.updated" {
   name: string
   category: string
   updatedAt: number
+}
+
+event DishActivated: "kitchen.dish.activated" {
+  dishId: string
+  name: string
+  activatedAt: number
 }
 
 event DishDeactivated: "kitchen.dish.deactivated" {
@@ -237,4 +322,38 @@ event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
   maxPrepLeadDays: number
   userId: string
   updatedAt: number
+}
+
+event DishMarkedSeasonal: "kitchen.dish.marked-seasonal" {
+  dishId: string
+  tenantId: string
+  name: string
+  seasonLabel: string
+  seasonStartMonth: number
+  seasonEndMonth: number
+  updatedAt: number
+}
+
+event DishUnmarkedSeasonal: "kitchen.dish.unmarked-seasonal" {
+  dishId: string
+  tenantId: string
+  name: string
+  updatedAt: number
+}
+
+event DishEightySixed: "kitchen.dish.eighty-sixed" {
+  dishId: string
+  tenantId: string
+  name: string
+  reason: string
+  userId: string
+  eightySixAt: number
+}
+
+event DishReinstated: "kitchen.dish.reinstated" {
+  dishId: string
+  tenantId: string
+  name: string
+  userId: string
+  reinstatedAt: number
 }

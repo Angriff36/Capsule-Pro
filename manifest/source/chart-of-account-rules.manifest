@@ -15,10 +15,12 @@ entity ChartOfAccount {
   property updatedAt: datetime = now()
 
   computed hasParent: boolean = self.parentId != ""
+  computed isLeaf: boolean = self.parentId == ""
 
   constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
   constraint requireAccountName: self.accountName != "" "Account name is required"
   constraint requireAccountType: self.accountType != "" "Account type is required"
+  constraint validAccountType: self.accountType in ["asset", "liability", "equity", "revenue", "expense", "cogs", "other"] "Invalid account type"
 
   command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
     guard accountNumber != null and accountNumber != "" "Account number is required"

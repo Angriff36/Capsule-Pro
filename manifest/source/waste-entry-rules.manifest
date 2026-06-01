@@ -12,7 +12,10 @@ entity WasteEntry {
   property locationId: string = ""
   property eventId: string = ""
   property loggedBy: string = ""
-  property loggedAt: datetime = now()
+  property loggedAt: datetime
+  property approvedBy: string = ""
+  property approvedAt: datetime
+  property status: string = "logged"
   property unitCost: money = 0
   property totalCost: money = 0
   property notes: string = ""
@@ -24,11 +27,14 @@ entity WasteEntry {
   computed hasEvent: boolean = self.eventId != ""
   computed hasCost: boolean = self.unitCost > 0
   computed isDeleted: boolean = self.deletedAt != null
+  computed isApproved: boolean = self.status == "approved"
+  computed isHighCost: boolean = self.totalCost > 100
 
   constraint requireInventoryItem: self.inventoryItemId != "" "Inventory item is required"
   constraint requireReason: self.reasonId > 0 "Waste reason is required"
   constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
   constraint positiveCost: self.unitCost >= 0 "Unit cost cannot be negative"
+  constraint validStatus: self.status in ["logged", "approved", "voided"] "Invalid waste entry status"
 
   command create(inventoryItemId: string, reasonId: number, quantity: number, unitId: number, locationId: string, eventId: string, loggedBy: string, unitCost: number, notes: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item is required"
@@ -46,11 +52,50 @@ entity WasteEntry {
     mutate unitCost = unitCost
     mutate totalCost = quantity * unitCost
     mutate notes = notes
+    mutate status = "logged"
     mutate loggedAt = now()
     mutate createdAt = now()
     mutate updatedAt = now()
 
     emit WasteEntryCreated
+  }
+
+  // Manager sign-off on a waste entry — required for high-cost losses before
+  // they are posted to inventory cost reports.
+  command approve(approvedBy: string) {
+    guard self.status == "logged" "Can only approve logged waste entries"
+    guard self.deletedAt == null "Cannot approve a deleted waste entry"
+    guard approvedBy != null and approvedBy != "" "Approving user is required"
+
+    constraint warnLowCost:warn self.isHighCost == false {
+      messageTemplate: "Approving low-cost waste entry ({totalCost}) — manual approval usually reserved for high-cost losses"
+      details: {
+        inventoryItemId: self.inventoryItemId
+        totalCost: self.totalCost
+      }
+    }
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit WasteEntryApproved
+  }
+
+  // Void a waste entry that was logged in error (e.g. wrong item, duplicate).
+  // Preferred over softDelete when the entry was already approved.
+  command voidEntry(voidedBy: string, reason: string) {
+    guard self.status in ["logged", "approved"] "Can only void logged or approved entries"
+    guard self.deletedAt == null "Entry is already deleted"
+    guard voidedBy != null and voidedBy != "" "Voiding user is required"
+    guard reason != null and reason != "" "Void reason is required"
+
+    mutate status = "voided"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit WasteEntryVoided
   }
 
   command update(quantity: number, unitId: number, locationId: string, notes: string, unitCost: number) {
@@ -114,4 +159,22 @@ event WasteEntryDeleted: "kitchen.waste-entry.deleted" {
   reason: string
   userId: string
   deletedAt: number
+}
+
+event WasteEntryApproved: "kitchen.waste-entry.approved" {
+  wasteEntryId: string
+  tenantId: string
+  inventoryItemId: string
+  totalCost: number
+  approvedBy: string
+  approvedAt: number
+}
+
+event WasteEntryVoided: "kitchen.waste-entry.voided" {
+  wasteEntryId: string
+  tenantId: string
+  inventoryItemId: string
+  voidedBy: string
+  reason: string
+  voidedAt: number
 }

@@ -1,5 +1,7 @@
 // Staff Domain - Training Module Rules
-// Manifest spec for training module CRUD operations
+// Manifest spec for training module lifecycle
+// Lifecycle: draft -> published -> archived (or draft -> archived)
+// Versioning: published modules can be versioned (creates new version label).
 
 entity TrainingModule {
   key [tenantId, id]
@@ -13,17 +15,32 @@ entity TrainingModule {
   property category: string = ""
   property isRequired: boolean = false
   property isActive: boolean = true
+  property status: string = "draft"
+  property version: int = 1
+  property publishedAt: datetime
+  property archivedAt: datetime
+  property notes: string = ""
   property createdBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isArchived: boolean = self.status == "archived"
+  computed isAssignable: boolean = self.status == "published" and self.deletedAt == null
+
+  transition status from "draft" to ["published", "archived"]
+  transition status from "published" to ["archived", "draft"]
 
   constraint requireTitle: self.title != "" "Title is required"
+  constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid module status"
+  constraint validContentType: self.contentType in ["document", "video", "quiz", "interactive", "checklist"] "Invalid content type"
 
   command create(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, createdBy: string) {
     guard title != null and title != "" "Title is required"
+    guard contentType in ["document", "video", "quiz", "interactive", "checklist"] "Invalid content type"
 
     mutate title = title
     mutate description = description
@@ -33,6 +50,8 @@ entity TrainingModule {
     mutate category = category
     mutate isRequired = isRequired
     mutate isActive = true
+    mutate status = "draft"
+    mutate version = 1
     mutate createdBy = createdBy
     mutate createdAt = now()
     mutate updatedAt = now()
@@ -40,8 +59,10 @@ entity TrainingModule {
     emit TrainingModuleCreated
   }
 
-  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, isActive: boolean) {
+  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean) {
     guard self.deletedAt == null "Cannot update a deleted training module"
+    guard self.status in ["draft"] "Can only update draft modules — use version to update a published module"
+    guard title != null and title != "" "Title is required"
 
     mutate title = title
     mutate description = description
@@ -50,16 +71,71 @@ entity TrainingModule {
     mutate durationMinutes = durationMinutes
     mutate category = category
     mutate isRequired = isRequired
-    mutate isActive = isActive
     mutate updatedAt = now()
 
     emit TrainingModuleUpdated
   }
 
+  // Publish the module so it can be assigned to staff.
+  command markPublished() {
+    guard self.deletedAt == null "Cannot publish a deleted module"
+    guard self.status in ["draft"] "Only draft modules can be published"
+    guard self.title != "" "Title is required before publishing"
+    guard self.contentUrl != "" "Content URL is required before publishing"
+
+    mutate status = "published"
+    mutate isActive = true
+    mutate publishedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingModulePublished
+  }
+
+  // Increment the content version and revert to draft for editing before republishing.
+  command createVersion(changeNotes: string) {
+    guard self.deletedAt == null "Cannot version a deleted module"
+    guard self.status == "published" "Only published modules can be versioned"
+    guard changeNotes != null and changeNotes != "" "Change notes are required for a new version"
+
+    mutate version = self.version + 1
+    mutate status = "draft"
+    mutate notes = changeNotes
+    mutate updatedAt = now()
+
+    emit TrainingModuleVersioned
+  }
+
+  // Archive a module — it remains visible in history but cannot be newly assigned.
+  command archive(reason: string) {
+    guard self.deletedAt == null "Cannot archive a deleted module"
+    guard self.status in ["draft", "published"] "Module is already archived"
+
+    mutate status = "archived"
+    mutate isActive = false
+    mutate archivedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingModuleArchived
+  }
+
+  // Restore an archived module back to draft for revival.
+  command unarchive() {
+    guard self.deletedAt == null "Cannot unarchive a deleted module"
+    guard self.status == "archived" "Module is not archived"
+
+    mutate status = "draft"
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit TrainingModuleUnarchived
+  }
+
   command softDelete() {
     guard self.deletedAt == null "Training module is already deleted"
+    guard self.status != "published" "Cannot delete a published module — archive it first"
 
     mutate deletedAt = now()
+    mutate isActive = false
     mutate updatedAt = now()
 
     emit TrainingModuleDeleted
@@ -83,6 +159,36 @@ event TrainingModuleUpdated: "staff.training-module.updated" {
   moduleId: string
   title: string
   updatedAt: number
+}
+
+event TrainingModulePublished: "staff.training-module.published" {
+  moduleId: string
+  tenantId: string
+  title: string
+  version: number
+  publishedAt: number
+}
+
+event TrainingModuleVersioned: "staff.training-module.versioned" {
+  moduleId: string
+  tenantId: string
+  version: number
+  changeNotes: string
+  versionedAt: number
+}
+
+event TrainingModuleArchived: "staff.training-module.archived" {
+  moduleId: string
+  tenantId: string
+  title: string
+  archivedAt: number
+}
+
+event TrainingModuleUnarchived: "staff.training-module.unarchived" {
+  moduleId: string
+  tenantId: string
+  title: string
+  unarchivedAt: number
 }
 
 event TrainingModuleDeleted: "staff.training-module.deleted" {

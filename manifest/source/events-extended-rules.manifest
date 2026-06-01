@@ -48,11 +48,24 @@ entity Venue {
     mutate updatedAt = now()
     emit VenueUpdated
   }
+  command activate() {
+    guard self.isActive == false "Venue is already active"
+    mutate isActive = true
+    mutate updatedAt = now()
+    emit VenueActivated
+  }
   command deactivate(reason: string) {
     guard self.isActive "Venue is already deactivated"
     mutate isActive = false
     mutate updatedAt = now()
     emit VenueDeactivated
+  }
+  command updateCapacity(capacity: int) {
+    guard self.isActive "Cannot update capacity of a deactivated venue"
+    guard capacity >= 0 "Capacity cannot be negative"
+    mutate capacity = capacity
+    mutate updatedAt = now()
+    emit VenueCapacityUpdated
   }
   store Venue in durable
 }
@@ -72,12 +85,24 @@ event VenueUpdated: "events.venue.updated" {
   name: string
   updatedAt: number
 }
+event VenueActivated: "events.venue.activated" {
+  venueId: string
+  tenantId: string
+  name: string
+  activatedAt: number
+}
 event VenueDeactivated: "events.venue.deactivated" {
   venueId: string
   tenantId: string
   name: string
   reason: string
   deactivatedAt: number
+}
+event VenueCapacityUpdated: "events.venue.capacity_updated" {
+  venueId: string
+  tenantId: string
+  capacity: number
+  updatedAt: number
 }
 
 entity EventStaffAssignment {
@@ -87,8 +112,9 @@ entity EventStaffAssignment {
   property required eventId: string
   property required staffMemberId: string
   property role: string = ""
-  property shiftStart: datetime = now()
-  property shiftEnd: datetime = now()
+  // Bug fix: shift times are lifecycle datetimes — no default
+  property shiftStart: datetime
+  property shiftEnd: datetime
   property status: string = "assigned"
   property notes: string = ""
   property required createdAt: datetime = now()
@@ -139,6 +165,13 @@ entity EventStaffAssignment {
     mutate updatedAt = now()
     emit EventStaffAssignmentShiftUpdated
   }
+  command updateRole(role: string) {
+    guard self.status != "cancelled" "Cannot update role on a cancelled assignment"
+    guard role != null and role != "" "Role is required"
+    mutate role = role
+    mutate updatedAt = now()
+    emit EventStaffAssignmentRoleUpdated
+  }
   store EventStaffAssignment in durable
 }
 
@@ -174,6 +207,14 @@ event EventStaffAssignmentShiftUpdated: "events.staff_assignment.shift_updated" 
   staffMemberId: string
   updatedAt: number
 }
+event EventStaffAssignmentRoleUpdated: "events.staff_assignment.role_updated" {
+  assignmentId: string
+  tenantId: string
+  eventId: string
+  staffMemberId: string
+  role: string
+  updatedAt: number
+}
 
 entity EventTimeline {
   key [tenantId, id]
@@ -181,7 +222,8 @@ entity EventTimeline {
   property required tenantId: string
   property required eventId: string
   property required title: string = ""
-  property scheduledAt: datetime = now()
+  // Bug fix: lifecycle datetime — no default
+  property scheduledAt: datetime
   property durationMinutes: int = 0
   property notes: string = ""
   property sortOrder: int = 0
@@ -271,10 +313,13 @@ entity TimelineTask {
   property required tenantId: string
   property required eventId: string
   property required title: string = ""
-  property dueAt: datetime = now()
+  // Bug fix: lifecycle datetime — no default
+  property dueAt: datetime
   property status: string = "pending"
   property assignedTo: string = ""
+  property notes: string = ""
   property sortOrder: int = 0
+  property completedAt: datetime
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
   property deletedAt: datetime
@@ -282,10 +327,11 @@ entity TimelineTask {
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isDone: boolean = self.status == "done"
+  computed isBlocked: boolean = self.status == "blocked"
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireTitle: self.title != "" "Task title is required"
-  constraint validStatus: self.status in ["pending", "in_progress", "done"] "Status must be pending, in_progress, or done"
+  constraint validStatus: self.status in ["pending", "in_progress", "done", "blocked"] "Status must be pending, in_progress, done, or blocked"
 
   command create(eventId: string, title: string, dueAt: datetime, assignedTo: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -309,8 +355,30 @@ entity TimelineTask {
   command complete(userId: string) {
     guard self.status == "in_progress" "Can only complete in-progress tasks"
     mutate status = "done"
+    mutate completedAt = now()
     mutate updatedAt = now()
     emit TimelineTaskCompleted
+  }
+  command blockTask(reason: string) {
+    guard self.status == "in_progress" "Can only block in-progress tasks"
+    guard reason != null and reason != "" "Block reason is required"
+    mutate status = "blocked"
+    mutate notes = reason
+    mutate updatedAt = now()
+    emit TimelineTaskBlocked
+  }
+  command unblockTask(userId: string) {
+    guard self.status == "blocked" "Can only unblock blocked tasks"
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+    emit TimelineTaskUnblocked
+  }
+  command reorder(newSortOrder: int) {
+    guard newSortOrder >= 0 "Sort order cannot be negative"
+    guard self.status != "done" "Cannot reorder a completed task"
+    mutate sortOrder = newSortOrder
+    mutate updatedAt = now()
+    emit TimelineTaskReordered
   }
   command reassign(newAssignedTo: string) {
     guard self.status != "done" "Cannot reassign a completed task"
@@ -354,6 +422,27 @@ event TimelineTaskCompleted: "events.timeline_task.completed" {
   userId: string
   completedAt: number
 }
+event TimelineTaskBlocked: "events.timeline_task.blocked" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  reason: string
+  blockedAt: number
+}
+event TimelineTaskUnblocked: "events.timeline_task.unblocked" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  userId: string
+  unblockedAt: number
+}
+event TimelineTaskReordered: "events.timeline_task.reordered" {
+  taskId: string
+  tenantId: string
+  eventId: string
+  newSortOrder: number
+  updatedAt: number
+}
 event TimelineTaskReassigned: "events.timeline_task.reassigned" {
   taskId: string
   tenantId: string
@@ -378,15 +467,21 @@ entity EventImport {
   property status: string = "pending"
   property totalRows: int = 0
   property importedRows: int = 0
+  property skippedRows: int = 0
   property errorMessage: string = ""
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
+  property completedAt: datetime
   property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isProcessing: boolean = self.status == "processing"
   computed isCompleted: boolean = self.status == "completed"
   computed isFailed: boolean = self.status == "failed"
+
+  transition status from "pending" to ["processing"]
+  transition status from "processing" to ["completed", "failed"]
+  transition status from "failed" to ["pending"]
 
   constraint requireSource: self.source != "" "Import source is required"
   constraint requireFileName: self.fileName != "" "File name is required"
@@ -402,6 +497,7 @@ entity EventImport {
     mutate fileName = fileName
     mutate totalRows = totalRows
     mutate importedRows = 0
+    mutate skippedRows = 0
     mutate status = "pending"
     mutate errorMessage = ""
     mutate createdAt = now()
@@ -414,11 +510,13 @@ entity EventImport {
     mutate updatedAt = now()
     emit EventImportProcessingStarted
   }
-  command complete(importedRows: int) {
+  command complete(importedRows: int, skippedRows: int) {
     guard self.status == "processing" "Can only complete an import that is processing"
     guard importedRows >= 0 "Imported rows cannot be negative"
     mutate status = "completed"
     mutate importedRows = importedRows
+    mutate skippedRows = skippedRows
+    mutate completedAt = now()
     mutate updatedAt = now()
     emit EventImportCompleted
   }
@@ -428,6 +526,15 @@ entity EventImport {
     mutate errorMessage = errorMessage
     mutate updatedAt = now()
     emit EventImportFailed
+  }
+  command retry(userId: string) {
+    guard self.status == "failed" "Can only retry a failed import"
+    mutate status = "pending"
+    mutate errorMessage = ""
+    mutate importedRows = 0
+    mutate skippedRows = 0
+    mutate updatedAt = now()
+    emit EventImportRetried
   }
   store EventImport in durable
 }
@@ -454,6 +561,7 @@ event EventImportCompleted: "events.import.completed" {
   source: string
   totalRows: number
   importedRows: number
+  skippedRows: number
   completedAt: number
 }
 event EventImportFailed: "events.import.failed" {
@@ -463,6 +571,13 @@ event EventImportFailed: "events.import.failed" {
   errorMessage: string
   failedAt: number
 }
+event EventImportRetried: "events.import.retried" {
+  importId: string
+  tenantId: string
+  source: string
+  userId: string
+  retriedAt: number
+}
 
 entity EventFollowup {
   key [tenantId, id]
@@ -470,10 +585,12 @@ entity EventFollowup {
   property required tenantId: string
   property required eventId: string
   property required type: string = ""
-  property dueAt: datetime = now()
+  // Bug fix: lifecycle datetime — no default
+  property dueAt: datetime
   property status: string = "pending"
   property assignedTo: string = ""
   property notes: string = ""
+  property completedAt: datetime
   property required createdAt: datetime = now()
   property required updatedAt: datetime = now()
   property deletedAt: datetime
@@ -503,8 +620,17 @@ entity EventFollowup {
     guard self.status == "pending" "Can only complete a pending followup"
     mutate status = "done"
     mutate notes = notes
+    mutate completedAt = now()
     mutate updatedAt = now()
     emit EventFollowupCompleted
+  }
+  command reschedule(newDueAt: datetime, reason: string) {
+    guard self.status == "pending" "Can only reschedule a pending followup"
+    guard newDueAt != null "New due date is required"
+    mutate dueAt = newDueAt
+    mutate notes = reason
+    mutate updatedAt = now()
+    emit EventFollowupRescheduled
   }
   command cancel(reason: string) {
     guard self.status == "pending" "Can only cancel a pending followup"
@@ -533,6 +659,14 @@ event EventFollowupCompleted: "events.followup.completed" {
   type: string
   userId: string
   completedAt: number
+}
+event EventFollowupRescheduled: "events.followup.rescheduled" {
+  followupId: string
+  tenantId: string
+  eventId: string
+  newDueAt: number
+  reason: string
+  rescheduledAt: number
 }
 event EventFollowupCancelled: "events.followup.cancelled" {
   followupId: string
@@ -710,7 +844,8 @@ entity Note {
   property required title: string = ""
   property content: string = ""
   property color: string = ""
-  property tags: array<string> = []
+  // Bug fix: array<string> is not valid DSL — use string[]
+  property tags: string[] = []
   property entityType: string = ""
   property entityId: string = ""
   property required createdAt: datetime = now()
@@ -719,7 +854,7 @@ entity Note {
 
   constraint requireTitle: self.title != "" "Note title is required"
 
-  command create(title: string, content: string, color: string, tags: array<string>, entityType: string, entityId: string) {
+  command create(title: string, content: string, color: string, tags: string[], entityType: string, entityId: string) {
     guard title != null and title != "" "Note title is required"
     mutate title = title
     mutate content = content
@@ -731,7 +866,7 @@ entity Note {
     mutate updatedAt = now()
     emit NoteCreated
   }
-  command update(title: string, content: string, color: string, tags: array<string>) {
+  command update(title: string, content: string, color: string, tags: string[]) {
     guard title != null and title != "" "Note title is required"
     mutate title = title
     mutate content = content

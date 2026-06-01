@@ -1,5 +1,9 @@
 // Kitchen Ops - Prep Comment Rules
 // Manifest spec for prep task comment threading, resolution, and moderation
+// Bug fixes:
+//   - resolvedAt: removed = now() default (lifecycle timestamp, must be nullable)
+//   - hasBeenResolved computed: was != 0 (invalid for datetime) → now uses != null
+//   - unresolve command: was mutate resolvedAt = 0 (invalid) → mutate resolvedAt = null
 
 entity PrepComment {
   key [tenantId, id]
@@ -9,14 +13,16 @@ entity PrepComment {
   property required employeeId: string
   property required commentText: string
   property isResolved: boolean = false
-  property resolvedAt: datetime = now()
+  // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
+  property resolvedAt: datetime
   property resolvedBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isActive: boolean = self.deletedAt == null
-  computed hasBeenResolved: boolean = self.resolvedAt != 0
+  // BUG FIX: was != 0, invalid for datetime — use != null
+  computed hasBeenResolved: boolean = self.resolvedAt != null
 
   constraint blockDeleteIfResolved:block self.isResolved {
     messageTemplate: "Cannot delete resolved comment '{commentId}' on task '{taskId}'"
@@ -24,7 +30,6 @@ entity PrepComment {
       commentId: self.id
       taskId: self.taskId
       resolvedBy: self.resolvedBy
-      resolvedAt: self.resolvedAt
     }
   }
 
@@ -43,6 +48,19 @@ entity PrepComment {
     emit PrepCommentCreated
   }
 
+  // Edit the text of an unresolved comment (e.g. to fix a typo or add context).
+  command edit(newText: string, userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard newText != null and newText != "" "Comment text cannot be empty"
+    guard self.isActive "Cannot edit a deleted comment"
+    guard self.isResolved == false "Cannot edit a resolved comment"
+
+    mutate commentText = newText
+    mutate updatedAt = now()
+
+    emit PrepCommentEdited
+  }
+
   command resolve(resolvedBy: string) {
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard self.isActive "Cannot resolve a deleted comment"
@@ -53,7 +71,6 @@ entity PrepComment {
         commentId: self.id
         taskId: self.taskId
         resolvedBy: self.resolvedBy
-        resolvedAt: self.resolvedAt
       }
     }
 
@@ -70,8 +87,9 @@ entity PrepComment {
     guard self.isResolved "Comment is not resolved"
     guard self.isActive "Cannot unresolve a deleted comment"
 
+    // BUG FIX: was `mutate resolvedAt = 0` — datetime cannot be set to 0; use null
     mutate isResolved = false
-    mutate resolvedAt = 0
+    mutate resolvedAt = null
     mutate resolvedBy = ""
     mutate updatedAt = now()
 
@@ -111,6 +129,14 @@ event PrepCommentCreated: "kitchen.prepcomment.created" {
   employeeId: string
   commentText: string
   createdAt: number
+}
+
+event PrepCommentEdited: "kitchen.prepcomment.edited" {
+  commentId: string
+  tenantId: string
+  taskId: string
+  userId: string
+  updatedAt: number
 }
 
 event PrepCommentResolved: "kitchen.prepcomment.resolved" {

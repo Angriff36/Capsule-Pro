@@ -1,5 +1,9 @@
 // Kitchen Ops - Allergen Warning Rules
 // Manifest spec for allergen warning tracking, acknowledgment, and resolution
+// Bug fixes:
+//   - acknowledgedAt: removed = now() default (lifecycle timestamp, nullable)
+//   - resolvedAt: removed = now() default (lifecycle timestamp, nullable)
+// Enriched with: escalate command for critical unacknowledged warnings.
 
 entity AllergenWarning {
   key [tenantId, id]
@@ -13,10 +17,14 @@ entity AllergenWarning {
   property severity: string = "warning"
   property isAcknowledged: boolean = false
   property acknowledgedBy: string = ""
-  property acknowledgedAt: datetime = now()
+  // BUG FIX: lifecycle timestamp — must NOT default to now()
+  property acknowledgedAt: datetime
   property overrideReason: string = ""
   property resolved: boolean = false
-  property resolvedAt: datetime = now()
+  // BUG FIX: lifecycle timestamp — must NOT default to now()
+  property resolvedAt: datetime
+  property escalatedAt: datetime
+  property escalatedTo: string = ""
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -26,10 +34,12 @@ entity AllergenWarning {
   computed isPending: boolean = self.isAcknowledged == false and self.resolved == false
   computed isOverridden: boolean = self.overrideReason != ""
   computed isDeleted: boolean = self.deletedAt != null
+  computed isEscalated: boolean = self.escalatedAt != null
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireWarningType: self.warningType != "" "Warning type is required"
   constraint requireAllergens: self.allergens != "" "Allergens list is required"
+  constraint validSeverity: self.severity in ["info", "warning", "critical"] "Severity must be info, warning, or critical"
   constraint cannotAcknowledgeTwice:warn self.isAcknowledged == true "Warning already acknowledged"
   constraint cannotResolveTwice:warn self.resolved == true "Warning already resolved"
 
@@ -37,6 +47,7 @@ entity AllergenWarning {
     guard eventId != null and eventId != "" "Event ID is required"
     guard warningType != null and warningType != "" "Warning type is required"
     guard allergens != null and allergens != "" "Allergens list is required"
+    guard severity in ["info", "warning", "critical"] "Severity must be info, warning, or critical"
 
     mutate eventId = eventId
     mutate dishId = dishId
@@ -66,8 +77,10 @@ entity AllergenWarning {
     emit AllergenWarningAcknowledged
   }
 
-  command resolve(notes: string) {
+  command resolve(resolvedBy: string, notes: string) {
     guard self.resolved == false "Warning is already resolved"
+    guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
+    guard self.isAcknowledged "Warning must be acknowledged before resolving"
 
     mutate resolved = true
     mutate resolvedAt = now()
@@ -88,6 +101,20 @@ entity AllergenWarning {
     mutate updatedAt = now()
 
     emit AllergenWarningOverridden
+  }
+
+  // Escalate a critical unacknowledged warning to a named supervisor or role.
+  command escalate(escalatedTo: string, reason: string) {
+    guard self.severity == "critical" "Only critical warnings can be escalated"
+    guard self.isAcknowledged == false "Already-acknowledged warnings do not need escalation"
+    guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
+
+    mutate escalatedAt = now()
+    mutate escalatedTo = escalatedTo
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit AllergenWarningEscalated
   }
 
   command softDelete(reason: string, userId: string) {
@@ -130,6 +157,7 @@ event AllergenWarningAcknowledged: "kitchen.allergen-warning.acknowledged" {
 event AllergenWarningResolved: "kitchen.allergen-warning.resolved" {
   allergenWarningId: string
   tenantId: string
+  resolvedBy: string
   resolvedAt: number
   notes: string
 }
@@ -140,6 +168,16 @@ event AllergenWarningOverridden: "kitchen.allergen-warning.overridden" {
   overrideReason: string
   acknowledgedBy: string
   acknowledgedAt: number
+}
+
+event AllergenWarningEscalated: "kitchen.allergen-warning.escalated" {
+  allergenWarningId: string
+  tenantId: string
+  eventId: string
+  allergens: string
+  escalatedTo: string
+  reason: string
+  escalatedAt: number
 }
 
 event AllergenWarningDeleted: "kitchen.allergen-warning.deleted" {

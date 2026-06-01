@@ -17,7 +17,11 @@ entity InventoryTransaction {
   property reason: string = ""
   property employeeId: string = ""
   property storageLocationId: string = ""
-  property transactionDate: datetime = now()
+  property transactionDate: datetime
+  property reversedAt: datetime
+  property reversedBy: string = ""
+  property reverseOfTransactionId: string = ""
+  property isReversed: boolean = false
   property createdAt: datetime = now()
 
   computed isReceipt: boolean = self.transactionType == "receipt"
@@ -27,6 +31,7 @@ entity InventoryTransaction {
   computed isWaste: boolean = self.transactionType == "waste"
   computed isReturn: boolean = self.transactionType == "return"
   computed hasReference: boolean = self.referenceId != ""
+  computed isReversible: boolean = self.isReversed == false
 
   constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
 
@@ -80,9 +85,40 @@ entity InventoryTransaction {
     mutate employeeId = employeeId
     mutate storageLocationId = storageLocationId
     mutate transactionDate = now()
+    mutate isReversed = false
     mutate createdAt = now()
 
     emit InventoryTransactionCreated
+  }
+
+  // Reverse a mistaken transaction — creates an equal-and-opposite correction record.
+  // The original transaction is marked reversed so it no longer counts toward stock.
+  command reverse(reversedBy: string, reason: string) {
+    guard self.isReversed == false "Transaction has already been reversed"
+    guard reversedBy != null and reversedBy != "" "Reversing user is required"
+    guard reason != null and reason != "" "Reversal reason is required"
+
+    mutate isReversed = true
+    mutate reversedBy = reversedBy
+    mutate reversedAt = now()
+    mutate notes = reason
+
+    emit InventoryTransactionReversed
+  }
+
+  // Adjust the cost or notes on a transaction without reversing quantity impact.
+  // Only allowed before the transaction date is more than 24 h in the past (enforced
+  // upstream) and only by a manager.
+  command adjustCost(newUnitCost: number, reason: string) {
+    guard self.isReversed == false "Cannot adjust a reversed transaction"
+    guard newUnitCost >= 0 "Unit cost cannot be negative"
+    guard reason != null and reason != "" "Adjustment reason is required"
+
+    mutate unitCost = newUnitCost
+    mutate totalCost = self.quantity * newUnitCost
+    mutate notes = reason
+
+    emit InventoryTransactionCostAdjusted
   }
 
   store InventoryTransaction in durable
@@ -104,4 +140,25 @@ event InventoryTransactionCreated: "inventory.transaction.created" {
   reason: string
   employeeId: string
   createdAt: number
+}
+
+event InventoryTransactionReversed: "inventory.transaction.reversed" {
+  transactionId: string
+  tenantId: string
+  itemId: string
+  transactionType: string
+  quantity: number
+  reversedBy: string
+  reason: string
+  reversedAt: number
+}
+
+event InventoryTransactionCostAdjusted: "inventory.transaction.cost-adjusted" {
+  transactionId: string
+  tenantId: string
+  itemId: string
+  oldUnitCost: number
+  newUnitCost: number
+  reason: string
+  adjustedAt: number
 }

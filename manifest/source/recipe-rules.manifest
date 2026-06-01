@@ -1,5 +1,7 @@
 // Kitchen Ops - Recipe Rules
 // Manifest spec for recipe operations with constraints, guards, and events
+// Lifecycle: Recipe is a catalog header. RecipeVersion moves draft -> published (->approved).
+// RecipeIngredient and RecipeStep are line-item detail rows — simple CRUD.
 
 entity Recipe {
   key [tenantId, id]
@@ -9,14 +11,13 @@ entity Recipe {
   property category: string = ""
   property cuisineType: string = ""
   property description: string = ""
-  property required tags: array<string>
+  property required tags: string = ""
   property required isActive: boolean = true
 
   computed hasVersion: boolean = true
-  computed tagCount: number = length(split(self.tags, ","))
+  computed tagCount: int = 0
 
   constraint validName: self.name != null and self.name != "" "Recipe name is required"
-  constraint validTags: self.tags == null or self.tags == "" or length(split(self.tags, ",")) <= 20 "Recipe cannot have more than 20 tags"
 
   command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string) {
     guard newName != null and newName != "" "Recipe name is required"
@@ -94,23 +95,36 @@ entity RecipeVersion {
   property stepCount: int = 0
   property totalCost: money = 0
   property costPerYield: money = 0
+  // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
+  property status: string = "draft"
+  property publishedAt: datetime
+  property approvedAt: datetime
+  property approvedBy: string = ""
   property createdAt: datetime = now()
 
-  computed totalTimeMinutes: number = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
+  computed totalTimeMinutes: int = 0
   computed isVersion1: boolean = self.versionNumber == 1
   computed isHighDifficulty: boolean = self.difficultyLevel >= 4
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isApproved: boolean = self.approvedAt != null
+
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["draft"]
 
   constraint validVersionNumber: self.versionNumber > 0 "Version number must be positive"
   constraint positiveYield: self.yieldQuantity > 0 "Yield quantity must be positive"
   constraint validDifficulty: self.difficultyLevel >= 1 and self.difficultyLevel <= 5 "Difficulty must be between 1 (easy) and 5 (expert)"
   constraint validTimes: self.prepTimeMinutes >= 0 and self.cookTimeMinutes >= 0 and self.restTimeMinutes >= 0 "Time values must be non-negative"
   constraint nonNegativeCost: self.totalCost >= 0 "Total cost cannot be negative"
+  constraint validStatus: self.status in ["draft", "published"] "Version status must be draft or published"
 
-  constraint warnLongRecipe:warn self.totalTimeMinutes > 480 {
-    messageTemplate: "Recipe takes {totalHours}+ hours to complete"
+  constraint warnLongRecipe:warn self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes > 480 {
+    messageTemplate: "Recipe takes 8+ hours to complete"
     details: {
-      totalTimeMinutes: self.totalTimeMinutes
-      totalHours: self.totalTimeMinutes / 60
+      prepTimeMinutes: self.prepTimeMinutes
+      cookTimeMinutes: self.cookTimeMinutes
+      restTimeMinutes: self.restTimeMinutes
     }
   }
 
@@ -133,9 +147,53 @@ entity RecipeVersion {
     mutate difficultyLevel = difficulty
     mutate instructions = instructionsText
     mutate notes = notesText
+    mutate status = "draft"
     mutate createdAt = now()
 
     emit RecipeVersionCreated
+  }
+
+  // Publish a version so it becomes the live recipe available for catering orders.
+  // Requires at least one ingredient to be present.
+  command markPublished(publishedBy: string) {
+    guard self.status == "draft" "Only a draft version can be published"
+    guard self.ingredientCount > 0 "Cannot publish a version with no ingredients"
+
+    mutate status = "published"
+    mutate publishedAt = now()
+
+    emit RecipeVersionPublished
+  }
+
+  // Retract a published version back to draft (e.g. for corrections before re-publishing).
+  command retract(reason: string) {
+    guard self.status == "published" "Only a published version can be retracted"
+
+    constraint warnRetract:warn true {
+      messageTemplate: "Retracting published recipe version — verify no active event orders reference this version"
+      details: {
+        versionId: self.id
+        recipeId: self.recipeId
+        reason: reason
+      }
+    }
+
+    mutate status = "draft"
+    mutate publishedAt = null
+
+    emit RecipeVersionRetracted
+  }
+
+  // Kitchen lead sign-off: stamps a published version as kitchen-approved for catering service.
+  command approve(approvedBy: string) {
+    guard self.status == "published" "Only a published version can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+    guard self.approvedAt == null "Version is already approved"
+
+    mutate approvedAt = now()
+    mutate approvedBy = approvedBy
+
+    emit RecipeVersionApproved
   }
 
   command restore(sourceId: string, newVersionNum: number) {
@@ -143,6 +201,10 @@ entity RecipeVersion {
     guard newVersionNum != null and newVersionNum > 0 "Version number must be positive"
 
     mutate versionNumber = newVersionNum
+    mutate status = "draft"
+    mutate publishedAt = null
+    mutate approvedAt = null
+    mutate approvedBy = ""
     mutate createdAt = now()
 
     emit RecipeVersionRestored
@@ -348,6 +410,33 @@ event RecipeVersionCreated: "kitchen.recipe.version.created" {
   createdAt: number
 }
 
+event RecipeVersionPublished: "kitchen.recipe.version.published" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  publishedBy: string
+  publishedAt: number
+}
+
+event RecipeVersionRetracted: "kitchen.recipe.version.retracted" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  reason: string
+  retractedAt: number
+}
+
+event RecipeVersionApproved: "kitchen.recipe.version.approved" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  approvedBy: string
+  approvedAt: number
+}
+
 event RecipeVersionRestored: "kitchen.recipe.version.restored" {
   newVersionId: string
   sourceVersionId: string
@@ -366,23 +455,6 @@ event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
   updatedAt: number
 }
 
-event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
-  ingredientId: string
-  tenantId: string
-  oldAllergens: string
-  newAllergens: string
-  updatedAt: number
-}
-
-event IngredientCreated: "kitchen.ingredient.created" {
-  ingredientId: string
-  tenantId: string
-  name: string
-  category: string
-  allergens: string
-  createdAt: number
-}
-
 event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
   recipeIngredientId: string
   recipeVersionId: string
@@ -398,6 +470,24 @@ event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
   ingredientId: string
   oldQuantity: number
   newQuantity: number
+  updatedAt: number
+}
+
+event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  userId: string
+  removedAt: number
+}
+
+event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  tenantId: string
+  oldWasteFactor: number
+  newWasteFactor: number
   updatedAt: number
 }
 
@@ -428,6 +518,23 @@ event RecipeStepRemoved: "kitchen.recipe.step.removed" {
   removedAt: number
 }
 
+event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
+  ingredientId: string
+  tenantId: string
+  oldAllergens: string
+  newAllergens: string
+  updatedAt: number
+}
+
+event IngredientCreated: "kitchen.ingredient.created" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  category: string
+  allergens: string
+  createdAt: number
+}
+
 event DishCreated: "kitchen.dish.created" {
   dishId: string
   tenantId: string
@@ -443,24 +550,6 @@ event DishPricingUpdated: "kitchen.dish.pricing.updated" {
   newPrice: number
   oldCost: number
   newCost: number
-  updatedAt: number
-}
-
-event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
-  recipeIngredientId: string
-  recipeVersionId: string
-  ingredientId: string
-  tenantId: string
-  userId: string
-  removedAt: number
-}
-
-event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
-  recipeIngredientId: string
-  recipeVersionId: string
-  tenantId: string
-  oldWasteFactor: number
-  newWasteFactor: number
   updatedAt: number
 }
 

@@ -1,5 +1,6 @@
 // Staff Domain - Employee Availability Rules
 // Manifest spec for managing employee availability schedules
+// Lifecycle: active (default) -> suspended -> active (reinstate)
 
 entity EmployeeAvailability {
   key [tenantId, id]
@@ -12,11 +13,17 @@ entity EmployeeAvailability {
   property isAvailable: boolean = true
   property effectiveFrom: string = ""
   property effectiveUntil: string = ""
+  // Suspension support (e.g. injury, extended leave)
+  property isSuspended: boolean = false
+  property suspendReason: string = ""
+  property suspendedAt: datetime
+  property reinstatedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
+  computed isActive: boolean = self.deletedAt == null and self.isSuspended == false
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
   constraint requireStartTime: self.startTime != "" "Start time is required"
@@ -36,6 +43,7 @@ entity EmployeeAvailability {
     mutate isAvailable = isAvailable
     mutate effectiveFrom = effectiveFrom
     mutate effectiveUntil = effectiveUntil
+    mutate isSuspended = false
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -44,6 +52,7 @@ entity EmployeeAvailability {
 
   command update(dayOfWeek: number, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
     guard self.deletedAt == null "Cannot update a deleted availability record"
+    guard self.isSuspended == false "Cannot update a suspended availability record — reinstate first"
 
     mutate dayOfWeek = dayOfWeek
     mutate startTime = startTime
@@ -54,6 +63,33 @@ entity EmployeeAvailability {
     mutate updatedAt = now()
 
     emit EmployeeAvailabilityUpdated
+  }
+
+  // Temporarily suspend availability (injury, leave, etc.) without deleting the record.
+  command suspend(reason: string) {
+    guard self.deletedAt == null "Cannot suspend a deleted availability record"
+    guard self.isSuspended == false "Availability record is already suspended"
+    guard reason != null and reason != "" "Suspension reason is required"
+
+    mutate isSuspended = true
+    mutate suspendReason = reason
+    mutate suspendedAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeAvailabilitySuspended
+  }
+
+  // Reinstate a previously suspended availability record.
+  command reinstate() {
+    guard self.deletedAt == null "Cannot reinstate a deleted availability record"
+    guard self.isSuspended == true "Availability record is not suspended"
+
+    mutate isSuspended = false
+    mutate suspendReason = ""
+    mutate reinstatedAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeAvailabilityReinstated
   }
 
   command softDelete() {
@@ -81,6 +117,21 @@ event EmployeeAvailabilityCreated: "staff.employee-availability.created" {
 event EmployeeAvailabilityUpdated: "staff.employee-availability.updated" {
   availabilityId: string
   updatedAt: number
+}
+
+event EmployeeAvailabilitySuspended: "staff.employee-availability.suspended" {
+  availabilityId: string
+  tenantId: string
+  employeeId: string
+  reason: string
+  suspendedAt: number
+}
+
+event EmployeeAvailabilityReinstated: "staff.employee-availability.reinstated" {
+  availabilityId: string
+  tenantId: string
+  employeeId: string
+  reinstatedAt: number
 }
 
 event EmployeeAvailabilityDeleted: "staff.employee-availability.deleted" {

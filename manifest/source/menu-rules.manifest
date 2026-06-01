@@ -1,5 +1,7 @@
 // Kitchen Ops - Menu Rules
 // Manifest spec for menu operations with constraints, guards, and events
+// Menu lifecycle: draft -> published -> archived
+// MenuDish is a junction row (menu <-> dish) with course/sort metadata.
 
 entity Menu {
   key [tenantId, id]
@@ -13,15 +15,33 @@ entity Menu {
   property pricePerPerson: money = 0
   property minGuests: int = 0
   property maxGuests: int = 0
+  // Season publishing: a menu can be flagged as seasonal and given a named season.
+  property isSeasonal: boolean = false
+  property seasonLabel: string = ""
+  property seasonYear: int = 0
+  // Publication workflow: menus are drafted then published for client selection.
+  property status: string = "draft"
+  property publishedAt: datetime
+  property archivedAt: datetime
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
 
   computed hasPricePerPerson: boolean = self.pricePerPerson > 0
   computed hasGuestConstraints: boolean = self.minGuests > 0 or self.maxGuests > 0
   computed guestRangeValid: boolean = self.maxGuests >= self.minGuests
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isArchived: boolean = self.status == "archived"
+
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["draft", "archived"]
+  transition status from "archived" to ["draft"]
 
   constraint validName: self.name != null and self.name != "" "Menu name is required"
   constraint validGuestRange: self.maxGuests >= self.minGuests "Maximum guests must be >= minimum guests"
   constraint positiveMinGuests: self.minGuests >= 0 "Minimum guests must be non-negative"
   constraint positivePrices: self.basePrice >= 0 and self.pricePerPerson >= 0 "Prices must be non-negative"
+  constraint validStatus: self.status in ["draft", "published", "archived"] "Menu status must be draft, published, or archived"
 
   constraint warnZeroPrice:warn self.pricePerPerson == 0 and self.basePrice == 0 {
     messageTemplate: "Menu has no pricing set (base price and price per person are both 0)"
@@ -40,55 +60,6 @@ entity Menu {
     }
   }
 
-  command update(newName: string, newDescription: string, newCategory: string, newBasePrice: number, newPricePerPerson: number, newMinGuests: number, newMaxGuests: number, newIsActive: boolean) {
-    guard newName != null and newName != "" "Menu name is required"
-
-    constraint warnPriceDecrease:warn newPricePerPerson > 0 and newPricePerPerson < self.pricePerPerson {
-      messageTemplate: "Menu price per person decreased from {oldPrice} to {newPrice}"
-      details: {
-        oldPrice: self.pricePerPerson
-        newPrice: newPricePerPerson
-        decreaseAmount: self.pricePerPerson - newPricePerPerson
-      }
-    }
-
-    constraint warnGuestRangeIncrease:warn newMaxGuests > 0 and newMaxGuests > self.maxGuests * 1.5 {
-      messageTemplate: "Maximum guest count increased by 50% or more"
-      details: {
-        oldMaxGuests: self.maxGuests
-        newMaxGuests: newMaxGuests
-        increasePercent: ((newMaxGuests - self.maxGuests) / self.maxGuests) * 100
-      }
-    }
-
-    mutate name = newName
-    mutate description = newDescription
-    mutate category = newCategory
-    mutate basePrice = newBasePrice
-    mutate pricePerPerson = newPricePerPerson
-    mutate minGuests = newMinGuests
-    mutate maxGuests = newMaxGuests
-    mutate isActive = newIsActive
-
-    emit MenuUpdated
-  }
-
-  command activate() {
-    guard self.isActive == false "Menu is already active"
-
-    mutate isActive = true
-
-    emit MenuActivated
-  }
-
-  command deactivate() {
-    guard self.isActive == true "Menu is already inactive"
-
-    mutate isActive = false
-
-    emit MenuDeactivated
-  }
-
   command create(name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number) {
     guard name != null and name != "" "Menu name is required"
     guard basePrice >= 0 "Base price must be non-negative"
@@ -104,8 +75,140 @@ entity Menu {
     mutate minGuests = minGuests
     mutate maxGuests = maxGuests
     mutate isActive = true
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
 
     emit MenuCreated
+  }
+
+  command update(newName: string, newDescription: string, newCategory: string, newBasePrice: number, newPricePerPerson: number, newMinGuests: number, newMaxGuests: number) {
+    guard newName != null and newName != "" "Menu name is required"
+    guard self.status != "archived" "Cannot update an archived menu"
+
+    constraint warnPriceDecrease:warn newPricePerPerson > 0 and newPricePerPerson < self.pricePerPerson {
+      messageTemplate: "Menu price per person decreased from {oldPrice} to {newPrice}"
+      details: {
+        oldPrice: self.pricePerPerson
+        newPrice: newPricePerPerson
+        decreaseAmount: self.pricePerPerson - newPricePerPerson
+      }
+    }
+
+    constraint warnGuestRangeIncrease:warn newMaxGuests > 0 and self.maxGuests > 0 and newMaxGuests > self.maxGuests * 1.5 {
+      messageTemplate: "Maximum guest count increased by 50% or more"
+      details: {
+        oldMaxGuests: self.maxGuests
+        newMaxGuests: newMaxGuests
+        increasePercent: ((newMaxGuests - self.maxGuests) / self.maxGuests) * 100
+      }
+    }
+
+    mutate name = newName
+    mutate description = newDescription
+    mutate category = newCategory
+    mutate basePrice = newBasePrice
+    mutate pricePerPerson = newPricePerPerson
+    mutate minGuests = newMinGuests
+    mutate maxGuests = newMaxGuests
+    mutate updatedAt = now()
+
+    emit MenuUpdated
+  }
+
+  // Update pricing independently — tracked with its own event for audit/history.
+  command updatePricing(newBasePrice: number, newPricePerPerson: number) {
+    guard self.status != "archived" "Cannot update pricing on an archived menu"
+    guard newBasePrice >= 0 "Base price must be non-negative"
+    guard newPricePerPerson >= 0 "Price per person must be non-negative"
+
+    constraint warnPriceDecrease:warn newPricePerPerson > 0 and newPricePerPerson < self.pricePerPerson {
+      messageTemplate: "Menu price per person decreased from {oldPrice} to {newPrice}"
+      details: {
+        oldPrice: self.pricePerPerson
+        newPrice: newPricePerPerson
+      }
+    }
+
+    mutate basePrice = newBasePrice
+    mutate pricePerPerson = newPricePerPerson
+    mutate updatedAt = now()
+
+    emit MenuPricingUpdated
+  }
+
+  // Menu active/inactive state is driven by the publication workflow below
+  // (markPublished/archive/restore), not a standalone activate/deactivate toggle.
+
+  // Publish a menu: makes it available for client selection and event planning.
+  command markPublished(publishedBy: string) {
+    guard self.status == "draft" "Only a draft menu can be published"
+    guard self.pricePerPerson > 0 or self.basePrice > 0 "Menu must have pricing before publishing"
+
+    mutate status = "published"
+    mutate isActive = true
+    mutate publishedAt = now()
+    mutate updatedAt = now()
+
+    emit MenuPublished
+  }
+
+  // Revert a published menu to draft for revisions.
+  command unpublish(reason: string) {
+    guard self.status == "published" "Only a published menu can be unpublished"
+
+    constraint warnActiveEvents:warn true {
+      messageTemplate: "Unpublishing menu '{menuName}' — verify no upcoming events still reference it"
+      details: {
+        menuName: self.name
+        menuId: self.id
+        reason: reason
+      }
+    }
+
+    mutate status = "draft"
+    mutate publishedAt = null
+    mutate updatedAt = now()
+
+    emit MenuUnpublished
+  }
+
+  // Archive a menu: permanently retired, history preserved.
+  command archive(reason: string) {
+    guard self.status in ["draft", "published"] "Menu must be draft or published to archive"
+
+    mutate status = "archived"
+    mutate isActive = false
+    mutate archivedAt = now()
+    mutate updatedAt = now()
+
+    emit MenuArchived
+  }
+
+  // Restore an archived menu back to draft (e.g. as a base for next season).
+  command restore(reason: string) {
+    guard self.status == "archived" "Only an archived menu can be restored"
+
+    mutate status = "draft"
+    mutate isActive = true
+    mutate archivedAt = null
+    mutate updatedAt = now()
+
+    emit MenuRestored
+  }
+
+  // Flag as seasonal and associate with a named season (e.g. "Fall 2025").
+  command markSeasonal(seasonLabel: string, seasonYear: number) {
+    guard self.status != "archived" "Cannot update an archived menu"
+    guard seasonLabel != null and seasonLabel != "" "Season label is required"
+    guard seasonYear >= 2000 "Season year must be a valid year"
+
+    mutate isSeasonal = true
+    mutate seasonLabel = seasonLabel
+    mutate seasonYear = seasonYear
+    mutate updatedAt = now()
+
+    emit MenuMarkedSeasonal
   }
 
   store Menu in durable
@@ -120,19 +223,15 @@ entity MenuDish {
   property course: string = ""
   property sortOrder: int = 0
   property isOptional: boolean = false
+  property priceOverride: money = 0
   property deletedAt: datetime
+
+  computed hasPriceOverride: boolean = self.priceOverride > 0
 
   constraint validMenuId: self.menuId != null and self.menuId != "" "Menu ID is required"
   constraint validDishId: self.dishId != null and self.dishId != "" "Dish ID is required"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
-
-  command updateCourse(newCourse: string, newSortOrder: number, newIsOptional: boolean) {
-    mutate course = newCourse
-    mutate sortOrder = newSortOrder
-    mutate isOptional = newIsOptional
-
-    emit MenuDishUpdated
-  }
+  constraint validCourse: self.course == "" or self.course in ["appetizer", "salad", "soup", "entree", "side", "dessert", "beverage", "action_station"] "Course must be a recognized value or empty"
 
   command create(menuId: string, dishId: string, course: string, sortOrder: number, isOptional: boolean) {
     guard menuId != null and menuId != "" "Menu ID is required"
@@ -145,6 +244,36 @@ entity MenuDish {
     mutate isOptional = isOptional
 
     emit MenuDishAdded
+  }
+
+  // Update course assignment, sort order, and optional flag.
+  command updateCourse(newCourse: string, newSortOrder: number, newIsOptional: boolean) {
+    guard self.deletedAt == null "Cannot update a removed menu dish"
+
+    mutate course = newCourse
+    mutate sortOrder = newSortOrder
+    mutate isOptional = newIsOptional
+
+    emit MenuDishUpdated
+  }
+
+  // Set a per-menu price override for this dish (e.g. premium upcharge for this menu only).
+  command setPriceOverride(priceOverride: number) {
+    guard self.deletedAt == null "Cannot update a removed menu dish"
+    guard priceOverride >= 0 "Price override cannot be negative"
+
+    constraint warnZeroOverride:warn priceOverride == 0 and self.priceOverride > 0 {
+      messageTemplate: "Clearing price override — dish will revert to its catalog price"
+      details: {
+        menuDishId: self.id
+        dishId: self.dishId
+        oldOverride: self.priceOverride
+      }
+    }
+
+    mutate priceOverride = priceOverride
+
+    emit MenuDishPriceOverrideSet
   }
 
   command remove(userId: string) {
@@ -178,18 +307,55 @@ event MenuUpdated: "kitchen.menu.updated" {
   updatedAt: number
 }
 
-event MenuDeactivated: "kitchen.menu.deactivated" {
+event MenuPublished: "kitchen.menu.published" {
   menuId: string
   tenantId: string
   name: string
-  deactivatedAt: number
+  publishedBy: string
+  publishedAt: number
 }
 
-event MenuActivated: "kitchen.menu.activated" {
+event MenuUnpublished: "kitchen.menu.unpublished" {
   menuId: string
   tenantId: string
   name: string
-  activatedAt: number
+  reason: string
+  unpublishedAt: number
+}
+
+event MenuArchived: "kitchen.menu.archived" {
+  menuId: string
+  tenantId: string
+  name: string
+  reason: string
+  archivedAt: number
+}
+
+event MenuRestored: "kitchen.menu.restored" {
+  menuId: string
+  tenantId: string
+  name: string
+  reason: string
+  restoredAt: number
+}
+
+event MenuPricingUpdated: "kitchen.menu.pricing.updated" {
+  menuId: string
+  tenantId: string
+  oldBasePrice: number
+  newBasePrice: number
+  oldPricePerPerson: number
+  newPricePerPerson: number
+  updatedAt: number
+}
+
+event MenuMarkedSeasonal: "kitchen.menu.marked-seasonal" {
+  menuId: string
+  tenantId: string
+  name: string
+  seasonLabel: string
+  seasonYear: number
+  updatedAt: number
 }
 
 event MenuDishAdded: "kitchen.menu.dish_added" {
@@ -218,6 +384,15 @@ event MenuDishUpdated: "kitchen.menu.dish_updated" {
   course: string
   sortOrder: number
   isOptional: boolean
+  updatedAt: number
+}
+
+event MenuDishPriceOverrideSet: "kitchen.menudish.price-override-set" {
+  menuDishId: string
+  menuId: string
+  dishId: string
+  tenantId: string
+  priceOverride: number
   updatedAt: number
 }
 

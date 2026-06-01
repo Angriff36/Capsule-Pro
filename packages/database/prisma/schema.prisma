@@ -101,6 +101,8 @@ model AllergenWarning {
   overrideReason String? @default("")
   resolved Boolean? @default(false)
   resolvedAt DateTime?
+  escalatedAt DateTime?
+  escalatedTo String? @default("")
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -181,6 +183,9 @@ model Budget {
   status String? @default("draft")
   category String? @default("general")
   departmentId String? @default("")
+  approvedBy String? @default("")
+  approvedAt DateTime?
+  lockedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -229,6 +234,8 @@ model CateringOrder {
   depositAmount Decimal? @db.Decimal(12, 2) @default(0)
   depositPaid Boolean? @default(false)
   depositPaidAt DateTime?
+  deliveredAt DateTime?
+  prepStartedAt DateTime?
   venueName String? @default("")
   venueAddress String? @default("")
   venueCity String? @default("")
@@ -729,6 +736,9 @@ model VarianceReport {
   adjustmentType String? @default("")
   adjustmentAmount Decimal? @db.Decimal(12, 2) @default(0)
   adjustmentDate DateTime?
+  rejectedAt DateTime?
+  rejectedBy String? @default("")
+  rejectionReason String? @default("")
   notes String? @default("")
   generatedAt DateTime?
   createdAt DateTime?
@@ -776,6 +786,13 @@ model Dish {
   pricePerPerson Decimal? @db.Decimal(12, 2) @default(0)
   costPerPerson Decimal? @db.Decimal(12, 2) @default(0)
   isActive Boolean? @default(true)
+  isSeasonal Boolean? @default(false)
+  seasonLabel String? @default("")
+  seasonStartMonth Int? @default(0)
+  seasonEndMonth Int? @default(0)
+  isEightySix Boolean? @default(false)
+  eightySixReason String? @default("")
+  eightySixAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -791,8 +808,15 @@ model DocumentVersion {
   content String
   changeDescription String? @default("")
   createdBy String? @default("")
+  status String? @default("draft")
+  approvedBy String? @default("")
+  publishedBy String? @default("")
+  supersededBy String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
+  approvedAt DateTime?
+  publishedAt DateTime?
+  supersededAt DateTime?
 
   @@id([tenantId, id])
 }
@@ -840,6 +864,10 @@ model EmployeeAvailability {
   isAvailable Boolean? @default(true)
   effectiveFrom String? @default("")
   effectiveUntil String? @default("")
+  isSuspended Boolean? @default(false)
+  suspendReason String? @default("")
+  suspendedAt DateTime?
+  reinstatedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -962,6 +990,7 @@ model EventWaitlistEntry {
   notes String? @default("")
   joinedAt DateTime?
   notifiedAt DateTime?
+  seatedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -1019,6 +1048,9 @@ model EventContract {
   documentType String? @default("")
   notes String? @default("")
   expiresAt DateTime?
+  sentAt DateTime?
+  viewedAt DateTime?
+  signedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1034,7 +1066,12 @@ model ContractSignature {
   signatureData String? @default("")
   signerName String? @default("")
   signerEmail String? @default("")
+  signerRole String? @default("")
   ipAddress String? @default("")
+  verifiedAt DateTime?
+  invalidatedAt DateTime?
+  invalidationReason String? @default("")
+  isValid Boolean? @default(true)
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1121,6 +1158,9 @@ model EventReport {
   reviewedBy String? @default("")
   reviewedAt DateTime?
   completedAt DateTime?
+  rejectedAt DateTime?
+  rejectedBy String? @default("")
+  rejectionReason String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1294,7 +1334,9 @@ model TimelineTask {
   dueAt DateTime?
   status String? @default("pending")
   assignedTo String? @default("")
+  notes String? @default("")
   sortOrder Int? @default(0)
+  completedAt DateTime?
   createdAt DateTime
   updatedAt DateTime
   deletedAt DateTime?
@@ -1310,9 +1352,11 @@ model EventImport {
   status String? @default("pending")
   totalRows Int? @default(0)
   importedRows Int? @default(0)
+  skippedRows Int? @default(0)
   errorMessage String? @default("")
   createdAt DateTime
   updatedAt DateTime
+  completedAt DateTime?
   deletedAt DateTime?
 
   @@id([tenantId, id])
@@ -1327,6 +1371,7 @@ model EventFollowup {
   status String? @default("pending")
   assignedTo String? @default("")
   notes String? @default("")
+  completedAt DateTime?
   createdAt DateTime
   updatedAt DateTime
   deletedAt DateTime?
@@ -1432,6 +1477,8 @@ model FacilityAsset {
   currentValue Decimal? @db.Decimal(12, 2) @default(0)
   depreciationRate Decimal? @db.Decimal(12, 2) @default(0)
   serialNumber String? @default("")
+  lastMaintenanceAt DateTime?
+  nextMaintenanceAt DateTime?
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -1451,6 +1498,7 @@ model FacilitySchedule {
   startDate DateTime?
   endDate DateTime?
   assignedTo String? @default("")
+  completedAt DateTime?
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -1493,6 +1541,12 @@ model Ingredient {
   storageInstructions String? @default("")
   allergens String? @default("")
   isActive Boolean? @default(true)
+  currentLotNumber String? @default("")
+  currentLotReceivedAt DateTime?
+  currentLotExpiresAt DateTime?
+  isRecalled Boolean? @default(false)
+  recallReason String? @default("")
+  recalledAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1555,6 +1609,10 @@ model InventoryForecast {
   forecastDate DateTime
   projectedQuantity Decimal @db.Decimal(12, 2) @default(0)
   confidence Decimal @db.Decimal(12, 2) @default(0)
+  status String? @default("draft")
+  publishedAt DateTime?
+  approvedAt DateTime?
+  approvedBy String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -1668,6 +1726,7 @@ model AuditSchedule {
   name String
   frequency String
   nextRunAt DateTime?
+  lastRunAt DateTime?
   isActive Boolean? @default(true)
   createdAt DateTime?
   updatedAt DateTime?
@@ -1714,6 +1773,13 @@ model InventorySupplier {
   tags String? @default("")
   isActive Boolean? @default(true)
   openPOCount Int? @default(0)
+  approvedAt DateTime?
+  approvedBy String? @default("")
+  suspendedAt DateTime?
+  suspendedReason String? @default("")
+  blacklistedAt DateTime?
+  blacklistedReason String? @default("")
+  qualificationStatus String? @default("pending")
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -1737,6 +1803,10 @@ model InventoryTransaction {
   employeeId String? @default("")
   storageLocationId String? @default("")
   transactionDate DateTime?
+  reversedAt DateTime?
+  reversedBy String? @default("")
+  reverseOfTransactionId String? @default("")
+  isReversed Boolean? @default(false)
   createdAt DateTime?
 
   @@id([tenantId, id])
@@ -1754,6 +1824,8 @@ model InventoryTransfer {
   receivedBy String? @default("")
   shipDate DateTime?
   receiveDate DateTime?
+  discrepancyNotes String? @default("")
+  hasDiscrepancy Boolean? @default(false)
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -2059,9 +2131,13 @@ model LaborBudget {
   periodStart String? @default("")
   periodEnd String? @default("")
   budgetAmount Decimal? @db.Decimal(12, 2) @default(0)
+  actualAmount Decimal? @db.Decimal(12, 2) @default(0)
   budgetType String? @default("weekly")
+  status String? @default("draft")
   notes String? @default("")
   createdBy String? @default("")
+  approvedBy String? @default("")
+  approvedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -2074,6 +2150,9 @@ model BudgetAlert {
   tenantId String
   budgetId String? @default("")
   alertType String? @default("")
+  thresholdPct Decimal? @db.Decimal(12, 2) @default(0)
+  actualPct Decimal? @db.Decimal(12, 2) @default(0)
+  message String? @default("")
   isAcknowledged Boolean? @default(false)
   acknowledgedBy String? @default("")
   acknowledgedAt DateTime?
@@ -2167,6 +2246,7 @@ model LogisticsRoute {
   actualEnd DateTime?
   stops Decimal? @db.Decimal(12, 2) @default(0)
   completedStops Int? @default(0)
+  delayMinutes Int? @default(0)
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -2184,6 +2264,8 @@ model LogisticsDispatch {
   priority String? @default("normal")
   estimatedDeliveryTime DateTime?
   actualDeliveryTime DateTime?
+  departedAt DateTime?
+  failureReason String? @default("")
   notes String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -2202,6 +2284,14 @@ model Menu {
   pricePerPerson Decimal? @db.Decimal(12, 2) @default(0)
   minGuests Int? @default(0)
   maxGuests Int? @default(0)
+  isSeasonal Boolean? @default(false)
+  seasonLabel String? @default("")
+  seasonYear Int? @default(0)
+  status String? @default("draft")
+  publishedAt DateTime?
+  archivedAt DateTime?
+  createdAt DateTime?
+  updatedAt DateTime?
 
   @@id([tenantId, id])
 }
@@ -2214,6 +2304,7 @@ model MenuDish {
   course String? @default("")
   sortOrder Int? @default(0)
   isOptional Boolean? @default(false)
+  priceOverride Decimal? @db.Decimal(12, 2) @default(0)
   deletedAt DateTime?
 
   @@id([tenantId, id])
@@ -2710,9 +2801,11 @@ model QACheck {
   location String? @default("")
   checkType String
   result String? @default("pass")
+  status String? @default("pending")
   inspector String? @default("")
   notes String? @default("")
   completedAt DateTime?
+  reinspectedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -2728,8 +2821,11 @@ model QACorrectiveAction {
   priority String? @default("medium")
   status String? @default("open")
   resolutionNotes String? @default("")
+  escalatedTo String? @default("")
+  escalationReason String? @default("")
   dueDate DateTime?
   resolvedAt DateTime?
+  escalatedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -2776,7 +2872,7 @@ model Recipe {
   category String? @default("")
   cuisineType String? @default("")
   description String? @default("")
-  tags String[]
+  tags String @default("")
   isActive Boolean @default(true)
 
   @@id([tenantId, id])
@@ -2805,6 +2901,10 @@ model RecipeVersion {
   stepCount Int? @default(0)
   totalCost Decimal? @db.Decimal(12, 2) @default(0)
   costPerYield Decimal? @db.Decimal(12, 2) @default(0)
+  status String? @default("draft")
+  publishedAt DateTime?
+  approvedAt DateTime?
+  approvedBy String? @default("")
   createdAt DateTime?
 
   @@id([tenantId, id])
@@ -2932,6 +3032,8 @@ model Schedule {
   status String? @default("draft")
   publishedAt DateTime?
   publishedBy String? @default("")
+  approvedBy String? @default("")
+  approvedAt DateTime?
   notes String? @default("")
   shiftCount Int? @default(0)
   createdAt DateTime?
@@ -2951,6 +3053,10 @@ model ScheduleShift {
   shiftEnd DateTime?
   roleDuringShift String? @default("")
   notes String? @default("")
+  swapOfferedTo String? @default("")
+  swapStatus String? @default("none")
+  swapOfferedAt DateTime?
+  swapAcceptedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -3070,6 +3176,9 @@ model TipPool {
   eventId String? @default("")
   totalTips Decimal? @db.Decimal(12, 2) @default(0)
   status String? @default("open")
+  distributedAmount Decimal? @db.Decimal(12, 2) @default(0)
+  distributedAt DateTime?
+  distributedBy String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -3085,6 +3194,9 @@ model DisciplinaryAction {
   severity String? @default("low")
   status String? @default("open")
   issuedBy String? @default("")
+  escalatedTo String? @default("")
+  escalationReason String? @default("")
+  escalatedAt DateTime?
   issuedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
@@ -3115,6 +3227,7 @@ model PerformanceReview {
   overallRating Decimal? @db.Decimal(12, 2) @default(0)
   status String? @default("draft")
   submittedAt DateTime?
+  signedOffAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -3266,7 +3379,9 @@ model StaffPerformance {
   improvements String? @default("")
   goals String? @default("")
   notes String? @default("")
+  acknowledgementNotes String? @default("")
   completedAt DateTime?
+  acknowledgedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -3282,6 +3397,9 @@ model Station {
   capacitySimultaneousTasks Int? @default(1)
   equipmentList String? @default("")
   isActive Boolean? @default(true)
+  inMaintenance Boolean? @default(false)
+  maintenanceReason String? @default("")
+  maintenanceStartAt DateTime?
   currentTaskCount Int? @default(0)
   notes String? @default("")
   createdAt DateTime?
@@ -3337,6 +3455,8 @@ model TimeOffRequest {
   processedBy String? @default("")
   processedAt DateTime?
   rejectionReason String? @default("")
+  balanceSnapshot Decimal? @db.Decimal(12, 2) @default(0)
+  balanceUnit String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -3376,6 +3496,11 @@ model TrainingModule {
   category String? @default("")
   isRequired Boolean? @default(false)
   isActive Boolean? @default(true)
+  status String? @default("draft")
+  version Int? @default(1)
+  publishedAt DateTime?
+  archivedAt DateTime?
+  notes String? @default("")
   createdBy String? @default("")
   createdAt DateTime?
   updatedAt DateTime?
@@ -3495,6 +3620,13 @@ model Vendor {
   rating Decimal? @db.Decimal(12, 2) @default(0)
   ratingCount Int? @default(0)
   notes String? @default("")
+  approvedAt DateTime?
+  approvedBy String? @default("")
+  suspendedAt DateTime?
+  suspendedReason String? @default("")
+  blacklistedAt DateTime?
+  blacklistedReason String? @default("")
+  lastContactAddedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
 
@@ -3558,6 +3690,9 @@ model WasteEntry {
   eventId String? @default("")
   loggedBy String? @default("")
   loggedAt DateTime?
+  approvedBy String? @default("")
+  approvedAt DateTime?
+  status String? @default("logged")
   unitCost Decimal? @db.Decimal(12, 2) @default(0)
   totalCost Decimal? @db.Decimal(12, 2) @default(0)
   notes String? @default("")

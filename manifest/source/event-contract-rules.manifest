@@ -13,7 +13,11 @@ entity EventContract {
   property documentUrl: string = ""
   property documentType: string = ""
   property notes: string = ""
-  property expiresAt: datetime = now()
+  // Bug fix: expiresAt is a lifecycle datetime — no default
+  property expiresAt: datetime
+  property sentAt: datetime
+  property viewedAt: datetime
+  property signedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
@@ -25,7 +29,11 @@ entity EventContract {
   computed isExpired: boolean = self.status == "expired"
   computed isCancelled: boolean = self.status == "cancelled"
   computed hasDocument: boolean = self.documentUrl != ""
-  computed hasExpiration: boolean = self.expiresAt > 0
+  computed hasExpiration: boolean = self.expiresAt != null
+
+  transition status from "draft" to ["sent"]
+  transition status from "sent" to ["viewed", "expired", "cancelled"]
+  transition status from "viewed" to ["signed", "expired", "cancelled"]
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
@@ -64,10 +72,12 @@ entity EventContract {
   }
 
   command send(sentBy: string) {
-    guard self.status != "signed" "Cannot send a signed contract"
+    guard self.status == "draft" "Can only send a draft contract"
     guard sentBy != null and sentBy != "" "Sender is required"
+    guard self.documentUrl != "" "Cannot send a contract without an attached document"
 
     mutate status = "sent"
+    mutate sentAt = now()
     mutate updatedAt = now()
 
     emit ContractSent
@@ -77,6 +87,7 @@ entity EventContract {
     guard self.status == "sent" "Contract must be sent before it can be viewed"
 
     mutate status = "viewed"
+    mutate viewedAt = now()
     mutate updatedAt = now()
 
     emit ContractViewed
@@ -86,6 +97,7 @@ entity EventContract {
     guard self.status == "sent" or self.status == "viewed" "Contract must be sent or viewed to be signed"
 
     mutate status = "signed"
+    mutate signedAt = now()
     mutate updatedAt = now()
 
     emit ContractSigned
@@ -103,6 +115,7 @@ entity EventContract {
 
   command cancel(reason: string, canceledBy: string) {
     guard self.status != "signed" "Cannot cancel a signed contract"
+    guard self.status != "cancelled" "Contract is already cancelled"
 
     mutate status = "cancelled"
     mutate updatedAt = now()
@@ -125,23 +138,31 @@ entity ContractSignature {
   property required id: string
   property required tenantId: string
   property required contractId: string
-  property signedAt: datetime = now()
+  // Bug fix: signedAt is a lifecycle datetime — no default
+  property signedAt: datetime
   property signatureData: string = ""
   property signerName: string = ""
   property signerEmail: string = ""
+  property signerRole: string = ""
   property ipAddress: string = ""
+  property verifiedAt: datetime
+  property invalidatedAt: datetime
+  property invalidationReason: string = ""
+  property isValid: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed hasEmail: boolean = self.signerEmail != ""
   computed hasIpAddress: boolean = self.ipAddress != ""
+  computed isVerified: boolean = self.verifiedAt != null
+  computed isInvalidated: boolean = self.isValid == false
 
   constraint requireContract: self.contractId != null and self.contractId != "" "Contract ID is required"
   constraint requireSignatureData: self.signatureData != null and self.signatureData != "" "Signature data is required"
   constraint requireSignerName: self.signerName != null and self.signerName != "" "Signer name is required"
 
-  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, ipAddress: string) {
+  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, signerRole: string, ipAddress: string) {
     guard contractId != null and contractId != "" "Contract ID is required"
     guard signatureData != null and signatureData != "" "Signature data is required"
     guard signerName != null and signerName != "" "Signer name is required"
@@ -150,12 +171,36 @@ entity ContractSignature {
     mutate signatureData = signatureData
     mutate signerName = signerName
     mutate signerEmail = signerEmail
+    mutate signerRole = signerRole
     mutate ipAddress = ipAddress
+    mutate isValid = true
     mutate signedAt = now()
     mutate createdAt = now()
     mutate updatedAt = now()
 
     emit SignatureCreated
+  }
+
+  command verify(verifiedBy: string) {
+    guard self.isValid "Cannot verify an invalidated signature"
+    guard self.verifiedAt == null "Signature is already verified"
+
+    mutate verifiedAt = now()
+    mutate updatedAt = now()
+
+    emit SignatureVerified
+  }
+
+  command invalidate(reason: string, userId: string) {
+    guard self.isValid "Signature is already invalidated"
+    guard reason != null and reason != "" "Invalidation reason is required"
+
+    mutate isValid = false
+    mutate invalidatedAt = now()
+    mutate invalidationReason = reason
+    mutate updatedAt = now()
+
+    emit SignatureInvalidated
   }
 
   command softDelete(reason: string, userId: string) {
@@ -249,6 +294,23 @@ event SignatureCreated: "events.contract.signature_created" {
   signerName: string
   signerEmail: string
   signedAt: number
+}
+
+event SignatureVerified: "events.contract.signature_verified" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  verifiedBy: string
+  verifiedAt: number
+}
+
+event SignatureInvalidated: "events.contract.signature_invalidated" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  reason: string
+  userId: string
+  invalidatedAt: number
 }
 
 event SignatureDeleted: "events.contract.signature_deleted" {

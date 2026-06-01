@@ -1,5 +1,6 @@
 // Kitchen Ops - Container Rules
 // Manifest spec for container inventory, capacity tracking, and storage management
+// Enriched with: reactivate + relocate commands for real kitchen ops needs.
 
 entity Container {
   key [tenantId, id]
@@ -88,6 +89,28 @@ entity Container {
     emit ContainerDeactivated
   }
 
+  // Reactivate a deactivated container — puts it back in circulation.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Container is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit ContainerReactivated
+  }
+
+  // Relocate a container to a different storage location (e.g. move from cold room to prep area).
+  command relocate(newLocationId: string, userId: string) {
+    guard self.isActive "Cannot relocate a deactivated container"
+    guard newLocationId != null and newLocationId != "" "New location ID is required"
+    guard newLocationId != self.locationId "Container is already at this location"
+
+    mutate locationId = newLocationId
+    mutate updatedAt = now()
+
+    emit ContainerRelocated
+  }
+
   store Container in durable
 }
 
@@ -119,4 +142,22 @@ event ContainerDeactivated: "kitchen.container.deactivated" {
   reason: string
   userId: string
   deactivatedAt: number
+}
+
+event ContainerReactivated: "kitchen.container.reactivated" {
+  containerId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: number
+}
+
+event ContainerRelocated: "kitchen.container.relocated" {
+  containerId: string
+  tenantId: string
+  name: string
+  oldLocationId: string
+  newLocationId: string
+  userId: string
+  relocatedAt: number
 }

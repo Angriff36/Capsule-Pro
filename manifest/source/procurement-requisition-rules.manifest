@@ -12,7 +12,7 @@ entity PurchaseRequisition {
   property required requisitionNumber: string
   property required requestedBy: string = ""
   property required requestDate: datetime = now()
-  property requiredBy: datetime = now()
+  property requiredBy: datetime
   property locationId: string = ""
   property department: string = ""
   property justification: string = ""
@@ -22,16 +22,16 @@ entity PurchaseRequisition {
   property required estimatedShipping: money = 0
   property required estimatedTotal: money = 0
   property approvedBy: string = ""
-  property approvedAt: datetime = now()
+  property approvedAt: datetime
   property managerApprovalBy: string = ""
-  property managerApprovalAt: datetime = now()
+  property managerApprovalAt: datetime
   property financeApprovalBy: string = ""
-  property financeApprovalAt: datetime = now()
+  property financeApprovalAt: datetime
   property convertedToPoId: string = ""
-  property convertedAt: datetime = now()
+  property convertedAt: datetime
   property rejectionReason: string = ""
   property notes: string = ""
-  property submittedAt: datetime = now()
+  property submittedAt: datetime
   property itemCategory: string = ""
   property required priority: string = "normal"
   property required createdAt: datetime = now()
@@ -54,8 +54,12 @@ entity PurchaseRequisition {
 
   constraint validStatus: self.status in ["draft", "pending_manager", "pending_finance", "approved", "rejected", "converted", "cancelled"] "Invalid requisition status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent", "critical"] "Invalid priority level"
-  constraint blockEditAfterSubmit:block self.status != "draft" {
-    messageTemplate: "Cannot edit requisition after submission"
+  constraint warnNotDraft:warn self.status != "draft" {
+    messageTemplate: "Requisition '{requisitionNumber}' is no longer in draft — most edits are blocked"
+    details: {
+      requisitionNumber: self.requisitionNumber
+      status: self.status
+    }
   }
 
   command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
@@ -121,7 +125,7 @@ entity PurchaseRequisition {
     mutate managerApprovalBy = userId
     mutate managerApprovalAt = now()
     mutate approvedBy = self.estimatedTotal >= 5000 ? "" : userId
-    mutate approvedAt = self.estimatedTotal >= 5000 ? 0 : now()
+    mutate approvedAt = self.estimatedTotal >= 5000 ? null : now()
     mutate updatedAt = now()
 
     emit PurchaseRequisitionManagerApproved

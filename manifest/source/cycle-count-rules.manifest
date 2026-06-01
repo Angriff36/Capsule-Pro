@@ -9,10 +9,10 @@ entity CycleCountSession {
   property required sessionId: string
   property required sessionName: string
   property countType: string = "ad_hoc"
-  property scheduledDate: datetime = now()
-  property startedAt: datetime = now()
-  property completedAt: datetime = now()
-  property finalizedAt: datetime = now()
+  property scheduledDate: datetime
+  property startedAt: datetime
+  property completedAt: datetime
+  property finalizedAt: datetime
   property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
@@ -90,6 +90,8 @@ entity CycleCountSession {
     guard self.status == "completed" "Can only finalize completed sessions"
 
     mutate status = "finalized"
+    mutate finalizedAt = now()
+    mutate approvedById = userId
     mutate updatedAt = now()
 
     emit CycleCountSessionFinalized
@@ -132,13 +134,13 @@ entity CycleCountRecord {
   property countedQuantity: int = 0
   property variance: decimal = 0
   property variancePct: decimal = 0
-  property countDate: datetime = now()
+  property countDate: datetime
   property countedById: string = ""
   property barcode: string = ""
   property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
-  property verifiedAt: datetime = now()
+  property verifiedAt: datetime
   property syncStatus: string = "synced"
   property offlineId: string = ""
   property createdAt: datetime = now()
@@ -243,9 +245,12 @@ entity VarianceReport {
   property status: string = "pending"
   property adjustmentType: string = ""
   property adjustmentAmount: money = 0
-  property adjustmentDate: datetime = now()
+  property adjustmentDate: datetime
+  property rejectedAt: datetime
+  property rejectedBy: string = ""
+  property rejectionReason: string = ""
   property notes: string = ""
-  property generatedAt: datetime = now()
+  property generatedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
@@ -256,7 +261,7 @@ entity VarianceReport {
   computed hasAdjustment: boolean = self.adjustmentType != ""
   computed isHighVariance: boolean = self.variancePct > 10 or self.variancePct < -10
 
-  constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted"] "Invalid variance report status"
+  constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted", "rejected"] "Invalid variance report status"
 
   command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
@@ -279,6 +284,19 @@ entity VarianceReport {
     mutate updatedAt = now()
 
     emit VarianceReportCreated
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status in ["pending", "reviewed"] "Can only reject pending or reviewed reports"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectedBy = userId
+    mutate rejectionReason = reason
+    mutate rejectedAt = now()
+    mutate updatedAt = now()
+
+    emit VarianceReportRejected
   }
 
   command review(userId: string, notes: string) {
@@ -435,4 +453,13 @@ event VarianceReportApproved: "inventory.variance.report.approved" {
   adjustmentAmount: number
   userId: string
   approvedAt: number
+}
+
+event VarianceReportRejected: "inventory.variance.report.rejected" {
+  reportId: string
+  sessionId: string
+  itemName: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: number
 }

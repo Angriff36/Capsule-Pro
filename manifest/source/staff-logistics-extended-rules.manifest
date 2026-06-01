@@ -23,6 +23,8 @@ entity TimecardApproval {
   computed isApproved: boolean = self.status == "approved"
   computed isRejected: boolean = self.status == "rejected"
 
+  transition status from "pending" to ["approved", "rejected"]
+
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid timecard approval status"
 
   command create(employeeId: string, payrollPeriodId: string, notes: string) {
@@ -63,6 +65,20 @@ entity TimecardApproval {
     mutate updatedAt = now()
 
     emit TimecardRejected
+  }
+
+  // Bulk-approve: manager stamps a batch of timecards in one operation.
+  // Each instance is approved individually via this command — callers loop over IDs.
+  command bulkApprove(approvedBy: string) {
+    guard self.status == "pending" "Only pending timecards can be bulk-approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit TimecardBulkApproved
   }
 
   store TimecardApproval in durable
@@ -130,14 +146,24 @@ entity TipPool {
   property eventId: string = ""
   property totalTips: money = 0
   property status: string = "open"
+  // Distribution tracking
+  property distributedAmount: money = 0
+  property distributedAt: datetime
+  property distributedBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isOpen: boolean = self.status == "open"
   computed isAllocated: boolean = self.status == "allocated"
+  computed isDistributed: boolean = self.status == "distributed"
   computed isClosed: boolean = self.status == "closed"
+  computed undistributedAmount: money = self.totalTips - self.distributedAmount
 
-  constraint validStatus: self.status in ["open", "allocated", "closed"] "Invalid tip pool status"
+  transition status from "open" to ["allocated"]
+  transition status from "allocated" to ["distributed", "open"]
+  transition status from "distributed" to ["closed"]
+
+  constraint validStatus: self.status in ["open", "allocated", "distributed", "closed"] "Invalid tip pool status"
   constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
 
   command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
@@ -149,6 +175,7 @@ entity TipPool {
     mutate periodEnd = periodEnd
     mutate eventId = eventId
     mutate totalTips = totalTips
+    mutate distributedAmount = 0
     mutate status = "open"
     mutate createdAt = now()
     mutate updatedAt = now()
@@ -167,8 +194,38 @@ entity TipPool {
     emit TipPoolAllocated
   }
 
+  // Record per-employee distribution of tips from this pool.
+  // Callers invoke once per employee — amount is additive against the pool total.
+  command distribute(employeeId: string, amount: number, distributedBy: string) {
+    guard self.status == "allocated" "Only allocated tip pools can be distributed"
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard amount > 0 "Distribution amount must be positive"
+    guard amount <= self.undistributedAmount "Distribution amount cannot exceed undistributed balance"
+    guard distributedBy != null and distributedBy != "" "Distributor ID is required"
+
+    mutate distributedAmount = self.distributedAmount + amount
+    mutate distributedBy = distributedBy
+    mutate distributedAt = now()
+    mutate updatedAt = now()
+
+    emit TipPoolDistributed
+  }
+
+  // Mark distribution complete — moves pool to distributed status.
+  command finalizeDistribution(distributedBy: string) {
+    guard self.status == "allocated" "Only allocated tip pools can be finalized"
+    guard distributedBy != null and distributedBy != "" "Distributor ID is required"
+
+    mutate status = "distributed"
+    mutate distributedBy = distributedBy
+    mutate distributedAt = now()
+    mutate updatedAt = now()
+
+    emit TipPoolDistributionFinalized
+  }
+
   command close() {
-    guard self.status == "allocated" "Only allocated tip pools can be closed"
+    guard self.status in ["allocated", "distributed"] "Only allocated or distributed tip pools can be closed"
 
     mutate status = "closed"
     mutate updatedAt = now()
@@ -189,16 +246,24 @@ entity DisciplinaryAction {
   property severity: string = "low"
   property status: string = "open"
   property issuedBy: string = ""
+  property escalatedTo: string = ""
+  property escalationReason: string = ""
+  property escalatedAt: datetime
   property issuedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isOpen: boolean = self.status == "open"
   computed isInProgress: boolean = self.status == "in_progress"
+  computed isEscalated: boolean = self.status == "escalated"
   computed isClosed: boolean = self.status == "closed"
 
+  transition status from "open" to ["in_progress", "escalated", "closed"]
+  transition status from "in_progress" to ["escalated", "closed"]
+  transition status from "escalated" to ["in_progress", "closed"]
+
   constraint validSeverity: self.severity in ["low", "medium", "high", "termination"] "Invalid disciplinary action severity"
-  constraint validStatus: self.status in ["open", "in_progress", "closed"] "Invalid disciplinary action status"
+  constraint validStatus: self.status in ["open", "in_progress", "escalated", "closed"] "Invalid disciplinary action status"
   constraint requireActionType: self.actionType != "" "Action type is required"
   constraint requireReason: self.reason != "" "Reason is required"
 
@@ -231,8 +296,23 @@ entity DisciplinaryAction {
     emit DisciplinaryActionAcknowledged
   }
 
+  // Escalate to HR or senior management when severity warrants it.
+  command escalate(escalatedTo: string, escalationReason: string) {
+    guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be escalated"
+    guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
+    guard escalationReason != null and escalationReason != "" "Escalation reason is required"
+
+    mutate escalatedTo = escalatedTo
+    mutate escalationReason = escalationReason
+    mutate status = "escalated"
+    mutate escalatedAt = now()
+    mutate updatedAt = now()
+
+    emit DisciplinaryActionEscalated
+  }
+
   command close(issuedBy: string) {
-    guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be closed"
+    guard self.status in ["open", "in_progress", "escalated"] "Only open, in-progress, or escalated actions can be closed"
 
     mutate status = "closed"
     mutate updatedAt = now()
@@ -309,12 +389,16 @@ entity PerformanceReview {
   property overallRating: decimal = 0
   property status: string = "draft"
   property submittedAt: datetime
+  property signedOffAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"
   computed isAcknowledged: boolean = self.status == "acknowledged"
+
+  transition status from "draft" to ["submitted"]
+  transition status from "submitted" to ["acknowledged", "draft"]
 
   constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
   constraint validRating: self.overallRating >= 0 and self.overallRating <= 5 "Rating must be between 0 and 5"
@@ -345,6 +429,17 @@ entity PerformanceReview {
     mutate updatedAt = now()
 
     emit PerformanceReviewSubmitted
+  }
+
+  // Employee signs off on the submitted review — closes the loop.
+  command signOff() {
+    guard self.status == "submitted" "Only submitted reviews can be signed off"
+
+    mutate status = "acknowledged"
+    mutate signedOffAt = now()
+    mutate updatedAt = now()
+
+    emit PerformanceReviewSignedOff
   }
 
   command acknowledge() {
@@ -862,6 +957,15 @@ event TimecardRejected: "hr.timecard.rejected" {
   rejectedAt: number
 }
 
+event TimecardBulkApproved: "hr.timecard.bulk-approved" {
+  approvalId: string
+  tenantId: string
+  employeeId: string
+  payrollPeriodId: string
+  approvedBy: string
+  approvedAt: number
+}
+
 event PayrollLineItemCreated: "payroll.lineitem.created" {
   lineItemId: string
   tenantId: string
@@ -897,6 +1001,22 @@ event TipPoolAllocated: "hr.tippool.allocated" {
   allocatedAt: number
 }
 
+event TipPoolDistributed: "hr.tippool.distributed" {
+  tipPoolId: string
+  tenantId: string
+  employeeId: string
+  amount: number
+  distributedBy: string
+  distributedAt: number
+}
+
+event TipPoolDistributionFinalized: "hr.tippool.distribution-finalized" {
+  tipPoolId: string
+  tenantId: string
+  distributedBy: string
+  finalizedAt: number
+}
+
 event TipPoolClosed: "hr.tippool.closed" {
   tipPoolId: string
   tenantId: string
@@ -918,6 +1038,15 @@ event DisciplinaryActionAcknowledged: "hr.disciplinary.acknowledged" {
   tenantId: string
   employeeId: string
   acknowledgedAt: number
+}
+
+event DisciplinaryActionEscalated: "hr.disciplinary.escalated" {
+  actionId: string
+  tenantId: string
+  employeeId: string
+  escalatedTo: string
+  escalationReason: string
+  escalatedAt: number
 }
 
 event DisciplinaryActionClosed: "hr.disciplinary.closed" {
@@ -965,6 +1094,13 @@ event PerformanceReviewSubmitted: "hr.review.submitted" {
   employeeId: string
   overallRating: number
   submittedAt: number
+}
+
+event PerformanceReviewSignedOff: "hr.review.signed-off" {
+  reviewId: string
+  tenantId: string
+  employeeId: string
+  signedOffAt: number
 }
 
 event PerformanceReviewAcknowledged: "hr.review.acknowledged" {

@@ -1,4 +1,4 @@
-// Facilities Domain — Facility Management Rules  
+// Facilities Domain — Facility Management Rules
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 
 entity Facility {
@@ -19,6 +19,7 @@ entity Facility {
   property updatedAt: datetime = now()
 
   computed isActive: boolean = self.status == "active"
+  computed isUnderMaintenance: boolean = self.status == "maintenance"
   computed hasCapacityInfo: boolean = self.capacity > 0
 
   constraint validType: self.type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
@@ -69,6 +70,28 @@ entity Facility {
 
     emit FacilityUpdated
   }
+
+  // Place the facility in maintenance mode — blocks new bookings until restored
+  command sendToMaintenance(reason: string) {
+    guard self.status == "active" "Only an active facility can be sent to maintenance"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "maintenance"
+    mutate updatedAt = now()
+
+    emit FacilitySentToMaintenance
+  }
+
+  // Restore the facility to active service after maintenance is complete
+  command restoreFromMaintenance() {
+    guard self.status == "maintenance" "Facility is not in maintenance"
+
+    mutate status = "active"
+    mutate updatedAt = now()
+
+    emit FacilityRestoredFromMaintenance
+  }
+
   store Facility in durable
 }
 
@@ -88,6 +111,7 @@ entity FacilityArea {
   property updatedAt: datetime = now()
 
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
+  constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
 
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
     guard name != null and name != "" "Area name is required"
@@ -126,6 +150,27 @@ entity FacilityArea {
 
     emit FacilityAreaUpdated
   }
+
+  // Mark an area out of use for deep-cleaning, repair, or renovation
+  command closeForMaintenance(reason: string) {
+    guard self.status == "active" "Only an active area can be closed for maintenance"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "maintenance"
+    mutate updatedAt = now()
+
+    emit FacilityAreaClosedForMaintenance
+  }
+
+  command reopen() {
+    guard self.status == "maintenance" "Area is not in maintenance"
+
+    mutate status = "active"
+    mutate updatedAt = now()
+
+    emit FacilityAreaReopened
+  }
+
   store FacilityArea in durable
 }
 
@@ -139,17 +184,32 @@ entity FacilityAsset {
   property assetType: string = "other"
   property assetClass: string = "fixed"
   property status: string = "operational"
-  property purchaseDate: datetime = now()
+  // purchaseDate: nullable lifecycle timestamp — no = now() default
+  property purchaseDate: datetime
   property purchasePrice: money = 0
   property currentValue: decimal = 0
   property depreciationRate: decimal = 0
   property serialNumber: string = ""
+  property lastMaintenanceAt: datetime
+  property nextMaintenanceAt: datetime
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isOperational: boolean = self.status == "operational"
+  computed isUnderMaintenance: boolean = self.status == "maintenance"
+  computed maintenanceOverdue: boolean = self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational"
+
   constraint validAssetType: self.assetType in ["equipment", "furniture", "vehicle", "technology", "other"] "Invalid asset type"
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
+
+  constraint warnMaintenanceOverdue:warn self.maintenanceOverdue {
+    messageTemplate: "Asset '{assetName}' is overdue for maintenance"
+    details: {
+      assetName: self.name
+      nextMaintenanceAt: self.nextMaintenanceAt
+    }
+  }
 
   command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: number, purchasePrice: number, serialNumber: string, notes: string) {
     guard name != null and name != "" "Asset name is required"
@@ -187,6 +247,49 @@ entity FacilityAsset {
 
     emit FacilityAssetUpdated
   }
+
+  // Send asset to maintenance — blocks it from being assigned to events
+  command sendToMaintenance(reason: string, nextMaintenanceAt: number) {
+    guard self.status == "operational" "Only an operational asset can be sent to maintenance"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "maintenance"
+    mutate updatedAt = now()
+
+    emit FacilityAssetSentToMaintenance
+  }
+
+  // Return asset to service; record when it was serviced and when it's next due
+  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceAt: number) {
+    guard self.status == "maintenance" "Asset is not in maintenance"
+
+    mutate status = "operational"
+    mutate lastMaintenanceAt = now()
+    mutate nextMaintenanceAt = nextMaintenanceAt
+    mutate updatedAt = now()
+
+    emit FacilityAssetReturnedFromMaintenance
+  }
+
+  // Permanently retire a broken or end-of-life asset
+  command retire(reason: string) {
+    guard self.status != "retired" "Asset is already retired"
+    guard self.status != "sold" "Asset has already been sold"
+
+    constraint warnRetireOperational:warn self.status == "operational" {
+      messageTemplate: "Retiring operational asset '{assetName}' — verify no active assignments"
+      details: {
+        assetName: self.name
+        reason: reason
+      }
+    }
+
+    mutate status = "retired"
+    mutate updatedAt = now()
+
+    emit FacilityAssetRetired
+  }
+
   store FacilityAsset in durable
 }
 
@@ -200,15 +303,23 @@ entity FacilitySchedule {
   property description: string = ""
   property scheduleType: string = "maintenance"
   property status: string = "scheduled"
-  property startDate: datetime = now()
-  property endDate: datetime = now()
+  // startDate/endDate are lifecycle times — no = now() default
+  property startDate: datetime
+  property endDate: datetime
   property assignedTo: string = ""
+  property completedAt: datetime
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isActive: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+
   constraint validScheduleType: self.scheduleType in ["maintenance", "cleaning", "inspection", "renovation", "other"] "Invalid schedule type"
   constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
+
+  transition status from "scheduled" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
 
   command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
@@ -239,6 +350,7 @@ entity FacilitySchedule {
 
   command edit(title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
+    guard self.status == "scheduled" "Can only edit a scheduled (not yet started) schedule"
 
     mutate title = title
     mutate description = description
@@ -252,15 +364,39 @@ entity FacilitySchedule {
     emit FacilityScheduleUpdated
   }
 
+  // Begin the scheduled maintenance/cleaning/inspection work
+  command start(userId: string) {
+    guard self.status == "scheduled" "Can only start a scheduled item"
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate status = "in_progress"
+    mutate assignedTo = userId
+    mutate updatedAt = now()
+
+    emit FacilityScheduleStarted
+  }
+
   command complete(completionNotes: string) {
-    guard self.status == "scheduled" "Only scheduled items can be completed"
+    guard self.status == "in_progress" "Only an in-progress schedule can be completed"
 
     mutate status = "completed"
+    mutate completedAt = now()
     mutate notes = completionNotes
     mutate updatedAt = now()
 
     emit FacilityScheduleCompleted
   }
+
+  command cancel(reason: string) {
+    guard self.status in ["scheduled", "in_progress"] "Cannot cancel a completed schedule"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit FacilityScheduleCancelled
+  }
+
   store FacilitySchedule in durable
 }
 
@@ -280,14 +416,33 @@ entity FacilityWorkOrder {
   property assignedTo: string = ""
   property estimatedCost: money = 0
   property actualCost: money = 0
-  property scheduledDate: datetime = now()
-  property completedDate: datetime = now()
+  // scheduledDate/completedDate: lifecycle times — no = now() default
+  property scheduledDate: datetime
+  property completedDate: datetime
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isOpen: boolean = self.status == "open"
+  computed isAssigned: boolean = self.assignedTo != ""
+  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])
+
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
-  constraint validStatus: self.status in ["open", "in_progress", "completed", "cancelled"] "Invalid work order status"
+  constraint validStatus: self.status in ["open", "assigned", "in_progress", "completed", "cancelled"] "Invalid work order status"
+  constraint validCategory: self.category in ["repair", "inspection", "cleaning", "installation", "renovation", "other"] "Invalid category"
+
+  constraint warnOverdue:warn self.isOverdue {
+    messageTemplate: "Facility work order '{title}' is past scheduled date"
+    details: {
+      title: self.title
+      scheduledDate: self.scheduledDate
+      priority: self.priority
+    }
+  }
+
+  transition status from "open" to ["assigned", "in_progress", "cancelled"]
+  transition status from "assigned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
 
   command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: number, notes: string) {
     guard title != null and title != "" "Work order title is required"
@@ -305,22 +460,62 @@ entity FacilityWorkOrder {
     mutate notes = notes
     mutate status = "open"
     mutate actualCost = 0
-    mutate completedDate = 0
     mutate createdAt = now()
     mutate updatedAt = now()
 
     emit FacilityWorkOrderCreated
   }
 
-  command updateStatus(status: string, notes: string) {
-    guard status in ["open", "in_progress", "completed", "cancelled"] "Invalid status"
+  // Assign to a maintenance tech and lock in the scheduled date
+  command assign(assignedTo: string, scheduledDate: number, estimatedCost: number) {
+    guard assignedTo != null and assignedTo != "" "Assignee is required"
+    guard self.status == "open" "Work order must be open to assign"
 
-    mutate status = status
-    mutate notes = notes
+    mutate assignedTo = assignedTo
+    mutate scheduledDate = scheduledDate
+    mutate estimatedCost = estimatedCost
+    mutate status = "assigned"
     mutate updatedAt = now()
 
-    emit FacilityWorkOrderStatusUpdated
+    emit FacilityWorkOrderAssigned
   }
+
+  // Technician begins physical work on site
+  command start(userId: string) {
+    guard self.status in ["open", "assigned"] "Work order must be open or assigned to start"
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate status = "in_progress"
+    mutate assignedTo = userId
+    mutate updatedAt = now()
+
+    emit FacilityWorkOrderStarted
+  }
+
+  // Work is done; record actual cost and close the order
+  command complete(actualCost: number, completionNotes: string) {
+    guard self.status == "in_progress" "Work order must be in progress to complete"
+    guard actualCost >= 0 "Actual cost cannot be negative"
+
+    mutate status = "completed"
+    mutate actualCost = actualCost
+    mutate completedDate = now()
+    mutate notes = completionNotes
+    mutate updatedAt = now()
+
+    emit FacilityWorkOrderCompleted
+  }
+
+  command cancel(reason: string) {
+    guard not (self.status in ["completed", "cancelled"]) "Cannot cancel a completed or already cancelled work order"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit FacilityWorkOrderCancelled
+  }
+
   store FacilityWorkOrder in durable
 }
 
@@ -346,6 +541,19 @@ event FacilityUpdated: "facility.updated" {
   updatedAt: number
 }
 
+event FacilitySentToMaintenance: "facility.sent-to-maintenance" {
+  facilityId: string
+  tenantId: string
+  reason: string
+  sentAt: number
+}
+
+event FacilityRestoredFromMaintenance: "facility.restored-from-maintenance" {
+  facilityId: string
+  tenantId: string
+  restoredAt: number
+}
+
 event FacilityAreaCreated: "facility.area.created" {
   areaId: string
   tenantId: string
@@ -365,6 +573,19 @@ event FacilityAreaUpdated: "facility.area.updated" {
   updatedAt: number
 }
 
+event FacilityAreaClosedForMaintenance: "facility.area.closed-for-maintenance" {
+  areaId: string
+  tenantId: string
+  reason: string
+  closedAt: number
+}
+
+event FacilityAreaReopened: "facility.area.reopened" {
+  areaId: string
+  tenantId: string
+  reopenedAt: number
+}
+
 event FacilityAssetCreated: "facility.asset.created" {
   assetId: string
   tenantId: string
@@ -382,6 +603,27 @@ event FacilityAssetUpdated: "facility.asset.updated" {
   assetId: string
   name: string
   updatedAt: number
+}
+
+event FacilityAssetSentToMaintenance: "facility.asset.sent-to-maintenance" {
+  assetId: string
+  tenantId: string
+  reason: string
+  sentAt: number
+}
+
+event FacilityAssetReturnedFromMaintenance: "facility.asset.returned-from-maintenance" {
+  assetId: string
+  tenantId: string
+  nextMaintenanceAt: number
+  returnedAt: number
+}
+
+event FacilityAssetRetired: "facility.asset.retired" {
+  assetId: string
+  tenantId: string
+  reason: string
+  retiredAt: number
 }
 
 event FacilityScheduleCreated: "facility.schedule.created" {
@@ -404,10 +646,24 @@ event FacilityScheduleUpdated: "facility.schedule.updated" {
   updatedAt: number
 }
 
+event FacilityScheduleStarted: "facility.schedule.started" {
+  scheduleId: string
+  tenantId: string
+  assignedTo: string
+  startedAt: number
+}
+
 event FacilityScheduleCompleted: "facility.schedule.completed" {
   scheduleId: string
   completionNotes: string
   completedAt: number
+}
+
+event FacilityScheduleCancelled: "facility.schedule.cancelled" {
+  scheduleId: string
+  tenantId: string
+  reason: string
+  cancelledAt: number
 }
 
 event FacilityWorkOrderCreated: "facility.workorder.created" {
@@ -419,10 +675,31 @@ event FacilityWorkOrderCreated: "facility.workorder.created" {
   createdAt: number
 }
 
-event FacilityWorkOrderStatusUpdated: "facility.workorder.status.updated" {
+event FacilityWorkOrderAssigned: "facility.workorder.assigned" {
   workOrderId: string
-  oldStatus: string
-  newStatus: string
-  notes: string
-  updatedAt: number
+  tenantId: string
+  assignedTo: string
+  scheduledDate: number
+  assignedAt: number
+}
+
+event FacilityWorkOrderStarted: "facility.workorder.started" {
+  workOrderId: string
+  tenantId: string
+  userId: string
+  startedAt: number
+}
+
+event FacilityWorkOrderCompleted: "facility.workorder.completed" {
+  workOrderId: string
+  tenantId: string
+  actualCost: number
+  completedAt: number
+}
+
+event FacilityWorkOrderCancelled: "facility.workorder.cancelled" {
+  workOrderId: string
+  tenantId: string
+  reason: string
+  cancelledAt: number
 }

@@ -9,7 +9,8 @@ entity Driver {
   property email: string = ""
   property phone: string = ""
   property licenseNumber: string = ""
-  property licenseExpiry: datetime = now()
+  // licenseExpiry: nullable lifecycle timestamp — no = now() default
+  property licenseExpiry: datetime
   property status: string = "active"
   property currentVehicleId: string = ""
   property rating: decimal = 0
@@ -19,12 +20,21 @@ entity Driver {
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed isActive: boolean = self.status == "active"
-  computed licenseExpiring: boolean = self.licenseExpiry > 0 and now() + (30 * 86400000) > self.licenseExpiry
+  computed licenseExpiring: boolean = self.licenseExpiry != null and now() + (30 * 86400000) > self.licenseExpiry
+  computed licenseExpired: boolean = self.licenseExpiry != null and now() > self.licenseExpiry
 
   constraint validStatus: self.status in ["active", "inactive", "suspended"] "Invalid driver status"
 
-  constraint warnLicenseExpiring:warn self.licenseExpiring and self.status == "active" {
+  constraint warnLicenseExpiring:warn self.licenseExpiring and self.status == "active" and not self.licenseExpired {
     messageTemplate: "Driver '{driverName}' license expiring within 30 days"
+    details: {
+      driverName: self.fullName
+      licenseExpiry: self.licenseExpiry
+    }
+  }
+
+  constraint blockExpiredLicense:block self.licenseExpired and self.status == "active" {
+    messageTemplate: "Driver '{driverName}' has an expired license — suspend or renew before dispatching"
     details: {
       driverName: self.fullName
       licenseExpiry: self.licenseExpiry
@@ -74,6 +84,40 @@ entity Driver {
 
     emit DriverUpdated
   }
+
+  // Record a renewed or replaced license and clear the expiry warning
+  command renewLicense(licenseNumber: string, licenseExpiry: number) {
+    guard licenseNumber != null and licenseNumber != "" "License number is required"
+    guard licenseExpiry > 0 "New expiry date is required"
+
+    mutate licenseNumber = licenseNumber
+    mutate licenseExpiry = licenseExpiry
+    mutate updatedAt = now()
+
+    emit DriverLicenseRenewed
+  }
+
+  // Suspend a driver pending investigation or policy violation
+  command suspend(reason: string) {
+    guard self.status == "active" "Only an active driver can be suspended"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "suspended"
+    mutate updatedAt = now()
+
+    emit DriverSuspended
+  }
+
+  // Reinstate a previously suspended driver
+  command reactivate(notes: string) {
+    guard self.status == "suspended" "Only a suspended driver can be reactivated"
+
+    mutate status = "active"
+    mutate updatedAt = now()
+
+    emit DriverReactivated
+  }
+
   store Driver in durable
 }
 
@@ -91,14 +135,26 @@ entity Vehicle {
   property capacity: string = ""
   property status: string = "available"
   property currentDriverId: string = ""
-  property lastMaintenanceDate: datetime = now()
-  property nextMaintenanceDate: datetime = now()
+  // lastMaintenanceDate / nextMaintenanceDate: lifecycle — no = now() default
+  property lastMaintenanceDate: datetime
+  property nextMaintenanceDate: datetime
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isAvailable: boolean = self.status == "available"
+  computed maintenanceDue: boolean = self.nextMaintenanceDate != null and now() >= self.nextMaintenanceDate
+
   constraint validType: self.type in ["delivery", "cargo", "refrigerated", "passenger"] "Invalid vehicle type"
-  constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service"] "Invalid vehicle status"
+  constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service", "retired"] "Invalid vehicle status"
+
+  constraint warnMaintenanceDue:warn self.maintenanceDue and self.status != "maintenance" and self.status != "retired" {
+    messageTemplate: "Vehicle '{vehicleName}' is due for maintenance"
+    details: {
+      vehicleName: self.name
+      nextMaintenanceDate: self.nextMaintenanceDate
+    }
+  }
 
   command create(name: string, type: string, plateNumber: string, vin: string, make: string, model: string, year: number, capacity: string, notes: string) {
     guard name != null and name != "" "Vehicle name is required"
@@ -144,6 +200,49 @@ entity Vehicle {
 
     emit VehicleUpdated
   }
+
+  // Send vehicle to maintenance workshop; blocks dispatch until returned
+  command sendToMaintenance(reason: string, nextMaintenanceDate: number) {
+    guard self.status in ["available", "out_of_service"] "Vehicle must be available or out of service to send to maintenance"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate status = "maintenance"
+    mutate updatedAt = now()
+
+    emit VehicleSentToMaintenance
+  }
+
+  // Return vehicle to fleet after maintenance; record service dates
+  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceDate: number) {
+    guard self.status == "maintenance" "Vehicle is not in maintenance"
+
+    mutate status = "available"
+    mutate lastMaintenanceDate = now()
+    mutate nextMaintenanceDate = nextMaintenanceDate
+    mutate updatedAt = now()
+
+    emit VehicleReturnedFromMaintenance
+  }
+
+  // Permanently retire a vehicle that can no longer be operated
+  command retire(reason: string) {
+    guard self.status != "retired" "Vehicle is already retired"
+    guard self.status != "in_use" "Cannot retire a vehicle currently in use"
+
+    constraint warnRetireAvailable:warn self.status == "available" {
+      messageTemplate: "Retiring available vehicle '{vehicleName}' — confirm no upcoming assignments"
+      details: {
+        vehicleName: self.name
+        reason: reason
+      }
+    }
+
+    mutate status = "retired"
+    mutate updatedAt = now()
+
+    emit VehicleRetired
+  }
+
   store Vehicle in durable
 }
 
@@ -159,20 +258,26 @@ entity LogisticsRoute {
   property endLocation: string = ""
   property distance: decimal = 0
   property estimatedDuration: decimal = 0
-  property scheduledStart: datetime = now()
-  property scheduledEnd: datetime = now()
-  property actualStart: datetime = now()
-  property actualEnd: datetime = now()
+  // scheduledStart/End and actualStart/End: lifecycle times — no = now() default
+  property scheduledStart: datetime
+  property scheduledEnd: datetime
+  property actualStart: datetime
+  property actualEnd: datetime
   property stops: decimal = 0
   property completedStops: int = 0
+  property delayMinutes: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isActive: boolean = self.status == "in_progress"
   computed completionPercent: number = self.stops > 0 ? (self.completedStops / self.stops) * 100 : 0
+  computed isDelayed: boolean = self.delayMinutes > 0 and self.status == "in_progress"
 
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"
+
+  transition status from "planned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
 
   command create(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: number, scheduledEnd: number, distance: number, estimatedDuration: number, stops: number, notes: string) {
     guard name != null and name != "" "Route name is required"
@@ -190,6 +295,7 @@ entity LogisticsRoute {
     mutate notes = notes
     mutate status = "planned"
     mutate completedStops = 0
+    mutate delayMinutes = 0
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -207,6 +313,7 @@ entity LogisticsRoute {
 
   command update(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: number, scheduledEnd: number, distance: number, estimatedDuration: number, stops: number, notes: string) {
     guard name != null and name != "" "Route name is required"
+    guard self.status == "planned" "Can only update a planned route"
 
     mutate name = name
     mutate vehicleId = vehicleId
@@ -224,13 +331,57 @@ entity LogisticsRoute {
     emit LogisticsRouteUpdated
   }
 
-  command updateStatus(status: string) {
-    guard status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"
+  // Driver departs; route moves from planned to in progress
+  command start() {
+    guard self.status == "planned" "Only a planned route can be started"
 
-    mutate status = status
+    mutate status = "in_progress"
+    mutate actualStart = now()
     mutate updatedAt = now()
 
-    emit LogisticsRouteStatusUpdated
+    emit LogisticsRouteStarted
+  }
+
+  // Record a stop completion during an active route
+  command completeStop(notes: string) {
+    guard self.status == "in_progress" "Route must be in progress to complete a stop"
+
+    mutate completedStops = self.completedStops + 1
+    mutate updatedAt = now()
+
+    emit LogisticsRouteStopCompleted
+  }
+
+  // Record a delay (weather, traffic, incident) and new ETA offset in minutes
+  command recordDelay(delayMinutes: number, reason: string) {
+    guard self.status == "in_progress" "Route must be in progress to record a delay"
+    guard delayMinutes > 0 "Delay must be a positive number of minutes"
+
+    mutate delayMinutes = self.delayMinutes + delayMinutes
+    mutate updatedAt = now()
+
+    emit LogisticsRouteDelayRecorded
+  }
+
+  // Route fully completed — all deliveries done
+  command complete(notes: string) {
+    guard self.status == "in_progress" "Only an in-progress route can be completed"
+
+    mutate status = "completed"
+    mutate actualEnd = now()
+    mutate updatedAt = now()
+
+    emit LogisticsRouteCompleted
+  }
+
+  command cancel(reason: string) {
+    guard self.status != "completed" "Cannot cancel a completed route"
+    guard reason != null and reason != "" "Cancellation reason is required"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit LogisticsRouteCancelled
   }
 
   command optimize() {
@@ -240,6 +391,7 @@ entity LogisticsRoute {
 
     emit LogisticsRouteOptimized
   }
+
   store LogisticsRoute in durable
 }
 
@@ -252,17 +404,30 @@ entity LogisticsDispatch {
   property vehicleId: string = ""
   property status: string = "pending"
   property priority: string = "normal"
-  property estimatedDeliveryTime: datetime = now()
-  property actualDeliveryTime: datetime = now()
+  // estimatedDeliveryTime / actualDeliveryTime / departedAt: lifecycle — no = now() default
+  property estimatedDeliveryTime: datetime
+  property actualDeliveryTime: datetime
+  property departedAt: datetime
+  property failureReason: string = ""
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isInTransit: boolean = self.status == "in_transit"
+  computed isDelivered: boolean = self.status == "delivered"
+  computed hasFailed: boolean = self.status == "failed"
+
   constraint validStatus: self.status in ["pending", "assigned", "in_transit", "delivered", "failed"] "Invalid dispatch status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority"
 
+  transition status from "pending" to ["assigned"]
+  transition status from "assigned" to ["in_transit", "pending"]
+  transition status from "in_transit" to ["delivered", "failed"]
+
   command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: number, notes: string) {
     guard routeId != null and routeId != "" "Route ID is required"
+    guard driverId != null and driverId != "" "Driver ID is required"
+    guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
 
     mutate routeId = routeId
     mutate driverId = driverId
@@ -276,6 +441,58 @@ entity LogisticsDispatch {
 
     emit LogisticsDispatchAssigned
   }
+
+  // Driver confirms departure — catering goods are on the road
+  command depart(notes: string) {
+    guard self.status == "assigned" "Dispatch must be assigned before departing"
+
+    mutate status = "in_transit"
+    mutate departedAt = now()
+    mutate updatedAt = now()
+
+    emit LogisticsDispatchDeparted
+  }
+
+  // Goods successfully delivered to the venue
+  command deliver(notes: string) {
+    guard self.status == "in_transit" "Dispatch must be in transit to mark delivered"
+
+    mutate status = "delivered"
+    mutate actualDeliveryTime = now()
+    mutate updatedAt = now()
+
+    emit LogisticsDispatchDelivered
+  }
+
+  // Delivery failed — vehicle breakdown, wrong address, access denied, etc.
+  command fail(reason: string) {
+    guard self.status == "in_transit" "Dispatch must be in transit to mark as failed"
+    guard reason != null and reason != "" "Failure reason is required"
+
+    mutate status = "failed"
+    mutate failureReason = reason
+    mutate updatedAt = now()
+
+    emit LogisticsDispatchFailed
+  }
+
+  // Reassign a failed or pending dispatch to a different driver/vehicle
+  command reassign(driverId: string, vehicleId: string, estimatedDeliveryTime: number, notes: string) {
+    guard self.status in ["pending", "assigned", "failed"] "Can only reassign a pending, assigned, or failed dispatch"
+    guard driverId != null and driverId != "" "Driver ID is required"
+    guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
+
+    mutate driverId = driverId
+    mutate vehicleId = vehicleId
+    mutate estimatedDeliveryTime = estimatedDeliveryTime
+    mutate notes = notes
+    mutate status = "assigned"
+    mutate failureReason = ""
+    mutate updatedAt = now()
+
+    emit LogisticsDispatchReassigned
+  }
+
   store LogisticsDispatch in durable
 }
 
@@ -300,6 +517,27 @@ event DriverUpdated: "logistics.driver.updated" {
   updatedAt: number
 }
 
+event DriverLicenseRenewed: "logistics.driver.license-renewed" {
+  driverId: string
+  tenantId: string
+  licenseNumber: string
+  licenseExpiry: number
+  renewedAt: number
+}
+
+event DriverSuspended: "logistics.driver.suspended" {
+  driverId: string
+  tenantId: string
+  reason: string
+  suspendedAt: number
+}
+
+event DriverReactivated: "logistics.driver.reactivated" {
+  driverId: string
+  tenantId: string
+  reactivatedAt: number
+}
+
 event VehicleCreated: "logistics.vehicle.created" {
   vehicleId: string
   tenantId: string
@@ -317,6 +555,27 @@ event VehicleUpdated: "logistics.vehicle.updated" {
   vehicleId: string
   name: string
   updatedAt: number
+}
+
+event VehicleSentToMaintenance: "logistics.vehicle.sent-to-maintenance" {
+  vehicleId: string
+  tenantId: string
+  reason: string
+  sentAt: number
+}
+
+event VehicleReturnedFromMaintenance: "logistics.vehicle.returned-from-maintenance" {
+  vehicleId: string
+  tenantId: string
+  nextMaintenanceDate: number
+  returnedAt: number
+}
+
+event VehicleRetired: "logistics.vehicle.retired" {
+  vehicleId: string
+  tenantId: string
+  reason: string
+  retiredAt: number
 }
 
 event LogisticsRouteCreated: "logistics.route.created" {
@@ -338,11 +597,40 @@ event LogisticsRouteUpdated: "logistics.route.updated" {
   updatedAt: number
 }
 
-event LogisticsRouteStatusUpdated: "logistics.route.status.updated" {
+event LogisticsRouteStarted: "logistics.route.started" {
   routeId: string
-  oldStatus: string
-  newStatus: string
-  updatedAt: number
+  tenantId: string
+  driverId: string
+  vehicleId: string
+  startedAt: number
+}
+
+event LogisticsRouteStopCompleted: "logistics.route.stop-completed" {
+  routeId: string
+  tenantId: string
+  completedStops: number
+  completedAt: number
+}
+
+event LogisticsRouteDelayRecorded: "logistics.route.delay-recorded" {
+  routeId: string
+  tenantId: string
+  delayMinutes: number
+  reason: string
+  recordedAt: number
+}
+
+event LogisticsRouteCompleted: "logistics.route.completed" {
+  routeId: string
+  tenantId: string
+  completedAt: number
+}
+
+event LogisticsRouteCancelled: "logistics.route.cancelled" {
+  routeId: string
+  tenantId: string
+  reason: string
+  cancelledAt: number
 }
 
 event LogisticsRouteOptimized: "logistics.route.optimized" {
@@ -357,4 +645,36 @@ event LogisticsDispatchAssigned: "logistics.dispatch.assigned" {
   driverId: string
   vehicleId: string
   assignedAt: number
+}
+
+event LogisticsDispatchDeparted: "logistics.dispatch.departed" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  driverId: string
+  departedAt: number
+}
+
+event LogisticsDispatchDelivered: "logistics.dispatch.delivered" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  actualDeliveryTime: number
+  deliveredAt: number
+}
+
+event LogisticsDispatchFailed: "logistics.dispatch.failed" {
+  dispatchId: string
+  tenantId: string
+  routeId: string
+  reason: string
+  failedAt: number
+}
+
+event LogisticsDispatchReassigned: "logistics.dispatch.reassigned" {
+  dispatchId: string
+  tenantId: string
+  newDriverId: string
+  newVehicleId: string
+  reassignedAt: number
 }

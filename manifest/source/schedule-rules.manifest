@@ -1,15 +1,20 @@
 // Staff - Schedule Rules
 // Manifest spec for schedule and shift management
+// Lifecycle: draft -> approved -> published -> closed
+// ScheduleShift: can offer/swap shifts after publish
 
 entity Schedule {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
   property locationId: string = ""
-  property scheduleDate: datetime = now()
+  // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
+  property scheduleDate: datetime
   property status: string = "draft"
-  property publishedAt: datetime = now()
+  property publishedAt: datetime
   property publishedBy: string = ""
+  property approvedBy: string = ""
+  property approvedAt: datetime
   property notes: string = ""
   property shiftCount: int = 0
   property createdAt: datetime = now()
@@ -17,12 +22,17 @@ entity Schedule {
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
+  computed isApproved: boolean = self.status == "approved"
   computed isPublished: boolean = self.status == "published"
   computed isClosed: boolean = self.status == "closed"
   computed hasShifts: boolean = self.shiftCount > 0
-  computed isEditable: boolean = self.status == "draft"
+  computed isEditable: boolean = self.status in ["draft", "approved"]
 
-  constraint validStatus: self.status in ["draft", "published", "closed"] "Invalid schedule status"
+  transition status from "draft" to ["approved"]
+  transition status from "approved" to ["draft", "published"]
+  transition status from "published" to ["closed", "draft"]
+
+  constraint validStatus: self.status in ["draft", "approved", "published", "closed"] "Invalid schedule status"
 
   command create(locationId: string, scheduleDate: number, notes: string) {
     guard scheduleDate != null and scheduleDate > 0 "Schedule date is required"
@@ -39,7 +49,7 @@ entity Schedule {
   }
 
   command update(scheduleDate: number, locationId: string, notes: string) {
-    guard self.status == "draft" "Can only update draft schedules"
+    guard self.status in ["draft", "approved"] "Can only update draft or approved schedules"
 
     mutate scheduleDate = scheduleDate
     mutate locationId = locationId
@@ -49,8 +59,34 @@ entity Schedule {
     emit ScheduleUpdated
   }
 
+  // Manager approves the schedule before it is published to staff.
+  command approve(userId: string) {
+    guard self.status == "draft" "Only draft schedules can be approved"
+    guard self.shiftCount > 0 "Cannot approve a schedule with no shifts"
+    guard userId != null and userId != "" "Approver ID is required"
+
+    mutate status = "approved"
+    mutate approvedBy = userId
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleApproved
+  }
+
+  // Revert an approved schedule back to draft for corrections before publishing.
+  command reopen(userId: string, reason: string) {
+    guard self.status == "approved" "Only an approved schedule can be reopened"
+    guard reason != null and reason != "" "Reason for reopening is required"
+
+    mutate status = "draft"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit ScheduleReopened
+  }
+
   command release(userId: string) {
-    guard self.status == "draft" "Can only publish draft schedules"
+    guard self.status in ["draft", "approved"] "Can only publish draft or approved schedules"
 
     constraint blockNoShifts:block self.shiftCount == 0 {
       messageTemplate: "Cannot publish schedule with no shifts assigned"
@@ -70,14 +106,6 @@ entity Schedule {
 
   command close(userId: string) {
     guard self.status == "published" "Can only close published schedules"
-
-    constraint blockNotPublished:block self.status != "published" {
-      messageTemplate: "Cannot close schedule that is not published (current status: '{status}')"
-      details: {
-        scheduleId: self.id
-        status: self.status
-      }
-    }
 
     mutate status = "closed"
     mutate updatedAt = now()
@@ -99,6 +127,11 @@ entity ScheduleShift {
   property optional shiftEnd: datetime
   property roleDuringShift: string = ""
   property notes: string = ""
+  // Swap offer fields
+  property swapOfferedTo: string = ""
+  property swapStatus: string = "none"
+  property swapOfferedAt: datetime
+  property swapAcceptedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
@@ -106,8 +139,10 @@ entity ScheduleShift {
   computed durationHours: number = self.shiftEnd > self.shiftStart ? (self.shiftEnd - self.shiftStart) / 3600000 : 0
   computed isAssigned: boolean = self.employeeId != ""
   computed hasRole: boolean = self.roleDuringShift != ""
+  computed hasSwapPending: boolean = self.swapStatus == "offered"
 
   constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
+  constraint validSwapStatus: self.swapStatus in ["none", "offered", "accepted", "declined"] "Invalid swap status"
 
   constraint warnLongShift:warn self.durationHours > 12 {
     messageTemplate: "Shift duration ({hours} hours) exceeds 12 hours"
@@ -132,6 +167,7 @@ entity ScheduleShift {
     mutate shiftEnd = shiftEnd
     mutate roleDuringShift = roleDuringShift
     mutate notes = notes
+    mutate swapStatus = "none"
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -140,6 +176,7 @@ entity ScheduleShift {
 
   command update(employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
     guard shiftEnd > shiftStart "Shift end must be after shift start"
+    guard self.deletedAt == null "Cannot update a removed shift"
 
     mutate employeeId = employeeId
     mutate locationId = locationId
@@ -150,6 +187,56 @@ entity ScheduleShift {
     mutate updatedAt = now()
 
     emit ScheduleShiftUpdated
+  }
+
+  // Offer a shift swap to another employee on the same schedule.
+  command offerSwap(swapOfferedTo: string) {
+    guard self.deletedAt == null "Cannot offer swap on a removed shift"
+    guard self.swapStatus == "none" "Shift already has a pending swap offer"
+    guard swapOfferedTo != null and swapOfferedTo != "" "Target employee ID is required"
+    guard swapOfferedTo != self.employeeId "Cannot offer a swap to yourself"
+
+    mutate swapOfferedTo = swapOfferedTo
+    mutate swapStatus = "offered"
+    mutate swapOfferedAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleShiftSwapOffered
+  }
+
+  // Accept a pending swap offer — reassigns the shift to the accepting employee.
+  command acceptSwap(acceptingEmployeeId: string) {
+    guard self.swapStatus == "offered" "No pending swap offer to accept"
+    guard acceptingEmployeeId != null and acceptingEmployeeId != "" "Accepting employee ID is required"
+
+    mutate employeeId = acceptingEmployeeId
+    mutate swapStatus = "accepted"
+    mutate swapAcceptedAt = now()
+    mutate updatedAt = now()
+
+    emit ScheduleShiftSwapAccepted
+  }
+
+  // Decline a pending swap offer.
+  command declineSwap() {
+    guard self.swapStatus == "offered" "No pending swap offer to decline"
+
+    mutate swapStatus = "declined"
+    mutate swapOfferedTo = ""
+    mutate updatedAt = now()
+
+    emit ScheduleShiftSwapDeclined
+  }
+
+  // Cancel a swap offer that has not yet been accepted.
+  command cancelSwap() {
+    guard self.swapStatus == "offered" "No pending swap offer to cancel"
+
+    mutate swapStatus = "none"
+    mutate swapOfferedTo = ""
+    mutate updatedAt = now()
+
+    emit ScheduleShiftSwapCancelled
   }
 
   command remove(userId: string) {
@@ -180,6 +267,21 @@ event ScheduleUpdated: "staff.schedule.updated" {
   scheduleDate: number
   locationId: string
   updatedAt: number
+}
+
+event ScheduleApproved: "staff.schedule.approved" {
+  scheduleId: string
+  tenantId: string
+  approvedBy: string
+  approvedAt: number
+}
+
+event ScheduleReopened: "staff.schedule.reopened" {
+  scheduleId: string
+  tenantId: string
+  userId: string
+  reason: string
+  reopenedAt: number
 }
 
 event SchedulePublished: "staff.schedule.published" {
@@ -216,6 +318,37 @@ event ScheduleShiftUpdated: "staff.schedule.shift.updated" {
   shiftEnd: number
   roleDuringShift: string
   updatedAt: number
+}
+
+event ScheduleShiftSwapOffered: "staff.schedule.shift.swap-offered" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  fromEmployeeId: string
+  toEmployeeId: string
+  offeredAt: number
+}
+
+event ScheduleShiftSwapAccepted: "staff.schedule.shift.swap-accepted" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  newEmployeeId: string
+  acceptedAt: number
+}
+
+event ScheduleShiftSwapDeclined: "staff.schedule.shift.swap-declined" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  declinedAt: number
+}
+
+event ScheduleShiftSwapCancelled: "staff.schedule.shift.swap-cancelled" {
+  shiftId: string
+  tenantId: string
+  scheduleId: string
+  cancelledAt: number
 }
 
 event ScheduleShiftRemoved: "staff.schedule.shift.removed" {

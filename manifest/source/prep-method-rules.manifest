@@ -1,5 +1,6 @@
 // Kitchen Ops - Prep Method Rules
 // Manifest spec for preparation method catalog, duration estimates, and certification requirements
+// PrepMethod is a simple config catalog — enriched with reactivate command.
 
 entity PrepMethod {
   key [tenantId, id]
@@ -64,10 +65,29 @@ entity PrepMethod {
   command deactivate(reason: string, userId: string) {
     guard self.isActive "Prep method is already deactivated"
 
+    constraint warnInUse:warn true {
+      messageTemplate: "Deactivating prep method '{methodName}' — verify it is not referenced in active recipe versions"
+      details: {
+        methodName: self.name
+        methodId: self.id
+        reason: reason
+      }
+    }
+
     mutate isActive = false
     mutate updatedAt = now()
 
     emit PrepMethodDeactivated
+  }
+
+  // Reactivate a previously deactivated prep method — makes it available again for recipe authoring.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Prep method is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit PrepMethodReactivated
   }
 
   store PrepMethod in durable
@@ -101,4 +121,12 @@ event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
   reason: string
   userId: string
   deactivatedAt: number
+}
+
+event PrepMethodReactivated: "kitchen.prepmethod.reactivated" {
+  prepMethodId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: number
 }

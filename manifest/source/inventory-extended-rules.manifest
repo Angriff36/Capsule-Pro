@@ -169,9 +169,9 @@ entity InventoryAlert {
   property required severity: string
   property required message: string
   property required status: string = "active"
-  property triggeredAt: datetime = now()
-  property acknowledgedAt: datetime = now()
-  property resolvedAt: datetime = now()
+  property triggeredAt: datetime
+  property acknowledgedAt: datetime
+  property resolvedAt: datetime
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
   property createdAt: datetime = now()
@@ -201,6 +201,18 @@ entity InventoryAlert {
     mutate updatedAt = now()
 
     emit InventoryAlertTriggered
+  }
+
+  // Escalate an acknowledged alert to a higher severity (e.g. medium → high → critical).
+  command escalate(escalatedBy: string, newSeverity: string) {
+    guard self.status in ["active", "acknowledged"] "Can only escalate active or acknowledged alerts"
+    guard newSeverity in ["low", "medium", "high", "critical"] "Invalid severity"
+    guard escalatedBy != null and escalatedBy != "" "Escalating user is required"
+
+    mutate severity = newSeverity
+    mutate updatedAt = now()
+
+    emit InventoryAlertEscalated
   }
 
   command acknowledge(acknowledgedBy: string) {
@@ -240,19 +252,26 @@ entity InventoryForecast {
   property required id: string
   property required tenantId: string
   property required inventoryItemId: string
-  property required forecastDate: datetime = now()
+  property required forecastDate: datetime
   property required projectedQuantity: decimal = 0
   property required confidence: decimal = 0
+  property status: string = "draft"
+  property publishedAt: datetime
+  property approvedAt: datetime
+  property approvedBy: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isHighConfidence: boolean = self.confidence >= 0.8
   computed isLowConfidence: boolean = self.confidence < 0.5
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isApproved: boolean = self.status == "approved"
 
   constraint confidenceRange: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
   constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
 
-  command create(inventoryItemId: string, forecastDate: decimal, projectedQuantity: decimal, confidence: decimal) {
+  command create(inventoryItemId: string, forecastDate: number, projectedQuantity: decimal, confidence: decimal) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard forecastDate != null and forecastDate > 0 "Forecast date is required"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
@@ -262,6 +281,7 @@ entity InventoryForecast {
     mutate forecastDate = forecastDate
     mutate projectedQuantity = projectedQuantity
     mutate confidence = confidence
+    mutate status = "draft"
     mutate createdAt = now()
     mutate updatedAt = now()
 
@@ -269,6 +289,7 @@ entity InventoryForecast {
   }
 
   command update(projectedQuantity: decimal, confidence: decimal) {
+    guard self.status == "draft" "Can only update draft forecasts"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
     guard confidence >= 0 and confidence <= 1 "Confidence must be between 0 and 1"
 
@@ -277,6 +298,38 @@ entity InventoryForecast {
     mutate updatedAt = now()
 
     emit InventoryForecastUpdated
+  }
+
+  // Make the forecast visible to planners for event scheduling decisions.
+  command markPublished() {
+    guard self.status == "draft" "Only draft forecasts can be published"
+
+    constraint warnLowConfidence:warn self.isLowConfidence {
+      messageTemplate: "Publishing low-confidence forecast ({confidence}) for item '{inventoryItemId}'"
+      details: {
+        inventoryItemId: self.inventoryItemId
+        confidence: self.confidence
+      }
+    }
+
+    mutate status = "published"
+    mutate publishedAt = now()
+    mutate updatedAt = now()
+
+    emit InventoryForecastPublished
+  }
+
+  // Approve a published forecast so it drives reorder and event-planning automation.
+  command approve(approvedBy: string) {
+    guard self.status == "published" "Only published forecasts can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver is required"
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit InventoryForecastApproved
   }
 
   store InventoryForecast in durable
@@ -291,7 +344,7 @@ entity ForecastInput {
   property required id: string
   property required tenantId: string
   property required inventoryItemId: string
-  property required inputDate: datetime = now()
+  property required inputDate: datetime
   property required actualUsage: decimal = 0
   property required source: string
   property createdAt: datetime = now()
@@ -300,7 +353,7 @@ entity ForecastInput {
   constraint nonNegativeUsage: self.actualUsage >= 0 "Actual usage cannot be negative"
   constraint requireSource: self.source != "" "Data source is required"
 
-  command create(inventoryItemId: string, inputDate: decimal, actualUsage: decimal, source: string) {
+  command create(inventoryItemId: string, inputDate: number, actualUsage: decimal, source: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard inputDate != null and inputDate > 0 "Input date is required"
     guard actualUsage >= 0 "Actual usage cannot be negative"
@@ -374,6 +427,18 @@ entity ReorderSuggestion {
     mutate updatedAt = now()
 
     emit ReorderSuggestionDismissed
+  }
+
+  // System-driven auto-accept: fires when a tenant has enabled auto-reorder rules
+  // and the suggestion meets all par/budget thresholds without human review.
+  command autoAccept(triggeredBy: string) {
+    guard self.status == "pending" "Can only auto-accept pending suggestions"
+    guard triggeredBy != null and triggeredBy != "" "Trigger source is required"
+
+    mutate status = "accepted"
+    mutate updatedAt = now()
+
+    emit ReorderSuggestionAutoAccepted
   }
 
   store ReorderSuggestion in durable
@@ -570,8 +635,8 @@ entity ProcurementBudget {
   property required id: string
   property required tenantId: string
   property required name: string
-  property required periodStart: datetime = now()
-  property required periodEnd: datetime = now()
+  property required periodStart: datetime
+  property required periodEnd: datetime
   property required budgetAmount: money = 0
   property spentAmount: money = 0
   property required status: string = "active"
@@ -671,8 +736,8 @@ entity ProcurementBudgetAlert {
   property required procurementBudgetId: string
   property required thresholdPct: decimal = 0
   property required message: string
-  property triggeredAt: datetime = now()
-  property acknowledgedAt: datetime = now()
+  property triggeredAt: datetime
+  property acknowledgedAt: datetime
   property acknowledgedBy: string = ""
   property isAcknowledged: boolean = false
   property createdAt: datetime = now()
@@ -724,7 +789,8 @@ entity AuditSchedule {
   property required tenantId: string
   property required name: string
   property required frequency: string
-  property nextRunAt: datetime = now()
+  property nextRunAt: datetime
+  property lastRunAt: datetime
   property isActive: boolean = true
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -777,6 +843,27 @@ entity AuditSchedule {
     mutate updatedAt = now()
 
     emit AuditScheduleDeactivated
+  }
+
+  command activate() {
+    guard self.isDeactivated "Audit schedule is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit AuditScheduleActivated
+  }
+
+  // Record a completed run and advance the next scheduled run date.
+  command recordRun(nextRunAt: number) {
+    guard self.isActive "Cannot record a run for an inactive schedule"
+    guard nextRunAt != null and nextRunAt > 0 "Next run date is required"
+
+    mutate lastRunAt = now()
+    mutate nextRunAt = nextRunAt
+    mutate updatedAt = now()
+
+    emit AuditScheduleRunRecorded
   }
 
   store AuditSchedule in durable
@@ -1074,4 +1161,51 @@ event AuditScheduleDeactivated: "inventory.audit_schedule.deactivated" {
   name: string
   reason: string
   deactivatedAt: number
+}
+
+event AuditScheduleActivated: "inventory.audit_schedule.activated" {
+  scheduleId: string
+  name: string
+  activatedAt: number
+}
+
+event AuditScheduleRunRecorded: "inventory.audit_schedule.run-recorded" {
+  scheduleId: string
+  name: string
+  lastRunAt: number
+  nextRunAt: number
+}
+
+event InventoryAlertEscalated: "inventory.alert.escalated" {
+  alertId: string
+  inventoryItemId: string
+  newSeverity: string
+  escalatedBy: string
+  escalatedAt: number
+}
+
+event InventoryForecastPublished: "inventory.forecast.published" {
+  forecastId: string
+  tenantId: string
+  inventoryItemId: string
+  projectedQuantity: number
+  confidence: number
+  publishedAt: number
+}
+
+event InventoryForecastApproved: "inventory.forecast.approved" {
+  forecastId: string
+  tenantId: string
+  inventoryItemId: string
+  approvedBy: string
+  approvedAt: number
+}
+
+event ReorderSuggestionAutoAccepted: "inventory.reorder.suggestion.auto-accepted" {
+  suggestionId: string
+  tenantId: string
+  inventoryItemId: string
+  suggestedQuantity: number
+  triggeredBy: string
+  acceptedAt: number
 }

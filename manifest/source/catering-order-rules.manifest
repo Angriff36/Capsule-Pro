@@ -10,7 +10,7 @@ entity CateringOrder {
   property eventId: string = ""
   property orderStatus: string = "draft"
   property orderDate: datetime = now()
-  property optional deliveryDate: datetime
+  property deliveryDate: datetime
   property deliveryTime: string = ""
   property subtotalAmount: money = 0
   property taxAmount: money = 0
@@ -20,7 +20,10 @@ entity CateringOrder {
   property depositRequired: boolean = false
   property depositAmount: money = 0
   property depositPaid: boolean = false
-  property depositPaidAt: datetime = now()
+  // Bug fix: depositPaidAt is a lifecycle datetime — no default
+  property depositPaidAt: datetime
+  property deliveredAt: datetime
+  property prepStartedAt: datetime
   property venueName: string = ""
   property venueAddress: string = ""
   property venueCity: string = ""
@@ -40,6 +43,7 @@ entity CateringOrder {
   computed isDraft: boolean = self.orderStatus == "draft"
   computed isConfirmed: boolean = self.orderStatus == "confirmed"
   computed isInProgress: boolean = self.orderStatus == "in_progress"
+  computed isDelivered: boolean = self.orderStatus == "delivered"
   computed isCompleted: boolean = self.orderStatus == "completed"
   computed isCancelled: boolean = self.orderStatus == "cancelled"
   computed isActive: boolean = self.orderStatus == "draft" or self.orderStatus == "confirmed" or self.orderStatus == "in_progress"
@@ -47,8 +51,13 @@ entity CateringOrder {
   computed isFullyStaffed: boolean = self.staffAssigned >= self.staffRequired
   computed hasDeposit: boolean = self.depositRequired and self.depositPaid
 
+  transition status from "draft" to ["confirmed", "cancelled"]
+  transition status from "confirmed" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["delivered", "cancelled"]
+  transition status from "delivered" to ["completed"]
+
   constraint validOrderNumber: self.orderNumber != null and self.orderNumber != "" "Order number is required"
-  constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "completed", "cancelled"] "Status must be valid"
+  constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "delivered", "completed", "cancelled"] "Status must be valid"
   constraint positiveGuestCount: self.guestCount >= 0 "Guest count must be non-negative"
   constraint positiveTotalAmount: self.totalAmount >= 0 "Total amount must be non-negative"
 
@@ -152,6 +161,30 @@ entity CateringOrder {
     emit CateringOrderConfirmed
   }
 
+  command recordDeposit(paymentReference: string) {
+    guard self.orderStatus in ["draft", "confirmed"] "Can only record deposit on draft or confirmed orders"
+    guard self.depositRequired "Order does not require a deposit"
+    guard self.depositPaid == false "Deposit has already been recorded"
+    guard paymentReference != null and paymentReference != "" "Payment reference is required"
+
+    mutate depositPaid = true
+    mutate depositPaidAt = now()
+    mutate updatedAt = now()
+
+    emit CateringOrderDepositRecorded
+  }
+
+  command scheduleDelivery(deliveryDate: number, deliveryTime: string) {
+    guard self.orderStatus in ["draft", "confirmed"] "Can only schedule delivery for draft or confirmed orders"
+    guard deliveryDate != null "Delivery date is required"
+
+    mutate deliveryDate = deliveryDate
+    mutate deliveryTime = deliveryTime
+    mutate updatedAt = now()
+
+    emit CateringOrderDeliveryScheduled
+  }
+
   command cancel(reason: string) {
     guard self.orderStatus != "completed" "Cannot cancel completed order"
     guard self.orderStatus != "cancelled" "Order is already cancelled"
@@ -175,21 +208,32 @@ entity CateringOrder {
     guard self.orderStatus == "confirmed" "Can only start prep on confirmed orders"
 
     mutate orderStatus = "in_progress"
+    mutate prepStartedAt = now()
     mutate updatedAt = now()
 
     emit CateringOrderPrepStarted
   }
 
-  command markComplete(userId: string) {
-    guard self.orderStatus == "in_progress" "Can only complete orders that are in progress"
+  command deliver(userId: string) {
+    guard self.orderStatus == "in_progress" "Can only deliver orders that are in progress"
 
-    constraint warnIncompleteItems:warn true {
-      messageTemplate: "Completing catering order '{orderId}' — verify all items are prepared"
+    constraint warnNoDeposit:warn self.depositRequired and not self.depositPaid {
+      messageTemplate: "Delivering order {orderNumber} with outstanding deposit"
       details: {
-        orderId: self.id
-        eventId: self.eventId
+        orderNumber: self.orderNumber
+        depositAmount: self.depositAmount
       }
     }
+
+    mutate orderStatus = "delivered"
+    mutate deliveredAt = now()
+    mutate updatedAt = now()
+
+    emit CateringOrderDelivered
+  }
+
+  command markComplete(userId: string) {
+    guard self.orderStatus == "delivered" "Can only complete orders that have been delivered"
 
     mutate orderStatus = "completed"
     mutate updatedAt = now()
@@ -236,6 +280,24 @@ event CateringOrderConfirmed: "events.catering_order.confirmed" {
   confirmedAt: number
 }
 
+event CateringOrderDepositRecorded: "events.catering_order.deposit_recorded" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  depositAmount: number
+  paymentReference: string
+  recordedAt: number
+}
+
+event CateringOrderDeliveryScheduled: "events.catering_order.delivery_scheduled" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  deliveryDate: number
+  deliveryTime: string
+  scheduledAt: number
+}
+
 event CateringOrderCancelled: "events.catering_order.cancelled" {
   orderId: string
   tenantId: string
@@ -250,6 +312,15 @@ event CateringOrderPrepStarted: "catering.order.prep_started" {
   eventId: string
   userId: string
   startedAt: number
+}
+
+event CateringOrderDelivered: "catering.order.delivered" {
+  orderId: string
+  tenantId: string
+  eventId: string
+  orderNumber: string
+  userId: string
+  deliveredAt: number
 }
 
 event CateringOrderCompleted: "catering.order.completed" {

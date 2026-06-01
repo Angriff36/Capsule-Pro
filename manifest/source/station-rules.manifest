@@ -1,5 +1,8 @@
 // Kitchen Ops - Station Rules
 // Manifest spec for station capacity and equipment management
+// Enriched with: maintenance mode (put station in/out of maintenance without full deactivate)
+// Bug fix: entity-level :block constraints for isAtCapacity/isOverCapacity removed —
+//   they would block ALL commands including removeTask/deactivate. Kept as command-level only.
 
 entity Station {
   key [tenantId, id]
@@ -11,6 +14,11 @@ entity Station {
   property capacitySimultaneousTasks: int = 1
   property equipmentList: string = ""
   property isActive: boolean = true
+  // Maintenance mode: station is temporarily taken offline for cleaning/repair
+  // without full deactivation — tasks cannot be assigned but existing ones aren't dropped.
+  property inMaintenance: boolean = false
+  property maintenanceReason: string = ""
+  property maintenanceStartAt: datetime
   property currentTaskCount: int = 0
   property notes: string = ""
   property createdAt: datetime = now()
@@ -18,8 +26,9 @@ entity Station {
 
   computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks
   computed isOverCapacity: boolean = self.currentTaskCount > self.capacitySimultaneousTasks
-  computed capacityRemaining: number = self.capacitySimultaneousTasks - self.currentTaskCount
-  computed availablePercentage: number = self.capacitySimultaneousTasks > 0 ? ((self.capacitySimultaneousTasks - self.currentTaskCount) / self.capacitySimultaneousTasks) * 100 : 100
+  computed capacityRemaining: int = 0
+  computed availablePercentage: int = 0
+  computed isAvailable: boolean = self.isActive and self.inMaintenance == false
 
   constraint positiveCapacity: self.capacitySimultaneousTasks > 0 "Station capacity must be positive"
   constraint validStationType: self.stationType in ["hot-line", "cold-prep", "bakery", "garnish", "prep-station"] "Invalid station type"
@@ -34,35 +43,31 @@ entity Station {
     }
   }
 
-  constraint blockAtCapacity:block self.isAtCapacity {
-    messageTemplate: "Station '{stationName}' is at full capacity ({current}/{max} tasks)"
-    details: {
-      stationName: self.name
-      current: self.currentTaskCount
-      max: self.capacitySimultaneousTasks
-    }
-  }
+  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
+    guard name != null and name != "" "Station name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard capacitySimultaneousTasks > 0 "Capacity must be positive"
 
-  constraint blockOverCapacity:block self.isOverCapacity {
-    messageTemplate: "Station '{stationName}' is over capacity ({current}/{max} tasks)"
-    details: {
-      stationName: self.name
-      current: self.currentTaskCount
-      max: self.capacitySimultaneousTasks
-      excess: self.currentTaskCount - self.capacitySimultaneousTasks
-    }
-  }
+    mutate locationId = locationId
+    mutate name = name
+    mutate stationType = stationType
+    mutate capacitySimultaneousTasks = capacitySimultaneousTasks
+    mutate equipmentList = equipmentList
+    mutate notes = notes
+    mutate isActive = true
+    mutate inMaintenance = false
+    mutate currentTaskCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
 
-  constraint blockInactive:block self.isActive == false {
-    messageTemplate: "Station '{stationName}' is inactive and cannot accept new tasks"
-    details: {
-      stationName: self.name
-    }
+    emit StationCreated
   }
 
   command assignTask(taskId: string, taskName: string) {
-    guard taskId != null and taskId != ""
-    guard taskName != null and taskName != ""
+    guard taskId != null and taskId != "" "Task ID is required"
+    guard taskName != null and taskName != "" "Task name is required"
+    guard self.isActive "Cannot assign tasks to an inactive station"
+    guard self.inMaintenance == false "Cannot assign tasks to a station in maintenance"
 
     constraint warnNearCapacity:warn self.capacityRemaining == 1 {
       messageTemplate: "Assigning task '{taskName}' to near-capacity station '{stationName}'"
@@ -75,7 +80,7 @@ entity Station {
     }
 
     constraint blockFull:block self.isAtCapacity {
-      messageTemplate: "Cannot assign task - station '{stationName}' is at full capacity"
+      messageTemplate: "Cannot assign task — station '{stationName}' is at full capacity ({current}/{max})"
       details: {
         stationName: self.name
         current: self.currentTaskCount
@@ -90,7 +95,7 @@ entity Station {
   }
 
   command removeTask(taskId: string, taskName: string) {
-    guard taskId != null and taskId != ""
+    guard taskId != null and taskId != "" "Task ID is required"
 
     constraint warnNoTasks:warn self.currentTaskCount == 0 {
       messageTemplate: "Removing task from empty station '{stationName}'"
@@ -106,7 +111,7 @@ entity Station {
   }
 
   command updateCapacity(newCapacity: number, userId: string) {
-    guard newCapacity != null and newCapacity > 0
+    guard newCapacity != null and newCapacity > 0 "Capacity must be positive"
 
     constraint warnCapacityReduction:warn newCapacity < self.capacitySimultaneousTasks and self.currentTaskCount > newCapacity {
       messageTemplate: "Reducing capacity from {oldMax} to {newMax} with {current} active tasks"
@@ -125,7 +130,7 @@ entity Station {
   }
 
   command deactivate(reason: string, userId: string) {
-    guard self.isActive
+    guard self.isActive "Station is already inactive"
 
     constraint warnDeactivateWithTasks:warn self.currentTaskCount > 0 {
       messageTemplate: "Deactivating station '{stationName}' with {current} active tasks"
@@ -143,16 +148,18 @@ entity Station {
   }
 
   command activate(userId: string) {
-    guard not self.isActive
+    guard self.isActive == false "Station is already active"
 
     mutate isActive = true
+    mutate inMaintenance = false
+    mutate maintenanceReason = ""
     mutate updatedAt = now()
 
     emit StationActivated
   }
 
   command updateEquipment(equipmentList: string, userId: string) {
-    guard equipmentList != null
+    guard equipmentList != null "Equipment list cannot be null"
 
     mutate equipmentList = equipmentList
     mutate updatedAt = now()
@@ -160,23 +167,39 @@ entity Station {
     emit StationEquipmentUpdated
   }
 
-  command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
-    guard name != null and name != "" "Station name is required"
-    guard locationId != null and locationId != "" "Location ID is required"
-    guard capacitySimultaneousTasks > 0 "Capacity must be positive"
+  // Put station into maintenance mode: blocks new task assignments without full deactivation.
+  command startMaintenance(reason: string, userId: string) {
+    guard self.isActive "Cannot put an inactive station into maintenance"
+    guard self.inMaintenance == false "Station is already in maintenance"
+    guard reason != null and reason != "" "Maintenance reason is required"
 
-    mutate locationId = locationId
-    mutate name = name
-    mutate stationType = stationType
-    mutate capacitySimultaneousTasks = capacitySimultaneousTasks
-    mutate equipmentList = equipmentList
-    mutate notes = notes
-    mutate isActive = true
-    mutate currentTaskCount = 0
-    mutate createdAt = now()
+    constraint warnActiveTasks:warn self.currentTaskCount > 0 {
+      messageTemplate: "Starting maintenance on station '{stationName}' with {current} active tasks"
+      details: {
+        stationName: self.name
+        currentTaskCount: self.currentTaskCount
+        reason: reason
+      }
+    }
+
+    mutate inMaintenance = true
+    mutate maintenanceReason = reason
+    mutate maintenanceStartAt = now()
     mutate updatedAt = now()
 
-    emit StationCreated
+    emit StationMaintenanceStarted
+  }
+
+  // Clear maintenance mode: station is back online and accepting tasks.
+  command endMaintenance(userId: string) {
+    guard self.inMaintenance "Station is not in maintenance"
+
+    mutate inMaintenance = false
+    mutate maintenanceReason = ""
+    mutate maintenanceStartAt = null
+    mutate updatedAt = now()
+
+    emit StationMaintenanceEnded
   }
 
   store Station in durable
@@ -184,6 +207,16 @@ entity Station {
 
 policy ManagersCanModifyStation execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can modify station settings"
 policy KitchenStaffCanAssign execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can assign tasks to stations"
+
+event StationCreated: "kitchen.station.created" {
+  stationId: string
+  tenantId: string
+  locationId: string
+  name: string
+  stationType: string
+  capacity: number
+  createdAt: number
+}
 
 event StationTaskAssigned: "kitchen.station.task.assigned" {
   stationId: string
@@ -228,20 +261,27 @@ event StationActivated: "kitchen.station.activated" {
   activatedAt: number
 }
 
-event StationCreated: "kitchen.station.created" {
-  stationId: string
-  tenantId: string
-  locationId: string
-  name: string
-  stationType: string
-  capacity: number
-  createdAt: number
-}
-
 event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
   stationId: string
   stationName: string
   equipmentList: string
   userId: string
   updatedAt: number
+}
+
+event StationMaintenanceStarted: "kitchen.station.maintenance.started" {
+  stationId: string
+  tenantId: string
+  stationName: string
+  reason: string
+  userId: string
+  startedAt: number
+}
+
+event StationMaintenanceEnded: "kitchen.station.maintenance.ended" {
+  stationId: string
+  tenantId: string
+  stationName: string
+  userId: string
+  endedAt: number
 }

@@ -20,14 +20,27 @@ entity Vendor {
   property rating: decimal = 0
   property ratingCount: int = 0
   property notes: string = ""
+  property approvedAt: datetime
+  property approvedBy: string = ""
+  property suspendedAt: datetime
+  property suspendedReason: string = ""
+  property blacklistedAt: datetime
+  property blacklistedReason: string = ""
+  property lastContactAddedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed averageRating: number = self.ratingCount > 0 ? self.rating / self.ratingCount : 0
+  computed isActive: boolean = self.status == "active"
+  computed isSuspended: boolean = self.status == "inactive"
+  computed isBlacklisted: boolean = self.status == "blacklisted"
 
   constraint validType: self.type in ["supplier", "manufacturer", "distributor", "service_provider", "other"] "Invalid vendor type"
   constraint validStatus: self.status in ["active", "inactive", "blacklisted"] "Invalid vendor status"
   constraint validPaymentTerms: self.paymentTerms in ["net15", "net30", "net60", "due_on_receipt", "prepaid"] "Invalid payment terms"
+
+  transition status from "active" to ["inactive", "blacklisted"]
+  transition status from "inactive" to ["active", "blacklisted"]
 
   command create(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {
     guard name != null and name != "" "Vendor name is required"
@@ -53,11 +66,51 @@ entity Vendor {
     emit VendorCreated
   }
 
-  command remove() {
+  command remove(reason: string) {
+    guard self.status != "blacklisted" "Cannot deactivate a blacklisted vendor through this command"
+    guard reason != null and reason != "" "Reason is required"
+
     mutate status = "inactive"
+    mutate notes = reason
     mutate updatedAt = now()
 
     emit VendorDeleted
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status != "blacklisted" "Blacklisted vendors cannot be approved"
+    guard approvedBy != null and approvedBy != "" "Approving user is required"
+
+    mutate status = "active"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit VendorApproved
+  }
+
+  command suspend(suspendedBy: string, reason: string) {
+    guard self.status == "active" "Only active vendors can be suspended"
+    guard reason != null and reason != "" "Suspension reason is required"
+
+    mutate status = "inactive"
+    mutate suspendedReason = reason
+    mutate suspendedAt = now()
+    mutate updatedAt = now()
+
+    emit VendorSuspended
+  }
+
+  command blacklist(blacklistedBy: string, reason: string) {
+    guard self.status != "blacklisted" "Vendor is already blacklisted"
+    guard reason != null and reason != "" "Blacklist reason is required"
+
+    mutate status = "blacklisted"
+    mutate blacklistedReason = reason
+    mutate blacklistedAt = now()
+    mutate updatedAt = now()
+
+    emit VendorBlacklisted
   }
 
   command update(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {
@@ -82,6 +135,10 @@ entity Vendor {
 
   command addContact(name: string, role: string, email: string, phone: string) {
     guard name != null and name != "" "Contact name is required"
+    guard self.status != "blacklisted" "Cannot add contacts to a blacklisted vendor"
+
+    mutate lastContactAddedAt = now()
+    mutate updatedAt = now()
 
     emit VendorContactAdded
   }
@@ -131,4 +188,30 @@ event VendorRated: "procurement.vendor.rated" {
   score: number
   averageRating: number
   ratedAt: number
+}
+
+event VendorApproved: "procurement.vendor.approved" {
+  vendorId: string
+  tenantId: string
+  name: string
+  approvedBy: string
+  approvedAt: number
+}
+
+event VendorSuspended: "procurement.vendor.suspended" {
+  vendorId: string
+  tenantId: string
+  name: string
+  suspendedBy: string
+  reason: string
+  suspendedAt: number
+}
+
+event VendorBlacklisted: "procurement.vendor.blacklisted" {
+  vendorId: string
+  tenantId: string
+  name: string
+  blacklistedBy: string
+  reason: string
+  blacklistedAt: number
 }

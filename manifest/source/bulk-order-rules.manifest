@@ -1,6 +1,9 @@
 // Bulk Order Rules
 // Manifest spec for bulk order management
-// Version: @angriff36/manifest v0.3.35
+// A BulkOrderRule defines quantity-threshold incentives (discounts, free shipping)
+// applied to catalog entries when orders meet the minimum quantity.
+// Enriched with: activate/deactivate lifecycle, adjustPriority command.
+// Bug fix: isEffective computed used == 0 on datetime fields — replaced with == null.
 
 entity BulkOrderRule {
   key [tenantId, id]
@@ -16,6 +19,7 @@ entity BulkOrderRule {
   property freeItemQuantity: int = 0
   property shippingIncluded: boolean = false
   property priority: int = 0
+  // effectiveFrom/effectiveTo: null = unbounded on that side (no date restriction).
   property effectiveFrom: datetime
   property effectiveTo: datetime
   property isActive: boolean = true
@@ -24,18 +28,32 @@ entity BulkOrderRule {
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
-  computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
+  // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+  computed hasDiscountAction: boolean = self.action == "discount" and self.discountPercent > 0
+  computed hasFreeShipping: boolean = self.action == "free_shipping" or self.shippingIncluded
 
   constraint requireRuleName: self.ruleName != null and self.ruleName != "" "Rule name is required"
   constraint requireMinimumQuantity: self.minimumQuantity >= 1 "Minimum quantity must be at least 1"
   constraint requireRuleType: self.ruleType in ["discount", "free_shipping", "threshold"] "Rule type must be discount, free_shipping, or threshold"
   constraint requireAction: self.action in ["discount", "free_shipping"] "Action must be discount or free_shipping"
+  constraint validDiscount: self.discountPercent >= 0 and self.discountPercent <= 100 "Discount percent must be between 0 and 100"
+
+  constraint warnNoDiscount:warn self.action == "discount" and self.discountPercent == 0 and self.isActive {
+    messageTemplate: "Bulk order rule '{ruleName}' has discount action but 0% discount — verify this is intentional"
+    details: {
+      ruleName: self.ruleName
+      action: self.action
+      discountPercent: self.discountPercent
+    }
+  }
 
   command create(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number) {
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
     guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
     guard action in ["discount", "free_shipping"] "Invalid action"
+    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
 
     mutate catalogEntryId = catalogEntryId
     mutate ruleName = ruleName
@@ -58,6 +76,20 @@ entity BulkOrderRule {
 
   command update(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted rule"
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
+    guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
+    guard action in ["discount", "free_shipping"] "Invalid action"
+    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+
+    constraint warnDiscountIncrease:warn action == "discount" and discountPercent > self.discountPercent and self.discountPercent > 0 {
+      messageTemplate: "Discount increased from {oldPct}% to {newPct}% for rule '{ruleName}'"
+      details: {
+        ruleName: ruleName
+        oldPct: self.discountPercent
+        newPct: discountPercent
+      }
+    }
 
     mutate catalogEntryId = catalogEntryId
     mutate ruleName = ruleName
@@ -75,6 +107,39 @@ entity BulkOrderRule {
     mutate updatedAt = now()
 
     emit BulkOrderRuleUpdated
+  }
+
+  // Activate a suspended (but not deleted) rule — e.g. re-enable a seasonal promo.
+  command activate() {
+    guard self.deletedAt == null "Cannot activate a deleted rule"
+    guard self.isActive == false "Rule is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit BulkOrderRuleActivated
+  }
+
+  // Suspend a rule without deleting it — stops it applying to new orders.
+  command deactivate(reason: string) {
+    guard self.deletedAt == null "Cannot deactivate a deleted rule"
+    guard self.isActive "Rule is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit BulkOrderRuleSuspended
+  }
+
+  // Change rule evaluation priority — higher priority rules are applied first.
+  command adjustPriority(newPriority: number) {
+    guard self.deletedAt == null "Cannot adjust priority of a deleted rule"
+    guard newPriority >= 0 "Priority must be non-negative"
+
+    mutate priority = newPriority
+    mutate updatedAt = now()
+
+    emit BulkOrderRulePriorityAdjusted
   }
 
   command softDelete(reason: string) {
@@ -117,6 +182,32 @@ event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
   minimumQuantity: number
   ruleType: string
   action: string
+  updatedAt: number
+}
+
+event BulkOrderRuleActivated: "inventory.bulk-order-rule.activated" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  activatedAt: number
+}
+
+event BulkOrderRuleSuspended: "inventory.bulk-order-rule.suspended" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  reason: string
+  suspendedAt: number
+}
+
+event BulkOrderRulePriorityAdjusted: "inventory.bulk-order-rule.priority-adjusted" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  newPriority: number
   updatedAt: number
 }
 

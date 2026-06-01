@@ -7,14 +7,27 @@ entity QACheck {
   property location: string = ""
   property required checkType: string
   property result: string = "pass"
+  property status: string = "pending"
   property inspector: string = ""
   property notes: string = ""
-  property completedAt: datetime = now()
+  // Bug fix: lifecycle timestamps must be nullable (no = now() default)
+  property completedAt: datetime
+  property reinspectedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isPending: boolean = self.status == "pending"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isFailed: boolean = self.result == "fail"
+  computed needsReinspection: boolean = self.status == "reinspection_required"
+
+  transition status from "pending" to ["completed"]
+  transition status from "completed" to ["reinspection_required"]
+  transition status from "reinspection_required" to ["completed"]
+
   constraint validCheckType: self.checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
   constraint validResult: self.result in ["pass", "fail", "na"] "Invalid check result"
+  constraint validStatus: self.status in ["pending", "completed", "reinspection_required"] "Invalid check status"
 
   command create(location: string, checkType: string, inspector: string, notes: string) {
     guard checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
@@ -24,23 +37,71 @@ entity QACheck {
     mutate inspector = inspector
     mutate notes = notes
     mutate result = "pass"
+    mutate status = "pending"
     mutate createdAt = now()
     mutate updatedAt = now()
 
     emit QACheckCreated
   }
 
+  // Complete a pending check with a passing or n/a result.
   command complete(result: string, inspector: string, notes: string) {
-    guard result in ["pass", "fail", "na"] "Invalid check result"
+    guard self.status in ["pending", "reinspection_required"] "Check must be pending or awaiting reinspection"
+    guard result in ["pass", "na"] "Use the fail command to record a failing check"
 
     mutate result = result
     mutate inspector = inspector
     mutate notes = notes
+    mutate status = "completed"
     mutate completedAt = now()
     mutate updatedAt = now()
 
     emit QACheckCompleted
   }
+
+  // Record a failing result — callers should open a QACorrectiveAction.
+  command fail(inspector: string, notes: string) {
+    guard self.status in ["pending", "reinspection_required"] "Check must be pending or awaiting reinspection"
+    guard inspector != null and inspector != "" "Inspector is required"
+
+    mutate result = "fail"
+    mutate inspector = inspector
+    mutate notes = notes
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit QACheckFailed
+  }
+
+  // Flag a completed check for reinspection (disputed result, equipment recalibrated, etc.).
+  command requireReinspection(reason: string) {
+    guard self.status == "completed" "Only a completed check can be flagged for reinspection"
+    guard reason != null and reason != "" "Reason for reinspection is required"
+
+    mutate status = "reinspection_required"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit QACheckReinspectionRequired
+  }
+
+  // Complete a reinspection and record the updated result.
+  command reinspect(result: string, inspector: string, notes: string) {
+    guard self.status == "reinspection_required" "Check must be in reinspection_required state"
+    guard result in ["pass", "fail", "na"] "Invalid reinspection result"
+    guard inspector != null and inspector != "" "Inspector is required"
+
+    mutate result = result
+    mutate inspector = inspector
+    mutate notes = notes
+    mutate status = "completed"
+    mutate reinspectedAt = now()
+    mutate updatedAt = now()
+
+    emit QACheckReinspected
+  }
+
   store QACheck in durable
 }
 
@@ -54,17 +115,32 @@ entity QACorrectiveAction {
   property priority: string = "medium"
   property status: string = "open"
   property resolutionNotes: string = ""
-  property dueDate: datetime = now()
-  property resolvedAt: datetime = now()
+  property escalatedTo: string = ""
+  property escalationReason: string = ""
+  // Bug fix: lifecycle datetimes must be nullable
+  property dueDate: datetime
+  property resolvedAt: datetime
+  property escalatedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isOpen: boolean = self.status == "open"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isResolved: boolean = self.status == "resolved"
+  computed isEscalated: boolean = self.status == "escalated"
+  computed isDismissed: boolean = self.status == "dismissed"
+
+  transition status from "open" to ["in_progress", "escalated", "dismissed"]
+  transition status from "in_progress" to ["resolved", "escalated"]
+  transition status from "escalated" to ["in_progress", "resolved"]
+
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
-  constraint validStatus: self.status in ["open", "in_progress", "resolved", "dismissed"] "Invalid action status"
+  constraint validStatus: self.status in ["open", "in_progress", "resolved", "escalated", "dismissed"] "Invalid action status"
 
   command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: number) {
     guard checkId != null and checkId != "" "Check ID is required"
     guard description != null and description != "" "Description is required"
+    guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
 
     mutate checkId = checkId
     mutate description = description
@@ -78,8 +154,36 @@ entity QACorrectiveAction {
     emit CorrectiveActionCreated
   }
 
+  // Assign or reassign a corrective action to a staff member and put it in progress.
+  command assign(assignedTo: string) {
+    guard self.status in ["open", "escalated"] "Can only assign an open or escalated action"
+    guard assignedTo != null and assignedTo != "" "Assignee is required"
+
+    mutate assignedTo = assignedTo
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit CorrectiveActionAssigned
+  }
+
+  // Escalate to a supervisor when the assignee cannot resolve within the priority window.
+  command escalate(escalatedTo: string, escalationReason: string) {
+    guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be escalated"
+    guard escalatedTo != null and escalatedTo != "" "Escalation target is required"
+    guard escalationReason != null and escalationReason != "" "Escalation reason is required"
+
+    mutate escalatedTo = escalatedTo
+    mutate escalationReason = escalationReason
+    mutate status = "escalated"
+    mutate escalatedAt = now()
+    mutate updatedAt = now()
+
+    emit CorrectiveActionEscalated
+  }
+
   command resolve(resolutionNotes: string) {
-    guard self.status in ["open", "in_progress"] "Only open actions can be resolved"
+    guard self.status in ["open", "in_progress", "escalated"] "Only open or active actions can be resolved"
+    guard resolutionNotes != null and resolutionNotes != "" "Resolution notes are required"
 
     mutate status = "resolved"
     mutate resolutionNotes = resolutionNotes
@@ -88,6 +192,19 @@ entity QACorrectiveAction {
 
     emit CorrectiveActionResolved
   }
+
+  // Dismiss an action determined to be a false positive or no longer applicable.
+  command dismiss(reason: string) {
+    guard self.status in ["open", "in_progress"] "Only open or in-progress actions can be dismissed"
+    guard reason != null and reason != "" "Dismissal reason is required"
+
+    mutate status = "dismissed"
+    mutate resolutionNotes = reason
+    mutate updatedAt = now()
+
+    emit CorrectiveActionDismissed
+  }
+
   store QACorrectiveAction in durable
 }
 
@@ -101,7 +218,8 @@ entity QATemperatureLog {
   property equipment: string = ""
   property recordedBy: string = ""
   property notes: string = ""
-  property loggedAt: datetime = now()
+  // Bug fix: lifecycle datetime must be nullable
+  property loggedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -153,6 +271,30 @@ event QACheckCompleted: "kitchen.qa.check.completed" {
   completedAt: number
 }
 
+event QACheckFailed: "kitchen.qa.check.failed" {
+  checkId: string
+  tenantId: string
+  checkType: string
+  location: string
+  inspector: string
+  failedAt: number
+}
+
+event QACheckReinspectionRequired: "kitchen.qa.check.reinspection-required" {
+  checkId: string
+  tenantId: string
+  reason: string
+  flaggedAt: number
+}
+
+event QACheckReinspected: "kitchen.qa.check.reinspected" {
+  checkId: string
+  tenantId: string
+  result: string
+  inspector: string
+  reinspectedAt: number
+}
+
 event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
   actionId: string
   checkId: string
@@ -162,11 +304,36 @@ event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
   createdAt: number
 }
 
+event CorrectiveActionAssigned: "kitchen.qa.corrective.assigned" {
+  actionId: string
+  tenantId: string
+  checkId: string
+  assignedTo: string
+  assignedAt: number
+}
+
+event CorrectiveActionEscalated: "kitchen.qa.corrective.escalated" {
+  actionId: string
+  tenantId: string
+  checkId: string
+  escalatedTo: string
+  escalationReason: string
+  escalatedAt: number
+}
+
 event CorrectiveActionResolved: "kitchen.qa.corrective.resolved" {
   actionId: string
   checkId: string
   resolutionNotes: string
   resolvedAt: number
+}
+
+event CorrectiveActionDismissed: "kitchen.qa.corrective.dismissed" {
+  actionId: string
+  tenantId: string
+  checkId: string
+  reason: string
+  dismissedAt: number
 }
 
 event TemperatureLogged: "kitchen.temperature.logged" {

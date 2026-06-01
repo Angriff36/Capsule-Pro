@@ -14,6 +14,9 @@ entity Budget {
   property status: string = "draft"
   property category: string = "general"
   property departmentId: string = ""
+  property approvedBy: string = ""
+  property approvedAt: datetime
+  property lockedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
@@ -77,6 +80,77 @@ entity Budget {
     emit BudgetUpdated
   }
 
+  command approve(approvedBy: string) {
+    guard self.status == "draft" "Only draft budgets can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+
+    constraint blockApproveZero:block self.allocatedAmount == 0 {
+      messageTemplate: "Cannot approve budget '{budgetName}' with zero allocated amount"
+      details: {
+        budgetName: self.name
+        fiscalYear: self.fiscalYear
+      }
+    }
+
+    mutate status = "active"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetApproved
+  }
+
+  command lock(lockedBy: string) {
+    guard self.status == "active" "Only active budgets can be locked"
+    guard lockedBy != null and lockedBy != "" "Locker ID is required"
+
+    mutate status = "closed"
+    mutate lockedAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetLocked
+  }
+
+  command addLineItem(lineItemName: string, amount: number, category: string) {
+    guard self.status in ["draft", "active"] "Cannot add line items to a closed or archived budget"
+    guard lineItemName != null and lineItemName != "" "Line item name is required"
+    guard amount >= 0 "Line item amount must be non-negative"
+
+    constraint warnExceedsTotal:warn self.allocatedAmount > 0 and (self.spentAmount + amount) > self.allocatedAmount {
+      messageTemplate: "Adding '{lineItemName}' would push spend past allocated amount"
+      details: {
+        budgetName: self.name
+        allocatedAmount: self.allocatedAmount
+        currentSpent: self.spentAmount
+        addedAmount: amount
+      }
+    }
+
+    mutate spentAmount = self.spentAmount + amount
+    mutate updatedAt = now()
+
+    emit BudgetLineItemAdded
+  }
+
+  command recordVariance(actualSpent: number, note: string) {
+    guard self.status in ["active", "closed"] "Can only record variance on active or closed budgets"
+    guard actualSpent >= 0 "Actual spent must be non-negative"
+
+    constraint warnLargeVariance:warn actualSpent > self.allocatedAmount * 1.1 {
+      messageTemplate: "Variance alert: actual spend ({actualSpent}) exceeds budget by more than 10%"
+      details: {
+        budgetName: self.name
+        allocatedAmount: self.allocatedAmount
+        actualSpent: actualSpent
+      }
+    }
+
+    mutate spentAmount = actualSpent
+    mutate updatedAt = now()
+
+    emit BudgetVarianceRecorded
+  }
+
   command refresh() {
     guard self.status == "active" "Only active budgets can be refreshed"
 
@@ -113,4 +187,38 @@ event BudgetUpdated: "procurement.budget.updated" {
 event BudgetRefreshed: "procurement.budget.refreshed" {
   budgetId: string
   refreshedAt: number
+}
+
+event BudgetApproved: "procurement.budget.approved" {
+  budgetId: string
+  tenantId: string
+  name: string
+  allocatedAmount: number
+  approvedBy: string
+  approvedAt: number
+}
+
+event BudgetLocked: "procurement.budget.locked" {
+  budgetId: string
+  tenantId: string
+  name: string
+  lockedBy: string
+  lockedAt: number
+}
+
+event BudgetLineItemAdded: "procurement.budget.line_item_added" {
+  budgetId: string
+  tenantId: string
+  lineItemName: string
+  amount: number
+  category: string
+  addedAt: number
+}
+
+event BudgetVarianceRecorded: "procurement.budget.variance_recorded" {
+  budgetId: string
+  tenantId: string
+  allocatedAmount: number
+  actualSpent: number
+  recordedAt: number
 }

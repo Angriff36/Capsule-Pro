@@ -7,8 +7,9 @@ entity AutomatedFollowup {
   property required eventId: string
   property type: string = "email"
   property status: string = "pending"
-  property scheduledDate: datetime = now()
-  property sentDate: datetime = now()
+  // Bug fix: lifecycle datetimes — no default
+  property scheduledDate: datetime
+  property sentDate: datetime
   property recipientId: string = ""
   property subject: string = ""
   property body: string = ""
@@ -16,6 +17,11 @@ entity AutomatedFollowup {
   property errorMessage: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
+
+  computed isPending: boolean = self.status == "pending"
+  computed isSent: boolean = self.status == "sent"
+  computed isFailed: boolean = self.status == "failed"
+  computed isSkipped: boolean = self.status == "skipped"
 
   constraint validType: self.type in ["email", "sms", "push"] "Invalid followup type"
   constraint validStatus: self.status in ["pending", "sent", "failed", "skipped"] "Invalid followup status"
@@ -56,6 +62,27 @@ entity AutomatedFollowup {
     emit FollowupGenerated
   }
 
+  command fail(errorMessage: string) {
+    guard self.status == "pending" "Only pending followups can be failed"
+    guard errorMessage != null and errorMessage != "" "Error message is required"
+
+    mutate status = "failed"
+    mutate errorMessage = errorMessage
+    mutate updatedAt = now()
+
+    emit FollowupFailed
+  }
+
+  command retry(userId: string) {
+    guard self.status == "failed" "Only failed followups can be retried"
+
+    mutate status = "pending"
+    mutate errorMessage = ""
+    mutate updatedAt = now()
+
+    emit FollowupRetried
+  }
+
   command skip(reason: string) {
     guard self.status == "pending" "Only pending followups can be skipped"
 
@@ -78,17 +105,19 @@ entity EventTimelineItem {
   property itemType: string = "task"
   property status: string = "pending"
   property assignedTo: string = ""
-  property dueDate: datetime = now()
-  property completedAt: datetime = now()
+  // Bug fix: lifecycle datetime — no default
+  property dueDate: datetime
+  property completedAt: datetime
   property sortOrder: int = 0
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
   computed isCompleted: boolean = self.status == "completed"
-  computed isOverdue: boolean = self.dueDate > 0 and self.status != "completed" and now() > self.dueDate
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isBlocked: boolean = self.status == "blocked"
 
   constraint validItemType: self.itemType in ["task", "milestone", "reminder", "note"] "Invalid timeline item type"
-  constraint validStatus: self.status in ["pending", "in_progress", "completed", "cancelled"] "Invalid timeline item status"
+  constraint validStatus: self.status in ["pending", "in_progress", "completed", "cancelled", "blocked"] "Invalid timeline item status"
 
   command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -108,6 +137,45 @@ entity EventTimelineItem {
     emit TimelineItemCreated
   }
 
+  command startItem(userId: string) {
+    guard self.status == "pending" "Can only start a pending timeline item"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit TimelineItemStarted
+  }
+
+  command blockItem(reason: string) {
+    guard self.status == "in_progress" "Can only block an in-progress timeline item"
+    guard reason != null and reason != "" "Block reason is required"
+
+    mutate status = "blocked"
+    mutate description = reason
+    mutate updatedAt = now()
+
+    emit TimelineItemBlocked
+  }
+
+  command unblockItem(userId: string) {
+    guard self.status == "blocked" "Can only unblock a blocked timeline item"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit TimelineItemUnblocked
+  }
+
+  command reorderItem(newSortOrder: number) {
+    guard newSortOrder >= 0 "Sort order cannot be negative"
+    guard self.status != "completed" "Cannot reorder a completed item"
+
+    mutate sortOrder = newSortOrder
+    mutate updatedAt = now()
+
+    emit TimelineItemReordered
+  }
+
   command deleteItem() {
     mutate status = "cancelled"
     mutate updatedAt = now()
@@ -116,6 +184,8 @@ entity EventTimelineItem {
   }
 
   command completeItem() {
+    guard self.status in ["pending", "in_progress"] "Can only complete a pending or in-progress timeline item"
+
     mutate status = "completed"
     mutate completedAt = now()
     mutate updatedAt = now()
@@ -125,6 +195,7 @@ entity EventTimelineItem {
 
   command updateItem(title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
     guard title != null and title != "" "Title is required"
+    guard self.status != "completed" "Cannot update a completed timeline item"
 
     mutate title = title
     mutate description = description
@@ -150,16 +221,26 @@ entity EventWaitlistEntry {
   property partySize: int = 1
   property status: string = "waiting"
   property notes: string = ""
-  property joinedAt: datetime = now()
-  property notifiedAt: datetime = now()
+  // Bug fix: lifecycle datetimes — no default
+  property joinedAt: datetime
+  property notifiedAt: datetime
+  property seatedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
 
+  computed isWaiting: boolean = self.status == "waiting"
+  computed isNotified: boolean = self.status == "notified"
+  computed isSeated: boolean = self.status == "seated"
+  computed isCancelled: boolean = self.status == "cancelled"
+
   constraint validStatus: self.status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid waitlist status"
+  constraint requireGuestName: self.guestName != "" "Guest name is required"
+  constraint positivePartySize: self.partySize >= 1 "Party size must be at least 1"
 
   command addGuest(eventId: string, guestName: string, email: string, phone: string, partySize: number, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"
+    guard partySize >= 1 "Party size must be at least 1"
 
     mutate eventId = eventId
     mutate guestName = guestName
@@ -175,6 +256,16 @@ entity EventWaitlistEntry {
     emit WaitlistGuestAdded
   }
 
+  command notify(message: string) {
+    guard self.status == "waiting" "Can only notify guests who are waiting"
+
+    mutate status = "notified"
+    mutate notifiedAt = now()
+    mutate updatedAt = now()
+
+    emit WaitlistGuestNotified
+  }
+
   command promote() {
     guard self.status in ["waiting", "notified"] "Cannot promote a non-waiting guest"
 
@@ -182,6 +273,27 @@ entity EventWaitlistEntry {
     mutate updatedAt = now()
 
     emit WaitlistGuestPromoted
+  }
+
+  command seat(tableNumber: string) {
+    guard self.status == "confirmed" "Guest must be confirmed before seating"
+
+    mutate status = "seated"
+    mutate seatedAt = now()
+    mutate updatedAt = now()
+
+    emit WaitlistGuestSeated
+  }
+
+  command cancel(reason: string) {
+    guard self.status != "seated" "Cannot cancel a seated guest"
+    guard self.status != "cancelled" "Guest is already cancelled"
+
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+
+    emit WaitlistGuestCancelled
   }
 
   command updateRsvp(status: string) {
@@ -217,6 +329,20 @@ event FollowupGenerated: "event.followup.generated" {
   generatedAt: number
 }
 
+event FollowupFailed: "event.followup.failed" {
+  followupId: string
+  eventId: string
+  errorMessage: string
+  failedAt: number
+}
+
+event FollowupRetried: "event.followup.retried" {
+  followupId: string
+  eventId: string
+  userId: string
+  retriedAt: number
+}
+
 event FollowupSkipped: "event.followup.skipped" {
   followupId: string
   eventId: string
@@ -230,6 +356,34 @@ event TimelineItemCreated: "event.timeline.item.created" {
   title: string
   itemType: string
   createdAt: number
+}
+
+event TimelineItemStarted: "event.timeline.item.started" {
+  itemId: string
+  eventId: string
+  userId: string
+  startedAt: number
+}
+
+event TimelineItemBlocked: "event.timeline.item.blocked" {
+  itemId: string
+  eventId: string
+  reason: string
+  blockedAt: number
+}
+
+event TimelineItemUnblocked: "event.timeline.item.unblocked" {
+  itemId: string
+  eventId: string
+  userId: string
+  unblockedAt: number
+}
+
+event TimelineItemReordered: "event.timeline.item.reordered" {
+  itemId: string
+  eventId: string
+  newSortOrder: number
+  updatedAt: number
 }
 
 event TimelineItemDeleted: "event.timeline.item.deleted" {
@@ -259,11 +413,34 @@ event WaitlistGuestAdded: "event.waitlist.guest.added" {
   addedAt: number
 }
 
+event WaitlistGuestNotified: "event.waitlist.guest.notified" {
+  entryId: string
+  eventId: string
+  guestName: string
+  notifiedAt: number
+}
+
 event WaitlistGuestPromoted: "event.waitlist.guest.promoted" {
   entryId: string
   eventId: string
   guestName: string
   promotedAt: number
+}
+
+event WaitlistGuestSeated: "event.waitlist.guest.seated" {
+  entryId: string
+  eventId: string
+  guestName: string
+  partySize: number
+  seatedAt: number
+}
+
+event WaitlistGuestCancelled: "event.waitlist.guest.cancelled" {
+  entryId: string
+  eventId: string
+  guestName: string
+  reason: string
+  cancelledAt: number
 }
 
 event WaitlistRsvpUpdated: "event.waitlist.rsvp.updated" {

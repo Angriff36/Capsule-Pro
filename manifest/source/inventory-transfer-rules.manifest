@@ -12,8 +12,10 @@ entity InventoryTransfer {
   property approvedBy: string = ""
   property shippedBy: string = ""
   property receivedBy: string = ""
-  property shipDate: datetime = now()
-  property receiveDate: datetime = now()
+  property shipDate: datetime
+  property receiveDate: datetime
+  property discrepancyNotes: string = ""
+  property hasDiscrepancy: boolean = false
   property notes: string = ""
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
@@ -100,6 +102,36 @@ entity InventoryTransfer {
 
     emit TransferCancelled
   }
+
+  // Record a partial receipt when the delivered quantities are less than requested.
+  // The transfer stays open (in_transit) so the remainder can be received later or
+  // a discrepancy can be flagged.
+  command partialReceive(receivedBy: string, receivedItems: string, notes: string) {
+    guard self.status == "in_transit" "Transfer must be in transit to record a partial receipt"
+    guard receivedBy != null and receivedBy != "" "Receiving user is required"
+
+    mutate receivedBy = receivedBy
+    mutate receiveDate = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit TransferPartiallyReceived
+  }
+
+  // Flag a quantity or quality discrepancy discovered at receipt time.
+  // Keeps the transfer in received state while the issue is investigated.
+  command flagDiscrepancy(reportedBy: string, discrepancyNotes: string) {
+    guard self.status in ["in_transit", "received"] "Can only flag discrepancies on in-transit or received transfers"
+    guard reportedBy != null and reportedBy != "" "Reporting user is required"
+    guard discrepancyNotes != null and discrepancyNotes != "" "Discrepancy notes are required"
+
+    mutate hasDiscrepancy = true
+    mutate discrepancyNotes = discrepancyNotes
+    mutate updatedAt = now()
+
+    emit TransferDiscrepancyFlagged
+  }
+
   store InventoryTransfer in durable
 }
 
@@ -136,4 +168,19 @@ event TransferCancelled: "inventory.transfer.cancelled" {
   transferId: string
   reason: string
   cancelledAt: number
+}
+
+event TransferPartiallyReceived: "inventory.transfer.partially-received" {
+  transferId: string
+  receivedBy: string
+  receivedItems: string
+  notes: string
+  receivedAt: number
+}
+
+event TransferDiscrepancyFlagged: "inventory.transfer.discrepancy-flagged" {
+  transferId: string
+  reportedBy: string
+  discrepancyNotes: string
+  flaggedAt: number
 }
