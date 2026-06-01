@@ -136,6 +136,28 @@ Client generates.** On branch `manifest/full-official-generation`.
 - Only 6 `@relation`s emit (the declared belongsTo/hasMany); the rest use flat string FKs — CONSISTENT
   with Capsule's "no FKs, flat keys" convention (AGENTS.md). Relations are opt-in via source.
 
+### PROMOTION ATTEMPT (2026-06-01): pure 132-model schema drops 118 tables — hybrid is required by docs
+Promoted generated schema → live (`.tmp/build-live-schema.cjs`, single-schema, repo generator header).
+`prisma validate` ✓, `prisma generate` ✓. But typecheck exploded: **2054 errors / 323 files** because a
+PURE 132-model schema DROPS 118 tables the system needs:
+- **Runtime infra (4): OutboxEvent, ManifestEntity, ManifestIdempotency, ManifestCommandTelemetry.**
+  OutboxEvent alone breaks every command (audit row). **DOCS ARE EXPLICIT (/integration/prisma): infra
+  tables must be defined OUTSIDE Manifest entities** — the projection has "no app coupling," no outbox/
+  audit/idempotency concept. So these must NOT be authored as IR entities; they stay in a separate
+  non-IR schema appendix. Authoring them as entities would contradict official guidance.
+- **Core (Account=157 cols!, Location, Tenant, UserPreference)** — tenant/org backbone.
+- **~30 snake_case raw/legacy** (audit_log, settings, units, sms_*, status_*, workflow_*).
+- **~87 PascalCase**: real domain (Venue, line-items, claims) MIXED with more infra (webhooks,
+  Goodshuffle*/Nowsta* integration sync, SentryFixJob, RateLimitEvent).
+
+DECISION (user: author missing tables as .manifest entities) + DOCS reconciliation → **HYBRID by design:**
+  - Author the genuine DOMAIN tables (junctions, line-items, Venue/Location-type) as `.manifest` source.
+  - KEEP infra/integration/runtime tables (outbox, idempotency, telemetry, webhooks, sync, audit) as a
+    SEPARATE non-IR schema partial appended at build time — this is what the docs prescribe, not a hack.
+Live schema currently = pure 132 (BROKEN for app). Backup at `.tmp/schema.prisma.pre-regen.bak`.
+NEXT: classify all 118 (domain-to-author vs infra-to-preserve), author domain entities by cluster,
+build-live-schema appends the infra partial. Rollback always available via the backup.
+
 ### Note on CLI: prisma projection not exposed by installed CLI bin
 `pnpm exec manifest generate -p prisma` fails ("Unknown projection: prisma (supported: nextjs)") even
 though the package ships `projections/prisma`. So schema gen uses the programmatic `PrismaProjection`
