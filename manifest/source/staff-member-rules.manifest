@@ -57,6 +57,25 @@ entity StaffMember {
     emit StaffMemberDeactivated
   }
 
+  command reactivate() {
+    guard self.status == "inactive" "Staff member is already active"
+
+    mutate status = "active"
+    mutate updatedAt = now()
+
+    emit StaffMemberReactivated
+  }
+
+  command changeRole(role: string, changedBy: string) {
+    guard self.isActive "Cannot change the role of an inactive staff member"
+    guard role != null and role != "" "Role is required"
+
+    mutate role = role
+    mutate updatedAt = now()
+
+    emit StaffMemberRoleChanged
+  }
+
   store StaffMember in durable
 }
 
@@ -83,4 +102,18 @@ event StaffMemberDeactivated: "staff.staff-member.deactivated" {
   tenantId: string
   reason: string
   deactivatedAt: number
+}
+
+event StaffMemberReactivated: "staff.staff-member.reactivated" {
+  staffMemberId: string
+  tenantId: string
+  reactivatedAt: number
+}
+
+event StaffMemberRoleChanged: "staff.staff-member.role-changed" {
+  staffMemberId: string
+  tenantId: string
+  role: string
+  changedBy: string
+  changedAt: number
 }

@@ -1,5 +1,6 @@
 // Staff Domain - Training Assignment Rules
-// Manifest spec for training assignment creation and management
+// Manifest spec for assigning training modules to staff and tracking completion.
+// Lifecycle: assigned -> in_progress -> completed (or waived / overdue).
 
 entity TrainingAssignment {
   key [tenantId, id]
@@ -11,14 +12,28 @@ entity TrainingAssignment {
   property assignedBy: string = ""
   property dueDate: string = ""
   property status: string = "assigned"
+  property score: int = 0
+  property waiveReason: string = ""
   property assignedAt: datetime = now()
+  property startedAt: datetime
+  property completedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
+  computed isAssigned: boolean = self.status == "assigned"
+  computed isInProgress: boolean = self.status == "in_progress"
+  computed isCompleted: boolean = self.status == "completed"
+  computed isWaived: boolean = self.status == "waived"
+  computed isOverdue: boolean = self.status == "overdue"
+
+  transition status from "assigned" to ["in_progress", "waived", "overdue"]
+  transition status from "in_progress" to ["completed", "waived"]
+  transition status from "overdue" to ["in_progress", "completed", "waived"]
 
   constraint requireModule: self.moduleId != "" "Module ID is required"
+  constraint validStatus: self.status in ["assigned", "in_progress", "completed", "waived", "overdue"] "Invalid training assignment status"
 
   command create(moduleId: string, employeeId: string, assignedToAll: boolean, assignedBy: string, dueDate: string) {
     guard moduleId != null and moduleId != "" "Module ID is required"
@@ -34,6 +49,59 @@ entity TrainingAssignment {
     mutate updatedAt = now()
 
     emit TrainingAssignmentCreated
+  }
+
+  command start() {
+    guard self.status in ["assigned", "overdue"] "Training must be assigned or overdue to start"
+
+    mutate status = "in_progress"
+    mutate startedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingStarted
+  }
+
+  command complete(score: number) {
+    guard self.status in ["in_progress", "overdue"] "Training must be started before it can be completed"
+    guard score >= 0 "Score cannot be negative"
+
+    mutate status = "completed"
+    mutate score = score
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingCompleted
+  }
+
+  // Excuse the assignment (e.g. prior equivalent certification on file).
+  command waive(reason: string, waivedBy: string) {
+    guard self.status in ["assigned", "in_progress", "overdue"] "Cannot waive a completed assignment"
+    guard reason != null and reason != "" "Waive reason is required"
+
+    mutate status = "waived"
+    mutate waiveReason = reason
+    mutate updatedAt = now()
+
+    emit TrainingWaived
+  }
+
+  command markOverdue() {
+    guard self.status in ["assigned", "in_progress"] "Only an open assignment can be marked overdue"
+
+    mutate status = "overdue"
+    mutate updatedAt = now()
+
+    emit TrainingMarkedOverdue
+  }
+
+  command extendDueDate(dueDate: string) {
+    guard self.status in ["assigned", "in_progress", "overdue"] "Cannot extend a finished assignment"
+    guard dueDate != null and dueDate != "" "New due date is required"
+
+    mutate dueDate = dueDate
+    mutate updatedAt = now()
+
+    emit TrainingDueDateExtended
   }
 
   command softDelete() {
@@ -58,6 +126,44 @@ event TrainingAssignmentCreated: "staff.training-assignment.created" {
   assignedToAll: boolean
   assignedBy: string
   createdAt: number
+}
+
+event TrainingStarted: "staff.training-assignment.started" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  startedAt: number
+}
+
+event TrainingCompleted: "staff.training-assignment.completed" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  moduleId: string
+  score: number
+  completedAt: number
+}
+
+event TrainingWaived: "staff.training-assignment.waived" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  reason: string
+  waivedAt: number
+}
+
+event TrainingMarkedOverdue: "staff.training-assignment.overdue" {
+  assignmentId: string
+  tenantId: string
+  employeeId: string
+  markedAt: number
+}
+
+event TrainingDueDateExtended: "staff.training-assignment.due-date-extended" {
+  assignmentId: string
+  tenantId: string
+  dueDate: string
+  updatedAt: number
 }
 
 event TrainingAssignmentDeleted: "staff.training-assignment.deleted" {

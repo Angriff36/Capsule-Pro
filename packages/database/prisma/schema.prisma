@@ -856,6 +856,7 @@ model EmployeeCertification {
   issuedDate String? @default("")
   expiryDate String? @default("")
   documentUrl String? @default("")
+  status String? @default("active")
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?
@@ -3352,7 +3353,11 @@ model TrainingAssignment {
   assignedBy String? @default("")
   dueDate String? @default("")
   status String? @default("assigned")
+  score Int? @default(0)
+  waiveReason String? @default("")
   assignedAt DateTime?
+  startedAt DateTime?
+  completedAt DateTime?
   createdAt DateTime?
   updatedAt DateTime?
   deletedAt DateTime?

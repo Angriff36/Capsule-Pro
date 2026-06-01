@@ -1031,6 +1031,21 @@
   },
   {
     "entity": "EmployeeCertification",
+    "command": "expire",
+    "commandId": "EmployeeCertification.expire"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "renew",
+    "commandId": "EmployeeCertification.renew"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "revoke",
+    "commandId": "EmployeeCertification.revoke"
+  },
+  {
+    "entity": "EmployeeCertification",
     "command": "softDelete",
     "commandId": "EmployeeCertification.softDelete"
   },
@@ -3351,6 +3366,11 @@
   },
   {
     "entity": "StaffMember",
+    "command": "changeRole",
+    "commandId": "StaffMember.changeRole"
+  },
+  {
+    "entity": "StaffMember",
     "command": "create",
     "commandId": "StaffMember.create"
   },
@@ -3358,6 +3378,11 @@
     "entity": "StaffMember",
     "command": "deactivate",
     "commandId": "StaffMember.deactivate"
+  },
+  {
+    "entity": "StaffMember",
+    "command": "reactivate",
+    "commandId": "StaffMember.reactivate"
   },
   {
     "entity": "StaffMember",
@@ -3606,13 +3631,38 @@
   },
   {
     "entity": "TrainingAssignment",
+    "command": "complete",
+    "commandId": "TrainingAssignment.complete"
+  },
+  {
+    "entity": "TrainingAssignment",
     "command": "create",
     "commandId": "TrainingAssignment.create"
   },
   {
     "entity": "TrainingAssignment",
+    "command": "extendDueDate",
+    "commandId": "TrainingAssignment.extendDueDate"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "markOverdue",
+    "commandId": "TrainingAssignment.markOverdue"
+  },
+  {
+    "entity": "TrainingAssignment",
     "command": "softDelete",
     "commandId": "TrainingAssignment.softDelete"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "start",
+    "commandId": "TrainingAssignment.start"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "waive",
+    "commandId": "TrainingAssignment.waive"
   },
   {
     "entity": "TrainingCompletion",
