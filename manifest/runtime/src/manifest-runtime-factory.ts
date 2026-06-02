@@ -21,6 +21,7 @@ import type {
   RuntimeOptions,
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
+import { createCustomBuiltins } from "./manifest-builtins";
 import { createPermissionGuard, loadRolePolicies } from "./permission-guard";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
@@ -494,10 +495,15 @@ export async function createManifestRuntime(
     : undefined;
 
   // 7. Assemble the runtime engine.
+  //    customBuiltins injects the project's deterministic expression helpers
+  //    (daysBetween/percent/containsAny/…) so guards and computed properties
+  //    can call them. This is the single registration site — every runtime
+  //    construction path flows through this factory, so all callers
+  //    (apps/api, apps/app, MCP server) get an identical builtin set.
   const engine = new ManifestRuntimeEngine(
     ir,
     { user: resolvedUser, eventCollector, telemetry },
-    { storeProvider, idempotencyStore }
+    { storeProvider, idempotencyStore, customBuiltins: createCustomBuiltins() }
   );
 
   // 8. Wrap with RBAC permission guard.

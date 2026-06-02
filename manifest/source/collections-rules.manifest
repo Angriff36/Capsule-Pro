@@ -59,7 +59,7 @@ entity CollectionCase {
   property closedAt: datetime
 
   // Computed properties
-  computed collectionPercentage: number = self.originalAmount > 0 ? (self.collectedAmount / self.originalAmount) * 100 : 0
+  computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount)
   computed isHighRisk: boolean = self.daysOverdue > 90 or self.status == "LEGAL"
   computed estimatedLoss: number = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
 
@@ -336,7 +336,7 @@ entity CollectionPaymentPlan {
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"
   computed isDefaulted: boolean = self.status == "DEFAULTED"
-  computed completionPercentage: number = self.installmentCount > 0 ? (self.completedInstallments / self.installmentCount) * 100 : 0
+  computed completionPercentage: number = percent(self.completedInstallments, self.installmentCount)
   computed remainingAmount: number = (self.installmentCount - self.completedInstallments) * self.installmentAmount
   computed paidAmount: number = self.completedInstallments * self.installmentAmount
 

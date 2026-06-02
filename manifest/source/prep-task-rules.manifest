@@ -28,7 +28,7 @@ entity PrepTask {
   computed isClaimed: boolean = self.claimedBy != ""
   computed isOverdue: boolean = self.dueByDate != null and now() > self.dueByDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"
-  computed percentComplete: number = self.quantityTotal > 0 ? (self.quantityCompleted / self.quantityTotal) * 100 : 0
+  computed percentComplete: number = percent(self.quantityCompleted, self.quantityTotal)
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
 
@@ -47,7 +47,7 @@ entity PrepTask {
     details: {
       taskName: self.name
       dueDate: self.dueByDate
-      daysOverdue: (now() - self.dueByDate) / 86400000
+      daysOverdue: daysBetween(self.dueByDate, now())
     }
   }
 

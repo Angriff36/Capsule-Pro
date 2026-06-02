@@ -644,7 +644,7 @@ entity ProcurementBudget {
   property updatedAt: datetime = now()
 
   computed remainingAmount: decimal = self.budgetAmount - self.spentAmount
-  computed utilizationPct: decimal = self.budgetAmount > 0 ? (self.spentAmount / self.budgetAmount) * 100 : 0
+  computed utilizationPct: decimal = percent(self.spentAmount, self.budgetAmount)
   computed isOverBudget: boolean = self.spentAmount > self.budgetAmount
   computed isActive: boolean = self.status == "active"
   computed isClosed: boolean = self.status == "closed"

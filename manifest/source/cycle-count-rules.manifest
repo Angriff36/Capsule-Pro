@@ -29,7 +29,7 @@ entity CycleCountSession {
   computed isInProgress: boolean = self.status == "in_progress"
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
-  computed countProgress: number = self.totalItems > 0 ? (self.countedItems / self.totalItems) * 100 : 0
+  computed countProgress: number = percent(self.countedItems, self.totalItems)
   computed hasVariance: boolean = self.totalVariance != 0
 
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
@@ -165,7 +165,7 @@ entity CycleCountRecord {
     mutate expectedQuantity = expectedQuantity
     mutate countedQuantity = countedQuantity
     mutate variance = countedQuantity - expectedQuantity
-    mutate variancePct = expectedQuantity > 0 ? ((countedQuantity - expectedQuantity) / expectedQuantity) * 100 : 0
+    mutate variancePct = percent(countedQuantity - expectedQuantity, expectedQuantity)
     mutate countDate = now()
     mutate countedById = userId
     mutate barcode = barcode
@@ -184,7 +184,7 @@ entity CycleCountRecord {
 
     mutate countedQuantity = countedQuantity
     mutate variance = countedQuantity - self.expectedQuantity
-    mutate variancePct = self.expectedQuantity > 0 ? ((countedQuantity - self.expectedQuantity) / self.expectedQuantity) * 100 : 0
+    mutate variancePct = percent(countedQuantity - self.expectedQuantity, self.expectedQuantity)
     mutate notes = notes
     mutate countedById = userId
     mutate countDate = now()

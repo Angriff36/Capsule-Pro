@@ -42,7 +42,7 @@ entity PrepTaskPlanWorkflow {
   computed canReview: boolean = self.status == "awaiting_review"
   computed canApprove: boolean = self.status == "awaiting_approval"
   computed canRetry: boolean = self.status == "failed"
-  computed progress: number = self.totalSteps > 0 ? (self.currentStep / self.totalSteps) * 100 : 0
+  computed progress: number = percent(self.currentStep, self.totalSteps)
 
   // Constraints
   constraint validStatus: self.status in ["created", "generating", "awaiting_review", "reviewing", "awaiting_approval", "approving", "instantiating", "scheduling", "completed", "failed", "cancelled"]

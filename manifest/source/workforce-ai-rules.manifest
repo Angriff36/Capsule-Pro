@@ -94,7 +94,7 @@ entity PerformancePrediction {
     mutate factors = factors
     mutate createdAt = now()
     // Predictions expire after 7 days
-    mutate expiresAt = now() + (7 * 24 * 60 * 60 * 1000)
+    mutate expiresAt = addDays(now(), 7)
 
     emit PerformancePredictionCreated
   }

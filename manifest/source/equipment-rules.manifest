@@ -26,8 +26,8 @@ entity Equipment {
   property updatedAt: datetime = now()
 
   computed isOverdueForMaintenance: boolean = self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate
-  computed daysUntilMaintenance: number = self.nextMaintenanceDate != null ? (self.nextMaintenanceDate - now()) / 86400000 : -1
-  computed usagePercentage: number = self.maxUsageHours > 0 ? (self.usageHours / self.maxUsageHours) * 100 : 0
+  computed daysUntilMaintenance: number = self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1
+  computed usagePercentage: number = percent(self.usageHours, self.maxUsageHours)
   computed isNearEndOfLife: boolean = self.usagePercentage >= 80
   computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
 
@@ -98,7 +98,7 @@ entity Equipment {
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
 
     mutate lastMaintenanceDate = maintenanceDate
-    mutate nextMaintenanceDate = maintenanceDate + (self.maintenanceIntervalDays * 86400000)
+    mutate nextMaintenanceDate = addDays(maintenanceDate, self.maintenanceIntervalDays)
     mutate status = "active"
     mutate updatedAt = now()
 
@@ -174,7 +174,7 @@ entity Equipment {
     mutate condition = "good"
     mutate usageHours = 0
     mutate lastMaintenanceDate = 0
-    mutate nextMaintenanceDate = now() + (maintenanceIntervalDays * 86400000)
+    mutate nextMaintenanceDate = addDays(now(), maintenanceIntervalDays)
     mutate isActive = true
     mutate createdAt = now()
     mutate updatedAt = now()
@@ -226,7 +226,7 @@ entity MaintenanceWorkOrder {
   property updatedAt: datetime = now()
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate
-  computed daysUntilDue: number = self.scheduledDate != null ? (self.scheduledDate - now()) / 86400000 : -1
+  computed daysUntilDue: number = self.scheduledDate != null ? daysBetween(now(), self.scheduledDate) : -1
 
   constraint validWorkOrderType: self.type in ["repair", "replacement", "inspection", "upgrade"] "Invalid work order type"
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"

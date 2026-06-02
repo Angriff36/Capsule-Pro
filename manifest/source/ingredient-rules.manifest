@@ -35,7 +35,7 @@ entity Ingredient {
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
   constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"
 
-  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten") {
+  constraint warnMajorAllergen:warn self.allergens != null and containsAny(self.allergens, ["nuts", "dairy", "gluten"]) {
     messageTemplate: "Ingredient contains major allergen: {allergens}"
     details: {
       allergens: self.allergens

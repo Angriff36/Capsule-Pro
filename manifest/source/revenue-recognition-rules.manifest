@@ -45,9 +45,9 @@ entity RevenueRecognitionSchedule {
   property completedAt: datetime
 
   // Computed properties
-  computed recognitionPercentage: number = self.totalAmount > 0 ? (self.recognizedAmount / self.totalAmount) * 100 : 0
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount)
   computed isFullyRecognized: boolean = self.recognizedAmount >= self.totalAmount - 0.01
-  computed milestonePercentage: number = self.totalMilestones > 0 ? (self.completedMilestones / self.totalMilestones) * 100 : 0
+  computed milestonePercentage: number = percent(self.completedMilestones, self.totalMilestones)
   computed daysRemaining: number = self.endDate > now() ? self.endDate - now() : 0
   computed totalDays: number = self.endDate - self.startDate
 
@@ -225,7 +225,7 @@ entity RevenueRecognitionLine {
   computed isRecognized: boolean = self.status == "RECOGNIZED"
   computed isOverdue: boolean = self.status == "PENDING" and self.dueDate < now()
   computed daysUntilDue: number = self.dueDate - now()
-  computed recognitionPercentage: number = self.amount > 0 ? (self.recognizedAmount / self.amount) * 100 : 0
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.amount)
 
   // Constraints
   constraint amount_positive: self.amount > 0 "Line amount must be positive"

@@ -45,9 +45,9 @@ entity VendorContract {
   computed isActive: boolean = self.status == "active"
   computed isPending: boolean = self.status == "pending_approval"
   computed isExpired: boolean = self.endDate != null and now() > self.endDate
-  computed isExpiringSoon: boolean = self.endDate != null and (self.endDate - now()) < (self.noticeDaysBeforeRenewal * 86400000)
-  computed requiresComplianceReview: boolean = (now() - self.lastComplianceReview) > 7776000000
-  computed daysUntilExpiry: number = self.endDate != null ? (self.endDate - now()) / 86400000 : -1
+  computed isExpiringSoon: boolean = self.endDate != null and daysBetween(now(), self.endDate) < self.noticeDaysBeforeRenewal
+  computed requiresComplianceReview: boolean = daysBetween(self.lastComplianceReview, now()) > 90
+  computed daysUntilExpiry: number = self.endDate != null ? daysBetween(now(), self.endDate) : -1
   computed hasPerformanceIssues: boolean = self.complianceScore < 80 or self.slaBreachCount > 3
   computed isEditable: boolean = self.status == "draft"
 
