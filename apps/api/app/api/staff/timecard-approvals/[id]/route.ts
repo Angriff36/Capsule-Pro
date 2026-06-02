@@ -29,8 +29,7 @@ export async function GET(
     const timecardApproval = await database.timecardApproval.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

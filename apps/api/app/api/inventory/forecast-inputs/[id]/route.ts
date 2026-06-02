@@ -29,8 +29,7 @@ export async function GET(
     const forecastInput = await database.forecastInput.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const entityVersion = await database.entityVersion.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

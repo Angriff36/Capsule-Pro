@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const bulkCombineRules = await database.bulkCombineRule.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

@@ -29,8 +29,7 @@ export async function GET(
     const deal = await database.deal.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

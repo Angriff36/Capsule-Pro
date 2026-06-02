@@ -29,8 +29,7 @@ export async function GET(
     const performancePrediction = await database.performancePrediction.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

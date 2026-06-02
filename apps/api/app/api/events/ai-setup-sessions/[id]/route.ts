@@ -29,8 +29,7 @@ export async function GET(
     const aiEventSetupSession = await database.aiEventSetupSession.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

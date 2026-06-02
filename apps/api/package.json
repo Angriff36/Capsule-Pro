@@ -2,7 +2,7 @@
   "name": "api",
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",
-    "@angriff36/manifest": "1.7.0",
+    "@angriff36/manifest": "1.8.0",
     "@capsule-pro/sales-reporting": "workspace:*",
     "@react-pdf/renderer": "^4.5.1",
     "@repo/analytics": "workspace:*",

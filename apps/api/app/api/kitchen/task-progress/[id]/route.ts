@@ -29,8 +29,7 @@ export async function GET(
     const kitchenTaskProgress = await database.kitchenTaskProgress.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

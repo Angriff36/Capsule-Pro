@@ -22,11 +22,10 @@ export async function GET(request: NextRequest) {
 
 const payments = await database.payment.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
-      createdAt: "desc",
+      id: "desc",
     },
   });
 

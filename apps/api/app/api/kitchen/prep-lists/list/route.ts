@@ -22,11 +22,10 @@ export async function GET(request: NextRequest) {
 
 const prepLists = await database.prepList.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
-      createdAt: "desc",
+      id: "desc",
     },
   });
 

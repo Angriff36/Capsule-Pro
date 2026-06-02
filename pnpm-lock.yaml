@@ -29,8 +29,8 @@ importers:
   .:
     dependencies:
       '@angriff36/manifest':
-        specifier: 1.7.0
-        version: 1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+        specifier: 1.8.0
+        version: 1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@prisma/adapter-neon':
         specifier: 7.3.0
         version: 7.3.0
@@ -135,8 +135,8 @@ importers:
         specifier: ^3.0.65
         version: 3.0.65(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 1.7.0
-        version: 1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+        specifier: 1.8.0
+        version: 1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -277,8 +277,8 @@ importers:
         specifier: ^3.0.193
         version: 3.0.193(react@19.2.6)(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 1.7.0
-        version: 1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+        specifier: 1.8.0
+        version: 1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -874,8 +874,8 @@ importers:
   manifest/runtime:
     dependencies:
       '@angriff36/manifest':
-        specifier: 1.7.0
-        version: 1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+        specifier: 1.8.0
+        version: 1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -1410,8 +1410,8 @@ importers:
   packages/mcp-server:
     dependencies:
       '@angriff36/manifest':
-        specifier: 1.7.0
-        version: 1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
+        specifier: 1.8.0
+        version: 1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(@cfworker/json-schema@4.1.1)(zod@4.4.3)
@@ -1940,8 +1940,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@1.7.0':
-    resolution: {integrity: sha512-lioajWXnBGUaHlapY1W+C5Yr782G8cVBCv4j2jSPruE3pRHLdUThwv+M9icqlyRSlUVj192OM6E5p6MZCF+0fw==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/1.7.0/98210a87cf1757b991d2151d8f4e13b32a130f65}
+  '@angriff36/manifest@1.8.0':
+    resolution: {integrity: sha512-fTYPOppi3+694f8eQKtSyhKEMF16T8IY2tDb2EQYOtIP/CZUz/5BdioD0aOSVHG+hn8xeibBZVoN+6fjKujMNg==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/1.8.0/d3276445bfc0f18554a9fe33258fdafe182adeef}
     hasBin: true
     peerDependencies:
       '@supabase/supabase-js': ^2
@@ -15844,7 +15844,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@1.7.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))':
+  '@angriff36/manifest@1.8.0(@cfworker/json-schema@4.1.1)(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)

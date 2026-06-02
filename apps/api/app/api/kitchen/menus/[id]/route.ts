@@ -29,8 +29,7 @@ export async function GET(
     const menu = await database.menu.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

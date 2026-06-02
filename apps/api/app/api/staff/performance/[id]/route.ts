@@ -29,8 +29,7 @@ export async function GET(
     const staffPerformance = await database.staffPerformance.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

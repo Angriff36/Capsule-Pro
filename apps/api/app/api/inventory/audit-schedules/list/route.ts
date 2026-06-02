@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const auditSchedules = await database.auditSchedule.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

@@ -29,8 +29,7 @@ export async function GET(
     const reorderSuggestion = await database.reorderSuggestion.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

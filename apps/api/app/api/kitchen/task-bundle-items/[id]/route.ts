@@ -29,8 +29,7 @@ export async function GET(
     const taskBundleItem = await database.taskBundleItem.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

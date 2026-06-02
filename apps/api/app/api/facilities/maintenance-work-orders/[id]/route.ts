@@ -29,8 +29,7 @@ export async function GET(
     const maintenanceWorkOrder = await database.maintenanceWorkOrder.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

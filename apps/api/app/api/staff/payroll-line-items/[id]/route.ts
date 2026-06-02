@@ -29,8 +29,7 @@ export async function GET(
     const payrollLineItem = await database.payrollLineItem.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

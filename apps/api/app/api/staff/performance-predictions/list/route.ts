@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const performancePredictions = await database.performancePrediction.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

@@ -29,8 +29,7 @@ export async function GET(
     const revenueRecognitionLine = await database.revenueRecognitionLine.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

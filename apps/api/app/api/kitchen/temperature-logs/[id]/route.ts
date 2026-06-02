@@ -29,8 +29,7 @@ export async function GET(
     const temperatureLog = await database.temperatureLog.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

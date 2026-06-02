@@ -227,7 +227,7 @@ entity InventoryAlert {
     emit InventoryAlertAcknowledged
   }
 
-  command resolve(resolvedBy: string) {
+  command markResolved(resolvedBy: string) {
     guard self.status != "resolved" "Alert is already resolved"
     guard resolvedBy != null and resolvedBy != "" "Resolving user is required"
 

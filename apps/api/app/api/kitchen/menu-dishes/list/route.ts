@@ -26,7 +26,7 @@ const menuDishs = await database.menuDish.findMany({
         deletedAt: null
       },
     orderBy: {
-      createdAt: "desc",
+      id: "desc",
     },
   });
 

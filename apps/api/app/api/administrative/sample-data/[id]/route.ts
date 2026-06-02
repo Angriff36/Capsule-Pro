@@ -29,8 +29,7 @@ export async function GET(
     const sampleData = await database.sampleData.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const automatedFollowup = await database.automatedFollowup.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

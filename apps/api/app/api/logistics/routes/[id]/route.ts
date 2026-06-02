@@ -29,8 +29,7 @@ export async function GET(
     const logisticsRoute = await database.logisticsRoute.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

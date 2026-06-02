@@ -29,8 +29,7 @@ export async function GET(
     const facilityWorkOrder = await database.facilityWorkOrder.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const knowledgeBaseEntry = await database.knowledgeBaseEntry.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

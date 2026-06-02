@@ -29,8 +29,7 @@ export async function GET(
     const routeStop = await database.routeStop.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

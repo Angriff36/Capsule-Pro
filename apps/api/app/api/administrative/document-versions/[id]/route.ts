@@ -29,8 +29,7 @@ export async function GET(
     const documentVersion = await database.documentVersion.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

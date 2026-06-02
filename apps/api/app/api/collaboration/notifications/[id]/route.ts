@@ -29,8 +29,7 @@ export async function GET(
     const notification = await database.notification.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

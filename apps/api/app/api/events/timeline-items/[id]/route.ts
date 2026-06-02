@@ -29,8 +29,7 @@ export async function GET(
     const eventTimelineItem = await database.eventTimelineItem.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const paymentRefundAttempt = await database.paymentRefundAttempt.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

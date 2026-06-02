@@ -77,7 +77,7 @@ entity AllergenWarning {
     emit AllergenWarningAcknowledged
   }
 
-  command resolve(resolvedBy: string, notes: string) {
+  command markResolved(resolvedBy: string, notes: string) {
     guard self.resolved == false "Warning is already resolved"
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard self.isAcknowledged "Warning must be acknowledged before resolving"

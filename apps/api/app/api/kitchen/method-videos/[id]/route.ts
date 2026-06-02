@@ -29,8 +29,7 @@ export async function GET(
     const methodVideo = await database.methodVideo.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

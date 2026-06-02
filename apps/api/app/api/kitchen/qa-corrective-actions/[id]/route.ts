@@ -29,8 +29,7 @@ export async function GET(
     const qACorrectiveAction = await database.qACorrectiveAction.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

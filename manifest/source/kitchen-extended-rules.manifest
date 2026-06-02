@@ -288,7 +288,7 @@ entity IoTAlert {
     emit IoTAlertAcknowledged
   }
 
-  command resolve(resolvedBy: string) {
+  command markResolved(resolvedBy: string) {
     guard self.status in ["active", "acknowledged"] "Only active or acknowledged alerts can be resolved"
     guard resolvedBy != null and resolvedBy != "" "Resolver employee ID is required"
 

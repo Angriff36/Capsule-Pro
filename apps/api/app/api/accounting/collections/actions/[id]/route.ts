@@ -29,8 +29,7 @@ export async function GET(
     const collectionAction = await database.collectionAction.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

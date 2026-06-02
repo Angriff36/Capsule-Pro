@@ -173,7 +173,7 @@ entity BudgetAlert {
     emit BudgetAlertAcknowledged
   }
 
-  command resolve() {
+  command markResolved() {
     guard self.resolved == false "Alert is already resolved"
 
     mutate resolved = true

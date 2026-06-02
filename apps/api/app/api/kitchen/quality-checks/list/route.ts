@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const qualityChecks = await database.qualityCheck.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

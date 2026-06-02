@@ -29,8 +29,7 @@ export async function GET(
     const qualityCheck = await database.qualityCheck.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

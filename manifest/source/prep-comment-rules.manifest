@@ -61,7 +61,7 @@ entity PrepComment {
     emit PrepCommentEdited
   }
 
-  command resolve(resolvedBy: string) {
+  command markResolved(resolvedBy: string) {
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard self.isActive "Cannot resolve a deleted comment"
 

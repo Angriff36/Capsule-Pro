@@ -29,8 +29,7 @@ export async function GET(
     const bulkCombineRule = await database.bulkCombineRule.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

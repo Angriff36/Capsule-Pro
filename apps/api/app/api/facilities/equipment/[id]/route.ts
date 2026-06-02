@@ -29,8 +29,7 @@ export async function GET(
     const equipment = await database.equipment.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

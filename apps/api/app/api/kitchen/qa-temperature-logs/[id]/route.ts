@@ -29,8 +29,7 @@ export async function GET(
     const qATemperatureLog = await database.qATemperatureLog.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const adminChatThreads = await database.adminChatThread.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

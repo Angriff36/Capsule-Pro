@@ -29,8 +29,7 @@ export async function GET(
     const eventWaitlistEntry = await database.eventWaitlistEntry.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const bankAccount = await database.bankAccount.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

@@ -29,8 +29,7 @@ export async function GET(
     const driver = await database.driver.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

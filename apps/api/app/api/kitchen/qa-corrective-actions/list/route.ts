@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const qACorrectiveActions = await database.qACorrectiveAction.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

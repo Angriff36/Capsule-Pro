@@ -181,7 +181,7 @@ entity QACorrectiveAction {
     emit CorrectiveActionEscalated
   }
 
-  command resolve(resolutionNotes: string) {
+  command markResolved(resolutionNotes: string) {
     guard self.status in ["open", "in_progress", "escalated"] "Only open or active actions can be resolved"
     guard resolutionNotes != null and resolutionNotes != "" "Resolution notes are required"
 

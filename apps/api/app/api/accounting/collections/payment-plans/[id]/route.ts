@@ -29,8 +29,7 @@ export async function GET(
     const collectionPaymentPlan = await database.collectionPaymentPlan.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

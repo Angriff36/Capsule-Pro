@@ -29,8 +29,7 @@ export async function GET(
     const ioTAlert = await database.ioTAlert.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

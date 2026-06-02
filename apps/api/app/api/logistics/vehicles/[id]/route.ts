@@ -29,8 +29,7 @@ export async function GET(
     const vehicle = await database.vehicle.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

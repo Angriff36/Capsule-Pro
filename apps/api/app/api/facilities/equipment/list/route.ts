@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const equipments = await database.equipment.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

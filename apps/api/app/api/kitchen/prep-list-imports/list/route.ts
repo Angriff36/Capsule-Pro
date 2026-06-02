@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const prepListImports = await database.prepListImport.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

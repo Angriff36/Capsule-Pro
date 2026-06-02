@@ -29,8 +29,7 @@ export async function GET(
     const inventoryTransferItem = await database.inventoryTransferItem.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

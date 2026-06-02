@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const entityVersions = await database.entityVersion.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

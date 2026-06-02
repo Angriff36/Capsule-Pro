@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const deliveryRoutes = await database.deliveryRoute.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

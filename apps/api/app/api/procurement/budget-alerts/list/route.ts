@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const procurementBudgetAlerts = await database.procurementBudgetAlert.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

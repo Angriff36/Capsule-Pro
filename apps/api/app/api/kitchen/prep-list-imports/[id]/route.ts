@@ -29,8 +29,7 @@ export async function GET(
     const prepListImport = await database.prepListImport.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

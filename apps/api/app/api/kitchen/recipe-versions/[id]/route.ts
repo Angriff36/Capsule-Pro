@@ -29,8 +29,7 @@ export async function GET(
     const recipeVersion = await database.recipeVersion.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

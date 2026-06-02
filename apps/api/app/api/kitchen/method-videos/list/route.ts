@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const methodVideos = await database.methodVideo.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

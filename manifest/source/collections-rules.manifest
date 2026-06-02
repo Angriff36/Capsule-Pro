@@ -83,7 +83,7 @@ entity CollectionCase {
     emit CollectionStatusChanged
   }
 
-  command resolve(notes: string) {
+  command settle(notes: string) {
     mutate status = "RESOLVED"
     mutate resolvedAt = now()
     mutate notes = notes

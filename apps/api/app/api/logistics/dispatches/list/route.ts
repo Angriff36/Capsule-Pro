@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const logisticsDispatchs = await database.logisticsDispatch.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

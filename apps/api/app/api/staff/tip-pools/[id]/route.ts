@@ -29,8 +29,7 @@ export async function GET(
     const tipPool = await database.tipPool.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

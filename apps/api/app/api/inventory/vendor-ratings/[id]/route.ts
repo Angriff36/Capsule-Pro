@@ -29,8 +29,7 @@ export async function GET(
     const vendorRating = await database.vendorRating.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

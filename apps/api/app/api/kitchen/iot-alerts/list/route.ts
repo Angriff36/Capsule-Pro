@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const ioTAlerts = await database.ioTAlert.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

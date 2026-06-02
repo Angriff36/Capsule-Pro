@@ -29,8 +29,7 @@ export async function GET(
     const preventiveMaintenanceSchedule = await database.preventiveMaintenanceSchedule.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

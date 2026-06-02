@@ -29,8 +29,7 @@ export async function GET(
     const workforceOptimization = await database.workforceOptimization.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

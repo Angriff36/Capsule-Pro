@@ -156,8 +156,8 @@
   },
   {
     "entity": "AllergenWarning",
-    "command": "resolve",
-    "commandId": "AllergenWarning.resolve"
+    "command": "markResolved",
+    "commandId": "AllergenWarning.markResolved"
   },
   {
     "entity": "AllergenWarning",
@@ -401,8 +401,8 @@
   },
   {
     "entity": "BudgetAlert",
-    "command": "resolve",
-    "commandId": "BudgetAlert.resolve"
+    "command": "markResolved",
+    "commandId": "BudgetAlert.markResolved"
   },
   {
     "entity": "BudgetLineItem",
@@ -681,11 +681,6 @@
   },
   {
     "entity": "CollectionCase",
-    "command": "resolve",
-    "commandId": "CollectionCase.resolve"
-  },
-  {
-    "entity": "CollectionCase",
     "command": "resolveDispute",
     "commandId": "CollectionCase.resolveDispute"
   },
@@ -698,6 +693,11 @@
     "entity": "CollectionCase",
     "command": "setPriority",
     "commandId": "CollectionCase.setPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "settle",
+    "commandId": "CollectionCase.settle"
   },
   {
     "entity": "CollectionCase",
@@ -2056,8 +2056,8 @@
   },
   {
     "entity": "InventoryAlert",
-    "command": "resolve",
-    "commandId": "InventoryAlert.resolve"
+    "command": "markResolved",
+    "commandId": "InventoryAlert.markResolved"
   },
   {
     "entity": "InventoryForecast",
@@ -2291,8 +2291,8 @@
   },
   {
     "entity": "IoTAlert",
-    "command": "resolve",
-    "commandId": "IoTAlert.resolve"
+    "command": "markResolved",
+    "commandId": "IoTAlert.markResolved"
   },
   {
     "entity": "IotAlertRule",
@@ -2941,8 +2941,8 @@
   },
   {
     "entity": "PrepComment",
-    "command": "resolve",
-    "commandId": "PrepComment.resolve"
+    "command": "markResolved",
+    "commandId": "PrepComment.markResolved"
   },
   {
     "entity": "PrepComment",
@@ -3511,8 +3511,8 @@
   },
   {
     "entity": "QACorrectiveAction",
-    "command": "resolve",
-    "commandId": "QACorrectiveAction.resolve"
+    "command": "markResolved",
+    "commandId": "QACorrectiveAction.markResolved"
   },
   {
     "entity": "QATemperatureLog",

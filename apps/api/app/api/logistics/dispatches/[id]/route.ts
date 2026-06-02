@@ -29,8 +29,7 @@ export async function GET(
     const logisticsDispatch = await database.logisticsDispatch.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

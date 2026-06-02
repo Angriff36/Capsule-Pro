@@ -29,8 +29,7 @@ export async function GET(
     const kitchenTaskClaim = await database.kitchenTaskClaim.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

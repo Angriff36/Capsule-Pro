@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const reorderSuggestions = await database.reorderSuggestion.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

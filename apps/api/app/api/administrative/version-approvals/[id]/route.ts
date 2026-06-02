@@ -29,8 +29,7 @@ export async function GET(
     const versionApproval = await database.versionApproval.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

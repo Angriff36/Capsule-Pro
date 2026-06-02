@@ -29,8 +29,7 @@ export async function GET(
     const prepTaskPlanWorkflow = await database.prepTaskPlanWorkflow.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 
