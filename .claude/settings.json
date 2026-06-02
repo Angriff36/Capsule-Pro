@@ -39,6 +39,28 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "matcher": "mcp__plugin_context7_context7__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/context7-record.sh",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/post-edit.sh",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -49,6 +71,12 @@
             "type": "command",
             "shell": "bash",
             "command": "bash .claude/hooks/guardrail/gate.sh",
+            "timeout": 15
+          },
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash .claude/hooks/guardrail/context7-gate.sh",
             "timeout": 15
           }
         ]

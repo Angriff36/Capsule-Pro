@@ -22,7 +22,6 @@ export async function GET(request: Request) {
     where: {
       AND: [
         { tenantId },
-        { deletedAt: null },
         ...(status ? [{ status }] : []),
         ...(minPriority
           ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]

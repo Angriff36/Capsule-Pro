@@ -928,7 +928,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const tasks = (await this.prisma.kitchenTask.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
+      where: { tenantId: this.tenantId },
     })) as KitchenTask[];
 
     // Fetch claims in batch (not N+1 - uses single IN query)
@@ -959,7 +959,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const task = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!task) {
@@ -1018,7 +1018,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     const existing = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!existing) {
@@ -1107,16 +1107,15 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     const existing = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!existing) {
       return false;
     }
 
-    await this.prisma.kitchenTask.update({
+    await this.prisma.kitchenTask.delete({
       where: { tenantId_id: { tenantId: this.tenantId, id } },
-      data: { deletedAt: new Date() },
     });
 
     return true;

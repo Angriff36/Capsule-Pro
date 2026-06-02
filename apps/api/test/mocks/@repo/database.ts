@@ -157,6 +157,7 @@ export const database: Record<string, unknown> = {
   documentVersion: createMockModel(),
   // Kitchen task model
   kitchenTask: createMockModel(),
+  kitchenTaskClaim: createMockModel(),
   // Workforce optimization model
   workforceOptimization: createMockModel(),
   // Supplier / vendor catalog models (webhook)

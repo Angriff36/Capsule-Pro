@@ -154,7 +154,6 @@ async function processTaskReminders() {
           status: {
             notIn: ["completed", "cancelled"],
           },
-          deletedAt: null,
         },
       });
 

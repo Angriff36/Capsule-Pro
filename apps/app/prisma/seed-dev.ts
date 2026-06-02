@@ -526,7 +526,7 @@ const ensurePrepTasks = async (
 
 const ensureKitchenTasks = async (tenantId: string) => {
   const existing = await prisma.kitchenTask.findFirst({
-    where: { tenantId, deletedAt: null },
+    where: { tenantId },
   });
   if (existing) {
     return;
@@ -541,7 +541,7 @@ const ensureKitchenTasks = async (tenantId: string) => {
         status: "pending",
         priority: 4,
         complexity: 3,
-        tags: ["seed", "prep"],
+        tags: "seed,prep",
       },
       {
         tenantId,
@@ -550,7 +550,7 @@ const ensureKitchenTasks = async (tenantId: string) => {
         status: "in-progress",
         priority: 3,
         complexity: 2,
-        tags: ["seed", "garnish"],
+        tags: "seed,garnish",
       },
     ],
   });

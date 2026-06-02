@@ -32,7 +32,6 @@ const KitchenPage = async () => {
   const tasks = await database.kitchenTask.findMany({
     where: {
       tenantId,
-      deletedAt: null,
     },
     orderBy: [
       { priority: "asc" }, // priority 1-10, so ascending = highest first
