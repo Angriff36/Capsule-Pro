@@ -2,7 +2,7 @@
   "name": "capsule-pro",
   "private": true,
   "dependencies": {
-    "@angriff36/manifest": "1.8.0",
+    "@angriff36/manifest": "2.1.0",
     "@prisma/adapter-neon": "7.8.0",
     "@prisma/client": "7.8.0",
     "ai": "^6.0.191",
@@ -106,6 +106,7 @@
     "manifest:check": "node manifest/scripts/check.mjs",
     "manifest:compile": "node manifest/scripts/compile.mjs",
     "manifest:generate": "node manifest/scripts/generate.mjs",
+    "manifest:client": "node manifest/scripts/generate-capsule-client.mjs",
     "manifest:try-prisma": "node manifest/scripts/try-prisma.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:inspect": "pnpm exec manifest inspect entity",

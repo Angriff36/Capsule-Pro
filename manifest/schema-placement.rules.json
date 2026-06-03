@@ -1,0 +1,85 @@
+{
+  "$comment": "Capsule-Pro Schema Placement Rules — machine-readable companion to docs/database/SCHEMA_PLACEMENT_POLICY.md. Consumed by the Manifest Prisma projection pipeline (manifest/scripts/build-live-schema.mjs / generate-prisma-schema.mjs) to assign each entity a Postgres @@schema. Sources of truth: docs/database/SCHEMAS.md, packages/database/schema-registry-v2.txt, docs/database/README.md, manifest/source/*.manifest filenames, and the known-good multi-schema schema.prisma at commit 923baaa8. NEVER place a tenant entity in public.",
+  "version": 1,
+  "neverUse": ["public"],
+
+  "decisionOrder": [
+    "1: explicit entitySchema override (manifest.config.yaml projections.prisma.options.multiSchema.entitySchema)",
+    "2: sourceFileRules — match the .manifest source file the entity is authored in",
+    "3: namePatterns — match the entity name against a documented domain pattern",
+    "4: sharedTenantInfra — generic tenant-wide infrastructure not owned by one module -> tenant",
+    "5: fail with UNMAPPED_SCHEMA_PLACEMENT (never fall back to public)"
+  ],
+
+  "schemas": {
+    "platform": "SaaS/account layer. Tenants, accounts, platform audit, sent emails, platform jobs, API keys. NOT normal tenant business data; no tenant_id.",
+    "core": "Shared immutable reference data: enums, units, conversion tables, status types, system functions. Cross-domain, not tenant-scoped.",
+    "tenant": "Shared tenant infrastructure used by multiple domains: locations, settings, documents, outbox/events, generic tenant-wide records not owned by one business module.",
+    "tenant_crm": "Sales/customer lifecycle: leads, clients, contacts, proposals, deals, follow-ups, CRM interactions.",
+    "tenant_events": "Booked event operations: events, battle boards, event imports, timelines, guest lists, event budgets, waitlists, event setup sessions, command boards.",
+    "tenant_inventory": "Inventory and purchasing: inventory items, stock, suppliers/vendors, purchase orders, shipments, reorder suggestions, storage locations, pricing tiers.",
+    "tenant_kitchen": "Kitchen/food operations: recipes, prep lists, prep tasks, dishes, menus, method videos, bulk prep, allergens, food-safety QA, temperature logs, stations, kitchen waste, constraint override audit.",
+    "tenant_staff": "Workforce/HR operations: employees, schedules, shifts, time entries, payroll, performance, staff availability, training, labor budgets, staff disciplinary/corrective actions.",
+    "tenant_admin": "Tenant control-plane metadata: reports, workflows, notifications, permissions/roles config, admin audit, generic approval/versioning/configuration records, email/sms templates, rate limits, seed data. Do NOT put operational records here just because an admin clicks the button.",
+    "tenant_accounting": "Accounting/finance: bank accounts, chart of accounts, invoices, payments, payment methods, revenue recognition, collections, payroll accounting, finance budgets unless clearly event-owned.",
+    "tenant_facilities": "Facilities/maintenance: facility schedules, work orders, equipment/facility maintenance.",
+    "tenant_logistics": "Routing/dispatch/delivery logistics: routes, dispatches, transport coordination."
+  },
+
+  "sourceFileRules": {
+    "$comment": "First match wins, evaluated top-to-bottom. 'match' is a JS-style regex tested (case-insensitive) against the source .manifest filename (basename). Specific rules precede general ones.",
+    "rules": [
+      { "match": "facilit", "schema": "tenant_facilities" },
+      { "match": "logistic", "schema": "tenant_logistics" },
+      { "match": "^event-budget", "schema": "tenant_events" },
+      { "match": "^labor-budget", "schema": "tenant_staff" },
+      { "match": "invoice|payment|bank-account|chart-of-account|revenue-recognition|collections|accounting", "schema": "tenant_accounting" },
+      { "match": "client|^lead|proposal|^deal|crm-admin|client-interaction", "schema": "tenant_crm" },
+      { "match": "^event|battle-board|catering-order|command-board|document-version", "schema": "tenant_events" },
+      { "match": "inventory|vendor|^purchase|procurement|shipment|cycle-count|bulk-order|pricing-tier|alerts-config|reorder|stock", "schema": "tenant_inventory" },
+      { "match": "recipe|^prep|^dish|menu|ingredient|container|kitchen|^qa-|allergen|station|waste|^work-order|method|override-audit", "schema": "tenant_kitchen" },
+      { "match": "staff|employee|schedule|time-entry|time-off|shift|training|payroll|labor|^user|role-policy|workforce|performance", "schema": "tenant_staff" },
+      { "match": "notification|workflow|^report|email|sms|rate-limit|version-control|sample-data|^admin", "schema": "tenant_admin" },
+      { "match": "api-key", "schema": "platform" },
+      { "match": "knowledge-base", "schema": "tenant" }
+    ]
+  },
+
+  "namePatterns": {
+    "$comment": "Fallback when no source file rule matches (e.g. an entity authored in a multi-domain file). First match wins, tested (case-insensitive) against the entity name.",
+    "rules": [
+      { "match": "facilit", "schema": "tenant_facilities" },
+      { "match": "logistic|dispatch|^route", "schema": "tenant_logistics" },
+      { "match": "^qa|temperature", "schema": "tenant_kitchen" },
+      { "match": "recipe|prep|^dish|menu|ingredient|allergen|kitchen|waste", "schema": "tenant_kitchen" },
+      { "match": "bank|invoice|payment|ledger|account(ing|s)?$|revenue|collection", "schema": "tenant_accounting" },
+      { "match": "vendor|supplier|inventory|purchase|shipment|^stock|reorder|pricing", "schema": "tenant_inventory" },
+      { "match": "event", "schema": "tenant_events" },
+      { "match": "client|^lead|proposal|^deal|contact|followup|prospect", "schema": "tenant_crm" },
+      { "match": "staff|employee|payroll|schedule|shift|timeentry|workforce|performance|availability|training", "schema": "tenant_staff" },
+      { "match": "notification|workflow|report|version|permission|role|template|seed", "schema": "tenant_admin" }
+    ]
+  },
+
+  "sharedTenantInfra": {
+    "$comment": "Rule 4: generic tenant-wide infrastructure not owned by any single business module. Only reached if rules 1-3 do not match.",
+    "schema": "tenant",
+    "namePatterns": [ "^location", "^setting", "^document$", "outbox", "knowledgebase", "tenantconfig", "commandboard" ]
+  },
+
+  "ambiguityGuidance": {
+    "$comment": "Documented judgement calls. These are encoded as explicit entitySchema overrides (rule 1) when the default rule is wrong for a given entity.",
+    "QACorrectiveAction": "tenant_kitchen if food-safety / process correction; tenant_staff if employee discipline / performance correction. Default tenant_kitchen (authored in qa-rules).",
+    "Budget": "tenant_accounting unless it is clearly an EventBudget (event-owned -> tenant_events) or LaborBudget (staff-owned -> tenant_staff).",
+    "Equipment": "tenant_kitchen for kitchen equipment; tenant_facilities for facility/building equipment.",
+    "Vendor": "tenant_inventory (procurement-owned).",
+    "EntityVersion / VersionedEntity / VersionApproval / SampleData": "tenant_admin unless tied to a specific operational domain."
+  },
+
+  "failure": {
+    "code": "UNMAPPED_SCHEMA_PLACEMENT",
+    "messageTemplate": "UNMAPPED_SCHEMA_PLACEMENT: cannot place entity '{entity}' (source: {sourceFile}). No entitySchema override, no sourceFileRule, no namePattern, and not shared tenant infra matched. Add an override to manifest.config.yaml (projections.prisma.options.multiSchema.entitySchema) OR add a domain rule to manifest/schema-placement.rules.json. Fields: {fields}.",
+    "report": ["entity", "sourceFile", "fields", "suggestedPolicyGap"],
+    "neverFallbackToPublic": true
+  }
+}

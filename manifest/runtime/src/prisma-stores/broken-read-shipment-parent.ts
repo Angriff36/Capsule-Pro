@@ -71,7 +71,7 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
         shippingMethod: asNullableString(data.shippingMethod),
         deliveredBy: asNullableString(data.deliveredBy),
         receivedBy: asNullableString(data.receivedBy),
-        signature: asNullableString(data.signature),
+        signatureData: asNullableString(data.signatureData),
         notes: asNullableString(data.notes),
         internalNotes: asNullableString(data.internalNotes),
         reference: asNullableString(data.reference),
@@ -120,8 +120,8 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
         patch.deliveredBy = asNullableString(data.deliveredBy);
       if (data.receivedBy !== undefined)
         patch.receivedBy = asNullableString(data.receivedBy);
-      if (data.signature !== undefined)
-        patch.signature = asNullableString(data.signature);
+      if (data.signatureData !== undefined)
+        patch.signatureData = asNullableString(data.signatureData);
       if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.internalNotes !== undefined)
         patch.internalNotes = asNullableString(data.internalNotes);
@@ -190,7 +190,7 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
       shippingMethod: (r.shippingMethod as string) ?? null,
       deliveredBy: (r.deliveredBy as string) ?? null,
       receivedBy: (r.receivedBy as string) ?? null,
-      signature: (r.signature as string) ?? null,
+      signatureData: (r.signatureData as string) ?? null,
       notes: (r.notes as string) ?? null,
       internalNotes: (r.internalNotes as string) ?? null,
       reference: (r.reference as string) ?? null,

@@ -7,7 +7,7 @@
  * 1. Compiles all manifests using programmatic API (proper merge)
  * 2. Generates code from the merged IR using the CLI
  *
- * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
+ * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
 
 import { spawnSync } from "node:child_process";

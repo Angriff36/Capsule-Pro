@@ -292,6 +292,24 @@ export function mergeIrs(irsOrEntries, provenance) {
     "value-object"
   );
 
+  // 2.0 top-level workflow blocks. These were dropped by the merge before
+  // (the per-file IR carries them but mergeIrs never propagated them), so any
+  // authored saga/reaction silently vanished. Approvals ride on entity.approvals
+  // and merge with their entity, so they need no separate pass here.
+  const sagasResult = mergeBy(
+    entries,
+    (ir) => ir.sagas ?? [],
+    (saga) => saga.name,
+    "saga"
+  );
+  const reactionsResult = mergeBy(
+    entries,
+    (ir) => ir.reactions ?? [],
+    (reaction) =>
+      `${reaction.event}:${reaction.targetEntity}.${reaction.targetCommand}`,
+    "reaction"
+  );
+
   const droppedDuplicates = [
     ...modulesResult.drops,
     ...entitiesResult.drops,
@@ -301,6 +319,8 @@ export function mergeIrs(irsOrEntries, provenance) {
     ...policiesResult.drops,
     ...enumsResult.drops,
     ...valuesResult.drops,
+    ...sagasResult.drops,
+    ...reactionsResult.drops,
   ].sort((a, b) => {
     const typeCompare = a.type.localeCompare(b.type);
     if (typeCompare !== 0) {
@@ -328,6 +348,8 @@ export function mergeIrs(irsOrEntries, provenance) {
       policies: policiesResult.keptItems.length,
       enums: enumsResult.keptItems.length,
       values: valuesResult.keptItems.length,
+      sagas: sagasResult.keptItems.length,
+      reactions: reactionsResult.keptItems.length,
     },
     droppedDuplicates,
   };
@@ -344,6 +366,8 @@ export function mergeIrs(irsOrEntries, provenance) {
       events: eventsResult.keptItems,
       commands: commandsResult.keptItems,
       policies: policiesResult.keptItems,
+      sagas: sagasResult.keptItems,
+      reactions: reactionsResult.keptItems,
     },
     duplicateWarnings,
     mergeReport,

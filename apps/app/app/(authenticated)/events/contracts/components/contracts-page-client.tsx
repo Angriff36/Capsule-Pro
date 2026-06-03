@@ -433,7 +433,9 @@ export const ContractsPageClient = ({
                         <CalendarIcon className="size-4 shrink-0" />
                         <span className="truncate">{contract.event.title}</span>
                         <span className="text-muted-foreground/60 text-xs">
-                          ({dateFormatter.format(contract.event.eventDate)})
+                          ({contract.event.eventDate
+                            ? dateFormatter.format(new Date(contract.event.eventDate))
+                            : "TBD"})
                         </span>
                       </div>
                     )}

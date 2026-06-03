@@ -1,21 +1,26 @@
 # `manifest/ir/` — Compiled IR
 
-The compiled IR currently lives at
-**`packages/manifest-ir/ir/kitchen/kitchen.ir.json`** (despite the
-`kitchen` prefix it contains the full aggregated IR for all 86 manifest
-sources — 130 entities, 589 commands).
+The compiled IR lives here, at **`manifest/ir/kitchen.ir.json`** (despite the
+`kitchen` prefix it contains the full aggregated IR for all manifest sources —
+189 entities, 952 commands as of this writing).
 
-This directory is a layout marker. The IR was not relocated in the
-artifact-layout cleanup because:
+This is the canonical, single home for the IR. The legacy
+`packages/manifest-ir/` location was retired (2026-06-03) — every consumer now
+reads from `manifest/ir/`:
 
-- The dispatcher tests reference `packages/manifest-ir/ir/kitchen/kitchen.commands.json` (a sidecar emitted next to the IR).
-- The codegen scripts (`scripts/manifest/build.mjs`, `generate.mjs`, `generate-all-routes.mjs`) write into `packages/manifest-ir/ir/kitchen/`.
-- `packages/mcp-server/src/lib/route-conformance-scan.ts` reads from there.
+- The codegen scripts (`manifest/scripts/build.mjs`, `compile.mjs`,
+  `generate.mjs`) write into `manifest/ir/`.
+- `packages/mcp-server/src/lib/route-conformance-scan.ts` reads
+  `manifest/ir/kitchen.commands.json` and `manifest/runtime/routes.manifest.json`.
+- The manifest-editor settings API (`apps/app/app/lib/manifest-editor/kitchen-ir.ts`)
+  reads `manifest/ir/kitchen.ir.json`.
 
-A follow-up PR can:
+Files in this directory:
 
-1. Retarget every consumer to read from `manifest/ir/`.
-2. Update the codegen scripts to write there.
-3. Drop the `kitchen` directory prefix entirely (the name is historical and misleading).
-
-See [`docs/audits/manifest-artifact-layout-adr.md`](../../docs/audits/manifest-artifact-layout-adr.md) for context.
+- `kitchen.ir.json` — full merged IR (source of truth for codegen + runtime).
+- `kitchen.commands.json` — flat command index.
+- `kitchen.merge-report.json` — per-compile merge/dedup report.
+- `kitchen.provenance.json` — compiler version + (currently empty) content hashes.
+- `candidate-schema.prisma` — an experimental Prisma-projection output (NOT the
+  live schema; the live schema is hand-authored at
+  `packages/database/prisma/schema.prisma`).

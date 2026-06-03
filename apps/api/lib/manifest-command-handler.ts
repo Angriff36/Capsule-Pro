@@ -141,7 +141,15 @@ export async function executeManifestCommand(
         typeof commandPayload.id === "string" && commandPayload.id.length > 0
           ? commandPayload.id
           : randomUUID();
-      const seeded = await runtime.createInstance(entityName, { id });
+      // Seed the new instance with the FULL command body (not just the id), so
+      // block-severity entity constraints (e.g. requireSignatureData / requireName)
+      // evaluate against the real values during createInstance instead of empty
+      // defaults. The create command's mutate actions re-apply the same values
+      // idempotently. Mirrors the fix in run-manifest-command-core.ts (notes §15a).
+      const seeded = await runtime.createInstance(entityName, {
+        ...commandPayload,
+        id,
+      });
       if (!seeded) {
         return manifestErrorResponse(
           "Failed to initialize entity instance for create",

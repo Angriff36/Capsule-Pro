@@ -162,3 +162,19 @@ event FraudReviewCompleted: "payment.fraud-review-completed" {
   approved: boolean
   reviewer: string
 }
+
+// --- 2.0 Saga: atomic payment settlement across Payment + Invoice ---
+// Records a processed payment AND applies it to its invoice as one unit.
+// If applyToInvoice fails, processPayment is compensated (refunded) in reverse.
+// Wired via runtime.runSaga("ProcessInvoicePayment", ...) from the payments route.
+saga ProcessInvoicePayment {
+  step processPayment {
+    command: Payment.process
+    compensate: Payment.refund
+  }
+  step applyToInvoice {
+    command: Invoice.applyPayment
+    compensate: Invoice.recordRefund
+  }
+  on_failure: compensate
+}

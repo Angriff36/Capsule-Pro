@@ -34,11 +34,17 @@ export function parseISODateToLocal(isoString: string): Date {
 /**
  * Format date for display
  */
-export function formatDate(date: Date | string | null): string {
-  if (!date) {
+export function formatDate(
+  date: Date | string | number | null | undefined
+): string {
+  if (date == null || date === "") {
     return "Never";
   }
-  const d = typeof date === "string" ? parseISODateToLocal(date) : date;
+  const d =
+    typeof date === "string" ? parseISODateToLocal(date) : new Date(date);
+  if (Number.isNaN(d.getTime())) {
+    return "Never";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
@@ -47,13 +53,21 @@ export function formatDate(date: Date | string | null): string {
 }
 
 /**
- * Format date and time for display
+ * Format date and time for display.
+ * SCHEMA PLACEMENT / CONTRACT RULE: API sends ISO strings or null; UI formats with
+ * this helper (or formatDate). Never call Intl.DateTimeFormat().format(value) on a
+ * raw value — it throws "Invalid time value" on null/invalid. These helpers never throw.
  */
-export function formatDateTime(date: Date | string | null): string {
-  if (!date) {
+export function formatDateTime(
+  date: Date | string | number | null | undefined
+): string {
+  if (date == null || date === "") {
     return "Never";
   }
-  const d = typeof date === "string" ? new Date(date) : date;
+  const d = typeof date === "string" ? new Date(date) : new Date(date);
+  if (Number.isNaN(d.getTime())) {
+    return "Never";
+  }
   return new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",

@@ -181,13 +181,15 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     return pools.map((pool) => ({
       id: pool.id,
       tenantId: pool.tenantId,
-      periodId: pool.periodId,
+      periodId: pool.periodId ?? "",
       totalTips: Number(pool.totalTips),
-      allocationRule: pool.allocationRule as
+      allocationRule: (pool.allocationRule ?? "by_hours") as
         | "by_hours"
         | "by_headcount"
         | "fixed_shares",
-      fixedShares: pool.fixedShares as Record<string, number> | undefined,
+      fixedShares: pool.fixedShares
+        ? (JSON.parse(pool.fixedShares) as Record<string, number>)
+        : undefined,
     }));
   }
 

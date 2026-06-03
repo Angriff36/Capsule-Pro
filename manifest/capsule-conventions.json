@@ -1,0 +1,51 @@
+{
+  "$comment": "Capsule-Pro generation conventions — the SINGLE source of truth for how Manifest IR is projected into Capsule's API + client. The stock Manifest projections assume flat paths + bare envelopes; Capsule diverges (domain paths, custom envelopes, apiFetch, multi-schema). This file encodes Capsule's conventions so generated routes AND the generated client agree with each other and with hand-written code. Consumed by manifest/scripts/generate-capsule-client.mjs (and, going forward, generate.mjs). See manifest/contract-alignment-plan.md.",
+  "version": 1,
+
+  "routePaths": {
+    "$comment": "entity -> route base. Reads live under the DOMAIN base; writes go through the canonical dispatcher. Source of truth for the base is manifest/scripts/entity-domain-map.mjs (ENTITY_DOMAIN_MAP); templates below build full paths from it.",
+    "domainMap": "manifest/scripts/entity-domain-map.mjs#ENTITY_DOMAIN_MAP",
+    "readCollection": "/api/{domainBase}/list",
+    "readDetail": "/api/{domainBase}/{id}",
+    "command": "/api/manifest/{entity}/commands/{command}",
+    "commandOverrides": {
+      "$comment": "entity.command -> explicit legacy/domain route path, used only where a route enriches the request (e.g. signature ipAddress) and hasn't moved to the dispatcher yet.",
+      "ContractSignature.create": "/api/events/contracts/{contractId}/signatures"
+    }
+  },
+
+  "readEnvelope": {
+    "$comment": "Shape of generated GET responses (via manifestSuccessResponse). The list payload key is the camelCase PLURAL entity name; detail is the camelCase singular. Always fall back to `data` for hand-written/legacy routes.",
+    "list": { "wrapper": "manifestSuccessResponse", "key": "{entityCamelPlural}", "fallbackKey": "data", "pagination": "pagination" },
+    "detail": { "wrapper": "manifestSuccessResponse", "key": "{entityCamel}", "fallbackKey": "data" }
+  },
+
+  "commandEnvelope": {
+    "$comment": "Shape of ALL command (write) responses. Uniform across the dispatcher (run-manifest-command-core) and the legacy handler (manifest-command-handler).",
+    "sync": { "success": "boolean", "result": "<created/updated instance>", "events": "string[]", "constraintOutcomes": "ConstraintOutcome[]?" },
+    "async": { "success": "boolean", "jobId": "string", "status": "pending|running|completed|failed", "enqueuedAt": "number" },
+    "error": { "success": false, "error": "string", "message": "string?", "constraintOutcomes": "ConstraintOutcome[]?", "diagnostics": "Diagnostic[]?" }
+  },
+
+  "schemaPlacement": {
+    "$comment": "Prisma @@schema placement — multi-schema is NOT native to the projection (per official docs), so Capsule applies it via the placement policy post-process.",
+    "rules": "manifest/schema-placement.rules.json",
+    "policy": "docs/database/SCHEMA_PLACEMENT_POLICY.md",
+    "neverUse": ["public"]
+  },
+
+  "dateSerialization": {
+    "$comment": "API sends ISO 8601 strings or null. UI formats with the single safe helper; raw Intl.DateTimeFormat.format(value) on a non-Date is banned (throws 'Invalid time value').",
+    "wireFormat": "iso-8601-string-or-null",
+    "uiHelper": "apps/app/app/lib/format.ts#formatDate,formatDateTime",
+    "ban": "Intl.DateTimeFormat().format(value) where value is not a Date"
+  },
+
+  "client": {
+    "$comment": "Generated typed client settings.",
+    "fetch": "apps/app/app/lib/api.ts#apiFetch",
+    "commandCore": "apps/app/app/lib/manifest-client.ts#executeCommand",
+    "typesOutput": "apps/app/app/lib/manifest-types.generated.ts",
+    "clientOutput": "apps/app/app/lib/manifest-client.generated.ts"
+  }
+}

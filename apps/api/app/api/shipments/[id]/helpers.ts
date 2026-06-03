@@ -265,7 +265,7 @@ export async function fetchUpdatedShipment(
     shipping_method: updated.shippingMethod,
     delivered_by: updated.deliveredBy,
     received_by: updated.receivedBy,
-    signature: updated.signature,
+    signature: updated.signatureData,
     notes: updated.notes,
     internal_notes: updated.internalNotes,
     reference: updated.reference,

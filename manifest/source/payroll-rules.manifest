@@ -267,6 +267,30 @@ entity PayrollRun {
   store PayrollRun in durable
 }
 
+entity PayrollLineItem {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property required payrollRunId: string
+  property required employeeId: string
+  property grossPay: money = 0
+  property netPay: money = 0
+  property totalDeductions: money = 0
+  property hoursWorked: money = 0
+  property hoursRegular: money = 0
+  property hoursOvertime: money = 0
+  property rateRegular: money = 0
+  property rateOvertime: money = 0
+  property deductions: string = "{}"
+  property createdAt: datetime = now()
+  property updatedAt: datetime = now()
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  store PayrollLineItem in durable
+}
+
 policy PayrollManagement execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll"
 policy PayrollApproval execute: user.role in ["admin", "payroll_admin"] "Only payroll admins can approve/pay payroll runs"
 

@@ -240,7 +240,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
 
     // Fetch active claims
     const claims = await this.prisma.kitchenTaskClaim.findMany({
-      where: { tenantId: this.tenantId, kitchenTaskId: id, releasedAt: null },
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
       orderBy: { claimedAt: "desc" },
       take: 1,
     });
@@ -254,12 +254,13 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         tenantId: this.tenantId,
         id: data.id as string,
         eventId: data.eventId as string,
+        locationId: (data.locationId as string) || "",
         name: data.name as string,
         taskType: (data.taskType as string) || "prep",
         status: (data.status as string) || "pending",
         priority: (data.priority as number) || 5,
         quantityTotal: data.quantityTotal as number,
-        quantityUnitId: (data.quantityUnitId as string) || null,
+        quantityUnitId: (data.quantityUnitId as number) ?? null,
         quantityCompleted: (data.quantityCompleted as number) || 0,
         servingsTotal: data.servingsTotal as number | null,
         startByDate: data.startByDate
@@ -278,7 +279,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: task.id,
+          taskId: task.id,
           employeeId: data.claimedBy as string,
           claimedAt: new Date(data.claimedAt as number),
         },
@@ -317,7 +318,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
 
     // Handle claim changes
     const activeClaim = await this.prisma.kitchenTaskClaim.findFirst({
-      where: { tenantId: this.tenantId, kitchenTaskId: id, releasedAt: null },
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
     });
 
     const newClaimedBy = data.claimedBy as string | undefined;
@@ -328,7 +329,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: id,
+          taskId: id,
           employeeId: newClaimedBy,
           claimedAt: data.claimedAt
             ? new Date(data.claimedAt as number)
@@ -359,7 +360,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: id,
+          taskId: id,
           employeeId: newClaimedBy,
           claimedAt: data.claimedAt
             ? new Date(data.claimedAt as number)
@@ -415,11 +416,11 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       startByDate: task.startByDate ? task.startByDate.getTime() : 0,
       dueByDate: task.dueByDate ? task.dueByDate.getTime() : 0,
       notes: task.notes ?? "",
-      stationId: task.stationId ?? "",
-      claimedBy: task.claimedBy ?? activeClaim?.employeeId ?? "",
-      claimedAt: task.claimedAt
-        ? task.claimedAt.getTime()
-        : (activeClaim?.claimedAt.getTime() ?? 0),
+      stationId: "",
+      claimedBy: activeClaim?.employeeId ?? "",
+      claimedAt: activeClaim?.claimedAt
+        ? activeClaim.claimedAt.getTime()
+        : 0,
       createdAt: task.createdAt?.getTime() ?? 0,
       updatedAt: task.updatedAt?.getTime() ?? 0,
     };
@@ -600,9 +601,7 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
         category: (data.category as string) || null,
         cuisineType: (data.cuisineType as string) || null,
         description: (data.description as string) || null,
-        tags: Array.isArray(data.tags)
-          ? (data.tags as string[]).join(",")
-          : ((data.tags as string) ?? ""),
+        tags: toStringArray(data.tags),
         versionNumber: (data.versionNumber as number) || 1,
         yieldQuantity: data.yieldQuantity as number,
         yieldUnitId: data.yieldUnitId as number,
@@ -841,9 +840,7 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
         durationMinutes: (data.durationMinutes as number) || null,
         temperatureValue: (data.temperatureValue as number) || null,
         temperatureUnit: (data.temperatureUnit as string) || null,
-        equipmentNeeded: Array.isArray(data.equipmentNeeded)
-          ? (data.equipmentNeeded as string[]).join(",")
-          : ((data.equipmentNeeded as string) ?? null),
+        equipmentNeeded: toStringArray(data.equipmentNeeded),
         tips: (data.tips as string) || null,
         videoUrl: (data.videoUrl as string) || null,
         imageUrl: (data.imageUrl as string) || null,
@@ -938,7 +935,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         ? await this.prisma.kitchenTaskClaim.findMany({
             where: {
               tenantId: this.tenantId,
-              kitchenTaskId: { in: taskIds },
+              taskId: { in: taskIds },
               releasedAt: null,
             },
             orderBy: { claimedAt: "desc" },
@@ -947,9 +944,9 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
     const claimsByTaskId = new Map<string, KitchenTaskClaim[]>();
     for (const claim of claims) {
-      const existing = claimsByTaskId.get(claim.kitchenTaskId) || [];
+      const existing = claimsByTaskId.get(claim.taskId) || [];
       existing.push(claim);
-      claimsByTaskId.set(claim.kitchenTaskId, existing);
+      claimsByTaskId.set(claim.taskId, existing);
     }
 
     return tasks.map((task) =>
@@ -970,7 +967,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     }
 
     const claims = await this.prisma.kitchenTaskClaim.findMany({
-      where: { tenantId: this.tenantId, kitchenTaskId: id, releasedAt: null },
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
       orderBy: { claimedAt: "desc" },
       take: 1,
     });
@@ -988,9 +985,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         status: (data.status as string) || "pending",
         priority: (data.priority as number) || 5,
         complexity: (data.complexity as number) || 5,
-        tags: Array.isArray(data.tags)
-          ? (data.tags as string[]).join(",")
-          : ((data.tags as string) ?? null),
+        tags: toStringArray(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -1003,7 +998,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: task.id,
+          taskId: task.id,
           employeeId: data.claimedBy as string,
           claimedAt: new Date(data.claimedAt as number),
         },
@@ -1036,9 +1031,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         complexity: data.complexity as number | undefined,
         title: data.title as string | undefined,
         summary: data.summary as string | undefined,
-        tags: Array.isArray(data.tags)
-          ? (data.tags as string[]).join(",")
-          : (data.tags as string | undefined),
+        tags: toStringArrayOrUndefined(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -1048,7 +1041,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     });
 
     const activeClaim = await this.prisma.kitchenTaskClaim.findFirst({
-      where: { tenantId: this.tenantId, kitchenTaskId: id, releasedAt: null },
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
     });
 
     const newClaimedBy = data.claimedBy as string | undefined;
@@ -1058,7 +1051,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: id,
+          taskId: id,
           employeeId: newClaimedBy,
           claimedAt: data.claimedAt
             ? new Date(data.claimedAt as number)
@@ -1087,7 +1080,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         data: {
           id: crypto.randomUUID(),
           tenantId: this.tenantId,
-          kitchenTaskId: id,
+          taskId: id,
           employeeId: newClaimedBy,
           claimedAt: data.claimedAt
             ? new Date(data.claimedAt as number)
@@ -1097,7 +1090,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     }
 
     const claims = await this.prisma.kitchenTaskClaim.findMany({
-      where: { tenantId: this.tenantId, kitchenTaskId: id, releasedAt: null },
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
       orderBy: { claimedAt: "desc" },
       take: 1,
     });
@@ -1185,8 +1178,8 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
         eventId: data.eventId as string,
         dishId: (data.dishId as string) || null,
         warningType: data.warningType as string,
-        allergens: this.toCommaString(data.allergens),
-        affectedGuests: this.toCommaString(data.affectedGuests),
+        allergens: toStringArray(data.allergens),
+        affectedGuests: toStringArray(data.affectedGuests),
         severity: (data.severity as string) || "warning",
         isAcknowledged: (data.isAcknowledged as boolean) ?? false,
         acknowledgedBy: (data.acknowledgedBy as string) || null,
@@ -1266,6 +1259,7 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
     }
     return "";
   }
+
 
   private mapToManifestEntity(warning: AllergenWarning): EntityInstance {
     return {
@@ -2292,9 +2286,7 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
         eventId: data.eventId as string,
         name: data.name as string,
         batchMultiplier: (data.batchMultiplier as number) ?? 1,
-        dietaryRestrictions: Array.isArray(data.dietaryRestrictions)
-          ? (data.dietaryRestrictions as string[]).join(",")
-          : ((data.dietaryRestrictions as string) ?? null),
+        dietaryRestrictions: toStringArray(data.dietaryRestrictions),
         status: (data.status as string) || "draft",
         totalItems: (data.totalItems as number) || 0,
         totalEstimatedTime: (data.totalEstimatedTime as number) || 0,
@@ -2320,9 +2312,7 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
         data: {
           name: data.name as string | undefined,
           batchMultiplier: data.batchMultiplier as number | undefined,
-          dietaryRestrictions: Array.isArray(data.dietaryRestrictions)
-            ? (data.dietaryRestrictions as string[]).join(",")
-            : (data.dietaryRestrictions as string | undefined),
+          dietaryRestrictions: toStringArrayOrUndefined(data.dietaryRestrictions),
           status: data.status as string | undefined,
           totalItems: data.totalItems as number | undefined,
           totalEstimatedTime: data.totalEstimatedTime as number | undefined,
@@ -2341,10 +2331,9 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
-      // PrepList has no deletedAt — deactivate instead
       await this.prisma.prepList.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { isActive: false },
+        data: { deletedAt: new Date() },
       });
       return true;
     } catch (error) {
@@ -2356,7 +2345,7 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
   async clear(): Promise<void> {
     await this.prisma.prepList.updateMany({
       where: { tenantId: this.tenantId },
-      data: { isActive: false },
+      data: { deletedAt: new Date() },
     });
   }
 
@@ -2377,7 +2366,7 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
         ? prepList.generatedAt.getTime()
         : Date.now(),
       finalizedAt: prepList.finalizedAt ? prepList.finalizedAt.getTime() : 0,
-      isActive: prepList.isActive ?? true,
+      isActive: prepList.deletedAt == null,
       isDraft: prepList.status === "draft",
       isFinalized: prepList.status === "finalized",
       isCompleted: prepList.status === "completed",
@@ -2432,12 +2421,8 @@ export class PrepListItemPrismaStore implements Store<EntityInstance> {
         scaledUnit: (data.scaledUnit as string) || "",
         isOptional: (data.isOptional as boolean) ?? false,
         preparationNotes: (data.preparationNotes as string) || null,
-        allergens: Array.isArray(data.allergens)
-          ? (data.allergens as string[]).join(",")
-          : ((data.allergens as string) ?? null),
-        dietarySubstitutions: Array.isArray(data.dietarySubstitutions)
-          ? (data.dietarySubstitutions as string[]).join(",")
-          : ((data.dietarySubstitutions as string) ?? null),
+        allergens: toStringArray(data.allergens),
+        dietarySubstitutions: toStringArray(data.dietarySubstitutions),
         dishId: (data.dishId as string) || null,
         dishName: (data.dishName as string) || null,
         recipeVersionId: (data.recipeVersionId as string) || null,
@@ -2467,12 +2452,8 @@ export class PrepListItemPrismaStore implements Store<EntityInstance> {
           baseUnit: data.baseUnit as string | undefined,
           scaledUnit: data.scaledUnit as string | undefined,
           preparationNotes: data.preparationNotes as string | null | undefined,
-          allergens: Array.isArray(data.allergens)
-            ? (data.allergens as string[]).join(",")
-            : (data.allergens as string | undefined),
-          dietarySubstitutions: Array.isArray(data.dietarySubstitutions)
-            ? (data.dietarySubstitutions as string[]).join(",")
-            : (data.dietarySubstitutions as string | undefined),
+          allergens: toStringArrayOrUndefined(data.allergens),
+          dietarySubstitutions: toStringArrayOrUndefined(data.dietarySubstitutions),
           sortOrder: data.sortOrder as number | undefined,
           isCompleted: data.isCompleted as boolean | undefined,
           completedAt: data.completedAt
@@ -2532,10 +2513,9 @@ export class PrepListItemPrismaStore implements Store<EntityInstance> {
       isCompleted: item.isCompleted ?? false,
       completedAt: item.completedAt ? item.completedAt.getTime() : 0,
       completedBy: item.completedBy ?? "",
-      hasAllergens:
-        typeof item.allergens === "string" && item.allergens.length > 0,
+      hasAllergens: Array.isArray(item.allergens) && item.allergens.length > 0,
       hasDietarySubstitutions:
-        typeof item.dietarySubstitutions === "string" &&
+        Array.isArray(item.dietarySubstitutions) &&
         item.dietarySubstitutions.length > 0,
       isRequired: !(item.isOptional ?? false),
     };
@@ -2653,10 +2633,8 @@ export class StationPrismaStore implements Store<EntityInstance> {
         stationType: (data.stationType as string) || "prep-station",
         capacitySimultaneousTasks:
           (data.capacitySimultaneousTasks as number) || 1,
-        // equipmentList is String? scalar — store comma-separated
-        equipmentList: Array.isArray(data.equipmentList)
-          ? (data.equipmentList as string[]).join(",")
-          : ((data.equipmentList as string) ?? null),
+        // equipmentList is a Postgres String[] column.
+        equipmentList: toStringArray(data.equipmentList),
         isActive: (data.isActive as boolean) ?? true,
         notes: (data.notes as string) || null,
       },
@@ -2677,12 +2655,7 @@ export class StationPrismaStore implements Store<EntityInstance> {
           capacitySimultaneousTasks: data.capacitySimultaneousTasks as
             | number
             | undefined,
-          equipmentList:
-            data.equipmentList !== undefined
-              ? Array.isArray(data.equipmentList)
-                ? (data.equipmentList as string[]).join(",")
-                : (data.equipmentList as string)
-              : undefined,
+          equipmentList: toStringArrayOrUndefined(data.equipmentList),
           isActive: data.isActive as boolean | undefined,
           notes: data.notes as string | null | undefined,
           updatedAt: new Date(),
@@ -3062,4 +3035,27 @@ export function createPrismaOutboxWriter(
       });
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// Shared array coercion (module-level so every *PrismaStore class can use it).
+// Schema array columns are Postgres String[]; manifest values may arrive as an
+// array OR a legacy comma-string. These normalize to a real string[].
+// ---------------------------------------------------------------------------
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v));
+  }
+  if (typeof value === "string" && value.length > 0) {
+    return value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+// For updates: leave the column untouched when the field wasn't provided.
+function toStringArrayOrUndefined(value: unknown): string[] | undefined {
+  return value === undefined ? undefined : toStringArray(value);
 }

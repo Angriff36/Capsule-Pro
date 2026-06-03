@@ -23,7 +23,7 @@ entity Shipment {
   property shippingMethod: string = ""
   property deliveredBy: string = ""
   property receivedBy: string = ""
-  property signature: string = ""
+  property signatureData: string = ""
   property notes: string = ""
   property internalNotes: string = ""
   property reference: string = ""
@@ -113,7 +113,7 @@ entity Shipment {
     emit ShipmentShipped
   }
 
-  command markDelivered(userId: string, receivedBy: string, signature: string) {
+  command markDelivered(userId: string, receivedBy: string, signatureData: string) {
     guard self.status == "in_transit" or self.status == "scheduled" "Can only deliver in-transit or scheduled shipments"
 
     constraint blockNoItems:block self.totalItems == 0 {
@@ -126,7 +126,7 @@ entity Shipment {
     mutate status = "delivered"
     mutate deliveredBy = userId
     mutate receivedBy = receivedBy
-    mutate signature = signature
+    mutate signatureData = signatureData
     mutate actualDeliveryDate = now()
     mutate updatedAt = now()
 

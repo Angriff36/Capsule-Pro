@@ -143,9 +143,13 @@ entity TipPool {
   property required tenantId: string
   property periodStart: datetime
   property periodEnd: datetime
+  property periodId: string = ""
   property eventId: string = ""
   property totalTips: money = 0
   property status: string = "open"
+  // Allocation
+  property allocationRule: string = "by_hours"
+  property fixedShares: string = "{}"
   // Distribution tracking
   property distributedAmount: money = 0
   property distributedAt: datetime

@@ -40,7 +40,14 @@ const ir = JSON.parse(readFileSync(irPath, "utf8"));
 
 const result = new PrismaProjection().generate(ir, {
   surface: "prisma.schema",
-  options: {}, // no provider → model blocks only; Capsule owns the header below
+  options: {
+    // no provider → model blocks only; Capsule owns the header below.
+    // `signature` became a reserved word in @angriff36/manifest 2.0, so the IR
+    // property was renamed Shipment.signature → Shipment.signatureData. Map it
+    // back to the existing physical column `signature` so the dev DB and the
+    // raw-SQL writers in apps/api/app/api/shipments/** keep working (no migration).
+    columnMappings: { Shipment: { signatureData: "signature" } },
+  },
 });
 const arts = result.artifacts || [];
 const schemaArt =
