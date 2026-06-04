@@ -14,8 +14,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ---------------------------------------------------------------------------
 
 // Mock the IR loader so we don't need the actual IR file on disk.
-vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => ({
-  loadPrecompiledIR: vi.fn(() => ({
+// The factory calls loadMergedPrecompiledIR() when no explicit irPath is supplied
+// (manifest-runtime-factory.ts:251) and loadPrecompiledIR(irPath) otherwise (L249).
+// Both must be present on the mock or the factory throws at IR-load time.
+vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => {
+  const bundle = () => ({
     ir: {
       version: "1.0",
       provenance: { source: "test" },
@@ -28,8 +31,12 @@ vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => ({
     },
     hash: "test-hash",
     files: [],
-  })),
-}));
+  });
+  return {
+    loadPrecompiledIR: vi.fn(bundle),
+    loadMergedPrecompiledIR: vi.fn(bundle),
+  };
+});
 
 // Capture PrismaStore constructor calls.
 const prismaStoreConstructorSpy = vi.fn();

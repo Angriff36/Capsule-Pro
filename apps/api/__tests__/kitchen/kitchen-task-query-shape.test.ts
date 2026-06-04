@@ -48,20 +48,22 @@ describe("KitchenTask API query shape", () => {
     expectNoDeletedAt(args);
   });
 
-  it("uses string-compatible station filtering for available kitchen tasks", async () => {
+  it("uses array-membership station filtering for available kitchen tasks", async () => {
     await getAvailableTasks(
       new Request("http://localhost/api/kitchen/tasks/available?station=grill")
     );
 
     const args = vi.mocked(database.kitchenTask.findMany).mock.calls[0]?.[0];
     expectNoDeletedAt(args);
-    expect(JSON.stringify(args)).not.toContain('"has"');
+    // KitchenTask.tags is a Postgres String[] (schema.prisma:326, GIN-indexed).
+    // The correct Prisma list filter for "tags contains this station" is `{ has }`,
+    // not the scalar-string `{ contains }` (which is a type error on String[]).
     expect(args).toEqual(
       expect.objectContaining({
         where: expect.objectContaining({
           AND: expect.arrayContaining([
             expect.objectContaining({
-              tags: expect.objectContaining({ contains: "grill" }),
+              tags: expect.objectContaining({ has: "grill" }),
             }),
           ]),
         }),

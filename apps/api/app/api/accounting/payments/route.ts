@@ -32,6 +32,11 @@ import {
   validateCreatePaymentRequest,
 } from "./validation";
 
+// This route constructs the Manifest runtime (createManifestRuntime), which depends on
+// Node-only APIs (Prisma, node:crypto). Pin it to the Node.js runtime so it never gets
+// bundled for the Edge runtime. Enforced by manifest-runtime-node.invariant.test.ts.
+export const runtime = "nodejs";
+
 /**
  * Cache scope for `Idempotency-Key`-protected payment creation.
  * Stored as `http:accounting:payments:create:<key>` in `manifest_idempotency`.
