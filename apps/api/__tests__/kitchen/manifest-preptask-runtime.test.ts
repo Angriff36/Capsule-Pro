@@ -244,7 +244,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const instance = await runtime.getInstance("PrepTask", "task-005");
     expect(instance?.status).toBe("open");
     expect(instance?.claimedBy).toBe("");
-    expect(instance?.claimedAt).toBe(0);
+    expect(instance?.claimedAt).toBeNull();
     expect(instance?.stationId).toBe("");
 
     // Verify event emission
