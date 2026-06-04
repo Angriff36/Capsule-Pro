@@ -4,6 +4,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
 const TEST_TENANT_ID = "tenant-test-001";
 
@@ -42,13 +43,17 @@ async function buildRuntime() {
     policies: compiled.flatMap((item) => item.policies),
   };
 
-  return new ManifestRuntimeEngine(mergedIr, {
-    user: {
-      id: "manager-001",
-      tenantId: TEST_TENANT_ID,
-      role: "manager",
+  return new ManifestRuntimeEngine(
+    mergedIr,
+    {
+      user: {
+        id: "manager-001",
+        tenantId: TEST_TENANT_ID,
+        role: "manager",
+      },
     },
-  });
+    { storeProvider: inMemoryStoreProvider() }
+  );
 }
 
 describe("Manifest Runtime - Event + PrepSeed -> PrepTasks flow", () => {

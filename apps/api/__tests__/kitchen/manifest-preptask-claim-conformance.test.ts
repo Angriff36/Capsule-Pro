@@ -20,6 +20,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
 // ---------------------------------------------------------------------------
 // Deterministic fixtures — fixed IDs and timestamps for reproducibility
@@ -65,6 +66,7 @@ async function buildDeterministicRuntime(userOverrides?: {
     },
     {
       now: () => FIXED_NOW,
+      storeProvider: inMemoryStoreProvider(),
     }
   );
 }
