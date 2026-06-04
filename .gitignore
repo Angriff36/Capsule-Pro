@@ -603,3 +603,4 @@ playwright-verify-suggestions.spec.ts
 .claude/.guardrail/
 
 .fallow/
+manifest/generated/
