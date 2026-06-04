@@ -23,6 +23,7 @@ import { pathToFileURL } from "node:url";
 import { resolve, dirname } from "node:path";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
@@ -456,6 +457,83 @@ console.log("  Forward relation lines stripped: " + strippedRelLines);
 console.log("  @db.Time stripped: " + strippedDbTime);
 
 // ---------------------------------------------------------------------------
+// 5g. Deduplicate generated models with the same @@map table name.
+//     Some IR entities represent the same domain concept and map to the same
+//     Prisma table (e.g., EventStaff + EventStaffAssignment → event_staff_assignments).
+//     When multiple generated models share a @@map table, keep the one whose
+//     model name matches the actual Prisma model name (the "canonical" one)
+//     and remove the alias entity's model.
+// ---------------------------------------------------------------------------
+{
+  // Collect model name → @@map table for all generated models
+  const modelTableMap = new Map(); // modelName → tableName
+  const tableModelsMap = new Map(); // tableName → [modelNames]
+  const modelRegex5g = /^model\s+(\w+)\s*\{/gm;
+  let match5g;
+  while ((match5g = modelRegex5g.exec(generatedCode)) !== null) {
+    const modelName = match5g[1];
+    const startIdx = match5g.index;
+    const openBrace = startIdx + match5g[0].length - 1;
+    let depth = 1;
+    let idx = openBrace + 1;
+    while (idx < generatedCode.length) {
+      if (generatedCode[idx] === "{") depth++;
+      if (generatedCode[idx] === "}") depth--;
+      if (depth === 0) break;
+      idx++;
+    }
+    const block = generatedCode.substring(startIdx, idx + 1);
+    const mapMatch = block.match(/@@map\("([^"]+)"\)/);
+    if (mapMatch) {
+      modelTableMap.set(modelName, mapMatch[1]);
+      if (!tableModelsMap.has(mapMatch[1])) tableModelsMap.set(mapMatch[1], []);
+      tableModelsMap.get(mapMatch[1]).push(modelName);
+    }
+  }
+
+  // Find tables with multiple models
+  let dupTableCount = 0;
+  const modelsToRemove = new Set();
+  for (const [table, models] of tableModelsMap) {
+    if (models.length > 1) {
+      dupTableCount++;
+      // Keep the "canonical" model and remove the alias.
+      // Heuristic: the alias entity is the one listed in ENTITY_ACCESSOR_OVERRIDES
+      // (it maps to a different Prisma model name). The canonical entity maps directly.
+      const canonical = models.find(m => !ENTITY_ACCESSOR_OVERRIDES[m]);
+      const toRemove = canonical ? models.filter(m => m !== canonical) : models.slice(1);
+      toRemove.forEach(m => modelsToRemove.add(m));
+    }
+  }
+
+  if (modelsToRemove.size > 0) {
+    // Remove the duplicate models from generatedCode
+    for (const modelName of modelsToRemove) {
+      const startPattern = "model " + modelName + " {";
+      const startIdx = generatedCode.indexOf(startPattern);
+      if (startIdx === -1) continue;
+      const openBrace = startIdx + startPattern.length - 1;
+      let depth = 1;
+      let idx = openBrace + 1;
+      while (idx < generatedCode.length) {
+        if (generatedCode[idx] === "{") depth++;
+        if (generatedCode[idx] === "}") depth--;
+        if (depth === 0) break;
+        idx++;
+      }
+      // Remove the model block plus surrounding whitespace
+      const before = generatedCode.substring(0, startIdx).trimEnd();
+      const after = generatedCode.substring(idx + 1).trimStart();
+      generatedCode = before + "\n" + after;
+    }
+  }
+  console.log("  Duplicate-table models deduplicated: " + modelsToRemove.size + " removed (" + dupTableCount + " table conflicts)");
+  if (modelsToRemove.size > 0) {
+    console.log("    Removed: " + [...modelsToRemove].join(", "));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // 6. Extract header from committed schema (datasource + generator)
 // ---------------------------------------------------------------------------
 const firstModelIdx = committedSchema.indexOf("model ");
@@ -496,6 +574,21 @@ const committedModelNames = [
 ].map((m) => m[1]);
 const infraModels = committedModelNames.filter((name) => !irEntityNames.has(name));
 
+// ---------------------------------------------------------------------------
+// 6a. Collect @@map table names from generated models to avoid duplicates
+//     in infra-core pass-through. When an IR entity has a different name
+//     from the Prisma model but maps to the same table (e.g., IR BankAccount
+//     → model EmployeeBankAccount → table employee_bank_accounts), the
+//     generated model already covers that table via @@map.
+// ---------------------------------------------------------------------------
+const generatedTableNames = new Set();
+const genMapRegex = /@@map\("([^"]+)"\)/g;
+let genMapMatch;
+while ((genMapMatch = genMapRegex.exec(generatedCode)) !== null) {
+  generatedTableNames.add(genMapMatch[1]);
+}
+console.log("  Generated @@map tables: " + generatedTableNames.size);
+
 // Extract each infra model block using depth-aware brace matching
 function extractModelBlock(schemaText, modelName) {
   const startPattern = "model " + modelName + " {";
@@ -516,15 +609,27 @@ function extractModelBlock(schemaText, modelName) {
 
 const infraBlocks = [];
 const infraMissing = [];
+const infraDeduped = [];
 for (const name of infraModels) {
   const block = extractModelBlock(committedSchema, name);
   if (block) {
+    // Check if this infra model's @@map table is already covered by a generated model
+    const infraMapMatch = block.match(/@@map\("([^"]+)"\)/);
+    const infraTable = infraMapMatch ? infraMapMatch[1] : name;
+    if (generatedTableNames.has(infraTable)) {
+      infraDeduped.push(name + " (table: " + infraTable + ")");
+      continue; // Skip — generated model already covers this table
+    }
     infraBlocks.push(block);
   } else {
     infraMissing.push(name);
   }
 }
 console.log("\nInfra-core: " + infraBlocks.length + " pass-through models appended");
+if (infraDeduped.length > 0) {
+  console.log("  Deduplicated (table covered by generated model): " + infraDeduped.length);
+  for (const d of infraDeduped) console.log("    " + d);
+}
 if (infraMissing.length > 0) {
   console.log("  Missing (extract failed): " + infraMissing.join(", "));
 }

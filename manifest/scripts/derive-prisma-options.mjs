@@ -6,6 +6,7 @@
 import { readFileSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { ENTITY_ACCESSOR_OVERRIDES } from "./entity-domain-map.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "../..");
@@ -284,10 +285,32 @@ function buildOptions(irEntities, prismaModels) {
 
   for (const entity of irEntities) {
     const entityName = entity.name;
-    const model = prismaModels.get(entityName);
+    // Try direct lookup first, then fall back to accessor override name.
+    // ENTITY_ACCESSOR_OVERRIDES maps IR entity names to their actual Prisma client
+    // accessor names (e.g., BankAccount → employeeBankAccount, Document → documents).
+    // Null values mean the entity genuinely has no matching Prisma model.
+    // Two accessor→model patterns exist in schema.prisma:
+    //   camelCase accessor → PascalCase model (e.g., employeeBankAccount → EmployeeBankAccount)
+    //   snake_case accessor → snake_case model (e.g., documents → documents)
+    const accessorOverride = ENTITY_ACCESSOR_OVERRIDES[entityName];
+    let model = prismaModels.get(entityName);
+    let modelName = entityName;
+
+    if (!model && accessorOverride !== undefined && accessorOverride !== null) {
+      // Try accessor name directly (handles snake_case legacy models)
+      model = prismaModels.get(accessorOverride);
+      modelName = accessorOverride;
+
+      // Try PascalCase version (handles camelCase accessors from PascalCase models)
+      if (!model) {
+        const pascalCase = accessorOverride[0].toUpperCase() + accessorOverride.slice(1);
+        model = prismaModels.get(pascalCase);
+        modelName = pascalCase;
+      }
+    }
 
     if (!model) {
-      report.noPrismaModel.push(entityName);
+      report.noPrismaModel.push(entityName + (modelName !== entityName ? ` (tried ${modelName})` : ""));
       continue;
     }
 
@@ -316,6 +339,7 @@ function buildOptions(irEntities, prismaModels) {
 
       report.matched.push({
         entity: entityName,
+        resolvedModel: modelName !== entityName ? modelName : undefined,
         tableMapping: !!parsed.tableMapping,
         columnMappings: Object.keys(parsed.columnMappings).length,
         dbAttributes: Object.keys(parsed.dbAttributes).length,

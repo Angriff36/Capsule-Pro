@@ -43,6 +43,7 @@ vi.mock("@repo/database", () => ({
   database: {
     payment: {
       create: mocks.paymentCreateMock,
+      update: vi.fn().mockResolvedValue({}),
       findMany: vi.fn(),
       count: vi.fn(),
     },
@@ -56,6 +57,9 @@ vi.mock("@repo/database", () => ({
       findUnique: mocks.manifestIdempotencyFindUniqueMock,
       upsert: mocks.manifestIdempotencyUpsertMock,
     },
+    activityFeed: {
+      create: vi.fn().mockResolvedValue({}),
+    },
   },
 }));
 
@@ -65,6 +69,18 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
+}));
+
+// Prevent the import chain: manifest-runtime → prisma-store → @repo/database/standalone → keys.ts
+// from running at import time. keys() calls createEnv() which validates DATABASE_URL.
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn().mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: true }),
+  }),
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
 import { NextRequest } from "next/server";
