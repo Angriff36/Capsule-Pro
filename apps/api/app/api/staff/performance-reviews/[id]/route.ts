@@ -29,7 +29,7 @@ export async function GET(
     const performanceReview = await database.performanceReview.findFirst({
       where: {
         id,
-        tenantId
+        tenant_id: tenantId
       },
     });
 

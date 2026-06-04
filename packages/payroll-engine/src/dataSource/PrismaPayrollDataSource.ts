@@ -188,7 +188,9 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         | "by_headcount"
         | "fixed_shares",
       fixedShares: pool.fixedShares
-        ? (JSON.parse(pool.fixedShares) as Record<string, number>)
+        ? ((typeof pool.fixedShares === "string"
+            ? JSON.parse(pool.fixedShares)
+            : pool.fixedShares) as Record<string, number>)
         : undefined,
     }));
   }

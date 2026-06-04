@@ -29,7 +29,7 @@ export async function GET(
     const actionMilestone = await database.actionMilestone.findFirst({
       where: {
         id,
-        tenantId
+        tenant_id: tenantId
       },
     });
 

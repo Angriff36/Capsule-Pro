@@ -29,7 +29,7 @@ export async function GET(
     const onboardingTask = await database.onboardingTask.findFirst({
       where: {
         id,
-        tenantId,
+        tenant_id: tenantId,
         deletedAt: null
       },
     });

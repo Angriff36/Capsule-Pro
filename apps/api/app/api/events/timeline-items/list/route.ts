@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const eventTimelineItems = await database.eventTimelineItem.findMany({
+const eventTimelineItems = await database.eventTimeline.findMany({
     where: {
         tenantId
       },

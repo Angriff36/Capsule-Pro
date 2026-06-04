@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
 const eventFollowups = await database.eventFollowup.findMany({
     where: {
-        tenantId,
+        tenant_id: tenantId,
         deletedAt: null
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

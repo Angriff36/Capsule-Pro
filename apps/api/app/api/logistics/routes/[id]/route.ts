@@ -26,7 +26,7 @@ export async function GET(
     const { id } = await params;
 
     // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
-    const logisticsRoute = await database.logisticsRoute.findFirst({
+    const logisticsRoute = await database.deliveryRoute.findFirst({
       where: {
         id,
         tenantId

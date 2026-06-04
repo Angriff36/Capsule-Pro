@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const qATemperatureLogs = await database.qATemperatureLog.findMany({
+const qATemperatureLogs = await database.temperatureLog.findMany({
     where: {
         tenantId
       },

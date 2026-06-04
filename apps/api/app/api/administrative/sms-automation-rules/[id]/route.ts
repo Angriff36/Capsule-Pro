@@ -26,10 +26,10 @@ export async function GET(
     const { id } = await params;
 
     // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
-    const smsAutomationRule = await database.smsAutomationRule.findFirst({
+    const smsAutomationRule = await database.sms_automation_rules.findFirst({
       where: {
         id,
-        tenantId,
+        tenant_id: tenantId,
         deletedAt: null
       },
     });

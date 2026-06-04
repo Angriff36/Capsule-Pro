@@ -20,12 +20,12 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const bulkCombineRules = await database.bulkCombineRule.findMany({
+const bulkCombineRules = await database.bulk_combine_rules.findMany({
     where: {
-        tenantId
+        tenant_id: tenantId
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

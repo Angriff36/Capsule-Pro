@@ -133,7 +133,7 @@ export async function GET(request: Request) {
       shipping_method: s.shippingMethod,
       delivered_by: s.deliveredBy,
       received_by: s.receivedBy,
-      signature: s.signatureData,
+      signature: s.signature,
       notes: s.notes,
       internal_notes: s.internalNotes,
       created_at: s.createdAt,

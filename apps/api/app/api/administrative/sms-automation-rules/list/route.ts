@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse({ error: "Tenant not found", diagnostics: [] }, 400);
   }
 
-const smsAutomationRules = await database.smsAutomationRule.findMany({
+const smsAutomationRules = await database.sms_automation_rules.findMany({
     where: {
-        tenantId,
+        tenant_id: tenantId,
         deletedAt: null
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

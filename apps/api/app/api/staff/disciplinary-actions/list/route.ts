@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
 
 const disciplinaryActions = await database.disciplinaryAction.findMany({
     where: {
-        tenantId
+        tenant_id: tenantId
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

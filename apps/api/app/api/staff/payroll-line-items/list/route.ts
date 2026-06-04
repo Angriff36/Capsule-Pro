@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
 
 const payrollLineItems = await database.payrollLineItem.findMany({
     where: {
-        tenantId
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

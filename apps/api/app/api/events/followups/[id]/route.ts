@@ -29,7 +29,7 @@ export async function GET(
     const eventFollowup = await database.eventFollowup.findFirst({
       where: {
         id,
-        tenantId,
+        tenant_id: tenantId,
         deletedAt: null
       },
     });

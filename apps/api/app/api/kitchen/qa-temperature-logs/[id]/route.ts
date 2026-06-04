@@ -26,7 +26,7 @@ export async function GET(
     const { id } = await params;
 
     // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
-    const qATemperatureLog = await database.qATemperatureLog.findFirst({
+    const qATemperatureLog = await database.temperatureLog.findFirst({
       where: {
         id,
         tenantId

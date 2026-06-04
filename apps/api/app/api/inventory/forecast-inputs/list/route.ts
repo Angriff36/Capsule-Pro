@@ -24,9 +24,6 @@ const forecastInputs = await database.forecastInput.findMany({
     where: {
         tenantId
       },
-    orderBy: {
-      createdAt: "desc",
-    },
   });
 
     return manifestSuccessResponse({ forecastInputs });

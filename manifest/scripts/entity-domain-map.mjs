@@ -256,7 +256,108 @@ export function toCamelCase(value) {
 export const ENTITY_ACCESSOR_OVERRIDES = {
   EventStaff: "eventStaffAssignment",
   EventImportWorkflow: "eventImport",
+
+  // ─── Renamed Prisma models (verified same domain concept; remap) ───
+  // BankAccount → model EmployeeBankAccount @@map("employee_bank_accounts"). Identical field
+  //   schema (employeeId, accountNumber, routingNumber, accountType, bankName, status, verifiedAt).
+  //   schema.prisma:288. Verified 2026-06-03.
+  BankAccount: "employeeBankAccount",
+  // LogisticsRoute → model DeliveryRoute @@map("delivery_routes"). Same delivery-route concept
+  //   (driver/vehicle assignment, distance, duration, actual-execution tracking). schema.prisma:6219.
+  LogisticsRoute: "deliveryRoute",
+
+  // ─── Accessor name mismatches (Prisma's own "Did you mean" suggestions; authoritative) ───
+  // Each value is the EXACT accessor PrismaClient exposes for the committed model.
+  Document: "documents",
+  SmsAutomationRule: "sms_automation_rules",
+  EventTimelineItem: "eventTimeline",
+  StorageLocation: "storage_locations",
+  BulkCombineRule: "bulk_combine_rules",
+  MethodVideo: "method_videos",
+  PrepListImport: "prep_list_imports",
+  QACorrectiveAction: "correctiveAction",
+  QATemperatureLog: "temperatureLog",
+  TaskBundleItem: "task_bundle_items",
+  TaskBundle: "task_bundles",
+  OpenShift: "open_shifts",
+
+  // ─── No Prisma table (drop the generated read route; constitution §10 — never invent a
+  //     read surface over a non-existent/mismatched table). These IR entities have commands,
+  //     events and constraints but no backing model. Tracked for table creation in Task 0.3;
+  //     until then they have no read surface. ───
+  Deal: null,
+  AiEventSetupSession: null,
+  AutomatedFollowup: null,
+  EntityVersion: null,
+  EventWaitlistEntry: null,
+  FacilitySchedule: null,
+  FacilityWorkOrder: null,
+  LogisticsDispatch: null,
+  PerformancePrediction: null,
+  SampleData: null,
+  StaffPerformance: null,
+  VersionApproval: null,
+  VersionedEntity: null,
+  WorkforceOptimization: null,
+  Budget: null,
+  Vendor: null,
+  // QACheck: model QualityCheck exists but is a DIFFERENT concept (QC session with itemized
+  //   QualityCheckItem children, status passed/failed/needs_review), whereas IR QACheck is a single
+  //   inspection task (result pass/fail/na, reinspectedAt, checkTypes temperature/sanitation/...).
+  //   Remapping would invent semantics over a mismatched table (constitution §10), so DROP rather
+  //   than remap. If business confirms equivalence, create a dedicated mapping/table (Task 0.3).
+  QACheck: null,
 };
+
+// Per-entity Prisma FIELD-name corrections for generated read routes.
+//
+// Why: the upstream nextjs projection emits `where: { tenantId, ... }` (shorthand) and
+// `orderBy: { createdAt: "desc" }` assuming camelCase Prisma fields. A handful of LEGACY models use
+// RAW snake_case fields (`tenant_id`, `created_at`) with no @map, or lack a created-at column
+// entirely — so those literal field names are phantom and break api typecheck (TS2561 / TS2353).
+// The fix belongs in the producer (regenerate), never by hand-editing the "DO NOT EDIT" routes.
+//
+// Value semantics per field key:
+//   tenantId: "<col>"   → rewrite the `where` shorthand `tenantId` to `<col>: tenantId`.
+//   createdAt: "<col>"  → rewrite the `orderBy` field `createdAt` to `<col>`.
+//   createdAt: null     → the model has NO created-at column; remove the `orderBy` clause entirely.
+//
+// Verified against packages/database/prisma/schema.prisma (2026-06-03):
+//   tenant_id raw + created_at raw: EventFollowup, ActionMilestone, DisciplinaryAction,
+//     OnboardingCompletion, OnboardingTask, PerformanceReview.
+//   tenantId @map + created_at raw: ReorderSuggestion (where ok, orderBy needs rewrite).
+//   no created-at column: ForecastInput (absent), InventoryForecast (uses last_updated).
+export const ENTITY_FIELD_OVERRIDES = {
+  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at" },
+  ActionMilestone: { tenantId: "tenant_id", createdAt: "created_at" },
+  DisciplinaryAction: { tenantId: "tenant_id", createdAt: "created_at" },
+  OnboardingCompletion: { tenantId: "tenant_id", createdAt: "created_at" },
+  OnboardingTask: { tenantId: "tenant_id", createdAt: "created_at" },
+  PerformanceReview: { tenantId: "tenant_id", createdAt: "created_at" },
+  ReorderSuggestion: { createdAt: "created_at" },
+  ForecastInput: { createdAt: null },
+  InventoryForecast: { createdAt: null },
+
+  // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
+  // exposed that these models also use raw `tenant_id` + `created_at` (no @map). Verified
+  // 2026-06-03 against schema.prisma (all 9 have raw tenant_id + created_at columns).
+  Document: { tenantId: "tenant_id", createdAt: "created_at" },
+  SmsAutomationRule: { tenantId: "tenant_id", createdAt: "created_at" },
+  StorageLocation: { tenantId: "tenant_id", createdAt: "created_at" },
+  BulkCombineRule: { tenantId: "tenant_id", createdAt: "created_at" },
+  MethodVideo: { tenantId: "tenant_id", createdAt: "created_at" },
+  PrepListImport: { tenantId: "tenant_id", createdAt: "created_at" },
+  TaskBundle: { tenantId: "tenant_id", createdAt: "created_at" },
+  TaskBundleItem: { tenantId: "tenant_id", createdAt: "created_at" },
+  OpenShift: { tenantId: "tenant_id", createdAt: "created_at" },
+};
+
+// Entities whose generated DETAIL route (`[id]/route.ts`, fetch-by-single-id) cannot be emitted
+// because the backing Prisma model has NO single-column `id` (composite primary key only). The
+// list route is still valid and kept; only the by-id detail route is dropped.
+//   TaskBundleItem → model task_bundle_items @@id([tenant_id, bundle_id, task_id]) — no `id` column,
+//     so `findFirst({ where: { id } })` references a phantom field. schema.prisma (tenant_kitchen).
+export const ENTITY_DETAIL_DROP = new Set(["TaskBundleItem"]);
 
 // Detail-route segment names for domain routes that already use a resource-specific
 // slug. This keeps regenerated read routes from colliding with handcrafted sibling
@@ -296,4 +397,51 @@ export function resolveAccessor(entityName) {
 
 export function resolveDetailSegment(entityName) {
   return ENTITY_DETAIL_SEGMENT_OVERRIDES[entityName] ?? "id";
+}
+
+/**
+ * Rewrite phantom Prisma field names in a generated read-route body for `entityName`,
+ * per ENTITY_FIELD_OVERRIDES. No-op when the entity has no field overrides.
+ * Only the exact shapes the upstream nextjs projection emits are matched:
+ *   - `where: { tenantId, ... }` shorthand  → `where: { <col>: tenantId, ... }`
+ *     (composite `tenantId_id:` and explicit `tenantId: x` are left untouched).
+ *   - `orderBy: { createdAt: "desc" }`       → rename field, or remove the clause when null.
+ * @param {string} content - generated route source
+ * @param {string} entityName
+ * @returns {{ content: string, rewrites: string[] }}
+ */
+export function applyFieldOverrides(content, entityName) {
+  const overrides = entityName ? ENTITY_FIELD_OVERRIDES[entityName] : undefined;
+  if (!overrides) return { content, rewrites: [] };
+  let out = content;
+  const rewrites = [];
+
+  if (overrides.tenantId) {
+    const before = out;
+    out = out.replace(
+      /(\n[^\S\n]*)tenantId(,?)(?=\s*\n)/g,
+      `$1${overrides.tenantId}: tenantId$2`
+    );
+    if (out !== before) rewrites.push(`where.tenantId → ${overrides.tenantId}`);
+  }
+
+  if (overrides.createdAt === null) {
+    const before = out;
+    out = out.replace(
+      /\n[^\S\n]*orderBy:\s*\{\s*createdAt:\s*"desc",?\s*\},?/g,
+      ""
+    );
+    if (out !== before) {
+      rewrites.push("orderBy.createdAt removed (no created-at column)");
+    }
+  } else if (overrides.createdAt) {
+    const before = out;
+    out = out.replace(
+      /(orderBy:\s*\{\s*)createdAt(\s*:\s*"desc")/g,
+      `$1${overrides.createdAt}$2`
+    );
+    if (out !== before) rewrites.push(`orderBy.createdAt → ${overrides.createdAt}`);
+  }
+
+  return { content: out, rewrites };
 }

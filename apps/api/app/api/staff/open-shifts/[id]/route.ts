@@ -26,10 +26,10 @@ export async function GET(
     const { id } = await params;
 
     // Using findFirst — multi-field filter (tenant/soft-delete) requires findFirst on Prisma 7+.
-    const openShift = await database.openShift.findFirst({
+    const openShift = await database.open_shifts.findFirst({
       where: {
         id,
-        tenantId
+        tenant_id: tenantId
       },
     });
 

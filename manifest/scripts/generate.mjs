@@ -15,6 +15,8 @@ import {
   FLAT_SEGMENT_TO_ENTITY,
   resolveAccessor,
   resolveDetailSegment,
+  applyFieldOverrides,
+  ENTITY_DETAIL_DROP,
 } from "./entity-domain-map.mjs";
 
 const repoRoot = resolve(process.cwd());
@@ -229,6 +231,7 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
   const copiedFiles = [];
   const droppedFiles = [];
   const rewrittenAccessors = [];
+  const rewrittenFields = [];
   let skippedOverwriteCount = 0;
 
   // Load commands manifest (used for dispatcher validation messaging only)
@@ -320,8 +323,13 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       ? resolveAccessor(entity)
       : { naive: null, accessor: null, drop: false, overridden: false };
 
-    if (drop) {
-      // No backing Prisma table — never emit a database.* read route for this entity.
+    // A detail route is any read route under a dynamic segment (e.g. `[id]`/`[threadId]`);
+    // list routes live under a static `list/` segment. Used for detail-only drops below.
+    const isDetailRoute = safeRelativePath.includes("/[");
+
+    if (drop || (isDetailRoute && entity && ENTITY_DETAIL_DROP.has(entity))) {
+      // Either the entity has no Prisma table at all (drop both routes), or its model has no
+      // single-column id so the by-id detail route can't be emitted (drop just the detail route).
       if (existsSync(destinationPath)) {
         const existing = readFileSync(destinationPath, "utf8");
         if (hasGeneratedMarker(existing)) {
@@ -357,12 +365,30 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       }
     }
 
+    // Correct phantom Prisma field names (legacy snake_case models / missing created-at columns).
+    // The upstream projection hardcodes `where: { tenantId }` / `orderBy: { createdAt }`; rewrite
+    // those to the real field names for the few entities that need it (constitution §10 — fix the
+    // producer + regenerate, never hand-edit the "DO NOT EDIT" route).
+    const fieldResult = applyFieldOverrides(outputContent, entity);
+    if (fieldResult.rewrites.length > 0) {
+      outputContent = fieldResult.content;
+      rewrittenFields.push(
+        `${safeRelativePath} (${fieldResult.rewrites.join("; ")})`
+      );
+    }
+
     mkdirSync(resolve(destinationPath, ".."), { recursive: true });
     writeFileSync(destinationPath, outputContent, "utf8");
     copiedFiles.push(destinationPath.replace(/\\/g, "/"));
   }
 
-  return { copiedFiles, skippedOverwriteCount, droppedFiles, rewrittenAccessors };
+  return {
+    copiedFiles,
+    skippedOverwriteCount,
+    droppedFiles,
+    rewrittenAccessors,
+    rewrittenFields,
+  };
 };
 
 /**
@@ -552,6 +578,15 @@ if (routeResult.status === 0 && detailResult.status === 0) {
         `[manifest/generate] Dropped ${materializeResult.droppedFiles.length} read route(s) for entities with no Prisma table:`
       );
       for (const rel of materializeResult.droppedFiles) {
+        console.log(`  - ${rel}`);
+      }
+    }
+
+    if (materializeResult.rewrittenFields.length > 0) {
+      console.log(
+        `[manifest/generate] Rewrote phantom Prisma field name(s) in ${materializeResult.rewrittenFields.length} read route(s):`
+      );
+      for (const rel of materializeResult.rewrittenFields) {
         console.log(`  - ${rel}`);
       }
     }
