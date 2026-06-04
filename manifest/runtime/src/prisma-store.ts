@@ -26,151 +26,15 @@ import type {
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
 import { GenericPrismaStore } from "./prisma-stores/generic-prisma-store";
-import {
-  ContainerPrismaStore,
-  PrepMethodPrismaStore,
-} from "./prisma-stores/broken-read-batch01-prep-container";
-import {
-  WasteEntryPrismaStore,
-  WorkflowPrismaStore,
-} from "./prisma-stores/broken-read-batch01-waste-workflow";
-import {
-  ApiKeyPrismaStore,
-  BattleBoardPrismaStore,
-  BudgetAlertPrismaStore,
-} from "./prisma-stores/broken-read-batch02-api-battle-budget";
-import {
-  AdminChatParticipantPrismaStore,
-  AdminTaskPrismaStore,
-} from "./prisma-stores/broken-read-batch02-participant-task";
-import {
-  BudgetLineItemPrismaStore,
-  BulkOrderRulePrismaStore,
-  CateringOrderPrismaStore,
-} from "./prisma-stores/broken-read-batch03-budget-bulk-catering";
-import {
-  ChartOfAccountPrismaStore,
-  ClientPrismaStore,
-} from "./prisma-stores/broken-read-batch03-chart-client";
-import {
-  ClientContactPrismaStore,
-  ClientInteractionPrismaStore,
-  ClientPreferencePrismaStore,
-} from "./prisma-stores/broken-read-batch04-client-trio";
-import {
-  CommandBoardCardPrismaStore,
-  CommandBoardPrismaStore,
-} from "./prisma-stores/broken-read-batch04-command-board";
-import {
-  CommandBoardConnectionPrismaStore,
-  CommandBoardGroupPrismaStore,
-  CommandBoardLayoutPrismaStore,
-} from "./prisma-stores/broken-read-batch05-command-board";
-import {
-  ContractSignaturePrismaStore,
-  CycleCountRecordPrismaStore,
-} from "./prisma-stores/broken-read-batch05-contract-cycle";
-import {
-  CycleCountSessionPrismaStore,
-  DishPrismaStore,
-} from "./prisma-stores/broken-read-batch06-cycle-dish";
-export { DishPrismaStore };
-
-import {
-  EmailTemplatePrismaStore,
-  EmailWorkflowPrismaStore,
-} from "./prisma-stores/broken-read-batch06-email";
-export { EmailTemplatePrismaStore };
-
-import { EmployeeAvailabilityPrismaStore } from "./prisma-stores/broken-read-batch06-employee-availability";
-import {
-  EmployeeCertificationPrismaStore,
-  EmployeeDeductionPrismaStore,
-} from "./prisma-stores/broken-read-batch07-employee";
-import {
-  EventBudgetPrismaStore,
-  EventContractPrismaStore,
-  EventPrismaStore,
-} from "./prisma-stores/broken-read-batch07-event";
-export { EventPrismaStore };
-
-import { EventDishPrismaStore } from "./prisma-stores/broken-read-batch08-event-dish";
-import {
-  EventGuestPrismaStore,
-  EventImportPrismaStore,
-} from "./prisma-stores/broken-read-batch08-event-guest-import";
-import {
-  EventProfitabilityPrismaStore,
-  EventReportPrismaStore,
-} from "./prisma-stores/broken-read-batch08-event-profit-report";
-import { EventSummaryPrismaStore } from "./prisma-stores/broken-read-batch09-event-staff-summary";
-import {
-  EventStaffPrismaStore,
-  StaffMemberPrismaStore,
-} from "./prisma-stores/staff-slice";
+// Boilerplate store imports removed — 81 entities now use GenericPrismaStore.
+// Only custom stores with genuine business logic retain specific imports.
+import { DishPrismaStore } from "./prisma-stores/broken-read-batch06-cycle-dish";
 import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient";
-export { IngredientPrismaStore };
-
-import {
-  InventoryItemPrismaStore,
-  InventorySupplierPrismaStore,
-} from "./prisma-stores/broken-read-batch09-inventory";
-export { InventoryItemPrismaStore };
-
-import { InventoryTransactionPrismaStore } from "./prisma-stores/broken-read-batch10-inventory-transaction";
-import {
-  LaborBudgetPrismaStore,
-  LeadPrismaStore,
-} from "./prisma-stores/broken-read-batch10-labor-budget-lead";
-import { OverrideAuditPrismaStore } from "./prisma-stores/broken-read-batch11-override-audit";
-import {
-  PayrollApprovalHistoryPrismaStore,
-  PayrollPeriodPrismaStore,
-  PayrollRunPrismaStore,
-} from "./prisma-stores/broken-read-batch11-payroll";
-import {
-  PrepCommentPrismaStore,
-  PricingTierPrismaStore,
-} from "./prisma-stores/broken-read-batch12-prep-pricing";
-import {
-  TimecardEditRequestPrismaStore,
-  TimeEntryPrismaStore,
-  TrainingAssignmentPrismaStore,
-} from "./prisma-stores/broken-read-batch12-staff-time";
-import {
-  ProposalLineItemPrismaStore,
-  PurchaseOrderItemPrismaStore,
-} from "./prisma-stores/broken-read-batch13-order-proposal";
-import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-schedule-shipment";
-import {
-  TrainingModulePrismaStore,
-  VarianceReportPrismaStore,
-} from "./prisma-stores/broken-read-batch13-training-variance";
-import {
-  VendorCatalogPrismaStore,
-  VendorContractPrismaStore,
-} from "./prisma-stores/broken-read-batch13-vendor";
-import {
-  CollectionActionPrismaStore,
-  CollectionCasePrismaStore,
-  CollectionPaymentPlanPrismaStore,
-} from "./prisma-stores/broken-read-batch14-collections";
-import {
-  InvoicePrismaStore,
-  PaymentMethodPrismaStore,
-  PaymentPrismaStore,
-} from "./prisma-stores/broken-read-batch14-invoice-payment";
-import {
-  RolePolicyPrismaStore,
-  TimeOffRequestPrismaStore,
-} from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff";
+import { InventoryItemPrismaStore } from "./prisma-stores/broken-read-batch09-inventory";
 import { InventoryTransferPrismaStore } from "./prisma-stores/broken-read-batch16-inventory-transfer";
-import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent";
-import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent";
-import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent";
-import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent";
-import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent";
-import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent";
+
+// Re-export stores that are used internally AND re-exported from index.ts
+export { DishPrismaStore, IngredientPrismaStore, InventoryItemPrismaStore };
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1649,200 +1513,38 @@ export function createPrismaStoreProvider(
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
-      case "AlertsConfig":
-        return new AlertsConfigPrismaStore(prisma, tenantId);
-      case "AllergenWarning":
-        return new AllergenWarningPrismaStore(prisma, tenantId);
+      // ── Custom stores with genuine business logic ──────────────────────────
+      // These stores have cross-table queries, custom computed fields, special
+      // delete semantics, or other logic that GenericPrismaStore cannot express.
+      // All other entities fall through to GenericPrismaStore (line ~2942).
       case "PrepTask":
         return new PrepTaskPrismaStore(prisma, tenantId);
+      case "KitchenTask":
+        return new KitchenTaskPrismaStore(prisma, tenantId);
       case "Recipe":
         return new RecipePrismaStore(prisma, tenantId);
       case "RecipeVersion":
         return new RecipeVersionPrismaStore(prisma, tenantId);
-      case "Ingredient":
-        return new IngredientPrismaStore(prisma, tenantId);
-      case "RecipeIngredient":
-        return new RecipeIngredientPrismaStore(prisma, tenantId);
-      case "RecipeStep":
-        return new RecipeStepPrismaStore(prisma, tenantId);
+      case "AllergenWarning":
+        return new AllergenWarningPrismaStore(prisma, tenantId);
+      case "AlertsConfig":
+        return new AlertsConfigPrismaStore(prisma, tenantId);
+      case "PrepTaskPlanWorkflow":
+        return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
       case "Menu":
         return new MenuPrismaStore(prisma, tenantId);
-      case "MenuDish":
-        return new MenuDishPrismaStore(prisma, tenantId);
       case "PrepList":
         return new PrepListPrismaStore(prisma, tenantId);
       case "PrepListItem":
         return new PrepListItemPrismaStore(prisma, tenantId);
       case "Station":
         return new StationPrismaStore(prisma, tenantId);
-      case "InventoryItem":
-        return new InventoryItemPrismaStore(prisma, tenantId);
-      case "KitchenTask":
-        return new KitchenTaskPrismaStore(prisma, tenantId);
-      case "PrepTaskPlanWorkflow":
-        return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
-      case "PrepMethod":
-        return new PrepMethodPrismaStore(prisma, tenantId);
-      case "Container":
-        return new ContainerPrismaStore(prisma, tenantId);
-      case "WasteEntry":
-        return new WasteEntryPrismaStore(prisma, tenantId);
-      case "Workflow":
-        return new WorkflowPrismaStore(prisma, tenantId);
-      case "AdminChatParticipant":
-        return new AdminChatParticipantPrismaStore(prisma, tenantId);
-      case "AdminTask":
-        return new AdminTaskPrismaStore(prisma, tenantId);
-      case "ApiKey":
-        return new ApiKeyPrismaStore(prisma, tenantId);
-      case "BattleBoard":
-        return new BattleBoardPrismaStore(prisma, tenantId);
-      case "BudgetAlert":
-        return new BudgetAlertPrismaStore(prisma, tenantId);
-      case "BudgetLineItem":
-        return new BudgetLineItemPrismaStore(prisma, tenantId);
-      case "BulkOrderRule":
-        return new BulkOrderRulePrismaStore(prisma, tenantId);
-      case "CateringOrder":
-        return new CateringOrderPrismaStore(prisma, tenantId);
-      case "ChartOfAccount":
-        return new ChartOfAccountPrismaStore(prisma, tenantId);
-      case "Client":
-        return new ClientPrismaStore(prisma, tenantId);
-      case "ClientContact":
-        return new ClientContactPrismaStore(prisma, tenantId);
-      case "ClientInteraction":
-        return new ClientInteractionPrismaStore(prisma, tenantId);
-      case "ClientPreference":
-        return new ClientPreferencePrismaStore(prisma, tenantId);
-      case "CommandBoard":
-        return new CommandBoardPrismaStore(prisma, tenantId);
-      case "CommandBoardCard":
-        return new CommandBoardCardPrismaStore(prisma, tenantId);
-      case "CommandBoardConnection":
-        return new CommandBoardConnectionPrismaStore(prisma, tenantId);
-      case "CommandBoardGroup":
-        return new CommandBoardGroupPrismaStore(prisma, tenantId);
-      case "CommandBoardLayout":
-        return new CommandBoardLayoutPrismaStore(prisma, tenantId);
-      case "ContractSignature":
-        return new ContractSignaturePrismaStore(prisma, tenantId);
-      case "CycleCountRecord":
-        return new CycleCountRecordPrismaStore(prisma, tenantId);
-      case "CycleCountSession":
-        return new CycleCountSessionPrismaStore(prisma, tenantId);
-      case "Dish":
-        return new DishPrismaStore(prisma, tenantId);
-      case "EmailTemplate":
-        return new EmailTemplatePrismaStore(prisma, tenantId);
-      case "EmailWorkflow":
-        return new EmailWorkflowPrismaStore(prisma, tenantId);
-      case "EmployeeAvailability":
-        return new EmployeeAvailabilityPrismaStore(prisma, tenantId);
-      case "EmployeeCertification":
-        return new EmployeeCertificationPrismaStore(prisma, tenantId);
-      case "EmployeeDeduction":
-        return new EmployeeDeductionPrismaStore(prisma, tenantId);
-      case "Event":
-        return new EventPrismaStore(prisma, tenantId);
-      case "EventBudget":
-        return new EventBudgetPrismaStore(prisma, tenantId);
-      case "EventContract":
-        return new EventContractPrismaStore(prisma, tenantId);
-      case "EventDish":
-        return new EventDishPrismaStore(prisma, tenantId);
-      case "EventGuest":
-        return new EventGuestPrismaStore(prisma, tenantId);
-      case "EventImportWorkflow":
-        return new EventImportPrismaStore(prisma, tenantId);
-      case "EventProfitability":
-        return new EventProfitabilityPrismaStore(prisma, tenantId);
-      case "EventReport":
-        return new EventReportPrismaStore(prisma, tenantId);
-      case "EventStaff":
-        return new EventStaffPrismaStore(prisma, tenantId);
-      case "StaffMember":
-        return new StaffMemberPrismaStore(prisma, tenantId);
-      case "EventSummary":
-        return new EventSummaryPrismaStore(prisma, tenantId);
-      case "InventorySupplier":
-        return new InventorySupplierPrismaStore(prisma, tenantId);
-      case "InventoryTransaction":
-        return new InventoryTransactionPrismaStore(prisma, tenantId);
-      case "LaborBudget":
-        return new LaborBudgetPrismaStore(prisma, tenantId);
-      case "Lead":
-        return new LeadPrismaStore(prisma, tenantId);
-      case "OverrideAudit":
-        return new OverrideAuditPrismaStore(prisma, tenantId);
-      case "PayrollApprovalHistory":
-        return new PayrollApprovalHistoryPrismaStore(prisma, tenantId);
-      case "PayrollPeriod":
-        return new PayrollPeriodPrismaStore(prisma, tenantId);
-      case "PayrollRun":
-        return new PayrollRunPrismaStore(prisma, tenantId);
-      case "PrepComment":
-        return new PrepCommentPrismaStore(prisma, tenantId);
-      case "PricingTier":
-        return new PricingTierPrismaStore(prisma, tenantId);
-      case "TimeEntry":
-        return new TimeEntryPrismaStore(prisma, tenantId);
-      case "TimecardEditRequest":
-        return new TimecardEditRequestPrismaStore(prisma, tenantId);
-      case "TrainingAssignment":
-        return new TrainingAssignmentPrismaStore(prisma, tenantId);
-      case "Proposal":
-        return new ProposalPrismaStore(prisma, tenantId);
-      case "ProposalLineItem":
-        return new ProposalLineItemPrismaStore(prisma, tenantId);
-      case "PurchaseOrder":
-        return new PurchaseOrderPrismaStore(prisma, tenantId);
-      case "PurchaseOrderItem":
-        return new PurchaseOrderItemPrismaStore(prisma, tenantId);
-      case "Notification":
-        return new NotificationPrismaStore(prisma, tenantId);
-      case "Schedule":
-        return new SchedulePrismaStore(prisma, tenantId);
-      case "ScheduleShift":
-        return new ScheduleShiftPrismaStore(prisma, tenantId);
-      case "Shipment":
-        return new ShipmentPrismaStore(prisma, tenantId);
-      case "VendorContract":
-        return new VendorContractPrismaStore(prisma, tenantId);
-      case "PurchaseRequisition":
-        return new PurchaseRequisitionPrismaStore(prisma, tenantId);
-      case "Invoice":
-        return new InvoicePrismaStore(prisma, tenantId);
-      case "PaymentMethod":
-        return new PaymentMethodPrismaStore(prisma, tenantId);
-      case "Payment":
-        return new PaymentPrismaStore(prisma, tenantId);
-      case "CollectionCase":
-        return new CollectionCasePrismaStore(prisma, tenantId);
-      case "CollectionAction":
-        return new CollectionActionPrismaStore(prisma, tenantId);
-      case "CollectionPaymentPlan":
-        return new CollectionPaymentPlanPrismaStore(prisma, tenantId);
-      case "VendorCatalog":
-        return new VendorCatalogPrismaStore(prisma, tenantId);
-      case "VarianceReport":
-        return new VarianceReportPrismaStore(prisma, tenantId);
-      case "TrainingModule":
-        return new TrainingModulePrismaStore(prisma, tenantId);
-      case "RolePolicy":
-        return new RolePolicyPrismaStore(prisma, tenantId);
-      case "TimeOffRequest":
-        return new TimeOffRequestPrismaStore(prisma, tenantId);
       case "InventoryTransfer":
         return new InventoryTransferPrismaStore(prisma, tenantId, userId);
       default: {
-        if (!loggedMissingStoreEntities.has(entityName)) {
-          loggedMissingStoreEntities.add(entityName);
-          console.error(
-            `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
-          );
-          manifestStoreIssueReporter?.(entityName, "missing");
-        }
+        // 81 boilerplate entities now handled by GenericPrismaStore.
+        // The PrismaStore constructor (line ~2942) instantiates GenericPrismaStore
+        // when createPrismaStoreProvider returns undefined.
         return undefined;
       }
     }
