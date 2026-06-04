@@ -146,6 +146,7 @@ entity Ingredient {
 
     mutate currentLotNumber = lotNumber
     mutate currentLotReceivedAt = now()
+    mutate currentLotExpiresAt = expiresAt
     mutate updatedAt = now()
 
     emit IngredientLotRecorded

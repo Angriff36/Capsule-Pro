@@ -102,7 +102,7 @@ entity RecipeVersion {
   property approvedBy: string = ""
   property createdAt: datetime = now()
 
-  computed totalTimeMinutes: int = 0
+  computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
   computed isVersion1: boolean = self.versionNumber == 1
   computed isHighDifficulty: boolean = self.difficultyLevel >= 4
   computed isDraft: boolean = self.status == "draft"
