@@ -260,7 +260,8 @@ Last: [first session]
 
 ## Last Session Bridge
 [proactive bridge @ 86% context — saved before compacting]
-Files (1):
-  manifest/scripts/generate-full-schema.mjs (edit)
+Files (2):
+  manifest/runtime/src/prisma-store.ts (edit)
+  manifest/source/shipment-rules.manifest (edit)
 
 # === END COGNILAYER ===

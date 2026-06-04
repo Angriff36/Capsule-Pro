@@ -146,6 +146,13 @@ entity Shipment {
     emit ShipmentCancelled
   }
 
+  // State transitions
+  transition status from "draft" to ["scheduled", "cancelled"]
+  transition status from "scheduled" to ["preparing", "cancelled"]
+  transition status from "preparing" to ["in_transit", "cancelled"]
+  transition status from "in_transit" to ["delivered", "cancelled"]
+  // "delivered" and "cancelled" are terminal states
+
   store Shipment in durable
 }
 

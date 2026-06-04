@@ -192,6 +192,12 @@ entity Equipment {
     emit EquipmentRetired
   }
 
+  // State transitions
+  transition status from "active" to ["maintenance", "out_of_service", "retired"]
+  transition status from "maintenance" to ["active", "out_of_service", "retired"]
+  transition status from "out_of_service" to ["active", "maintenance", "retired"]
+  // "retired" is terminal
+
   store Equipment in durable
 }
 

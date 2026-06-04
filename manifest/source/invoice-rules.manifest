@@ -141,6 +141,14 @@ entity Invoice {
     mutate lineItems = lineItems
     emit InvoiceLineItemsUpdated
   }
+
+  // State transitions
+  transition status from "DRAFT" to ["SENT", "VOIDED"]
+  transition status from "SENT" to ["VIEWED", "OVERDUE", "VOIDED"]
+  transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
+  transition status from "OVERDUE" to ["PARTIALLY_PAID", "PAID", "WRITTEN_OFF", "VOIDED"]
+  transition status from "PARTIALLY_PAID" to ["PAID", "WRITTEN_OFF"]
+  // "PAID", "VOIDED", "WRITTEN_OFF" are terminal states
 }
 
 store Invoice in durable

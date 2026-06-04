@@ -177,6 +177,12 @@ entity RevenueRecognitionSchedule {
     emit ScheduleAdjusted
   }
 
+  // State transitions
+  transition status from "PENDING" to ["IN_PROGRESS", "CANCELLED", "SKIPPED"]
+  transition status from "IN_PROGRESS" to ["PAUSED", "COMPLETED", "CANCELLED"]
+  transition status from "PAUSED" to ["IN_PROGRESS", "CANCELLED"]
+  // "COMPLETED", "CANCELLED", "SKIPPED" are terminal states
+
   store RevenueRecognitionSchedule in durable
 }
 

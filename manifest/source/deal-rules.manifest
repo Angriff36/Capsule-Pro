@@ -121,6 +121,12 @@ entity Deal {
     emit DealReopened
   }
 
+  // State transitions
+  transition status from "open" to ["won", "lost", "abandoned"]
+  transition status from "lost" to ["open"]
+  transition status from "abandoned" to ["open"]
+  // "won" is terminal
+
   store Deal in durable
 }
 

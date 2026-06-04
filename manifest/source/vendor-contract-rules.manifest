@@ -206,6 +206,14 @@ entity VendorContract {
     emit VendorContractSlaBreachRecorded
   }
 
+  // State transitions
+  transition status from "draft" to ["pending_approval", "cancelled"]
+  transition status from "pending_approval" to ["pending_activation", "rejected", "cancelled"]
+  transition status from "pending_activation" to ["active", "cancelled"]
+  transition status from "active" to ["terminated", "renewed"]
+  transition status from "renewed" to ["active", "terminated"]
+  // "terminated", "rejected", "cancelled" are terminal states
+
   store VendorContract in durable
 }
 

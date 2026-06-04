@@ -11,7 +11,7 @@ entity Event {
   property required eventType: string = "general"
   property required eventDate: datetime
   property required guestCount: int = 1
-  property required status: string = "confirmed"
+  property required status: string = "draft"
   property budget: money = 0
   property ticketPrice: money = 0
   property ticketTier: string = ""
@@ -90,7 +90,7 @@ entity Event {
     mutate ticketPrice = ticketPrice
     mutate ticketTier = ticketTier
     mutate eventFormat = eventFormat
-    mutate status = status != null and status != "" ? status : "confirmed"
+    mutate status = status != null and status != "" ? status : "draft"
 
     emit EventCreated
   }
@@ -228,6 +228,12 @@ entity Event {
 
     emit EventUnfinalized
   }
+
+  // State transitions (self-transitions allowed for idempotent mutations)
+  transition status from "draft" to ["draft", "confirmed", "cancelled"]
+  transition status from "confirmed" to ["confirmed", "completed", "cancelled"]
+  transition status from "completed" to ["completed", "archived"]
+  // "cancelled" and "archived" are terminal states
 
   store Event in durable
 }

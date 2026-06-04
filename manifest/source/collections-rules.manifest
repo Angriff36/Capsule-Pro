@@ -199,6 +199,14 @@ entity CollectionCase {
     mutate closedAt = now()
     emit CollectionClosed
   }
+
+  // State transitions
+  transition status from "ACTIVE" to ["IN_PROGRESS", "LEGAL", "RESOLVED", "DEFAULTED", "CANCELLED"]
+  transition status from "IN_PROGRESS" to ["LEGAL", "RESOLVED", "DEFAULTED", "CANCELLED"]
+  transition status from "LEGAL" to ["RESOLVED", "DISPUTED"]
+  transition status from "DISPUTED" to ["IN_PROGRESS", "RESOLVED"]
+  // "RESOLVED", "DEFAULTED", "CANCELLED" are terminal states
+
   store CollectionCase in durable
 }
 

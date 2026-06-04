@@ -10,8 +10,8 @@ const TEST_TENANT_ID = "tenant-test-001";
 
 async function buildRuntime() {
   const manifestRoot = join(
-    process.cwd(),
-    "../../manifest/source"
+    import.meta.dirname,
+    "../../../../manifest/source"
   );
 
   const manifestFiles = [
@@ -62,19 +62,13 @@ describe("Manifest Runtime - Event + PrepSeed -> PrepTasks flow", () => {
     const eventId = "event-seed-001";
     const prepListId = "preplist-seed-001";
 
-    await runtime.createInstance("Event", {
-      id: eventId,
-      tenantId: TEST_TENANT_ID,
-      title: "Seed Placeholder",
-      eventType: "catering",
-      eventDate: 1_772_006_400_000,
-      guestCount: 1,
-      status: "draft",
-    });
-
+    // Let runCommand("create") auto-create the instance (no createInstance first),
+    // because the Event transition rules don't allow draft→draft.
     const createEventResult = await runtime.runCommand(
       "create",
       {
+        id: eventId,
+        tenantId: TEST_TENANT_ID,
         clientId: "client-001",
         eventNumber: "EVT-2026-001",
         title: "Spring Tasting",
@@ -84,10 +78,10 @@ describe("Manifest Runtime - Event + PrepSeed -> PrepTasks flow", () => {
         venueName: "The Conservatory",
         venueAddress: "100 Main St, Chicago",
         notes: "Seed import test event",
-        tags: "seasonal, vip",
+        tags: ["seasonal", "vip"],
         status: "draft",
       },
-      { entityName: "Event", instanceId: eventId }
+      { entityName: "Event" }
     );
 
     expect(createEventResult.success).toBe(true);
