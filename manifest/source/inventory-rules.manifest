@@ -27,7 +27,7 @@ entity InventoryItem {
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
   computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level
-  computed totalValue: number = self.quantityOnHand * self.unitCost
+  computed totalValue: money = self.quantityOnHand * self.unitCost
   computed needsReorder: boolean = self.isBelowReorderPoint
   // Stock not already promised to an event/reservation.
   computed quantityAvailable: int = self.quantityOnHand - self.quantityReserved

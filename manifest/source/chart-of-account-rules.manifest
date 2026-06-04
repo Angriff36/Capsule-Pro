@@ -15,7 +15,7 @@ entity ChartOfAccount {
   property updatedAt: datetime = now()
 
   computed hasParent: boolean = self.parentId != ""
-  computed isLeaf: boolean = self.parentId == ""
+  computed isRoot: boolean = self.parentId == ""
 
   constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
   constraint requireAccountName: self.accountName != "" "Account name is required"

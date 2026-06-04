@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-04T10:18:59.324Z",
+  "generatedAt": "2026-06-04T10:38:31.664Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -109,19 +109,6 @@
     "reactions": 0
   },
   "droppedDuplicates": [
-    {
-      "type": "entity",
-      "key": "PayrollLineItem",
-      "allowlistKey": "entity:PayrollLineItem",
-      "keptFrom": "payroll-rules.manifest",
-      "droppedFrom": [
-        "staff-logistics-extended-rules.manifest"
-      ],
-      "sources": [
-        "payroll-rules.manifest",
-        "staff-logistics-extended-rules.manifest"
-      ]
-    },
     {
       "type": "event-channel",
       "key": "kitchen.dish.created",
@@ -284,19 +271,6 @@
         "dish-rules.manifest",
         "ingredient-rules.manifest",
         "prep-method-rules.manifest"
-      ]
-    },
-    {
-      "type": "store",
-      "key": "PayrollLineItem:undefined",
-      "allowlistKey": "store:PayrollLineItem:undefined",
-      "keptFrom": "payroll-rules.manifest",
-      "droppedFrom": [
-        "staff-logistics-extended-rules.manifest"
-      ],
-      "sources": [
-        "payroll-rules.manifest",
-        "staff-logistics-extended-rules.manifest"
       ]
     }
   ]

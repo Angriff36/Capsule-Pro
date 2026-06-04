@@ -259,8 +259,10 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 168% context — saved before compacting]
-Files (1):
-  apps/api/app/api/manifest/[entity]/commands/[command]/route.ts (edit)
+[proactive bridge @ 85% context — saved before compacting]
+Files (3):
+  manifest/source/client-rules.manifest (edit)
+  manifest/source/logistics-all-rules.manifest (edit)
+  manifest/source/catering-order-rules.manifest (edit)
 
 # === END COGNILAYER ===
