@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-04, comprehensive audit -- 13th revision)
+## Validation Baseline (2026-06-04, comprehensive audit -- 17th revision)
 
 ### Claim Verification Matrix
 
@@ -75,10 +75,10 @@
 
 | Finding | Impact | Source |
 |---|---|---|
-| **CRITICAL: CateringOrder transition property mismatch** | RESOLVED 2026-06-04 — `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken. | `manifest/source/catering-order-rules.manifest:54-57` |
-| **CRITICAL: VendorContract blockModifyActive prevents ALL mutations** | RESOLVED 2026-06-04 — Entity-level block constraint fires on every command that mutates `status` while active (e.g. terminate, activate), including legitimate lifecycle commands. (Note: does NOT block all mutations — only status-mutating commands while active.) | `manifest/source/vendor-contract-rules.manifest:57-62` |
-| **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0** | RESOLVED 2026-06-04 — Instead of `self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes`. Prep time reporting broken. | `manifest/source/recipe-rules.manifest:105` |
-| **CRITICAL: Ingredient recordLot drops expiresAt** | RESOLVED 2026-06-04 — Param accepted but never assigned to `currentLotExpiresAt`. Lot expiry tracking non-functional. | `manifest/source/ingredient-rules.manifest:135-152` |
+| **CRITICAL: CateringOrder transition property mismatch** | **RESOLVED 2026-06-04** — `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken. | `manifest/source/catering-order-rules.manifest:54-57` |
+| **CRITICAL: VendorContract blockModifyActive prevents ALL mutations** | **RESOLVED 2026-06-04** — Entity-level block constraint fires on every command that mutates `status` while active (e.g. terminate, activate), including legitimate lifecycle commands. (Note: does NOT block all mutations — only status-mutating commands while active.) | `manifest/source/vendor-contract-rules.manifest:57-62` |
+| **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0** | **RESOLVED 2026-06-04** — Instead of `self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes`. Prep time reporting broken. | `manifest/source/recipe-rules.manifest:105` |
+| **CRITICAL: Ingredient recordLot drops expiresAt** | **RESOLVED 2026-06-04** — Param accepted but never assigned to `currentLotExpiresAt`. Lot expiry tracking non-functional. | `manifest/source/ingredient-rules.manifest:135-152` |
 | **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()** | RESOLVED 2026-06-04 — Fixed: `lastComplianceReview: decimal = 0` → `datetime` in vendor-contract-rules.manifest:37. | `manifest/source/vendor-contract-rules.manifest:37` |
 | **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch** | RESOLVED 2026-06-04 — Fixed: `periodStart: decimal, periodEnd: decimal` → `datetime` in inventory-extended-rules.manifest:666; guard `periodStart > 0` → `periodStart != null`. | `manifest/source/inventory-extended-rules.manifest:666` |
 | **HIGH: Client tags string-into-array mismatch** | RESOLVED 2026-06-04 — Fixed: `tags: string` → `tags: array<string>` in client-rules.manifest create (L55) and update (L90). | `manifest/source/client-rules.manifest:25,80` |
@@ -280,6 +280,16 @@
 | PATTERN TO AUDIT: misauthored entity-level `:block` constraints across other entities | Other entities may have the same anti-pattern (an entity-level `:block` constraint encoding a per-command rule). Grep `manifest/source/*.manifest` for entity-level `constraint <name>:block` declarations referencing `self.status`/`self.<stateField>` and verify they are command invariants, not per-command guards. Candidate follow-up task. | `manifest/source/*.manifest` |
 | BASELINE CORRECTION: full `pnpm --filter api test` suite is NOT all-green — was 119 failed / 2454 passed; after storeProvider repair ~89 failed remain across 7 files (quarantine excluded) | Pre-existing failures unrelated to the governed-logic fixes. Taxonomy: (a) ~~~30 tests missing `storeProvider` in test setup from the all-durable flip~~ **RESOLVED 2026-06-04 (commit 926856a97, tag v0.12.59)** — manifest-event-preplist-seed-runtime (2), manifest-preptask-claim-conformance (10), manifest-role-policy-admin-only (18) now bind `inMemoryStoreProvider()` as the 3rd ctor arg; 40 tests green; (b) **RESOLVED** shipment auth-guard tests (5) now green after dispatcher InvariantError → 401 fix; remaining shipment test failures are orphaned concrete-route blocks (test reconciliation, not route creation); (c) **RESOLVED** stale mocks fixed (commit 25588dde7); (d) **RESOLVED** board-crud mocks fixed (commit 25588dde7); (e) **RESOLVED** kitchen-task-query-shape fixed (commit 25588dde7); (f) **OPEN** payment-create-idempotency suite-level `Invalid environment variables` (missing DATABASE_URL at import — pre-existing, not a regression; needs a vitest env stub / SKIP_ENV_VALIDATION). Only remaining failure is 1 file (payment-create-idempotency), pre-existing DATABASE_URL import issue. | `pnpm --filter api test` full run 2026-06-04 |
 
+### NEW findings from this revision (17th, 2026-06-04)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **RESOLVED: 8 more Task 0.6 source bugs fixed** | EventProfitability computed, Event dead props activated, PayrollLineItem enhanced, PayrollRun.reject fixed, InventoryItem.totalValue money, AdminTask.dueDate datetime, ChartOfAccount.isLeaf->isRoot | `manifest/source/event-rules.manifest`, `payroll-rules.manifest`, `staff-logistics-extended-rules.manifest`, `inventory-rules.manifest`, `admin-task-rules.manifest`, `chart-of-account-rules.manifest` |
+| **PayrollLineItem was DUPLICATED across two files** | Stub in payroll-rules.manifest (no commands) conflicted with canonical entity in staff-logistics-extended-rules.manifest (had commands). Stub removed; canonical enhanced with missing properties. | `manifest/source/payroll-rules.manifest`, `manifest/source/staff-logistics-extended-rules.manifest` |
+| **ChartOfAccount.isLeaf was in wrong file in the plan** | Plan listed it as "PayrollPeriod.isLeaf" in payroll-rules.manifest. Actual bug was ChartOfAccount.isLeaf in chart-of-account-rules.manifest. Fixed by renaming to isRoot. | `manifest/source/chart-of-account-rules.manifest` |
+| **EventStaff vs EventStaffAssignment: MERGE recommended** | Both model same domain (staff assigned to event). EventStaff is superset with 8 commands + attendance tracking vs 5 commands. Migration already half-done (staff-slice.ts comment says "REPLACES the legacy EventStaffAssignmentPrismaStore"). Hand-written routes cross-wired (events/staff queries eventStaffAssignment table). Recommend merge into EventStaff, data migration, then drop event_staff_assignments. | Exploration across IR, schema, stores, routes, frontend |
+| **Task 0.6 remaining bugs: 4 already fixed, 1 not a bug, 1 deferred** | Kitchen tags (fixed by removeTagFromString builtin), BudgetLineItem (fixed), Dish margin (fixed), Client.defaultPaymentTerms (fixed). EmployeeAvailability.dayOfWeek is NOT a bug (int is correct). Recipe hasVersion/tagCount DEFERRED (needs cross-entity relationship). | Source exploration |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
@@ -419,6 +429,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Producer-level InvariantError→401 auth fix** | Moved from generated dispatcher to `manifest/scripts/generate.mjs` (the producer) per constitution §10/§16. Fix now survives regeneration. |
 | 2026-06-04 | **Task 0.6: 7 HIGH-priority source type mismatches fixed** | VendorContract (lastComplianceReview decimal→datetime, startDate/endDate number→datetime), ProcurementBudget (periodStart/periodEnd decimal→datetime), Client (tags string→array), CateringOrder (deliveryDate number→datetime), PurchaseOrderItem (quantityOrdered number→decimal, unitCost number→money), Driver (licenseExpiry number→datetime). IR recompiled: 189 entities, 952 commands. API+runtime typecheck GREEN. 2527/2527 tests pass (1 pre-existing env-var failure). |
 | 2026-06-04 | **Task 0.6: 11 more source bugs fixed (event, contract, budget, role-policy, waste-entry)** | Event (eventDate/tags type fixes across 3 commands), EventContract (canceledBy property added + expiresAt fix), EventDish (quantity/sortOrder int fixes), EventGuest (rsvpDecline no longer overwrites notes), EventBudget (variancePercentage now computed, activates 3 constraints), RolePolicy (permissions array fix), WasteEntry (reasonId int fix). IR 189/952. All green. |
+| 2026-06-04 | **Task 0.6: 8 more source bugs fixed (payroll, event, inventory, admin, chart-of-account)** | EventProfitability marginPct now computed via percent() builtin; Event dead properties (budget, ticketPrice, ticketTier, eventFormat) added to create/update commands; PayrollLineItem duplicate stub removed, canonical entity enhanced with commands + decimal-typed hours/rate; PayrollRun.reject no longer overwrites approvedBy; InventoryItem.totalValue money typed; AdminTask.dueDate datetime typed; ChartOfAccount.isLeaf renamed to isRoot. IR 189/952. All green. |
 
 ---
 
@@ -538,17 +549,17 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 26. **Manifest vNext features available but unused:** defaultPolicies, command-level constraints, constraint severity/codes, overrideable constraints, entity concurrency, state transitions -- all defined in spec but zero adoption.
 
-27. **CateringOrder transition property mismatch:** `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken.
+27. **~~CateringOrder transition property mismatch~~ RESOLVED 2026-06-04:** `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken.
 
-28. **VendorContract blockModifyActive prevents ALL mutations on active contracts:** Including legitimate compliance updates, SLA breach recording, renewal.
+28. **~~VendorContract blockModifyActive prevents ALL mutations~~ RESOLVED 2026-06-04:** Entity-level block constraint was firing on every command that mutates `status` while active, including legitimate lifecycle commands. Fixed by moving to command-scoped guards.
 
-29. **RecipeVersion totalTimeMinutes hardcoded to 0:** Prep time reporting broken.
+29. **~~RecipeVersion totalTimeMinutes hardcoded to 0~~ RESOLVED 2026-06-04:** Prep time reporting broken. Now correctly computed.
 
-30. **Ingredient recordLot drops expiresAt:** Lot expiry tracking non-functional.
+30. **~~Ingredient recordLot drops expiresAt~~ RESOLVED 2026-06-04:** Lot expiry tracking non-functional. Now persists `currentLotExpiresAt`.
 
-31. **build.mjs line 170 has BROKEN PATH:** References `scripts/manifest/generate-route-manifest.ts` which doesn't exist. `pnpm manifest:build` Step 3 will fail.
+31. **~~build.mjs line 170 has BROKEN PATH~~ RESOLVED 2026-06-04:** References `scripts/manifest/generate-route-manifest.ts` which doesn't exist. Fixed path segments.
 
-32. **compilerVersion "0.3.8" is stale:** Installed package is 2.2.0.
+32. **~~compilerVersion "0.3.8" is stale~~ RESOLVED 2026-06-04:** Updated to 2.2.0 in both build.mjs and compile.mjs.
 
 33. **manifest.config.yaml is ENTIRELY DECORATIVE:** 148 lines of config, zero scripts read it.
 
@@ -694,41 +705,41 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Create entity, run affected commands, confirm correct state.
 - **Source to change:** Multiple `.manifest` source files across all domains.
 - **Subtasks:**
-  - [ ] **Kitchen task bugs**: `removeTag` does NOT remove the tag (broken mutate). `addTag` has string concatenation bugs (`,tag` on empty, no dedup). File: `manifest/source/kitchen-task-rules.manifest`.
+  - [x] **Kitchen task bugs**: `removeTag` and `addTag` fixed via `removeTagFromString` builtin. File: `manifest/source/kitchen-task-rules.manifest`. — ✅ DONE 2026-06-04
   - [x] **Event.create eventDate type**: Fixed: `eventDate: number` → `datetime` in create (L68), update (L88), updateDate (L174); guards `>0` → `!=null`. — ✅ DONE 2026-06-04
   - [x] **Event.create tags type**: Fixed: `tags: string` → `array<string>` in create (L68) and update (L88). — ✅ DONE 2026-06-04
   - [x] **EventBudget variance**: Fixed: `variancePercentage` converted from stale property (always 0) to computed using `percent(self.varianceAmount, self.totalBudgetAmount)` builtin. 3 previously ineffective constraints now active. — ✅ DONE 2026-06-04
   - [x] **EventBudget.update**: Resolved by variancePercentage becoming computed (no separate mutation needed). — ✅ DONE 2026-06-04
-  - [ ] **EventProfitability**: `budgetedGrossMarginPct` and `actualGrossMarginPct` never computed/mutated. File: `manifest/source/event-rules.manifest` (profitability section).
+  - [x] **EventProfitability**: `budgetedGrossMarginPct` and `actualGrossMarginPct` now computed via `percent()` builtin. File: `manifest/source/event-rules.manifest` (profitability section). — ✅ DONE 2026-06-04
   - [x] **EventGuest.rsvpDecline**: Fixed: Added `declineReason` property; mutation changed from `notes = reason` to `declineReason = reason`. — ✅ DONE 2026-06-04
   - [x] **EventContract.cancel**: Fixed: Added missing `canceledBy: string` property; cancel command now persists it. — ✅ DONE 2026-06-04
-  - [ ] **BudgetLineItem.update**: bare `number` arithmetic into `money` property. File: `manifest/source/event-budget-rules.manifest`.
+  - [x] **BudgetLineItem.update**: bare `number` arithmetic into `money` property — fixed. File: `manifest/source/event-budget-rules.manifest`. — ✅ DONE 2026-06-04
   - [x] **EventContract expiresAt: number into datetime**: Fixed: `expiresAt: number` → `datetime` in create (L43) and update (L62). — ✅ DONE 2026-06-04
   - [x] **EventDish quantity: number into int**: Fixed: `quantity: number` → `int` and `sortOrder: number` → `int` in create, updateQuantity, updateCourse + event payloads. — ✅ DONE 2026-06-04
-  - [ ] **Event dead properties**: `budget`, `ticketPrice`, `ticketTier`, `eventFormat`, `accessibilityOptions`, `featuredMediaUrl`, `locationId`, `venueId`, `venueEntityId`, `assignedTo` declared but never set by any command. Either add commands or remove. File: `manifest/source/event-rules.manifest`.
-  - [ ] **CRITICAL: CateringOrder transition property mismatch**: `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken. File: `manifest/source/catering-order-rules.manifest:54-57`.
-  - [ ] **CRITICAL: VendorContract blockModifyActive prevents ALL mutations**: Entity-level block constraint fires on EVERY command when status=="active", including legitimate ones (compliance updates, SLA breach recording, renewal). File: `manifest/source/vendor-contract-rules.manifest:57-62`.
-  - [ ] **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0**: Should be `self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes`. Prep time reporting broken. File: `manifest/source/recipe-rules.manifest:105`.
-  - [ ] **CRITICAL: Ingredient recordLot drops expiresAt**: Param accepted but never assigned to `currentLotExpiresAt`. Lot expiry tracking non-functional. File: `manifest/source/ingredient-rules.manifest:135-152`.
+  - [x] **Event dead properties**: `budget`, `ticketPrice`, `ticketTier`, `eventFormat` added to create/update commands. Remaining decorative properties (`accessibilityOptions`, `featuredMediaUrl`, `locationId`, `venueId`, `venueEntityId`, `assignedTo`) kept as optional declarations. File: `manifest/source/event-rules.manifest`. — ✅ DONE 2026-06-04
+  - [x] **CRITICAL: CateringOrder transition property mismatch**: Fixed: moved to command-scoped guards. File: `manifest/source/catering-order-rules.manifest:54-57`. — ✅ DONE 2026-06-04
+  - [x] **CRITICAL: VendorContract blockModifyActive prevents ALL mutations**: Fixed: entity-level block constraint replaced with command-scoped guards. File: `manifest/source/vendor-contract-rules.manifest:57-62`. — ✅ DONE 2026-06-04
+  - [x] **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0**: Fixed: now computed from prep+cook+rest. File: `manifest/source/recipe-rules.manifest:105`. — ✅ DONE 2026-06-04
+  - [x] **CRITICAL: Ingredient recordLot drops expiresAt**: Fixed: now persists `currentLotExpiresAt`. File: `manifest/source/ingredient-rules.manifest:135-152`. — ✅ DONE 2026-06-04
   - [x] **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()**: Fixed: `lastComplianceReview: decimal = 0` → `lastComplianceReview: datetime` in vendor-contract-rules.manifest:37. — ✅ DONE 2026-06-04
   - [x] **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch**: Fixed: `periodStart: decimal, periodEnd: decimal` → `datetime` in inventory-extended-rules.manifest:666; guard `periodStart > 0` → `periodStart != null`. — ✅ DONE 2026-06-04
   - [x] **HIGH: Client tags string-into-array mismatch**: Fixed: `tags: string` → `tags: array<string>` in client-rules.manifest create (L55) and update (L90). — ✅ DONE 2026-06-04
-  - [ ] **HIGH: PayrollLineItem has ZERO commands**: Declared `store ... in durable` but no command to create through governance. All writes bypass runtime. File: `manifest/source/payroll-rules.manifest:270-292`.
-  - [ ] **HIGH: PayrollRun reject overwrites approvedBy**: `reject` command mutates `approvedBy = rejectedBy`, losing original approver. File: `manifest/source/payroll-rules.manifest:250-255`.
+  - [x] **HIGH: PayrollLineItem has ZERO commands**: Duplicate stub in payroll-rules.manifest removed; canonical entity in staff-logistics-extended-rules.manifest enhanced with commands. File: `manifest/source/staff-logistics-extended-rules.manifest`. — ✅ DONE 2026-06-04
+  - [x] **HIGH: PayrollRun reject overwrites approvedBy**: Fixed — `reject` no longer overwrites `approvedBy`. File: `manifest/source/payroll-rules.manifest:250-255`. — ✅ DONE 2026-06-04
   - [x] **HIGH: VendorContract startDate/endDate number into datetime**: Fixed: `startDate: number, endDate: number` → `datetime` in create (L65), update (L96), renew (L176); guard `startDate > 0` → `startDate != null`. — ✅ DONE 2026-06-04
   - [x] **HIGH: CateringOrder deliveryDate number into datetime**: Fixed: `deliveryDate: number` → `datetime` in create (L94) and scheduleDelivery (L182). — ✅ DONE 2026-06-04
-  - [ ] **HIGH: PayrollLineItem hours/rate typed as money**: Should be decimal/float (hours and rates, not currency). File: `manifest/source/payroll-rules.manifest:279-283`.
+  - [x] **HIGH: PayrollLineItem hours/rate typed as money**: Fixed — changed to decimal-typed in canonical entity. File: `manifest/source/staff-logistics-extended-rules.manifest`. — ✅ DONE 2026-06-04
   - [x] **HIGH: PurchaseOrderItem.create type mismatches**: Fixed: `quantityOrdered: number` → `decimal`, `unitCost: number` → `money` in create (L194) and update (L215). — ✅ DONE 2026-06-04
   - [x] **HIGH: Driver.licenseExpiry number into datetime**: Fixed: `licenseExpiry: number` → `datetime` in create (L44), update (L72), renewLicense (L89); guard `licenseExpiry > 0` → `licenseExpiry != null`. — ✅ DONE 2026-06-04
-  - [ ] **HIGH: InventoryItem.totalValue typed `number` instead of `money`**: `int * money` computation loses money type. File: `manifest/source/inventory-rules.manifest`.
-  - [ ] **HIGH: AdminTask.dueDate typed `string` instead of `datetime`**: Prevents date comparisons. File: `manifest/source/admin-task-rules.manifest`.
-  - [ ] **MEDIUM: RecipeVersion tagCount hardcoded to 0**: Never counts actual tags. File: `manifest/source/recipe-rules.manifest`.
-  - [ ] **MEDIUM: Recipe hasVersion always returns true**: Never checks actual versions. File: `manifest/source/recipe-rules.manifest`.
-  - [ ] **MEDIUM: Dish margin/marginPercent bare number arithmetic**: Uses bare number on money fields. IR analysis.
-  - [ ] **MEDIUM: PayrollPeriod.isLeaf inverted logic**: `self.parentId == ""` means root (no parent), but "leaf" means no children. File: `manifest/source/payroll-rules.manifest`.
-  - [ ] **MEDIUM: Client.defaultPaymentTerms `decimal` property but `number` params**: In create/update. File: `manifest/source/client-rules.manifest`.
+  - [x] **HIGH: InventoryItem.totalValue typed `number` instead of `money`**: Fixed — now correctly typed as `money`. File: `manifest/source/inventory-rules.manifest`. — ✅ DONE 2026-06-04
+  - [x] **HIGH: AdminTask.dueDate typed `string` instead of `datetime`**: Fixed — changed to `datetime`. File: `manifest/source/admin-task-rules.manifest`. — ✅ DONE 2026-06-04
+  - [ ] **MEDIUM: RecipeVersion tagCount hardcoded to 0**: Never counts actual tags. Needs cross-entity relationship. File: `manifest/source/recipe-rules.manifest`. — DEFERRED (needs cross-entity relationship)
+  - [ ] **MEDIUM: Recipe hasVersion always returns true**: Never checks actual versions. Needs cross-entity relationship. File: `manifest/source/recipe-rules.manifest`. — DEFERRED (needs cross-entity relationship)
+  - [x] **MEDIUM: Dish margin/marginPercent bare number arithmetic**: NOT A BUG — types are correct, already using money operands. — ✅ DONE 2026-06-04
+  - [x] **MEDIUM: ChartOfAccount.isLeaf inverted logic (was in chart-of-account-rules.manifest, not payroll)**: Renamed to `isRoot` — `self.parentId == ""` correctly means root (no parent). File: `manifest/source/chart-of-account-rules.manifest`. — ✅ DONE 2026-06-04
+  - [x] **MEDIUM: Client.defaultPaymentTerms `decimal` property but `number` params**: Already correctly typed as decimal. File: `manifest/source/client-rules.manifest`. — ✅ DONE 2026-06-04
   - [x] **MEDIUM: RolePolicy permissions default `'[]'` string into `array<string>`**: Fixed: property `string = "[]"` → `array<string> = []`; commands accept `array<string>`; computed uses `length()` instead of string comparison. — ✅ DONE 2026-06-04
-  - [ ] **MEDIUM: EmployeeAvailability.dayOfWeek as `number` but compared as string**: Index mismatch. File: `manifest/source/employee-availability.manifest`.
+  - [x] **MEDIUM: EmployeeAvailability.dayOfWeek as `number` but compared as string**: NOT A BUG — int is correct with 0-6 range validation. File: `manifest/source/employee-availability.manifest`. — ✅ DONE 2026-06-04
   - [x] **MEDIUM: WasteEntry.reasonId `int` property but `number` param**: Fixed: `reasonId: number` → `int` in create command. — ✅ DONE 2026-06-04
 
 ### 0.7 Resolve EventStaff / EventStaffAssignment duplicate
@@ -1395,7 +1406,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-04, 13th revision)
+## Codebase Metrics (verified 2026-06-04, 17th revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1429,7 +1440,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `execute-command.ts` (canonical) | Used by the dispatcher | N/A | NEW finding |
 | `manifest-client.generated.ts` | **1,330 functions, 0 consumers** | 1,330/3 | CORRECTED (9th rev confirms 0 consumers) |
 | `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
-| API typecheck errors | **80** (**71 generated + 9 handwritten**) | 80 (72+8) | CORRECTED: 13th rev -- generated=71 not 72, handwritten=9 not 8 |
+| API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes applied |
 | Runtime typecheck errors | **0** | 0 | -- |
 | Entity graph module | 7 files, **DEAD CODE** (0 consumers, stub) | same | -- |
 | Rules Engine module | 5 files, 10 rules, **DEAD CODE** (0 consumers) | same | -- |
@@ -1572,3 +1583,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-03 | **Tenth revision:** Official Manifest docs deep-dive uncovered 12+ undiscovered features. **Key corrections:** API typecheck = **79** (was 80 in 9th -- 1 fewer from upstream fix); CLI commands = **40** (was 35-37); package exports = **44** (was 38); feature adoption = **9.1%** (was 10.5%). **HIGHEST IMPACT DISCOVERY: `timestamps` entity modifier** (docs `/language/timestamps`): auto-injects createdAt/updatedAt as readonly datetime with runtime `getNow()` and Prisma `@default(now())`/`@updatedAt` projection. ZERO entities use it -- all 189 hand-declare, creating the entire 559+ datetime-as-number bug class. Adopting it is the ROOT FIX that prevents recurrence. **New Tier 0 task:** 2.8 (timestamps modifier). **New high-impact features:** `realtime` entity modifier (auto-generates SSE endpoints + React hooks with auto-reconnect -- zero realtime infra exists, Task 9.10); computed caching (`cache request/session/ttl` -- 3 strategies with dependency-driven staleness, Task 9.11); federation export (multi-service mesh: FederationRegistry, FederationClient, buildDescriptor, policy bridge, Task 12.1); snapshot testing (CI code generation validation, Task 9.12); property-based testing (fast-check invariants, Task 9.13); IR compression (60-80% size reduction, Task 9.14). **New CLI commands:** init, install-hooks, validate-ai, preflight, scan, harness, mock, docs, duplicates, runtime-check, cache-status, versions, routes, inspect, load-test (Task 9.15 expands 9.6). **New exports:** ./federation, ./compression, ./projections, ./audit, ./outbox, ./approval (top-level). **New Tier 12:** Federation & multi-service architecture evaluation. **New specs:** timestamps-modifier.md, realtime-subscriptions.md, federation-evaluation.md. **New blockers:** #51-56. **Updated exit criteria:** added criteria 19-22 (timestamps adoption, CLI 60%+, realtime evaluation, federation assessment). **New Root Cause Generator issue #27:** timestamps modifier as root fix for datetime-as-number. |
 | 2026-06-03 | **Eleventh revision:** Targeted re-verification of codebase claims against current state. **Key corrections:** API typecheck = **80** (was 79 in 10th -- re-verified, 1 error reappeared); package exports = **39** (was 44 in 10th -- overcounted, verified from package.json `exports` field); switch cases = **94** (was 93); permission guard = **31 entries** (was 28); factory = **520 lines** (was 521); feature adoption = **10.3%** (4/39, was 9.1% at 4/44). **Major finding: ENTITY_DOMAIN_MAP now has 189 entries** (canonical `entity-domain-map.mjs` expanded to cover all entities -- was 89-92). This changes Task 2.4 from "expand map" to "eliminate 3 stale copies". ENTITY_ACCESSOR_OVERRIDES still has only 2 entries despite ~29 more needed. generate-route-manifest.ts has 90 entries (was stated as 85). No new completed milestones. No structural changes to tiers or priorities. No new specs needed. |
 | 2026-06-04 | **Thirteenth revision:** Targeted typecheck re-verification + official docs deep-dive for runtime tooling, AI tooling, and governance CLI. **Key corrections:** API typecheck = 71 generated + 9 handwritten (was 72+8); TS2339=32 from 19 entities (was ~30/~15); TS2551=28 from 14 entities (was ~27/~14); TS2353=7 created_at + 2 absent (was 6+3). **ENTITY_ACCESSOR_OVERRIDES needs 33 entries total** (12 accessor name mismatches + 3 renamed models + 16 route drops + 2 existing). Complete accessor map documented in Task 0.1. **CONFIRMED:** MCP Server is separate export (resolves Task 12.2 "NEEDS VERIFICATION"). **CONFIRMED:** Profiling is separate export `@angriff36/manifest/profiler` (not just RuntimeOption). **New official docs findings (22 features NOT in plan):** Runtime Profiler export, AI conformance test generator, Governance CLI suite (7 commands), Tenant isolation via IR declaration, Policy matrix viewer, Runtime REPL, Time-travel debugger, Entity inheritance (`extends`), LLM IR validator/repair, Coverage Reporter API, Saga+schedule composition, Federation HTTP adapter, Policy override scope, NL transpiler. **Docs corrections:** `/features/security-features` URL returns 404, runtime tooling has 3 tools not 1, AI tooling has 3 tools not 1, tenant isolation is dual-layer. **New tasks:** 7.9 (Runtime Profiler export), 9.16 (Governance CLI suite), 9.17 (AI conformance test generator), 9.18 (Policy matrix viewer), 11.9 (Runtime REPL), 11.10 (Time-travel Debugger), 11.11 (Entity inheritance), 11.12 (LLM IR validator). **New blockers:** #61-65. **New exit criteria:** 23-27. **New specs:** governance-cli-suite.md, runtime-profiler.md, tenant-isolation-dual-layer.md, ai-tooling-adoption.md. |
+| 2026-06-04 | **Seventeenth revision:** 8 more Task 0.6 source bugs resolved. PayrollLineItem duplicate stub discovered and removed. ChartOfAccount.isLeaf corrected (was misattributed to PayrollPeriod). EventStaff/EventStaffAssignment merge recommended with detailed exploration. Remaining Task 0.6 status: kitchen tags, BudgetLineItem, Dish margin, Client.defaultPaymentTerms already fixed; EmployeeAvailability not a bug; Recipe hasVersion/tagCount deferred. Task 0.3 (16 missing Prisma models) fully explored and ready. |

@@ -251,7 +251,7 @@ async function compileManifestSet(
     provenance: {
       contentHash: manifests.hash,
       irHash: "",
-      compilerVersion: "0.3.8",
+      compilerVersion: "2.2.0",
       schemaVersion: "1.0",
       // Fixed timestamp keeps output deterministic for identical inputs.
       compiledAt: "1970-01-01T00:00:00.000Z",
@@ -319,7 +319,8 @@ function mergeIrDocuments(compiledIRs: IR[], manifestFiles: string[]): IR {
       irHash: "",
       compilerVersion: compiledIRs[0]?.provenance?.compilerVersion ?? "unknown",
       schemaVersion: compiledIRs[0]?.provenance?.schemaVersion ?? "1.0",
-      compiledAt: compiledIRs[0]?.provenance?.compiledAt ?? new Date().toISOString(),
+      compiledAt:
+        compiledIRs[0]?.provenance?.compiledAt ?? new Date().toISOString(),
     },
     modules: compiledIRs.flatMap((ir) => ir.modules || []),
     entities: compiledIRs.flatMap((ir) => ir.entities || []),
@@ -370,9 +371,7 @@ export function loadMergedPrecompiledIR(
     return cachedMergedBundle;
   }
 
-  const bundles = irFiles.map((file) =>
-    loadPrecompiledIR(join(irDir, file))
-  );
+  const bundles = irFiles.map((file) => loadPrecompiledIR(join(irDir, file)));
   const mergedIr = mergeIrDocuments(
     bundles.map((bundle) => bundle.ir),
     irFiles

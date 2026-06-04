@@ -1,16 +1,12 @@
 {
   "irHash": "",
-  "compilerVersion": "0.3.8",
+  "compilerVersion": "2.2.0",
   "entities": [
     {
       "name": "AdminChatParticipant",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "archive",
-        "unarchive",
-        "clearHistory"
-      ],
+      "commands": ["archive", "unarchive", "clearHistory"],
       "properties": [
         "id",
         "tenantId",
@@ -91,17 +87,8 @@
       "name": "AlertsConfig",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
-      "properties": [
-        "id",
-        "tenantId",
-        "channel",
-        "destination"
-      ]
+      "commands": ["create", "update", "remove"],
+      "properties": ["id", "tenantId", "channel", "destination"]
     },
     {
       "name": "AllergenWarning",
@@ -139,13 +126,7 @@
       "name": "ApiKey",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "revoke",
-        "softDelete",
-        "recordUsage"
-      ],
+      "commands": ["create", "update", "revoke", "softDelete", "recordUsage"],
       "properties": [
         "id",
         "tenantId",
@@ -166,13 +147,7 @@
       "name": "BankAccount",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "setDefault",
-        "update",
-        "verify"
-      ],
+      "commands": ["create", "remove", "setDefault", "update", "verify"],
       "properties": [
         "id",
         "tenantId",
@@ -228,12 +203,7 @@
       "name": "Budget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update",
-        "refresh"
-      ],
+      "commands": ["create", "remove", "update", "refresh"],
       "properties": [
         "id",
         "tenantId",
@@ -254,11 +224,7 @@
       "name": "BulkOrderRule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -332,11 +298,7 @@
       "name": "ChartOfAccount",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -354,11 +316,7 @@
       "name": "ClientInteraction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "complete"
-      ],
+      "commands": ["create", "update", "complete"],
       "properties": [
         "id",
         "tenantId",
@@ -381,12 +339,7 @@
       "name": "Client",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "archive",
-        "reactivate"
-      ],
+      "commands": ["create", "update", "archive", "reactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -420,12 +373,7 @@
       "name": "ClientContact",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove",
-        "setPrimary"
-      ],
+      "commands": ["create", "update", "remove", "setPrimary"],
       "properties": [
         "id",
         "tenantId",
@@ -448,11 +396,7 @@
       "name": "ClientPreference",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -531,12 +475,7 @@
       "name": "CollectionAction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "complete",
-        "fail",
-        "skip",
-        "reschedule"
-      ],
+      "commands": ["complete", "fail", "skip", "reschedule"],
       "properties": [
         "id",
         "tenantId",
@@ -597,12 +536,7 @@
       "name": "CommandBoard",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "activate",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "activate", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -621,13 +555,7 @@
       "name": "CommandBoardCard",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "move",
-        "resize",
-        "remove"
-      ],
+      "commands": ["create", "update", "move", "resize", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -656,11 +584,7 @@
       "name": "CommandBoardGroup",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -682,10 +606,7 @@
       "name": "CommandBoardConnection",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove"
-      ],
+      "commands": ["create", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -704,11 +625,7 @@
       "name": "CommandBoardLayout",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -729,11 +646,7 @@
       "name": "Container",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -755,13 +668,7 @@
       "name": "CycleCountSession",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "start",
-        "complete",
-        "finalize",
-        "cancel"
-      ],
+      "commands": ["create", "start", "complete", "finalize", "cancel"],
       "properties": [
         "id",
         "tenantId",
@@ -790,12 +697,7 @@
       "name": "CycleCountRecord",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "verify",
-        "remove"
-      ],
+      "commands": ["create", "update", "verify", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -826,11 +728,7 @@
       "name": "VarianceReport",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "review",
-        "approve"
-      ],
+      "commands": ["create", "review", "approve"],
       "properties": [
         "id",
         "tenantId",
@@ -859,10 +757,7 @@
       "name": "Deal",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "updateStage",
-        "close"
-      ],
+      "commands": ["updateStage", "close"],
       "properties": [
         "id",
         "tenantId",
@@ -919,10 +814,7 @@
       "name": "DocumentVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "restore"
-      ],
+      "commands": ["create", "restore"],
       "properties": [
         "id",
         "tenantId",
@@ -939,11 +831,7 @@
       "name": "EmailTemplate",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -963,11 +851,7 @@
       "name": "EmailWorkflow",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -986,11 +870,7 @@
       "name": "EmployeeAvailability",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -1010,11 +890,7 @@
       "name": "EmployeeCertification",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -1107,12 +983,7 @@
       "name": "AutomatedFollowup",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "complete",
-        "generate",
-        "skip"
-      ],
+      "commands": ["create", "complete", "generate", "skip"],
       "properties": [
         "id",
         "tenantId",
@@ -1134,12 +1005,7 @@
       "name": "EventTimelineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "createItem",
-        "deleteItem",
-        "completeItem",
-        "updateItem"
-      ],
+      "commands": ["createItem", "deleteItem", "completeItem", "updateItem"],
       "properties": [
         "id",
         "tenantId",
@@ -1160,11 +1026,7 @@
       "name": "EventWaitlistEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "addGuest",
-        "promote",
-        "updateRsvp"
-      ],
+      "commands": ["addGuest", "promote", "updateRsvp"],
       "properties": [
         "id",
         "tenantId",
@@ -1185,12 +1047,7 @@
       "name": "EventBudget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "approve",
-        "finalize"
-      ],
+      "commands": ["create", "update", "approve", "finalize"],
       "properties": [
         "id",
         "tenantId",
@@ -1211,11 +1068,7 @@
       "name": "BudgetLineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -1268,10 +1121,7 @@
       "name": "ContractSignature",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "softDelete"
-      ],
+      "commands": ["create", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -1290,10 +1140,7 @@
       "name": "EventDish",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove"
-      ],
+      "commands": ["create", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -1312,11 +1159,7 @@
       "name": "EventGuest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -1385,12 +1228,7 @@
       "name": "EventReport",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "submit",
-        "approve",
-        "complete"
-      ],
+      "commands": ["create", "submit", "approve", "complete"],
       "properties": [
         "id",
         "tenantId",
@@ -1460,11 +1298,7 @@
       "name": "EventProfitability",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "recalculate"
-      ],
+      "commands": ["create", "update", "recalculate"],
       "properties": [
         "id",
         "tenantId",
@@ -1500,11 +1334,7 @@
       "name": "EventSummary",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "refresh"
-      ],
+      "commands": ["create", "update", "refresh"],
       "properties": [
         "id",
         "tenantId",
@@ -1526,10 +1356,7 @@
       "name": "EventStaff",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "assign",
-        "unassign"
-      ],
+      "commands": ["assign", "unassign"],
       "properties": [
         "id",
         "tenantId",
@@ -1549,11 +1376,7 @@
       "name": "Facility",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "edit"
-      ],
+      "commands": ["create", "remove", "edit"],
       "properties": [
         "id",
         "tenantId",
@@ -1575,11 +1398,7 @@
       "name": "FacilityArea",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "edit"
-      ],
+      "commands": ["create", "remove", "edit"],
       "properties": [
         "id",
         "tenantId",
@@ -1599,11 +1418,7 @@
       "name": "FacilityAsset",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update"
-      ],
+      "commands": ["create", "remove", "update"],
       "properties": [
         "id",
         "tenantId",
@@ -1627,12 +1442,7 @@
       "name": "FacilitySchedule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "edit",
-        "complete"
-      ],
+      "commands": ["create", "remove", "edit", "complete"],
       "properties": [
         "id",
         "tenantId",
@@ -1654,10 +1464,7 @@
       "name": "FacilityWorkOrder",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "updateStatus"
-      ],
+      "commands": ["create", "updateStatus"],
       "properties": [
         "id",
         "tenantId",
@@ -1747,11 +1554,7 @@
       "name": "InventorySupplier",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -1774,9 +1577,7 @@
       "name": "InventoryTransaction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create"
-      ],
+      "commands": ["create"],
       "properties": [
         "id",
         "tenantId",
@@ -1800,13 +1601,7 @@
       "name": "InventoryTransfer",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "approve",
-        "ship",
-        "receive",
-        "cancel"
-      ],
+      "commands": ["create", "approve", "ship", "receive", "cancel"],
       "properties": [
         "id",
         "tenantId",
@@ -1916,12 +1711,7 @@
       "name": "KnowledgeBaseEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update",
-        "publishEntry"
-      ],
+      "commands": ["create", "remove", "update", "publishEntry"],
       "properties": [
         "id",
         "tenantId",
@@ -1941,11 +1731,7 @@
       "name": "LaborBudget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -1965,10 +1751,7 @@
       "name": "BudgetAlert",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "acknowledge",
-        "resolve"
-      ],
+      "commands": ["acknowledge", "resolve"],
       "properties": [
         "id",
         "tenantId",
@@ -2020,11 +1803,7 @@
       "name": "Driver",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update"
-      ],
+      "commands": ["create", "remove", "update"],
       "properties": [
         "id",
         "tenantId",
@@ -2046,11 +1825,7 @@
       "name": "Vehicle",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update"
-      ],
+      "commands": ["create", "remove", "update"],
       "properties": [
         "id",
         "tenantId",
@@ -2075,13 +1850,7 @@
       "name": "LogisticsRoute",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update",
-        "updateStatus",
-        "optimize"
-      ],
+      "commands": ["create", "remove", "update", "updateStatus", "optimize"],
       "properties": [
         "id",
         "tenantId",
@@ -2108,9 +1877,7 @@
       "name": "LogisticsDispatch",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "assign"
-      ],
+      "commands": ["assign"],
       "properties": [
         "id",
         "tenantId",
@@ -2130,12 +1897,7 @@
       "name": "Menu",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "update",
-        "activate",
-        "deactivate",
-        "create"
-      ],
+      "commands": ["update", "activate", "deactivate", "create"],
       "properties": [
         "id",
         "tenantId",
@@ -2153,11 +1915,7 @@
       "name": "MenuDish",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "updateCourse",
-        "create",
-        "remove"
-      ],
+      "commands": ["updateCourse", "create", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -2173,12 +1931,7 @@
       "name": "Notification",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "markRead",
-        "markDismissed",
-        "remove"
-      ],
+      "commands": ["create", "markRead", "markDismissed", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -2197,10 +1950,7 @@
       "name": "OverrideAudit",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "authorize"
-      ],
+      "commands": ["create", "authorize"],
       "properties": [
         "id",
         "tenantId",
@@ -2302,9 +2052,7 @@
       "name": "PayrollPeriod",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create"
-      ],
+      "commands": ["create"],
       "properties": [
         "id",
         "tenantId",
@@ -2320,9 +2068,7 @@
       "name": "EmployeeDeduction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create"
-      ],
+      "commands": ["create"],
       "properties": [
         "id",
         "tenantId",
@@ -2344,9 +2090,7 @@
       "name": "PayrollApprovalHistory",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create"
-      ],
+      "commands": ["create"],
       "properties": [
         "id",
         "tenantId",
@@ -2364,9 +2108,7 @@
       "name": "PayrollRun",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "updateStatus"
-      ],
+      "commands": ["updateStatus"],
       "properties": [
         "id",
         "tenantId",
@@ -2389,12 +2131,7 @@
       "name": "PrepComment",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "resolve",
-        "unresolve",
-        "softDelete"
-      ],
+      "commands": ["create", "resolve", "unresolve", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -2483,11 +2220,7 @@
       "name": "PrepMethod",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -2602,11 +2335,7 @@
       "name": "PricingTier",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -2676,11 +2405,7 @@
       "name": "PurchaseRequisitionItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -2749,11 +2474,7 @@
       "name": "ProposalLineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -2816,11 +2537,7 @@
       "name": "PurchaseOrderItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -2844,10 +2561,7 @@
       "name": "QACheck",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "complete"
-      ],
+      "commands": ["create", "complete"],
       "properties": [
         "id",
         "tenantId",
@@ -2865,10 +2579,7 @@
       "name": "QACorrectiveAction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "resolve"
-      ],
+      "commands": ["create", "resolve"],
       "properties": [
         "id",
         "tenantId",
@@ -2888,9 +2599,7 @@
       "name": "QATemperatureLog",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "log"
-      ],
+      "commands": ["log"],
       "properties": [
         "id",
         "tenantId",
@@ -2909,13 +2618,7 @@
       "name": "RateLimitConfig",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete",
-        "turnOn",
-        "turnOff"
-      ],
+      "commands": ["create", "update", "softDelete", "turnOn", "turnOff"],
       "properties": [
         "id",
         "tenantId",
@@ -2935,12 +2638,7 @@
       "name": "Recipe",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "update",
-        "deactivate",
-        "activate",
-        "create"
-      ],
+      "commands": ["update", "deactivate", "activate", "create"],
       "properties": [
         "id",
         "tenantId",
@@ -2956,11 +2654,7 @@
       "name": "RecipeVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "restore",
-        "updateCosts"
-      ],
+      "commands": ["create", "restore", "updateCosts"],
       "properties": [
         "id",
         "recipeId",
@@ -2991,12 +2685,7 @@
       "name": "RecipeIngredient",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "updateQuantity",
-        "updateWasteFactor",
-        "create",
-        "remove"
-      ],
+      "commands": ["updateQuantity", "updateWasteFactor", "create", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -3015,11 +2704,7 @@
       "name": "RecipeStep",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "updateInstruction",
-        "remove"
-      ],
+      "commands": ["create", "updateInstruction", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -3085,12 +2770,7 @@
       "name": "RevenueRecognitionLine",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "recognize",
-        "skip",
-        "cancel"
-      ],
+      "commands": ["create", "recognize", "skip", "cancel"],
       "properties": [
         "id",
         "tenantId",
@@ -3115,11 +2795,7 @@
       "name": "RolePolicy",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "update",
-        "grant",
-        "revoke"
-      ],
+      "commands": ["update", "grant", "revoke"],
       "properties": [
         "id",
         "tenantId",
@@ -3137,11 +2813,7 @@
       "name": "SampleData",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "seed",
-        "clear",
-        "reseed"
-      ],
+      "commands": ["seed", "clear", "reseed"],
       "properties": [
         "tenantId",
         "seededAt",
@@ -3157,12 +2829,7 @@
       "name": "Schedule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "release",
-        "close"
-      ],
+      "commands": ["create", "update", "release", "close"],
       "properties": [
         "id",
         "tenantId",
@@ -3182,11 +2849,7 @@
       "name": "ScheduleShift",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove"
-      ],
+      "commands": ["create", "update", "remove"],
       "properties": [
         "id",
         "tenantId",
@@ -3249,10 +2912,7 @@
       "name": "ShipmentItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "updateReceived"
-      ],
+      "commands": ["create", "updateReceived"],
       "properties": [
         "id",
         "tenantId",
@@ -3277,13 +2937,7 @@
       "name": "SmsAutomationRule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "activate",
-        "deactivate",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "activate", "deactivate", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3306,12 +2960,7 @@
       "name": "StaffPerformance",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "remove",
-        "complete"
-      ],
+      "commands": ["create", "update", "remove", "complete"],
       "properties": [
         "id",
         "tenantId",
@@ -3363,12 +3012,7 @@
       "name": "TimeEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "clockIn",
-        "clockOut",
-        "addEntry",
-        "softDelete"
-      ],
+      "commands": ["clockIn", "clockOut", "addEntry", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3390,11 +3034,7 @@
       "name": "TimecardEditRequest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "approve",
-        "reject"
-      ],
+      "commands": ["create", "approve", "reject"],
       "properties": [
         "id",
         "tenantId",
@@ -3413,13 +3053,7 @@
       "name": "TimeOffRequest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "approve",
-        "reject",
-        "cancel",
-        "softDelete"
-      ],
+      "commands": ["create", "approve", "reject", "cancel", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3441,10 +3075,7 @@
       "name": "TrainingAssignment",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "softDelete"
-      ],
+      "commands": ["create", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3464,11 +3095,7 @@
       "name": "TrainingModule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3490,13 +3117,7 @@
       "name": "User",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "deactivate",
-        "terminate",
-        "updateRole"
-      ],
+      "commands": ["create", "update", "deactivate", "terminate", "updateRole"],
       "properties": [
         "id",
         "tenantId",
@@ -3524,11 +3145,7 @@
       "name": "VendorCatalog",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3613,13 +3230,7 @@
       "name": "Vendor",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "remove",
-        "update",
-        "addContact",
-        "rate"
-      ],
+      "commands": ["create", "remove", "update", "addContact", "rate"],
       "properties": [
         "id",
         "tenantId",
@@ -3646,12 +3257,7 @@
       "name": "VersionedEntity",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "register",
-        "lock",
-        "unlock",
-        "updateName"
-      ],
+      "commands": ["register", "lock", "unlock", "updateName"],
       "properties": [
         "id",
         "tenantId",
@@ -3668,12 +3274,7 @@
       "name": "EntityVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "approve",
-        "reject",
-        "restore"
-      ],
+      "commands": ["create", "approve", "reject", "restore"],
       "properties": [
         "id",
         "tenantId",
@@ -3695,12 +3296,7 @@
       "name": "VersionApproval",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "approve",
-        "reject",
-        "cancel"
-      ],
+      "commands": ["create", "approve", "reject", "cancel"],
       "properties": [
         "id",
         "tenantId",
@@ -3716,11 +3312,7 @@
       "name": "WasteEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "softDelete"
-      ],
+      "commands": ["create", "update", "softDelete"],
       "properties": [
         "id",
         "tenantId",
@@ -3744,12 +3336,7 @@
       "name": "Workflow",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "update",
-        "activate",
-        "deactivate"
-      ],
+      "commands": ["create", "update", "activate", "deactivate"],
       "properties": [
         "id",
         "tenantId",
@@ -3767,12 +3354,7 @@
       "name": "WorkforceOptimization",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create",
-        "start",
-        "complete",
-        "fail"
-      ],
+      "commands": ["create", "start", "complete", "fail"],
       "properties": [
         "id",
         "tenantId",
@@ -3788,9 +3370,7 @@
       "name": "PerformancePrediction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": [
-        "create"
-      ],
+      "commands": ["create"],
       "properties": [
         "id",
         "tenantId",
