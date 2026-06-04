@@ -183,6 +183,8 @@
     "knip": "knip",
     "manifest:audit-schema-drift": "node manifest/scripts/audit-schema-drift.mjs",
     "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict",
+    "manifest:audit-route-drift": "node manifest/scripts/audit-route-drift.mjs",
+    "manifest:audit-route-drift:strict": "node manifest/scripts/audit-route-drift.mjs --strict",
     "manifest:mcp": "manifest-mcp",
     "scripts:audit": "node tools/audit-package-scripts.mjs",
     "check:scripts": "node tools/audit-package-scripts.mjs",
