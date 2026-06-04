@@ -304,7 +304,7 @@
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
 - 241 top-level policies exist but all 189 entities have empty `policies: []`
 - 0 overrideable constraints out of 583 total
-- **Event payload timestamps: 916 fields typed `number`, 0 typed `datetime`** (root cause: `now()` returns epoch-ms)
+- **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
 - **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
 ### Property types (all resolved)
 
@@ -432,6 +432,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 0.6: 8 more source bugs fixed (payroll, event, inventory, admin, chart-of-account)** | EventProfitability marginPct now computed via percent() builtin; Event dead properties (budget, ticketPrice, ticketTier, eventFormat) added to create/update commands; PayrollLineItem duplicate stub removed, canonical entity enhanced with commands + decimal-typed hours/rate; PayrollRun.reject no longer overwrites approvedBy; InventoryItem.totalValue money typed; AdminTask.dueDate datetime typed; ChartOfAccount.isLeaf renamed to isRoot. IR 189/952. All green. |
 | 2026-06-04 | **Task 0.3: Create Prisma models for 16 IR entities** | 16 Prisma model declarations added to schema.prisma for: AiEventSetupSession, AutomatedFollowup, Budget, Deal, EntityVersion, EventWaitlistEntry, FacilitySchedule, FacilityWorkOrder, LogisticsDispatch, PerformancePrediction, SampleData, StaffPerformance, Vendor, VersionApproval, VersionedEntity, WorkforceOptimization. All match existing SQL tables from baseline migration. 0 typecheck errors, 0 drift, 2535 tests pass. |
 | 2026-06-04 | **Task 2.8: Adopt timestamps modifier (ROOT FIX for datetime-as-number)** | All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate removed (350 property declarations + 1041 mutate lines). createdAt/updatedAt auto-injected as readonly datetime. IR 189/952. All green. |
+| 2026-06-04 | **Task 2.7: Fix 988 datetime-as-number occurrences across 90 manifest sources** | Event payload (923) and command param (69) timestamp fields changed from number to datetime across all domains. IR 189/952. API+runtime typecheck GREEN. 2535/2535 tests pass. |
 
 ---
 
@@ -800,7 +801,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** Duplicate entry at lines 199 and 226. Benign but indicates copy-paste drift.
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`.
 
-### 2.7 Fix manifest source type mismatches (559+ datetime-as-number occurrences -- UNIVERSAL)
+### 2.7 Fix manifest source type mismatches (559+ datetime-as-number occurrences -- UNIVERSAL) — ✅ DONE 2026-06-04
+- **✅ DONE 2026-06-04.** All 988 datetime-as-number type mismatches fixed across 90 .manifest source files. Event payload timestamp fields (923) and command parameters (69) changed from `number` to `datetime`. Fields like `windowMs`, `duration`, `guestCount` were correctly left as numeric types. IR recompiled: 189 entities, 952 commands, 936 events. API typecheck: 0 errors. Runtime typecheck: 0 errors. 2535/2535 tests pass. One stale test expectation (preptask `claimedAt` expecting 0 instead of null) also fixed. Only pre-existing payment-create-idempotency env-var failure remains.
 - **Done when:** `pnpm manifest:compile` produces zero type warnings. No datetime field mutated to literal `0`. No `number` param assigned to `datetime`/`decimal`/`money`/`int` property. No `string` param assigned to `array<string>` property.
 - **Why:** 559+ event timestamp fields typed as `number` while entity property is `datetime` -- every event loses type safety at the boundary. Confirmed in EVERY domain: Finance, Payroll, Staff, Procurement, Notifications, Kitchen, Inventory, CRM, Logistics, Admin, Infra/Quality. Additionally: 9 datetime fields mutated to literal `0` instead of `null` for reset operations. Array<string> properties (Client.tags, ApiKey.scopes, RolePolicy.permissions) mutated from string param. CollectionCase.dunningStage arithmetic on string produces NaN. PurchaseOrderItem (number->decimal/int/money). Driver.licenseExpiry (number->datetime in 3 commands). AdminTask.dueDate (string instead of datetime).
 - **Backpressure:** IR recompile shows all datetime fields with correct types.
