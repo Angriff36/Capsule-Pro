@@ -23,7 +23,7 @@ import type {
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { createCustomBuiltins } from "./manifest-builtins";
-import { createRbacMiddleware } from "./middleware";
+import { createAuditOutboxMiddleware, createRbacMiddleware } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
@@ -414,8 +414,11 @@ export async function createManifestRuntime(
     });
   };
 
-  // 5. Build telemetry hooks — combine caller-provided telemetry with
-  //    outbox event persistence (preserving existing behavior exactly).
+  // 5. Build telemetry hooks — pass through caller-provided telemetry only.
+  //    Outbox event persistence is now handled by the audit middleware (step 7),
+  //    which runs inside the engine lifecycle at the after-emit hook instead of
+  //    via post-hoc telemetry hooks. This separates observability (telemetry)
+  //    from durability (outbox writes).
   const telemetry: ManifestTelemetryHooks = {
     onConstraintEvaluated: deps.telemetry?.onConstraintEvaluated,
     onOverrideApplied: deps.telemetry?.onOverrideApplied,
@@ -426,57 +429,6 @@ export async function createManifestRuntime(
     ) => {
       // Fire caller-provided telemetry (e.g. Sentry metrics).
       deps.telemetry?.onCommandExecuted?.(command, result, entityName);
-
-      // Write emitted events to outbox for reliable delivery.
-      if (
-        result.success &&
-        result.emittedEvents &&
-        result.emittedEvents.length > 0
-      ) {
-        const outboxWriter = createPrismaOutboxWriter(
-          entityName || "unknown",
-          resolvedUser.tenantId
-        );
-
-        // Prefer the runtime's canonical subject metadata (@angriff36/manifest
-        // >= 1.6.0): subject.id is resolved deterministically
-        // (instanceId → created-id → payload.id), and subject.entity names the
-        // originating entity. Fall back to the command result id / the command's
-        // entityName for older events that carry no subject.
-        const eventsToWrite = result.emittedEvents.map((event) => ({
-          eventType: event.name || "unknown",
-          payload: event.payload,
-          aggregateType: event.subject?.entity || entityName || "unknown",
-          aggregateId:
-            event.subject?.id ||
-            (result.result as { id?: string })?.id ||
-            "unknown",
-        }));
-
-        try {
-          // When prismaOverride is provided (composite route transaction),
-          // write directly to the override client - it's already in a transaction.
-          // Otherwise, create a new transaction for atomic outbox writes.
-          if (deps.prismaOverride) {
-            // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; prismaOverride is structurally compatible.
-            await outboxWriter(deps.prismaOverride as any, eventsToWrite);
-          } else {
-            await deps.prisma.$transaction(async (tx) => {
-              // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; tx is structurally compatible.
-              await outboxWriter(tx as any, eventsToWrite);
-            });
-          }
-        } catch (error) {
-          deps.log.error(
-            "[manifest-runtime] Failed to write events to outbox",
-            {
-              error,
-            }
-          );
-          deps.captureException(error);
-          throw error;
-        }
-      }
     },
   };
 
@@ -505,12 +457,21 @@ export async function createManifestRuntime(
     : [];
 
   // 8. Build middleware pipeline.
-  //    Middleware runs INSIDE the Manifest engine lifecycle, replacing the
-  //    external Proxy wrapper. The RBAC middleware fires at 'before-guard'
-  //    (after policies, before guards) to enforce command-level authorization.
-  //    This is composable — future middleware (audit, identity) can be added here.
+  //    Middleware runs INSIDE the Manifest engine lifecycle, replacing both
+  //    the external Proxy wrapper (RBAC) and the telemetry-embedded outbox writes.
+  //    Pipeline order:
+  //    - before-guard: RBAC permission check (command-level authorization)
+  //    - after-emit:   Audit/outbox persistence (durable event delivery)
   const middleware: Middleware[] = [
     createRbacMiddleware({ rolePolicies }),
+    createAuditOutboxMiddleware({
+      prisma: deps.prisma,
+      prismaOverride: deps.prismaOverride ?? null,
+      tenantId: resolvedUser.tenantId,
+      log: deps.log,
+      captureException: deps.captureException,
+      createOutboxWriter: createPrismaOutboxWriter,
+    }),
   ];
 
   // 9. Assemble the runtime engine.

@@ -8,3 +8,4 @@
  */
 
 export { createRbacMiddleware, type RbacMiddlewareOptions } from "./rbac-middleware";
+export { createAuditOutboxMiddleware, type AuditMiddlewareOptions } from "./audit-outbox-middleware";
