@@ -162,6 +162,8 @@ entity ClientContact {
   constraint validFirstName: self.firstName != null and self.firstName != "" "First name is required"
   constraint validLastName: self.lastName != null and self.lastName != "" "Last name is required"
 
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+
   constraint warnNoContactInfo:warn self.email == "" and self.phone == "" and self.phoneMobile == "" {
     messageTemplate: "Contact '{contactName}' has no email or phone number"
     details: {
@@ -247,6 +249,8 @@ entity ClientPreference {
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"
   constraint validPreferenceKey: self.preferenceKey != null and self.preferenceKey != "" "Preference key is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
   command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"

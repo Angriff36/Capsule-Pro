@@ -121,6 +121,9 @@ entity EventStaffAssignment {
   constraint requireStaff: self.staffMemberId != "" "Staff member ID is required"
   constraint validStatus: self.status in ["assigned", "confirmed", "cancelled"] "Status must be assigned, confirmed, or cancelled"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
+
   command assign(eventId: string, staffMemberId: string, role: string, shiftStart: datetime, shiftEnd: datetime, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
@@ -222,6 +225,8 @@ entity EventTimeline {
   constraint requireTitle: self.title != "" "Timeline entry title is required"
   constraint positiveDuration: self.durationMinutes >= 0 "Duration cannot be negative"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   command create(eventId: string, title: string, scheduledAt: datetime, durationMinutes: int, notes: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Title is required"
@@ -311,6 +316,8 @@ entity TimelineTask {
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireTitle: self.title != "" "Task title is required"
   constraint validStatus: self.status in ["pending", "in_progress", "done", "blocked"] "Status must be pending, in_progress, done, or blocked"
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   command create(eventId: string, title: string, dueAt: datetime, assignedTo: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -564,6 +571,8 @@ entity EventFollowup {
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireType: self.type != "" "Followup type is required"
   constraint validStatus: self.status in ["pending", "done", "cancelled"] "Status must be pending, done, or cancelled"
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   command create(eventId: string, type: string, dueAt: datetime, assignedTo: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"

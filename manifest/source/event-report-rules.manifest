@@ -44,6 +44,8 @@ entity EventReport {
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "approved", "rejected"] "Status must be valid"
   constraint validCompletion: self.completion >= 0 and self.completion <= 100 "Completion must be between 0 and 100"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint warnLowCompletion:warn self.completion < 50 and self.status == "in_progress" {
     messageTemplate: "Report '{reportName}' is less than 50% complete"
     details: {

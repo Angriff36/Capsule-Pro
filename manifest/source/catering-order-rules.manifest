@@ -65,6 +65,8 @@ entity CateringOrder {
   constraint positiveGuestCount: self.guestCount >= 0 "Guest count must be non-negative"
   constraint positiveTotalAmount: self.totalAmount >= 0 "Total amount must be non-negative"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint warnUnstaffed:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired {
     messageTemplate: "Order {orderNumber} needs {needed} more staff ({assigned}/{required})"
     details: {

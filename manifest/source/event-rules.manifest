@@ -38,9 +38,18 @@ entity Event {
   computed isActive: boolean = self.status == "draft" or self.status == "confirmed"
   computed isLargeEvent: boolean = self.guestCount > 200
 
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship hasMany invoices: Invoice
   relationship hasMany payments: Payment
   relationship hasMany budgets: EventBudget
+  relationship hasMany eventStaff: EventStaff
+  relationship hasMany eventGuests: EventGuest
+  relationship hasMany eventDishes: EventDish
+  relationship hasMany eventFollowups: EventFollowup
+  relationship hasMany eventContracts: EventContract
+  relationship hasMany eventReports: EventReport
+  relationship hasMany eventProfitabilities: EventProfitability
+  relationship hasMany eventSummaries: EventSummary
 
   constraint validTitle: self.title != null and self.title != "" "Event title is required"
   constraint validEventType: self.eventType != null and self.eventType != "" "Event type is required"
@@ -257,6 +266,8 @@ entity EventProfitability {
   computed hasVariance: boolean = self.totalCostVariance != 0 or self.revenueVariance != 0
   computed isOverBudget: boolean = self.actualTotalCost > self.budgetedTotalCost
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
   constraint warnNegativeMargin:warn self.actualGrossMarginPct < 0 {
@@ -342,6 +353,8 @@ entity EventSummary {
   computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
   computed hasIssues: boolean = self.issues != "[]" and self.issues != ""
   computed hasFeedback: boolean = self.clientFeedback != "[]" and self.clientFeedback != ""
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 

@@ -3,6 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { RoutesProjection } from "@angriff36/manifest/projections/routes";
+import { ENTITY_DOMAIN_MAP } from "./entity-domain-map.mjs";
 
 const repoRoot = resolve(process.cwd());
 const irPath = join(
@@ -17,114 +18,6 @@ const args = process.argv.slice(2);
 const formatIndex = args.indexOf("--format");
 const format =
   formatIndex >= 0 && args[formatIndex + 1] ? args[formatIndex + 1] : "json";
-
-// Maps each entity to its actual domain directory under apps/api/app/api/.
-// Must stay in sync with ENTITY_DOMAIN_MAP in scripts/manifest/generate-all-routes.mjs.
-const ENTITY_DOMAIN_MAP: Record<string, string> = {
-  // ─── Kitchen Operations ───
-  PrepTask: "kitchen/prep-tasks",
-  PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows",
-  KitchenTask: "kitchen/kitchen-tasks",
-  Recipe: "kitchen/recipes",
-  RecipeVersion: "kitchen/recipe-versions",
-  RecipeIngredient: "kitchen/recipe-ingredients",
-  RecipeStep: "kitchen/recipe-steps",
-  Ingredient: "kitchen/ingredients",
-  Dish: "kitchen/dishes",
-  Menu: "kitchen/menus",
-  MenuDish: "kitchen/menu-dishes",
-  PrepList: "kitchen/prep-lists",
-  PrepListItem: "kitchen/prep-list-items",
-  Station: "kitchen/stations",
-  InventoryItem: "kitchen/inventory",
-  PrepComment: "kitchen/prep-comments",
-  Container: "kitchen/containers",
-  PrepMethod: "kitchen/prep-methods",
-  WasteEntry: "kitchen/waste-entries",
-  AllergenWarning: "kitchen/allergen-warnings",
-  AlertsConfig: "kitchen/alerts-config",
-  OverrideAudit: "kitchen/override-audits",
-  // ─── Events & Catering ───
-  Event: "manifest/Event",
-  EventProfitability: "events/profitability",
-  EventSummary: "events/summaries",
-  EventReport: "events/reports",
-  EventBudget: "events/budgets",
-  BudgetLineItem: "events/budget-line-items",
-  BudgetAlert: "events/budget-alerts",
-  CateringOrder: "events/catering-orders",
-  BattleBoard: "events/battle-boards",
-  EventGuest: "events/guests",
-  EventContract: "events/contracts",
-  ContractSignature: "events/contract-signatures",
-  EventDish: "events/event-dishes",
-  EventStaff: "events/staff",
-  EventImportWorkflow: "events/import-workflows",
-  // ─── CRM & Sales ───
-  Client: "crm/clients",
-  ClientContact: "crm/client-contacts",
-  ClientPreference: "crm/client-preferences",
-  Lead: "crm/leads",
-  Proposal: "crm/proposals",
-  ProposalLineItem: "crm/proposal-line-items",
-  ClientInteraction: "crm/client-interactions",
-  // ─── Purchasing & Inventory ───
-  PurchaseOrder: "inventory/purchase-orders",
-  PurchaseOrderItem: "inventory/purchase-order-items",
-  PurchaseRequisition: "procurement/requisitions",
-  PurchaseRequisitionItem: "procurement/requisition-items",
-  VendorContract: "procurement/vendor-contracts",
-  Shipment: "shipments/shipment",
-  ShipmentItem: "shipments/shipment-items",
-  InventoryTransaction: "inventory/transactions",
-  InventorySupplier: "inventory/suppliers",
-  CycleCountSession: "inventory/cycle-count/sessions",
-  CycleCountRecord: "inventory/cycle-count/records",
-  VarianceReport: "inventory/cycle-count/variance-reports",
-  BulkOrderRule: "inventory/bulk-order-rules",
-  PricingTier: "inventory/pricing-tiers",
-  VendorCatalog: "inventory/vendor-catalogs",
-  // ─── Staff & Scheduling ───
-  User: "staff/employees",
-  Schedule: "staff/schedules",
-  ScheduleShift: "staff/shifts",
-  TimeEntry: "timecards/entries",
-  TimecardEditRequest: "timecards/edit-requests",
-  TimeOffRequest: "timecards/time-off-requests",
-  EmployeeAvailability: "staff/availability",
-  EmployeeCertification: "staff/certifications",
-  // ─── Payroll ───
-  PayrollPeriod: "payroll/periods",
-  PayrollRun: "payroll/runs",
-  PayrollApprovalHistory: "payroll/approval-history",
-  EmployeeDeduction: "payroll/deductions",
-  LaborBudget: "payroll/labor-budgets",
-  // ─── Training ───
-  TrainingAssignment: "training/assignments",
-  TrainingModule: "training/modules",
-  // ─── Command Board ───
-  CommandBoard: "command-board/boards",
-  CommandBoardCard: "command-board/cards",
-  CommandBoardGroup: "command-board/groups",
-  CommandBoardConnection: "command-board/connections",
-  CommandBoardLayout: "command-board/layouts",
-  // ─── Workflows & Notifications ───
-  Workflow: "collaboration/workflows",
-  Notification: "collaboration/notifications",
-  EmailTemplate: "communications/email-templates",
-  EmailWorkflow: "communications/email-workflows",
-  // ─── Administrative ───
-  AdminTask: "administrative/tasks",
-  AdminChatParticipant: "administrative/chat/participants",
-  // ─── Settings ───
-  ApiKey: "settings/api-keys",
-  // ─── Rate Limiting ───
-  RateLimitConfig: "administrative/rate-limits",
-  // ─── Accounting ───
-  ChartOfAccount: "accounting/chart-of-accounts",
-  // ─── Role Policy ───
-  RolePolicy: "rolepolicy/policies",
-};
 
 function toKebabCase(value: string): string {
   return value

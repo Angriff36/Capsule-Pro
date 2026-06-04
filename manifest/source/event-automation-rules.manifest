@@ -25,6 +25,8 @@ entity AutomatedFollowup {
   constraint validType: self.type in ["email", "sms", "push"] "Invalid followup type"
   constraint validStatus: self.status in ["pending", "sent", "failed", "skipped"] "Invalid followup status"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   command create(eventId: string, type: string, scheduledDate: datetime, recipientId: string, subject: string, body: string, templateId: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard type in ["email", "sms", "push"] "Invalid followup type"
@@ -109,6 +111,8 @@ entity EventTimelineItem {
 
   constraint validItemType: self.itemType in ["task", "milestone", "reminder", "note"] "Invalid timeline item type"
   constraint validStatus: self.status in ["pending", "in_progress", "completed", "cancelled", "blocked"] "Invalid timeline item status"
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: datetime, sortOrder: number) {
     guard eventId != null and eventId != "" "Event ID is required"
@@ -217,6 +221,8 @@ entity EventWaitlistEntry {
   constraint validStatus: self.status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid waitlist status"
   constraint requireGuestName: self.guestName != "" "Guest name is required"
   constraint positivePartySize: self.partySize >= 1 "Party size must be at least 1"
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   command addGuest(eventId: string, guestName: string, email: string, phone: string, partySize: number, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"

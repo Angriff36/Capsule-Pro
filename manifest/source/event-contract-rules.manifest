@@ -39,6 +39,9 @@ entity EventContract {
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validStatus: self.status in ["draft", "sent", "viewed", "signed", "expired", "cancelled"] "Status must be valid"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+
   command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard clientId != null and clientId != "" "Client ID is required"
@@ -152,6 +155,8 @@ entity ContractSignature {
   constraint requireContract: self.contractId != null and self.contractId != "" "Contract ID is required"
   constraint requireSignatureData: self.signatureData != null and self.signatureData != "" "Signature data is required"
   constraint requireSignerName: self.signerName != null and self.signerName != "" "Signer name is required"
+
+  relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
 
   command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, signerRole: string, ipAddress: string) {
     guard contractId != null and contractId != "" "Contract ID is required"

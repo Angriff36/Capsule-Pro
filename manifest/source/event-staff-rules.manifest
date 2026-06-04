@@ -36,6 +36,9 @@ entity EventStaff {
   constraint requireStaffMember: self.staffMemberId != null and self.staffMemberId != "" "Staff member ID is required"
   constraint validStatus: self.status in ["assigned", "confirmed", "checked_in", "checked_out", "no_show", "unassigned"] "Status must be valid"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
+
   command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"

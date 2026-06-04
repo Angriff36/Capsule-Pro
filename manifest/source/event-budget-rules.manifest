@@ -151,6 +151,8 @@ entity BudgetLineItem {
   constraint positiveActualAmount: self.actualAmount >= 0 "Actual amount must be non-negative"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
 
+  relationship belongsTo budget: EventBudget fields [tenantId, budgetId] references [tenantId, id]
+
   constraint warnOverBudgetItem:warn self.actualAmount > self.budgetedAmount {
     messageTemplate: "Line item '{itemName}' is over budget by {variance}"
     details: {

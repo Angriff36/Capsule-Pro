@@ -38,6 +38,8 @@ entity EventGuest {
   constraint requireGuestName: self.guestName != "" "Guest name is required"
   constraint validRsvpStatus: self.rsvpStatus in ["pending", "confirmed", "declined"] "RSVP status must be valid"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"
