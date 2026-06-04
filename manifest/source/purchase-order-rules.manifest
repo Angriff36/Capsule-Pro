@@ -191,7 +191,7 @@ entity PurchaseOrderItem {
   constraint positiveQuantity: self.quantityOrdered > 0 "Quantity ordered must be positive"
   constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
 
-  command create(purchaseOrderId: string, itemId: string, quantityOrdered: number, unitId: number, unitCost: number, notes: string) {
+  command create(purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
     guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
@@ -212,7 +212,7 @@ entity PurchaseOrderItem {
     emit PurchaseOrderItemCreated
   }
 
-  command update(quantityOrdered: number, unitCost: number, notes: string) {
+  command update(quantityOrdered: decimal, unitCost: money, notes: string) {
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
     guard unitCost != null and unitCost >= 0 "Unit cost cannot be negative"
 

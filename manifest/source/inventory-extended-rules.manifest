@@ -663,9 +663,9 @@ entity ProcurementBudget {
     }
   }
 
-  command create(name: string, periodStart: decimal, periodEnd: decimal, budgetAmount: money) {
+  command create(name: string, periodStart: datetime, periodEnd: datetime, budgetAmount: money) {
     guard name != null and name != "" "Budget name is required"
-    guard periodStart != null and periodStart > 0 "Period start date is required"
+    guard periodStart != null "Period start date is required"
     guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
     guard budgetAmount != null and budgetAmount > 0 "Budget amount must be positive"
 

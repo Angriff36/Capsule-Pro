@@ -34,7 +34,7 @@ entity VendorContract {
   property contractUrl: string = ""
   property notes: string = ""
   property complianceScore: decimal = 100
-  property lastComplianceReview: decimal = 0
+  property lastComplianceReview: datetime
   property slaBreachCount: int = 0
   property onTimeDeliveryRate: decimal = 0
   property qualityRating: decimal = 0
@@ -62,10 +62,10 @@ entity VendorContract {
   // prevented by `command update`'s `guard self.status == "draft"`, so no
   // protection is lost. See apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts.
 
-  command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: number, endDate: number, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, currencyCode: string, contractUrl: string, notes: string) {
+  command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: datetime, endDate: datetime, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, currencyCode: string, contractUrl: string, notes: string) {
     guard contractNumber != null and contractNumber != "" "Contract number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
-    guard startDate != null and startDate > 0 "Start date is required"
+    guard startDate != null "Start date is required"
 
     mutate contractNumber = contractNumber
     mutate vendorId = vendorId
@@ -93,7 +93,7 @@ entity VendorContract {
     emit VendorContractCreated
   }
 
-  command update(endDate: number, autoRenew: boolean, renewalTermDays: number, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, contractUrl: string, notes: string) {
+  command update(endDate: datetime, autoRenew: boolean, renewalTermDays: number, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, contractUrl: string, notes: string) {
     guard self.status == "draft" "Can only update draft contracts"
 
     mutate endDate = endDate
@@ -173,7 +173,7 @@ entity VendorContract {
     emit VendorContractTerminated
   }
 
-  command renew(userId: string, newEndDate: number) {
+  command renew(userId: string, newEndDate: datetime) {
     guard self.status == "active" "Can only renew active contracts"
     guard self.autoRenew == true "Contract must have auto-renewal enabled"
 

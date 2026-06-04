@@ -41,7 +41,7 @@ entity Driver {
     }
   }
 
-  command create(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
+  command create(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, notes: string) {
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
 
@@ -69,7 +69,7 @@ entity Driver {
     emit DriverDeleted
   }
 
-  command update(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: number, notes: string) {
+  command update(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, notes: string) {
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
 
@@ -86,9 +86,9 @@ entity Driver {
   }
 
   // Record a renewed or replaced license and clear the expiry warning
-  command renewLicense(licenseNumber: string, licenseExpiry: number) {
+  command renewLicense(licenseNumber: string, licenseExpiry: datetime) {
     guard licenseNumber != null and licenseNumber != "" "License number is required"
-    guard licenseExpiry > 0 "New expiry date is required"
+    guard licenseExpiry != null "New expiry date is required"
 
     mutate licenseNumber = licenseNumber
     mutate licenseExpiry = licenseExpiry

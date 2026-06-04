@@ -91,7 +91,7 @@ entity CateringOrder {
   // prevents cancelling a completed order via `guard self.orderStatus != "completed"`, so
   // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
-  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: number, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
     guard orderNumber != null and orderNumber != "" "Order number is required"
     guard customerId != null and customerId != "" "Customer ID is required"
 
@@ -179,7 +179,7 @@ entity CateringOrder {
     emit CateringOrderDepositRecorded
   }
 
-  command scheduleDelivery(deliveryDate: number, deliveryTime: string) {
+  command scheduleDelivery(deliveryDate: datetime, deliveryTime: string) {
     guard self.orderStatus in ["draft", "confirmed"] "Can only schedule delivery for draft or confirmed orders"
     guard deliveryDate != null "Delivery date is required"
 

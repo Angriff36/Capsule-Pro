@@ -4,8 +4,10 @@
  * Companion to `shipment-end-to-end.test.ts`. The end-to-end suite proves that
  * write commands flow through the right Prisma store and that instance-scoped
  * verbs receive `instanceId`. THIS suite covers what the end-to-end suite does
- * NOT: per-route auth/tenant/user guards, body-forwarding, policy denials,
- * guard failures, internal errors, and the ShipmentItem command surface.
+ * NOT, all against the canonical dispatcher
+ * (`/api/manifest/[entity]/commands/[command]`): body-forwarding, dispatcher
+ * failure mapping (policy denials, guard failures, raw errors), and the
+ * ShipmentItem command surface (auth/tenant guards, body-forwarding, errors).
  *
  * Why these matter
  * ----------------
@@ -17,11 +19,13 @@
  * future refactor of the manifest runtime cannot silently change who can
  * trigger a state transition.
  *
- * The `update-received` route is the most fragile of the bunch: the route
- * forwards the body to `runtime.runCommand("updateReceived", body)` WITHOUT
- * passing `instanceId`. That's a real bug (the manifest store cannot uniquely
- * identify the item to update) — the test below pins the current behavior so
- * it can't regress further while the bug is open.
+ * Instance-scoped verbs (update, cancel, schedule, ship, startPreparing,
+ * markDelivered, updateReceived) must reach the store with an `instanceId` so it
+ * can target the correct row. The canonical dispatcher derives that id from the
+ * request body — `body.id`, or the entity self-reference param `<entity>Id`
+ * (e.g. ShipmentItem.updateReceived passes `shipmentItemId`). These tests pin
+ * that resolution. The legacy per-command concrete routes were pruned into the
+ * single dispatcher (constitution §6, commit 12c1a4f9b).
  */
 
 import { database } from "@repo/database";
@@ -118,231 +122,90 @@ function mockRuntime(runCommand: ReturnType<typeof vi.fn>) {
 }
 
 // ---------------------------------------------------------------------------
-// Per-command auth/tenant/user guards — applied uniformly across every route
+// Dispatcher failure mapping — policy denial (403), guard failure (422), and a
+// raw command error (400). Previously asserted per concrete command route; those
+// routes were pruned into the canonical dispatcher (constitution §6, commit
+// 12c1a4f9b), so the mapping is pinned once against the dispatcher. The 403 path
+// is security-critical: it proves an unauthorized role is rejected before any
+// state transition runs.
 // ---------------------------------------------------------------------------
 
-const SHIPMENT_COMMANDS: Array<{ verb: string; file: string; body: object }> = [
-  {
-    verb: "create",
-    file: "create",
-    body: { shipmentNumber: "SHP-NEW", carrier: "FedEx" },
-  },
-  { verb: "update", file: "update", body: { id: TEST_SHIPMENT_ID } },
-  {
-    verb: "cancel",
-    file: "cancel",
-    body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID, reason: "duplicate" },
-  },
-  {
-    verb: "schedule",
-    file: "schedule",
-    body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID, scheduledDate: 0 },
-  },
-  {
-    verb: "ship",
-    file: "ship",
-    body: {
-      id: TEST_SHIPMENT_ID,
-      userId: TEST_USER_ID,
-      trackingNumber: "T-1",
-    },
-  },
-  {
-    verb: "startPreparing",
-    file: "start-preparing",
-    body: { id: TEST_SHIPMENT_ID, userId: TEST_USER_ID },
-  },
-  {
-    verb: "markDelivered",
-    file: "mark-delivered",
-    body: {
-      id: TEST_SHIPMENT_ID,
-      userId: TEST_USER_ID,
-      receivedBy: "John",
-      signature: "sig",
-    },
-  },
-];
-
-describe("Shipment Command Routes — auth/tenant/user guards", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  for (const { verb, file, body } of SHIPMENT_COMMANDS) {
-    describe(`POST /commands/${file}`, () => {
-      it(`${verb}: returns 401 when unauthenticated`, async () => {
-        vi.mocked(auth).mockResolvedValue({
-          orgId: null,
-          userId: null,
-        } as never);
-        vi.mocked(resolveCurrentUser).mockRejectedValue(
-          new InvariantError("Unauthenticated")
-        );
-
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-
-        expect(response.status).toBe(401);
-      });
-
-      it(`${verb}: returns 401 when tenant cannot be resolved`, async () => {
-        vi.mocked(auth).mockResolvedValue({
-          orgId: TEST_ORG_ID,
-          userId: TEST_CLERK_ID,
-        } as never);
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
-        vi.mocked(resolveCurrentUser).mockRejectedValue(
-          new InvariantError("Tenant not found")
-        );
-
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-
-        expect(response.status).toBe(401);
-      });
-
-      it(`${verb}: returns 401 when user not in database`, async () => {
-        vi.mocked(auth).mockResolvedValue({
-          orgId: TEST_ORG_ID,
-          userId: TEST_CLERK_ID,
-        } as never);
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.user.findFirst).mockResolvedValue(null);
-        vi.mocked(resolveCurrentUser).mockRejectedValue(
-          new InvariantError("User not found")
-        );
-
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-
-        expect(response.status).toBe(401);
-      });
-
-      it(`${verb}: returns 500 on internal error`, async () => {
-        authedAsAdmin();
-        vi.mocked(createManifestRuntime).mockRejectedValue(
-          new Error("runtime boom")
-        );
-
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-
-        expect(response.status).toBe(500);
-      });
-    });
-  }
-});
-
-// ---------------------------------------------------------------------------
-// Per-command failure paths from the manifest runtime
-// ---------------------------------------------------------------------------
-
-describe("Shipment Command Routes — runtime failure responses", () => {
+describe("Shipment dispatcher — runtime failure responses", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     authedAsAdmin();
   });
 
-  for (const { verb, file, body } of SHIPMENT_COMMANDS) {
-    describe(`POST /commands/${file}`, () => {
-      it(`${verb}: returns 403 when policy denies access`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: false,
-          policyDenial: { policyName: "ManagersCanCancelShipment" },
-        });
-        mockRuntime(runCommand);
+  it("returns 403 when a policy denies access", async () => {
+    mockRuntime(
+      vi.fn().mockResolvedValue({
+        success: false,
+        policyDenial: { policyName: "ManagersCanCancelShipment" },
+      })
+    );
+    const { POST } = await import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
+    const response = await POST(
+      createMockRequest("http://localhost:3000/test", {
+        method: "POST",
+        body: JSON.stringify({ id: TEST_SHIPMENT_ID, reason: "supplier delay" }),
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
+    );
+    const data = await response.json();
 
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-        const data = await response.json();
+    expect(response.status).toBe(403);
+    // Surface includes the policy name + role for ops debugging.
+    expect(JSON.stringify(data)).toContain("ManagersCanCancelShipment");
+    expect(JSON.stringify(data)).toContain("admin");
+  });
 
-        expect(response.status).toBe(403);
-        // Surface includes the policy name + role for ops debugging.
-        expect(JSON.stringify(data)).toContain("ManagersCanCancelShipment");
-        expect(JSON.stringify(data)).toContain("admin");
-      });
+  it("returns 422 when a manifest guard fails", async () => {
+    mockRuntime(
+      vi.fn().mockResolvedValue({
+        success: false,
+        guardFailure: { index: 0, formatted: "self.status == 'draft'" },
+      })
+    );
+    const { POST } = await import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
+    const response = await POST(
+      createMockRequest("http://localhost:3000/test", {
+        method: "POST",
+        body: JSON.stringify({ id: TEST_SHIPMENT_ID }),
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
+    );
+    const data = await response.json();
 
-      it(`${verb}: returns 422 when a manifest guard fails`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: false,
-          guardFailure: { index: 0, formatted: "self.status == 'draft'" },
-        });
-        mockRuntime(runCommand);
+    expect(response.status).toBe(422);
+    expect(JSON.stringify(data)).toContain("self.status == 'draft'");
+  });
 
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-        const data = await response.json();
+  it("returns 400 with the raw error when neither policy nor guard set", async () => {
+    mockRuntime(
+      vi.fn().mockResolvedValue({
+        success: false,
+        error: "Constraint blockNoItems failed",
+      })
+    );
+    const { POST } = await import(
+      "@/app/api/manifest/[entity]/commands/[command]/route"
+    );
+    const response = await POST(
+      createMockRequest("http://localhost:3000/test", {
+        method: "POST",
+        body: JSON.stringify({ id: TEST_SHIPMENT_ID }),
+      }),
+      { params: Promise.resolve({ entity: "Shipment", command: "cancel" }) }
+    );
+    const data = await response.json();
 
-        expect(response.status).toBe(422);
-        expect(JSON.stringify(data)).toContain("self.status == 'draft'");
-      });
-
-      it(`${verb}: returns 400 with raw error when neither policy nor guard set`, async () => {
-        const runCommand = vi.fn().mockResolvedValue({
-          success: false,
-          error: "Constraint blockNoItems failed",
-        });
-        mockRuntime(runCommand);
-
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
-        );
-        const response = await mod.POST(
-          createMockRequest("http://localhost:3000/test", {
-            method: "POST",
-            body: JSON.stringify(body),
-          })
-        );
-        const data = await response.json();
-
-        expect(response.status).toBe(400);
-        expect(JSON.stringify(data)).toContain("blockNoItems");
-      });
-    });
-  }
+    expect(response.status).toBe(400);
+    expect(JSON.stringify(data)).toContain("blockNoItems");
+  });
 });
 
 // ---------------------------------------------------------------------------

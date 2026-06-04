@@ -259,10 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 86% context — saved before compacting]
-Files (3):
-  package.json (edit)
-  apps/api/package.json (edit)
-  apps/app/package.json (edit)
+[proactive bridge @ 168% context — saved before compacting]
+Files (1):
+  apps/api/app/api/manifest/[entity]/commands/[command]/route.ts (edit)
 
 # === END COGNILAYER ===

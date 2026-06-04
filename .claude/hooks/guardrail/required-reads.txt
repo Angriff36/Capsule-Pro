@@ -4,3 +4,4 @@ manifest/IMPLEMENTATION_PROMPT.md
 manifest/notes.md
 manifest/phase-out-registry.md
 manifest/task_plan.md
+IMPLEMENTATION_PLAN.md

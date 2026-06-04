@@ -79,13 +79,13 @@
 | **CRITICAL: VendorContract blockModifyActive prevents ALL mutations** | RESOLVED 2026-06-04 — Entity-level block constraint fires on every command that mutates `status` while active (e.g. terminate, activate), including legitimate lifecycle commands. (Note: does NOT block all mutations — only status-mutating commands while active.) | `manifest/source/vendor-contract-rules.manifest:57-62` |
 | **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0** | RESOLVED 2026-06-04 — Instead of `self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes`. Prep time reporting broken. | `manifest/source/recipe-rules.manifest:105` |
 | **CRITICAL: Ingredient recordLot drops expiresAt** | RESOLVED 2026-06-04 — Param accepted but never assigned to `currentLotExpiresAt`. Lot expiry tracking non-functional. | `manifest/source/ingredient-rules.manifest:135-152` |
-| **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()** | Type mismatch: decimal property receives datetime value. | `manifest/source/vendor-contract-rules.manifest:37` |
-| **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch** | `create` accepts `decimal` params for `datetime` properties. | `manifest/source/inventory-extended-rules.manifest:666` |
-| **HIGH: Client tags string-into-array mismatch** | `tags: string` param into `array<string>` property. Same anti-pattern as Event. | `manifest/source/client-rules.manifest:25,80` |
+| **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()** | RESOLVED 2026-06-04 — Fixed: `lastComplianceReview: decimal = 0` → `datetime` in vendor-contract-rules.manifest:37. | `manifest/source/vendor-contract-rules.manifest:37` |
+| **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch** | RESOLVED 2026-06-04 — Fixed: `periodStart: decimal, periodEnd: decimal` → `datetime` in inventory-extended-rules.manifest:666; guard `periodStart > 0` → `periodStart != null`. | `manifest/source/inventory-extended-rules.manifest:666` |
+| **HIGH: Client tags string-into-array mismatch** | RESOLVED 2026-06-04 — Fixed: `tags: string` → `tags: array<string>` in client-rules.manifest create (L55) and update (L90). | `manifest/source/client-rules.manifest:25,80` |
 | **HIGH: PayrollLineItem has ZERO commands** | Declared `store ... in durable` but no command to create through governance. All writes bypass runtime. | `manifest/source/payroll-rules.manifest:270-292` |
 | **HIGH: PayrollRun reject overwrites approvedBy** | `reject` command mutates `approvedBy = rejectedBy`, losing original approver. | `manifest/source/payroll-rules.manifest:250-255` |
-| **HIGH: VendorContract startDate/endDate number into datetime** | Epoch-ms-to-datetime mismatch (same pattern as Event). | `manifest/source/vendor-contract-rules.manifest:64,73` |
-| **HIGH: CateringOrder deliveryDate number into datetime** | Same epoch-ms-to-datetime pattern. | `manifest/source/catering-order-rules.manifest:96` |
+| **HIGH: VendorContract startDate/endDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `startDate: number, endDate: number` → `datetime` in create (L65), update (L96), renew (L176); guard `startDate > 0` → `startDate != null`. | `manifest/source/vendor-contract-rules.manifest:64,73` |
+| **HIGH: CateringOrder deliveryDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `deliveryDate: number` → `datetime` in create (L94) and scheduleDelivery (L182). | `manifest/source/catering-order-rules.manifest:96` |
 | **HIGH: PayrollLineItem hours/rate typed as money** | Should be decimal/float (hours and rates, not currency). | `manifest/source/payroll-rules.manifest:279-283` |
 | **MEDIUM: RecipeVersion tagCount hardcoded to 0** | Never counts actual tags. | `manifest/source/recipe-rules.manifest` |
 | **MEDIUM: Recipe hasVersion always returns true** | Never checks actual versions. | `manifest/source/recipe-rules.manifest` |
@@ -417,6 +417,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Dispatcher auth error handling: InvariantError → 401 (was 500)** | Canonical dispatcher route catches `InvariantError` from `requireCurrentUser()` and returns 401 instead of 500. Fixes auth-guard tests across all 189 entities. 5 shipment auth-guard tests green. |
 | 2026-06-04 | **Task 0.2: Fix build.mjs broken path, stale compilerVersion, dead variable** | `pnpm manifest:build` completes all 4 steps. Line 170 path fixed (swapped segments), compilerVersion 0.3.8→2.2.0 in both build.mjs+compile.mjs, dead CODE_OUTPUT_DIR removed. |
 | 2026-06-04 | **Producer-level InvariantError→401 auth fix** | Moved from generated dispatcher to `manifest/scripts/generate.mjs` (the producer) per constitution §10/§16. Fix now survives regeneration. |
+| 2026-06-04 | **Task 0.6: 7 HIGH-priority source type mismatches fixed** | VendorContract (lastComplianceReview decimal→datetime, startDate/endDate number→datetime), ProcurementBudget (periodStart/periodEnd decimal→datetime), Client (tags string→array), CateringOrder (deliveryDate number→datetime), PurchaseOrderItem (quantityOrdered number→decimal, unitCost number→money), Driver (licenseExpiry number→datetime). IR recompiled: 189 entities, 952 commands. API+runtime typecheck GREEN. 2527/2527 tests pass (1 pre-existing env-var failure). |
 
 ---
 
@@ -708,16 +709,16 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - [ ] **CRITICAL: VendorContract blockModifyActive prevents ALL mutations**: Entity-level block constraint fires on EVERY command when status=="active", including legitimate ones (compliance updates, SLA breach recording, renewal). File: `manifest/source/vendor-contract-rules.manifest:57-62`.
   - [ ] **CRITICAL: RecipeVersion totalTimeMinutes hardcoded to 0**: Should be `self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes`. Prep time reporting broken. File: `manifest/source/recipe-rules.manifest:105`.
   - [ ] **CRITICAL: Ingredient recordLot drops expiresAt**: Param accepted but never assigned to `currentLotExpiresAt`. Lot expiry tracking non-functional. File: `manifest/source/ingredient-rules.manifest:135-152`.
-  - [ ] **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()**: Type mismatch. File: `manifest/source/vendor-contract-rules.manifest:37`.
-  - [ ] **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch**: `create` accepts `decimal` params for `datetime` properties. File: `manifest/source/inventory-extended-rules.manifest:666`.
-  - [ ] **HIGH: Client tags string-into-array mismatch**: `tags: string` param into `array<string>` property. Same anti-pattern as Event. File: `manifest/source/client-rules.manifest:25,80`.
+  - [x] **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()**: Fixed: `lastComplianceReview: decimal = 0` → `lastComplianceReview: datetime` in vendor-contract-rules.manifest:37. — ✅ DONE 2026-06-04
+  - [x] **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch**: Fixed: `periodStart: decimal, periodEnd: decimal` → `datetime` in inventory-extended-rules.manifest:666; guard `periodStart > 0` → `periodStart != null`. — ✅ DONE 2026-06-04
+  - [x] **HIGH: Client tags string-into-array mismatch**: Fixed: `tags: string` → `tags: array<string>` in client-rules.manifest create (L55) and update (L90). — ✅ DONE 2026-06-04
   - [ ] **HIGH: PayrollLineItem has ZERO commands**: Declared `store ... in durable` but no command to create through governance. All writes bypass runtime. File: `manifest/source/payroll-rules.manifest:270-292`.
   - [ ] **HIGH: PayrollRun reject overwrites approvedBy**: `reject` command mutates `approvedBy = rejectedBy`, losing original approver. File: `manifest/source/payroll-rules.manifest:250-255`.
-  - [ ] **HIGH: VendorContract startDate/endDate number into datetime**: Epoch-ms-to-datetime mismatch (same pattern as Event). File: `manifest/source/vendor-contract-rules.manifest:64,73`.
-  - [ ] **HIGH: CateringOrder deliveryDate number into datetime**: Same epoch-ms-to-datetime pattern. File: `manifest/source/catering-order-rules.manifest:96`.
+  - [x] **HIGH: VendorContract startDate/endDate number into datetime**: Fixed: `startDate: number, endDate: number` → `datetime` in create (L65), update (L96), renew (L176); guard `startDate > 0` → `startDate != null`. — ✅ DONE 2026-06-04
+  - [x] **HIGH: CateringOrder deliveryDate number into datetime**: Fixed: `deliveryDate: number` → `datetime` in create (L94) and scheduleDelivery (L182). — ✅ DONE 2026-06-04
   - [ ] **HIGH: PayrollLineItem hours/rate typed as money**: Should be decimal/float (hours and rates, not currency). File: `manifest/source/payroll-rules.manifest:279-283`.
-  - [ ] **HIGH: PurchaseOrderItem.create type mismatches**: quantityOrdered `number`->`decimal`, unitId `number`->`int`, unitCost `number`->`money`. File: `manifest/source/purchase-order-rules.manifest`.
-  - [ ] **HIGH: Driver.licenseExpiry number into datetime**: In create, update, AND renewLicense commands. File: `manifest/source/logistics-all-rules.manifest`.
+  - [x] **HIGH: PurchaseOrderItem.create type mismatches**: Fixed: `quantityOrdered: number` → `decimal`, `unitCost: number` → `money` in create (L194) and update (L215). — ✅ DONE 2026-06-04
+  - [x] **HIGH: Driver.licenseExpiry number into datetime**: Fixed: `licenseExpiry: number` → `datetime` in create (L44), update (L72), renewLicense (L89); guard `licenseExpiry > 0` → `licenseExpiry != null`. — ✅ DONE 2026-06-04
   - [ ] **HIGH: InventoryItem.totalValue typed `number` instead of `money`**: `int * money` computation loses money type. File: `manifest/source/inventory-rules.manifest`.
   - [ ] **HIGH: AdminTask.dueDate typed `string` instead of `datetime`**: Prevents date comparisons. File: `manifest/source/admin-task-rules.manifest`.
   - [ ] **MEDIUM: RecipeVersion tagCount hardcoded to 0**: Never counts actual tags. File: `manifest/source/recipe-rules.manifest`.

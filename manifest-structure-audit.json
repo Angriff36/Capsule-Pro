@@ -2,9 +2,9 @@
   "auditVersion": "2026-05-27",
   "root": "C:\\Projects\\capsule-pro",
   "counts": {
-    "FAIL": 13,
-    "WARN": 7,
-    "PASS": 143,
+    "FAIL": 18,
+    "WARN": 10,
+    "PASS": 135,
     "INFO": 15
   },
   "results": [
@@ -273,15 +273,15 @@
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "legacy-manifest-package-dir.leftover",
-      "message": "Legacy Manifest directory exists without package.json; inspect/delete if stale: packages/manifest-ir",
+      "level": "PASS",
+      "id": "legacy-manifest-package-dir.absent",
+      "message": "Legacy Manifest package directory absent: packages/manifest-ir",
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "legacy-manifest-package-dir.leftover",
-      "message": "Legacy Manifest directory exists without package.json; inspect/delete if stale: packages/manifest-adapters",
+      "level": "PASS",
+      "id": "legacy-manifest-package-dir.absent",
+      "message": "Legacy Manifest package directory absent: packages/manifest-adapters",
       "details": []
     },
     {
@@ -291,33 +291,33 @@
       "details": []
     },
     {
-      "level": "PASS",
-      "id": "manifest-package-dep.normal",
-      "message": "root package.json uses @angriff36/manifest 1.0.32",
+      "level": "WARN",
+      "id": "manifest-package-dep.version-drift",
+      "message": "root package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
       "details": []
     },
     {
-      "level": "PASS",
-      "id": "manifest-package-dep.normal",
-      "message": "apps/api/package.json uses @angriff36/manifest 1.0.32",
+      "level": "WARN",
+      "id": "manifest-package-dep.version-drift",
+      "message": "apps/api/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
       "details": []
     },
     {
-      "level": "PASS",
-      "id": "manifest-package-dep.normal",
-      "message": "manifest/runtime/package.json uses @angriff36/manifest 1.0.32",
+      "level": "WARN",
+      "id": "manifest-package-dep.version-drift",
+      "message": "manifest/runtime/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
       "details": []
     },
     {
-      "level": "PASS",
-      "id": "manifest-package-dep.normal",
-      "message": "packages/mcp-server/package.json uses @angriff36/manifest 1.0.32",
+      "level": "WARN",
+      "id": "manifest-package-dep.version-drift",
+      "message": "packages/mcp-server/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
       "details": []
     },
     {
       "level": "FAIL",
       "id": "frontend-manifest-runtime-dep.present",
-      "message": "apps/app should not depend on @angriff36/manifest; found dependencies:1.0.32",
+      "message": "apps/app should not depend on @angriff36/manifest; found dependencies:2.2.0",
       "details": []
     },
     {
@@ -423,9 +423,9 @@
       "details": []
     },
     {
-      "level": "PASS",
-      "id": "manifest-lock.github-package",
-      "message": "pnpm-lock resolves @angriff36/manifest from GitHub Packages URL",
+      "level": "WARN",
+      "id": "manifest-lock.github-package.unproven",
+      "message": "Could not prove @angriff36/manifest resolves from GitHub Packages in pnpm-lock.yaml",
       "details": []
     },
     {
@@ -519,13 +519,13 @@
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.import-runtime-type",
       "message": "imports RuntimeEngine type from official package",
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.import-resolveCommand",
       "message": "imports resolveCommand from command-resolver",
       "details": []
@@ -561,7 +561,7 @@
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.calls-resolveCommand",
       "message": "calls resolveCommand",
       "details": []
@@ -573,7 +573,7 @@
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.calls-runtime-runCommand",
       "message": "calls runtime.runCommand",
       "details": []
@@ -597,19 +597,19 @@
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.create-bootstrap",
       "message": "bootstraps create commands with runtime.createInstance",
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "execute.no-direct-repo-runtime",
       "message": "execute-command must go through apps/api/lib/manifest-runtime shim, not @repo/manifest-runtime directly",
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
       "id": "execute.no-auth-resolution",
       "message": "execute-command must not resolve auth; caller supplies user context",
       "details": []
@@ -627,25 +627,25 @@
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "resolver.import-registry-helper",
-      "message": "has command registry helper import from @repo/manifest-runtime/commands-registry",
+      "message": "missing command registry helper import from @repo/manifest-runtime/commands-registry",
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "resolver.exports-resolveCommand",
       "message": "exports resolveCommand",
       "details": []
     },
     {
-      "level": "PASS",
+      "level": "FAIL",
       "id": "resolver.handles-kebab",
       "message": "documents or implements slug/kebab to camel command mapping",
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
       "id": "resolver.no-direct-json",
       "message": "resolver should not directly import commands.registry.json",
       "details": []
@@ -919,10 +919,8 @@
         "apps/app/app/(authenticated)/kitchen/recipes/components/new-recipe-form-client.tsx: imports @angriff36/manifest/ir",
         "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts: imports @angriff36/manifest/ir",
         "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/scheduling/shifts/actions.ts: imports @angriff36/manifest",
-        "apps/app/lib/manifest-runtime.ts: imports @angriff36/manifest",
-        "apps/app/lib/manifest-runtime.ts: imports @repo/manifest-runtime/manifest-runtime-factory",
-        "apps/app/lib/manifest-runtime.ts: imports @angriff36/manifest"
+        "apps/app/lib/manifest-command.ts: imports @repo/manifest-runtime/manifest-runtime-factory",
+        "apps/app/lib/manifest-command.ts: imports @repo/manifest-runtime/run-manifest-command-core"
       ]
     },
     {
@@ -930,7 +928,6 @@
       "id": "callsites.old-command-paths",
       "message": "Code still calls old concrete command URLs instead of dispatcher",
       "details": [
-        "apps/api/lib/manifest/execute-command.ts:8: * dispatcher (apps/api/app/api/manifest/[entity]/commands/[command]/route.ts)",
         "packages/mcp-server/src/lib/route-conformance-scan.ts:247: \"Add apps/api/app/api/manifest/[entity]/commands/[command]/route.ts\",",
         "packages/mcp-server/src/plugins/route-resolution.ts:181: ? \"apps/api/app/api/manifest/[entity]/commands/[command]/route.ts\""
       ]
@@ -952,7 +949,7 @@
     {
       "level": "PASS",
       "id": "callsites.dispatcher-paths",
-      "message": "Found 132 dispatcher-style command call sites",
+      "message": "Found 133 dispatcher-style command call sites",
       "details": []
     },
     {
@@ -968,15 +965,15 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "generator.templates-runManifestCommand.missing",
-      "message": "generator does not contain runManifestCommand; it may regenerate inline dispatcher logic",
+      "level": "PASS",
+      "id": "generator.templates-runManifestCommand",
+      "message": "generator templates/delegates to runManifestCommand",
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "generator.templates-resolveCommand",
-      "message": "generator still appears to template inline resolveCommand logic into dispatcher",
+      "level": "PASS",
+      "id": "generator.no-inline-resolveCommand",
+      "message": "generator does not appear to template inline resolveCommand logic",
       "details": []
     },
     {
@@ -1009,6 +1006,7 @@
       "message": "Bad deep/absolute imports found",
       "details": [
         "manifest/runtime/src/__tests__/commands-registry.test.ts: ../commands-registry.js",
+        "manifest/runtime/src/__tests__/manifest-builtins.test.ts: ../manifest-builtins.js",
         "manifest/runtime/src/bottleneck-detector/ai-suggestions.ts: ./types",
         "manifest/runtime/src/bottleneck-detector/detector.ts: ./types",
         "manifest/runtime/src/bottleneck-detector/detector.ts: ./types",
@@ -1016,6 +1014,7 @@
         "manifest/runtime/src/bottleneck-detector/index.ts: ./ai-suggestions",
         "manifest/runtime/src/bottleneck-detector/index.ts: ./detector",
         "manifest/runtime/src/bottleneck-detector/index.ts: ./types",
+        "manifest/runtime/src/command-resolver.ts: ./commands-registry",
         "manifest/runtime/src/entity-graph/entity-graph.ts: ./factories",
         "manifest/runtime/src/entity-graph/entity-graph.ts: ./types",
         "manifest/runtime/src/entity-graph/entity-graph.ts: ./types",
@@ -1047,6 +1046,7 @@
         "manifest/runtime/src/index.ts: ./recipe-optimization-engine",
         "manifest/runtime/src/index.ts: ./recipe-scaling-engine",
         "manifest/runtime/src/index.ts: ./rules-engine/index",
+        "manifest/runtime/src/manifest-runtime-factory.ts: ./manifest-builtins",
         "manifest/runtime/src/manifest-runtime-factory.ts: ./permission-guard",
         "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-idempotency-store",
         "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-json-store",
@@ -1057,6 +1057,7 @@
         "manifest/runtime/src/manifest-runtime.ts: ./index",
         "manifest/runtime/src/permission-guard.ts: ./permission-checker",
         "manifest/runtime/src/prisma-json-store.ts: ./prisma-store",
+        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/generic-prisma-store",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch01-prep-container",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch01-waste-workflow",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch02-api-battle-budget",
@@ -1076,6 +1077,7 @@
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch08-event-guest-import",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch08-event-profit-report",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch09-event-staff-summary",
+        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/staff-slice",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch09-ingredient",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch09-inventory",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch10-inventory-transaction",
@@ -1102,12 +1104,7 @@
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch06-employee-availability",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch08-event-dish",
         "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch09-inventory",
-        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch10-inventory-transaction",
-        "manifest/runtime/src/prisma-stores/broken-read-batch01-prep-container.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/broken-read-batch01-waste-workflow.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/broken-read-batch02-api-battle-budget.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/broken-read-batch02-participant-task.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/broken-read-batch03-budget-bulk-catering.ts: ./shared"
+        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch10-inventory-transaction"
       ]
     },
     {
@@ -1119,13 +1116,13 @@
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "apps/api imports @angriff36/manifest and declares it in dependencies:1.0.32",
+      "message": "apps/api imports @angriff36/manifest and declares it in dependencies:2.2.0",
       "details": []
     },
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "apps/app imports @angriff36/manifest and declares it in dependencies:1.0.32",
+      "message": "apps/app imports @angriff36/manifest and declares it in dependencies:2.2.0",
       "details": []
     },
     {
@@ -1143,7 +1140,7 @@
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "packages/mcp-server imports @angriff36/manifest and declares it in dependencies:1.0.32",
+      "message": "packages/mcp-server imports @angriff36/manifest and declares it in dependencies:2.2.0",
       "details": []
     },
     {
@@ -1155,7 +1152,7 @@
     {
       "level": "PASS",
       "id": "imports.dependency-declared",
-      "message": "manifest/runtime imports @angriff36/manifest and declares it in dependencies:1.0.32",
+      "message": "manifest/runtime imports @angriff36/manifest and declares it in dependencies:2.2.0",
       "details": []
     },
     {
@@ -1170,6 +1167,7 @@
       "message": "Some API routes directly import Manifest runtime packages; classify as custom orchestration or migrate later",
       "details": [
         "apps/api/app/api/analytics/bottlenecks/route.ts: imports @repo/manifest-runtime/bottleneck-detector",
+        "apps/api/app/api/analytics/bottlenecks/route.ts: imports @repo/manifest-runtime/bottleneck-detector",
         "apps/api/app/api/communications/email-templates/commands/create/route.ts: imports @angriff36/manifest",
         "apps/api/app/api/events/contracts/[id]/send/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/events/contracts/[id]/status/route.ts: imports @repo/manifest-runtime/route-helpers",
@@ -1180,8 +1178,9 @@
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts: imports @angriff36/manifest/ir",
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts: imports @repo/manifest-runtime/route-helpers",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts: imports @angriff36/manifest/ir",
         "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts: imports @repo/manifest-runtime/route-helpers",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts: imports @angriff36/manifest/ir",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/recipes/[id]/scale/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts: imports @angriff36/manifest/ir",
@@ -1219,7 +1218,7 @@
         "apps/api/app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts:44: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts:59: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts:73: const runtime = await createManifestRuntime({",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:144: const runtime = await createManifestRuntime({",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:443: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts:210: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/recipes/[id]/scale/route.ts:285: const runtime = await createManifestRuntime({",
         "apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts:139: const runtime = await createManifestRuntime({",
@@ -1259,10 +1258,10 @@
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts:79: const versionResult = await runtime.runCommand(",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts:124: await runtime.runCommand(",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts:152: await runtime.runCommand(",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:177: const updateResult = await runtime.runCommand(",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:244: const versionResult = await runtime.runCommand(",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:346: const ingredientResult = await runtime.runCommand(",
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:385: const stepResult = await runtime.runCommand(",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:328: const ingredientResult = await runtime.runCommand(",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:379: const stepResult = await runtime.runCommand(",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:455: const updateResult = await runtime.runCommand(",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:473: const versionResult = await runtime.runCommand(",
         "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts:215: const updateResult = await runtime.runCommand(",
         "apps/api/app/api/kitchen/recipes/[id]/scale/route.ts:290: const updateResult = await runtime.runCommand(",
         "apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts:145: const recipeResult = await runtime.runCommand(",
@@ -1349,13 +1348,13 @@
     {
       "level": "PASS",
       "id": "commands-registry.array",
-      "message": "commands.registry.json contains 590 command entries",
+      "message": "commands.registry.json contains 952 command entries",
       "details": []
     },
     {
       "level": "PASS",
       "id": "manifest-source.present",
-      "message": "manifest/source contains 86 .manifest files",
+      "message": "manifest/source contains 92 .manifest files",
       "details": []
     },
     {
