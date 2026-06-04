@@ -14,6 +14,7 @@ import {
   type RunManifestCommandCoreFailure,
   type RunManifestCommandCoreParams,
 } from "@repo/manifest-runtime/run-manifest-command-core";
+import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
 import { logManifestIssue } from "@/lib/manifest/issue-log";
 import {
   manifestErrorResponse,
@@ -115,6 +116,30 @@ export async function runManifestCommand(
       captureException(result.error);
     }
     return manifestErrorResponse(result.message, result.httpStatus);
+  }
+
+  // Fire-and-forget webhook dispatch (matches legacy handler behavior)
+  const resultData = result.result as Record<string, unknown> | undefined;
+  const entityId = String(resultData?.id ?? params.body?.id ?? "");
+  if (resultData?.id) {
+    const webhookAction =
+      params.command === "create"
+        ? ("created" as const)
+        : params.command === "delete" ||
+            params.command === "softDelete" ||
+            params.command === "cancel"
+          ? ("deleted" as const)
+          : ("updated" as const);
+    dispatchWebhooks({
+      tenantId: params.user.tenantId,
+      entityType: params.entity,
+      entityId,
+      action: webhookAction,
+      data: {
+        ...(resultData ?? {}),
+        commandName: params.command,
+      },
+    }).catch(() => {});
   }
 
   return manifestSuccessResponse({

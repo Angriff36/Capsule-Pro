@@ -52,7 +52,33 @@ Only delete after confirming the projection output covers the real usage.
 - `packages/mcp-server/src/lib/entity-domain-map.ts` — a 4th copy (TS, in a different workspace package). **STILL TO DO.**
 Deferred deliberately: those two are separate scripts/packages with their own typing + the `manifest/Event` quirk; folding them in is out of scope for the deploy-unblock PR (one concern per PR). Tracked here.
 
-## E. Explicitly NOT for phase-out (keep)
+## E. Legacy `executeManifestCommand` → canonical `runManifestCommand` migration
+
+Legacy handler: `apps/api/lib/manifest-command-handler.ts` (289 LOC).
+Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCommand` from `@repo/manifest-runtime/run-manifest-command-core`.
+
+**Migration pattern:** import swap + caller resolves user/body (the canonical handler does not do it internally).
+
+### Migrated (7 routes, 2026-06-04)
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/lead/route.ts` | Lead | transformBody inlined; ctx.userId not used |
+| `app/api/payroll/approvals/route.ts` | PayrollApprovalHistory | ctx.userId→user.id (performedBy) |
+| `app/api/payroll/deductions/route.ts` | EmployeeDeduction | transformBody inlined |
+| `app/api/payroll/periods/route.ts` | PayrollPeriod | transformBody inlined |
+| `app/api/rolepolicy/grant/route.ts` | RolePolicy | ctx.userId→user.id (grantedBy) |
+| `app/api/rolepolicy/revoke/route.ts` | RolePolicy | ctx.userId→user.id (revokedBy) |
+| `app/api/rolepolicy/update/route.ts` | RolePolicy | transformBody inlined |
+
+### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
+- File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
+- All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`
+- All 11 test file mocks updated
+- Webhook dispatch preserved via fire-and-forget in canonical handler
+- Zero remaining imports of deleted file
+- Status: **DONE**
+
+## F. Explicitly NOT for phase-out (keep)
 - The singular command dispatcher `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` (canonical write path, constitution §6).
 - `manifest/runtime/src/manifest-runtime-factory.ts` (rewire to new provider; do not delete).
 - `manifest/scripts/audit-schema-drift.mjs` (upgrade to compare generated vs committed).

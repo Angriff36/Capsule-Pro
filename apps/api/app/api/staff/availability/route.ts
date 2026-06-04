@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type { AvailabilityListResponse } from "./types";
 import { validateDayOfWeek } from "./validation";
 
@@ -163,18 +163,21 @@ export async function GET(request: Request) {
  * POST /api/staff/availability
  * Create a new availability record via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EmployeeAvailability",
-    commandName: "create",
-    transformBody: (body) => ({
-      employeeId: body.employeeId || body.employee_id,
-      dayOfWeek: body.dayOfWeek ?? body.day_of_week,
-      startTime: body.startTime || body.start_time,
-      endTime: body.endTime || body.end_time,
-      isAvailable: body.isAvailable ?? body.is_available ?? true,
-      effectiveFrom: body.effectiveFrom || body.effective_from || "",
-      effectiveUntil: body.effectiveUntil || body.effective_until || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "create",
+    body: {
+      employeeId: rawBody.employeeId || rawBody.employee_id,
+      dayOfWeek: rawBody.dayOfWeek ?? rawBody.day_of_week,
+      startTime: rawBody.startTime || rawBody.start_time,
+      endTime: rawBody.endTime || rawBody.end_time,
+      isAvailable: rawBody.isAvailable ?? rawBody.is_available ?? true,
+      effectiveFrom: rawBody.effectiveFrom || rawBody.effective_from || "",
+      effectiveUntil: rawBody.effectiveUntil || rawBody.effective_until || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

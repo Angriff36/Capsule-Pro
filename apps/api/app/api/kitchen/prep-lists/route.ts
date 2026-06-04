@@ -13,8 +13,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface PrepListListFilters {
   eventId?: string;
@@ -242,8 +242,13 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   log.info("[PrepList/POST] Delegating to manifest create command");
 
-  return await executeManifestCommand(request, {
-    entityName: "PrepList",
-    commandName: "create",
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return await runManifestCommand({
+    entity: "PrepList",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

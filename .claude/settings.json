@@ -72,13 +72,6 @@
             "shell": "bash",
             "command": "bash .claude/hooks/guardrail/gate.sh",
             "timeout": 15
-          },
-          {
-            "type": "command",
-            "shell": "bash",
-            "command": "bash .claude/hooks/guardrail/context7-gate.sh",
-            "timeout": 15,
-            "enabled": false
           }
         ]
       }

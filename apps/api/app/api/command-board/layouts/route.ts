@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { validateBoardId } from "./validation";
 
 const LAYOUT_SELECT = {
@@ -82,14 +82,17 @@ export async function GET(request: Request) {
  * POST /api/command-board/layouts
  * Create a new layout via manifest runtime
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "CommandBoardLayout",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
-      ...body,
-      tenantId: ctx.tenantId,
-      userId: ctx.userId,
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "CommandBoardLayout",
+    command: "create",
+    body: {
+      ...rawBody,
+      tenantId: user.tenantId,
+      userId: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

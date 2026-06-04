@@ -9,8 +9,8 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type DeductionType =
   | "benefits"
@@ -166,20 +166,28 @@ export async function GET(request: Request) {
 /**
  * POST /api/payroll/deductions - Create a new deduction
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EmployeeDeduction",
-    commandName: "create",
-    transformBody: (body) => ({
-      employeeId: body.employeeId || "",
-      type: body.type || "",
-      name: body.name || "",
-      amount: body.amount ?? 0,
-      percentage: body.percentage ?? 0,
-      isPreTax: body.isPreTax ?? false,
-      effectiveDate: body.effectiveDate || "",
-      endDate: body.endDate || "",
-      maxAnnualAmount: body.maxAnnualAmount ?? 0,
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "EmployeeDeduction",
+    command: "create",
+    body: {
+      employeeId: rawBody.employeeId || "",
+      type: rawBody.type || "",
+      name: rawBody.name || "",
+      amount: rawBody.amount ?? 0,
+      percentage: rawBody.percentage ?? 0,
+      isPreTax: rawBody.isPreTax ?? false,
+      effectiveDate: rawBody.effectiveDate || "",
+      endDate: rawBody.endDate || "",
+      maxAnnualAmount: rawBody.maxAnnualAmount ?? 0,
+    },
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    },
   });
 }

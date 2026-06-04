@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireApiManager } from "@/app/lib/auth-roles";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type PayrollRunStatus =
   | "pending"
@@ -190,17 +190,25 @@ export async function GET(request: Request) {
 /**
  * POST /api/payroll/approvals - Create approval request for a payroll run
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "PayrollApprovalHistory",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
-      payrollRunId: body.payrollRunId || "",
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "PayrollApprovalHistory",
+    command: "create",
+    body: {
+      payrollRunId: rawBody.payrollRunId || "",
       action: "approval_requested",
       previousStatus: "",
       newStatus: "",
-      performedBy: body.requestedBy || ctx.userId,
-      reason: body.notes || "",
-    }),
+      performedBy: rawBody.requestedBy || user.id,
+      reason: rawBody.notes || "",
+    },
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    },
   });
 }

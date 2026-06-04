@@ -12,8 +12,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -156,11 +156,13 @@ export async function GET(_request: Request, { params }: RouteParams) {
  */
 export async function PUT(request: NextRequest, context: RouteParams) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "Proposal",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "Proposal",
+    command: "update",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -170,10 +172,11 @@ export async function PUT(request: NextRequest, context: RouteParams) {
  */
 export async function DELETE(request: NextRequest, context: RouteParams) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "Proposal",
-    commandName: "withdraw",
-    params: { id },
-    transformBody: (_body) => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "Proposal",
+    command: "withdraw",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

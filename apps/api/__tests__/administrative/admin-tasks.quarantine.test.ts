@@ -41,8 +41,8 @@ vi.mock("@/app/lib/tenant", () => ({
 }));
 
 // Manifest command handler mock — used by PATCH, DELETE, and POST on the root route.
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 // Manifest runtime mock — used by POST /commands/create.
@@ -84,8 +84,8 @@ vi.mock("@/lib/pagination", () => ({
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { executeManifestCommand } = await import(
-  "@/lib/manifest-command-handler"
+const { runManifestCommand } = await import(
+  "@/lib/manifest/execute-command"
 );
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
 
@@ -422,7 +422,7 @@ describe("Admin Task API", () => {
   // ================================================================== PATCH
   describe("PATCH /api/administrative/tasks/[id]", () => {
     it("should map status 'todo' to moveToTodo command", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -436,18 +436,16 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "moveToTodo",
-          params: { id: TEST_TASK_ID },
+          entity: "AdminTask",
+          command: "moveToTodo",
         })
       );
     });
 
     it("should map status 'in_progress' to startProgress command", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -461,17 +459,16 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "startProgress",
+          entity: "AdminTask",
+          command: "startProgress",
         })
       );
     });
 
     it("should map status 'done' to complete command", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -485,17 +482,16 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "complete",
+          entity: "AdminTask",
+          command: "complete",
         })
       );
     });
 
     it("should map status 'cancelled' to cancel command", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -509,17 +505,16 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "cancel",
+          entity: "AdminTask",
+          command: "cancel",
         })
       );
     });
 
     it("should map status 'backlog' to reopen command", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -533,11 +528,10 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "reopen",
+          entity: "AdminTask",
+          command: "reopen",
         })
       );
     });
@@ -557,7 +551,7 @@ describe("Admin Task API", () => {
     });
 
     it("should use update command when no status is provided", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -571,12 +565,10 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "update",
-          params: { id: TEST_TASK_ID },
+          entity: "AdminTask",
+          command: "update",
         })
       );
     });
@@ -584,8 +576,8 @@ describe("Admin Task API", () => {
 
   // ================================================================== DELETE
   describe("DELETE /api/administrative/tasks/[id]", () => {
-    it("should call executeManifestCommand with softDelete", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+    it("should call runManifestCommand with softDelete", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -598,12 +590,10 @@ describe("Admin Task API", () => {
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "softDelete",
-          params: { id: TEST_TASK_ID },
+          entity: "AdminTask",
+          command: "softDelete",
         })
       );
     });
@@ -611,8 +601,8 @@ describe("Admin Task API", () => {
 
   // ================================================================== POST ROOT (manifest command handler)
   describe("POST /api/administrative/tasks (root route)", () => {
-    it("should delegate to executeManifestCommand", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+    it("should delegate to runManifestCommand", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true, result: {} }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -626,17 +616,16 @@ describe("Admin Task API", () => {
 
       await postTaskRoot(request);
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        expect.any(Request),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "AdminTask",
-          commandName: "create",
+          entity: "AdminTask",
+          command: "create",
         })
       );
     });
 
-    it("should pass transformBody that injects createdBy and defaults", async () => {
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+    it("should pass body that injects createdBy and defaults", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true, result: {} }), {
           headers: { "Content-Type": "application/json" },
         })
@@ -650,18 +639,10 @@ describe("Admin Task API", () => {
 
       await postTaskRoot(request);
 
-      const options = vi.mocked(executeManifestCommand).mock.calls[0][1];
-      const transformed = options.transformBody!(
-        { title: "New Task" },
-        {
-          userId: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        }
-      );
-      expect(transformed.createdBy).toBe(TEST_USER_ID);
-      expect(transformed.status).toBe("backlog");
-      expect(transformed.priority).toBe("medium");
+      const callArgs = vi.mocked(runManifestCommand).mock.calls[0][0];
+      expect(callArgs.body.createdBy).toBe(TEST_USER_ID);
+      expect(callArgs.body.status).toBe("backlog");
+      expect(callArgs.body.priority).toBe("medium");
     });
   });
 

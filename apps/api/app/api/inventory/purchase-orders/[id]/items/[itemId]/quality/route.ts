@@ -5,7 +5,8 @@
  */
 
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string; itemId: string }>;
@@ -16,15 +17,17 @@ interface RouteContext {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id, itemId } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "PurchaseOrderItem",
-    commandName: "update",
-    params: { id: itemId, purchaseOrderId: id },
-    transformBody: (body, ctx) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "PurchaseOrderItem",
+    command: "update",
+    body: {
+      ...rawBody,
       id: itemId,
       purchaseOrderId: id,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

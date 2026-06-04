@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -98,8 +98,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body = await request.clone().json();
-  const status = body.status;
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  const status = rawBody.status as string;
 
   let commandName: string;
   if (status === "APPROVED") commandName = "approve";
@@ -111,15 +112,16 @@ export async function PATCH(
       headers: { "Content-Type": "application/json" },
     });
 
-  return executeManifestCommand(request, {
-    entityName: "TimeOffRequest",
-    commandName,
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
-      processedBy: ctx.userId,
-      rejectionReason: body.rejectionReason || body.rejection_reason || "",
-    }),
+  return runManifestCommand({
+    entity: "TimeOffRequest",
+    command: commandName,
+    body: {
+      ...rawBody,
+      id,
+      processedBy: user.id,
+      rejectionReason: (rawBody.rejectionReason as string) || (rawBody.rejection_reason as string) || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -132,10 +134,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "TimeOffRequest",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  const user = await resolveCurrentUser(request);
+
+  return runManifestCommand({
+    entity: "TimeOffRequest",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

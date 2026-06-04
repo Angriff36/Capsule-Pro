@@ -46,8 +46,8 @@ vi.mock("@/app/lib/tenant", () => ({
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/pagination", () => ({
   clampLimit: vi.fn().mockReturnValue(50),
@@ -90,7 +90,7 @@ import {
   GET as listModules,
 } from "@/app/api/training/modules/route";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -646,13 +646,13 @@ describe("Training API", () => {
   // =======================================================================
   // MODULES -- Update via handler (PUT /api/training/modules/[id])
   // =======================================================================
-  describe("PUT /api/training/modules/[id] (via executeManifestCommand)", () => {
-    it("should delegate to executeManifestCommand with correct params", async () => {
+  describe("PUT /api/training/modules/[id] (via runManifestCommand)", () => {
+    it("should delegate to runManifestCommand with correct params", async () => {
       const mockResponse = new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
         "http://localhost/api/training/modules/mod-001",
@@ -666,12 +666,11 @@ describe("Training API", () => {
       });
 
       expect(response.status).toBe(200);
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        request,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "TrainingModule",
-          commandName: "update",
-          params: { id: "mod-001" },
+          entity: "TrainingModule",
+          command: "update",
+          body: expect.objectContaining({ id: "mod-001", title: "Updated Title" }),
         })
       );
     });
@@ -680,13 +679,13 @@ describe("Training API", () => {
   // =======================================================================
   // MODULES -- Delete via handler (DELETE /api/training/modules/[id])
   // =======================================================================
-  describe("DELETE /api/training/modules/[id] (via executeManifestCommand)", () => {
-    it("should delegate to executeManifestCommand with softDelete", async () => {
+  describe("DELETE /api/training/modules/[id] (via runManifestCommand)", () => {
+    it("should delegate to runManifestCommand with softDelete", async () => {
       const mockResponse = new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
         "http://localhost/api/training/modules/mod-001",
@@ -697,12 +696,11 @@ describe("Training API", () => {
       });
 
       expect(response.status).toBe(200);
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        request,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "TrainingModule",
-          commandName: "softDelete",
-          params: { id: "mod-001" },
+          entity: "TrainingModule",
+          command: "softDelete",
+          body: expect.objectContaining({ id: "mod-001" }),
         })
       );
     });
@@ -1410,13 +1408,13 @@ describe("Training API", () => {
   // =======================================================================
   // ASSIGNMENTS -- Create via handler (POST /api/training/assignments)
   // =======================================================================
-  describe("POST /api/training/assignments (via executeManifestCommand)", () => {
-    it("should delegate to executeManifestCommand", async () => {
+  describe("POST /api/training/assignments (via runManifestCommand)", () => {
+    it("should delegate to runManifestCommand", async () => {
       const mockResponse = new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments",
@@ -1431,21 +1429,20 @@ describe("Training API", () => {
       const response = await createAssignmentViaHandler(request);
 
       expect(response.status).toBe(200);
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        request,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "TrainingAssignment",
-          commandName: "create",
+          entity: "TrainingAssignment",
+          command: "create",
         })
       );
     });
 
-    it("should pass transformBody with assignedBy from context", async () => {
+    it("should pass body with assignedBy from context", async () => {
       const mockResponse = new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new NextRequest(
         "http://localhost/api/training/assignments",
@@ -1456,20 +1453,10 @@ describe("Training API", () => {
       );
       await createAssignmentViaHandler(request);
 
-      const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-      const ctx = {
-        userId: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      };
-      const transformed = callArgs.transformBody!(
-        { moduleId: "mod-001", employeeId: "emp-001" },
-        ctx
-      );
-
-      expect(transformed.assignedBy).toBe(TEST_USER_ID);
-      expect(transformed.moduleId).toBe("mod-001");
-      expect(transformed.employeeId).toBe("emp-001");
+      const callArgs = vi.mocked(runManifestCommand).mock.calls[0][0];
+      expect(callArgs.body.assignedBy).toBe(TEST_USER_ID);
+      expect(callArgs.body.moduleId).toBe("mod-001");
+      expect(callArgs.body.employeeId).toBe("emp-001");
     });
   });
 

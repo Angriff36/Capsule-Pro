@@ -9,7 +9,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { InvariantError } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import type { ContractStatus } from "./types";
@@ -227,14 +228,8 @@ export async function GET(request: Request) {
  * POST /api/events/contracts
  * Create a new contract via manifest runtime
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EventContract",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
-      ...body,
-      tenantId: ctx.tenantId,
-      status: "draft",
-    }),
-  });
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "EventContract", command: "create", body: { ...rawBody, tenantId: user.tenantId, status: "draft" }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

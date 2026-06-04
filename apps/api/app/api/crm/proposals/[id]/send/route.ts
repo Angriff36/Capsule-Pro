@@ -5,7 +5,8 @@
  */
 
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -18,10 +19,12 @@ interface RouteParams {
  */
 export async function POST(request: NextRequest, context: RouteParams) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "Proposal",
-    commandName: "send",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "Proposal",
+    command: "send",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

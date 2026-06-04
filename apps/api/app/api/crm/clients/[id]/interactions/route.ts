@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/crm/clients/[id]/interactions
@@ -98,10 +98,12 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "ClientInteraction",
-    commandName: "create",
-    params: { id },
-    transformBody: (body) => ({ ...body, clientId: id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "ClientInteraction",
+    command: "create",
+    body: { ...rawBody, clientId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

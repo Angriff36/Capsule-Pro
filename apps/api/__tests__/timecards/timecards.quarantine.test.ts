@@ -72,8 +72,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 const { auth } = await import("@repo/auth/server");

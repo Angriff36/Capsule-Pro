@@ -10,8 +10,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -66,21 +66,24 @@ export async function GET(request: NextRequest, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-  return executeManifestCommand(request, {
-    entityName: "EmailTemplate",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({
+  return runManifestCommand({
+    entity: "EmailTemplate",
+    command: "update",
+    body: {
       id,
-      name: body.name || "",
-      templateType: body.templateType || "custom",
-      subject: body.subject || "",
-      body: body.body || "",
-      mergeFields: JSON.stringify(body.mergeFields || []),
-      isActive: body.isActive ?? true,
-      isDefault: body.isDefault ?? false,
-    }),
+      name: rawBody.name || "",
+      templateType: rawBody.templateType || "custom",
+      subject: rawBody.subject || "",
+      body: rawBody.body || "",
+      mergeFields: JSON.stringify(rawBody.mergeFields || []),
+      isActive: rawBody.isActive ?? true,
+      isDefault: rawBody.isDefault ?? false,
+    },
+    instanceId: id,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -90,11 +93,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
 
-  return executeManifestCommand(request, {
-    entityName: "EmailTemplate",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  return runManifestCommand({
+    entity: "EmailTemplate",
+    command: "softDelete",
+    body: { id },
+    instanceId: id,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

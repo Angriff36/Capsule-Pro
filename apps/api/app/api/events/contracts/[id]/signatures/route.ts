@@ -10,8 +10,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // Define types
 interface PaginationParams {
@@ -258,18 +258,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: contractId } = await params;
-  return executeManifestCommand(request, {
-    entityName: "ContractSignature",
-    commandName: "create",
-    params: { contractId },
-    transformBody: (body, ctx) => ({
-      ...body,
-      contractId,
-      tenantId: ctx.tenantId,
-      ipAddress:
-        (request as NextRequest).headers.get("x-forwarded-for") ||
-        (request as NextRequest).headers.get("x-real-ip") ||
-        "unknown",
-    }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "ContractSignature", command: "create", body: { ...rawBody, contractId, tenantId: user.tenantId, ipAddress: request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown" }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { clampLimit } from "@/lib/pagination";
 import type {
   AssignmentStatus,
@@ -193,16 +193,20 @@ export async function GET(request: Request) {
  * POST /api/training/assignments
  * Create a new training assignment via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "TrainingAssignment",
-    commandName: "create",
-    transformBody: (body, ctx) => ({
-      moduleId: body.moduleId || body.module_id || "",
-      employeeId: body.employeeId || body.employee_id || "",
-      assignedToAll: body.assignToAll ?? body.assignedToAll ?? false,
-      assignedBy: ctx.userId,
-      dueDate: body.dueDate || body.due_date || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TrainingAssignment",
+    command: "create",
+    body: {
+      moduleId: rawBody.moduleId || rawBody.module_id || "",
+      employeeId: rawBody.employeeId || rawBody.employee_id || "",
+      assignedToAll: rawBody.assignToAll ?? rawBody.assignedToAll ?? false,
+      assignedBy: user.id,
+      dueDate: rawBody.dueDate || rawBody.due_date || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

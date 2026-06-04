@@ -10,8 +10,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export async function GET(
   _request: Request,
@@ -99,13 +99,15 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
   log.info("[ShipmentItem/POST] Delegating to manifest create command", {
     shipmentId: id,
   });
-  return executeManifestCommand(request, {
-    entityName: "ShipmentItem",
-    commandName: "create",
-    params: { id },
-    transformBody: (body) => ({ ...body, shipmentId: id }),
+  return runManifestCommand({
+    entity: "ShipmentItem",
+    command: "create",
+    body: { ...rawBody, shipmentId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

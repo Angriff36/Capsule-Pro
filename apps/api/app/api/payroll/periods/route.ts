@@ -9,8 +9,8 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type PayrollPeriodStatus = "open" | "closed" | "processing";
 
@@ -141,13 +141,21 @@ export async function GET(request: Request) {
 /**
  * POST /api/payroll/periods - Create a new payroll period
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "PayrollPeriod",
-    commandName: "create",
-    transformBody: (body) => ({
-      periodStart: body.periodStart || "",
-      periodEnd: body.periodEnd || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "PayrollPeriod",
+    command: "create",
+    body: {
+      periodStart: rawBody.periodStart || "",
+      periodEnd: rawBody.periodEnd || "",
+    },
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    },
   });
 }

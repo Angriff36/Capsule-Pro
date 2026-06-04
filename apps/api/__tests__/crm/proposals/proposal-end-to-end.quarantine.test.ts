@@ -73,28 +73,18 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", async () => {
+vi.mock("@/lib/manifest/execute-command", async () => {
   const { manifestSuccessResponse } = await import(
     "@repo/manifest-runtime/route-helpers"
   );
   return {
-    executeManifestCommand: vi.fn(
-      async (_req: NextRequest, options: Record<string, unknown>) => {
+    runManifestCommand: vi.fn(
+      async (params: Record<string, unknown>) => {
         // Simulate a successful create: the manifest runtime wrote to the
         // ProposalPrismaStore which persisted to the DB. Return the payload
         // as the result so the caller gets a 200.
         return manifestSuccessResponse({
-          result: (options as any).transformBody
-            ? (options as any).transformBody(
-                {},
-                {
-                  userId: TEST_USER_ID,
-                  tenantId: TEST_TENANT_ID,
-                  role: "admin",
-                  params: (options as any).params,
-                }
-              )
-            : {},
+          result: (params as any).body ?? {},
         });
       }
     ),

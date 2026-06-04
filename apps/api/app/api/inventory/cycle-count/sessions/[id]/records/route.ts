@@ -11,7 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
@@ -192,10 +193,12 @@ export async function POST(
   log.info("[CycleCountRecord/POST] Delegating to manifest create command", {
     sessionId,
   });
-  return executeManifestCommand(request, {
-    entityName: "CycleCountRecord",
-    commandName: "create",
-    params: { sessionId },
-    transformBody: (body) => ({ ...body, sessionId }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "CycleCountRecord",
+    command: "create",
+    body: { ...rawBody, sessionId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

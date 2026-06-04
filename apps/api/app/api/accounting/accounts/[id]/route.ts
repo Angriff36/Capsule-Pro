@@ -12,8 +12,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -85,12 +85,9 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "ChartOfAccount",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "ChartOfAccount", command: "update", body: { ...rawBody }, user: { id: user.id, tenantId: user.tenantId, role: user.role }, instanceId: id });
 }
 
 /**
@@ -102,9 +99,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "ChartOfAccount",
-    commandName: "deactivate",
-    params: { id },
-  });
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({ entity: "ChartOfAccount", command: "deactivate", body: {}, user: { id: user.id, tenantId: user.tenantId, role: user.role }, instanceId: id });
 }

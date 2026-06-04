@@ -3,8 +3,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export async function GET(
   _request: Request,
@@ -144,11 +144,14 @@ export async function PUT(
   log.info("[TimeEntry/PUT] Delegating to manifest clockOut command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "TimeEntry",
-    commandName: "clockOut",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TimeEntry",
+    command: "clockOut",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -160,10 +163,13 @@ export async function DELETE(
   log.info("[TimeEntry/DELETE] Delegating to manifest softDelete command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "TimeEntry",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TimeEntry",
+    command: "softDelete",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

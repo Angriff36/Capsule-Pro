@@ -13,8 +13,8 @@ vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 const tenantId = "tenant_test";

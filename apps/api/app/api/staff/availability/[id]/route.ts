@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -88,19 +88,21 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EmployeeAvailability",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "update",
+    body: {
       id,
-      dayOfWeek: body.dayOfWeek ?? body.day_of_week,
-      startTime: body.startTime || body.start_time,
-      endTime: body.endTime || body.end_time,
-      isAvailable: body.isAvailable ?? body.is_available,
-      effectiveFrom: body.effectiveFrom || body.effective_from || "",
-      effectiveUntil: body.effectiveUntil || body.effective_until || "",
-    }),
+      dayOfWeek: rawBody.dayOfWeek ?? rawBody.day_of_week,
+      startTime: rawBody.startTime || rawBody.start_time,
+      endTime: rawBody.endTime || rawBody.end_time,
+      isAvailable: rawBody.isAvailable ?? rawBody.is_available,
+      effectiveFrom: rawBody.effectiveFrom || rawBody.effective_from || "",
+      effectiveUntil: rawBody.effectiveUntil || rawBody.effective_until || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -113,10 +115,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EmployeeAvailability",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

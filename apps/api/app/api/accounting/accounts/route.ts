@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { parseAccountListFilters } from "./validation";
 
 export const runtime = "nodejs";
@@ -133,16 +133,19 @@ export async function validateParentAccount(
  * POST /api/accounting/accounts
  * Create a new account via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "ChartOfAccount",
-    commandName: "create",
-    transformBody: (body) => ({
-      accountNumber: body.accountNumber || body.account_number,
-      accountName: body.accountName || body.account_name,
-      accountType: body.accountType || body.account_type,
-      parentId: body.parentId || body.parent_id || "",
-      description: body.description || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "ChartOfAccount",
+    command: "create",
+    body: {
+      accountNumber: rawBody.accountNumber || rawBody.account_number,
+      accountName: rawBody.accountName || rawBody.account_name,
+      accountType: rawBody.accountType || rawBody.account_type,
+      parentId: rawBody.parentId || rawBody.parent_id || "",
+      description: rawBody.description || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

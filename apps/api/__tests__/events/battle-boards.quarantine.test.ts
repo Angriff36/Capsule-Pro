@@ -3,7 +3,7 @@
  *
  * Covers all 8 routes in apps/api/app/api/events/battle-boards/:
  *   - GET  /api/events/battle-boards               (list)
- *   - POST /api/events/battle-boards               (create — delegates to executeManifestCommand)
+ *   - POST /api/events/battle-boards               (create — delegates to runManifestCommand)
  *   - POST /api/events/battle-boards/commands/create
  *   - POST /api/events/battle-boards/commands/add-dish        (addDish)
  *   - POST /api/events/battle-boards/commands/remove-dish     (removeDish)
@@ -54,8 +54,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 vi.mock("@/lib/manifest-response", async () => {
@@ -80,8 +80,8 @@ const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { database } = await import("@repo/database");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-const { executeManifestCommand } = await import(
-  "@/lib/manifest-command-handler"
+const { runManifestCommand } = await import(
+  "@/lib/manifest/execute-command"
 );
 
 // --- Constants ---
@@ -324,15 +324,15 @@ describe("Battle Boards API", () => {
   });
 
   // ---------------------------------------------------------------
-  // POST /api/events/battle-boards (delegated to executeManifestCommand)
+  // POST /api/events/battle-boards (delegated to runManifestCommand)
   // ---------------------------------------------------------------
   describe("POST /api/events/battle-boards (delegated create)", () => {
     const ROUTE = "@/app/api/events/battle-boards/route";
     const URL_BASE = "/api/events/battle-boards";
 
-    it("delegates to executeManifestCommand with BattleBoard/create", async () => {
+    it("delegates to runManifestCommand with BattleBoard/create", async () => {
       const { NextResponse } = await import("next/server");
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         NextResponse.json(
           { success: true, result: { id: TEST_BATTLE_BOARD_ID } },
           { status: 200 }
@@ -344,15 +344,17 @@ describe("Battle Boards API", () => {
       const res = await mod.POST(req);
 
       expect(res.status).toBe(200);
-      expect(executeManifestCommand).toHaveBeenCalledWith(req, {
-        entityName: "BattleBoard",
-        commandName: "create",
-      });
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "BattleBoard",
+          command: "create",
+        })
+      );
     });
 
-    it("propagates the response from executeManifestCommand", async () => {
+    it("propagates the response from runManifestCommand", async () => {
       const { NextResponse } = await import("next/server");
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         NextResponse.json(
           { success: false, message: "delegated failure" },
           { status: 422 }

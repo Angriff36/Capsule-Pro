@@ -11,7 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   FSAStatus,
   InventoryItemListFilters,
@@ -257,13 +258,16 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   log.info("[InventoryItem/POST] Delegating to manifest create command");
-  return await executeManifestCommand(request, {
-    entityName: "InventoryItem",
-    commandName: "create",
-    transformBody: (body) => ({
-      ...body,
-      unitCost: body.unit_cost,
-      quantityOnHand: body.quantity_on_hand,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "InventoryItem",
+    command: "create",
+    body: {
+      ...rawBody,
+      unitCost: rawBody.unit_cost,
+      quantityOnHand: rawBody.quantity_on_hand,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

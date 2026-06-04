@@ -10,8 +10,8 @@ import { database, type Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   PaginationParams,
   ShipmentFilters,
@@ -153,60 +153,63 @@ export async function GET(request: Request) {
   }
 }
 
-export function POST(request: NextRequest) {
+export async function POST(request: NextRequest) {
   log.info("[Shipment/POST] Delegating to manifest create command");
-  return executeManifestCommand(request, {
-    entityName: "Shipment",
-    commandName: "create",
-    transformBody: (body) => {
-      // Map snake_case client fields to camelCase manifest fields
-      const mapped: Record<string, unknown> = {};
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-      // Convert all snake_case keys to camelCase
-      for (const [key, value] of Object.entries(body)) {
-        const camelKey = key.replace(/_([a-z])/g, (_: string, c: string) =>
-          c.toUpperCase()
-        );
-        mapped[camelKey] = value;
-      }
+  // Map snake_case client fields to camelCase manifest fields
+  const mapped: Record<string, unknown> = {};
 
-      // Generate shipment number if empty/missing (guard requires non-empty)
-      if (
-        !mapped.shipmentNumber ||
-        String(mapped.shipmentNumber).trim() === ""
-      ) {
-        mapped.shipmentNumber = `SHP-${Date.now()}`;
-      }
+  // Convert all snake_case keys to camelCase
+  for (const [key, value] of Object.entries(rawBody)) {
+    const camelKey = key.replace(/_([a-z])/g, (_: string, c: string) =>
+      c.toUpperCase()
+    );
+    mapped[camelKey] = value;
+  }
 
-      // Convert date strings to epoch ms (manifest expects number type)
-      if (typeof mapped.scheduledDate === "string" && mapped.scheduledDate) {
-        mapped.scheduledDate = new Date(mapped.scheduledDate).getTime();
-      }
-      if (
-        typeof mapped.estimatedDeliveryDate === "string" &&
-        mapped.estimatedDeliveryDate
-      ) {
-        mapped.estimatedDeliveryDate = new Date(
-          mapped.estimatedDeliveryDate
-        ).getTime();
-      }
+  // Generate shipment number if empty/missing (guard requires non-empty)
+  if (
+    !mapped.shipmentNumber ||
+    String(mapped.shipmentNumber).trim() === ""
+  ) {
+    mapped.shipmentNumber = `SHP-${Date.now()}`;
+  }
 
-      // Default missing required fields (manifest requires non-null string;
-      // PrismaStore converts empty string to null for nullable DB columns)
-      if (mapped.supplierId === undefined) mapped.supplierId = "";
-      if (mapped.locationId === undefined) mapped.locationId = "";
-      if (mapped.eventId === undefined) mapped.eventId = "";
+  // Convert date strings to epoch ms (manifest expects number type)
+  if (typeof mapped.scheduledDate === "string" && mapped.scheduledDate) {
+    mapped.scheduledDate = new Date(mapped.scheduledDate).getTime();
+  }
+  if (
+    typeof mapped.estimatedDeliveryDate === "string" &&
+    mapped.estimatedDeliveryDate
+  ) {
+    mapped.estimatedDeliveryDate = new Date(
+      mapped.estimatedDeliveryDate
+    ).getTime();
+  }
 
-      // Coerce numeric fields
-      if (mapped.shippingCost !== undefined) {
-        mapped.shippingCost = Number(mapped.shippingCost);
-      }
+  // Default missing required fields (manifest requires non-null string;
+  // PrismaStore converts empty string to null for nullable DB columns)
+  if (mapped.supplierId === undefined) mapped.supplierId = "";
+  if (mapped.locationId === undefined) mapped.locationId = "";
+  if (mapped.eventId === undefined) mapped.eventId = "";
 
-      log.info(
-        "[Shipment/POST] Transformed body:",
-        JSON.stringify({ ...mapped, scheduledDate: "<epoch>" })
-      );
-      return mapped;
-    },
+  // Coerce numeric fields
+  if (mapped.shippingCost !== undefined) {
+    mapped.shippingCost = Number(mapped.shippingCost);
+  }
+
+  log.info(
+    "[Shipment/POST] Transformed body:",
+    JSON.stringify({ ...mapped, scheduledDate: "<epoch>" })
+  );
+
+  return runManifestCommand({
+    entity: "Shipment",
+    command: "create",
+    body: mapped,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

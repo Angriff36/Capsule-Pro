@@ -3,8 +3,8 @@ import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/staff/shifts
@@ -123,10 +123,15 @@ export async function GET(request: Request) {
  * POST /api/staff/shifts
  * Create a new shift (manifest command)
  */
-export function POST(request: NextRequest) {
+export async function POST(request: NextRequest) {
   log.info("[ScheduleShift/POST] Delegating to manifest create command");
-  return executeManifestCommand(request, {
-    entityName: "ScheduleShift",
-    commandName: "create",
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "ScheduleShift",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

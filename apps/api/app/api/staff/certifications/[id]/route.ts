@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -84,18 +84,20 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EmployeeCertification",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "EmployeeCertification",
+    command: "update",
+    body: {
       id,
-      certificationType: body.certificationType || body.certification_type,
-      certificationName: body.certificationName || body.certification_name,
-      issuedDate: body.issuedDate || body.issued_date,
-      expiryDate: body.expiryDate || body.expiry_date || "",
-      documentUrl: body.documentUrl || body.document_url || "",
-    }),
+      certificationType: rawBody.certificationType || rawBody.certification_type,
+      certificationName: rawBody.certificationName || rawBody.certification_name,
+      issuedDate: rawBody.issuedDate || rawBody.issued_date,
+      expiryDate: rawBody.expiryDate || rawBody.expiry_date || "",
+      documentUrl: rawBody.documentUrl || rawBody.document_url || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -108,10 +110,11 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EmployeeCertification",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "EmployeeCertification",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

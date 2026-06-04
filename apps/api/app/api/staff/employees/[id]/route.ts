@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -78,15 +78,14 @@ export async function GET(_request: Request, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "User",
-    commandName: "update",
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
-      id,
-      tenantId: ctx.tenantId,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "User",
+    command: "update",
+    body: { ...rawBody, id, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 

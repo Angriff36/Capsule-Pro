@@ -12,8 +12,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -156,11 +156,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
+  const user = await resolveCurrentUser(request);
 
-  return executeManifestCommand(request, {
-    entityName: "RateLimitConfig",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  return runManifestCommand({
+    entity: "RateLimitConfig",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

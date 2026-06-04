@@ -11,8 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { parsePaginationParams, parseProposalFilters } from "./validation";
 
 /**
@@ -182,8 +182,12 @@ export async function GET(request: Request) {
  * Create a new proposal via manifest command
  */
 export async function POST(request: NextRequest) {
-  return await executeManifestCommand(request, {
-    entityName: "Proposal",
-    commandName: "create",
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return await runManifestCommand({
+    entity: "Proposal",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

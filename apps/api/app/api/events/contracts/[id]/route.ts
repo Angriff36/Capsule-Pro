@@ -4,8 +4,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type Params = Promise<{ id: string }>;
 
@@ -91,16 +91,9 @@ export async function PUT(
   { params }: { params: Params }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EventContract",
-    commandName: "update",
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
-      id,
-      tenantId: ctx.tenantId,
-    }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "EventContract", command: "update", body: { ...rawBody, id, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }
 
 /**
@@ -112,13 +105,6 @@ export async function DELETE(
   { params }: { params: Params }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EventContract",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: (_body, ctx) => ({
-      id,
-      tenantId: ctx.tenantId,
-    }),
-  });
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({ entity: "EventContract", command: "softDelete", body: { id, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

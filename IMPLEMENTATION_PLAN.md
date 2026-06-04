@@ -142,7 +142,7 @@
 | **CORRECTED: Server actions with direct writes = 28 files** | App uses `database.*` singleton (not `prisma.*`), so prior search for `prisma.*` missed them. 28 files with `database.*` direct writes confirmed. | Server actions audit |
 | **CORRECTED: apiFetch = 167 files, 1,092 call sites** | 9th revision fresh count: 1,092 calls in 167 files (down from prior 1,098/169). TanStack Query = 5 files, 31 uses (down from prior 6/32). | Frontend audit |
 | **CORRECTED: Permission guard = 31 entries across 9 entity types** | Prior plan said ~36 entries. Actual is 28. Allow-by-default on 180/189 confirmed. | `manifest/runtime/src/permission-guard.ts` |
-| **CORRECTED: manifest-command-handler.ts is LEGACY** | Two handlers exist: `manifest-command-handler.ts` (LEGACY, does everything in one function) and `execute-command.ts` (CANONICAL, used by the dispatcher). Legacy handler should be removed. | `apps/api/lib/` |
+| ~~**CORRECTED: manifest-command-handler.ts is LEGACY**~~ RESOLVED 2026-06-04 (Task 10.13) | Legacy `manifest-command-handler.ts` deleted (289 lines). All 71 route files + 11 test files migrated to `runManifestCommand` via canonical `execute-command.ts`. Webhook dispatch support added to canonical handler. 0 legacy consumers remain. Single command path through full middleware pipeline (identity, RBAC, audit, outbox). API typecheck 0, 2562 tests pass. | `apps/api/lib/` |
 | **Finance domain: universal datetime-as-number** | InvoiceSent.dueDate `number` into `datetime`. InvoiceViewed.viewedAt `number` into `datetime`. Payment events: createdAt/updatedAt as `number`. RevenueRecognitionSchedule timestamps as `number`. | Source audit |
 | **Payroll domain: universal datetime-as-number + inverted logic** | PayrollPeriod.isLeaf: `self.parentId == ""` means no parent (root), but "leaf" in a tree means no children -- misleading. Payroll events: ALL timestamps as `number`. | Source audit |
 | **Staff domain: universal datetime-as-number across 9 files** | StaffMember events: createdAt/updatedAt/deactivatedAt/reactivatedAt/roleChangedAt ALL `number` instead of `datetime` across 5 events. TimeEntry.addEntry: clockIn/clockOut `number` into `datetime`. TimecardEditRequest: multiple mismatches. EmployeeAvailability: dayOfWeek as `number` but compared as string. | Source audit |
@@ -362,7 +362,7 @@
 - No durable approval state (`approvalStore` not wired)
 - No middleware pipeline (all cross-cutting concerns handled by Proxy wrapper)
 - Permission guard: whitelist-based `COMMAND_PERMISSION_MAP` covering **31 entries** across 9 entity types
-- **Two command handlers**: `manifest-command-handler.ts` (LEGACY, monolithic) and `execute-command.ts` (CANONICAL, used by dispatcher). Legacy should be removed.
+- **Single command handler**: `execute-command.ts` (CANONICAL). Legacy `manifest-command-handler.ts` removed (Task 10.13, 2026-06-04). All routes use full middleware pipeline (identity, RBAC, audit, outbox).
 
 ### Store Layer
 
@@ -595,7 +595,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 43. **Payroll-engine 100% disconnected from Manifest:** Sets invalid status values, constructor strips `$transaction`, zero Manifest awareness. Task 8.1.
 
-44. **Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:** Two command handlers, legacy should be removed. Task 10.13.
+44. ~~**Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:**~~ RESOLVED 2026-06-04 (Task 10.13). Legacy handler deleted, all routes migrated to canonical execute-command.ts.
 
 45. **Universal domain-level source bugs beyond datetime:** PurchaseOrderItem (number->decimal/int/money), InventoryItem.totalValue (number instead of money), Client.defaultPaymentTerms (number into decimal), AdminTask.dueDate (string instead of datetime), PayrollPeriod.isLeaf (inverted logic), EmployeeAvailability.dayOfWeek (number vs string comparison). Task 0.6.
 
@@ -1265,11 +1265,15 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** Manifest spec defines entity concurrency with `ConcurrencyConflict` results. Currently no entity uses this, making concurrent mutations prone to lost-update bugs.
 - **Source to change:** `manifest/source/*.manifest`.
 
-### 10.13 Remove legacy manifest-command-handler.ts
-- **Done when:** `apps/api/lib/manifest-command-handler.ts` (legacy monolithic handler) is deleted. All code paths use `execute-command.ts` (canonical handler) via the dispatcher.
-- **Why:** Two command handlers exist: `manifest-command-handler.ts` (LEGACY, monolithic) and `execute-command.ts` (CANONICAL, used by the dispatcher). The legacy handler does everything in one function and is a maintenance burden.
-- **Backpressure:** `grep -r "manifest-command-handler" apps/api/` returns 0 matches. `pnpm --filter api typecheck` green.
-- **Source to change:** Delete `apps/api/lib/manifest-command-handler.ts`. Verify all callers use the dispatcher.
+### 10.13 Remove legacy manifest-command-handler.ts -- DONE (2026-06-04)
+- **Completed:** `apps/api/lib/manifest-command-handler.ts` (legacy monolithic handler, 289 lines) deleted. All code paths use `execute-command.ts` (canonical handler) via the dispatcher.
+- **What was done:**
+  - Deleted `apps/api/lib/manifest-command-handler.ts` (289 lines).
+  - Migrated ALL 71 route files from `executeManifestCommand` to `runManifestCommand`.
+  - Migrated all 11 test files to mock the new canonical handler.
+  - Added webhook dispatch support to canonical `execute-command.ts` (fire-and-forget, matching legacy behavior).
+  - Migration pattern: routes now call `resolveCurrentUser(request)` + `runManifestCommand({ entity, command, body, user })` instead of `executeManifestCommand(request, { entityName, commandName, transformBody })`. All `transformBody` callbacks inlined into `body` parameter. All `ctx.userId`/`ctx.tenantId`/`ctx.role` replaced with `user.id`/`user.tenantId`/`user.role`.
+- **Verification:** API typecheck 0 errors. 2562 tests pass (1 pre-existing env validation failure unrelated to this change). 0 remaining consumers of legacy handler. Single canonical command path through full middleware pipeline (identity, RBAC, audit, outbox).
 
 ---
 
@@ -1403,8 +1407,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
 12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9.
 13. **Source type correctness** -- zero datetime-as-number mismatches, zero datetime-mutated-to-0, zero number-into-decimal/money/int mismatches.
-14. **Dead code eliminated** -- rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts removed or rebuilt with consumers.
-15. **Single command handler** -- legacy manifest-command-handler.ts removed, all paths use execute-command.ts.
+14. **Dead code eliminated** -- rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts removed or rebuilt with consumers. ~~legacy manifest-command-handler.ts~~ REMOVED (Task 10.13).
+15. **Single command handler** -- legacy manifest-command-handler.ts removed, all paths use execute-command.ts. DONE (Task 10.13).
 16. **ENTITY_DOMAIN_MAP coverage 100%** -- all 189 entities mapped in canonical map (DONE), stale copies eliminated (DONE 2026-06-04).
 17. **Script hygiene** -- all scripts reachable via package.json or removed (generate-all-routes.mjs, dead CODE_OUTPUT_DIR, build.mjs compile delegation).
 18. **Advanced Manifest features evaluated** -- async commands, feature flags, mixin composition, scheduled commands evaluated with adoption decisions documented.
@@ -1450,8 +1454,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `manifest-runtime.ts` (package re-export) | 66 lines | 66 | -- |
 | `manifest-runtime.ts` (legacy dead code) | 3,205 lines, 60+ `as any`, 50+ wrappers | same | -- |
 | `manifest-runtime.ts` (API shim) | 376 lines | 376 | -- |
-| `manifest-command-handler.ts` (legacy) | Monolithic handler, SHOULD BE DELETED | N/A | NEW finding |
-| `execute-command.ts` (canonical) | Used by the dispatcher | N/A | NEW finding |
+| `manifest-command-handler.ts` (legacy) | ~~Monolithic handler, SHOULD BE DELETED~~ DELETED (Task 10.13) | N/A | RESOLVED 2026-06-04 |
+| `execute-command.ts` (canonical) | Single canonical handler, used by all 71 routes + dispatcher | N/A | RESOLVED 2026-06-04 |
 | `manifest-client.generated.ts` | **1,330 functions, 0 consumers** | 1,330/3 | CORRECTED (9th rev confirms 0 consumers) |
 | `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
 | API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes applied |
@@ -1550,7 +1554,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 25. **27 projections available (CORRECTED from 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10, 5.11.
 
-26. **Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:** Two handlers for the same purpose. Legacy is monolithic. Task 10.13.
+26. ~~**Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:**~~ RESOLVED 2026-06-04 (Task 10.13). Legacy handler deleted, all 71 routes migrated to canonical handler.
 
 27. **~~`timestamps` entity modifier prevents datetime-as-number bug class~~ RESOLVED 2026-06-04:** Official docs at `/language/timestamps` describe a modifier that auto-injects createdAt/updatedAt as readonly datetime properties with runtime population via `getNow()` and Prisma projection as `@default(now())`/`@updatedAt`. ZERO entities use it -- all 189 hand-declare these fields, creating the 559+ datetime-as-number mismatch opportunities. Adopting `timestamps` is the ROOT FIX that prevents this entire class of bugs from recurring. Task 2.8.
 
@@ -1601,3 +1605,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.4c + 10.4 (21st revision):** Audit/outbox middleware replaces telemetry-embedded outbox writes. Dead code deleted: rules-engine/, entity-graph/, packages/services/ (~4,971 LOC). New: `manifest/runtime/src/middleware/audit-outbox-middleware.ts`. Modified: `manifest/runtime-factory.ts` (simplified telemetry, added audit middleware to pipeline). Deleted: 12 dead code files + 1 empty package. |
 | 2026-06-04 | **Task 7.4a (20th revision):** RBAC middleware replaces Proxy-based permission guard. `createRbacMiddleware()` wired as `before-guard` middleware in factory. Proxy wrapping removed. COMMAND_PERMISSION_MAP preserved. 2560/2560 tests pass, typecheck GREEN. New files: `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/middleware/index.ts`. Modified: `manifest/runtime/src/manifest-runtime-factory.ts`. |
 | 2026-06-04 | **Task 7.1 + 7.2 (22nd revision):** PostgresAuditSink + PostgresOutboxStore wired from upstream. New pg-pool.ts provides singleton pg.Pool with idempotent schema bootstrap. Custom createAuditOutboxMiddleware removed from pipeline. RuntimeOptions now wires 5 of 19 properties directly (storeProvider, idempotencyStore, customBuiltins, auditSink, outboxStore). |
+| 2026-06-04 | **Task 10.13 (23rd revision):** Legacy `manifest-command-handler.ts` removed (289 lines deleted). All 71 route files migrated from `executeManifestCommand` to `runManifestCommand`. All 11 test files migrated to mock the canonical handler. Webhook dispatch support added to canonical `execute-command.ts` (fire-and-forget). API typecheck 0, 2562 tests pass. Exit criteria 14 (dead code eliminated) and 15 (single command handler) now satisfied. Blocker #44 resolved. |

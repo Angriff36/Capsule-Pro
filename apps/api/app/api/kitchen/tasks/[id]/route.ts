@@ -4,8 +4,8 @@ import { triggerTaskCompletedSms } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -36,9 +36,10 @@ const STATUS_TO_COMMAND: Record<string, string> = {
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
 
   // Clone the request so we can read the body to determine the command,
-  // while still passing the original request to executeManifestCommand
+  // then parsing it locally for command dispatch
   const clonedRequest = request.clone();
   let body: Record<string, unknown> = {};
   try {
@@ -107,24 +108,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       })();
     }
 
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName,
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
-        ...reqBody,
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: commandName,
+      body: {
+        ...body,
         id,
-        userId: ctx.userId,
+        userId: user.id,
         // cancel command requires reason and canceledBy
         ...(commandName === "cancel" && {
-          reason: reqBody.reason || "Cancelled via task update",
-          canceledBy: ctx.userId,
+          reason: body.reason || "Cancelled via task update",
+          canceledBy: user.id,
         }),
         // release command requires reason
         ...(commandName === "release" && {
-          reason: reqBody.reason || "Released via task update",
+          reason: body.reason || "Released via task update",
         }),
-      }),
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -134,15 +135,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       priority: body.priority,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updatePriority",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updatePriority",
+      body: {
         id,
-        priority: reqBody.priority,
-        userId: ctx.userId,
-      }),
+        priority: body.priority,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -151,15 +152,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       complexity: body.complexity,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updateComplexity",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateComplexity",
+      body: {
         id,
-        complexity: reqBody.complexity,
-        userId: ctx.userId,
-      }),
+        complexity: body.complexity,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -168,15 +169,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       title: body.title,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updateTitle",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateTitle",
+      body: {
         id,
-        title: reqBody.title,
-        userId: ctx.userId,
-      }),
+        title: body.title,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -185,15 +186,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       summary: body.summary,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updateSummary",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateSummary",
+      body: {
         id,
-        summary: reqBody.summary,
-        userId: ctx.userId,
-      }),
+        summary: body.summary,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -202,15 +203,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       dueDate: body.dueDate,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updateDueDate",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateDueDate",
+      body: {
         id,
-        dueDate: reqBody.dueDate,
-        userId: ctx.userId,
-      }),
+        dueDate: body.dueDate,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
@@ -219,15 +220,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       taskId: id,
       tags: body.tags,
     });
-    return executeManifestCommand(request, {
-      entityName: "KitchenTask",
-      commandName: "updateTags",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
+    return runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateTags",
+      body: {
         id,
-        tags: reqBody.tags,
-        userId: ctx.userId,
-      }),
+        tags: body.tags,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 }
@@ -239,19 +240,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
 
   log.debug("[KitchenTask/DELETE] Delegating to cancel command", {
     taskId: id,
   });
 
-  return executeManifestCommand(request, {
-    entityName: "KitchenTask",
-    commandName: "cancel",
-    params: { id },
-    transformBody: (_body, ctx) => ({
+  return runManifestCommand({
+    entity: "KitchenTask",
+    command: "cancel",
+    body: {
       id,
       reason: "Deleted via API",
-      canceledBy: ctx.userId,
-    }),
+      canceledBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
