@@ -12,7 +12,6 @@
     "./route-helpers": "./src/route-helpers.ts",
     "./ir-contract": "./src/ir-contract.ts",
     "./runtime-engine": "./src/runtime-engine.ts",
-    "./manifest-runtime": "./src/manifest-runtime.ts",
     "./runtime/loadManifests": "./src/runtime/loadManifests.ts",
     "./prisma-json-store": "./src/prisma-json-store.ts",
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
