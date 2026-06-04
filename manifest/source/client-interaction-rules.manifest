@@ -32,6 +32,9 @@ entity ClientInteraction {
   constraint validSubject: self.subject != null and self.subject != "" "Subject is required"
   constraint validEmployeeId: self.employeeId != null and self.employeeId != "" "Employee ID is required"
 
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
+
   constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
     messageTemplate: "Interaction '{subject}' is not linked to any client or lead"
     details: {

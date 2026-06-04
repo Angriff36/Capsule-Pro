@@ -31,6 +31,9 @@ entity PrepTask {
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
 
+  relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
+  relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
+
   // State transitions enforce valid status flows at runtime
   transition status from "open" to ["in_progress", "canceled"]
   transition status from "pending" to ["in_progress", "canceled"]

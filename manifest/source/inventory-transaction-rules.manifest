@@ -33,6 +33,9 @@ entity InventoryTransaction {
   computed hasReference: boolean = self.referenceId != ""
   computed isReversible: boolean = self.isReversed == false
 
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+  relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
+
   constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
 
   constraint nonZeroQuantity: self.quantity != 0 {

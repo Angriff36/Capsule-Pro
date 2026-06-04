@@ -22,6 +22,8 @@ entity TemperatureProbe {
   computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt == null
   computed rangeSpan: decimal = self.maxThreshold - self.minThreshold
 
+  relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
+
   constraint thresholdOrder: self.minThreshold < self.maxThreshold "minThreshold must be less than maxThreshold"
   constraint requireName: self.name != "" "Probe name is required"
   constraint requireLocation: self.location != "" "Probe location is required"
@@ -90,6 +92,8 @@ entity TemperatureLog {
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
   constraint requireRecordedBy: self.recordedBy != "" "Recorder employee ID is required"
 
+  relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
+
   constraint warnOutOfRange:warn self.withinRange == false {
     messageTemplate: "Manual temperature log for equipment '{equipmentId}' is out of safe range"
     details: {
@@ -131,6 +135,8 @@ entity TemperatureReading {
 
   constraint requireProbe: self.probeId != "" "Probe ID is required"
 
+  relationship belongsTo probe: TemperatureProbe fields [tenantId, probeId] references [tenantId, id]
+
   constraint warnOutOfRange:warn self.withinRange == false {
     messageTemplate: "Automated reading from probe '{probeId}' is out of safe range"
     details: {
@@ -169,6 +175,9 @@ entity IotAlertRule {
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
+
+  relationship belongsTo equipment: Equipment fields [tenantId, equipmentId] references [tenantId, id]
+
   constraint requireMetric: self.metric != "" "Metric is required"
   constraint requireComparison: self.comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
   constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
@@ -239,6 +248,9 @@ entity IoTAlert {
   constraint validStatus: self.status in ["active", "acknowledged", "resolved"] "Invalid alert status"
   constraint validSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
   constraint requireMessage: self.message != "" "Alert message is required"
+
+  relationship belongsTo probe: TemperatureProbe fields [tenantId, probeId] references [tenantId, id]
+  relationship belongsTo rule: IotAlertRule fields [tenantId, ruleId] references [tenantId, id]
 
   command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: datetime) {
     guard probeId != null and probeId != "" "Probe ID is required"
@@ -370,6 +382,8 @@ entity QualityCheck {
   computed isPassed: boolean = self.status == "passed"
   computed isFailed: boolean = self.status == "failed"
 
+  relationship hasMany items: QualityCheckItem
+
   transition status from "pending" to ["passed", "failed"]
   transition status from "passed" to ["pending"]
   transition status from "failed" to ["pending"]
@@ -439,6 +453,9 @@ entity QualityCheckItem {
   timestamps
 
   constraint requireQualityCheckId: self.qualityCheckId != "" "Quality check ID is required"
+
+  relationship belongsTo qualityCheck: QualityCheck fields [tenantId, qualityCheckId] references [tenantId, id]
+
   constraint requireCriterion: self.criterion != "" "Criterion description is required"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
 
@@ -491,6 +508,8 @@ entity KitchenTaskClaim {
   constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
 
+  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+
   command claim(kitchenTaskId: string, employeeId: string, claimedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -536,6 +555,8 @@ entity KitchenTaskProgress {
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
   constraint validProgressPct: self.progressPct >= 0 and self.progressPct <= 100 "Progress percentage must be between 0 and 100"
 
+  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+
   command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -570,6 +591,8 @@ entity TaskBundle {
 
   computed isArchived: boolean = self.status == "archived"
   computed isActive: boolean = self.status == "active"
+
+  relationship hasMany items: TaskBundleItem
 
   transition status from "active" to ["archived"]
 
@@ -623,6 +646,9 @@ entity TaskBundleItem {
   constraint requireTaskBundleId: self.taskBundleId != "" "Task bundle ID is required"
   constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
+
+  relationship belongsTo taskBundle: TaskBundle fields [tenantId, taskBundleId] references [tenantId, id]
+  relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
 
   command addItem(taskBundleId: string, kitchenTaskId: string, sortOrder: number) {
     guard taskBundleId != null and taskBundleId != "" "Task bundle ID is required"
@@ -708,6 +734,9 @@ entity MethodVideo {
   timestamps
 
   constraint requirePrepMethodId: self.prepMethodId != "" "Prep method ID is required"
+
+  relationship belongsTo prepMethod: PrepMethod fields [tenantId, prepMethodId] references [tenantId, id]
+
   constraint requireTitle: self.title != "" "Video title is required"
   constraint requireUrl: self.url != "" "Video URL is required"
   constraint positiveDuration: self.durationSeconds >= 0 "Duration cannot be negative"

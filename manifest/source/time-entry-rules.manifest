@@ -23,6 +23,8 @@ entity TimeEntry {
   computed totalHours: number = self.totalMinutes > 0 ? (self.totalMinutes - self.breakMinutes) / 60 : 0
   computed isApproved: boolean = self.approvedBy != ""
 
+  relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
+
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
@@ -125,6 +127,8 @@ entity TimecardEditRequest {
   computed isApproved: boolean = self.status == "approved"
   computed isRejected: boolean = self.status == "rejected"
   computed isProcessed: boolean = self.status != "pending"
+
+  relationship belongsTo timeEntry: TimeEntry fields [tenantId, timeEntryId] references [tenantId, id]
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid edit request status"
 

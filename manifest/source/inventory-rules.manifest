@@ -31,6 +31,16 @@ entity InventoryItem {
   // Stock not already promised to an event/reservation.
   computed quantityAvailable: int = self.quantityOnHand - self.quantityReserved
 
+  relationship hasMany transactions: InventoryTransaction
+  relationship hasMany wasteEntries: WasteEntry
+  relationship hasMany stockLevels: InventoryStock
+  relationship hasMany alerts: InventoryAlert
+  relationship hasMany forecasts: InventoryForecast
+  relationship hasMany forecastInputs: ForecastInput
+  relationship hasMany reorderSuggestions: ReorderSuggestion
+  relationship hasMany transferItems: InventoryTransferItem
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+
   constraint warnBelowPar:warn self.isBelowPar {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
     details: {

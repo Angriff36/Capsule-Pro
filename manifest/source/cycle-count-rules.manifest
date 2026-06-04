@@ -31,6 +31,9 @@ entity CycleCountSession {
   computed countProgress: number = percent(self.countedItems, self.totalItems)
   computed hasVariance: boolean = self.totalVariance != 0
 
+  relationship hasMany records: CycleCountRecord
+  relationship hasMany varianceReports: VarianceReport
+
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
 
   command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
@@ -144,6 +147,9 @@ entity CycleCountRecord {
   computed isUndercount: boolean = self.variance < 0
   computed isLargeVariance: boolean = self.variancePct > 10 or self.variancePct < -10
 
+  relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+
   command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -246,6 +252,9 @@ entity VarianceReport {
   computed isApproved: boolean = self.status == "approved"
   computed hasAdjustment: boolean = self.adjustmentType != ""
   computed isHighVariance: boolean = self.variancePct > 10 or self.variancePct < -10
+
+  relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
   constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted", "rejected"] "Invalid variance report status"
 

@@ -32,6 +32,8 @@ entity TrainingAssignment {
   transition status from "overdue" to ["in_progress", "completed", "waived"]
 
   constraint requireModule: self.moduleId != "" "Module ID is required"
+
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   constraint validStatus: self.status in ["assigned", "in_progress", "completed", "waived", "overdue"] "Invalid training assignment status"
 
   command create(moduleId: string, employeeId: string, assignedToAll: boolean, assignedBy: string, dueDate: string) {

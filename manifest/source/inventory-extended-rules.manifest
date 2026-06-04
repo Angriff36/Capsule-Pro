@@ -80,6 +80,9 @@ entity InventoryStock {
 
   computed isZeroStock: boolean = self.quantityOnHand <= 0
 
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+  relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
+
   constraint nonNegativeQty: self.quantityOnHand >= 0 "Quantity on hand cannot be negative"
 
   constraint warnZeroStock:warn self.quantityOnHand == 0 {
@@ -170,6 +173,8 @@ entity InventoryAlert {
   computed isAcknowledged: boolean = self.status == "acknowledged"
   computed isResolved: boolean = self.status == "resolved"
 
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
   constraint validStatus: self.status in ["active", "acknowledged", "resolved"] "Invalid alert status"
   constraint validSeverity: self.severity in ["low", "medium", "high", "critical"] "Invalid alert severity"
   constraint validAlertType: self.alertType in ["low_stock", "out_of_stock", "expiry_warning", "expiry_critical", "overstock"] "Invalid alert type"
@@ -251,6 +256,8 @@ entity InventoryForecast {
   computed isPublished: boolean = self.status == "published"
   computed isApproved: boolean = self.status == "approved"
 
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
   constraint confidenceRange: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
   constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
 
@@ -330,6 +337,8 @@ entity ForecastInput {
   constraint nonNegativeUsage: self.actualUsage >= 0 "Actual usage cannot be negative"
   constraint requireSource: self.source != "" "Data source is required"
 
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+
   command create(inventoryItemId: string, inputDate: datetime, actualUsage: decimal, source: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard inputDate != null and inputDate > 0 "Input date is required"
@@ -367,6 +376,8 @@ entity ReorderSuggestion {
 
   constraint validStatus: self.status in ["pending", "accepted", "dismissed"] "Invalid reorder suggestion status"
   constraint positiveSuggestedQty: self.suggestedQuantity > 0 "Suggested quantity must be positive"
+
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
   command create(inventoryItemId: string, suggestedQuantity: decimal, reason: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
@@ -433,6 +444,8 @@ entity VendorContact {
   constraint requireName: self.name != "" "Contact name is required"
   constraint requireSupplier: self.inventorySupplierId != "" "Supplier ID is required"
 
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, inventorySupplierId] references [tenantId, id]
+
   command create(inventorySupplierId: string, name: string, email: string, phone: string, role: string, isPrimary: boolean) {
     guard inventorySupplierId != null and inventorySupplierId != "" "Supplier ID is required"
     guard name != null and name != "" "Contact name is required"
@@ -492,6 +505,8 @@ entity VendorRating {
   constraint scoreRange: self.score >= 0 and self.score <= 5 "Score must be between 0 and 5"
   constraint requireCategory: self.category != "" "Rating category is required"
 
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, inventorySupplierId] references [tenantId, id]
+
   constraint warnLowScore:warn self.isLowScore {
     messageTemplate: "Low vendor rating ({score}/5) for category '{category}' — consider reviewing supplier"
     details: {
@@ -548,6 +563,9 @@ entity InventoryTransferItem {
   constraint positiveQuantity: self.quantity > 0 "Transfer quantity must be positive"
   constraint requireTransfer: self.inventoryTransferId != "" "Transfer ID is required"
   constraint requireItem: self.inventoryItemId != "" "Inventory item ID is required"
+
+  relationship belongsTo transfer: InventoryTransfer fields [tenantId, inventoryTransferId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
   command addItem(inventoryTransferId: string, inventoryItemId: string, quantity: decimal, unitId: string) {
     guard inventoryTransferId != null and inventoryTransferId != "" "Transfer ID is required"
@@ -692,6 +710,8 @@ entity ProcurementBudgetAlert {
   timestamps
 
   computed isCritical: boolean = self.thresholdPct >= 100
+
+  relationship belongsTo budget: ProcurementBudget fields [tenantId, procurementBudgetId] references [tenantId, id]
 
   constraint validThreshold: self.thresholdPct > 0 and self.thresholdPct <= 150 "Threshold percentage must be between 0 and 150"
 

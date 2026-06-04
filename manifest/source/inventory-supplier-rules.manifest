@@ -31,6 +31,10 @@ entity InventorySupplier {
   computed isSuspended: boolean = self.qualificationStatus == "suspended"
   computed isBlacklisted: boolean = self.qualificationStatus == "blacklisted"
 
+  relationship hasMany items: InventoryItem
+  relationship hasMany contacts: VendorContact
+  relationship hasMany ratings: VendorRating
+
   constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
   constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"
 

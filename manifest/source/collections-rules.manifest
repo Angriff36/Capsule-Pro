@@ -63,6 +63,9 @@ entity CollectionCase {
   computed estimatedLoss: number = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
 
   // Constraints
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint amount_positive: self.originalAmount > 0 "Original amount must be positive"
   constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"
 
@@ -240,6 +243,8 @@ entity CollectionAction {
   computed hasPromiseToPay: boolean = self.promiseAmount > 0
 
   // Constraints
+  relationship belongsTo case: CollectionCase fields [tenantId, caseId] references [tenantId, id]
+
   constraint valid_direction: self.direction in ["INBOUND", "OUTBOUND"] "Invalid direction"
   constraint valid_status: self.status in ["PENDING", "COMPLETED", "FAILED", "SKIPPED"] "Invalid status"
 
@@ -318,6 +323,8 @@ entity CollectionPaymentPlan {
   computed paidAmount: number = self.completedInstallments * self.installmentAmount
 
   // Constraints
+  relationship belongsTo case: CollectionCase fields [tenantId, caseId] references [tenantId, id]
+
   constraint amount_positive: self.totalAmount > 0 and self.installmentAmount > 0 "Amounts must be positive"
   constraint installments_valid: self.installmentCount > 0 "Must have at least one installment"
   constraint completed_valid: self.completedInstallments <= self.installmentCount "Completed cannot exceed total"

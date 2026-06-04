@@ -32,6 +32,8 @@ entity Menu {
   computed isPublished: boolean = self.status == "published"
   computed isArchived: boolean = self.status == "archived"
 
+  relationship hasMany dishes: MenuDish
+
   transition status from "draft" to ["published"]
   transition status from "published" to ["draft", "archived"]
   transition status from "archived" to ["draft"]
@@ -218,6 +220,9 @@ entity MenuDish {
   property deletedAt: datetime
 
   computed hasPriceOverride: boolean = self.priceOverride > 0
+
+  relationship belongsTo menu: Menu fields [tenantId, menuId] references [tenantId, id]
+  relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
 
   constraint validMenuId: self.menuId != null and self.menuId != "" "Menu ID is required"
   constraint validDishId: self.dishId != null and self.dishId != "" "Dish ID is required"

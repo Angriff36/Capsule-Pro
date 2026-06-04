@@ -42,6 +42,9 @@ entity Dish {
   computed isDeactivated: boolean = self.isActive == false
   computed isAvailable: boolean = self.isActive and self.isEightySix == false
 
+  relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
+  relationship belongsTo defaultContainer: Container fields [tenantId, defaultContainerId] references [tenantId, id]
+
   constraint validName: self.name != null and self.name != "" "Dish name is required"
   constraint positivePrice: self.pricePerPerson >= 0 "Price per person cannot be negative"
   constraint positiveCost: self.costPerPerson >= 0 "Cost per person cannot be negative"

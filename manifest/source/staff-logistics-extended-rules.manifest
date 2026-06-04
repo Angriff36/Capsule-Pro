@@ -339,6 +339,8 @@ entity ActionMilestone {
   constraint validStatus: self.status in ["pending", "met", "missed"] "Invalid milestone status"
   constraint requireTitle: self.title != "" "Milestone title is required"
 
+  relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
+
   command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
@@ -455,6 +457,8 @@ entity TrainingCompletion {
   computed hasPassed: boolean = self.passed == true
   computed hasScore: boolean = self.score > 0
 
+  relationship belongsTo trainingModule: TrainingModule fields [tenantId, trainingModuleId] references [tenantId, id]
+
   constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
 
   command create(employeeId: string, trainingModuleId: string, completedAt: datetime, score: number, passed: boolean) {
@@ -533,6 +537,8 @@ entity OnboardingCompletion {
   computed isPending: boolean = self.status == "pending"
   computed isComplete: boolean = self.status == "completed"
 
+  relationship belongsTo onboardingTask: OnboardingTask fields [tenantId, onboardingTaskId] references [tenantId, id]
+
   constraint validStatus: self.status in ["pending", "completed"] "Invalid onboarding completion status"
 
   command create(employeeId: string, onboardingTaskId: string) {
@@ -576,6 +582,8 @@ entity OpenShift {
 
   constraint validStatus: self.status in ["open", "claimed", "cancelled"] "Invalid open shift status"
   constraint requireRole: self.role != "" "Role is required for an open shift"
+
+  relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
 
   command create(scheduleId: string, role: string, shiftStart: number, shiftEnd: number) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
@@ -699,6 +707,8 @@ entity RouteStop {
   constraint validStatus: self.status in ["pending", "arrived", "completed"] "Invalid route stop status"
   constraint requireAddress: self.address != "" "Address is required"
   constraint sequencePositive: self.sequence >= 0 "Sequence must be non-negative"
+
+  relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, deliveryRouteId] references [tenantId, id]
 
   command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
     guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"

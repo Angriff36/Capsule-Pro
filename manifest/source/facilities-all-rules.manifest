@@ -103,6 +103,8 @@ entity FacilityArea {
   timestamps
 
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
+
+  relationship belongsTo facility: Facility fields [tenantId, venueId] references [tenantId, id]
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
 
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
@@ -186,6 +188,9 @@ entity FacilityAsset {
   computed maintenanceOverdue: boolean = self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational"
 
   constraint validAssetType: self.assetType in ["equipment", "furniture", "vehicle", "technology", "other"] "Invalid asset type"
+
+  relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
+  relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
 
   constraint warnMaintenanceOverdue:warn self.maintenanceOverdue {
@@ -293,6 +298,9 @@ entity FacilitySchedule {
   computed isCompleted: boolean = self.status == "completed"
 
   constraint validScheduleType: self.scheduleType in ["maintenance", "cleaning", "inspection", "renovation", "other"] "Invalid schedule type"
+
+  relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
+  relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   constraint validStatus: self.status in ["scheduled", "in_progress", "completed", "cancelled"] "Invalid schedule status"
 
   transition status from "scheduled" to ["in_progress", "cancelled"]
@@ -399,6 +407,10 @@ entity FacilityWorkOrder {
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "assigned", "in_progress", "completed", "cancelled"] "Invalid work order status"
   constraint validCategory: self.category in ["repair", "inspection", "cleaning", "installation", "renovation", "other"] "Invalid category"
+
+  relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
+  relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
+  relationship belongsTo asset: FacilityAsset fields [tenantId, assetId] references [tenantId, id]
 
   constraint warnOverdue:warn self.isOverdue {
     messageTemplate: "Facility work order '{title}' is past scheduled date"

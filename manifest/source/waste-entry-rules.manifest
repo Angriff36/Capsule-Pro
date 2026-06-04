@@ -29,6 +29,9 @@ entity WasteEntry {
   computed isApproved: boolean = self.status == "approved"
   computed isHighCost: boolean = self.totalCost > 100
 
+  relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint requireInventoryItem: self.inventoryItemId != "" "Inventory item is required"
   constraint requireReason: self.reasonId > 0 "Waste reason is required"
   constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"

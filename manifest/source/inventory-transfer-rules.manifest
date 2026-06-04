@@ -29,6 +29,8 @@ entity InventoryTransfer {
   computed isApproved: boolean = self.status == "approved"
   computed isInTransit: boolean = self.status == "in_transit"
 
+  relationship hasMany items: InventoryTransferItem
+
   constraint validStatus: self.status in ["draft", "pending_approval", "approved", "in_transit", "received", "cancelled"] "Invalid transfer status"
 
   // requestedBy + transferNumber are intentionally NOT command params here.

@@ -35,6 +35,8 @@ entity AllergenWarning {
   computed isDeleted: boolean = self.deletedAt != null
   computed isEscalated: boolean = self.escalatedAt != null
 
+  relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
+
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireWarningType: self.warningType != "" "Warning type is required"
   constraint requireAllergens: self.allergens != "" "Allergens list is required"

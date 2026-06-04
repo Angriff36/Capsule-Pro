@@ -18,6 +18,8 @@ entity Recipe {
   computed hasVersion: boolean = true
   computed tagCount: int = 0
 
+  relationship hasMany versions: RecipeVersion
+
   constraint validName: self.name != null and self.name != "" "Recipe name is required"
 
   command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string[]) {
@@ -109,6 +111,10 @@ entity RecipeVersion {
   computed isDraft: boolean = self.status == "draft"
   computed isPublished: boolean = self.status == "published"
   computed isApproved: boolean = self.approvedAt != null
+
+  relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
+  relationship hasMany ingredients: RecipeIngredient
+  relationship hasMany steps: RecipeStep
 
   transition status from "draft" to ["published"]
   transition status from "published" to ["draft"]
@@ -244,6 +250,9 @@ entity RecipeIngredient {
   timestamps
   property deletedAt: datetime
 
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
+  relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
+
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
   constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
@@ -324,6 +333,8 @@ entity RecipeStep {
   property imageUrl: string = ""
   timestamps
   property deletedAt: datetime
+
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
 
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"

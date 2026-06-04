@@ -25,6 +25,9 @@ entity KitchenTask {
   computed isHighPriority: boolean = self.priority <= 3
   computed isAssigned: boolean = self.assignedTo != ""
 
+  relationship hasMany claims: KitchenTaskClaim
+  relationship hasMany progress: KitchenTaskProgress
+
   // State transitions
   transition status from "pending" to ["in_progress", "done", "cancelled"]
   transition status from "in_progress" to ["pending", "done", "cancelled"]

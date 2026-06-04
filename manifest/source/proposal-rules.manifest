@@ -45,6 +45,9 @@ entity Proposal {
   constraint validStatus: self.status in ["draft", "sent", "viewed", "accepted", "rejected", "withdrawn", "expired"] "Invalid proposal status"
   constraint validTitle: self.title != null and self.title != "" "Proposal title is required"
   constraint validProposalNumber: self.proposalNumber != null and self.proposalNumber != "" "Proposal number is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
@@ -250,6 +253,8 @@ entity ProposalLineItem {
 
   constraint validProposalId: self.proposalId != null and self.proposalId != "" "Proposal ID is required"
   constraint validDescription: self.description != null and self.description != "" "Description is required"
+
+  relationship belongsTo proposal: Proposal fields [tenantId, proposalId] references [tenantId, id]
   constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
   constraint positiveUnitPrice: self.unitPrice >= 0 "Unit price must be non-negative"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"

@@ -38,6 +38,8 @@ entity Shipment {
   computed hasItems: boolean = self.totalItems > 0
   computed hasTracking: boolean = self.trackingNumber != ""
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
   command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
@@ -171,6 +173,8 @@ entity ShipmentItem {
   computed receivedPercentage: number = percent(self.quantityReceived, self.quantityShipped)
 
   constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
+
+  relationship belongsTo shipment: Shipment fields [tenantId, shipmentId] references [tenantId, id]
 
   command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"

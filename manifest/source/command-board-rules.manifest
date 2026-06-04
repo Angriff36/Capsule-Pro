@@ -116,6 +116,8 @@ entity CommandBoardCard {
   constraint positiveWidth: self.width > 0 "Card width must be positive"
   constraint positiveHeight: self.height > 0 "Card height must be positive"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
   command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
@@ -221,6 +223,8 @@ entity CommandBoardGroup {
   constraint positiveWidth: self.width > 0 "Group width must be positive"
   constraint positiveHeight: self.height > 0 "Group height must be positive"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
   command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard name != null and name != "" "Group name is required"
@@ -284,6 +288,8 @@ entity CommandBoardConnection {
   constraint noSelfConnection: self.fromCardId != self.toCardId "Cannot connect a card to itself"
   constraint validRelationshipType: self.relationshipType in ["generic", "dependency", "blocks", "related", "sequence"] "Invalid connection type"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
   command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard fromCardId != null and fromCardId != "" "Source card ID is required"
@@ -330,6 +336,8 @@ entity CommandBoardLayout {
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
   constraint validUserId: self.userId != null and self.userId != "" "User ID is required"
   constraint positiveGridSize: self.gridSize > 0 "Grid size must be positive"
+
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
 
   command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"

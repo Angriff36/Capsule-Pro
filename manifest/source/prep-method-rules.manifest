@@ -19,6 +19,8 @@ entity PrepMethod {
   computed hasCertification: boolean = self.requiresCertification != ""
   computed isDeactivated: boolean = self.isActive == false
 
+  relationship hasMany videos: MethodVideo
+
   constraint requireName: self.name != "" "Prep method name is required"
   constraint positiveDuration: self.estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
 

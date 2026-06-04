@@ -24,6 +24,9 @@ entity PrepList {
   computed hasItems: boolean = self.totalItems > 0
   computed avgTimePerItem: number = self.totalItems > 0 ? (self.totalEstimatedTime / self.totalItems) : 0
 
+  relationship hasMany items: PrepListItem
+  relationship hasMany tasks: PrepTask
+
   constraint validName: self.name != null and self.name != "" "Prep list name is required"
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint validBatchMultiplier: self.batchMultiplier > 0 "Batch multiplier must be positive"
@@ -226,6 +229,12 @@ entity PrepListItem {
   computed hasAllergens: boolean = self.allergens != null and self.allergens != ""
   computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and self.dietarySubstitutions != ""
   computed isRequired: boolean = self.isOptional == false
+
+  relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
+  relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
+  relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
+  relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
 
   constraint validPrepListId: self.prepListId != null and self.prepListId != "" "Prep list ID is required"
   constraint validStationName: self.stationName != null and self.stationName != "" "Station name is required"
