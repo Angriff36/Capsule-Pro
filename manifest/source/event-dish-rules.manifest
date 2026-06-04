@@ -22,7 +22,7 @@ entity EventDish {
   constraint requireDish: self.dishId != null and self.dishId != "" "Dish ID is required"
   constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
 
-  command create(eventId: string, dishId: string, quantity: number, notes: string, courseLabel: string, sortOrder: number) {
+  command create(eventId: string, dishId: string, quantity: int, notes: string, courseLabel: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard dishId != null and dishId != "" "Dish ID is required"
     guard quantity > 0 "Quantity must be positive"
@@ -39,7 +39,7 @@ entity EventDish {
     emit EventDishCreated
   }
 
-  command updateQuantity(quantity: number) {
+  command updateQuantity(quantity: int) {
     guard self.deletedAt == null "Cannot change quantity on a removed event dish"
     guard quantity > 0 "Quantity must be positive"
 
@@ -49,7 +49,7 @@ entity EventDish {
     emit EventDishQuantityUpdated
   }
 
-  command updateCourse(courseLabel: string, sortOrder: number) {
+  command updateCourse(courseLabel: string, sortOrder: int) {
     guard self.deletedAt == null "Cannot re-course a removed event dish"
 
     mutate courseLabel = courseLabel
@@ -87,7 +87,7 @@ event EventDishCreated: "events.event-dish.created" {
   tenantId: string
   eventId: string
   dishId: string
-  quantity: number
+  quantity: int
   courseLabel: string
   createdAt: number
 }
@@ -97,7 +97,7 @@ event EventDishQuantityUpdated: "events.event-dish.quantity-updated" {
   tenantId: string
   eventId: string
   dishId: string
-  quantity: number
+  quantity: int
   updatedAt: number
 }
 
@@ -106,7 +106,7 @@ event EventDishCourseUpdated: "events.event-dish.course-updated" {
   tenantId: string
   eventId: string
   courseLabel: string
-  sortOrder: number
+  sortOrder: int
   updatedAt: number
 }
 

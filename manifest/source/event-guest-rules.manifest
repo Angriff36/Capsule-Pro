@@ -14,6 +14,7 @@ entity EventGuest {
   property dietaryRestrictions: string = ""
   property allergenRestrictions: string = ""
   property notes: string = ""
+  property declineReason: string = ""
   property specialMealRequired: boolean = false
   property specialMealNotes: string = ""
   property tableAssignment: string = ""
@@ -98,7 +99,7 @@ entity EventGuest {
 
     mutate rsvpStatus = "declined"
     mutate rsvpAt = now()
-    mutate notes = reason
+    mutate declineReason = reason
     mutate updatedAt = now()
 
     emit EventGuestRsvpDeclined

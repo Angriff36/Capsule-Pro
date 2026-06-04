@@ -20,6 +20,7 @@ entity EventContract {
   property signedAt: datetime
   property createdAt: datetime = now()
   property updatedAt: datetime = now()
+  property canceledBy: string = ""
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -39,7 +40,7 @@ entity EventContract {
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validStatus: self.status in ["draft", "sent", "viewed", "signed", "expired", "cancelled"] "Status must be valid"
 
-  command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+  command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard clientId != null and clientId != "" "Client ID is required"
 
@@ -58,7 +59,7 @@ entity EventContract {
     emit ContractCreated
   }
 
-  command update(title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+  command update(title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard self.status != "signed" "Cannot modify a signed contract"
 
     mutate title = title
@@ -118,6 +119,7 @@ entity EventContract {
     guard self.status != "cancelled" "Contract is already cancelled"
 
     mutate status = "cancelled"
+    mutate canceledBy = canceledBy
     mutate updatedAt = now()
 
     emit ContractCancelled

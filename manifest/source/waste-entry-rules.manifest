@@ -36,7 +36,7 @@ entity WasteEntry {
   constraint positiveCost: self.unitCost >= 0 "Unit cost cannot be negative"
   constraint validStatus: self.status in ["logged", "approved", "voided"] "Invalid waste entry status"
 
-  command create(inventoryItemId: string, reasonId: number, quantity: number, unitId: number, locationId: string, eventId: string, loggedBy: string, unitCost: number, notes: string) {
+  command create(inventoryItemId: string, reasonId: int, quantity: number, unitId: number, locationId: string, eventId: string, loggedBy: string, unitCost: number, notes: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item is required"
     guard reasonId != null and reasonId > 0 "Waste reason is required"
     guard quantity != null and quantity > 0 "Quantity must be positive"

@@ -65,14 +65,14 @@ entity Event {
   // already enforced on the relevant commands: `cancel` guards
   // status != completed/archived/cancelled; `archive` guards status == completed.
 
-  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
+  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string) {
     // All params are optional — AI and forms can provide any subset
     // Defaults are applied at the store layer (EventPrismaStore.create)
     mutate clientId = clientId
     mutate eventNumber = eventNumber
     mutate title = title != null and title != "" ? title : "Untitled Event"
     mutate eventType = eventType != null and eventType != "" ? eventType : "general"
-    mutate eventDate = eventDate != null and eventDate > 0 ? eventDate : now()
+    mutate eventDate = eventDate != null ? eventDate : now()
     mutate guestCount = guestCount != null and guestCount > 0 ? guestCount : 1
     mutate venueName = venueName
     mutate venueAddress = venueAddress
@@ -85,7 +85,7 @@ entity Event {
     emit EventCreated
   }
 
-  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
+  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
@@ -93,7 +93,7 @@ entity Event {
     guard eventNumber != null and eventNumber != "" "Event number is required"
     guard title != null and title != "" "Event title is required"
     guard eventType != null and eventType != "" "Event type is required"
-    guard eventDate > 0 "Event date is required"
+    guard eventDate != null "Event date is required"
     guard guestCount > 0 "Guest count must be positive"
     guard status == "" or status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"
 
@@ -171,11 +171,11 @@ entity Event {
     emit EventGuestCountUpdated
   }
 
-  command updateDate(newEventDate: number) {
+  command updateDate(newEventDate: datetime) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.status != "completed" "Cannot update completed event"
-    guard newEventDate != null and newEventDate > 0 "Event date is required"
+    guard newEventDate != null "Event date is required"
 
     mutate eventDate = newEventDate
     mutate updatedAt = now()

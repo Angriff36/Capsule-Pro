@@ -8,7 +8,7 @@ entity RolePolicy {
   property required tenantId: string
   property required roleId: string
   property roleName: string = ""
-  property permissions: string = "[]"
+  property permissions: array<string> = []
   property description: string = ""
   property isActive: boolean = true
   property createdAt: datetime = now()
@@ -16,11 +16,11 @@ entity RolePolicy {
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
-  computed hasPermissions: boolean = self.permissions != "[]" and self.permissions != ""
+  computed hasPermissions: boolean = length(self.permissions) > 0
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 
-  command create(roleId: string, roleName: string, permissions: string, description: string) {
+  command create(roleId: string, roleName: string, permissions: array<string>, description: string) {
     guard roleId != null and roleId != "" "Role ID is required"
 
     mutate roleId = roleId
@@ -34,7 +34,7 @@ entity RolePolicy {
     emit RolePolicyCreated
   }
 
-  command update(roleName: string, permissions: string, description: string, isActive: boolean) {
+  command update(roleName: string, permissions: array<string>, description: string, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted role policy"
 
     mutate roleName = roleName
