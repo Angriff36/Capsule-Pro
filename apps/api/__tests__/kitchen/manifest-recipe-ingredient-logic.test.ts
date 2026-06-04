@@ -23,71 +23,11 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { EntityInstance, Store } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
-
-/**
- * Minimal Map-backed store that actually persists, so command mutations and
- * computed evaluations can be read back. The repo's durable entities require a
- * storeProvider (durable is backend-neutral); the production path uses a
- * Prisma-backed adapter, but these IR-semantics tests need no database.
- * Mirrors the upstream `MemoryStore` (getAll/getById/create/update/delete/clear).
- */
-class InMemoryStore implements Store {
-  private readonly items = new Map<string, EntityInstance>();
-
-  async getAll(): Promise<EntityInstance[]> {
-    return Array.from(this.items.values());
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    return this.items.get(id);
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const id = (data.id as string) ?? crypto.randomUUID();
-    const item = { ...data, id } as EntityInstance;
-    this.items.set(id, item);
-    return item;
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    const existing = this.items.get(id);
-    if (!existing) {
-      return undefined;
-    }
-    const updated = { ...existing, ...data, id } as EntityInstance;
-    this.items.set(id, updated);
-    return updated;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    return this.items.delete(id);
-  }
-
-  async clear(): Promise<void> {
-    this.items.clear();
-  }
-}
-
-/** One persistent in-memory store per entity for the lifetime of a runtime. */
-function inMemoryStoreProvider(): (entityName: string) => Store {
-  const stores = new Map<string, InMemoryStore>();
-  return (entityName: string) => {
-    let store = stores.get(entityName);
-    if (!store) {
-      store = new InMemoryStore();
-      stores.set(entityName, store);
-    }
-    return store;
-  };
-}
+import { inMemoryStoreProvider } from "../test-helpers";
 
 async function getRuntime(manifestFile: string) {
   const manifestPath = join(
