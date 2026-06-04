@@ -18,8 +18,7 @@ entity WorkOrder {
   property assignedTo: string = ""
   // completedAt: nullable — only set when work finishes
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
@@ -68,8 +67,6 @@ entity WorkOrder {
     mutate description = description
     mutate scheduledDate = scheduledDate
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WorkOrderCreated
   }
@@ -82,7 +79,6 @@ entity WorkOrder {
     mutate assignedTo = userId
     mutate scheduledDate = scheduledDate
     mutate status = "assigned"
-    mutate updatedAt = now()
 
     emit WorkOrderAssigned
   }
@@ -93,7 +89,6 @@ entity WorkOrder {
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit WorkOrderStarted
   }
@@ -104,7 +99,6 @@ entity WorkOrder {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit WorkOrderCompleted
   }
@@ -114,7 +108,6 @@ entity WorkOrder {
     guard reason != null and reason != "" "Cancellation reason is required"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit WorkOrderCancelled
   }
@@ -124,7 +117,6 @@ entity WorkOrder {
     guard not (self.status in ["completed", "cancelled"]) "Cannot reprioritize a closed work order"
 
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit WorkOrderPriorityUpdated
   }
@@ -134,7 +126,6 @@ entity WorkOrder {
     guard not (self.status in ["completed", "cancelled"]) "Cannot reschedule a closed work order"
 
     mutate scheduledDate = scheduledDate
-    mutate updatedAt = now()
 
     emit WorkOrderRescheduled
   }

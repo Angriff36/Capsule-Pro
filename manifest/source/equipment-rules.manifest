@@ -22,8 +22,7 @@ entity Equipment {
   property condition: string = "good"
   property notes: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOverdueForMaintenance: boolean = self.nextMaintenanceDate != null and now() > self.nextMaintenanceDate
   computed daysUntilMaintenance: number = self.nextMaintenanceDate != null ? daysBetween(now(), self.nextMaintenanceDate) : -1
@@ -88,7 +87,6 @@ entity Equipment {
     }
 
     mutate nextMaintenanceDate = scheduledDate
-    mutate updatedAt = now()
 
     emit EquipmentMaintenanceScheduled
   }
@@ -100,7 +98,6 @@ entity Equipment {
     mutate lastMaintenanceDate = maintenanceDate
     mutate nextMaintenanceDate = addDays(maintenanceDate, self.maintenanceIntervalDays)
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit EquipmentMaintenanceRecorded
   }
@@ -120,7 +117,6 @@ entity Equipment {
     }
 
     mutate status = newStatus
-    mutate updatedAt = now()
 
     emit EquipmentStatusUpdated
   }
@@ -138,7 +134,6 @@ entity Equipment {
     }
 
     mutate condition = newCondition
-    mutate updatedAt = now()
 
     emit EquipmentConditionUpdated
   }
@@ -147,7 +142,6 @@ entity Equipment {
     guard hours != null and hours > 0 "Usage hours must be positive"
 
     mutate usageHours = self.usageHours + hours
-    mutate updatedAt = now()
 
     emit EquipmentUsageRecorded
   }
@@ -176,8 +170,6 @@ entity Equipment {
     mutate lastMaintenanceDate = 0
     mutate nextMaintenanceDate = addDays(now(), maintenanceIntervalDays)
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EquipmentCreated
   }
@@ -196,7 +188,6 @@ entity Equipment {
 
     mutate status = "retired"
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit EquipmentRetired
   }
@@ -222,8 +213,7 @@ entity MaintenanceWorkOrder {
   property completedDate: datetime
   property partsUsed: string = ""
   property vendorId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate
   computed daysUntilDue: number = self.scheduledDate != null ? daysBetween(now(), self.scheduledDate) : -1
@@ -250,7 +240,6 @@ entity MaintenanceWorkOrder {
     mutate scheduledDate = scheduledDate
     mutate estimatedCost = estimatedCost
     mutate status = "assigned"
-    mutate updatedAt = now()
 
     emit MaintenanceWorkOrderAssigned
   }
@@ -259,7 +248,6 @@ entity MaintenanceWorkOrder {
     guard self.status in ["assigned", "open"] "Work order must be assigned or open to start"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit MaintenanceWorkOrderStarted
   }
@@ -271,7 +259,6 @@ entity MaintenanceWorkOrder {
     mutate actualCost = actualCost
     mutate partsUsed = partsUsed
     mutate completedDate = now()
-    mutate updatedAt = now()
 
     emit MaintenanceWorkOrderCompleted
   }
@@ -291,7 +278,6 @@ entity MaintenanceWorkOrder {
     }
 
     mutate status = newStatus
-    mutate updatedAt = now()
 
     emit MaintenanceWorkOrderStatusUpdated
   }
@@ -323,8 +309,6 @@ entity MaintenanceWorkOrder {
     mutate status = "open"
     mutate actualCost = 0
     mutate completedDate = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit MaintenanceWorkOrderCreated
   }

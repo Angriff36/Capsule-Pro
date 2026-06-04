@@ -19,8 +19,7 @@ entity WasteEntry {
   property unitCost: money = 0
   property totalCost: money = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasLocation: boolean = self.locationId != ""
@@ -54,8 +53,6 @@ entity WasteEntry {
     mutate notes = notes
     mutate status = "logged"
     mutate loggedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WasteEntryCreated
   }
@@ -78,7 +75,6 @@ entity WasteEntry {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit WasteEntryApproved
   }
@@ -93,7 +89,6 @@ entity WasteEntry {
 
     mutate status = "voided"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit WasteEntryVoided
   }
@@ -109,7 +104,6 @@ entity WasteEntry {
     mutate notes = notes
     mutate unitCost = unitCost
     mutate totalCost = quantity * unitCost
-    mutate updatedAt = now()
 
     emit WasteEntryUpdated
   }
@@ -118,7 +112,6 @@ entity WasteEntry {
     guard self.deletedAt == null "Waste entry is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit WasteEntryDeleted
   }

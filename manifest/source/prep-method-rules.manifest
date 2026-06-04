@@ -12,8 +12,7 @@ entity PrepMethod {
   property estimatedDurationMinutes: decimal = 0
   property requiresCertification: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasDuration: boolean = self.estimatedDurationMinutes > 0
@@ -41,8 +40,6 @@ entity PrepMethod {
     mutate estimatedDurationMinutes = estimatedDurationMinutes
     mutate requiresCertification = requiresCertification
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepMethodCreated
   }
@@ -57,7 +54,6 @@ entity PrepMethod {
     mutate description = description
     mutate estimatedDurationMinutes = estimatedDurationMinutes
     mutate requiresCertification = requiresCertification
-    mutate updatedAt = now()
 
     emit PrepMethodUpdated
   }
@@ -75,7 +71,6 @@ entity PrepMethod {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit PrepMethodDeactivated
   }
@@ -85,7 +80,6 @@ entity PrepMethod {
     guard self.isActive == false "Prep method is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit PrepMethodReactivated
   }

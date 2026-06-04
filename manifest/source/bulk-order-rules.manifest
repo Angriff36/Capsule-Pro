@@ -23,8 +23,7 @@ entity BulkOrderRule {
   property effectiveFrom: datetime
   property effectiveTo: datetime
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -68,8 +67,6 @@ entity BulkOrderRule {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BulkOrderRuleCreated
   }
@@ -104,7 +101,6 @@ entity BulkOrderRule {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit BulkOrderRuleUpdated
   }
@@ -115,7 +111,6 @@ entity BulkOrderRule {
     guard self.isActive == false "Rule is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit BulkOrderRuleActivated
   }
@@ -126,7 +121,6 @@ entity BulkOrderRule {
     guard self.isActive "Rule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit BulkOrderRuleSuspended
   }
@@ -137,7 +131,6 @@ entity BulkOrderRule {
     guard newPriority >= 0 "Priority must be non-negative"
 
     mutate priority = newPriority
-    mutate updatedAt = now()
 
     emit BulkOrderRulePriorityAdjusted
   }
@@ -155,7 +148,6 @@ entity BulkOrderRule {
 
     mutate isActive = false
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit BulkOrderRuleDeactivated
   }

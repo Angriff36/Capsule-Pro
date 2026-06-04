@@ -16,8 +16,7 @@ entity StorageLocation {
   property required storageType: string
   property temperatureZone: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeactivated: boolean = self.isActive == false
@@ -36,8 +35,6 @@ entity StorageLocation {
     mutate storageType = storageType
     mutate temperatureZone = temperatureZone
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit StorageLocationCreated
   }
@@ -50,7 +47,6 @@ entity StorageLocation {
     mutate name = name
     mutate storageType = storageType
     mutate temperatureZone = temperatureZone
-    mutate updatedAt = now()
 
     emit StorageLocationUpdated
   }
@@ -59,7 +55,6 @@ entity StorageLocation {
     guard self.isActive "Storage location is already deactivated"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit StorageLocationDeactivated
   }
@@ -81,8 +76,7 @@ entity InventoryStock {
   property required quantityOnHand: decimal = 0
   property required unitId: string
   property lastCountedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isZeroStock: boolean = self.quantityOnHand <= 0
 
@@ -107,8 +101,6 @@ entity InventoryStock {
     mutate quantityOnHand = quantityOnHand
     mutate unitId = unitId
     mutate lastCountedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventoryStockCreated
   }
@@ -127,7 +119,6 @@ entity InventoryStock {
     }
 
     mutate quantityOnHand = self.quantityOnHand + delta
-    mutate updatedAt = now()
 
     emit InventoryStockAdjusted
   }
@@ -148,7 +139,6 @@ entity InventoryStock {
 
     mutate quantityOnHand = newQuantity
     mutate lastCountedAt = now()
-    mutate updatedAt = now()
 
     emit InventoryStockRecounted
   }
@@ -174,8 +164,7 @@ entity InventoryAlert {
   property resolvedAt: datetime
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "active"
   computed isAcknowledged: boolean = self.status == "acknowledged"
@@ -197,8 +186,6 @@ entity InventoryAlert {
     mutate message = message
     mutate status = "active"
     mutate triggeredAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventoryAlertTriggered
   }
@@ -210,7 +197,6 @@ entity InventoryAlert {
     guard escalatedBy != null and escalatedBy != "" "Escalating user is required"
 
     mutate severity = newSeverity
-    mutate updatedAt = now()
 
     emit InventoryAlertEscalated
   }
@@ -222,7 +208,6 @@ entity InventoryAlert {
     mutate status = "acknowledged"
     mutate acknowledgedBy = acknowledgedBy
     mutate acknowledgedAt = now()
-    mutate updatedAt = now()
 
     emit InventoryAlertAcknowledged
   }
@@ -234,7 +219,6 @@ entity InventoryAlert {
     mutate status = "resolved"
     mutate resolvedBy = resolvedBy
     mutate resolvedAt = now()
-    mutate updatedAt = now()
 
     emit InventoryAlertResolved
   }
@@ -259,8 +243,7 @@ entity InventoryForecast {
   property publishedAt: datetime
   property approvedAt: datetime
   property approvedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isHighConfidence: boolean = self.confidence >= 0.8
   computed isLowConfidence: boolean = self.confidence < 0.5
@@ -282,8 +265,6 @@ entity InventoryForecast {
     mutate projectedQuantity = projectedQuantity
     mutate confidence = confidence
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventoryForecastCreated
   }
@@ -295,7 +276,6 @@ entity InventoryForecast {
 
     mutate projectedQuantity = projectedQuantity
     mutate confidence = confidence
-    mutate updatedAt = now()
 
     emit InventoryForecastUpdated
   }
@@ -314,7 +294,6 @@ entity InventoryForecast {
 
     mutate status = "published"
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit InventoryForecastPublished
   }
@@ -327,7 +306,6 @@ entity InventoryForecast {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit InventoryForecastApproved
   }
@@ -347,8 +325,7 @@ entity ForecastInput {
   property required inputDate: datetime
   property required actualUsage: decimal = 0
   property required source: string
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint nonNegativeUsage: self.actualUsage >= 0 "Actual usage cannot be negative"
   constraint requireSource: self.source != "" "Data source is required"
@@ -363,8 +340,6 @@ entity ForecastInput {
     mutate inputDate = inputDate
     mutate actualUsage = actualUsage
     mutate source = source
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ForecastInputCreated
   }
@@ -384,8 +359,7 @@ entity ReorderSuggestion {
   property required suggestedQuantity: decimal = 0
   property required reason: string
   property required status: string = "pending"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isAccepted: boolean = self.status == "accepted"
@@ -403,8 +377,6 @@ entity ReorderSuggestion {
     mutate suggestedQuantity = suggestedQuantity
     mutate reason = reason
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ReorderSuggestionCreated
   }
@@ -414,7 +386,6 @@ entity ReorderSuggestion {
     guard acceptedBy != null and acceptedBy != "" "Accepting user is required"
 
     mutate status = "accepted"
-    mutate updatedAt = now()
 
     emit ReorderSuggestionAccepted
   }
@@ -424,7 +395,6 @@ entity ReorderSuggestion {
     guard dismissedBy != null and dismissedBy != "" "Dismissing user is required"
 
     mutate status = "dismissed"
-    mutate updatedAt = now()
 
     emit ReorderSuggestionDismissed
   }
@@ -436,7 +406,6 @@ entity ReorderSuggestion {
     guard triggeredBy != null and triggeredBy != "" "Trigger source is required"
 
     mutate status = "accepted"
-    mutate updatedAt = now()
 
     emit ReorderSuggestionAutoAccepted
   }
@@ -458,8 +427,7 @@ entity VendorContact {
   property phone: string = ""
   property role: string = ""
   property isPrimary: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireName: self.name != "" "Contact name is required"
@@ -475,8 +443,6 @@ entity VendorContact {
     mutate phone = phone
     mutate role = role
     mutate isPrimary = isPrimary
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VendorContactCreated
   }
@@ -489,7 +455,6 @@ entity VendorContact {
     mutate phone = phone
     mutate role = role
     mutate isPrimary = isPrimary
-    mutate updatedAt = now()
 
     emit VendorContactUpdated
   }
@@ -498,7 +463,6 @@ entity VendorContact {
     guard removedBy != null and removedBy != "" "Removing user is required"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit VendorContactRemoved
   }
@@ -520,8 +484,7 @@ entity VendorRating {
   property comment: string = ""
   property ratedAt: datetime
   property ratedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isHighScore: boolean = self.score >= 4
   computed isLowScore: boolean = self.score < 2
@@ -549,8 +512,6 @@ entity VendorRating {
     mutate comment = comment
     mutate ratedBy = ratedBy
     mutate ratedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VendorRatingCreated
   }
@@ -561,7 +522,6 @@ entity VendorRating {
     mutate score = score
     mutate comment = comment
     mutate ratedAt = now()
-    mutate updatedAt = now()
 
     emit VendorRatingUpdated
   }
@@ -581,8 +541,7 @@ entity InventoryTransferItem {
   property required inventoryItemId: string
   property required quantity: decimal = 0
   property required unitId: string
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isZeroQuantity: boolean = self.quantity <= 0
 
@@ -600,8 +559,6 @@ entity InventoryTransferItem {
     mutate inventoryItemId = inventoryItemId
     mutate quantity = quantity
     mutate unitId = unitId
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TransferItemAdded
   }
@@ -610,7 +567,6 @@ entity InventoryTransferItem {
     guard quantity != null and quantity > 0 "Quantity must be positive"
 
     mutate quantity = quantity
-    mutate updatedAt = now()
 
     emit TransferItemQuantityUpdated
   }
@@ -618,7 +574,6 @@ entity InventoryTransferItem {
   command removeItem(removedBy: string) {
     guard removedBy != null and removedBy != "" "Removing user is required"
 
-    mutate updatedAt = now()
 
     emit TransferItemRemoved
   }
@@ -640,8 +595,7 @@ entity ProcurementBudget {
   property required budgetAmount: money = 0
   property spentAmount: money = 0
   property required status: string = "active"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed remainingAmount: decimal = self.budgetAmount - self.spentAmount
   computed utilizationPct: decimal = percent(self.spentAmount, self.budgetAmount)
@@ -675,8 +629,6 @@ entity ProcurementBudget {
     mutate budgetAmount = budgetAmount
     mutate spentAmount = 0
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProcurementBudgetCreated
   }
@@ -697,7 +649,6 @@ entity ProcurementBudget {
 
     mutate name = name
     mutate budgetAmount = budgetAmount
-    mutate updatedAt = now()
 
     emit ProcurementBudgetUpdated
   }
@@ -707,7 +658,6 @@ entity ProcurementBudget {
     guard amount != null and amount > 0 "Spend amount must be positive"
 
     mutate spentAmount = self.spentAmount + amount
-    mutate updatedAt = now()
 
     emit ProcurementBudgetSpendRecorded
   }
@@ -717,7 +667,6 @@ entity ProcurementBudget {
     guard closedBy != null and closedBy != "" "Closing user is required"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit ProcurementBudgetClosed
   }
@@ -740,8 +689,7 @@ entity ProcurementBudgetAlert {
   property acknowledgedAt: datetime
   property acknowledgedBy: string = ""
   property isAcknowledged: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isCritical: boolean = self.thresholdPct >= 100
 
@@ -757,8 +705,6 @@ entity ProcurementBudgetAlert {
     mutate message = message
     mutate triggeredAt = now()
     mutate isAcknowledged = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProcurementBudgetAlertTriggered
   }
@@ -770,7 +716,6 @@ entity ProcurementBudgetAlert {
     mutate isAcknowledged = true
     mutate acknowledgedBy = acknowledgedBy
     mutate acknowledgedAt = now()
-    mutate updatedAt = now()
 
     emit ProcurementBudgetAlertAcknowledged
   }
@@ -792,8 +737,7 @@ entity AuditSchedule {
   property nextRunAt: datetime
   property lastRunAt: datetime
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isDeactivated: boolean = self.isActive == false
 
@@ -817,8 +761,6 @@ entity AuditSchedule {
     mutate frequency = frequency
     mutate nextRunAt = nextRunAt
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AuditScheduleCreated
   }
@@ -831,7 +773,6 @@ entity AuditSchedule {
     mutate name = name
     mutate frequency = frequency
     mutate nextRunAt = nextRunAt
-    mutate updatedAt = now()
 
     emit AuditScheduleUpdated
   }
@@ -840,7 +781,6 @@ entity AuditSchedule {
     guard self.isActive "Audit schedule is already deactivated"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit AuditScheduleDeactivated
   }
@@ -849,7 +789,6 @@ entity AuditSchedule {
     guard self.isDeactivated "Audit schedule is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit AuditScheduleActivated
   }
@@ -861,7 +800,6 @@ entity AuditSchedule {
 
     mutate lastRunAt = now()
     mutate nextRunAt = nextRunAt
-    mutate updatedAt = now()
 
     emit AuditScheduleRunRecorded
   }

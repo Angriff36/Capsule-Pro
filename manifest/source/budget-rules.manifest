@@ -17,8 +17,7 @@ entity Budget {
   property approvedBy: string = ""
   property approvedAt: datetime
   property lockedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed remainingAmount: number = self.allocatedAmount - self.spentAmount
   computed percentUsed: number = percent(self.spentAmount, self.allocatedAmount)
@@ -50,8 +49,6 @@ entity Budget {
     mutate status = "draft"
     mutate allocatedAmount = totalAmount
     mutate spentAmount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BudgetCreated
   }
@@ -60,7 +57,6 @@ entity Budget {
     guard self.status != "active" "Cannot delete an active budget"
 
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit BudgetDeleted
   }
@@ -75,7 +71,6 @@ entity Budget {
     mutate allocatedAmount = allocatedAmount
     mutate category = category
     mutate departmentId = departmentId
-    mutate updatedAt = now()
 
     emit BudgetUpdated
   }
@@ -95,7 +90,6 @@ entity Budget {
     mutate status = "active"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit BudgetApproved
   }
@@ -106,7 +100,6 @@ entity Budget {
 
     mutate status = "closed"
     mutate lockedAt = now()
-    mutate updatedAt = now()
 
     emit BudgetLocked
   }
@@ -127,7 +120,6 @@ entity Budget {
     }
 
     mutate spentAmount = self.spentAmount + amount
-    mutate updatedAt = now()
 
     emit BudgetLineItemAdded
   }
@@ -146,7 +138,6 @@ entity Budget {
     }
 
     mutate spentAmount = actualSpent
-    mutate updatedAt = now()
 
     emit BudgetVarianceRecorded
   }
@@ -154,7 +145,6 @@ entity Budget {
   command refresh() {
     guard self.status == "active" "Only active budgets can be refreshed"
 
-    mutate updatedAt = now()
 
     emit BudgetRefreshed
   }

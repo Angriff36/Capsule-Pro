@@ -21,8 +21,7 @@ entity Station {
   property maintenanceStartAt: datetime
   property currentTaskCount: int = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isAtCapacity: boolean = self.currentTaskCount >= self.capacitySimultaneousTasks
   computed isOverCapacity: boolean = self.currentTaskCount > self.capacitySimultaneousTasks
@@ -57,8 +56,6 @@ entity Station {
     mutate isActive = true
     mutate inMaintenance = false
     mutate currentTaskCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit StationCreated
   }
@@ -89,7 +86,6 @@ entity Station {
     }
 
     mutate currentTaskCount = self.currentTaskCount + 1
-    mutate updatedAt = now()
 
     emit StationTaskAssigned
   }
@@ -105,7 +101,6 @@ entity Station {
     }
 
     mutate currentTaskCount = self.currentTaskCount > 0 ? self.currentTaskCount - 1 : 0
-    mutate updatedAt = now()
 
     emit StationTaskRemoved
   }
@@ -124,7 +119,6 @@ entity Station {
     }
 
     mutate capacitySimultaneousTasks = newCapacity
-    mutate updatedAt = now()
 
     emit StationCapacityUpdated
   }
@@ -142,7 +136,6 @@ entity Station {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit StationDeactivated
   }
@@ -153,7 +146,6 @@ entity Station {
     mutate isActive = true
     mutate inMaintenance = false
     mutate maintenanceReason = ""
-    mutate updatedAt = now()
 
     emit StationActivated
   }
@@ -162,7 +154,6 @@ entity Station {
     guard equipmentList != null "Equipment list cannot be null"
 
     mutate equipmentList = equipmentList
-    mutate updatedAt = now()
 
     emit StationEquipmentUpdated
   }
@@ -185,7 +176,6 @@ entity Station {
     mutate inMaintenance = true
     mutate maintenanceReason = reason
     mutate maintenanceStartAt = now()
-    mutate updatedAt = now()
 
     emit StationMaintenanceStarted
   }
@@ -197,7 +187,6 @@ entity Station {
     mutate inMaintenance = false
     mutate maintenanceReason = ""
     mutate maintenanceStartAt = null
-    mutate updatedAt = now()
 
     emit StationMaintenanceEnded
   }

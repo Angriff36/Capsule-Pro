@@ -22,8 +22,7 @@ entity Ingredient {
   property isRecalled: boolean = false
   property recallReason: string = ""
   property recalledAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isExpirable: boolean = self.shelfLifeDays > 0
@@ -62,8 +61,6 @@ entity Ingredient {
     mutate allergens = allergens
     mutate isActive = true
     mutate isRecalled = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit IngredientCreated
   }
@@ -77,7 +74,6 @@ entity Ingredient {
     mutate defaultUnitId = defaultUnitId
     mutate densityGPerMl = densityGPerMl
     mutate storageInstructions = storageInstructions
-    mutate updatedAt = now()
 
     emit IngredientUpdated
   }
@@ -95,7 +91,6 @@ entity Ingredient {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit IngredientDeactivated
   }
@@ -106,7 +101,6 @@ entity Ingredient {
     guard self.isRecalled == false "Cannot reactivate a recalled ingredient — clear recall first"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit IngredientReactivated
   }
@@ -115,7 +109,6 @@ entity Ingredient {
     guard self.isActive "Cannot update allergens on a deactivated ingredient"
 
     mutate allergens = allergens
-    mutate updatedAt = now()
 
     emit IngredientAllergensUpdated
   }
@@ -126,7 +119,6 @@ entity Ingredient {
 
     mutate shelfLifeDays = shelfLifeDays
     mutate storageInstructions = storageInstructions
-    mutate updatedAt = now()
 
     emit IngredientShelfLifeUpdated
   }
@@ -147,7 +139,6 @@ entity Ingredient {
     mutate currentLotNumber = lotNumber
     mutate currentLotReceivedAt = now()
     mutate currentLotExpiresAt = expiresAt
-    mutate updatedAt = now()
 
     emit IngredientLotRecorded
   }
@@ -161,7 +152,6 @@ entity Ingredient {
     mutate recallReason = recallReason
     mutate recalledAt = now()
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit IngredientRecallFlagged
   }
@@ -174,7 +164,6 @@ entity Ingredient {
     mutate isRecalled = false
     mutate recallReason = ""
     mutate recalledAt = null
-    mutate updatedAt = now()
 
     emit IngredientRecallCleared
   }

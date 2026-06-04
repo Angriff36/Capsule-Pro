@@ -15,8 +15,7 @@ entity KitchenTask {
   property assignedTo: string = ""
   property dueDate: datetime
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"
@@ -49,7 +48,6 @@ entity KitchenTask {
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit KitchenTaskClaimed
   }
@@ -60,7 +58,6 @@ entity KitchenTask {
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit KitchenTaskStarted
   }
@@ -71,7 +68,6 @@ entity KitchenTask {
 
     mutate status = "done"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskCompleted
   }
@@ -82,7 +78,6 @@ entity KitchenTask {
 
     mutate status = "pending"
     mutate assignedTo = ""
-    mutate updatedAt = now()
 
     emit KitchenTaskReleased
   }
@@ -93,7 +88,6 @@ entity KitchenTask {
     guard self.status in ["pending", "in_progress"]
 
     mutate assignedTo = newUserId
-    mutate updatedAt = now()
 
     emit KitchenTaskReassigned
   }
@@ -102,7 +96,6 @@ entity KitchenTask {
     guard priority >= 1 and priority <= 5
 
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit KitchenTaskPriorityUpdated
   }
@@ -111,7 +104,6 @@ entity KitchenTask {
     guard complexity >= 1 and complexity <= 5
 
     mutate complexity = complexity
-    mutate updatedAt = now()
 
     emit KitchenTaskComplexityUpdated
   }
@@ -120,7 +112,6 @@ entity KitchenTask {
     guard title != null and title != "" "Task title is required"
 
     mutate title = title
-    mutate updatedAt = now()
 
     emit KitchenTaskTitleUpdated
   }
@@ -129,21 +120,18 @@ entity KitchenTask {
     guard summary != null "Task summary is required"
 
     mutate summary = summary
-    mutate updatedAt = now()
 
     emit KitchenTaskSummaryUpdated
   }
 
   command updateDueDate(dueDate: number) {
     mutate dueDate = dueDate
-    mutate updatedAt = now()
 
     emit KitchenTaskDueDateUpdated
   }
 
   command updateTags(tags: string) {
     mutate tags = tags
-    mutate updatedAt = now()
 
     emit KitchenTaskTagsUpdated
   }
@@ -153,7 +141,6 @@ entity KitchenTask {
     guard not (self.tags contains tag) "Tag already exists"
 
     mutate tags = self.tags == "" ? tag : self.tags + "," + tag
-    mutate updatedAt = now()
 
     emit KitchenTaskTagAdded
   }
@@ -163,7 +150,6 @@ entity KitchenTask {
     guard self.tags contains tag "Tag not found"
 
     mutate tags = removeTagFromString(self.tags, tag)
-    mutate updatedAt = now()
 
     emit KitchenTaskTagRemoved
   }
@@ -172,7 +158,6 @@ entity KitchenTask {
     guard self.status != "done" and self.status != "cancelled"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit KitchenTaskCanceled
   }
@@ -190,8 +175,6 @@ entity KitchenTask {
     mutate complexity = complexity
     mutate tags = tags
     mutate dueDate = dueDate
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskCreated
   }

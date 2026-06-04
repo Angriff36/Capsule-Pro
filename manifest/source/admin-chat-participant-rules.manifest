@@ -9,29 +9,25 @@ entity AdminChatParticipant {
   property userId: string = ""
   property archivedAt: datetime
   property clearedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isArchived: boolean = self.archivedAt != null
 
   command archive() {
     mutate archivedAt = now()
-    mutate updatedAt = now()
 
     emit ChatParticipantArchived
   }
 
   command unarchive() {
     mutate archivedAt = 0
-    mutate updatedAt = now()
 
     emit ChatParticipantUnarchived
   }
 
   command clearHistory() {
     mutate clearedAt = now()
-    mutate updatedAt = now()
 
     emit ChatHistoryCleared
   }

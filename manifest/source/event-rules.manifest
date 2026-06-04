@@ -26,8 +26,7 @@ entity Event {
   property venueAddress: string = ""
   property notes: string = ""
   property required tags: array<string>
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -83,8 +82,6 @@ entity Event {
     mutate ticketTier = ticketTier
     mutate eventFormat = eventFormat
     mutate status = status != null and status != "" ? status : "confirmed"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventCreated
   }
@@ -116,7 +113,6 @@ entity Event {
     mutate ticketTier = ticketTier
     mutate eventFormat = eventFormat
     mutate status = status != null and status != "" ? status : self.status
-    mutate updatedAt = now()
 
     emit EventUpdated
   }
@@ -133,7 +129,6 @@ entity Event {
     }
 
     mutate status = "confirmed"
-    mutate updatedAt = now()
 
     emit EventConfirmed
   }
@@ -144,7 +139,6 @@ entity Event {
     guard self.status != "cancelled" "Event is already cancelled"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit EventCancelled
   }
@@ -153,7 +147,6 @@ entity Event {
     guard self.status == "completed" "Can only archive completed events"
 
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit EventArchived
   }
@@ -174,7 +167,6 @@ entity Event {
     }
 
     mutate guestCount = newGuestCount
-    mutate updatedAt = now()
 
     emit EventGuestCountUpdated
   }
@@ -186,7 +178,6 @@ entity Event {
     guard newEventDate != null "Event date is required"
 
     mutate eventDate = newEventDate
-    mutate updatedAt = now()
 
     emit EventDateUpdated
   }
@@ -209,7 +200,6 @@ entity Event {
     mutate venueId = newVenueId
     mutate venueName = newVenueName
     mutate venueAddress = newVenueAddress
-    mutate updatedAt = now()
 
     emit EventLocationUpdated
   }
@@ -218,7 +208,6 @@ entity Event {
     guard self.status == "confirmed" "Can only finalize confirmed events"
 
     mutate status = "completed"
-    mutate updatedAt = now()
 
     emit EventFinalized
   }
@@ -227,7 +216,6 @@ entity Event {
     guard self.status == "completed" "Can only unfinalize completed events"
 
     mutate status = "confirmed"
-    mutate updatedAt = now()
 
     emit EventUnfinalized
   }
@@ -262,8 +250,7 @@ entity EventProfitability {
   property calculatedAt: datetime
   property calculationMethod: string = "auto"
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isProfitable: boolean = self.actualGrossMargin > 0
@@ -302,8 +289,6 @@ entity EventProfitability {
     mutate notes = notes
     mutate calculationMethod = "auto"
     mutate calculatedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventProfitabilityCreated
   }
@@ -320,7 +305,6 @@ entity EventProfitability {
     mutate laborCostVariance = actualLaborCost - self.budgetedLaborCost
     mutate totalCostVariance = (actualFoodCost + actualLaborCost + actualOverhead) - self.budgetedTotalCost
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit EventProfitabilityUpdated
   }
@@ -332,7 +316,6 @@ entity EventProfitability {
     mutate totalCostVariance = self.actualTotalCost - self.budgetedTotalCost
     mutate calculationMethod = calculationMethod
     mutate calculatedAt = now()
-    mutate updatedAt = now()
 
     emit EventProfitabilityRecalculated
   }
@@ -353,8 +336,7 @@ entity EventSummary {
   property overallSummary: string = ""
   property generatedAt: datetime
   property generationDurationMs: int = 0
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasHighlights: boolean = self.highlights != "[]" and self.highlights != ""
@@ -374,8 +356,6 @@ entity EventSummary {
     mutate insights = insights
     mutate overallSummary = overallSummary
     mutate generatedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventSummaryCreated
   }
@@ -387,14 +367,12 @@ entity EventSummary {
     mutate clientFeedback = clientFeedback
     mutate insights = insights
     mutate overallSummary = overallSummary
-    mutate updatedAt = now()
 
     emit EventSummaryUpdated
   }
 
   command refresh() {
     mutate generatedAt = now()
-    mutate updatedAt = now()
 
     emit EventSummaryRefreshed
   }

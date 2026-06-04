@@ -53,8 +53,7 @@ entity CollectionCase {
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property resolvedAt: datetime
   property closedAt: datetime
 
@@ -72,14 +71,12 @@ entity CollectionCase {
     guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only assign active cases"
     mutate assignedTo = userId
     mutate assignedAt = now()
-    mutate updatedAt = now()
     emit CollectionAssigned
   }
 
   command updateStatus(newStatus: string, newNotes: string) {
     mutate status = newStatus
     mutate notes = newNotes
-    mutate updatedAt = now()
     emit CollectionStatusChanged
   }
 
@@ -87,7 +84,6 @@ entity CollectionCase {
     mutate status = "RESOLVED"
     mutate resolvedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
     emit CollectionStatusChanged
   }
 
@@ -97,7 +93,6 @@ entity CollectionCase {
     mutate collectedAmount = self.collectedAmount + amount
     mutate outstandingAmount = self.outstandingAmount - amount
     mutate lastActivityAt = now()
-    mutate updatedAt = now()
     emit CollectionPaymentRecorded
   }
 
@@ -106,14 +101,12 @@ entity CollectionCase {
     mutate status = "RESOLVED"
     mutate resolvedAt = now()
     mutate closedAt = now()
-    mutate updatedAt = now()
     emit CollectionResolved
   }
 
   command escalateDunning() {
     guard self.status == "ACTIVE" "Can only escalate active cases"
     mutate dunningStage = self.dunningStage + 1
-    mutate updatedAt = now()
     emit DunningEscalated
   }
 
@@ -121,7 +114,6 @@ entity CollectionCase {
     mutate status = "LEGAL"
     mutate isEscalatedToLegal = true
     mutate priority = "URGENT"
-    mutate updatedAt = now()
     emit DunningEscalated
   }
 
@@ -136,7 +128,6 @@ entity CollectionCase {
   command resetDunning(stage: string, reason: string) {
     guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only reset active/in-progress cases"
     mutate dunningStage = stage
-    mutate updatedAt = now()
     emit DunningReset
   }
 
@@ -147,7 +138,6 @@ entity CollectionCase {
     mutate paymentPlanId = planId
     mutate nextPaymentDue = nextPaymentDue
     mutate priority = "MEDIUM"
-    mutate updatedAt = now()
     emit PaymentPlanCreated
   }
 
@@ -156,7 +146,6 @@ entity CollectionCase {
     mutate isDisputed = true
     mutate disputeReason = reason
     mutate status = "DISPUTED"
-    mutate updatedAt = now()
     emit CollectionDisputed
   }
 
@@ -165,7 +154,6 @@ entity CollectionCase {
     mutate isDisputed = false
     mutate disputeResolvedAt = now()
     mutate status = "ACTIVE"
-    mutate updatedAt = now()
     emit DisputeResolved
   }
 
@@ -178,7 +166,6 @@ entity CollectionCase {
     mutate status = "LEGAL"
     mutate dunningStage = "LEGAL"
     mutate priority = "URGENT"
-    mutate updatedAt = now()
     emit EscalatedToLegal
   }
 
@@ -189,20 +176,17 @@ entity CollectionCase {
     mutate outstandingAmount = amount
     mutate status = "WRITTEN_OFF"
     mutate closedAt = now()
-    mutate updatedAt = now()
     emit CollectionWrittenOff
   }
 
   command updateAging(daysOverdue: number, agingBucket: string) {
     mutate daysOverdue = daysOverdue
     mutate agingBucket = agingBucket
-    mutate updatedAt = now()
     emit AgingUpdated
   }
 
   command setPriority(newPriority: string, reason: string) {
     mutate priority = newPriority
-    mutate updatedAt = now()
     emit PriorityChanged
   }
 
@@ -210,7 +194,6 @@ entity CollectionCase {
     guard self.status in ["ACTIVE", "IN_PROGRESS", "DISPUTED"] "Case already closed"
     mutate status = "RESOLVED"
     mutate closedAt = now()
-    mutate updatedAt = now()
     emit CollectionClosed
   }
   store CollectionCase in durable
@@ -249,8 +232,7 @@ entity CollectionAction {
   // Timestamps
   property required scheduledFor: datetime = now()
   property completedAt: datetime
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
 
   // Computed properties
   computed isCompleted: boolean = self.status == "COMPLETED"
@@ -270,7 +252,6 @@ entity CollectionAction {
     mutate promiseAmount = promiseAmount
     mutate promiseDate = promiseDate
     mutate nextActionDate = nextActionDate
-    mutate updatedAt = now()
     emit ActionCompleted
   }
 
@@ -279,7 +260,6 @@ entity CollectionAction {
     mutate status = "FAILED"
     mutate outcome = "Failed: " + reason
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit ActionFailed
   }
 
@@ -288,14 +268,12 @@ entity CollectionAction {
     mutate status = "SKIPPED"
     mutate outcome = "Skipped: " + reason
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit ActionSkipped
   }
 
   command reschedule(newScheduledFor: number, reason: string) {
     guard self.status == "PENDING" "Can only reschedule pending actions"
     mutate scheduledFor = newScheduledFor
-    mutate updatedAt = now()
     emit ActionRescheduled
   }
   store CollectionAction in durable
@@ -328,8 +306,7 @@ entity CollectionPaymentPlan {
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property completedAt: datetime
   property defaultedAt: datetime
 
@@ -350,7 +327,6 @@ entity CollectionPaymentPlan {
     guard self.status == "ACTIVE" "Can only record payments for active plans"
     guard amount == self.installmentAmount "Payment must match installment amount"
     mutate completedInstallments = self.completedInstallments + 1
-    mutate updatedAt = now()
     emit InstallmentRecorded
   }
 
@@ -358,7 +334,6 @@ entity CollectionPaymentPlan {
     guard self.status == "ACTIVE" "Can only complete active plans"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit PaymentPlanCompleted
   }
 
@@ -366,14 +341,12 @@ entity CollectionPaymentPlan {
     guard self.status == "ACTIVE" "Can only default active plans"
     mutate status = "DEFAULTED"
     mutate defaultedAt = now()
-    mutate updatedAt = now()
     emit PaymentPlanDefaulted
   }
 
   command cancel(reason: string) {
     guard self.status == "ACTIVE" "Can only cancel active plans"
     mutate status = "CANCELLED"
-    mutate updatedAt = now()
     emit PaymentPlanCancelled
   }
 
@@ -381,7 +354,6 @@ entity CollectionPaymentPlan {
     guard self.status == "ACTIVE" "Can only modify active plans"
     mutate installmentAmount = newInstallmentAmount
     mutate installmentCount = newInstallmentCount
-    mutate updatedAt = now()
     emit PaymentPlanModified
   }
   store CollectionPaymentPlan in durable

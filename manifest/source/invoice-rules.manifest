@@ -52,6 +52,7 @@ entity Invoice {
   property lineItems: string = "[]"
   property required metadata: string = "{}"
 
+  timestamps
   // Computed properties
   computed isPaidInFull: boolean = self.amountDue <= 0
   computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now()

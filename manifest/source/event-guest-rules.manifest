@@ -22,8 +22,7 @@ entity EventGuest {
   property rsvpStatus: string = "pending"
   property rsvpAt: datetime
   property checkedInAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
@@ -56,8 +55,6 @@ entity EventGuest {
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
     mutate rsvpStatus = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventGuestCreated
   }
@@ -77,7 +74,6 @@ entity EventGuest {
     mutate specialMealNotes = specialMealNotes
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
-    mutate updatedAt = now()
 
     emit EventGuestUpdated
   }
@@ -88,7 +84,6 @@ entity EventGuest {
 
     mutate rsvpStatus = "confirmed"
     mutate rsvpAt = now()
-    mutate updatedAt = now()
 
     emit EventGuestRsvpConfirmed
   }
@@ -100,7 +95,6 @@ entity EventGuest {
     mutate rsvpStatus = "declined"
     mutate rsvpAt = now()
     mutate declineReason = reason
-    mutate updatedAt = now()
 
     emit EventGuestRsvpDeclined
   }
@@ -111,7 +105,6 @@ entity EventGuest {
     guard self.checkedInAt == null "Guest has already checked in"
 
     mutate checkedInAt = now()
-    mutate updatedAt = now()
 
     emit EventGuestCheckedIn
   }
@@ -121,7 +114,6 @@ entity EventGuest {
     guard tableAssignment != "" "Table assignment is required"
 
     mutate tableAssignment = tableAssignment
-    mutate updatedAt = now()
 
     emit EventGuestTableAssigned
   }
@@ -130,7 +122,6 @@ entity EventGuest {
     guard self.deletedAt == null "Guest is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EventGuestDeleted
   }

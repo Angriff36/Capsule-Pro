@@ -26,8 +26,7 @@ entity VendorCatalog {
   property notes: string = ""
   property required tags: array<string>
   property lastCostUpdate: datetime
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -64,8 +63,6 @@ entity VendorCatalog {
     mutate notes = notes
     mutate tags = tags
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VendorCatalogCreated
   }
@@ -93,7 +90,6 @@ entity VendorCatalog {
     mutate notes = notes
     mutate tags = tags
     mutate lastCostUpdate = lastCostUpdate
-    mutate updatedAt = now()
 
     emit VendorCatalogUpdated
   }
@@ -130,7 +126,6 @@ entity VendorCatalog {
     mutate baseUnitCost = newBaseUnitCost
     mutate effectiveFrom = effectiveFrom
     mutate lastCostUpdate = now()
-    mutate updatedAt = now()
 
     emit VendorCatalogPriceUpdated
   }
@@ -140,7 +135,6 @@ entity VendorCatalog {
     guard self.deletedAt == null "Catalog entry is deleted"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit VendorCatalogItemDeactivated
   }
@@ -151,7 +145,6 @@ entity VendorCatalog {
     guard reactivatedBy != null and reactivatedBy != "" "Reactivating user is required"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit VendorCatalogItemReactivated
   }
@@ -170,7 +163,6 @@ entity VendorCatalog {
 
     mutate isActive = false
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit VendorCatalogDeactivated
   }

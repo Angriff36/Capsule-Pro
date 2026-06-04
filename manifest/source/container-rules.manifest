@@ -15,8 +15,7 @@ entity Container {
   property capacityPortions: int = 0
   property isReusable: boolean = true
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasVolumeCapacity: boolean = self.capacityVolumeMl > 0
@@ -54,8 +53,6 @@ entity Container {
     mutate capacityPortions = capacityPortions
     mutate isReusable = isReusable
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ContainerCreated
   }
@@ -75,7 +72,6 @@ entity Container {
     mutate capacityWeightG = capacityWeightG
     mutate capacityPortions = capacityPortions
     mutate isReusable = isReusable
-    mutate updatedAt = now()
 
     emit ContainerUpdated
   }
@@ -84,7 +80,6 @@ entity Container {
     guard self.isActive "Container is already deactivated"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit ContainerDeactivated
   }
@@ -94,7 +89,6 @@ entity Container {
     guard self.isActive == false "Container is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit ContainerReactivated
   }
@@ -106,7 +100,6 @@ entity Container {
     guard newLocationId != self.locationId "Container is already at this location"
 
     mutate locationId = newLocationId
-    mutate updatedAt = now()
 
     emit ContainerRelocated
   }

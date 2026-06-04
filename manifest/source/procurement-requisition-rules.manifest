@@ -34,8 +34,7 @@ entity PurchaseRequisition {
   property submittedAt: datetime
   property itemCategory: string = ""
   property required priority: string = "normal"
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
   property itemCount: int = 0
 
@@ -82,8 +81,6 @@ entity PurchaseRequisition {
     mutate estimatedShipping = 0
     mutate estimatedTotal = 0
     mutate itemCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionCreated
   }
@@ -95,7 +92,6 @@ entity PurchaseRequisition {
     mutate requiredBy = requiredBy
     mutate priority = priority
     mutate department = department
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionUpdated
   }
@@ -112,7 +108,6 @@ entity PurchaseRequisition {
 
     mutate status = "pending_manager"
     mutate submittedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionSubmitted
   }
@@ -126,7 +121,6 @@ entity PurchaseRequisition {
     mutate managerApprovalAt = now()
     mutate approvedBy = self.estimatedTotal >= 5000 ? "" : userId
     mutate approvedAt = self.estimatedTotal >= 5000 ? null : now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionManagerApproved
   }
@@ -139,7 +133,6 @@ entity PurchaseRequisition {
     mutate financeApprovalAt = now()
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionFinanceApproved
   }
@@ -152,7 +145,6 @@ entity PurchaseRequisition {
     mutate rejectionReason = reason
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionRejected
   }
@@ -164,7 +156,6 @@ entity PurchaseRequisition {
     mutate status = "converted"
     mutate convertedToPoId = purchaseOrderId
     mutate convertedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionConverted
   }
@@ -174,7 +165,6 @@ entity PurchaseRequisition {
 
     mutate status = "cancelled"
     mutate rejectionReason = reason
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionCancelled
   }
@@ -196,8 +186,7 @@ entity PurchaseRequisitionItem {
   property suggestedVendorName: string = ""
   property specifications: string = ""
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   key [tenantId, id]
@@ -227,8 +216,6 @@ entity PurchaseRequisitionItem {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemCreated
   }
@@ -244,14 +231,12 @@ entity PurchaseRequisitionItem {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemUpdated
   }
 
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemRemoved
   }

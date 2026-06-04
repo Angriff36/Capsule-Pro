@@ -18,9 +18,8 @@ entity BattleBoard {
   property description: string = ""
   property notes: string = ""
   property tags: string = ""
-  property createdAt: datetime = now()
+  timestamps
   property dishCount: int = 0
-  property updatedAt: datetime = now()
   property deletedAt: datetime
 
   computed isOpen: boolean = self.status == "open"
@@ -60,8 +59,6 @@ entity BattleBoard {
     mutate tags = tags
     mutate status = "draft"
     mutate boardData = "{}"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BattleBoardCreated
   }
@@ -78,7 +75,6 @@ entity BattleBoard {
     }
 
     mutate status = "open"
-    mutate updatedAt = now()
 
     emit BattleBoardOpened
   }
@@ -87,7 +83,6 @@ entity BattleBoard {
     guard self.status == "open" "Can only start voting on open battle boards"
 
     mutate status = "voting"
-    mutate updatedAt = now()
 
     emit BattleBoardVotingStarted
   }
@@ -97,7 +92,6 @@ entity BattleBoard {
     guard dishData != null and dishData != "" "Dish data is required"
 
     mutate boardData = dishData
-    mutate updatedAt = now()
 
     emit BattleBoardDishAdded
   }
@@ -107,7 +101,6 @@ entity BattleBoard {
     guard self.status != "voting" "Cannot remove dishes during voting"
     guard dishId != null and dishId != "" "Dish ID is required"
 
-    mutate updatedAt = now()
 
     emit BattleBoardDishRemoved
   }
@@ -118,7 +111,6 @@ entity BattleBoard {
     guard voteData != null and voteData != "" "Vote data is required"
 
     mutate boardData = voteData
-    mutate updatedAt = now()
 
     emit BattleBoardVoteCast
   }
@@ -128,7 +120,6 @@ entity BattleBoard {
     guard self.boardData != "{}" and self.boardData != "" "Cannot finalize board with no data"
 
     mutate status = "finalized"
-    mutate updatedAt = now()
 
     emit BattleBoardFinalized
   }

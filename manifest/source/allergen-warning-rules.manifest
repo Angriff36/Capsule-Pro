@@ -26,8 +26,7 @@ entity AllergenWarning {
   property escalatedAt: datetime
   property escalatedTo: string = ""
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isHighSeverity: boolean = self.severity == "critical"
@@ -58,8 +57,6 @@ entity AllergenWarning {
     mutate notes = notes
     mutate isAcknowledged = false
     mutate resolved = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AllergenWarningCreated
   }
@@ -72,7 +69,6 @@ entity AllergenWarning {
     mutate acknowledgedBy = acknowledgedBy
     mutate acknowledgedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit AllergenWarningAcknowledged
   }
@@ -85,7 +81,6 @@ entity AllergenWarning {
     mutate resolved = true
     mutate resolvedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit AllergenWarningResolved
   }
@@ -98,7 +93,6 @@ entity AllergenWarning {
     mutate acknowledgedBy = acknowledgedBy
     mutate isAcknowledged = true
     mutate acknowledgedAt = now()
-    mutate updatedAt = now()
 
     emit AllergenWarningOverridden
   }
@@ -112,7 +106,6 @@ entity AllergenWarning {
     mutate escalatedAt = now()
     mutate escalatedTo = escalatedTo
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit AllergenWarningEscalated
   }
@@ -121,7 +114,6 @@ entity AllergenWarning {
     guard self.deletedAt == null "Warning is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit AllergenWarningDeleted
   }

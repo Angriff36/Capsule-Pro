@@ -15,8 +15,7 @@ entity Facility {
   property status: string = "active"
   property capacity: int = 0
   property description: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "active"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
@@ -39,8 +38,6 @@ entity Facility {
     mutate capacity = capacity
     mutate description = description
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FacilityCreated
   }
@@ -49,7 +46,6 @@ entity Facility {
     guard self.status != "active" "Cannot delete an active facility"
 
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit FacilityDeleted
   }
@@ -66,7 +62,6 @@ entity Facility {
     mutate phone = phone
     mutate capacity = capacity
     mutate description = description
-    mutate updatedAt = now()
 
     emit FacilityUpdated
   }
@@ -77,7 +72,6 @@ entity Facility {
     guard reason != null and reason != "" "Reason is required"
 
     mutate status = "maintenance"
-    mutate updatedAt = now()
 
     emit FacilitySentToMaintenance
   }
@@ -87,7 +81,6 @@ entity Facility {
     guard self.status == "maintenance" "Facility is not in maintenance"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit FacilityRestoredFromMaintenance
   }
@@ -107,8 +100,7 @@ entity FacilityArea {
   property description: string = ""
   property squareFeet: decimal = 0
   property status: string = "active"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint validAreaType: self.areaType in ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"] "Invalid area type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
@@ -124,15 +116,12 @@ entity FacilityArea {
     mutate description = description
     mutate squareFeet = squareFeet
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FacilityAreaCreated
   }
 
   command remove() {
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit FacilityAreaDeleted
   }
@@ -146,7 +135,6 @@ entity FacilityArea {
     mutate floor = floor
     mutate description = description
     mutate squareFeet = squareFeet
-    mutate updatedAt = now()
 
     emit FacilityAreaUpdated
   }
@@ -157,7 +145,6 @@ entity FacilityArea {
     guard reason != null and reason != "" "Reason is required"
 
     mutate status = "maintenance"
-    mutate updatedAt = now()
 
     emit FacilityAreaClosedForMaintenance
   }
@@ -166,7 +153,6 @@ entity FacilityArea {
     guard self.status == "maintenance" "Area is not in maintenance"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit FacilityAreaReopened
   }
@@ -193,8 +179,7 @@ entity FacilityAsset {
   property lastMaintenanceAt: datetime
   property nextMaintenanceAt: datetime
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOperational: boolean = self.status == "operational"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
@@ -224,15 +209,12 @@ entity FacilityAsset {
     mutate serialNumber = serialNumber
     mutate notes = notes
     mutate status = "operational"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FacilityAssetCreated
   }
 
   command remove() {
     mutate status = "retired"
-    mutate updatedAt = now()
 
     emit FacilityAssetDeleted
   }
@@ -243,7 +225,6 @@ entity FacilityAsset {
     mutate currentValue = currentValue
     mutate serialNumber = serialNumber
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit FacilityAssetUpdated
   }
@@ -254,7 +235,6 @@ entity FacilityAsset {
     guard reason != null and reason != "" "Reason is required"
 
     mutate status = "maintenance"
-    mutate updatedAt = now()
 
     emit FacilityAssetSentToMaintenance
   }
@@ -266,7 +246,6 @@ entity FacilityAsset {
     mutate status = "operational"
     mutate lastMaintenanceAt = now()
     mutate nextMaintenanceAt = nextMaintenanceAt
-    mutate updatedAt = now()
 
     emit FacilityAssetReturnedFromMaintenance
   }
@@ -285,7 +264,6 @@ entity FacilityAsset {
     }
 
     mutate status = "retired"
-    mutate updatedAt = now()
 
     emit FacilityAssetRetired
   }
@@ -309,8 +287,7 @@ entity FacilitySchedule {
   property assignedTo: string = ""
   property completedAt: datetime
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "in_progress"
   computed isCompleted: boolean = self.status == "completed"
@@ -335,15 +312,12 @@ entity FacilitySchedule {
     mutate assignedTo = assignedTo
     mutate notes = notes
     mutate status = "scheduled"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FacilityScheduleCreated
   }
 
   command remove() {
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit FacilityScheduleDeleted
   }
@@ -359,7 +333,6 @@ entity FacilitySchedule {
     mutate endDate = endDate
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit FacilityScheduleUpdated
   }
@@ -371,7 +344,6 @@ entity FacilitySchedule {
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit FacilityScheduleStarted
   }
@@ -382,7 +354,6 @@ entity FacilitySchedule {
     mutate status = "completed"
     mutate completedAt = now()
     mutate notes = completionNotes
-    mutate updatedAt = now()
 
     emit FacilityScheduleCompleted
   }
@@ -392,7 +363,6 @@ entity FacilitySchedule {
     guard reason != null and reason != "" "Cancellation reason is required"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit FacilityScheduleCancelled
   }
@@ -420,8 +390,7 @@ entity FacilityWorkOrder {
   property scheduledDate: datetime
   property completedDate: datetime
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isAssigned: boolean = self.assignedTo != ""
@@ -460,8 +429,6 @@ entity FacilityWorkOrder {
     mutate notes = notes
     mutate status = "open"
     mutate actualCost = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FacilityWorkOrderCreated
   }
@@ -475,7 +442,6 @@ entity FacilityWorkOrder {
     mutate scheduledDate = scheduledDate
     mutate estimatedCost = estimatedCost
     mutate status = "assigned"
-    mutate updatedAt = now()
 
     emit FacilityWorkOrderAssigned
   }
@@ -487,7 +453,6 @@ entity FacilityWorkOrder {
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit FacilityWorkOrderStarted
   }
@@ -501,7 +466,6 @@ entity FacilityWorkOrder {
     mutate actualCost = actualCost
     mutate completedDate = now()
     mutate notes = completionNotes
-    mutate updatedAt = now()
 
     emit FacilityWorkOrderCompleted
   }
@@ -511,7 +475,6 @@ entity FacilityWorkOrder {
     guard reason != null and reason != "" "Cancellation reason is required"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit FacilityWorkOrderCancelled
   }

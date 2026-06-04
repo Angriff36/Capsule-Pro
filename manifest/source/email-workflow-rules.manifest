@@ -11,8 +11,7 @@ entity EmailWorkflow {
   property emailTemplateId: string = ""
   property recipientConfig: string = "{}"
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -28,8 +27,6 @@ entity EmailWorkflow {
     mutate emailTemplateId = emailTemplateId
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmailWorkflowCreated
   }
@@ -42,7 +39,6 @@ entity EmailWorkflow {
     mutate emailTemplateId = emailTemplateId
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit EmailWorkflowUpdated
   }
@@ -52,7 +48,6 @@ entity EmailWorkflow {
 
     mutate deletedAt = now()
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit EmailWorkflowDeleted
   }

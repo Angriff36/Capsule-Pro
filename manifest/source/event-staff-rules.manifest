@@ -18,8 +18,7 @@ entity EventStaff {
   property checkedInAt: datetime
   property checkedOutAt: datetime
   property noShowReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isAssigned: boolean = self.status == "assigned"
@@ -48,8 +47,6 @@ entity EventStaff {
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
     mutate status = "assigned"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventStaffAssigned
   }
@@ -59,7 +56,6 @@ entity EventStaff {
 
     mutate status = "confirmed"
     mutate confirmedAt = now()
-    mutate updatedAt = now()
 
     emit EventStaffConfirmed
   }
@@ -70,7 +66,6 @@ entity EventStaff {
 
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
-    mutate updatedAt = now()
 
     emit EventStaffShiftUpdated
   }
@@ -80,7 +75,6 @@ entity EventStaff {
     guard role != "" "Role is required"
 
     mutate role = role
-    mutate updatedAt = now()
 
     emit EventStaffRoleUpdated
   }
@@ -90,7 +84,6 @@ entity EventStaff {
 
     mutate status = "checked_in"
     mutate checkedInAt = now()
-    mutate updatedAt = now()
 
     emit EventStaffCheckedIn
   }
@@ -100,7 +93,6 @@ entity EventStaff {
 
     mutate status = "checked_out"
     mutate checkedOutAt = now()
-    mutate updatedAt = now()
 
     emit EventStaffCheckedOut
   }
@@ -110,7 +102,6 @@ entity EventStaff {
 
     mutate status = "no_show"
     mutate noShowReason = reason
-    mutate updatedAt = now()
 
     emit EventStaffNoShow
   }
@@ -120,7 +111,6 @@ entity EventStaff {
 
     mutate status = "unassigned"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit EventStaffUnassigned
   }

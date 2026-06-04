@@ -16,8 +16,7 @@ entity BankAccount {
   property verifiedAt: datetime
   property verificationFailedAt: datetime
   property verificationFailureReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isVerified: boolean = self.verifiedAt != null
   computed isPendingVerification: boolean = self.status == "pending_verification"
@@ -39,15 +38,12 @@ entity BankAccount {
     mutate bankName = bankName
     mutate isDefault = isDefault
     mutate status = "pending_verification"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BankAccountCreated
   }
 
   command remove() {
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit BankAccountDeleted
   }
@@ -57,7 +53,6 @@ entity BankAccount {
     guard self.verifiedAt != null "Account must be verified before setting as default"
 
     mutate isDefault = true
-    mutate updatedAt = now()
 
     emit BankAccountDefaultSet
   }
@@ -68,7 +63,6 @@ entity BankAccount {
     mutate routingNumber = routingNumber
     mutate accountType = accountType
     mutate bankName = bankName
-    mutate updatedAt = now()
 
     emit BankAccountUpdated
   }
@@ -78,7 +72,6 @@ entity BankAccount {
 
     mutate status = "active"
     mutate verifiedAt = now()
-    mutate updatedAt = now()
 
     emit BankAccountVerified
   }
@@ -90,7 +83,6 @@ entity BankAccount {
     mutate status = "verification_failed"
     mutate verificationFailedAt = now()
     mutate verificationFailureReason = reason
-    mutate updatedAt = now()
 
     emit BankAccountVerificationFailed
   }
@@ -100,7 +92,6 @@ entity BankAccount {
 
     mutate status = "pending_verification"
     mutate verificationFailureReason = ""
-    mutate updatedAt = now()
 
     emit BankAccountVerificationRetried
   }

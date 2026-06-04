@@ -8,6 +8,7 @@ entity AlertsConfig {
   property channel: string = ""
   property destination: string = ""
 
+  timestamps
   constraint requireChannel: self.channel != "" "Alert channel is required"
   constraint requireDestination: self.destination != "" "Alert destination is required"
 

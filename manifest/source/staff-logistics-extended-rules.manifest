@@ -16,8 +16,7 @@ entity TimecardApproval {
   property approvedBy: string = ""
   property approvedAt: datetime
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"
@@ -35,8 +34,6 @@ entity TimecardApproval {
     mutate payrollPeriodId = payrollPeriodId
     mutate notes = notes
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimecardApprovalCreated
   }
@@ -49,7 +46,6 @@ entity TimecardApproval {
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit TimecardApproved
   }
@@ -62,7 +58,6 @@ entity TimecardApproval {
     mutate status = "rejected"
     mutate approvedBy = approvedBy
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit TimecardRejected
   }
@@ -76,7 +71,6 @@ entity TimecardApproval {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit TimecardBulkApproved
   }
@@ -98,8 +92,7 @@ entity PayrollLineItem {
   property hoursOvertime: decimal = 0
   property rateRegular: decimal = 0
   property rateOvertime: decimal = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed deductionRate: decimal = self.grossPay > 0 ? self.totalDeductions / self.grossPay : 0
@@ -126,8 +119,6 @@ entity PayrollLineItem {
     mutate hoursOvertime = hoursOvertime
     mutate rateRegular = rateRegular
     mutate rateOvertime = rateOvertime
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PayrollLineItemCreated
   }
@@ -146,7 +137,6 @@ entity PayrollLineItem {
     mutate hoursOvertime = hoursOvertime
     mutate rateRegular = rateRegular
     mutate rateOvertime = rateOvertime
-    mutate updatedAt = now()
 
     emit PayrollLineItemUpdated
   }
@@ -171,8 +161,7 @@ entity TipPool {
   property distributedAmount: money = 0
   property distributedAt: datetime
   property distributedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isAllocated: boolean = self.status == "allocated"
@@ -198,8 +187,6 @@ entity TipPool {
     mutate totalTips = totalTips
     mutate distributedAmount = 0
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TipPoolCreated
   }
@@ -210,7 +197,6 @@ entity TipPool {
 
     mutate totalTips = totalTips
     mutate status = "allocated"
-    mutate updatedAt = now()
 
     emit TipPoolAllocated
   }
@@ -227,7 +213,6 @@ entity TipPool {
     mutate distributedAmount = self.distributedAmount + amount
     mutate distributedBy = distributedBy
     mutate distributedAt = now()
-    mutate updatedAt = now()
 
     emit TipPoolDistributed
   }
@@ -240,7 +225,6 @@ entity TipPool {
     mutate status = "distributed"
     mutate distributedBy = distributedBy
     mutate distributedAt = now()
-    mutate updatedAt = now()
 
     emit TipPoolDistributionFinalized
   }
@@ -249,7 +233,6 @@ entity TipPool {
     guard self.status in ["allocated", "distributed"] "Only allocated or distributed tip pools can be closed"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit TipPoolClosed
   }
@@ -271,8 +254,7 @@ entity DisciplinaryAction {
   property escalationReason: string = ""
   property escalatedAt: datetime
   property issuedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -302,8 +284,6 @@ entity DisciplinaryAction {
     mutate status = "open"
     mutate issuedBy = issuedBy
     mutate issuedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DisciplinaryActionCreated
   }
@@ -312,7 +292,6 @@ entity DisciplinaryAction {
     guard self.status == "open" "Only open actions can be acknowledged"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit DisciplinaryActionAcknowledged
   }
@@ -327,7 +306,6 @@ entity DisciplinaryAction {
     mutate escalationReason = escalationReason
     mutate status = "escalated"
     mutate escalatedAt = now()
-    mutate updatedAt = now()
 
     emit DisciplinaryActionEscalated
   }
@@ -336,7 +314,6 @@ entity DisciplinaryAction {
     guard self.status in ["open", "in_progress", "escalated"] "Only open, in-progress, or escalated actions can be closed"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit DisciplinaryActionClosed
   }
@@ -353,8 +330,7 @@ entity ActionMilestone {
   property dueAt: datetime
   property status: string = "pending"
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isMet: boolean = self.status == "met"
@@ -372,8 +348,6 @@ entity ActionMilestone {
     mutate title = title
     mutate dueAt = dueAt
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ActionMilestoneCreated
   }
@@ -383,7 +357,6 @@ entity ActionMilestone {
 
     mutate status = "met"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit ActionMilestoneMet
   }
@@ -392,7 +365,6 @@ entity ActionMilestone {
     guard self.status == "pending" "Only pending milestones can be marked missed"
 
     mutate status = "missed"
-    mutate updatedAt = now()
 
     emit ActionMilestoneMissed
   }
@@ -411,8 +383,7 @@ entity PerformanceReview {
   property status: string = "draft"
   property submittedAt: datetime
   property signedOffAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"
@@ -434,8 +405,6 @@ entity PerformanceReview {
     mutate reviewPeriod = reviewPeriod
     mutate overallRating = 0
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewCreated
   }
@@ -447,7 +416,6 @@ entity PerformanceReview {
     mutate overallRating = overallRating
     mutate status = "submitted"
     mutate submittedAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewSubmitted
   }
@@ -458,7 +426,6 @@ entity PerformanceReview {
 
     mutate status = "acknowledged"
     mutate signedOffAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewSignedOff
   }
@@ -467,7 +434,6 @@ entity PerformanceReview {
     guard self.status == "submitted" "Only submitted reviews can be acknowledged"
 
     mutate status = "acknowledged"
-    mutate updatedAt = now()
 
     emit PerformanceReviewAcknowledged
   }
@@ -484,8 +450,7 @@ entity TrainingCompletion {
   property completedAt: datetime
   property score: decimal = 0
   property passed: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed hasPassed: boolean = self.passed == true
   computed hasScore: boolean = self.score > 0
@@ -502,8 +467,6 @@ entity TrainingCompletion {
     mutate completedAt = completedAt
     mutate score = score
     mutate passed = passed
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TrainingCompletionRecorded
   }
@@ -519,8 +482,7 @@ entity OnboardingTask {
   property description: string = ""
   property sortOrder: int = 0
   property isRequired: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isActive: boolean = self.deletedAt == null
@@ -534,8 +496,6 @@ entity OnboardingTask {
     mutate description = description
     mutate sortOrder = sortOrder
     mutate isRequired = isRequired
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit OnboardingTaskCreated
   }
@@ -547,14 +507,12 @@ entity OnboardingTask {
     mutate description = description
     mutate sortOrder = sortOrder
     mutate isRequired = isRequired
-    mutate updatedAt = now()
 
     emit OnboardingTaskUpdated
   }
 
   command remove() {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit OnboardingTaskRemoved
   }
@@ -570,8 +528,7 @@ entity OnboardingCompletion {
   property required onboardingTaskId: string
   property completedAt: datetime
   property status: string = "pending"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isComplete: boolean = self.status == "completed"
@@ -585,8 +542,6 @@ entity OnboardingCompletion {
     mutate employeeId = employeeId
     mutate onboardingTaskId = onboardingTaskId
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit OnboardingCompletionCreated
   }
@@ -596,7 +551,6 @@ entity OnboardingCompletion {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit OnboardingCompletionCompleted
   }
@@ -614,8 +568,7 @@ entity OpenShift {
   property shiftEnd: datetime
   property status: string = "open"
   property claimedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isClaimed: boolean = self.status == "claimed"
@@ -636,8 +589,6 @@ entity OpenShift {
     mutate shiftEnd = shiftEnd
     mutate status = "open"
     mutate claimedBy = ""
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit OpenShiftCreated
   }
@@ -648,7 +599,6 @@ entity OpenShift {
 
     mutate status = "claimed"
     mutate claimedBy = claimedBy
-    mutate updatedAt = now()
 
     emit OpenShiftClaimed
   }
@@ -657,7 +607,6 @@ entity OpenShift {
     guard self.status == "open" "Only open shifts can be cancelled"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit OpenShiftCancelled
   }
@@ -677,8 +626,7 @@ entity DeliveryRoute {
   property status: string = "planned"
   property totalStops: int = 0
   property distanceMiles: decimal = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPlanned: boolean = self.status == "planned"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -698,8 +646,6 @@ entity DeliveryRoute {
     mutate totalStops = totalStops
     mutate distanceMiles = distanceMiles
     mutate status = "planned"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DeliveryRouteCreated
   }
@@ -709,7 +655,6 @@ entity DeliveryRoute {
     guard self.driverId != "" "A driver must be assigned before starting the route"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit DeliveryRouteStarted
   }
@@ -718,7 +663,6 @@ entity DeliveryRoute {
     guard self.status == "in_progress" "Only in-progress routes can be completed"
 
     mutate status = "completed"
-    mutate updatedAt = now()
 
     emit DeliveryRouteCompleted
   }
@@ -728,7 +672,6 @@ entity DeliveryRoute {
     guard driverId != null and driverId != "" "Driver ID is required"
 
     mutate driverId = driverId
-    mutate updatedAt = now()
 
     emit DeliveryRouteDriverAssigned
   }
@@ -747,8 +690,7 @@ entity RouteStop {
   property scheduledAt: datetime
   property status: string = "pending"
   property arrivedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed hasArrived: boolean = self.status == "arrived"
@@ -769,8 +711,6 @@ entity RouteStop {
     mutate sequence = sequence
     mutate scheduledAt = scheduledAt
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit RouteStopCreated
   }
@@ -780,7 +720,6 @@ entity RouteStop {
 
     mutate status = "arrived"
     mutate arrivedAt = now()
-    mutate updatedAt = now()
 
     emit RouteStopArrived
   }
@@ -789,7 +728,6 @@ entity RouteStop {
     guard self.status == "arrived" "Stop must be in arrived state before completing"
 
     mutate status = "completed"
-    mutate updatedAt = now()
 
     emit RouteStopCompleted
   }
@@ -799,7 +737,6 @@ entity RouteStop {
     guard sequence >= 0 "Sequence must be non-negative"
 
     mutate sequence = sequence
-    mutate updatedAt = now()
 
     emit RouteStopReordered
   }
@@ -816,8 +753,7 @@ entity PaymentRefundAttempt {
   property reason: string = ""
   property status: string = "pending"
   property attemptedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isSucceeded: boolean = self.status == "succeeded"
@@ -836,8 +772,6 @@ entity PaymentRefundAttempt {
     mutate reason = reason
     mutate status = "pending"
     mutate attemptedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PaymentRefundAttemptCreated
   }
@@ -846,7 +780,6 @@ entity PaymentRefundAttempt {
     guard self.status == "pending" "Only pending refund attempts can be marked succeeded"
 
     mutate status = "succeeded"
-    mutate updatedAt = now()
 
     emit PaymentRefundAttemptSucceeded
   }
@@ -855,7 +788,6 @@ entity PaymentRefundAttempt {
     guard self.status == "pending" "Only pending refund attempts can be marked failed"
 
     mutate status = "failed"
-    mutate updatedAt = now()
 
     emit PaymentRefundAttemptFailed
   }
@@ -872,8 +804,7 @@ entity PreventiveMaintenanceSchedule {
   property frequency: string = ""
   property nextDueAt: datetime
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt
   computed isActiveSchedule: boolean = self.isActive == true
@@ -892,8 +823,6 @@ entity PreventiveMaintenanceSchedule {
     mutate frequency = frequency
     mutate nextDueAt = nextDueAt
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit MaintenanceScheduleCreated
   }
@@ -907,7 +836,6 @@ entity PreventiveMaintenanceSchedule {
     mutate name = name
     mutate frequency = frequency
     mutate nextDueAt = nextDueAt
-    mutate updatedAt = now()
 
     emit MaintenanceScheduleUpdated
   }
@@ -917,7 +845,6 @@ entity PreventiveMaintenanceSchedule {
     guard nextDueAt != null and nextDueAt > 0 "Next due date is required for recurrence"
 
     mutate nextDueAt = nextDueAt
-    mutate updatedAt = now()
 
     emit MaintenanceScheduleCompleted
   }
@@ -926,7 +853,6 @@ entity PreventiveMaintenanceSchedule {
     guard self.isActive "Schedule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit MaintenanceScheduleDeactivated
   }

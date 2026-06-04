@@ -15,8 +15,7 @@ entity SmsAutomationRule {
   property recipientConfig: string = "{}"
   property isActive: boolean = true
   property priority: int = 100
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -44,8 +43,6 @@ entity SmsAutomationRule {
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
     mutate priority = priority
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit SmsAutomationRuleCreated
   }
@@ -64,7 +61,6 @@ entity SmsAutomationRule {
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit SmsAutomationRuleUpdated
   }
@@ -74,7 +70,6 @@ entity SmsAutomationRule {
     guard self.isActive == false "Rule is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit SmsAutomationRuleActivated
   }
@@ -84,7 +79,6 @@ entity SmsAutomationRule {
     guard self.isActive == true "Rule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit SmsAutomationRuleDeactivated
   }
@@ -94,7 +88,6 @@ entity SmsAutomationRule {
 
     mutate deletedAt = now()
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit SmsAutomationRuleDeleted
   }

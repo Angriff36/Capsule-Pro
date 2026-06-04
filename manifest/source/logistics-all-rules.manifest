@@ -15,8 +15,7 @@ entity Driver {
   property currentVehicleId: string = ""
   property rating: decimal = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed fullName: string = self.firstName + " " + self.lastName
   computed isActive: boolean = self.status == "active"
@@ -54,8 +53,6 @@ entity Driver {
     mutate notes = notes
     mutate status = "active"
     mutate rating = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DriverCreated
   }
@@ -64,7 +61,6 @@ entity Driver {
     guard self.status != "active" or self.currentVehicleId == "" "Cannot delete an active driver assigned to a vehicle"
 
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit DriverDeleted
   }
@@ -80,7 +76,6 @@ entity Driver {
     mutate licenseNumber = licenseNumber
     mutate licenseExpiry = licenseExpiry
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit DriverUpdated
   }
@@ -92,7 +87,6 @@ entity Driver {
 
     mutate licenseNumber = licenseNumber
     mutate licenseExpiry = licenseExpiry
-    mutate updatedAt = now()
 
     emit DriverLicenseRenewed
   }
@@ -103,7 +97,6 @@ entity Driver {
     guard reason != null and reason != "" "Reason is required"
 
     mutate status = "suspended"
-    mutate updatedAt = now()
 
     emit DriverSuspended
   }
@@ -113,7 +106,6 @@ entity Driver {
     guard self.status == "suspended" "Only a suspended driver can be reactivated"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit DriverReactivated
   }
@@ -139,8 +131,7 @@ entity Vehicle {
   property lastMaintenanceDate: datetime
   property nextMaintenanceDate: datetime
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isAvailable: boolean = self.status == "available"
   computed maintenanceDue: boolean = self.nextMaintenanceDate != null and now() >= self.nextMaintenanceDate
@@ -169,8 +160,6 @@ entity Vehicle {
     mutate capacity = capacity
     mutate notes = notes
     mutate status = "available"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VehicleCreated
   }
@@ -179,7 +168,6 @@ entity Vehicle {
     guard self.status == "out_of_service" "Only out-of-service vehicles can be deleted"
 
     mutate status = "out_of_service"
-    mutate updatedAt = now()
 
     emit VehicleDeleted
   }
@@ -196,7 +184,6 @@ entity Vehicle {
     mutate year = year
     mutate capacity = capacity
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit VehicleUpdated
   }
@@ -207,7 +194,6 @@ entity Vehicle {
     guard reason != null and reason != "" "Reason is required"
 
     mutate status = "maintenance"
-    mutate updatedAt = now()
 
     emit VehicleSentToMaintenance
   }
@@ -219,7 +205,6 @@ entity Vehicle {
     mutate status = "available"
     mutate lastMaintenanceDate = now()
     mutate nextMaintenanceDate = nextMaintenanceDate
-    mutate updatedAt = now()
 
     emit VehicleReturnedFromMaintenance
   }
@@ -238,7 +223,6 @@ entity Vehicle {
     }
 
     mutate status = "retired"
-    mutate updatedAt = now()
 
     emit VehicleRetired
   }
@@ -267,8 +251,7 @@ entity LogisticsRoute {
   property completedStops: int = 0
   property delayMinutes: int = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "in_progress"
   computed completionPercent: number = percent(self.completedStops, self.stops)
@@ -296,8 +279,6 @@ entity LogisticsRoute {
     mutate status = "planned"
     mutate completedStops = 0
     mutate delayMinutes = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LogisticsRouteCreated
   }
@@ -306,7 +287,6 @@ entity LogisticsRoute {
     guard self.status != "in_progress" "Cannot delete a route in progress"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit LogisticsRouteDeleted
   }
@@ -326,7 +306,6 @@ entity LogisticsRoute {
     mutate estimatedDuration = estimatedDuration
     mutate stops = stops
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit LogisticsRouteUpdated
   }
@@ -337,7 +316,6 @@ entity LogisticsRoute {
 
     mutate status = "in_progress"
     mutate actualStart = now()
-    mutate updatedAt = now()
 
     emit LogisticsRouteStarted
   }
@@ -347,7 +325,6 @@ entity LogisticsRoute {
     guard self.status == "in_progress" "Route must be in progress to complete a stop"
 
     mutate completedStops = self.completedStops + 1
-    mutate updatedAt = now()
 
     emit LogisticsRouteStopCompleted
   }
@@ -358,7 +335,6 @@ entity LogisticsRoute {
     guard delayMinutes > 0 "Delay must be a positive number of minutes"
 
     mutate delayMinutes = self.delayMinutes + delayMinutes
-    mutate updatedAt = now()
 
     emit LogisticsRouteDelayRecorded
   }
@@ -369,7 +345,6 @@ entity LogisticsRoute {
 
     mutate status = "completed"
     mutate actualEnd = now()
-    mutate updatedAt = now()
 
     emit LogisticsRouteCompleted
   }
@@ -379,7 +354,6 @@ entity LogisticsRoute {
     guard reason != null and reason != "" "Cancellation reason is required"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit LogisticsRouteCancelled
   }
@@ -387,7 +361,6 @@ entity LogisticsRoute {
   command optimize() {
     guard self.status == "planned" "Only planned routes can be optimized"
 
-    mutate updatedAt = now()
 
     emit LogisticsRouteOptimized
   }
@@ -410,8 +383,7 @@ entity LogisticsDispatch {
   property departedAt: datetime
   property failureReason: string = ""
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isInTransit: boolean = self.status == "in_transit"
   computed isDelivered: boolean = self.status == "delivered"
@@ -436,8 +408,6 @@ entity LogisticsDispatch {
     mutate estimatedDeliveryTime = estimatedDeliveryTime
     mutate notes = notes
     mutate status = "assigned"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LogisticsDispatchAssigned
   }
@@ -448,7 +418,6 @@ entity LogisticsDispatch {
 
     mutate status = "in_transit"
     mutate departedAt = now()
-    mutate updatedAt = now()
 
     emit LogisticsDispatchDeparted
   }
@@ -459,7 +428,6 @@ entity LogisticsDispatch {
 
     mutate status = "delivered"
     mutate actualDeliveryTime = now()
-    mutate updatedAt = now()
 
     emit LogisticsDispatchDelivered
   }
@@ -471,7 +439,6 @@ entity LogisticsDispatch {
 
     mutate status = "failed"
     mutate failureReason = reason
-    mutate updatedAt = now()
 
     emit LogisticsDispatchFailed
   }
@@ -488,7 +455,6 @@ entity LogisticsDispatch {
     mutate notes = notes
     mutate status = "assigned"
     mutate failureReason = ""
-    mutate updatedAt = now()
 
     emit LogisticsDispatchReassigned
   }

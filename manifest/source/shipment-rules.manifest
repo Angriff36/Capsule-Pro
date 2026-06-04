@@ -27,8 +27,7 @@ entity Shipment {
   property notes: string = ""
   property internalNotes: string = ""
   property reference: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -56,8 +55,6 @@ entity Shipment {
     mutate totalItems = 0
     mutate shippingCost = 0
     mutate totalValue = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ShipmentCreated
   }
@@ -72,7 +69,6 @@ entity Shipment {
     mutate estimatedDeliveryDate = estimatedDeliveryDate
     mutate shippingCost = shippingCost
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ShipmentUpdated
   }
@@ -89,7 +85,6 @@ entity Shipment {
     }
 
     mutate status = "scheduled"
-    mutate updatedAt = now()
 
     emit ShipmentScheduled
   }
@@ -98,7 +93,6 @@ entity Shipment {
     guard self.status == "scheduled" "Can only start preparing scheduled shipments"
 
     mutate status = "preparing"
-    mutate updatedAt = now()
 
     emit ShipmentPreparationStarted
   }
@@ -108,7 +102,6 @@ entity Shipment {
 
     mutate status = "in_transit"
     mutate trackingNumber = trackingNumber
-    mutate updatedAt = now()
 
     emit ShipmentShipped
   }
@@ -128,7 +121,6 @@ entity Shipment {
     mutate receivedBy = receivedBy
     mutate signatureData = signatureData
     mutate actualDeliveryDate = now()
-    mutate updatedAt = now()
 
     emit ShipmentDelivered
   }
@@ -148,7 +140,6 @@ entity Shipment {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit ShipmentCancelled
   }
@@ -172,8 +163,7 @@ entity ShipmentItem {
   property conditionNotes: string = ""
   property lotNumber: string = ""
   property expirationDate: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
@@ -198,8 +188,6 @@ entity ShipmentItem {
     mutate condition = "good"
     mutate lotNumber = lotNumber
     mutate expirationDate = expirationDate
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ShipmentItemCreated
   }
@@ -230,7 +218,6 @@ entity ShipmentItem {
     mutate quantityDamaged = quantityDamaged
     mutate condition = condition
     mutate conditionNotes = conditionNotes
-    mutate updatedAt = now()
 
     emit ShipmentItemReceived
   }

@@ -22,8 +22,7 @@ entity InventorySupplier {
   property blacklistedAt: datetime
   property blacklistedReason: string = ""
   property qualificationStatus: string = "pending"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasContact: boolean = self.contactPerson != "" or self.email != ""
@@ -55,8 +54,6 @@ entity InventorySupplier {
     mutate tags = tags
     mutate isActive = true
     mutate openPOCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventorySupplierCreated
   }
@@ -71,7 +68,6 @@ entity InventorySupplier {
     mutate paymentTerms = paymentTerms
     mutate notes = notes
     mutate tags = tags
-    mutate updatedAt = now()
 
     emit InventorySupplierUpdated
   }
@@ -89,7 +85,6 @@ entity InventorySupplier {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit InventorySupplierDeactivated
   }
@@ -103,7 +98,6 @@ entity InventorySupplier {
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit InventorySupplierApproved
   }
@@ -126,7 +120,6 @@ entity InventorySupplier {
     mutate qualificationStatus = "suspended"
     mutate suspendedReason = reason
     mutate suspendedAt = now()
-    mutate updatedAt = now()
 
     emit InventorySupplierSuspended
   }
@@ -138,7 +131,6 @@ entity InventorySupplier {
 
     mutate qualificationStatus = "approved"
     mutate suspendedReason = ""
-    mutate updatedAt = now()
 
     emit InventorySupplierReinstated
   }
@@ -161,7 +153,6 @@ entity InventorySupplier {
     mutate blacklistedReason = reason
     mutate blacklistedAt = now()
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit InventorySupplierBlacklisted
   }

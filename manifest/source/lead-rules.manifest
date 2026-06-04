@@ -19,8 +19,7 @@ entity Lead {
   property notes: string = ""
   property convertedToClientId: string = ""
   property convertedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null
@@ -74,8 +73,6 @@ entity Lead {
     mutate assignedTo = assignedTo
     mutate notes = notes
     mutate status = "new"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LeadCreated
   }
@@ -104,7 +101,6 @@ entity Lead {
     mutate status = status
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit LeadUpdated
   }
@@ -133,7 +129,6 @@ entity Lead {
     mutate convertedToClientId = clientId
     mutate convertedAt = now()
     mutate status = "won"
-    mutate updatedAt = now()
 
     emit LeadConvertedToClient
   }
@@ -153,7 +148,6 @@ entity Lead {
     }
 
     mutate status = "disqualified"
-    mutate updatedAt = now()
 
     emit LeadDisqualified
   }
@@ -172,7 +166,6 @@ entity Lead {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit LeadArchived
   }

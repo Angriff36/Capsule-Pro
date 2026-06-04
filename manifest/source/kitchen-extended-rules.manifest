@@ -16,8 +16,7 @@ entity TemperatureProbe {
   property required maxThreshold: decimal
   property isActive: boolean = true
   property lastCalibratedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   // A probe that has never been calibrated needs attention before it can be trusted.
   computed isOutOfCalibration: boolean = self.isActive == true and self.lastCalibratedAt == null
@@ -39,8 +38,6 @@ entity TemperatureProbe {
     mutate minThreshold = minThreshold
     mutate maxThreshold = maxThreshold
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TemperatureProbeCreated
   }
@@ -50,7 +47,6 @@ entity TemperatureProbe {
     guard calibratedBy != null and calibratedBy != "" "Calibrator ID is required"
 
     mutate lastCalibratedAt = now()
-    mutate updatedAt = now()
 
     emit TemperatureProbeCalibrated
   }
@@ -61,7 +57,6 @@ entity TemperatureProbe {
 
     mutate minThreshold = minThreshold
     mutate maxThreshold = maxThreshold
-    mutate updatedAt = now()
 
     emit TemperatureProbeThresholdsUpdated
   }
@@ -70,7 +65,6 @@ entity TemperatureProbe {
     guard self.isActive "Probe is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit TemperatureProbeDeactivated
   }
@@ -91,8 +85,7 @@ entity TemperatureLog {
   property required recordedAt: datetime
   property required withinRange: boolean
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
   constraint requireRecordedBy: self.recordedBy != "" "Recorder employee ID is required"
@@ -116,8 +109,6 @@ entity TemperatureLog {
     mutate recordedAt = recordedAt
     mutate withinRange = withinRange
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TemperatureLogCreated
   }
@@ -136,8 +127,7 @@ entity TemperatureReading {
   property required temperature: decimal
   property required recordedAt: datetime
   property required withinRange: boolean
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireProbe: self.probeId != "" "Probe ID is required"
 
@@ -156,8 +146,6 @@ entity TemperatureReading {
     mutate temperature = temperature
     mutate recordedAt = recordedAt
     mutate withinRange = withinRange
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TemperatureReadingCreated
   }
@@ -178,8 +166,7 @@ entity IotAlertRule {
   property required comparison: string
   property required severity: string
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
   constraint requireMetric: self.metric != "" "Metric is required"
@@ -198,8 +185,6 @@ entity IotAlertRule {
     mutate comparison = comparison
     mutate severity = severity
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit IotAlertRuleCreated
   }
@@ -214,7 +199,6 @@ entity IotAlertRule {
     mutate threshold = threshold
     mutate comparison = comparison
     mutate severity = severity
-    mutate updatedAt = now()
 
     emit IotAlertRuleUpdated
   }
@@ -223,7 +207,6 @@ entity IotAlertRule {
     guard self.isActive "Alert rule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit IotAlertRuleDeactivated
   }
@@ -247,8 +230,7 @@ entity IoTAlert {
   property required triggeredAt: datetime
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "active"
   computed isAcknowledged: boolean = self.status == "acknowledged"
@@ -271,8 +253,6 @@ entity IoTAlert {
     mutate value = value
     mutate status = "active"
     mutate triggeredAt = triggeredAt
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit IoTAlertCreated
   }
@@ -283,7 +263,6 @@ entity IoTAlert {
 
     mutate status = "acknowledged"
     mutate acknowledgedBy = acknowledgedBy
-    mutate updatedAt = now()
 
     emit IoTAlertAcknowledged
   }
@@ -294,7 +273,6 @@ entity IoTAlert {
 
     mutate status = "resolved"
     mutate resolvedBy = resolvedBy
-    mutate updatedAt = now()
 
     emit IoTAlertResolved
   }
@@ -316,8 +294,7 @@ entity CorrectiveAction {
   property required status: string = "open"
   property dueAt: datetime
   property resolvedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -341,8 +318,6 @@ entity CorrectiveAction {
     mutate description = description
     mutate status = "open"
     mutate dueAt = dueAt
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CorrectiveActionCreated
   }
@@ -352,7 +327,6 @@ entity CorrectiveAction {
     guard assignedTo != null and assignedTo != "" "Assignee employee ID is required"
 
     mutate assignedTo = assignedTo
-    mutate updatedAt = now()
 
     emit CorrectiveActionAssigned
   }
@@ -361,7 +335,6 @@ entity CorrectiveAction {
     guard self.status == "open" "Corrective action must be open to start progress"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit CorrectiveActionStarted
   }
@@ -372,7 +345,6 @@ entity CorrectiveAction {
 
     mutate status = "closed"
     mutate resolvedAt = now()
-    mutate updatedAt = now()
 
     emit CorrectiveActionClosed
   }
@@ -392,8 +364,7 @@ entity QualityCheck {
   property required status: string = "pending"
   property performedAt: datetime = now()
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isPassed: boolean = self.status == "passed"
@@ -415,8 +386,6 @@ entity QualityCheck {
     mutate performedBy = performedBy
     mutate notes = notes
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit QualityCheckCreated
   }
@@ -427,7 +396,6 @@ entity QualityCheck {
     mutate status = "passed"
     mutate performedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit QualityCheckPassed
   }
@@ -439,7 +407,6 @@ entity QualityCheck {
     mutate status = "failed"
     mutate performedAt = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit QualityCheckFailed
   }
@@ -450,7 +417,6 @@ entity QualityCheck {
 
     mutate status = "pending"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit QualityCheckReinspected
   }
@@ -470,8 +436,7 @@ entity QualityCheckItem {
   property passed: boolean = false
   property notes: string = ""
   property sortOrder: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireQualityCheckId: self.qualityCheckId != "" "Quality check ID is required"
   constraint requireCriterion: self.criterion != "" "Criterion description is required"
@@ -486,8 +451,6 @@ entity QualityCheckItem {
     mutate criterion = criterion
     mutate passed = false
     mutate sortOrder = sortOrder
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit QualityCheckItemCreated
   }
@@ -497,7 +460,6 @@ entity QualityCheckItem {
 
     mutate passed = passed
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit QualityCheckItemResultRecorded
   }
@@ -518,8 +480,7 @@ entity KitchenTaskClaim {
   property required status: string = "active"
   property releasedAt: datetime
   property releaseReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isActive: boolean = self.status == "active"
   computed isReleased: boolean = self.status == "released"
@@ -538,8 +499,6 @@ entity KitchenTaskClaim {
     mutate employeeId = employeeId
     mutate claimedAt = claimedAt
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskClaimCreated
   }
@@ -551,7 +510,6 @@ entity KitchenTaskClaim {
     mutate status = "released"
     mutate releasedAt = now()
     mutate releaseReason = reason
-    mutate updatedAt = now()
 
     emit KitchenTaskClaimReleased
   }
@@ -572,8 +530,7 @@ entity KitchenTaskProgress {
   property required progressPct: decimal
   property note: string = ""
   property required recordedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
@@ -591,8 +548,6 @@ entity KitchenTaskProgress {
     mutate progressPct = progressPct
     mutate note = note
     mutate recordedAt = recordedAt
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskProgressRecorded
   }
@@ -611,8 +566,7 @@ entity TaskBundle {
   property eventId: string = ""
   property description: string = ""
   property required status: string = "active"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isArchived: boolean = self.status == "archived"
   computed isActive: boolean = self.status == "active"
@@ -629,8 +583,6 @@ entity TaskBundle {
     mutate eventId = eventId
     mutate description = description
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TaskBundleCreated
   }
@@ -641,7 +593,6 @@ entity TaskBundle {
 
     mutate name = name
     mutate description = description
-    mutate updatedAt = now()
 
     emit TaskBundleUpdated
   }
@@ -650,7 +601,6 @@ entity TaskBundle {
     guard self.status == "active" "Task bundle is already archived"
 
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit TaskBundleArchived
   }
@@ -668,8 +618,7 @@ entity TaskBundleItem {
   property required taskBundleId: string
   property required kitchenTaskId: string
   property sortOrder: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireTaskBundleId: self.taskBundleId != "" "Task bundle ID is required"
   constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
@@ -683,8 +632,6 @@ entity TaskBundleItem {
     mutate taskBundleId = taskBundleId
     mutate kitchenTaskId = kitchenTaskId
     mutate sortOrder = sortOrder
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TaskBundleItemAdded
   }
@@ -692,7 +639,6 @@ entity TaskBundleItem {
   command removeItem(removedBy: string, reason: string) {
     guard removedBy != null and removedBy != "" "Remover employee ID is required"
 
-    mutate updatedAt = now()
 
     emit TaskBundleItemRemoved
   }
@@ -710,8 +656,7 @@ entity BulkCombineRule {
   property required name: string
   property required matchCriteria: string
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requireName: self.name != "" "Bulk combine rule name is required"
   constraint requireMatchCriteria: self.matchCriteria != "" "Match criteria is required"
@@ -723,8 +668,6 @@ entity BulkCombineRule {
     mutate name = name
     mutate matchCriteria = matchCriteria
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BulkCombineRuleCreated
   }
@@ -736,7 +679,6 @@ entity BulkCombineRule {
 
     mutate name = name
     mutate matchCriteria = matchCriteria
-    mutate updatedAt = now()
 
     emit BulkCombineRuleUpdated
   }
@@ -745,7 +687,6 @@ entity BulkCombineRule {
     guard self.isActive "Bulk combine rule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit BulkCombineRuleDeactivated
   }
@@ -764,8 +705,7 @@ entity MethodVideo {
   property required title: string
   property required url: string
   property durationSeconds: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   constraint requirePrepMethodId: self.prepMethodId != "" "Prep method ID is required"
   constraint requireTitle: self.title != "" "Video title is required"
@@ -782,8 +722,6 @@ entity MethodVideo {
     mutate title = title
     mutate url = url
     mutate durationSeconds = durationSeconds
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit MethodVideoCreated
   }
@@ -796,7 +734,6 @@ entity MethodVideo {
     mutate title = title
     mutate url = url
     mutate durationSeconds = durationSeconds
-    mutate updatedAt = now()
 
     emit MethodVideoUpdated
   }
@@ -804,7 +741,6 @@ entity MethodVideo {
   command remove(removedBy: string, reason: string) {
     guard removedBy != null and removedBy != "" "Remover employee ID is required"
 
-    mutate updatedAt = now()
 
     emit MethodVideoRemoved
   }
@@ -824,8 +760,7 @@ entity PrepListImport {
   property required status: string = "pending"
   property importedAt: datetime
   property errorMessage: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isComplete: boolean = self.status == "complete"
@@ -844,8 +779,6 @@ entity PrepListImport {
     mutate source = source
     mutate fileName = fileName
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepListImportCreated
   }
@@ -855,7 +788,6 @@ entity PrepListImport {
 
     mutate status = "complete"
     mutate importedAt = now()
-    mutate updatedAt = now()
 
     emit PrepListImportCompleted
   }
@@ -866,7 +798,6 @@ entity PrepListImport {
 
     mutate status = "failed"
     mutate errorMessage = errorMessage
-    mutate updatedAt = now()
 
     emit PrepListImportFailed
   }

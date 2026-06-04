@@ -11,8 +11,7 @@ entity VersionedEntity {
   property required entityName: string
   property isLocked: boolean = false
   property currentVersionId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   // Derived from EntityVersion count
   computed versionCount: number = 0
@@ -40,8 +39,6 @@ entity VersionedEntity {
     mutate entityType = entityType
     mutate entityId = entityId
     mutate entityName = entityName
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VersionedEntityRegistered
   }
@@ -58,7 +55,6 @@ entity VersionedEntity {
     }
 
     mutate isLocked = true
-    mutate updatedAt = now()
 
     emit VersionedEntityLocked
   }
@@ -67,7 +63,6 @@ entity VersionedEntity {
     guard self.isLocked == true "Entity is not locked"
 
     mutate isLocked = false
-    mutate updatedAt = now()
 
     emit VersionedEntityUnlocked
   }
@@ -77,7 +72,6 @@ entity VersionedEntity {
     guard self.isLocked == false "Cannot update name while entity is locked"
 
     mutate entityName = newName
-    mutate updatedAt = now()
 
     emit VersionedEntityRenamed
   }
@@ -98,7 +92,7 @@ entity EntityVersion {
   property isApproved: boolean = false
   property approvedAt: datetime
   property approvedBy: string = ""
-  property createdAt: datetime = now()
+  timestamps
   property createdBy: string = ""
 
   computed isInitialVersion: boolean = self.versionNumber == 1
@@ -123,7 +117,6 @@ entity EntityVersion {
     mutate changeReason = reason
     mutate changeSummary = summary
     mutate createdBy = userId
-    mutate createdAt = now()
 
     emit EntityVersionCreated
   }
@@ -171,7 +164,7 @@ entity VersionApproval {
   property required status: string
   property comments: string = ""
   property reviewedAt: datetime
-  property createdAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"
@@ -195,7 +188,6 @@ entity VersionApproval {
     mutate entityVersionId = entityVersionId
     mutate approverId = approverId
     mutate status = "pending"
-    mutate createdAt = now()
     mutate reviewedAt = now()
 
     emit VersionApprovalRequested

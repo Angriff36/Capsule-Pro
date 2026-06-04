@@ -17,6 +17,7 @@ entity PrepList {
   property finalizedAt: datetime
   property isActive: boolean = true
 
+  timestamps
   computed isDraft: boolean = self.status == "draft"
   computed isFinalized: boolean = self.status == "finalized"
   computed isCompleted: boolean = self.status == "completed"
@@ -221,6 +222,7 @@ entity PrepListItem {
   property completedAt: datetime
   property completedBy: string = ""
 
+  timestamps
   computed hasAllergens: boolean = self.allergens != null and self.allergens != ""
   computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and self.dietarySubstitutions != ""
   computed isRequired: boolean = self.isOptional == false

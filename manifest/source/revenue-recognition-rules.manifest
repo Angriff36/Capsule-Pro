@@ -40,8 +40,7 @@ entity RevenueRecognitionSchedule {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property completedAt: datetime
 
   // Computed properties
@@ -81,8 +80,6 @@ entity RevenueRecognitionSchedule {
     mutate recognitionPeriod = recognitionPeriod
     mutate description = description
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit RecognitionStarted
   }
@@ -91,7 +88,6 @@ entity RevenueRecognitionSchedule {
     guard self.status == "PENDING" "Can only start pending recognition"
     guard now() >= self.startDate "Cannot start before start date"
     mutate status = "IN_PROGRESS"
-    mutate updatedAt = now()
     emit RecognitionStarted
   }
 
@@ -101,7 +97,6 @@ entity RevenueRecognitionSchedule {
     guard amount <= self.remainingAmount "Cannot recognize more than remaining amount"
     mutate recognizedAmount = self.recognizedAmount + amount
     mutate remainingAmount = self.remainingAmount - amount
-    mutate updatedAt = now()
     emit RevenueRecognized
   }
 
@@ -110,7 +105,6 @@ entity RevenueRecognitionSchedule {
     guard self.remainingAmount <= 0.01 "Not fully recognized yet"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
@@ -121,7 +115,6 @@ entity RevenueRecognitionSchedule {
     mutate completedMilestones = self.completedMilestones + 1
     mutate recognizedAmount = self.recognizedAmount + amount
     mutate remainingAmount = self.remainingAmount - amount
-    mutate updatedAt = now()
     emit MilestoneRecognized
   }
 
@@ -131,7 +124,6 @@ entity RevenueRecognitionSchedule {
     guard self.completedMilestones >= self.totalMilestones or self.remainingAmount <= 0.01 "Not all milestones completed"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
@@ -142,7 +134,6 @@ entity RevenueRecognitionSchedule {
     guard (self.totalAmount * percentage) / 100 > self.recognizedAmount "Target percentage already reached"
     mutate recognizedAmount = (self.totalAmount * percentage) / 100
     mutate remainingAmount = self.totalAmount - (self.totalAmount * percentage) / 100
-    mutate updatedAt = now()
     emit PercentageRecognized
   }
 
@@ -152,21 +143,18 @@ entity RevenueRecognitionSchedule {
     guard self.remainingAmount <= 0.01 "Not fully recognized yet"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
   command pause() {
     guard self.status == "IN_PROGRESS" "Can only pause in-progress recognition"
     mutate status = "PAUSED"
-    mutate updatedAt = now()
     emit RecognitionPaused
   }
 
   command resume() {
     guard self.status == "PAUSED" "Can only resume paused recognition"
     mutate status = "IN_PROGRESS"
-    mutate updatedAt = now()
     emit RecognitionResumed
   }
 
@@ -174,7 +162,6 @@ entity RevenueRecognitionSchedule {
     guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot cancel completed recognition"
     mutate status = "CANCELLED"
     mutate notes = self.notes + "\nCancelled: " + reason
-    mutate updatedAt = now()
     emit RecognitionCancelled
   }
 
@@ -184,7 +171,6 @@ entity RevenueRecognitionSchedule {
     mutate endDate = newEndDate
     mutate remainingAmount = self.remainingAmount + (newTotalAmount - self.totalAmount)
     mutate totalAmount = newTotalAmount
-    mutate updatedAt = now()
     emit ScheduleAdjusted
   }
 
@@ -218,8 +204,7 @@ entity RevenueRecognitionLine {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
 
   // Computed properties
   computed isRecognized: boolean = self.status == "RECOGNIZED"
@@ -249,8 +234,6 @@ entity RevenueRecognitionLine {
     mutate milestoneName = milestoneName
     mutate description = description
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LineCreated
   }
@@ -262,7 +245,6 @@ entity RevenueRecognitionLine {
     mutate recognizedAmount = amount
     mutate status = "RECOGNIZED"
     mutate recognizedAt = recognizedAt != null and recognizedAt > 0 ? recognizedAt : now()
-    mutate updatedAt = now()
     emit LineRecognized
   }
 
@@ -270,14 +252,12 @@ entity RevenueRecognitionLine {
     guard self.status == "PENDING" "Can only skip pending lines"
     mutate status = "SKIPPED"
     mutate notes = self.notes + "\nSkipped: " + reason
-    mutate updatedAt = now()
     emit LineSkipped
   }
 
   command cancel() {
     guard self.status == "PENDING" "Can only cancel pending lines"
     mutate status = "CANCELLED"
-    mutate updatedAt = now()
     emit LineCancelled
   }
 

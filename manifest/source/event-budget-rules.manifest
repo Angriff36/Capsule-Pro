@@ -13,8 +13,7 @@ entity EventBudget {
   property varianceAmount: money = 0
   computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount)
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -67,8 +66,6 @@ entity EventBudget {
     mutate notes = notes
     mutate status = "draft"
     mutate version = 1
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventBudgetCreated
   }
@@ -89,7 +86,6 @@ entity EventBudget {
     mutate totalActualAmount = totalActualAmount
     mutate varianceAmount = totalActualAmount - totalBudgetAmount
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit EventBudgetUpdated
   }
@@ -106,7 +102,6 @@ entity EventBudget {
     }
 
     mutate status = "approved"
-    mutate updatedAt = now()
 
     emit EventBudgetApproved
   }
@@ -123,7 +118,6 @@ entity EventBudget {
     }
 
     mutate status = "finalized"
-    mutate updatedAt = now()
 
     emit EventBudgetFinalized
   }
@@ -144,8 +138,7 @@ entity BudgetLineItem {
   property varianceAmount: money = 0
   property sortOrder: int = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isOverBudget: boolean = self.actualAmount > self.budgetedAmount
@@ -183,8 +176,6 @@ entity BudgetLineItem {
     mutate varianceAmount = 0
     mutate sortOrder = sortOrder
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BudgetLineItemCreated
   }
@@ -207,14 +198,12 @@ entity BudgetLineItem {
     mutate varianceAmount = actualAmount - budgetedAmount
     mutate description = description
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit BudgetLineItemUpdated
   }
 
   command remove(reason: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit BudgetLineItemRemoved
   }

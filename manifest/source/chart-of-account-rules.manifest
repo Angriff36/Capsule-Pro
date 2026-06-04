@@ -11,8 +11,7 @@ entity ChartOfAccount {
   property parentId: string = ""
   property description: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed hasParent: boolean = self.parentId != ""
   computed isRoot: boolean = self.parentId == ""
@@ -33,8 +32,6 @@ entity ChartOfAccount {
     mutate parentId = parentId
     mutate description = description
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ChartOfAccountCreated
   }
@@ -48,7 +45,6 @@ entity ChartOfAccount {
     mutate parentId = parentId
     mutate description = description
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit ChartOfAccountUpdated
   }
@@ -57,7 +53,6 @@ entity ChartOfAccount {
     guard self.isActive == true "Account is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit ChartOfAccountDeactivated
   }

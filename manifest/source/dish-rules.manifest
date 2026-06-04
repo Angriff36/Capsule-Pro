@@ -31,8 +31,7 @@ entity Dish {
   property isEightySix: boolean = false
   property eightySixReason: string = ""
   property eightySixAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasPrice: boolean = self.pricePerPerson > 0
@@ -108,8 +107,6 @@ entity Dish {
     mutate isActive = true
     mutate isSeasonal = false
     mutate isEightySix = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DishCreated
   }
@@ -127,7 +124,6 @@ entity Dish {
     mutate portionSizeDescription = portionSizeDescription
     mutate dietaryTags = dietaryTags
     mutate allergens = allergens
-    mutate updatedAt = now()
 
     emit DishUpdated
   }
@@ -136,7 +132,6 @@ entity Dish {
     guard self.isActive == false "Dish is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit DishActivated
   }
@@ -154,7 +149,6 @@ entity Dish {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit DishDeactivated
   }
@@ -193,7 +187,6 @@ entity Dish {
 
     mutate pricePerPerson = pricePerPerson
     mutate costPerPerson = costPerPerson
-    mutate updatedAt = now()
 
     emit DishPricingUpdated
   }
@@ -206,7 +199,6 @@ entity Dish {
 
     mutate minPrepLeadDays = minPrepLeadDays
     mutate maxPrepLeadDays = maxPrepLeadDays
-    mutate updatedAt = now()
 
     emit DishLeadTimeUpdated
   }
@@ -222,7 +214,6 @@ entity Dish {
     mutate seasonLabel = seasonLabel
     mutate seasonStartMonth = seasonStartMonth
     mutate seasonEndMonth = seasonEndMonth
-    mutate updatedAt = now()
 
     emit DishMarkedSeasonal
   }
@@ -235,7 +226,6 @@ entity Dish {
     mutate seasonLabel = ""
     mutate seasonStartMonth = 0
     mutate seasonEndMonth = 0
-    mutate updatedAt = now()
 
     emit DishUnmarkedSeasonal
   }
@@ -249,7 +239,6 @@ entity Dish {
     mutate isEightySix = true
     mutate eightySixReason = reason
     mutate eightySixAt = now()
-    mutate updatedAt = now()
 
     emit DishEightySixed
   }
@@ -261,7 +250,6 @@ entity Dish {
     mutate isEightySix = false
     mutate eightySixReason = ""
     mutate eightySixAt = null
-    mutate updatedAt = now()
 
     emit DishReinstated
   }

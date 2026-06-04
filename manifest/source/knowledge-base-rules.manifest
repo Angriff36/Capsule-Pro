@@ -13,8 +13,7 @@ entity KnowledgeBaseEntry {
   property authorId: string = ""
   property publishedAt: datetime
   property viewCount: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPublished: boolean = self.status == "published"
   computed isDraft: boolean = self.status == "draft"
@@ -33,15 +32,12 @@ entity KnowledgeBaseEntry {
     mutate authorId = authorId
     mutate status = "draft"
     mutate viewCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryCreated
   }
 
   command remove() {
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryDeleted
   }
@@ -53,7 +49,6 @@ entity KnowledgeBaseEntry {
     mutate category = category
     mutate content = content
     mutate tags = tags
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryUpdated
   }
@@ -65,7 +60,6 @@ entity KnowledgeBaseEntry {
 
     mutate status = "published"
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryPublished
   }
@@ -75,7 +69,6 @@ entity KnowledgeBaseEntry {
     guard self.status == "published" "Only a published entry can be unpublished"
 
     mutate status = "draft"
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryUnpublished
   }

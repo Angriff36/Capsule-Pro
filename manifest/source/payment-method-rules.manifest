@@ -43,8 +43,7 @@ entity PaymentMethod {
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property expiresAt: datetime
 
   // Computed properties
@@ -76,8 +75,6 @@ entity PaymentMethod {
     mutate status = "ACTIVE"
     mutate isDefault = false
     mutate fraudFlagged = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PaymentMethodCreated
   }
@@ -85,13 +82,11 @@ entity PaymentMethod {
   command markAsDefault() {
     guard self.isUsable "Payment method must be usable to be set as default"
     mutate isDefault = true
-    mutate updatedAt = now()
     emit PaymentMethodSetDefault
   }
 
   command markNotDefault() {
     mutate isDefault = false
-    mutate updatedAt = now()
     emit PaymentMethodUnsetDefault
   }
 
@@ -100,14 +95,12 @@ entity PaymentMethod {
     guard self.status == "ACTIVE" "Can only expire an active payment method"
     mutate status = "EXPIRED"
     mutate expiresAt = now()
-    mutate updatedAt = now()
     emit PaymentMethodExpired
   }
 
   command markInvalid(reason: string) {
     guard self.status != "FRAUDULENT" "Cannot invalidate a fraudulent payment method"
     mutate status = "INVALID"
-    mutate updatedAt = now()
     emit PaymentMethodInvalidated
   }
 
@@ -116,7 +109,6 @@ entity PaymentMethod {
     mutate fraudFlagged = true
     mutate status = "FRAUDULENT"
     mutate isDefault = false
-    mutate updatedAt = now()
     emit PaymentMethodFraudFlagged
   }
 
@@ -125,14 +117,12 @@ entity PaymentMethod {
     guard self.fraudFlagged == false "Cannot verify a fraud-flagged payment method"
     mutate verifiedAt = now()
     mutate verificationMethod = method
-    mutate updatedAt = now()
     emit PaymentMethodVerified
   }
 
   command markVerificationFailed(reason: string) {
     guard self.status == "ACTIVE" "Can only fail verification on an active payment method"
     mutate status = "INVALID"
-    mutate updatedAt = now()
     emit PaymentMethodVerificationFailed
   }
 
@@ -140,7 +130,6 @@ entity PaymentMethod {
     guard self.status == "ACTIVE" "Can only update active payment methods"
     guard newToken != null and newToken != "" "New token is required"
     mutate externalMethodId = newToken
-    mutate updatedAt = now()
     emit PaymentMethodTokenUpdated
   }
 }

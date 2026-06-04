@@ -38,8 +38,7 @@ entity VendorContract {
   property slaBreachCount: int = 0
   property onTimeDeliveryRate: decimal = 0
   property qualityRating: decimal = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
@@ -87,8 +86,6 @@ entity VendorContract {
     mutate slaBreachCount = 0
     mutate onTimeDeliveryRate = 0
     mutate qualityRating = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VendorContractCreated
   }
@@ -105,7 +102,6 @@ entity VendorContract {
     mutate annualSpendCommitment = annualSpendCommitment
     mutate contractUrl = contractUrl
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit VendorContractUpdated
   }
@@ -114,7 +110,6 @@ entity VendorContract {
     guard self.status == "draft" "Can only submit draft contracts"
 
     mutate status = "pending_approval"
-    mutate updatedAt = now()
 
     emit VendorContractSubmitted
   }
@@ -125,7 +120,6 @@ entity VendorContract {
     mutate status = now() >= self.startDate ? "active" : "pending_activation"
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit VendorContractApproved
   }
@@ -136,7 +130,6 @@ entity VendorContract {
 
     mutate status = "cancelled"
     mutate terminationReason = reason
-    mutate updatedAt = now()
 
     emit VendorContractRejected
   }
@@ -146,7 +139,6 @@ entity VendorContract {
     guard now() >= self.startDate "Cannot activate before start date"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit VendorContractActivated
   }
@@ -168,7 +160,6 @@ entity VendorContract {
     mutate terminatedAt = now()
     mutate terminationReason = reason
     mutate endDate = now()
-    mutate updatedAt = now()
 
     emit VendorContractTerminated
   }
@@ -178,7 +169,6 @@ entity VendorContract {
     guard self.autoRenew == true "Contract must have auto-renewal enabled"
 
     mutate endDate = newEndDate
-    mutate updatedAt = now()
 
     emit VendorContractRenewed
   }
@@ -202,7 +192,6 @@ entity VendorContract {
     mutate onTimeDeliveryRate = onTimeDeliveryRate
     mutate qualityRating = qualityRating
     mutate lastComplianceReview = now()
-    mutate updatedAt = now()
 
     emit VendorContractComplianceUpdated
   }
@@ -213,7 +202,6 @@ entity VendorContract {
     mutate slaBreachCount = self.slaBreachCount + 1
     mutate complianceScore = (self.complianceScore - 10) >= 0 ? (self.complianceScore - 10) : 0
     mutate lastComplianceReview = now()
-    mutate updatedAt = now()
 
     emit VendorContractSlaBreachRecorded
   }

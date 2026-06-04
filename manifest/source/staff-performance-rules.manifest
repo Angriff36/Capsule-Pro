@@ -21,8 +21,7 @@ entity StaffPerformance {
   // Bug fix: completedAt is a lifecycle timestamp — must be nullable
   property completedAt: datetime
   property acknowledgedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isDraft: boolean = self.status == "draft"
   computed isInReview: boolean = self.status == "in_review"
@@ -53,8 +52,6 @@ entity StaffPerformance {
     mutate notes = notes
     mutate status = "draft"
     mutate rating = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewCreated
   }
@@ -72,7 +69,6 @@ entity StaffPerformance {
     mutate improvements = improvements
     mutate goals = goals
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit PerformanceReviewUpdated
   }
@@ -83,7 +79,6 @@ entity StaffPerformance {
     guard self.reviewerId != "" "A reviewer must be assigned before submission"
 
     mutate status = "in_review"
-    mutate updatedAt = now()
 
     emit PerformanceReviewSubmittedForReview
   }
@@ -95,7 +90,6 @@ entity StaffPerformance {
 
     mutate status = "draft"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit PerformanceReviewSentBackToDraft
   }
@@ -108,7 +102,6 @@ entity StaffPerformance {
     mutate rating = rating
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewCompleted
   }
@@ -120,7 +113,6 @@ entity StaffPerformance {
     mutate status = "acknowledged"
     mutate acknowledgementNotes = acknowledgementNotes
     mutate acknowledgedAt = now()
-    mutate updatedAt = now()
 
     emit PerformanceReviewAcknowledged
   }
@@ -129,7 +121,6 @@ entity StaffPerformance {
     guard self.status in ["draft"] "Only draft reviews can be removed"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit PerformanceReviewRemoved
   }

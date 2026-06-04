@@ -21,8 +21,7 @@ entity InventoryItem {
   property fsa_temp_logged: boolean = false
   property fsa_allergen_info: boolean = false
   property fsa_traceable: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
@@ -68,7 +67,6 @@ entity InventoryItem {
     }
 
     mutate quantityReserved = self.quantityReserved + quantity
-    mutate updatedAt = now()
 
     emit InventoryReserved
   }
@@ -109,7 +107,6 @@ entity InventoryItem {
 
     mutate quantityOnHand = self.quantityOnHand - quantity
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryConsumed
   }
@@ -142,7 +139,6 @@ entity InventoryItem {
 
     mutate quantityOnHand = self.quantityOnHand - quantity
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryWasted
   }
@@ -162,7 +158,6 @@ entity InventoryItem {
     }
 
     mutate quantityOnHand = self.quantityOnHand + quantity
-    mutate updatedAt = now()
 
     emit InventoryAdjusted
   }
@@ -184,7 +179,6 @@ entity InventoryItem {
 
     mutate quantityOnHand = self.quantityOnHand + quantity
     mutate unitCost = costPerUnit
-    mutate updatedAt = now()
 
     emit InventoryRestocked
   }
@@ -204,7 +198,6 @@ entity InventoryItem {
     }
 
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryReservationReleased
   }
@@ -233,8 +226,6 @@ entity InventoryItem {
     mutate fsa_temp_logged = fsa_temp_logged
     mutate fsa_allergen_info = fsa_allergen_info
     mutate fsa_traceable = fsa_traceable
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventoryItemCreated
   }

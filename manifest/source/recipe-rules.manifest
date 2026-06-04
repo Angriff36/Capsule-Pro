@@ -13,6 +13,7 @@ entity Recipe {
   property description: string = ""
   property required tags: string[]
   property required isActive: boolean = true
+  timestamps
 
   computed hasVersion: boolean = true
   computed tagCount: int = 0
@@ -100,7 +101,7 @@ entity RecipeVersion {
   property publishedAt: datetime
   property approvedAt: datetime
   property approvedBy: string = ""
-  property createdAt: datetime = now()
+  timestamps
 
   computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
   computed isVersion1: boolean = self.versionNumber == 1
@@ -148,7 +149,6 @@ entity RecipeVersion {
     mutate instructions = instructionsText
     mutate notes = notesText
     mutate status = "draft"
-    mutate createdAt = now()
 
     emit RecipeVersionCreated
   }
@@ -205,7 +205,6 @@ entity RecipeVersion {
     mutate publishedAt = null
     mutate approvedAt = null
     mutate approvedBy = ""
-    mutate createdAt = now()
 
     emit RecipeVersionRestored
   }
@@ -242,6 +241,7 @@ entity RecipeIngredient {
   property preparationNotes: string = ""
   property isOptional: boolean = false
   property wasteFactor: decimal = 1.0
+  timestamps
   property deletedAt: datetime
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
@@ -322,6 +322,7 @@ entity RecipeStep {
   property tips: string = ""
   property videoUrl: string = ""
   property imageUrl: string = ""
+  timestamps
   property deletedAt: datetime
 
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"

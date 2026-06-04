@@ -11,8 +11,7 @@ entity RolePolicy {
   property permissions: array<string> = []
   property description: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -28,8 +27,6 @@ entity RolePolicy {
     mutate permissions = permissions
     mutate description = description
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit RolePolicyCreated
   }
@@ -41,7 +38,6 @@ entity RolePolicy {
     mutate permissions = permissions
     mutate description = description
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit RolePolicyUpdated
   }
@@ -50,7 +46,6 @@ entity RolePolicy {
     guard self.deletedAt == null "Cannot grant permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
-    mutate updatedAt = now()
 
     emit RolePolicyPermissionGranted
   }
@@ -59,7 +54,6 @@ entity RolePolicy {
     guard self.deletedAt == null "Cannot revoke permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
-    mutate updatedAt = now()
 
     emit RolePolicyPermissionRevoked
   }

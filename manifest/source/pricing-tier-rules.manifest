@@ -19,8 +19,7 @@ entity PricingTier {
   property effectiveFrom: datetime
   property effectiveTo: datetime
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -57,8 +56,6 @@ entity PricingTier {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PricingTierCreated
   }
@@ -88,7 +85,6 @@ entity PricingTier {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit PricingTierUpdated
   }
@@ -99,7 +95,6 @@ entity PricingTier {
     guard self.isActive == false "Pricing tier is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit PricingTierActivated
   }
@@ -110,7 +105,6 @@ entity PricingTier {
     guard self.isActive "Pricing tier is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit PricingTierDeactivated
   }
@@ -128,7 +122,6 @@ entity PricingTier {
 
     mutate isActive = false
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PricingTierDeleted
   }

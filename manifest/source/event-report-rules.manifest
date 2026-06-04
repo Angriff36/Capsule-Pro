@@ -22,8 +22,7 @@ entity EventReport {
   property rejectedAt: datetime
   property rejectedBy: string = ""
   property rejectionReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -80,8 +79,6 @@ entity EventReport {
     mutate reviewNotes = notes
     mutate status = "draft"
     mutate completion = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventReportCreated
   }
@@ -100,7 +97,6 @@ entity EventReport {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit EventReportSubmitted
   }
@@ -113,7 +109,6 @@ entity EventReport {
     mutate reviewedBy = userId
     mutate reviewedAt = now()
     mutate reviewNotes = reviewNotes
-    mutate updatedAt = now()
 
     emit EventReportApproved
   }
@@ -129,7 +124,6 @@ entity EventReport {
     mutate rejectionReason = reason
     mutate reviewedBy = userId
     mutate reviewedAt = now()
-    mutate updatedAt = now()
 
     emit EventReportRejected
   }
@@ -141,7 +135,6 @@ entity EventReport {
     mutate status = "completed"
     mutate completion = 100
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit EventReportCompleted
   }
@@ -153,7 +146,6 @@ entity EventReport {
     mutate status = "in_progress"
     mutate completion = completion
     mutate checklistData = checklistData
-    mutate updatedAt = now()
 
     emit EventReportProgressUpdated
   }

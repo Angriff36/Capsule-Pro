@@ -9,8 +9,7 @@ entity PayrollPeriod {
   property periodStart: string = ""
   property periodEnd: string = ""
   property status: string = "open"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -30,8 +29,6 @@ entity PayrollPeriod {
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PayrollPeriodCreated
   }
@@ -41,7 +38,6 @@ entity PayrollPeriod {
     guard self.status == "open" "Only an open period can be closed"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit PayrollPeriodClosed
   }
@@ -50,7 +46,6 @@ entity PayrollPeriod {
     guard self.status == "closed" "Only a closed (not locked) period can be reopened"
 
     mutate status = "open"
-    mutate updatedAt = now()
 
     emit PayrollPeriodReopened
   }
@@ -60,7 +55,6 @@ entity PayrollPeriod {
     guard self.status == "closed" "A period must be closed before locking"
 
     mutate status = "locked"
-    mutate updatedAt = now()
 
     emit PayrollPeriodLocked
   }
@@ -81,8 +75,7 @@ entity EmployeeDeduction {
   property effectiveDate: string = ""
   property endDate: string = ""
   property maxAnnualAmount: money = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -109,8 +102,6 @@ entity EmployeeDeduction {
     mutate effectiveDate = effectiveDate
     mutate endDate = endDate
     mutate maxAnnualAmount = maxAnnualAmount
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeDeductionCreated
   }
@@ -123,7 +114,6 @@ entity EmployeeDeduction {
     mutate percentage = percentage
     mutate endDate = endDate
     mutate maxAnnualAmount = maxAnnualAmount
-    mutate updatedAt = now()
 
     emit EmployeeDeductionUpdated
   }
@@ -134,7 +124,6 @@ entity EmployeeDeduction {
 
     mutate endDate = endDate
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeDeductionDeactivated
   }
@@ -153,7 +142,7 @@ entity PayrollApprovalHistory {
   property performedBy: string = ""
   property performedAt: datetime = now()
   property reason: string = ""
-  property createdAt: datetime = now()
+  timestamps
 
   command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string, reason: string) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
@@ -165,7 +154,6 @@ entity PayrollApprovalHistory {
     mutate performedBy = performedBy
     mutate reason = reason
     mutate performedAt = now()
-    mutate createdAt = now()
 
     emit PayrollApprovalRequested
   }
@@ -188,8 +176,7 @@ entity PayrollRun {
   property rejectedBy: string = ""
   property paidAt: datetime
   property rejectReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -211,8 +198,6 @@ entity PayrollRun {
     mutate payrollPeriodId = payrollPeriodId
     mutate runDate = runDate
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PayrollRunCreated
   }
@@ -226,7 +211,6 @@ entity PayrollRun {
     mutate totalDeductions = totalDeductions
     mutate totalNet = totalNet
     mutate status = "processing"
-    mutate updatedAt = now()
 
     emit PayrollRunProcessed
   }
@@ -238,7 +222,6 @@ entity PayrollRun {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit PayrollRunApproved
   }
@@ -250,7 +233,6 @@ entity PayrollRun {
     mutate status = "rejected"
     mutate rejectedBy = rejectedBy
     mutate rejectReason = rejectReason
-    mutate updatedAt = now()
 
     emit PayrollRunRejected
   }
@@ -260,7 +242,6 @@ entity PayrollRun {
 
     mutate status = "paid"
     mutate paidAt = now()
-    mutate updatedAt = now()
 
     emit PayrollRunPaid
   }

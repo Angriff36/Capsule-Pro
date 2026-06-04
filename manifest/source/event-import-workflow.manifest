@@ -19,8 +19,7 @@ entity EventImportWorkflow {
   property confidence: decimal = 0
   property startedAt: datetime
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   // Computed properties for state checks
   computed isActive: boolean = self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"]
@@ -46,8 +45,6 @@ entity EventImportWorkflow {
     mutate idempotencyKey = idempotencyKey
     mutate inputData = inputData
     mutate currentStep = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventImportWorkflowCreated
   }
@@ -58,7 +55,6 @@ entity EventImportWorkflow {
     mutate status = "parsing"
     mutate currentStep = 1
     mutate startedAt = now() == 0 ? now() : self.startedAt
-    mutate updatedAt = now()
 
     emit EventImportWorkflowParsingStarted
   }
@@ -70,7 +66,6 @@ entity EventImportWorkflow {
     mutate outputData = extractedData
     mutate confidence = confidence
     mutate currentStep = 2
-    mutate updatedAt = now()
 
     constraint warnLowConfidence:warn confidence < 70 {
       messageTemplate: "Low parsing confidence ({confidence}%) - manual review recommended"
@@ -84,7 +79,6 @@ entity EventImportWorkflow {
   command startExtracting() {
     guard self.status == "parsing"
     mutate status = "extracting"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowExtractingStarted
   }
@@ -94,7 +88,6 @@ entity EventImportWorkflow {
 
     mutate outputData = eventData
     mutate currentStep = 3
-    mutate updatedAt = now()
 
     emit EventImportWorkflowExtractingCompleted
   }
@@ -103,7 +96,6 @@ entity EventImportWorkflow {
   command startValidating() {
     guard self.status == "extracting"
     mutate status = "validating"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowValidatingStarted
   }
@@ -114,7 +106,6 @@ entity EventImportWorkflow {
     mutate errors = validationErrors
     mutate warnings = validationWarnings
     mutate currentStep = 4
-    mutate updatedAt = now()
 
     emit EventImportWorkflowValidationCompleted
   }
@@ -123,7 +114,6 @@ entity EventImportWorkflow {
   command startProposing() {
     guard self.status == "validating"
     mutate status = "proposing"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowProposingStarted
   }
@@ -133,7 +123,6 @@ entity EventImportWorkflow {
 
     mutate stepResults = proposedTasks
     mutate currentStep = 5
-    mutate updatedAt = now()
 
     emit EventImportWorkflowProposingCompleted
   }
@@ -142,7 +131,6 @@ entity EventImportWorkflow {
   command startReserving() {
     guard self.status == "proposing"
     mutate status = "reserving"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowReservingStarted
   }
@@ -152,7 +140,6 @@ entity EventImportWorkflow {
 
     mutate stepResults = reservationResults
     mutate currentStep = 6
-    mutate updatedAt = now()
 
     emit EventImportWorkflowReservingCompleted
   }
@@ -161,7 +148,6 @@ entity EventImportWorkflow {
   command startActivating() {
     guard self.status == "reserving"
     mutate status = "activating"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowActivatingStarted
   }
@@ -172,7 +158,6 @@ entity EventImportWorkflow {
     mutate eventId = eventId
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit EventImportWorkflowCompleted
   }
@@ -184,7 +169,6 @@ entity EventImportWorkflow {
     mutate status = "failed"
     mutate errors = errorList
     mutate currentStep = step
-    mutate updatedAt = now()
 
     emit EventImportWorkflowFailed
   }
@@ -195,7 +179,6 @@ entity EventImportWorkflow {
 
     mutate status = "paused"
     mutate warnings = reasonList
-    mutate updatedAt = now()
 
     emit EventImportWorkflowPaused
   }
@@ -206,7 +189,6 @@ entity EventImportWorkflow {
     guard self.currentStep > 0
 
     mutate status = self.currentStep == 1 ? "parsing" : self.currentStep == 2 ? "extracting" : self.currentStep == 3 ? "validating" : self.currentStep == 4 ? "proposing" : self.currentStep == 5 ? "reserving" : "activating"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowResumed
   }
@@ -217,7 +199,6 @@ entity EventImportWorkflow {
 
     mutate status = "cancelled"
     mutate errors = reasonList
-    mutate updatedAt = now()
 
     emit EventImportWorkflowCancelled
   }
@@ -230,7 +211,6 @@ entity EventImportWorkflow {
     mutate currentStep = self.currentStep > 1 ? self.currentStep - 1 : 1
     mutate status = self.currentStep == 1 ? "parsing" : self.currentStep == 2 ? "extracting" : self.currentStep == 3 ? "validating" : self.currentStep == 4 ? "proposing" : self.currentStep == 5 ? "reserving" : "activating"
     mutate errors = "[]"
-    mutate updatedAt = now()
 
     emit EventImportWorkflowRetried
   }

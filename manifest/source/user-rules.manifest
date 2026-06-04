@@ -20,8 +20,7 @@ entity User {
   property required isActive: boolean = true
   property avatarUrl: string = ""
   property roleId: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed fullName: string = self.firstName + " " + self.lastName
@@ -49,8 +48,6 @@ entity User {
     mutate employeeNumber = employeeNumber
     mutate isActive = true
     mutate terminationDate = null
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit UserCreated
   }
@@ -65,7 +62,6 @@ entity User {
     mutate hourlyRate = hourlyRate
     mutate salaryAnnual = salaryAnnual
     mutate avatarUrl = avatarUrl
-    mutate updatedAt = now()
 
     emit UserUpdated
   }
@@ -74,7 +70,6 @@ entity User {
     guard self.isActive "User is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit UserDeactivated
   }
@@ -93,7 +88,6 @@ entity User {
 
     mutate isActive = false
     mutate terminationDate = terminationDate
-    mutate updatedAt = now()
 
     emit UserTerminated
   }
@@ -113,7 +107,6 @@ entity User {
     }
 
     mutate role = newRole
-    mutate updatedAt = now()
 
     emit UserRoleUpdated
   }

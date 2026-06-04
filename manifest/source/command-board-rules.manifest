@@ -11,8 +11,7 @@ entity CommandBoard {
   property status: string = "draft"
   property isTemplate: boolean = false
   property tags: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -31,8 +30,6 @@ entity CommandBoard {
     mutate isTemplate = isTemplate
     mutate tags = tags
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCreated
   }
@@ -52,7 +49,6 @@ entity CommandBoard {
     mutate name = newName
     mutate description = newDescription
     mutate tags = newTags
-    mutate updatedAt = now()
 
     emit CommandBoardUpdated
   }
@@ -61,7 +57,6 @@ entity CommandBoard {
     guard self.status == "draft" "Can only activate draft boards"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit CommandBoardActivated
   }
@@ -79,7 +74,6 @@ entity CommandBoard {
 
     mutate status = "archived"
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardDeactivated
   }
@@ -107,8 +101,7 @@ entity CommandBoardCard {
   property entityId: string = ""
   property entityType: string = ""
   property version: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
@@ -143,8 +136,6 @@ entity CommandBoardCard {
     mutate entityType = entityType
     mutate version = 0
     mutate zIndex = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCardCreated
   }
@@ -169,7 +160,6 @@ entity CommandBoardCard {
     mutate metadata = newMetadata
     mutate groupId = newGroupId
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardUpdated
   }
@@ -182,7 +172,6 @@ entity CommandBoardCard {
     mutate positionY = newPositionY
     mutate zIndex = newZIndex
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardMoved
   }
@@ -194,7 +183,6 @@ entity CommandBoardCard {
     mutate width = newWidth
     mutate height = newHeight
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardResized
   }
@@ -203,7 +191,6 @@ entity CommandBoardCard {
     guard self.deletedAt == null "Card is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCardDeleted
   }
@@ -224,8 +211,7 @@ entity CommandBoardGroup {
   property width: decimal = 300
   property height: decimal = 200
   property zIndex: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -248,8 +234,6 @@ entity CommandBoardGroup {
     mutate height = height
     mutate collapsed = false
     mutate zIndex = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardGroupCreated
   }
@@ -264,7 +248,6 @@ entity CommandBoardGroup {
     mutate positionY = newPositionY
     mutate width = newWidth
     mutate height = newHeight
-    mutate updatedAt = now()
 
     emit CommandBoardGroupUpdated
   }
@@ -273,7 +256,6 @@ entity CommandBoardGroup {
     guard self.deletedAt == null "Group is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardGroupDeleted
   }
@@ -291,8 +273,7 @@ entity CommandBoardConnection {
   property relationshipType: string = "generic"
   property label: string = ""
   property visible: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -315,8 +296,6 @@ entity CommandBoardConnection {
     mutate relationshipType = relationshipType
     mutate label = label
     mutate visible = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardConnectionCreated
   }
@@ -325,7 +304,6 @@ entity CommandBoardConnection {
     guard self.deletedAt == null "Connection is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardConnectionDeleted
   }
@@ -345,8 +323,7 @@ entity CommandBoardLayout {
   property gridSize: int = 40
   property showGrid: boolean = true
   property snapToGrid: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint validName: self.name != null and self.name != "" "Layout name is required"
@@ -367,8 +344,6 @@ entity CommandBoardLayout {
     mutate gridSize = gridSize
     mutate showGrid = showGrid
     mutate snapToGrid = snapToGrid
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutCreated
   }
@@ -382,7 +357,6 @@ entity CommandBoardLayout {
     mutate gridSize = newGridSize
     mutate showGrid = newShowGrid
     mutate snapToGrid = newSnapToGrid
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutUpdated
   }
@@ -391,7 +365,6 @@ entity CommandBoardLayout {
     guard self.deletedAt == null "Layout is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutDeleted
   }

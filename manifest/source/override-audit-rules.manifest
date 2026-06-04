@@ -13,7 +13,7 @@ entity OverrideAudit {
   property overrideReason: string = ""
   property authorizedBy: string = ""
   property authorizedAt: datetime
-  property createdAt: datetime = now()
+  timestamps
 
   computed isAuthorized: boolean = self.authorizedBy != ""
   computed isPendingAuthorization: boolean = self.authorizedBy == ""
@@ -40,7 +40,6 @@ entity OverrideAudit {
     mutate guardExpression = guardExpression
     mutate overriddenBy = overriddenBy
     mutate overrideReason = overrideReason
-    mutate createdAt = now()
 
     emit OverrideAuditCreated
   }

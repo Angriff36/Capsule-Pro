@@ -29,8 +29,7 @@ entity Proposal {
   property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -102,8 +101,6 @@ entity Proposal {
     mutate total = 0
     mutate status = "draft"
     mutate lineItemCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProposalCreated
   }
@@ -127,7 +124,6 @@ entity Proposal {
     mutate validUntil = validUntil
     mutate notes = notes
     mutate termsAndConditions = termsAndConditions
-    mutate updatedAt = now()
 
     emit ProposalUpdated
   }
@@ -163,7 +159,6 @@ entity Proposal {
 
     mutate status = "sent"
     mutate sentAt = now()
-    mutate updatedAt = now()
 
     emit ProposalSent
   }
@@ -173,7 +168,6 @@ entity Proposal {
 
     mutate status = "viewed"
     mutate viewedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalViewed
   }
@@ -193,7 +187,6 @@ entity Proposal {
 
     mutate status = "accepted"
     mutate acceptedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalAccepted
   }
@@ -204,7 +197,6 @@ entity Proposal {
 
     mutate status = "rejected"
     mutate rejectedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalRejected
   }
@@ -229,7 +221,6 @@ entity Proposal {
     }
 
     mutate status = "withdrawn"
-    mutate updatedAt = now()
 
     emit ProposalWithdrawn
   }
@@ -252,8 +243,7 @@ entity ProposalLineItem {
   property totalPrice: money = 0
   property sortOrder: int = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
@@ -290,8 +280,6 @@ entity ProposalLineItem {
     mutate totalPrice = quantity * unitPrice
     mutate sortOrder = sortOrder
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProposalLineItemCreated
   }
@@ -312,7 +300,6 @@ entity ProposalLineItem {
     mutate totalPrice = quantity * unitPrice
     mutate sortOrder = sortOrder
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ProposalLineItemUpdated
   }
@@ -321,7 +308,6 @@ entity ProposalLineItem {
     guard self.deletedAt == null "Line item is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalLineItemRemoved
   }

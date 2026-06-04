@@ -26,8 +26,7 @@ entity Client {
   property source: string = ""
   property assignedTo: string = ""
   property isActive: boolean = true
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
@@ -81,8 +80,6 @@ entity Client {
     mutate source = source
     mutate assignedTo = assignedTo
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ClientCreated
   }
@@ -109,7 +106,6 @@ entity Client {
     mutate tags = tags
     mutate source = source
     mutate assignedTo = assignedTo
-    mutate updatedAt = now()
 
     emit ClientUpdated
   }
@@ -126,7 +122,6 @@ entity Client {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ClientArchived
   }
@@ -136,7 +131,6 @@ entity Client {
 
     mutate deletedAt = null
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit ClientReactivated
   }
@@ -158,8 +152,7 @@ entity ClientContact {
   property isPrimary: boolean = false
   property isBillingContact: boolean = false
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed fullName: string = self.firstName + " " + self.lastName
@@ -192,8 +185,6 @@ entity ClientContact {
     mutate isPrimary = isPrimary
     mutate isBillingContact = isBillingContact
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ClientContactCreated
   }
@@ -209,7 +200,6 @@ entity ClientContact {
     mutate phoneMobile = phoneMobile
     mutate isBillingContact = isBillingContact
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ClientContactUpdated
   }
@@ -226,7 +216,6 @@ entity ClientContact {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ClientContactRemoved
   }
@@ -236,7 +225,6 @@ entity ClientContact {
     guard self.isPrimary == false "Contact is already primary"
 
     mutate isPrimary = true
-    mutate updatedAt = now()
 
     emit ClientContactSetPrimary
   }
@@ -253,8 +241,7 @@ entity ClientPreference {
   property preferenceKey: string = ""
   property preferenceValue: string = ""
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
@@ -271,8 +258,6 @@ entity ClientPreference {
     mutate preferenceKey = preferenceKey
     mutate preferenceValue = preferenceValue
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ClientPreferenceCreated
   }
@@ -282,7 +267,6 @@ entity ClientPreference {
 
     mutate preferenceValue = preferenceValue
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ClientPreferenceUpdated
   }
@@ -291,7 +275,6 @@ entity ClientPreference {
     guard self.deletedAt == null "Preference is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ClientPreferenceRemoved
   }

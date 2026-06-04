@@ -12,8 +12,7 @@ entity RateLimitConfig {
   property burstAllowance: int = 0
   property required priority: int = 0
   property required isActive: boolean = true
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireName: self.name != "" "Rate limit name is required"
@@ -33,8 +32,6 @@ entity RateLimitConfig {
     mutate burstAllowance = burstAllowance
     mutate priority = priority
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit RateLimitConfigCreated
   }
 
@@ -47,28 +44,24 @@ entity RateLimitConfig {
     mutate burstAllowance = burstAllowance
     mutate priority = priority
     mutate isActive = isActive
-    mutate updatedAt = now()
     emit RateLimitConfigUpdated
   }
 
   command softDelete(reason: string = "") {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit RateLimitConfigDeleted
   }
 
   command turnOn() {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate isActive = true
-    mutate updatedAt = now()
     emit RateLimitConfigActivated
   }
 
   command turnOff() {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate isActive = false
-    mutate updatedAt = now()
     emit RateLimitConfigDeactivated
   }
 

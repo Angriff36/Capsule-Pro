@@ -18,8 +18,7 @@ entity EventContract {
   property sentAt: datetime
   property viewedAt: datetime
   property signedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property canceledBy: string = ""
   property deletedAt: datetime
 
@@ -53,8 +52,6 @@ entity EventContract {
     mutate notes = notes
     mutate expiresAt = expiresAt
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ContractCreated
   }
@@ -67,7 +64,6 @@ entity EventContract {
     mutate documentType = documentType
     mutate notes = notes
     mutate expiresAt = expiresAt
-    mutate updatedAt = now()
 
     emit ContractUpdated
   }
@@ -79,7 +75,6 @@ entity EventContract {
 
     mutate status = "sent"
     mutate sentAt = now()
-    mutate updatedAt = now()
 
     emit ContractSent
   }
@@ -89,7 +84,6 @@ entity EventContract {
 
     mutate status = "viewed"
     mutate viewedAt = now()
-    mutate updatedAt = now()
 
     emit ContractViewed
   }
@@ -99,7 +93,6 @@ entity EventContract {
 
     mutate status = "signed"
     mutate signedAt = now()
-    mutate updatedAt = now()
 
     emit ContractSigned
   }
@@ -109,7 +102,6 @@ entity EventContract {
     guard self.status != "cancelled" "Cannot expire a cancelled contract"
 
     mutate status = "expired"
-    mutate updatedAt = now()
 
     emit ContractExpired
   }
@@ -120,14 +112,12 @@ entity EventContract {
 
     mutate status = "cancelled"
     mutate canceledBy = canceledBy
-    mutate updatedAt = now()
 
     emit ContractCancelled
   }
 
   command softDelete(reason: string, userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ContractDeleted
   }
@@ -151,8 +141,7 @@ entity ContractSignature {
   property invalidatedAt: datetime
   property invalidationReason: string = ""
   property isValid: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasEmail: boolean = self.signerEmail != ""
@@ -177,8 +166,6 @@ entity ContractSignature {
     mutate ipAddress = ipAddress
     mutate isValid = true
     mutate signedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit SignatureCreated
   }
@@ -188,7 +175,6 @@ entity ContractSignature {
     guard self.verifiedAt == null "Signature is already verified"
 
     mutate verifiedAt = now()
-    mutate updatedAt = now()
 
     emit SignatureVerified
   }
@@ -200,14 +186,12 @@ entity ContractSignature {
     mutate isValid = false
     mutate invalidatedAt = now()
     mutate invalidationReason = reason
-    mutate updatedAt = now()
 
     emit SignatureInvalidated
   }
 
   command softDelete(reason: string, userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit SignatureDeleted
   }

@@ -18,8 +18,7 @@ entity EmployeeAvailability {
   property suspendReason: string = ""
   property suspendedAt: datetime
   property reinstatedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -44,8 +43,6 @@ entity EmployeeAvailability {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveUntil = effectiveUntil
     mutate isSuspended = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeAvailabilityCreated
   }
@@ -60,7 +57,6 @@ entity EmployeeAvailability {
     mutate isAvailable = isAvailable
     mutate effectiveFrom = effectiveFrom
     mutate effectiveUntil = effectiveUntil
-    mutate updatedAt = now()
 
     emit EmployeeAvailabilityUpdated
   }
@@ -74,7 +70,6 @@ entity EmployeeAvailability {
     mutate isSuspended = true
     mutate suspendReason = reason
     mutate suspendedAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeAvailabilitySuspended
   }
@@ -87,7 +82,6 @@ entity EmployeeAvailability {
     mutate isSuspended = false
     mutate suspendReason = ""
     mutate reinstatedAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeAvailabilityReinstated
   }
@@ -96,7 +90,6 @@ entity EmployeeAvailability {
     guard self.deletedAt == null "Availability record is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeAvailabilityDeleted
   }

@@ -13,8 +13,7 @@ entity StaffMember {
   property role: string = "server"
   property required status: string = "active"
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
@@ -30,8 +29,6 @@ entity StaffMember {
     mutate phone = phone
     mutate role = role
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit StaffMemberCreated
   }
@@ -43,7 +40,6 @@ entity StaffMember {
     mutate email = email
     mutate phone = phone
     mutate role = role
-    mutate updatedAt = now()
 
     emit StaffMemberUpdated
   }
@@ -52,7 +48,6 @@ entity StaffMember {
     guard self.isActive "Staff member is already inactive"
 
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit StaffMemberDeactivated
   }
@@ -61,7 +56,6 @@ entity StaffMember {
     guard self.status == "inactive" "Staff member is already active"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit StaffMemberReactivated
   }
@@ -71,7 +65,6 @@ entity StaffMember {
     guard role != null and role != "" "Role is required"
 
     mutate role = role
-    mutate updatedAt = now()
 
     emit StaffMemberRoleChanged
   }

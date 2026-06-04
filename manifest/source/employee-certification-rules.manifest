@@ -12,8 +12,7 @@ entity EmployeeCertification {
   property expiryDate: string = ""
   property documentUrl: string = ""
   property status: string = "active"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -42,8 +41,6 @@ entity EmployeeCertification {
     mutate issuedDate = issuedDate
     mutate expiryDate = expiryDate
     mutate documentUrl = documentUrl
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeCertificationCreated
   }
@@ -56,7 +53,6 @@ entity EmployeeCertification {
     mutate issuedDate = issuedDate
     mutate expiryDate = expiryDate
     mutate documentUrl = documentUrl
-    mutate updatedAt = now()
 
     emit EmployeeCertificationUpdated
   }
@@ -71,7 +67,6 @@ entity EmployeeCertification {
     mutate expiryDate = expiryDate
     mutate documentUrl = documentUrl
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit EmployeeCertificationRenewed
   }
@@ -81,7 +76,6 @@ entity EmployeeCertification {
     guard self.status == "active" "Only an active certification can expire"
 
     mutate status = "expired"
-    mutate updatedAt = now()
 
     emit EmployeeCertificationExpired
   }
@@ -91,7 +85,6 @@ entity EmployeeCertification {
     guard reason != null and reason != "" "Revocation reason is required"
 
     mutate status = "revoked"
-    mutate updatedAt = now()
 
     emit EmployeeCertificationRevoked
   }
@@ -100,7 +93,6 @@ entity EmployeeCertification {
     guard self.deletedAt == null "Certification is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeCertificationDeleted
   }

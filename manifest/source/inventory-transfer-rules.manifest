@@ -17,8 +17,7 @@ entity InventoryTransfer {
   property discrepancyNotes: string = ""
   property hasDiscrepancy: boolean = false
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   // items: JSON-array-as-string payload. The InventoryTransferPrismaStore
   // accepts both a real array (from the UI dispatcher) and a JSON string
   // (from server-to-server callers), parses it, and fans out to
@@ -55,8 +54,6 @@ entity InventoryTransfer {
     // progress. "pending" (the Prisma column default) is NOT in
     // validStatus and would violate the constraint.
     mutate status = "pending_approval"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TransferCreated
   }
@@ -66,7 +63,6 @@ entity InventoryTransfer {
 
     mutate approvedBy = approvedBy
     mutate status = "approved"
-    mutate updatedAt = now()
 
     emit TransferApproved
   }
@@ -77,7 +73,6 @@ entity InventoryTransfer {
     mutate shippedBy = shippedBy
     mutate shipDate = now()
     mutate status = "in_transit"
-    mutate updatedAt = now()
 
     emit TransferShipped
   }
@@ -88,7 +83,6 @@ entity InventoryTransfer {
     mutate receivedBy = receivedBy
     mutate receiveDate = now()
     mutate status = "received"
-    mutate updatedAt = now()
 
     emit TransferReceived
   }
@@ -98,7 +92,6 @@ entity InventoryTransfer {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit TransferCancelled
   }
@@ -113,7 +106,6 @@ entity InventoryTransfer {
     mutate receivedBy = receivedBy
     mutate receiveDate = now()
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit TransferPartiallyReceived
   }
@@ -127,7 +119,6 @@ entity InventoryTransfer {
 
     mutate hasDiscrepancy = true
     mutate discrepancyNotes = discrepancyNotes
-    mutate updatedAt = now()
 
     emit TransferDiscrepancyFlagged
   }

@@ -13,8 +13,7 @@ entity AdminTask {
   property assignedTo: string = ""
   property dueDate: datetime
   property createdBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -32,8 +31,6 @@ entity AdminTask {
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AdminTaskCreated
   }
@@ -47,7 +44,6 @@ entity AdminTask {
     mutate category = category
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
-    mutate updatedAt = now()
 
     emit AdminTaskUpdated
   }
@@ -57,7 +53,6 @@ entity AdminTask {
     guard self.status == "backlog" or self.status == "in_progress" "Can only move to todo from backlog or in_progress"
 
     mutate status = "todo"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
@@ -67,7 +62,6 @@ entity AdminTask {
     guard self.status == "todo" "Can only start progress from todo"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
@@ -77,7 +71,6 @@ entity AdminTask {
     guard self.status == "in_progress" "Can only complete from in_progress"
 
     mutate status = "done"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
@@ -87,7 +80,6 @@ entity AdminTask {
     guard self.status != "done" "Cannot cancel a completed task"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
@@ -97,7 +89,6 @@ entity AdminTask {
     guard self.status == "cancelled" "Can only reopen a cancelled task"
 
     mutate status = "backlog"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
@@ -106,7 +97,6 @@ entity AdminTask {
     guard self.deletedAt == null "Task is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit AdminTaskDeleted
   }

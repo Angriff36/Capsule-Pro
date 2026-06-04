@@ -16,8 +16,7 @@ entity ProposalTemplate {
   property footerHtml: string = ""
   property defaultTerms: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -40,8 +39,6 @@ entity ProposalTemplate {
     mutate footerHtml = footerHtml
     mutate defaultTerms = defaultTerms
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProposalTemplateCreated
   }
@@ -55,7 +52,6 @@ entity ProposalTemplate {
     mutate headerHtml = headerHtml
     mutate footerHtml = footerHtml
     mutate defaultTerms = defaultTerms
-    mutate updatedAt = now()
 
     emit ProposalTemplateUpdated
   }
@@ -65,7 +61,6 @@ entity ProposalTemplate {
     guard self.isActive == false "Template is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit ProposalTemplateActivated
   }
@@ -75,7 +70,6 @@ entity ProposalTemplate {
     guard self.isActive == true "Template is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit ProposalTemplateDeactivated
   }
@@ -97,8 +91,7 @@ entity InteractionAttachment {
   property fileType: string = ""
   property fileSizeBytes: int = 0
   property uploadedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
@@ -129,8 +122,6 @@ entity InteractionAttachment {
     mutate fileType = fileType
     mutate fileSizeBytes = fileSizeBytes
     mutate uploadedBy = uploadedBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InteractionAttachmentCreated
   }
@@ -139,7 +130,6 @@ entity InteractionAttachment {
     guard self.deletedAt == null "Attachment is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit InteractionAttachmentRemoved
   }
@@ -159,8 +149,7 @@ entity CrmScoringRule {
   property criterion: string = ""
   property points: int = 0
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -187,8 +176,6 @@ entity CrmScoringRule {
     mutate criterion = criterion
     mutate points = points
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CrmScoringRuleCreated
   }
@@ -202,7 +189,6 @@ entity CrmScoringRule {
     mutate name = name
     mutate criterion = criterion
     mutate points = points
-    mutate updatedAt = now()
 
     emit CrmScoringRuleUpdated
   }
@@ -212,7 +198,6 @@ entity CrmScoringRule {
     guard self.isActive == false "Scoring rule is already active"
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit CrmScoringRuleActivated
   }
@@ -222,7 +207,6 @@ entity CrmScoringRule {
     guard self.isActive == true "Scoring rule is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit CrmScoringRuleDeactivated
   }
@@ -244,8 +228,7 @@ entity Report {
   property displayConfig: string = "{}"
   property isShared: boolean = false
   property createdBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -264,8 +247,6 @@ entity Report {
     mutate displayConfig = displayConfig
     mutate isShared = isShared
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ReportCreated
   }
@@ -279,7 +260,6 @@ entity Report {
     mutate reportType = reportType
     mutate queryConfig = queryConfig
     mutate displayConfig = displayConfig
-    mutate updatedAt = now()
 
     emit ReportUpdated
   }
@@ -289,7 +269,6 @@ entity Report {
     guard self.isShared == false "Report is already shared"
 
     mutate isShared = true
-    mutate updatedAt = now()
 
     emit ReportShared
   }
@@ -298,7 +277,6 @@ entity Report {
     guard self.deletedAt == null "Report is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ReportRemoved
   }
@@ -322,8 +300,7 @@ entity Document {
   property entityType: string = ""
   property entityId: string = ""
   property uploadedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -358,8 +335,6 @@ entity Document {
     mutate entityType = entityType
     mutate entityId = entityId
     mutate uploadedBy = uploadedBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DocumentCreated
   }
@@ -369,7 +344,6 @@ entity Document {
     guard self.status == "parsing" "Document must be in parsing status to mark as parsed"
 
     mutate status = "parsed"
-    mutate updatedAt = now()
 
     emit DocumentParsed
   }
@@ -379,7 +353,6 @@ entity Document {
     guard self.status == "parsing" "Document must be in parsing status to mark as failed"
 
     mutate status = "failed"
-    mutate updatedAt = now()
 
     emit DocumentFailed
   }
@@ -388,7 +361,6 @@ entity Document {
     guard self.deletedAt == null "Document is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit DocumentRemoved
   }
@@ -408,8 +380,7 @@ entity AdminChatThread {
   property status: string = "open"
   property createdBy: string = ""
   property lastMessageAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isArchived: boolean = self.status == "archived"
@@ -425,8 +396,6 @@ entity AdminChatThread {
     mutate subject = subject
     mutate status = "open"
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AdminChatThreadCreated
   }
@@ -435,7 +404,6 @@ entity AdminChatThread {
     guard self.status == "open" "Thread is already archived"
 
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit AdminChatThreadArchived
   }
@@ -444,7 +412,6 @@ entity AdminChatThread {
     guard self.status == "archived" "Thread is already open"
 
     mutate status = "open"
-    mutate updatedAt = now()
 
     emit AdminChatThreadReopened
   }
@@ -464,8 +431,7 @@ entity AdminChatMessage {
   property senderId: string = ""
   property body: string = ""
   property sentAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
@@ -483,8 +449,6 @@ entity AdminChatMessage {
     mutate senderId = senderId
     mutate body = body
     mutate sentAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AdminChatMessageSent
   }
@@ -493,7 +457,6 @@ entity AdminChatMessage {
     guard self.deletedAt == null "Message is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit AdminChatMessageRemoved
   }

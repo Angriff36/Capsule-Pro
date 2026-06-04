@@ -15,8 +15,7 @@ entity AutomatedFollowup {
   property body: string = ""
   property templateId: string = ""
   property errorMessage: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isSent: boolean = self.status == "sent"
@@ -38,8 +37,6 @@ entity AutomatedFollowup {
     mutate body = body
     mutate templateId = templateId
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit FollowupCreated
   }
@@ -49,7 +46,6 @@ entity AutomatedFollowup {
 
     mutate status = "sent"
     mutate sentDate = sentDate
-    mutate updatedAt = now()
 
     emit FollowupSent
   }
@@ -57,7 +53,6 @@ entity AutomatedFollowup {
   command generate() {
     guard self.status == "pending" "Only pending followups can be generated"
 
-    mutate updatedAt = now()
 
     emit FollowupGenerated
   }
@@ -68,7 +63,6 @@ entity AutomatedFollowup {
 
     mutate status = "failed"
     mutate errorMessage = errorMessage
-    mutate updatedAt = now()
 
     emit FollowupFailed
   }
@@ -78,7 +72,6 @@ entity AutomatedFollowup {
 
     mutate status = "pending"
     mutate errorMessage = ""
-    mutate updatedAt = now()
 
     emit FollowupRetried
   }
@@ -88,7 +81,6 @@ entity AutomatedFollowup {
 
     mutate status = "skipped"
     mutate errorMessage = reason
-    mutate updatedAt = now()
 
     emit FollowupSkipped
   }
@@ -109,8 +101,7 @@ entity EventTimelineItem {
   property dueDate: datetime
   property completedAt: datetime
   property sortOrder: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isCompleted: boolean = self.status == "completed"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -131,8 +122,6 @@ entity EventTimelineItem {
     mutate dueDate = dueDate
     mutate sortOrder = sortOrder
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimelineItemCreated
   }
@@ -141,7 +130,6 @@ entity EventTimelineItem {
     guard self.status == "pending" "Can only start a pending timeline item"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit TimelineItemStarted
   }
@@ -152,7 +140,6 @@ entity EventTimelineItem {
 
     mutate status = "blocked"
     mutate description = reason
-    mutate updatedAt = now()
 
     emit TimelineItemBlocked
   }
@@ -161,7 +148,6 @@ entity EventTimelineItem {
     guard self.status == "blocked" "Can only unblock a blocked timeline item"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit TimelineItemUnblocked
   }
@@ -171,14 +157,12 @@ entity EventTimelineItem {
     guard self.status != "completed" "Cannot reorder a completed item"
 
     mutate sortOrder = newSortOrder
-    mutate updatedAt = now()
 
     emit TimelineItemReordered
   }
 
   command deleteItem() {
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit TimelineItemDeleted
   }
@@ -188,7 +172,6 @@ entity EventTimelineItem {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit TimelineItemCompleted
   }
@@ -203,7 +186,6 @@ entity EventTimelineItem {
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
     mutate sortOrder = sortOrder
-    mutate updatedAt = now()
 
     emit TimelineItemUpdated
   }
@@ -225,8 +207,7 @@ entity EventWaitlistEntry {
   property joinedAt: datetime
   property notifiedAt: datetime
   property seatedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isWaiting: boolean = self.status == "waiting"
   computed isNotified: boolean = self.status == "notified"
@@ -250,8 +231,6 @@ entity EventWaitlistEntry {
     mutate notes = notes
     mutate status = "waiting"
     mutate joinedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WaitlistGuestAdded
   }
@@ -261,7 +240,6 @@ entity EventWaitlistEntry {
 
     mutate status = "notified"
     mutate notifiedAt = now()
-    mutate updatedAt = now()
 
     emit WaitlistGuestNotified
   }
@@ -270,7 +248,6 @@ entity EventWaitlistEntry {
     guard self.status in ["waiting", "notified"] "Cannot promote a non-waiting guest"
 
     mutate status = "confirmed"
-    mutate updatedAt = now()
 
     emit WaitlistGuestPromoted
   }
@@ -280,7 +257,6 @@ entity EventWaitlistEntry {
 
     mutate status = "seated"
     mutate seatedAt = now()
-    mutate updatedAt = now()
 
     emit WaitlistGuestSeated
   }
@@ -291,7 +267,6 @@ entity EventWaitlistEntry {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit WaitlistGuestCancelled
   }
@@ -300,7 +275,6 @@ entity EventWaitlistEntry {
     guard status in ["waiting", "notified", "confirmed", "seated", "cancelled"] "Invalid RSVP status"
 
     mutate status = status
-    mutate updatedAt = now()
 
     emit WaitlistRsvpUpdated
   }

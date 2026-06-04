@@ -27,8 +27,7 @@ entity Vendor {
   property blacklistedAt: datetime
   property blacklistedReason: string = ""
   property lastContactAddedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed averageRating: number = self.ratingCount > 0 ? self.rating / self.ratingCount : 0
   computed isActive: boolean = self.status == "active"
@@ -60,8 +59,6 @@ entity Vendor {
     mutate status = "active"
     mutate rating = 0
     mutate ratingCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VendorCreated
   }
@@ -72,7 +69,6 @@ entity Vendor {
 
     mutate status = "inactive"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit VendorDeleted
   }
@@ -84,7 +80,6 @@ entity Vendor {
     mutate status = "active"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit VendorApproved
   }
@@ -96,7 +91,6 @@ entity Vendor {
     mutate status = "inactive"
     mutate suspendedReason = reason
     mutate suspendedAt = now()
-    mutate updatedAt = now()
 
     emit VendorSuspended
   }
@@ -108,7 +102,6 @@ entity Vendor {
     mutate status = "blacklisted"
     mutate blacklistedReason = reason
     mutate blacklistedAt = now()
-    mutate updatedAt = now()
 
     emit VendorBlacklisted
   }
@@ -128,7 +121,6 @@ entity Vendor {
     mutate taxId = taxId
     mutate paymentTerms = paymentTerms
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit VendorUpdated
   }
@@ -138,7 +130,6 @@ entity Vendor {
     guard self.status != "blacklisted" "Cannot add contacts to a blacklisted vendor"
 
     mutate lastContactAddedAt = now()
-    mutate updatedAt = now()
 
     emit VendorContactAdded
   }
@@ -148,7 +139,6 @@ entity Vendor {
 
     mutate rating = self.rating + score
     mutate ratingCount = self.ratingCount + 1
-    mutate updatedAt = now()
 
     emit VendorRated
   }

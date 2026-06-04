@@ -20,8 +20,7 @@ entity PurchaseOrder {
   property submittedAt: datetime
   property receivedBy: string = ""
   property receivedAt: datetime
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
   property itemCount: int = 0
 
@@ -60,8 +59,6 @@ entity PurchaseOrder {
     mutate total = 0
     mutate itemCount = 0
     mutate orderDate = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderCreated
   }
@@ -79,7 +76,6 @@ entity PurchaseOrder {
     mutate status = "submitted"
     mutate submittedBy = userId
     mutate submittedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderSubmitted
   }
@@ -95,7 +91,6 @@ entity PurchaseOrder {
     }
 
     mutate status = "approved"
-    mutate updatedAt = now()
 
     emit PurchaseOrderApproved
   }
@@ -106,7 +101,6 @@ entity PurchaseOrder {
 
     mutate status = "rejected"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit PurchaseOrderRejected
   }
@@ -133,7 +127,6 @@ entity PurchaseOrder {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit PurchaseOrderCancelled
   }
@@ -142,7 +135,6 @@ entity PurchaseOrder {
     guard self.status == "approved" "Can only mark approved orders as ordered"
 
     mutate status = "ordered"
-    mutate updatedAt = now()
 
     emit PurchaseOrderOrdered
   }
@@ -154,7 +146,6 @@ entity PurchaseOrder {
     mutate receivedBy = userId
     mutate receivedAt = now()
     mutate actualDeliveryDate = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderReceived
   }
@@ -176,8 +167,7 @@ entity PurchaseOrderItem {
   property discrepancyType: string = ""
   property discrepancyAmount: money = 0
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   key [tenantId, id]
@@ -206,8 +196,6 @@ entity PurchaseOrderItem {
     mutate qualityStatus = "pending"
     mutate quantityReceived = 0
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemCreated
   }
@@ -220,7 +208,6 @@ entity PurchaseOrderItem {
     mutate unitCost = unitCost
     mutate totalCost = quantityOrdered * unitCost
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemUpdated
   }
@@ -229,7 +216,6 @@ entity PurchaseOrderItem {
     guard self.quantityReceived == 0 "Cannot remove item that has been partially received"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemRemoved
   }

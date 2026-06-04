@@ -22,7 +22,7 @@ entity InventoryTransaction {
   property reversedBy: string = ""
   property reverseOfTransactionId: string = ""
   property isReversed: boolean = false
-  property createdAt: datetime = now()
+  timestamps
 
   computed isReceipt: boolean = self.transactionType == "receipt"
   computed isIssue: boolean = self.transactionType == "issue"
@@ -86,7 +86,6 @@ entity InventoryTransaction {
     mutate storageLocationId = storageLocationId
     mutate transactionDate = now()
     mutate isReversed = false
-    mutate createdAt = now()
 
     emit InventoryTransactionCreated
   }

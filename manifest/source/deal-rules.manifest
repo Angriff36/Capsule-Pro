@@ -17,8 +17,7 @@ entity Deal {
   property actualCloseDate: datetime
   property assignedTo: string = ""
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isWon: boolean = self.status == "won"
   computed isLost: boolean = self.status == "lost"
@@ -49,8 +48,6 @@ entity Deal {
     mutate assignedTo = assignedTo
     mutate notes = notes
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DealCreated
   }
@@ -61,7 +58,6 @@ entity Deal {
 
     mutate stage = stage
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit DealStageUpdated
   }
@@ -71,7 +67,6 @@ entity Deal {
     guard value >= 0 "Deal value cannot be negative"
 
     mutate value = value
-    mutate updatedAt = now()
 
     emit DealValueUpdated
   }
@@ -81,7 +76,6 @@ entity Deal {
     guard probability >= 0 and probability <= 100 "Probability must be between 0 and 100"
 
     mutate probability = probability
-    mutate updatedAt = now()
 
     emit DealProbabilityUpdated
   }
@@ -91,7 +85,6 @@ entity Deal {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
 
     mutate assignedTo = assignedTo
-    mutate updatedAt = now()
 
     emit DealAssigned
   }
@@ -103,7 +96,6 @@ entity Deal {
     mutate status = status
     mutate stage = "closed"
     mutate actualCloseDate = now()
-    mutate updatedAt = now()
 
     emit DealClosed
   }
@@ -114,7 +106,6 @@ entity Deal {
     mutate status = "abandoned"
     mutate notes = reason
     mutate actualCloseDate = now()
-    mutate updatedAt = now()
 
     emit DealAbandoned
   }
@@ -126,7 +117,6 @@ entity Deal {
     mutate stage = "negotiation"
     mutate actualCloseDate = null
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit DealReopened
   }

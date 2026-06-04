@@ -12,8 +12,7 @@ entity Venue {
   property contactPhone: string = ""
   property notes: string = ""
   property isActive: boolean = true
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isLargeVenue: boolean = self.capacity > 500
@@ -31,8 +30,6 @@ entity Venue {
     mutate contactPhone = contactPhone
     mutate notes = notes
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit VenueCreated
   }
   command update(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
@@ -45,26 +42,22 @@ entity Venue {
     mutate contactName = contactName
     mutate contactPhone = contactPhone
     mutate notes = notes
-    mutate updatedAt = now()
     emit VenueUpdated
   }
   command activate() {
     guard self.isActive == false "Venue is already active"
     mutate isActive = true
-    mutate updatedAt = now()
     emit VenueActivated
   }
   command deactivate(reason: string) {
     guard self.isActive "Venue is already deactivated"
     mutate isActive = false
-    mutate updatedAt = now()
     emit VenueDeactivated
   }
   command updateCapacity(capacity: int) {
     guard self.isActive "Cannot update capacity of a deactivated venue"
     guard capacity >= 0 "Capacity cannot be negative"
     mutate capacity = capacity
-    mutate updatedAt = now()
     emit VenueCapacityUpdated
   }
   store Venue in durable
@@ -117,8 +110,7 @@ entity EventStaffAssignment {
   property shiftEnd: datetime
   property status: string = "assigned"
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isAssigned: boolean = self.status == "assigned"
@@ -140,21 +132,17 @@ entity EventStaffAssignment {
     mutate shiftEnd = shiftEnd
     mutate notes = notes
     mutate status = "assigned"
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit EventStaffAssignmentAssigned
   }
   command confirm(userId: string) {
     guard self.status == "assigned" "Only assigned staff can confirm"
     mutate status = "confirmed"
-    mutate updatedAt = now()
     emit EventStaffAssignmentConfirmed
   }
   command cancel(reason: string) {
     guard self.status != "cancelled" "Assignment is already cancelled"
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
     emit EventStaffAssignmentCancelled
   }
   command updateShift(shiftStart: datetime, shiftEnd: datetime, notes: string) {
@@ -162,14 +150,12 @@ entity EventStaffAssignment {
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
     mutate notes = notes
-    mutate updatedAt = now()
     emit EventStaffAssignmentShiftUpdated
   }
   command updateRole(role: string) {
     guard self.status != "cancelled" "Cannot update role on a cancelled assignment"
     guard role != null and role != "" "Role is required"
     mutate role = role
-    mutate updatedAt = now()
     emit EventStaffAssignmentRoleUpdated
   }
   store EventStaffAssignment in durable
@@ -227,8 +213,7 @@ entity EventTimeline {
   property durationMinutes: int = 0
   property notes: string = ""
   property sortOrder: int = 0
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isShortEntry: boolean = self.durationMinutes > 0 and self.durationMinutes < 15
@@ -247,8 +232,6 @@ entity EventTimeline {
     mutate durationMinutes = durationMinutes
     mutate notes = notes
     mutate sortOrder = sortOrder
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit EventTimelineCreated
   }
   command update(title: string, scheduledAt: datetime, durationMinutes: int, notes: string) {
@@ -258,18 +241,15 @@ entity EventTimeline {
     mutate scheduledAt = scheduledAt
     mutate durationMinutes = durationMinutes
     mutate notes = notes
-    mutate updatedAt = now()
     emit EventTimelineUpdated
   }
   command reorder(newSortOrder: int) {
     guard newSortOrder >= 0 "Sort order cannot be negative"
     mutate sortOrder = newSortOrder
-    mutate updatedAt = now()
     emit EventTimelineReordered
   }
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit EventTimelineRemoved
   }
   store EventTimeline in durable
@@ -320,8 +300,7 @@ entity TimelineTask {
   property notes: string = ""
   property sortOrder: int = 0
   property completedAt: datetime
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
@@ -342,21 +321,17 @@ entity TimelineTask {
     mutate status = "pending"
     mutate assignedTo = assignedTo
     mutate sortOrder = sortOrder
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit TimelineTaskCreated
   }
   command start(userId: string) {
     guard self.status == "pending" "Can only start pending tasks"
     mutate status = "in_progress"
-    mutate updatedAt = now()
     emit TimelineTaskStarted
   }
   command complete(userId: string) {
     guard self.status == "in_progress" "Can only complete in-progress tasks"
     mutate status = "done"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit TimelineTaskCompleted
   }
   command blockTask(reason: string) {
@@ -364,33 +339,28 @@ entity TimelineTask {
     guard reason != null and reason != "" "Block reason is required"
     mutate status = "blocked"
     mutate notes = reason
-    mutate updatedAt = now()
     emit TimelineTaskBlocked
   }
   command unblockTask(userId: string) {
     guard self.status == "blocked" "Can only unblock blocked tasks"
     mutate status = "in_progress"
-    mutate updatedAt = now()
     emit TimelineTaskUnblocked
   }
   command reorder(newSortOrder: int) {
     guard newSortOrder >= 0 "Sort order cannot be negative"
     guard self.status != "done" "Cannot reorder a completed task"
     mutate sortOrder = newSortOrder
-    mutate updatedAt = now()
     emit TimelineTaskReordered
   }
   command reassign(newAssignedTo: string) {
     guard self.status != "done" "Cannot reassign a completed task"
     guard newAssignedTo != null and newAssignedTo != "" "Assignee is required"
     mutate assignedTo = newAssignedTo
-    mutate updatedAt = now()
     emit TimelineTaskReassigned
   }
   command remove(userId: string) {
     guard self.status != "in_progress" "Cannot remove a task that is in progress"
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit TimelineTaskRemoved
   }
   store TimelineTask in durable
@@ -469,8 +439,7 @@ entity EventImport {
   property importedRows: int = 0
   property skippedRows: int = 0
   property errorMessage: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property completedAt: datetime
   property deletedAt: datetime
 
@@ -500,14 +469,11 @@ entity EventImport {
     mutate skippedRows = 0
     mutate status = "pending"
     mutate errorMessage = ""
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit EventImportCreated
   }
   command startProcessing(userId: string) {
     guard self.status == "pending" "Can only start processing pending imports"
     mutate status = "processing"
-    mutate updatedAt = now()
     emit EventImportProcessingStarted
   }
   command complete(importedRows: int, skippedRows: int) {
@@ -517,14 +483,12 @@ entity EventImport {
     mutate importedRows = importedRows
     mutate skippedRows = skippedRows
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit EventImportCompleted
   }
   command fail(errorMessage: string) {
     guard self.status == "processing" "Can only fail an import that is processing"
     mutate status = "failed"
     mutate errorMessage = errorMessage
-    mutate updatedAt = now()
     emit EventImportFailed
   }
   command retry(userId: string) {
@@ -533,7 +497,6 @@ entity EventImport {
     mutate errorMessage = ""
     mutate importedRows = 0
     mutate skippedRows = 0
-    mutate updatedAt = now()
     emit EventImportRetried
   }
   store EventImport in durable
@@ -591,8 +554,7 @@ entity EventFollowup {
   property assignedTo: string = ""
   property notes: string = ""
   property completedAt: datetime
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
@@ -612,8 +574,6 @@ entity EventFollowup {
     mutate status = "pending"
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit EventFollowupCreated
   }
   command complete(userId: string, notes: string) {
@@ -621,7 +581,6 @@ entity EventFollowup {
     mutate status = "done"
     mutate notes = notes
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit EventFollowupCompleted
   }
   command reschedule(newDueAt: datetime, reason: string) {
@@ -629,14 +588,12 @@ entity EventFollowup {
     guard newDueAt != null "New due date is required"
     mutate dueAt = newDueAt
     mutate notes = reason
-    mutate updatedAt = now()
     emit EventFollowupRescheduled
   }
   command cancel(reason: string) {
     guard self.status == "pending" "Can only cancel a pending followup"
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
     emit EventFollowupCancelled
   }
   store EventFollowup in durable
@@ -688,8 +645,7 @@ entity BoardProjection {
   property positionY: decimal = 0
   property width: decimal = 200
   property height: decimal = 150
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
@@ -711,14 +667,11 @@ entity BoardProjection {
     mutate positionY = positionY
     mutate width = width
     mutate height = height
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit BoardProjectionCreated
   }
   command move(positionX: decimal, positionY: decimal) {
     mutate positionX = positionX
     mutate positionY = positionY
-    mutate updatedAt = now()
     emit BoardProjectionMoved
   }
   command resize(width: decimal, height: decimal) {
@@ -726,12 +679,10 @@ entity BoardProjection {
     guard height > 0 "Height must be positive"
     mutate width = width
     mutate height = height
-    mutate updatedAt = now()
     emit BoardProjectionResized
   }
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit BoardProjectionRemoved
   }
   store BoardProjection in durable
@@ -781,8 +732,7 @@ entity BoardAnnotation {
   property positionX: decimal = 0
   property positionY: decimal = 0
   property color: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
@@ -794,8 +744,6 @@ entity BoardAnnotation {
     mutate positionX = positionX
     mutate positionY = positionY
     mutate color = color
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit BoardAnnotationCreated
   }
   command update(text: string, positionX: decimal, positionY: decimal, color: string) {
@@ -803,12 +751,10 @@ entity BoardAnnotation {
     mutate positionX = positionX
     mutate positionY = positionY
     mutate color = color
-    mutate updatedAt = now()
     emit BoardAnnotationUpdated
   }
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit BoardAnnotationRemoved
   }
   store BoardAnnotation in durable
@@ -848,8 +794,7 @@ entity Note {
   property tags: string[] = []
   property entityType: string = ""
   property entityId: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireTitle: self.title != "" "Note title is required"
@@ -862,8 +807,6 @@ entity Note {
     mutate tags = tags
     mutate entityType = entityType
     mutate entityId = entityId
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit NoteCreated
   }
   command update(title: string, content: string, color: string, tags: string[]) {
@@ -872,12 +815,10 @@ entity Note {
     mutate content = content
     mutate color = color
     mutate tags = tags
-    mutate updatedAt = now()
     emit NoteUpdated
   }
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit NoteRemoved
   }
   store Note in durable

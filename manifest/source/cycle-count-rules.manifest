@@ -21,8 +21,7 @@ entity CycleCountSession {
   property notes: string = ""
   property createdById: string = ""
   property approvedById: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -50,8 +49,6 @@ entity CycleCountSession {
     mutate countedItems = 0
     mutate totalVariance = 0
     mutate variancePercentage = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionCreated
   }
@@ -61,7 +58,6 @@ entity CycleCountSession {
 
     mutate status = "in_progress"
     mutate startedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionStarted
   }
@@ -81,7 +77,6 @@ entity CycleCountSession {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionCompleted
   }
@@ -92,7 +87,6 @@ entity CycleCountSession {
     mutate status = "finalized"
     mutate finalizedAt = now()
     mutate approvedById = userId
-    mutate updatedAt = now()
 
     emit CycleCountSessionFinalized
   }
@@ -113,7 +107,6 @@ entity CycleCountSession {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit CycleCountSessionCancelled
   }
@@ -143,8 +136,7 @@ entity CycleCountRecord {
   property verifiedAt: datetime
   property syncStatus: string = "synced"
   property offlineId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed hasVariance: boolean = self.variance != 0
@@ -172,8 +164,6 @@ entity CycleCountRecord {
     mutate notes = notes
     mutate isVerified = false
     mutate syncStatus = "synced"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordCreated
   }
@@ -188,7 +178,6 @@ entity CycleCountRecord {
     mutate notes = notes
     mutate countedById = userId
     mutate countDate = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordUpdated
   }
@@ -210,7 +199,6 @@ entity CycleCountRecord {
     mutate isVerified = true
     mutate verifiedById = userId
     mutate verifiedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordVerified
   }
@@ -220,7 +208,6 @@ entity CycleCountRecord {
     guard self.deletedAt == null "Record is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordRemoved
   }
@@ -251,8 +238,7 @@ entity VarianceReport {
   property rejectionReason: string = ""
   property notes: string = ""
   property generatedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
@@ -280,8 +266,6 @@ entity VarianceReport {
     mutate status = "pending"
     mutate notes = notes
     mutate generatedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VarianceReportCreated
   }
@@ -294,7 +278,6 @@ entity VarianceReport {
     mutate rejectedBy = userId
     mutate rejectionReason = reason
     mutate rejectedAt = now()
-    mutate updatedAt = now()
 
     emit VarianceReportRejected
   }
@@ -304,7 +287,6 @@ entity VarianceReport {
 
     mutate status = "reviewed"
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit VarianceReportReviewed
   }
@@ -327,7 +309,6 @@ entity VarianceReport {
     mutate adjustmentType = adjustmentType
     mutate adjustmentAmount = adjustmentAmount
     mutate adjustmentDate = now()
-    mutate updatedAt = now()
 
     emit VarianceReportApproved
   }

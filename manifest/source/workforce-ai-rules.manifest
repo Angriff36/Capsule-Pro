@@ -8,8 +8,7 @@ entity WorkforceOptimization {
   property locationId: string = ""
   property optimizationType: string = "" // "schedule", "assignment", "performance"
   property status: string = "pending" // "pending", "in_progress", "completed", "failed"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property completedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
@@ -27,8 +26,6 @@ entity WorkforceOptimization {
     mutate locationId = locationId
     mutate optimizationType = optimizationType
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationCreated
   }
@@ -37,7 +34,6 @@ entity WorkforceOptimization {
     guard self.status == "pending" "Can only start pending optimizations"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationStarted
   }
@@ -47,14 +43,12 @@ entity WorkforceOptimization {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationCompleted
   }
 
   command fail(error: string) {
     mutate status = "failed"
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationFailed
   }
@@ -72,7 +66,7 @@ entity PerformancePrediction {
   property predictionScore: decimal = 0 // 0-100
   property confidence: string = "medium" // "low", "medium", "high"
   property factors: string = "" // JSON string of factors
-  property createdAt: datetime = now()
+  timestamps
   property expiresAt: datetime = now()
 
   computed isExpired: boolean = self.expiresAt < now()
@@ -92,7 +86,6 @@ entity PerformancePrediction {
     mutate predictionScore = predictionScore
     mutate confidence = confidence
     mutate factors = factors
-    mutate createdAt = now()
     // Predictions expire after 7 days
     mutate expiresAt = addDays(now(), 7)
 

@@ -12,8 +12,7 @@ entity EmailTemplate {
   property mergeFields: string = "[]"
   property isActive: boolean = true
   property isDefault: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -32,8 +31,6 @@ entity EmailTemplate {
     mutate mergeFields = mergeFields
     mutate isActive = isActive
     mutate isDefault = isDefault
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmailTemplateCreated
   }
@@ -50,7 +47,6 @@ entity EmailTemplate {
     mutate mergeFields = mergeFields
     mutate isActive = isActive
     mutate isDefault = isDefault
-    mutate updatedAt = now()
 
     emit EmailTemplateUpdated
   }
@@ -59,7 +55,6 @@ entity EmailTemplate {
     guard self.deletedAt == null "Template is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EmailTemplateDeleted
   }

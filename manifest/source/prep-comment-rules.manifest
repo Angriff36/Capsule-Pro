@@ -16,8 +16,7 @@ entity PrepComment {
   // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
   property resolvedAt: datetime
   property resolvedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isActive: boolean = self.deletedAt == null
@@ -42,8 +41,6 @@ entity PrepComment {
     mutate employeeId = employeeId
     mutate commentText = commentText
     mutate isResolved = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepCommentCreated
   }
@@ -56,7 +53,6 @@ entity PrepComment {
     guard self.isResolved == false "Cannot edit a resolved comment"
 
     mutate commentText = newText
-    mutate updatedAt = now()
 
     emit PrepCommentEdited
   }
@@ -77,7 +73,6 @@ entity PrepComment {
     mutate isResolved = true
     mutate resolvedAt = now()
     mutate resolvedBy = resolvedBy
-    mutate updatedAt = now()
 
     emit PrepCommentResolved
   }
@@ -91,7 +86,6 @@ entity PrepComment {
     mutate isResolved = false
     mutate resolvedAt = null
     mutate resolvedBy = ""
-    mutate updatedAt = now()
 
     emit PrepCommentUnresolved
   }
@@ -110,7 +104,6 @@ entity PrepComment {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PrepCommentDeleted
   }

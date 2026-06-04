@@ -13,8 +13,7 @@ entity QACheck {
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
   property completedAt: datetime
   property reinspectedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isCompleted: boolean = self.status == "completed"
@@ -38,8 +37,6 @@ entity QACheck {
     mutate notes = notes
     mutate result = "pass"
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit QACheckCreated
   }
@@ -54,7 +51,6 @@ entity QACheck {
     mutate notes = notes
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit QACheckCompleted
   }
@@ -69,7 +65,6 @@ entity QACheck {
     mutate notes = notes
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit QACheckFailed
   }
@@ -81,7 +76,6 @@ entity QACheck {
 
     mutate status = "reinspection_required"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit QACheckReinspectionRequired
   }
@@ -97,7 +91,6 @@ entity QACheck {
     mutate notes = notes
     mutate status = "completed"
     mutate reinspectedAt = now()
-    mutate updatedAt = now()
 
     emit QACheckReinspected
   }
@@ -121,8 +114,7 @@ entity QACorrectiveAction {
   property dueDate: datetime
   property resolvedAt: datetime
   property escalatedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isOpen: boolean = self.status == "open"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -148,8 +140,6 @@ entity QACorrectiveAction {
     mutate priority = priority
     mutate dueDate = dueDate
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CorrectiveActionCreated
   }
@@ -161,7 +151,6 @@ entity QACorrectiveAction {
 
     mutate assignedTo = assignedTo
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit CorrectiveActionAssigned
   }
@@ -176,7 +165,6 @@ entity QACorrectiveAction {
     mutate escalationReason = escalationReason
     mutate status = "escalated"
     mutate escalatedAt = now()
-    mutate updatedAt = now()
 
     emit CorrectiveActionEscalated
   }
@@ -188,7 +176,6 @@ entity QACorrectiveAction {
     mutate status = "resolved"
     mutate resolutionNotes = resolutionNotes
     mutate resolvedAt = now()
-    mutate updatedAt = now()
 
     emit CorrectiveActionResolved
   }
@@ -200,7 +187,6 @@ entity QACorrectiveAction {
 
     mutate status = "dismissed"
     mutate resolutionNotes = reason
-    mutate updatedAt = now()
 
     emit CorrectiveActionDismissed
   }
@@ -220,8 +206,7 @@ entity QATemperatureLog {
   property notes: string = ""
   // Bug fix: lifecycle datetime must be nullable
   property loggedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isInSafeRange: boolean = self.unit == "fahrenheit" ? (self.temperature >= 0 and self.temperature <= 40) : (self.temperature >= -18 and self.temperature <= 4)
 
@@ -245,8 +230,6 @@ entity QATemperatureLog {
     mutate recordedBy = recordedBy
     mutate notes = notes
     mutate loggedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TemperatureLogged
   }

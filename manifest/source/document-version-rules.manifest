@@ -15,8 +15,7 @@ entity DocumentVersion {
   property publishedBy: string = ""
   property supersededBy: string = ""
   // createdAt/updatedAt are audit timestamps — = now() is correct
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   // Lifecycle datetimes — no default
   property approvedAt: datetime
   property publishedAt: datetime
@@ -47,8 +46,6 @@ entity DocumentVersion {
     mutate createdBy = createdBy
     mutate versionNumber = 1
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit DocumentVersionCreated
   }
@@ -59,7 +56,6 @@ entity DocumentVersion {
 
     mutate content = content
     mutate changeDescription = changeDescription
-    mutate updatedAt = now()
 
     emit DocumentVersionContentUpdated
   }
@@ -71,7 +67,6 @@ entity DocumentVersion {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit DocumentVersionApproved
   }
@@ -83,7 +78,6 @@ entity DocumentVersion {
     mutate status = "published"
     mutate publishedBy = publishedBy
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit DocumentVersionPublished
   }
@@ -95,7 +89,6 @@ entity DocumentVersion {
     mutate status = "superseded"
     mutate supersededBy = newVersionId
     mutate supersededAt = now()
-    mutate updatedAt = now()
 
     emit DocumentVersionSuperseded
   }
@@ -104,7 +97,6 @@ entity DocumentVersion {
     guard self.versionNumber > 0 "Cannot restore invalid version"
     guard self.status != "superseded" "Cannot restore a superseded version — create a new version instead"
 
-    mutate updatedAt = now()
 
     emit DocumentVersionRestored
   }

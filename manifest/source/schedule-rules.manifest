@@ -17,8 +17,7 @@ entity Schedule {
   property approvedAt: datetime
   property notes: string = ""
   property shiftCount: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
@@ -42,8 +41,6 @@ entity Schedule {
     mutate notes = notes
     mutate status = "draft"
     mutate shiftCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleCreated
   }
@@ -54,7 +51,6 @@ entity Schedule {
     mutate scheduleDate = scheduleDate
     mutate locationId = locationId
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ScheduleUpdated
   }
@@ -68,7 +64,6 @@ entity Schedule {
     mutate status = "approved"
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleApproved
   }
@@ -80,7 +75,6 @@ entity Schedule {
 
     mutate status = "draft"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit ScheduleReopened
   }
@@ -99,7 +93,6 @@ entity Schedule {
     mutate status = "published"
     mutate publishedAt = now()
     mutate publishedBy = userId
-    mutate updatedAt = now()
 
     emit SchedulePublished
   }
@@ -108,7 +101,6 @@ entity Schedule {
     guard self.status == "published" "Can only close published schedules"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit ScheduleClosed
   }
@@ -132,8 +124,7 @@ entity ScheduleShift {
   property swapStatus: string = "none"
   property swapOfferedAt: datetime
   property swapAcceptedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed durationHours: number = self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0
@@ -168,8 +159,6 @@ entity ScheduleShift {
     mutate roleDuringShift = roleDuringShift
     mutate notes = notes
     mutate swapStatus = "none"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleShiftCreated
   }
@@ -184,7 +173,6 @@ entity ScheduleShift {
     mutate shiftEnd = shiftEnd
     mutate roleDuringShift = roleDuringShift
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ScheduleShiftUpdated
   }
@@ -199,7 +187,6 @@ entity ScheduleShift {
     mutate swapOfferedTo = swapOfferedTo
     mutate swapStatus = "offered"
     mutate swapOfferedAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleShiftSwapOffered
   }
@@ -212,7 +199,6 @@ entity ScheduleShift {
     mutate employeeId = acceptingEmployeeId
     mutate swapStatus = "accepted"
     mutate swapAcceptedAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleShiftSwapAccepted
   }
@@ -223,7 +209,6 @@ entity ScheduleShift {
 
     mutate swapStatus = "declined"
     mutate swapOfferedTo = ""
-    mutate updatedAt = now()
 
     emit ScheduleShiftSwapDeclined
   }
@@ -234,14 +219,12 @@ entity ScheduleShift {
 
     mutate swapStatus = "none"
     mutate swapOfferedTo = ""
-    mutate updatedAt = now()
 
     emit ScheduleShiftSwapCancelled
   }
 
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ScheduleShiftRemoved
   }

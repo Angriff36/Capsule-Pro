@@ -17,8 +17,7 @@ entity TrainingAssignment {
   property assignedAt: datetime
   property startedAt: datetime
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -45,8 +44,6 @@ entity TrainingAssignment {
     mutate dueDate = dueDate
     mutate status = "assigned"
     mutate assignedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TrainingAssignmentCreated
   }
@@ -56,7 +53,6 @@ entity TrainingAssignment {
 
     mutate status = "in_progress"
     mutate startedAt = now()
-    mutate updatedAt = now()
 
     emit TrainingStarted
   }
@@ -68,7 +64,6 @@ entity TrainingAssignment {
     mutate status = "completed"
     mutate score = score
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit TrainingCompleted
   }
@@ -80,7 +75,6 @@ entity TrainingAssignment {
 
     mutate status = "waived"
     mutate waiveReason = reason
-    mutate updatedAt = now()
 
     emit TrainingWaived
   }
@@ -89,7 +83,6 @@ entity TrainingAssignment {
     guard self.status in ["assigned", "in_progress"] "Only an open assignment can be marked overdue"
 
     mutate status = "overdue"
-    mutate updatedAt = now()
 
     emit TrainingMarkedOverdue
   }
@@ -99,7 +92,6 @@ entity TrainingAssignment {
     guard dueDate != null and dueDate != "" "New due date is required"
 
     mutate dueDate = dueDate
-    mutate updatedAt = now()
 
     emit TrainingDueDateExtended
   }
@@ -108,7 +100,6 @@ entity TrainingAssignment {
     guard self.deletedAt == null "Training assignment is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit TrainingAssignmentDeleted
   }

@@ -36,8 +36,7 @@ entity CateringOrder {
   property dietaryRestrictions: string = ""
   property staffRequired: int = 0
   property staffAssigned: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDraft: boolean = self.orderStatus == "draft"
@@ -113,8 +112,6 @@ entity CateringOrder {
     mutate staffRequired = staffRequired
     mutate orderStatus = "draft"
     mutate orderDate = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CateringOrderCreated
   }
@@ -143,7 +140,6 @@ entity CateringOrder {
     mutate specialInstructions = specialInstructions
     mutate dietaryRestrictions = dietaryRestrictions
     mutate staffRequired = staffRequired
-    mutate updatedAt = now()
 
     emit CateringOrderUpdated
   }
@@ -161,7 +157,6 @@ entity CateringOrder {
     }
 
     mutate orderStatus = "confirmed"
-    mutate updatedAt = now()
 
     emit CateringOrderConfirmed
   }
@@ -174,7 +169,6 @@ entity CateringOrder {
 
     mutate depositPaid = true
     mutate depositPaidAt = now()
-    mutate updatedAt = now()
 
     emit CateringOrderDepositRecorded
   }
@@ -185,7 +179,6 @@ entity CateringOrder {
 
     mutate deliveryDate = deliveryDate
     mutate deliveryTime = deliveryTime
-    mutate updatedAt = now()
 
     emit CateringOrderDeliveryScheduled
   }
@@ -204,7 +197,6 @@ entity CateringOrder {
     }
 
     mutate orderStatus = "cancelled"
-    mutate updatedAt = now()
 
     emit CateringOrderCancelled
   }
@@ -214,7 +206,6 @@ entity CateringOrder {
 
     mutate orderStatus = "in_progress"
     mutate prepStartedAt = now()
-    mutate updatedAt = now()
 
     emit CateringOrderPrepStarted
   }
@@ -232,7 +223,6 @@ entity CateringOrder {
 
     mutate orderStatus = "delivered"
     mutate deliveredAt = now()
-    mutate updatedAt = now()
 
     emit CateringOrderDelivered
   }
@@ -241,7 +231,6 @@ entity CateringOrder {
     guard self.orderStatus == "delivered" "Can only complete orders that have been delivered"
 
     mutate orderStatus = "completed"
-    mutate updatedAt = now()
 
     emit CateringOrderCompleted
   }

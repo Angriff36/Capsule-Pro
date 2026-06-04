@@ -30,8 +30,7 @@ entity PrepTaskPlanWorkflow {
   property approvedAt: datetime
   property startedAt: datetime
   property completedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   // Computed properties for state checks
   computed isActive: boolean = self.status in ["generating", "reviewing", "approving", "instantiating", "scheduling"]
@@ -63,8 +62,6 @@ entity PrepTaskPlanWorkflow {
     mutate idempotencyKey = idempotencyKey
     mutate generationOptions = generationOptions
     mutate currentStep = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowCreated
   }
@@ -76,7 +73,6 @@ entity PrepTaskPlanWorkflow {
     mutate status = "generating"
     mutate currentStep = 1
     mutate startedAt = now() == 0 ? now() : self.startedAt
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowGeneratingStarted
   }
@@ -89,7 +85,6 @@ entity PrepTaskPlanWorkflow {
     mutate constraintOutcomes = constraintOutcomes
     mutate status = "awaiting_review"
     mutate currentStep = 2
-    mutate updatedAt = now()
 
     constraint warnNoTasksGenerated:warn generatedCount == 0 {
       messageTemplate: "No tasks were generated for this event"
@@ -106,7 +101,6 @@ entity PrepTaskPlanWorkflow {
 
     mutate status = "reviewing"
     mutate reviewedBy = reviewerId
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowReviewingStarted
   }
@@ -122,7 +116,6 @@ entity PrepTaskPlanWorkflow {
     mutate status = "awaiting_approval"
     mutate reviewedAt = now()
     mutate currentStep = 3
-    mutate updatedAt = now()
 
     constraint warnAllRejected:warn approvedCount == 0 and self.generatedCount > 0 {
       messageTemplate: "All {total} tasks were rejected during review"
@@ -139,7 +132,6 @@ entity PrepTaskPlanWorkflow {
 
     mutate status = "approving"
     mutate approvedBy = approverId
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowApprovingStarted
   }
@@ -151,7 +143,6 @@ entity PrepTaskPlanWorkflow {
     mutate status = "instantiating"
     mutate approvedAt = now()
     mutate currentStep = 4
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowApproved
   }
@@ -161,7 +152,6 @@ entity PrepTaskPlanWorkflow {
 
     mutate status = "cancelled"
     mutate errors = reasonList
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowRejected
   }
@@ -170,7 +160,6 @@ entity PrepTaskPlanWorkflow {
   command startInstantiating() {
     guard self.status == "instantiating"
 
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowInstantiatingStarted
   }
@@ -183,7 +172,6 @@ entity PrepTaskPlanWorkflow {
     mutate status = "scheduling"
     mutate currentStep = 5
     mutate errors = instantiationErrors
-    mutate updatedAt = now()
 
     constraint warnPartialInstantiation:warn instantiatedCount < self.approvedCount {
       messageTemplate: "Only {instantiated} of {approved} tasks were successfully instantiated"
@@ -197,7 +185,6 @@ entity PrepTaskPlanWorkflow {
   command startScheduling() {
     guard self.status == "scheduling"
 
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowSchedulingStarted
   }
@@ -208,7 +195,6 @@ entity PrepTaskPlanWorkflow {
     mutate scheduledWindows = scheduledWindows
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowCompleted
   }
@@ -220,7 +206,6 @@ entity PrepTaskPlanWorkflow {
     mutate status = "failed"
     mutate errors = errorList
     mutate currentStep = step
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowFailed
   }
@@ -231,7 +216,6 @@ entity PrepTaskPlanWorkflow {
 
     mutate status = "cancelled"
     mutate errors = reasonList
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowCancelled
   }
@@ -244,7 +228,6 @@ entity PrepTaskPlanWorkflow {
     mutate currentStep = self.currentStep > 1 ? self.currentStep - 1 : 1
     mutate status = self.currentStep == 1 ? "generating" : self.currentStep == 2 ? "awaiting_review" : self.currentStep == 3 ? "awaiting_approval" : self.currentStep == 4 ? "instantiating" : "scheduling"
     mutate errors = "[]"
-    mutate updatedAt = now()
 
     emit PrepTaskPlanWorkflowRetried
   }
@@ -262,7 +245,6 @@ entity PrepTaskPlanWorkflow {
     mutate approvedAt = now()
     mutate status = "instantiating"
     mutate currentStep = 4
-    mutate updatedAt = now()
 
     constraint warnQuickApprove:warn true {
       messageTemplate: "Quick approve used - {count} tasks approved without individual review"

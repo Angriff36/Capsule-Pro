@@ -20,8 +20,7 @@ entity TimeOffRequest {
   // Accrual balance at time of request for manager visibility
   property balanceSnapshot: decimal = 0
   property balanceUnit: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -52,8 +51,6 @@ entity TimeOffRequest {
     mutate reason = reason
     mutate requestType = requestType
     mutate status = "PENDING"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimeOffRequestCreated
   }
@@ -66,7 +63,6 @@ entity TimeOffRequest {
 
     mutate balanceSnapshot = balanceSnapshot
     mutate balanceUnit = balanceUnit
-    mutate updatedAt = now()
 
     emit TimeOffBalanceAttached
   }
@@ -79,7 +75,6 @@ entity TimeOffRequest {
     mutate status = "APPROVED"
     mutate processedBy = processedBy
     mutate processedAt = now()
-    mutate updatedAt = now()
 
     emit TimeOffRequestApproved
   }
@@ -94,7 +89,6 @@ entity TimeOffRequest {
     mutate processedBy = processedBy
     mutate processedAt = now()
     mutate rejectionReason = rejectionReason
-    mutate updatedAt = now()
 
     emit TimeOffRequestRejected
   }
@@ -108,7 +102,6 @@ entity TimeOffRequest {
     mutate status = "PENDING"
     mutate rejectionReason = ""
     mutate reason = reason
-    mutate updatedAt = now()
 
     emit TimeOffRequestReconsidered
   }
@@ -118,7 +111,6 @@ entity TimeOffRequest {
     guard self.status == "PENDING" or self.status == "APPROVED" "Can only cancel pending or approved requests"
 
     mutate status = "CANCELLED"
-    mutate updatedAt = now()
 
     emit TimeOffRequestCancelled
   }
@@ -128,7 +120,6 @@ entity TimeOffRequest {
     guard self.status == "PENDING" or self.status == "CANCELLED" "Can only delete pending or cancelled requests"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit TimeOffRequestDeleted
   }

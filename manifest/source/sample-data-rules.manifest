@@ -33,6 +33,7 @@ entity SampleData {
   
   computed hasSampleData: boolean = self.isSeeded == true
 
+  timestamps
   // ─────────────────────────────────────────────────────────────────────────
   // SEED COMMAND
   // Creates sample data for new organizations to explore the platform

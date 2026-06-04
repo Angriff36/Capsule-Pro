@@ -14,8 +14,7 @@ entity TimeEntry {
   property notes: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isClockedIn: boolean = self.clockIn > 0 and self.clockOut == 0
@@ -42,8 +41,6 @@ entity TimeEntry {
     mutate clockOut = 0
     mutate breakMinutes = 0
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimeEntryClockedIn
   }
@@ -70,7 +67,6 @@ entity TimeEntry {
     mutate clockOut = now()
     mutate breakMinutes = breakMinutes
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit TimeEntryClockedOut
   }
@@ -97,8 +93,6 @@ entity TimeEntry {
     mutate clockOut = clockOut
     mutate breakMinutes = breakMinutes
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimeEntryAdded
   }
@@ -107,7 +101,6 @@ entity TimeEntry {
     guard self.deletedAt == null "Time entry is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit TimeEntryDeleted
   }
@@ -126,8 +119,7 @@ entity TimecardEditRequest {
   property requestedBreakMinutes: int = 0
   property required reason: string
   property status: string = "pending"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"
@@ -148,8 +140,6 @@ entity TimecardEditRequest {
     mutate requestedBreakMinutes = requestedBreakMinutes
     mutate reason = reason
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TimecardEditRequested
   }
@@ -167,7 +157,6 @@ entity TimecardEditRequest {
     }
 
     mutate status = "approved"
-    mutate updatedAt = now()
 
     emit TimecardEditApproved
   }
@@ -185,7 +174,6 @@ entity TimecardEditRequest {
     }
 
     mutate status = "rejected"
-    mutate updatedAt = now()
 
     emit TimecardEditRejected
   }

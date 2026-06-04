@@ -42,6 +42,7 @@ entity Payment {
   property metadata: string = "{}"
 
   // Computed properties
+  timestamps
   computed isRefundable: boolean = self.status == "COMPLETED" and self.refundedAt == null
   computed isFinal: boolean = self.status in ["COMPLETED", "FAILED", "REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK", "VOID"]
 

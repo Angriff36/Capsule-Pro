@@ -14,8 +14,7 @@ entity ApiKey {
   property expiresAt: datetime = now()
   property revokedAt: datetime
   property required createdByUserId: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isRevoked: boolean = self.revokedAt != null
@@ -59,8 +58,6 @@ entity ApiKey {
     mutate createdByUserId = createdByUserId
     mutate lastUsedAt = null
     mutate revokedAt = null
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ApiKeyCreated
   }
@@ -88,7 +85,6 @@ entity ApiKey {
     mutate name = name
     mutate scopes = scopes
     mutate expiresAt = expiresAt
-    mutate updatedAt = now()
 
     emit ApiKeyUpdated
   }
@@ -107,7 +103,6 @@ entity ApiKey {
     }
 
     mutate revokedAt = now()
-    mutate updatedAt = now()
 
     emit ApiKeyRevoked
   }
@@ -125,7 +120,6 @@ entity ApiKey {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ApiKeyDeleted
   }
@@ -144,7 +138,6 @@ entity ApiKey {
     }
 
     mutate lastUsedAt = now()
-    mutate updatedAt = now()
 
     emit ApiKeyUsed
   }

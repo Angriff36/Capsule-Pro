@@ -23,8 +23,7 @@ entity Menu {
   property status: string = "draft"
   property publishedAt: datetime
   property archivedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed hasPricePerPerson: boolean = self.pricePerPerson > 0
   computed hasGuestConstraints: boolean = self.minGuests > 0 or self.maxGuests > 0
@@ -76,8 +75,6 @@ entity Menu {
     mutate maxGuests = maxGuests
     mutate isActive = true
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit MenuCreated
   }
@@ -111,7 +108,6 @@ entity Menu {
     mutate pricePerPerson = newPricePerPerson
     mutate minGuests = newMinGuests
     mutate maxGuests = newMaxGuests
-    mutate updatedAt = now()
 
     emit MenuUpdated
   }
@@ -132,7 +128,6 @@ entity Menu {
 
     mutate basePrice = newBasePrice
     mutate pricePerPerson = newPricePerPerson
-    mutate updatedAt = now()
 
     emit MenuPricingUpdated
   }
@@ -148,7 +143,6 @@ entity Menu {
     mutate status = "published"
     mutate isActive = true
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit MenuPublished
   }
@@ -168,7 +162,6 @@ entity Menu {
 
     mutate status = "draft"
     mutate publishedAt = null
-    mutate updatedAt = now()
 
     emit MenuUnpublished
   }
@@ -180,7 +173,6 @@ entity Menu {
     mutate status = "archived"
     mutate isActive = false
     mutate archivedAt = now()
-    mutate updatedAt = now()
 
     emit MenuArchived
   }
@@ -192,7 +184,6 @@ entity Menu {
     mutate status = "draft"
     mutate isActive = true
     mutate archivedAt = null
-    mutate updatedAt = now()
 
     emit MenuRestored
   }
@@ -206,7 +197,6 @@ entity Menu {
     mutate isSeasonal = true
     mutate seasonLabel = seasonLabel
     mutate seasonYear = seasonYear
-    mutate updatedAt = now()
 
     emit MenuMarkedSeasonal
   }
@@ -224,6 +214,7 @@ entity MenuDish {
   property sortOrder: int = 0
   property isOptional: boolean = false
   property priceOverride: money = 0
+  timestamps
   property deletedAt: datetime
 
   computed hasPriceOverride: boolean = self.priceOverride > 0

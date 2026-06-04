@@ -16,8 +16,7 @@ entity LaborBudget {
   property createdBy: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -48,8 +47,6 @@ entity LaborBudget {
     mutate budgetType = budgetType
     mutate notes = notes
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LaborBudgetCreated
   }
@@ -63,7 +60,6 @@ entity LaborBudget {
     mutate budgetAmount = budgetAmount
     mutate budgetType = budgetType
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit LaborBudgetUpdated
   }
@@ -84,7 +80,6 @@ entity LaborBudget {
     mutate status = "approved"
     mutate approvedBy = approvedBy
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit LaborBudgetApproved
   }
@@ -95,7 +90,6 @@ entity LaborBudget {
     guard actualAmount >= 0 "Actual amount must be non-negative"
 
     mutate actualAmount = actualAmount
-    mutate updatedAt = now()
 
     emit LaborBudgetActualRecorded
   }
@@ -105,7 +99,6 @@ entity LaborBudget {
     guard self.deletedAt == null "Cannot close a deleted budget"
 
     mutate status = "closed"
-    mutate updatedAt = now()
 
     emit LaborBudgetClosed
   }
@@ -115,7 +108,6 @@ entity LaborBudget {
     guard self.status != "approved" "Cannot delete an approved budget; close it first"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit LaborBudgetDeleted
   }
@@ -137,8 +129,7 @@ entity BudgetAlert {
   property acknowledgedAt: datetime
   property resolved: boolean = false
   property resolvedAt: datetime
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isPending: boolean = self.isAcknowledged == false and self.resolved == false
 
@@ -156,8 +147,6 @@ entity BudgetAlert {
     mutate message = message
     mutate isAcknowledged = false
     mutate resolved = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BudgetAlertCreated
   }
@@ -168,7 +157,6 @@ entity BudgetAlert {
     mutate isAcknowledged = true
     mutate acknowledgedBy = acknowledgedBy
     mutate acknowledgedAt = now()
-    mutate updatedAt = now()
 
     emit BudgetAlertAcknowledged
   }
@@ -178,7 +166,6 @@ entity BudgetAlert {
 
     mutate resolved = true
     mutate resolvedAt = now()
-    mutate updatedAt = now()
 
     emit BudgetAlertResolved
   }

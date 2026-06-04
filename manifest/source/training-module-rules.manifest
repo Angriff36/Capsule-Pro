@@ -21,8 +21,7 @@ entity TrainingModule {
   property archivedAt: datetime
   property notes: string = ""
   property createdBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
@@ -53,8 +52,6 @@ entity TrainingModule {
     mutate status = "draft"
     mutate version = 1
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit TrainingModuleCreated
   }
@@ -71,7 +68,6 @@ entity TrainingModule {
     mutate durationMinutes = durationMinutes
     mutate category = category
     mutate isRequired = isRequired
-    mutate updatedAt = now()
 
     emit TrainingModuleUpdated
   }
@@ -86,7 +82,6 @@ entity TrainingModule {
     mutate status = "published"
     mutate isActive = true
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit TrainingModulePublished
   }
@@ -100,7 +95,6 @@ entity TrainingModule {
     mutate version = self.version + 1
     mutate status = "draft"
     mutate notes = changeNotes
-    mutate updatedAt = now()
 
     emit TrainingModuleVersioned
   }
@@ -113,7 +107,6 @@ entity TrainingModule {
     mutate status = "archived"
     mutate isActive = false
     mutate archivedAt = now()
-    mutate updatedAt = now()
 
     emit TrainingModuleArchived
   }
@@ -125,7 +118,6 @@ entity TrainingModule {
 
     mutate status = "draft"
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit TrainingModuleUnarchived
   }
@@ -136,7 +128,6 @@ entity TrainingModule {
 
     mutate deletedAt = now()
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit TrainingModuleDeleted
   }
