@@ -430,6 +430,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 0.6: 7 HIGH-priority source type mismatches fixed** | VendorContract (lastComplianceReview decimal→datetime, startDate/endDate number→datetime), ProcurementBudget (periodStart/periodEnd decimal→datetime), Client (tags string→array), CateringOrder (deliveryDate number→datetime), PurchaseOrderItem (quantityOrdered number→decimal, unitCost number→money), Driver (licenseExpiry number→datetime). IR recompiled: 189 entities, 952 commands. API+runtime typecheck GREEN. 2527/2527 tests pass (1 pre-existing env-var failure). |
 | 2026-06-04 | **Task 0.6: 11 more source bugs fixed (event, contract, budget, role-policy, waste-entry)** | Event (eventDate/tags type fixes across 3 commands), EventContract (canceledBy property added + expiresAt fix), EventDish (quantity/sortOrder int fixes), EventGuest (rsvpDecline no longer overwrites notes), EventBudget (variancePercentage now computed, activates 3 constraints), RolePolicy (permissions array fix), WasteEntry (reasonId int fix). IR 189/952. All green. |
 | 2026-06-04 | **Task 0.6: 8 more source bugs fixed (payroll, event, inventory, admin, chart-of-account)** | EventProfitability marginPct now computed via percent() builtin; Event dead properties (budget, ticketPrice, ticketTier, eventFormat) added to create/update commands; PayrollLineItem duplicate stub removed, canonical entity enhanced with commands + decimal-typed hours/rate; PayrollRun.reject no longer overwrites approvedBy; InventoryItem.totalValue money typed; AdminTask.dueDate datetime typed; ChartOfAccount.isLeaf renamed to isRoot. IR 189/952. All green. |
+| 2026-06-04 | **Task 0.3: Create Prisma models for 16 IR entities** | 16 Prisma model declarations added to schema.prisma for: AiEventSetupSession, AutomatedFollowup, Budget, Deal, EntityVersion, EventWaitlistEntry, FacilitySchedule, FacilityWorkOrder, LogisticsDispatch, PerformancePrediction, SampleData, StaffPerformance, Vendor, VersionApproval, VersionedEntity, WorkforceOptimization. All match existing SQL tables from baseline migration. 0 typecheck errors, 0 drift, 2535 tests pass. |
 
 ---
 
@@ -499,7 +500,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 1. **Bootstrap constraint gotcha (MOSTLY RESOLVED):** Upstream 1.7.0 fixed the core issue. Edge cases may remain for entities with unusually complex constraint blocks.
 
-2. **16 IR entities have no Prisma model:** Entities exist in IR with commands/events/constraints but no database table. Generated routes reference non-existent accessors. Full list: AiEventSetupSession, AutomatedFollowup, Budget, Deal, EntityVersion, EventWaitlistEntry, FacilitySchedule, FacilityWorkOrder, LogisticsDispatch, PerformancePrediction, SampleData, StaffPerformance, Vendor, VersionApproval, VersionedEntity, WorkforceOptimization. Additionally ~14 entities have models but wrong accessor names needing overrides.
+2. **~~16 IR entities have no Prisma model~~ RESOLVED 2026-06-04:** All 16 entities now have Prisma model declarations matching their SQL tables from the baseline migration. Additionally ~14 entities have models but wrong accessor names needing overrides (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1).
 
 3. **No store projection in the package:** Capsule must use GenericPrismaStore or build a codegen step.
 
@@ -664,7 +665,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** `pnpm manifest:build` succeeds through all steps. All scripts reachable via `package.json` or removed.
 - **Source to change:** `manifest/scripts/build.mjs` (line 170 path fix + line 96 version fix + remove dead CODE_OUTPUT_DIR + delegate to compile.mjs instead of duplicating), `package.json` (add entry for generate-all-routes.mjs or remove it).
 
-### 0.3 Create Prisma models for the 16 IR entities without tables
+### 0.3 Create Prisma models for the 16 IR entities without tables — ✅ DONE 2026-06-04
+- **✅ DONE 2026-06-04.** All 16 entities now have Prisma model declarations in `packages/database/prisma/schema.prisma`. Models match the existing SQL tables from the baseline migration: PascalCase column names (no @map needed), TEXT type IDs (no @db.Uuid), public schema, composite @@id([tenantId, id]). `"public"` added to datasource schemas array. `prisma validate` passes, `prisma generate` succeeds, `db:check` reports zero drift, `api typecheck` exits 0, 2535/2535 tests pass (1 pre-existing payment-env failure). Baseline migration applied to create the tables in the database.
 - **Done when:** All 189 IR entities have a corresponding Prisma model. `pnpm manifest:try-prisma <Entity>` succeeds for all entities.
 - **Why:** These entities exist in the IR with commands, events, and constraints but have no database table. Generated routes for them produce runtime errors.
 - **Backpressure:** `pnpm manifest:try-prisma` succeeds for all 189 entities with zero errors.

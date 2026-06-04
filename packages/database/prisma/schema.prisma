@@ -9,7 +9,7 @@ generator client {
 datasource db {
   provider     = "postgresql"
   relationMode = "prisma"
-  schemas      = ["core", "platform", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_facilities", "tenant_inventory", "tenant_kitchen", "tenant_logistics", "tenant_staff"]
+  schemas      = ["core", "platform", "public", "tenant", "tenant_accounting", "tenant_admin", "tenant_crm", "tenant_events", "tenant_facilities", "tenant_inventory", "tenant_kitchen", "tenant_logistics", "tenant_staff"]
 }
 
 model Account {
@@ -1813,24 +1813,24 @@ model InventoryItem {
 }
 
 model InventoryTransaction {
-  tenantId            String   @map("tenant_id") @db.Uuid
-  id                  String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  itemId              String   @map("item_id") @db.Uuid
-  transactionType     String   @map("transaction_type")
-  quantity            Decimal  @db.Decimal(12, 3)
-  unit_cost           Decimal  @default(0.00) @db.Decimal(10, 2)
-  total_cost          Decimal? @db.Decimal(12, 2)
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  itemId              String    @map("item_id") @db.Uuid
+  transactionType     String    @map("transaction_type")
+  quantity            Decimal   @db.Decimal(12, 3)
+  unit_cost           Decimal   @default(0.00) @db.Decimal(10, 2)
+  total_cost          Decimal?  @db.Decimal(12, 2)
   reference           String?
   notes               String?
-  transaction_date    DateTime @default(now()) @db.Timestamptz(6)
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  storage_location_id String?  @db.Uuid
-  reason              String   @default("")
-  referenceType       String?  @map("reference_type")
-  referenceId         String?  @map("reference_id") @db.Uuid
-  employee_id         String?  @db.Uuid
+  transaction_date    DateTime  @default(now()) @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  storage_location_id String?   @db.Uuid
+  reason              String    @default("")
+  referenceType       String?   @map("reference_type")
+  referenceId         String?   @map("reference_id") @db.Uuid
+  employee_id         String?   @db.Uuid
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
-  tenant              Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, transaction_date], map: "inventory_transactions_tenant_date_idx")
@@ -2013,13 +2013,13 @@ model ReorderSuggestion {
 }
 
 model AlertsConfig {
-  tenantId    String  @map("tenant_id") @db.Uuid
-  id          String  @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   channel     String
   destination String
   createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
-  tenant      Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant      Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@map("alerts_config")
@@ -4222,7 +4222,7 @@ model OverrideAudit {
   authorizedBy    String?   @map("authorized_by") @db.Uuid
   authorizedAt    DateTime? @map("authorized_at") @db.Timestamptz(6)
 
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@unique([tenantId, id])
@@ -5542,14 +5542,14 @@ model RolePolicy {
 
 /// Audit trail for payroll approval actions
 model PayrollApprovalHistory {
-  tenantId       String   @map("tenant_id") @db.Uuid
-  id             String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  payrollRunId   String   @map("payroll_run_id") @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  payrollRunId   String    @map("payroll_run_id") @db.Uuid
   action         String
-  previousStatus String   @map("previous_status")
-  newStatus      String   @map("new_status")
-  performedBy    String   @map("performed_by") @db.Uuid
-  performedAt    DateTime @default(now()) @map("performed_at") @db.Timestamptz(6)
+  previousStatus String    @map("previous_status")
+  newStatus      String    @map("new_status")
+  performedBy    String    @map("performed_by") @db.Uuid
+  performedAt    DateTime  @default(now()) @map("performed_at") @db.Timestamptz(6)
   reason         String?
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -6394,36 +6394,352 @@ model ProviderSync {
 // ===== Manifest-generated durable models (additive; no hand twin) =====
 
 model EventStaff {
-  id String
-  tenantId String
-  eventId String
+  id            String
+  tenantId      String
+  eventId       String
   staffMemberId String
-  role String? @default("")
-  notes String? @default("")
-  shiftStart Int? @default(0)
-  shiftEnd Int? @default(0)
-  status String? @default("assigned")
-  createdAt DateTime?
-  updatedAt DateTime?
-  deletedAt DateTime?
-  @@map("event_staff")
+  role          String?   @default("")
+  notes         String?   @default("")
+  shiftStart    Int?      @default(0)
+  shiftEnd      Int?      @default(0)
+  status        String?   @default("assigned")
+  createdAt     DateTime?
+  updatedAt     DateTime?
+  deletedAt     DateTime?
+
   @@id([tenantId, id])
+  @@map("event_staff")
   @@schema("tenant_events")
 }
 
 model StaffMember {
-  id String
-  tenantId String
-  displayName String @default("")
-  email String? @default("")
-  phone String? @default("")
-  role String? @default("server")
-  status String @default("active")
-  notes String? @default("")
-  createdAt DateTime
-  updatedAt DateTime
-  deletedAt DateTime?
-  @@map("staff_members")
+  id          String
+  tenantId    String
+  displayName String    @default("")
+  email       String?   @default("")
+  phone       String?   @default("")
+  role        String?   @default("server")
+  status      String    @default("active")
+  notes       String?   @default("")
+  createdAt   DateTime
+  updatedAt   DateTime
+  deletedAt   DateTime?
+
   @@id([tenantId, id])
+  @@map("staff_members")
   @@schema("tenant_staff")
+}
+
+// ============================================================
+// Task 0.3: Prisma models for 16 IR entities (baseline migration tables)
+// These tables use PascalCase columns, TEXT ids, public schema
+// ============================================================
+
+model AiEventSetupSession {
+  tenantId           String
+  id                 String
+  userId             String
+  originalInput      String?   @default("")
+  parsedTitle        String?   @default("")
+  parsedEventType    String?   @default("")
+  parsedEventDate    DateTime?
+  parsedGuestCount   Int?      @default(0)
+  parsedVenueName    String?   @default("")
+  parsedVenueAddress String?   @default("")
+  parsedNotes        String?   @default("")
+  parsedTags         String?   @default("")
+  status             String?   @default("pending")
+  confidence         Decimal?  @default(0) @db.Decimal(12, 2)
+  missingFields      String?   @default("[]")
+  suggestions        String?   @default("[]")
+  createdEventId     String?   @default("")
+  createdAt          DateTime?
+  updatedAt          DateTime?
+  completedAt        DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model AutomatedFollowup {
+  tenantId      String
+  id            String
+  eventId       String
+  type          String?   @default("email")
+  status        String?   @default("pending")
+  scheduledDate DateTime?
+  sentDate      DateTime?
+  recipientId   String?   @default("")
+  subject       String?   @default("")
+  body          String?   @default("")
+  templateId    String?   @default("")
+  errorMessage  String?   @default("")
+  createdAt     DateTime?
+  updatedAt     DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model Budget {
+  tenantId        String
+  id              String
+  name            String
+  description     String?   @default("")
+  fiscalYear      Int?      @default(0)
+  totalAmount     Decimal?  @default(0) @db.Decimal(12, 2)
+  allocatedAmount Decimal?  @default(0) @db.Decimal(12, 2)
+  spentAmount     Decimal?  @default(0) @db.Decimal(12, 2)
+  status          String?   @default("draft")
+  category        String?   @default("general")
+  departmentId    String?   @default("")
+  createdAt       DateTime?
+  updatedAt       DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model Deal {
+  tenantId          String
+  id                String
+  leadId            String
+  title             String
+  value             Decimal?  @default(0) @db.Decimal(12, 2)
+  currency          String?   @default("USD")
+  stage             String?   @default("new")
+  status            String?   @default("open")
+  probability       Decimal?  @default(0) @db.Decimal(12, 2)
+  expectedCloseDate DateTime?
+  actualCloseDate   DateTime?
+  assignedTo        String?   @default("")
+  notes             String?   @default("")
+  createdAt         DateTime?
+  updatedAt         DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model EntityVersion {
+  tenantId          String
+  id                String
+  versionedEntityId String
+  versionNumber     Int
+  changeReason      String?   @default("")
+  changeSummary     String?   @default("")
+  changeType        String
+  snapshotData      String?
+  metadata          String?
+  isApproved        Boolean?  @default(false)
+  approvedAt        DateTime?
+  approvedBy        String?   @default("")
+  createdAt         DateTime?
+  createdBy         String?   @default("")
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model EventWaitlistEntry {
+  tenantId   String
+  id         String
+  eventId    String
+  guestName  String
+  email      String?   @default("")
+  phone      String?   @default("")
+  partySize  Int?      @default(1)
+  status     String?   @default("waiting")
+  notes      String?   @default("")
+  joinedAt   DateTime?
+  notifiedAt DateTime?
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model FacilitySchedule {
+  tenantId     String
+  id           String
+  facilityId   String?   @default("")
+  areaId       String?   @default("")
+  title        String
+  description  String?   @default("")
+  scheduleType String?   @default("maintenance")
+  status       String?   @default("scheduled")
+  startDate    DateTime?
+  endDate      DateTime?
+  assignedTo   String?   @default("")
+  notes        String?   @default("")
+  createdAt    DateTime?
+  updatedAt    DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model FacilityWorkOrder {
+  tenantId      String
+  id            String
+  facilityId    String?   @default("")
+  areaId        String?   @default("")
+  assetId       String?   @default("")
+  title         String
+  description   String?   @default("")
+  priority      String?   @default("medium")
+  status        String?   @default("open")
+  category      String?   @default("repair")
+  requestedBy   String?   @default("")
+  assignedTo    String?   @default("")
+  estimatedCost Decimal?  @default(0) @db.Decimal(12, 2)
+  actualCost    Decimal?  @default(0) @db.Decimal(12, 2)
+  scheduledDate DateTime?
+  completedDate DateTime?
+  notes         String?   @default("")
+  createdAt     DateTime?
+  updatedAt     DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model LogisticsDispatch {
+  tenantId              String
+  id                    String
+  routeId               String
+  driverId              String?   @default("")
+  vehicleId             String?   @default("")
+  status                String?   @default("pending")
+  priority              String?   @default("normal")
+  estimatedDeliveryTime DateTime?
+  actualDeliveryTime    DateTime?
+  notes                 String?   @default("")
+  createdAt             DateTime?
+  updatedAt             DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model PerformancePrediction {
+  tenantId          String
+  id                String
+  employeeId        String?   @default("")
+  predictionType    String?   @default("")
+  predictionHorizon Int?      @default(0)
+  predictionScore   Decimal?  @default(0) @db.Decimal(12, 2)
+  confidence        String?   @default("medium")
+  factors           String?   @default("")
+  createdAt         DateTime?
+  expiresAt         DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model SampleData {
+  tenantId       String
+  id             String
+  seededAt       DateTime?
+  clearedAt      DateTime?
+  isSeeded       Boolean?  @default(false)
+  eventsCreated  Int?      @default(0)
+  clientsCreated Int?      @default(0)
+  usersCreated   Int?      @default(0)
+  recipesCreated Int?      @default(0)
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model StaffPerformance {
+  tenantId     String
+  id           String
+  employeeId   String
+  reviewType   String?   @default("quarterly")
+  status       String?   @default("draft")
+  rating       Decimal?  @default(0) @db.Decimal(12, 2)
+  reviewerId   String?   @default("")
+  periodStart  DateTime?
+  periodEnd    DateTime?
+  strengths    String?   @default("")
+  improvements String?   @default("")
+  goals        String?   @default("")
+  notes        String?   @default("")
+  completedAt  DateTime?
+  createdAt    DateTime?
+  updatedAt    DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model Vendor {
+  tenantId     String
+  id           String
+  name         String
+  type         String?   @default("supplier")
+  status       String?   @default("active")
+  email        String?   @default("")
+  phone        String?   @default("")
+  website      String?   @default("")
+  address      String?   @default("")
+  city         String?   @default("")
+  state        String?   @default("")
+  zip          String?   @default("")
+  taxId        String?   @default("")
+  paymentTerms String?   @default("net30")
+  rating       Decimal?  @default(0) @db.Decimal(12, 2)
+  ratingCount  Int?      @default(0)
+  notes        String?   @default("")
+  createdAt    DateTime?
+  updatedAt    DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model VersionApproval {
+  tenantId        String
+  id              String
+  entityVersionId String
+  approverId      String
+  status          String
+  comments        String?   @default("")
+  reviewedAt      DateTime?
+  createdAt       DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model VersionedEntity {
+  tenantId         String
+  id               String
+  entityType       String
+  entityId         String
+  entityName       String
+  isLocked         Boolean?  @default(false)
+  currentVersionId String?   @default("")
+  createdAt        DateTime?
+  updatedAt        DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
+}
+
+model WorkforceOptimization {
+  tenantId         String
+  id               String
+  locationId       String?   @default("")
+  optimizationType String?   @default("")
+  status           String?   @default("pending")
+  createdAt        DateTime?
+  updatedAt        DateTime?
+  completedAt      DateTime?
+
+  @@id([tenantId, id])
+  @@schema("public")
 }
