@@ -95,7 +95,7 @@ async function compileMergedManifests() {
   } = mergeIrs(compiledEntries, {
     contentHash: "",
     irHash: "",
-    compilerVersion: "0.3.8",
+    compilerVersion: "2.2.0",
     schemaVersion: "1.0",
     compiledAt: new Date().toISOString(),
   });

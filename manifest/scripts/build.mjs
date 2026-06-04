@@ -28,7 +28,6 @@ const IR_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const PROVENANCE_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.provenance.json");
 const MERGE_REPORT_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
 const COMMANDS_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
-const CODE_OUTPUT_DIR = join(process.cwd(), "apps/api/app/api/kitchen");
 
 function enforceNoDuplicateCommandIntent(compiledEntries) {
   const diagnostics = validateCommandIntentRegistry(
@@ -93,7 +92,7 @@ async function compileMergedManifests() {
   } = mergeIrs(compiledEntries, {
     contentHash: "",
     irHash: "",
-    compilerVersion: "0.3.8",
+    compilerVersion: "2.2.0",
     schemaVersion: "1.0",
     compiledAt: new Date().toISOString(),
     sources: manifestFiles,
@@ -167,7 +166,7 @@ function generateRouteSurface() {
     [
       "exec",
       "tsx",
-      "scripts/manifest/generate-route-manifest.ts",
+      "manifest/scripts/generate-route-manifest.ts",
       "--format",
       "summary",
     ],
