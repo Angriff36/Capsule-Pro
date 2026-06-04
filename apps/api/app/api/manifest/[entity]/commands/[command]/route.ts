@@ -30,6 +30,11 @@ export async function POST(
       },
     });
   } catch (error) {
+    // Auth/tenant resolution errors from requireCurrentUser should return 401, not 500.
+    // InvariantError is thrown for: Unauthenticated, Tenant not found, User not found.
+    if (error instanceof Error && error.name === "InvariantError") {
+      return manifestErrorResponse(error.message, 401);
+    }
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }
