@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 96% context — saved before compacting]
+[proactive bridge @ 97% context — saved before compacting]
 Files (1):
-  C:/Users/Ryan/.claude/plans/twinkly-nibbling-badger.md (create)
+  manifest/runtime/src/pg-pool.ts (edit)
 
 # === END COGNILAYER ===

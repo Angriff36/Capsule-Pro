@@ -1,8 +1,8 @@
 {
   "root": "C:\\Projects\\capsule-pro",
   "counts": {
-    "FAIL": 507,
-    "WARN": 308,
+    "FAIL": 592,
+    "WARN": 318,
     "PASS": 0,
     "INFO": 3
   },
@@ -10,20 +10,27 @@
     {
       "level": "INFO",
       "id": "entities.discovered",
-      "message": "Discovered 132 Manifest entities",
+      "message": "Discovered 190 Manifest entities",
       "details": [
+        "ActionMilestone",
+        "AdminChatMessage",
         "AdminChatParticipant",
+        "AdminChatThread",
         "AdminTask",
         "AiEventSetupSession",
         "AlertsConfig",
         "AllergenWarning",
         "ApiKey",
+        "AuditSchedule",
         "AutomatedFollowup",
         "BankAccount",
         "BattleBoard",
+        "BoardAnnotation",
+        "BoardProjection",
         "Budget",
         "BudgetAlert",
         "BudgetLineItem",
+        "BulkCombineRule",
         "BulkOrderRule",
         "CateringOrder",
         "ChartOfAccount",
@@ -41,10 +48,15 @@
         "CommandBoardLayout",
         "Container",
         "ContractSignature",
+        "CorrectiveAction",
+        "CrmScoringRule",
         "CycleCountRecord",
         "CycleCountSession",
         "Deal",
+        "DeliveryRoute",
+        "DisciplinaryAction",
         "Dish",
+        "Document",
         "DocumentVersion",
         "Driver",
         "EmailTemplate",
@@ -58,12 +70,16 @@
         "EventBudget",
         "EventContract",
         "EventDish",
+        "EventFollowup",
         "EventGuest",
+        "EventImport",
         "EventImportWorkflow",
         "EventProfitability",
         "EventReport",
         "EventStaff",
+        "EventStaffAssignment",
         "EventSummary",
+        "EventTimeline",
         "EventTimelineItem",
         "EventWaitlistEntry",
         "Facility",
@@ -71,14 +87,24 @@
         "FacilityAsset",
         "FacilitySchedule",
         "FacilityWorkOrder",
+        "ForecastInput",
         "ID",
         "Ingredient",
+        "InteractionAttachment",
+        "InventoryAlert",
+        "InventoryForecast",
         "InventoryItem",
+        "InventoryStock",
         "InventorySupplier",
         "InventoryTransaction",
         "InventoryTransfer",
+        "InventoryTransferItem",
         "Invoice",
+        "IoTAlert",
+        "IotAlertRule",
         "KitchenTask",
+        "KitchenTaskClaim",
+        "KitchenTaskProgress",
         "KnowledgeBaseEntry",
         "LaborBudget",
         "Lead",
@@ -87,51 +113,25 @@
         "MaintenanceWorkOrder",
         "Menu",
         "MenuDish",
+        "MethodVideo",
+        "Note",
         "Notification",
+        "OnboardingCompletion",
+        "OnboardingTask",
+        "OpenShift",
         "OverrideAudit",
         "Payment",
         "PaymentMethod",
+        "PaymentRefundAttempt",
         "PayrollApprovalHistory",
+        "PayrollLineItem",
         "PayrollPeriod",
         "PayrollRun",
         "PerformancePrediction",
+        "PerformanceReview",
         "PrepComment",
         "PrepList",
-        "PrepListItem",
-        "PrepMethod",
-        "PrepTask",
-        "PrepTaskPlanWorkflow",
-        "PricingTier",
-        "Proposal",
-        "ProposalLineItem",
-        "PurchaseOrder",
-        "PurchaseOrderItem",
-        "PurchaseRequisition",
-        "PurchaseRequisitionItem",
-        "QACheck",
-        "QACorrectiveAction",
-        "QATemperatureLog",
-        "RateLimitConfig",
-        "Recipe",
-        "RecipeIngredient",
-        "RecipeStep",
-        "RecipeVersion",
-        "RevenueRecognitionLine",
-        "RevenueRecognitionSchedule",
-        "RolePolicy",
-        "SampleData",
-        "Schedule",
-        "ScheduleShift",
-        "Shipment",
-        "ShipmentItem",
-        "SmsAutomationRule",
-        "StaffPerformance",
-        "Station",
-        "TimeEntry",
-        "TimeOffRequest",
-        "TimecardEditRequest",
-        "TrainingAssignment",
-        "TrainingModule"
+        "PrepListImport"
       ]
     },
     {
@@ -551,6 +551,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "PaymentRefundAttempt is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/accounting/payments/[id]/route.ts:353: await database.paymentRefundAttempt.create({",
+        "kind=prisma_write",
+        "model=paymentRefundAttempt",
+        "method=create",
+        "351:     // with after the fact.\n352:     try {\n353:       await database.paymentRefundAttempt.create({\n354:         data: {\n355:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "Payment is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/accounting/payments/[id]/route.ts:385: const updatedPayment = await database.payment.update({",
@@ -577,11 +589,11 @@
       "id": "entity-writes.offender",
       "message": "Payment is changed outside the approved Manifest store path",
       "details": [
-        "apps/api/app/api/accounting/payments/route.ts:234: const payment = await database.payment.create({",
+        "apps/api/app/api/accounting/payments/route.ts:239: const payment = await database.payment.create({",
         "kind=prisma_write",
         "model=payment",
         "method=create",
-        "232: \n233:     // Create payment - only use fields that exist in the schema\n234:     const payment = await database.payment.create({\n235:       data: {\n236:         tenantId,"
+        "237: \n238:     // Create payment - only use fields that exist in the schema\n239:     const payment = await database.payment.create({\n240:       data: {\n241:         tenantId,"
       ]
     },
     {
@@ -589,11 +601,11 @@
       "id": "entity-writes.offender",
       "message": "Payment is changed outside the approved Manifest store path",
       "details": [
-        "apps/api/app/api/accounting/payments/route.ts:271: await database.payment.update({",
+        "apps/api/app/api/accounting/payments/route.ts:276: await database.payment.update({",
         "kind=prisma_write",
         "model=payment",
         "method=update",
-        "269:       // Payment could not be processed — mark as FAILED and return error.\n270:       // The row exists (created via Prisma) but Manifest rejected the command.\n271:       await database.payment.update({\n272:         where: { id: payment.id },\n273:         data: { status: \"FAILED\" },"
+        "274:       // Payment could not be processed — mark as FAILED and return error.\n275:       // The row exists (created via Prisma) but Manifest rejected the command.\n276:       await database.payment.update({\n277:         where: { id: payment.id },\n278:         data: { status: \"FAILED\" },"
       ]
     },
     {
@@ -601,11 +613,11 @@
       "id": "entity-writes.offender",
       "message": "Payment is changed outside the approved Manifest store path",
       "details": [
-        "apps/api/app/api/accounting/payments/route.ts:297: await database.payment.update({",
+        "apps/api/app/api/accounting/payments/route.ts:302: await database.payment.update({",
         "kind=prisma_write",
         "model=payment",
         "method=update",
-        "295:       // Common cause: invoice is DRAFT (guard requires SENT/VIEWED/OVERDUE/PARTIALLY_PAID).\n296:       // Mark as accepted-but-not-applied so this state is visible and recoverable.\n297:       await database.payment.update({\n298:         where: { id: payment.id },\n299:         data: { status: \"ACCEPTED_NOT_APPLIED\" },"
+        "300:       // Common cause: invoice is DRAFT (guard requires SENT/VIEWED/OVERDUE/PARTIALLY_PAID).\n301:       // Mark as accepted-but-not-applied so this state is visible and recoverable.\n302:       await database.payment.update({\n303:         where: { id: payment.id },\n304:         data: { status: \"ACCEPTED_NOT_APPLIED\" },"
       ]
     },
     {
@@ -731,6 +743,30 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "AdminChatMessage is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts:300: const message = await database.adminChatMessage.create({",
+        "kind=prisma_write",
+        "model=adminChatMessage",
+        "method=create",
+        "298:         .trim() || employee.email;\n299: \n300:     const message = await database.adminChatMessage.create({\n301:       data: {\n302:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "AdminChatThread is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/administrative/chat/threads/[threadId]/messages/route.ts:317: await database.adminChatThread.update({",
+        "kind=prisma_write",
+        "model=adminChatThread",
+        "method=update",
+        "315:     });\n316: \n317:     await database.adminChatThread.update({\n318:       where: {\n319:         tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "AdminChatParticipant is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/administrative/chat/threads/[threadId]/route.ts:43: return await database.adminChatParticipant.upsert({",
@@ -755,6 +791,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "AdminChatThread is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/administrative/chat/threads/route.ts:133: const teamThread = await database.adminChatThread.upsert({",
+        "kind=prisma_write",
+        "model=adminChatThread",
+        "method=upsert",
+        "131: \n132: const ensureTeamThread = async (tenantId: string, employeeId: string) => {\n133:   const teamThread = await database.adminChatThread.upsert({\n134:     where: {\n135:       tenantId_slug: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "AdminChatParticipant is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/administrative/chat/threads/route.ts:149: await database.adminChatParticipant.upsert({",
@@ -762,6 +810,18 @@
         "model=adminChatParticipant",
         "method=upsert",
         "147:   });\n148: \n149:   await database.adminChatParticipant.upsert({\n150:     where: {\n151:       tenantId_threadId_userId: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "AdminChatThread is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/administrative/chat/threads/route.ts:342: const thread = await database.adminChatThread.upsert({",
+        "kind=prisma_write",
+        "model=adminChatThread",
+        "method=upsert",
+        "340:     const directKey = buildDirectKey(employee.id, participantId);\n341: \n342:     const thread = await database.adminChatThread.upsert({\n343:       where: {\n344:         tenantId_directKey: {"
       ]
     },
     {
@@ -875,6 +935,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:354: await tx.boardProjection.updateMany({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=updateMany",
+        "352:       // 1. Remove deleted projections\n353:       if (delta.removed_projection_ids.length > 0) {\n354:         await tx.boardProjection.updateMany({\n355:           where: {\n356:             id: { in: delta.removed_projection_ids },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "CommandBoardGroup is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:365: await tx.commandBoardGroup.updateMany({",
@@ -887,6 +959,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "BoardAnnotation is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:376: await tx.boardAnnotation.updateMany({",
+        "kind=prisma_write",
+        "model=boardAnnotation",
+        "method=updateMany",
+        "374:       // 3. Remove deleted annotations\n375:       if (delta.removed_annotation_ids.length > 0) {\n376:         await tx.boardAnnotation.updateMany({\n377:           where: {\n378:             id: { in: delta.removed_annotation_ids },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "CommandBoardGroup is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:387: await tx.commandBoardGroup.createMany({",
@@ -894,6 +978,42 @@
         "model=commandBoardGroup",
         "method=createMany",
         "385:       // 4. Add new groups (must be before projections that reference them)\n386:       if (delta.added_groups.length > 0) {\n387:         await tx.commandBoardGroup.createMany({\n388:           data: delta.added_groups.map((g: BoardGroup) => ({\n389:             id: crypto.randomUUID(),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:406: await tx.boardProjection.createMany({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=createMany",
+        "404:       // 5. Add new projections\n405:       if (delta.added_projections.length > 0) {\n406:         await tx.boardProjection.createMany({\n407:           data: delta.added_projections.map((p: BoardProjection) => ({\n408:             id: crypto.randomUUID(),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardAnnotation is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:428: await tx.boardAnnotation.createMany({",
+        "kind=prisma_write",
+        "model=boardAnnotation",
+        "method=createMany",
+        "426:       // 6. Add new annotations\n427:       if (delta.added_annotations.length > 0) {\n428:         await tx.boardAnnotation.createMany({\n429:           data: delta.added_annotations.map((a: BoardAnnotation) => ({\n430:             id: crypto.randomUUID(),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/[id]/apply/route.ts:464: await tx.boardProjection.update({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=update",
+        "462: \n463:         const dbField = fieldMapping[mod.field] || mod.field;\n464:         await tx.boardProjection.update({\n465:           where: {\n466:             tenantId_id: {"
       ]
     },
     {
@@ -947,6 +1067,42 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/merge/route.ts:271: await tx.boardProjection.update({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=update",
+        "269:         for (const sourceProj of sourceBoard.projections) {\n270:           if (!simProjMap.has(sourceProj.entityId)) {\n271:             await tx.boardProjection.update({\n272:               where: { tenantId_id: { tenantId, id: sourceProj.id } },\n273:               data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/merge/route.ts:283: await tx.boardProjection.create({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=create",
+        "281:       for (const simProj of simulationBoard.projections) {\n282:         if (!sourceProjMap.has(simProj.entityId)) {\n283:           await tx.boardProjection.create({\n284:             data: {\n285:               id: crypto.randomUUID(),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/merge/route.ts:330: await tx.boardProjection.update({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=update",
+        "328: \n329:           if (hasChanges) {\n330:             await tx.boardProjection.update({\n331:               where: { tenantId_id: { tenantId, id: sourceProj.id } },\n332:               data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "CommandBoardGroup is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/command-board/simulations/merge/route.ts:352: await tx.commandBoardGroup.create({",
@@ -966,6 +1122,30 @@
         "model=commandBoardGroup",
         "method=update",
         "373:         for (const sourceGroup of sourceBoard.groups) {\n374:           if (!simGroupMap.has(sourceGroup.id)) {\n375:             await tx.commandBoardGroup.update({\n376:               where: { tenantId_id: { tenantId, id: sourceGroup.id } },\n377:               data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardAnnotation is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/merge/route.ts:395: await tx.boardAnnotation.create({",
+        "kind=prisma_write",
+        "model=boardAnnotation",
+        "method=create",
+        "393:       for (const simAnn of simulationBoard.annotations) {\n394:         if (!sourceAnnMap.has(simAnn.id)) {\n395:           await tx.boardAnnotation.create({\n396:             data: {\n397:               id: crypto.randomUUID(),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardAnnotation is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/merge/route.ts:416: await tx.boardAnnotation.update({",
+        "kind=prisma_write",
+        "model=boardAnnotation",
+        "method=update",
+        "414:         for (const sourceAnn of sourceBoard.annotations) {\n415:           if (!simAnnMap.has(sourceAnn.id)) {\n416:             await tx.boardAnnotation.update({\n417:               where: { tenantId_id: { tenantId, id: sourceAnn.id } },\n418:               data: { deletedAt: new Date() },"
       ]
     },
     {
@@ -1007,6 +1187,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "BoardProjection is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/route.ts:272: await database.boardProjection.createMany({",
+        "kind=prisma_write",
+        "model=boardProjection",
+        "method=createMany",
+        "270:     // Batch insert projections\n271:     if (projectionCopies.length > 0) {\n272:       await database.boardProjection.createMany({\n273:         data: projectionCopies,\n274:       });"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "CommandBoardGroup is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/command-board/simulations/route.ts:279: await database.commandBoardGroup.createMany({",
@@ -1014,6 +1206,18 @@
         "model=commandBoardGroup",
         "method=createMany",
         "277:     // Batch insert groups\n278:     if (groupCopies.length > 0) {\n279:       await database.commandBoardGroup.createMany({\n280:         data: groupCopies,\n281:       });"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BoardAnnotation is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/command-board/simulations/route.ts:286: await database.boardAnnotation.createMany({",
+        "kind=prisma_write",
+        "model=boardAnnotation",
+        "method=createMany",
+        "284:     // Batch insert annotations\n285:     if (annotationCopies.length > 0) {\n286:       await database.boardAnnotation.createMany({\n287:         data: annotationCopies,\n288:       });"
       ]
     },
     {
@@ -1050,6 +1254,66 @@
         "model=sms_automation_rules",
         "method=create",
         "156: \n157:     // Create the rule in the database\n158:     const rule = await database.sms_automation_rules.create({\n159:       data: {\n160:         tenant_id: tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "InteractionAttachment is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/clients/interactions/attachments/route.ts:98: const attachment = await database.interactionAttachment.create({",
+        "kind=prisma_write",
+        "model=interactionAttachment",
+        "method=create",
+        "96:       });\n97: \n98:       const attachment = await database.interactionAttachment.create({\n99:         data: {\n100:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "InteractionAttachment is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/clients/interactions/attachments/route.ts:177: await database.interactionAttachment.update({",
+        "kind=prisma_write",
+        "model=interactionAttachment",
+        "method=update",
+        "175: \n176:   await deleteFile(attachment.fileUrl);\n177:   await database.interactionAttachment.update({\n178:     where: { tenantId_id: { tenantId, id: attachmentId } },\n179:     data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/venues/[id]/route.ts:109: const venue = await database.venue.update({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=update",
+        "107:     }\n108: \n109:     const venue = await database.venue.update({\n110:       where: { tenantId_id: { tenantId, id } },\n111:       data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/venues/[id]/route.ts:244: await database.venue.update({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=update",
+        "242:     }\n243: \n244:     await database.venue.update({\n245:       where: { tenantId_id: { tenantId, id } },\n246:       data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/venues/route.ts:132: const venue = await database.venue.create({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=create",
+        "130:     validateCreateVenueRequest(body);\n131: \n132:     const venue = await database.venue.create({\n133:       data: {\n134:         tenantId,"
       ]
     },
     {
@@ -1187,6 +1451,18 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/events/documents/parse/route.ts:628: const importRecord = await database.eventImport.create({",
+        "kind=prisma_write",
+        "model=eventImport",
+        "method=create",
+        "626: \n627:       // Create import record matching EventImport schema (parseErrors is required)\n628:       const importRecord = await database.eventImport.create({\n629:         data: {\n630:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "Event is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/events/documents/parse/route.ts:687: const newEvent = await database.event.create({",
@@ -1194,6 +1470,18 @@
         "model=event",
         "method=create",
         "685:   const notes = buildEventNotes(files, event);\n686: \n687:   const newEvent = await database.event.create({\n688:     data: {\n689:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/events/documents/parse/route.ts:715: database.eventImport.update({",
+        "kind=prisma_write",
+        "model=eventImport",
+        "method=update",
+        "713:   await Promise.all(\n714:     importRecords.map((record) =>\n715:       database.eventImport.update({\n716:         where: { id: record.importId },\n717:         data: { eventId },"
       ]
     },
     {
@@ -1266,6 +1554,66 @@
         "model=varianceReport",
         "method=update",
         "266: \n267:     // Update the report\n268:     const updatedReport = await database.varianceReport.update({\n269:       where: {\n270:         tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Report is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/inventory/audit/reports/[id]/route.ts:450: await database.report.update({",
+        "kind=prisma_write",
+        "model=report",
+        "method=update",
+        "448: \n449:     // Soft delete the report\n450:     await database.report.update({\n451:       where: {\n452:         tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Report is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/inventory/audit/reports/route.ts:767: const savedReport = await database.report.create({",
+        "kind=prisma_write",
+        "model=report",
+        "method=create",
+        "765:     let savedReportId: string | null = null;\n766:     if (save_report) {\n767:       const savedReport = await database.report.create({\n768:         data: {\n769:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "AuditSchedule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/inventory/audit/schedule/route.ts:173: const schedule = await database.auditSchedule.create({",
+        "kind=prisma_write",
+        "model=auditSchedule",
+        "method=create",
+        "171:     }\n172: \n173:     const schedule = await database.auditSchedule.create({\n174:       data: {\n175:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "AuditSchedule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/inventory/audit/schedule/route.ts:311: const schedule = await database.auditSchedule.update({",
+        "kind=prisma_write",
+        "model=auditSchedule",
+        "method=update",
+        "309:     }\n310: \n311:     const schedule = await database.auditSchedule.update({\n312:       where: {\n313:         tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "AuditSchedule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/inventory/audit/schedule/route.ts:379: await database.auditSchedule.update({",
+        "kind=prisma_write",
+        "model=auditSchedule",
+        "method=update",
+        "377: \n378:     // Soft delete\n379:     await database.auditSchedule.update({\n380:       where: {\n381:         tenantId_id: {"
       ]
     },
     {
@@ -1511,6 +1859,102 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "IotAlertRule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/alert-rules/route.ts:87: const rule = await database.iotAlertRule.create({",
+        "kind=prisma_write",
+        "model=iotAlertRule",
+        "method=create",
+        "85:     }\n86: \n87:     const rule = await database.iotAlertRule.create({\n88:       data: {\n89:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "IoTAlert is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/alerts/[id]/route.ts:83: const alert = await database.ioTAlert.update({",
+        "kind=prisma_write",
+        "model=ioTAlert",
+        "method=update",
+        "81:     }\n82: \n83:     const alert = await database.ioTAlert.update({\n84:       where: { tenantId_id: { tenantId, id } },\n85:       data: updateData,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "IoTAlert is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/alerts/route.ts:83: const alert = await database.ioTAlert.create({",
+        "kind=prisma_write",
+        "model=ioTAlert",
+        "method=create",
+        "81:     const alertNumber = `ALT-${String(alertCount + 1).padStart(6, \"0\")}`;\n82: \n83:     const alert = await database.ioTAlert.create({\n84:       data: {\n85:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TemperatureProbe is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/probes/route.ts:74: const probe = await database.temperatureProbe.create({",
+        "kind=prisma_write",
+        "model=temperatureProbe",
+        "method=create",
+        "72:     }\n73: \n74:     const probe = await database.temperatureProbe.create({\n75:       data: {\n76:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TemperatureReading is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/readings/route.ts:83: const reading = await database.temperatureReading.create({",
+        "kind=prisma_write",
+        "model=temperatureReading",
+        "method=create",
+        "81: \n82:     // Create the reading\n83:     const reading = await database.temperatureReading.create({\n84:       data: {\n85:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TemperatureProbe is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/readings/route.ts:92: await database.temperatureProbe.update({",
+        "kind=prisma_write",
+        "model=temperatureProbe",
+        "method=update",
+        "90: \n91:     // Update probe status\n92:     await database.temperatureProbe.update({\n93:       where: { tenantId_probeId: { tenantId, probeId } },\n94:       data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "IoTAlert is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/readings/route.ts:160: await database.ioTAlert.create({",
+        "kind=prisma_write",
+        "model=ioTAlert",
+        "method=create",
+        "158:       const alertNumber = `ALT-${String(alertCount + 1).padStart(6, \"0\")}`;\n159: \n160:       await database.ioTAlert.create({\n161:         data: {\n162:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "IoTAlert is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/iot/readings/route.ts:181: await database.ioTAlert.create({",
+        "kind=prisma_write",
+        "model=ioTAlert",
+        "method=create",
+        "179:       const alertNumber = `ALT-${String(alertCount + 1).padStart(6, \"0\")}`;\n180: \n181:       await database.ioTAlert.create({\n182:         data: {\n183:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "OverrideAudit is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/kitchen/overrides/route.ts:98: await tx.overrideAudit.create({",
@@ -1547,6 +1991,30 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "KitchenTaskClaim is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/[id]/claim/route.ts:149: const claim = await tx.kitchenTaskClaim.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskClaim",
+        "method=create",
+        "147: \n148:     // Create claim record\n149:     const claim = await tx.kitchenTaskClaim.create({\n150:       data: { tenantId, taskId: id, employeeId: userId },\n151:     });"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskProgress is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/[id]/claim/route.ts:157: await tx.kitchenTaskProgress.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskProgress",
+        "method=create",
+        "155:       const fullName =\n156:         `${currentUser.firstName || \"\"} ${currentUser.lastName || \"\"}`.trim();\n157:       await tx.kitchenTaskProgress.create({\n158:         data: {\n159:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "PrepTask is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/kitchen/tasks/bundle-claim/route.ts:200: await tx.prepTask.update({",
@@ -1554,6 +2022,30 @@
         "model=prepTask",
         "method=update",
         "198: \n199:         // Update task status via transaction\n200:         await tx.prepTask.update({\n201:           where: { tenantId_id: { tenantId, id: task.id } },\n202:           data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskClaim is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/bundle-claim/route.ts:208: const claim = await tx.kitchenTaskClaim.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskClaim",
+        "method=create",
+        "206: \n207:         // Create claim record via transaction\n208:         const claim = await tx.kitchenTaskClaim.create({\n209:           data: {\n210:             tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskProgress is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/bundle-claim/route.ts:220: await tx.kitchenTaskProgress.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskProgress",
+        "method=create",
+        "218:           const fullName =\n219:             `${currentUser.firstName || \"\"} ${currentUser.lastName || \"\"}`.trim();\n220:           await tx.kitchenTaskProgress.create({\n221:             data: {\n222:               tenantId,"
       ]
     },
     {
@@ -1571,6 +2063,30 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "KitchenTaskProgress is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts:271: return database.kitchenTaskProgress.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskProgress",
+        "method=create",
+        "269:   notes?: string\n270: ): Promise<Prisma.KitchenTaskProgressGetPayload<Record<string, never>>> {\n271:   return database.kitchenTaskProgress.create({\n272:     data: {\n273:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskClaim is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts:292: return database.kitchenTaskClaim.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskClaim",
+        "method=create",
+        "290:   employeeId: string\n291: ): Promise<Prisma.KitchenTaskClaimGetPayload<Record<string, never>>> {\n292:   return database.kitchenTaskClaim.create({\n293:     data: {\n294:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "PrepTask is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts:512: const updatedTask = await tx.prepTask.update({",
@@ -1578,6 +2094,18 @@
         "model=prepTask",
         "method=update",
         "510:   // Atomically: update task status + create progress entry + outbox event\n511:   return database.$transaction(async (tx) => {\n512:     const updatedTask = await tx.prepTask.update({\n513:       where: { tenantId_id: { tenantId, id: taskId } },\n514:       data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskProgress is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts:524: progressEntry = await tx.kitchenTaskProgress.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskProgress",
+        "method=create",
+        "522:       | undefined;\n523:     if (employeeId && newStatus !== task.status) {\n524:       progressEntry = await tx.kitchenTaskProgress.create({\n525:         data: {\n526:           tenantId,"
       ]
     },
     {
@@ -1818,6 +2346,54 @@
         "model=vendorCatalog",
         "method=upsert",
         "216:       };\n217: \n218:       await database.vendorCatalog.upsert({\n219:         where: {\n220:           tenantId_supplierId_itemNumber: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "InventoryForecast is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/lib/inventory-forecasting.ts:693: await database.inventoryForecast.update({",
+        "kind=prisma_write",
+        "model=inventoryForecast",
+        "method=update",
+        "691: \n692:     if (existing) {\n693:       await database.inventoryForecast.update({\n694:         where: {\n695:           tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "InventoryForecast is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/lib/inventory-forecasting.ts:710: await database.inventoryForecast.create({",
+        "kind=prisma_write",
+        "model=inventoryForecast",
+        "method=create",
+        "708:       });\n709:     } else {\n710:       await database.inventoryForecast.create({\n711:         data: {\n712:           tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ReorderSuggestion is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/lib/inventory-forecasting.ts:733: await database.reorderSuggestion.create({",
+        "kind=prisma_write",
+        "model=reorderSuggestion",
+        "method=create",
+        "731:   suggestion: ReorderSuggestionResult\n732: ): Promise<void> {\n733:   await database.reorderSuggestion.create({\n734:     data: {\n735:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "InventoryForecast is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/lib/inventory-forecasting.ts:788: await database.inventoryForecast.update({",
+        "kind=prisma_write",
+        "model=inventoryForecast",
+        "method=update",
+        "786: \n787:   // Update the forecast with actual data\n788:   await database.inventoryForecast.update({\n789:     where: {\n790:       tenantId_id: {"
       ]
     },
     {
@@ -2397,6 +2973,123 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:199: await database.proposalTemplate.updateMany({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=updateMany",
+        "apps/app surface: yes",
+        "197:   // If setting as default, unset any existing default\n198:   if (input.isDefault) {\n199:     await database.proposalTemplate.updateMany({\n200:       where: { tenantId, isDefault: true },\n201:       data: { isDefault: false },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:205: const template = await database.proposalTemplate.create({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=create",
+        "apps/app surface: yes",
+        "203:   }\n204: \n205:   const template = await database.proposalTemplate.create({\n206:     data: {\n207:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:300: await database.proposalTemplate.updateMany({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=updateMany",
+        "apps/app surface: yes",
+        "298: \n299:   if (input.isDefault) {\n300:     await database.proposalTemplate.updateMany({\n301:       where: { tenantId, isDefault: true, id: { not: id } },\n302:       data: { isDefault: false },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:306: const template = await database.proposalTemplate.update({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=update",
+        "apps/app surface: yes",
+        "304:   }\n305: \n306:   const template = await database.proposalTemplate.update({\n307:     where: { id },\n308:     data: buildUpdateData(input),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:336: await database.proposalTemplate.update({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=update",
+        "apps/app surface: yes",
+        "334:   invariant(existingTemplate, \"Template not found\");\n335: \n336:   await database.proposalTemplate.update({\n337:     where: { id },\n338:     data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "ProposalTemplate is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/proposals/templates/actions.ts:366: const newTemplate = await database.proposalTemplate.create({",
+        "kind=prisma_write",
+        "model=proposalTemplate",
+        "method=create",
+        "apps/app surface: yes",
+        "364:   }\n365: \n366:   const newTemplate = await database.proposalTemplate.create({\n367:     data: {\n368:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/venues/actions.ts:227: const venue = await database.venue.create({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=create",
+        "apps/app surface: yes",
+        "225:   invariant(input.name, \"Venue name is required\");\n226: \n227:   const venue = await database.venue.create({\n228:     data: {\n229:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/venues/actions.ts:279: const venue = await database.venue.update({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=update",
+        "apps/app surface: yes",
+        "277:   invariant(existing, \"Venue not found\");\n278: \n279:   const venue = await database.venue.update({\n280:     where: {\n281:       tenantId_id: { tenantId, id },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/venues/actions.ts:375: await database.venue.update({",
+        "kind=prisma_write",
+        "model=venue",
+        "method=update",
+        "apps/app surface: yes",
+        "373: \n374:   // Soft delete\n375:   await database.venue.update({\n376:     where: {\n377:       tenantId_id: { tenantId, id },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "VarianceReport is changed outside the approved Manifest store path",
       "details": [
         "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts:62: await database.varianceReport.createMany({",
@@ -2555,12 +3248,25 @@
       "id": "entity-writes.offender",
       "message": "Event is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:231: const event = await tx.event.create({",
+        "apps/app/app/(authenticated)/events/actions.ts:215: await database.event.updateMany({",
+        "kind=prisma_write",
+        "model=event",
+        "method=updateMany",
+        "apps/app surface: yes",
+        "213:   eventId: string\n214: ): Promise<void> => {\n215:   await database.event.updateMany({\n216:     where: { tenantId, id: eventId },\n217:     data: { deletedAt: new Date() },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Event is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/actions.ts:243: const event = await tx.event.create({",
         "kind=prisma_write",
         "model=event",
         "method=create",
         "apps/app surface: yes",
-        "229:       const eventNumber = `EVT-${year}-${String(count + 1).padStart(4, \"0\")}`;\n230: \n231:       const event = await tx.event.create({\n232:         data: {\n233:           tenantId,"
+        "241:   try {\n242:     const created = await database.$transaction(async (tx) => {\n243:       const event = await tx.event.create({\n244:         data: {\n245:           tenantId,"
       ]
     },
     {
@@ -2568,12 +3274,12 @@
       "id": "entity-writes.offender",
       "message": "BattleBoard is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:255: await tx.battleBoard.create({",
+        "apps/app/app/(authenticated)/events/actions.ts:253: await tx.battleBoard.create({",
         "kind=prisma_write",
         "model=battleBoard",
         "method=create",
         "apps/app surface: yes",
-        "253:       });\n254: \n255:       await tx.battleBoard.create({\n256:         data: {\n257:           tenantId,"
+        "251:       });\n252: \n253:       await tx.battleBoard.create({\n254:         data: {\n255:           tenantId,"
       ]
     },
     {
@@ -2581,12 +3287,12 @@
       "id": "entity-writes.offender",
       "message": "Event is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:325: await database.event.updateMany({",
+        "apps/app/app/(authenticated)/events/actions.ts:299: await database.event.updateMany({",
         "kind=prisma_write",
         "model=event",
         "method=updateMany",
         "apps/app surface: yes",
-        "323:   const tags = mergeTags(data.tags, missingFields);\n324: \n325:   await database.event.updateMany({\n326:     where: {\n327:       AND: [{ tenantId }, { id: eventId }],"
+        "297:   );\n298: \n299:   await database.event.updateMany({\n300:     where: { tenantId, id: data.eventId },\n301:     data: {"
       ]
     },
     {
@@ -2594,38 +3300,12 @@
       "id": "entity-writes.offender",
       "message": "Event is changed outside the approved Manifest store path",
       "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:360: await database.event.updateMany({",
+        "apps/app/app/(authenticated)/events/actions.ts:321: await database.event.updateMany({",
         "kind=prisma_write",
         "model=event",
         "method=updateMany",
         "apps/app surface: yes",
-        "358:   const tenantId = await requireTenantId();\n359: \n360:   await database.event.updateMany({\n361:     where: {\n362:       AND: [{ tenantId }, { id: eventId }],"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "entity-writes.offender",
-      "message": "Event is changed outside the approved Manifest store path",
-      "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:380: await database.event.updateMany({",
-        "kind=prisma_write",
-        "model=event",
-        "method=updateMany",
-        "apps/app surface: yes",
-        "378:   }\n379: \n380:   await database.event.updateMany({\n381:     where: {\n382:       AND: [{ tenantId }, { id: eventId }],"
-      ]
-    },
-    {
-      "level": "FAIL",
-      "id": "entity-writes.offender",
-      "message": "Event is changed outside the approved Manifest store path",
-      "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:399: await database.event.updateMany({",
-        "kind=prisma_write",
-        "model=event",
-        "method=updateMany",
-        "apps/app surface: yes",
-        "397:     throw new Error(\"Event id is required.\");\n398:   }\n399:   await database.event.updateMany({\n400:     where: { tenantId, id: eventId },\n401:     data: { deletedAt: new Date() },"
+        "319:   const safeClientId = required(clientId, \"Client id\");\n320: \n321:   await database.event.updateMany({\n322:     where: { tenantId, id: safeEventId },\n323:     data: { clientId: safeClientId },"
       ]
     },
     {
@@ -2683,6 +3363,32 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "BattleBoard is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/battle-boards/actions.ts:94: await database.battleBoard.updateMany({",
+        "kind=prisma_write",
+        "model=battleBoard",
+        "method=updateMany",
+        "apps/app surface: yes",
+        "92:   const tenantId = await getTenantIdForOrg(orgId);\n93: \n94:   await database.battleBoard.updateMany({\n95:     where: { id: boardId, tenantId, deletedAt: null },\n96:     data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "BattleBoard is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/battle-boards/actions.ts:131: await database.battleBoard.updateMany({",
+        "kind=prisma_write",
+        "model=battleBoard",
+        "method=updateMany",
+        "apps/app surface: yes",
+        "129:   };\n130: \n131:   await database.battleBoard.updateMany({\n132:     where: { id: boardId, tenantId, deletedAt: null },\n133:     data: { boardData: { ...data, imports: [...existingImports, newImport] } as never },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "Recipe is changed outside the approved Manifest store path",
       "details": [
         "apps/app/app/(authenticated)/events/importer.ts:893: const createdRecipe = await database.recipe.create({",
@@ -2717,6 +3423,19 @@
         "method=create",
         "apps/app surface: yes",
         "1340:     .join(\"\\n\");\n1341: \n1342:   const event = await database.event.create({\n1343:     data: {\n1344:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:1362: await database.eventImport.create({",
+        "kind=prisma_write",
+        "model=eventImport",
+        "method=create",
+        "apps/app surface: yes",
+        "1360:   const doc = result.documents[0];\n1361: \n1362:   await database.eventImport.create({\n1363:     data: {\n1364:       tenantId,"
       ]
     },
     {
@@ -2769,6 +3488,32 @@
         "method=create",
         "apps/app surface: yes",
         "164:   const workOrderNumber = `WO-${randomUUID().slice(0, 8).toUpperCase()}`;\n165: \n166:   const wo = await database.maintenanceWorkOrder.create({\n167:     data: {\n168:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "PreventiveMaintenanceSchedule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/facilities/actions.ts:210: const schedule = await database.preventiveMaintenanceSchedule.create({",
+        "kind=prisma_write",
+        "model=preventiveMaintenanceSchedule",
+        "method=create",
+        "apps/app surface: yes",
+        "208:   const scheduleNumber = `PM-${randomUUID().slice(0, 8).toUpperCase()}`;\n209: \n210:   const schedule = await database.preventiveMaintenanceSchedule.create({\n211:     data: {\n212:       tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "PreventiveMaintenanceSchedule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/facilities/actions.ts:276: await database.preventiveMaintenanceSchedule.update({",
+        "kind=prisma_write",
+        "model=preventiveMaintenanceSchedule",
+        "method=update",
+        "apps/app surface: yes",
+        "274:   }\n275: \n276:   await database.preventiveMaintenanceSchedule.update({\n277:     where: { tenantId_id: { tenantId, id: scheduleId } },\n278:     data: {"
       ]
     },
     {
@@ -2995,6 +3740,32 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "KitchenTaskClaim is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/tasks/actions.ts:345: const created = await tx.kitchenTaskClaim.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskClaim",
+        "method=create",
+        "apps/app surface: yes",
+        "343: \n344:     // Create claim record\n345:     const created = await tx.kitchenTaskClaim.create({\n346:       data: {\n347:         tenantId,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskClaim is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/tasks/actions.ts:404: const released = await tx.kitchenTaskClaim.update({",
+        "kind=prisma_write",
+        "model=kitchenTaskClaim",
+        "method=update",
+        "apps/app surface: yes",
+        "402:   const updatedClaim = await client.$transaction(async (tx) => {\n403:     // Release the claim\n404:     const released = await tx.kitchenTaskClaim.update({\n405:       where: { tenantId_id: { tenantId, id: activeClaim.id } },\n406:       data: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "KitchenTask is changed outside the approved Manifest store path",
       "details": [
         "apps/app/app/(authenticated)/kitchen/tasks/actions.ts:413: await tx.kitchenTask.update({",
@@ -3003,6 +3774,19 @@
         "method=update",
         "apps/app surface: yes",
         "411: \n412:     // Update task status back to open\n413:     await tx.kitchenTask.update({\n414:       where: { tenantId_id: { tenantId, id: taskId } },\n415:       data: { status: \"open\" },"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "KitchenTaskProgress is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/kitchen/tasks/actions.ts:508: const created = await tx.kitchenTaskProgress.create({",
+        "kind=prisma_write",
+        "model=kitchenTaskProgress",
+        "method=create",
+        "apps/app surface: yes",
+        "506: \n507:   const progress = await client.$transaction(async (tx) => {\n508:     const created = await tx.kitchenTaskProgress.create({\n509:       data: {\n510:         tenantId,"
       ]
     },
     {
@@ -4224,11 +5008,11 @@
       "id": "entity-writes.offender",
       "message": "PayrollPeriod is changed outside the approved Manifest store path",
       "details": [
-        "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:218: await this.#prisma.payrollPeriod.upsert({",
+        "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:242: await this.#prisma.payrollPeriod.upsert({",
         "kind=prisma_write",
         "model=payrollPeriod",
         "method=upsert",
-        "216: \n217:   async savePayrollPeriod(period: PayrollPeriod): Promise<void> {\n218:     await this.#prisma.payrollPeriod.upsert({\n219:       where: {\n220:         tenantId_id: {"
+        "240: \n241:   async savePayrollPeriod(period: PayrollPeriod): Promise<void> {\n242:     await this.#prisma.payrollPeriod.upsert({\n243:       where: {\n244:         tenantId_id: {"
       ]
     },
     {
@@ -4236,11 +5020,23 @@
       "id": "entity-writes.offender",
       "message": "PayrollRun is changed outside the approved Manifest store path",
       "details": [
-        "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:259: const payrollRun = await this.#prisma.payrollRun.upsert({",
+        "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:283: const payrollRun = await this.#prisma.payrollRun.upsert({",
         "kind=prisma_write",
         "model=payrollRun",
         "method=upsert",
-        "257:     );\n258: \n259:     const payrollRun = await this.#prisma.payrollRun.upsert({\n260:       where: {\n261:         tenantId_id: {"
+        "281:     );\n282: \n283:     const payrollRun = await this.#prisma.payrollRun.upsert({\n284:       where: {\n285:         tenantId_id: {"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "PayrollLineItem is changed outside the approved Manifest store path",
+      "details": [
+        "packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:313: await this.#prisma.payrollLineItem.upsert({",
+        "kind=prisma_write",
+        "model=payrollLineItem",
+        "method=upsert",
+        "311:     // Save payroll line items\n312:     for (const record of records) {\n313:       await this.#prisma.payrollLineItem.upsert({\n314:         where: {\n315:           tenantId_id: {"
       ]
     },
     {
@@ -4328,6 +5124,28 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "CrmScoringRule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/scoring/[id]/route.ts:55: UPDATE tenant_crm.crm_scoring_rules",
+        "kind=raw_sql_write",
+        "table=crm_scoring_rules",
+        "53: \n54:     const updateResult = await database.$executeRaw`\n55:       UPDATE tenant_crm.crm_scoring_rules\n56:       SET\n57:         rule_name = COALESCE(${rule_name ?? null}, rule_name),"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "CrmScoringRule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/scoring/[id]/route.ts:127: DELETE FROM tenant_crm.crm_scoring_rules",
+        "kind=raw_sql_write",
+        "table=crm_scoring_rules",
+        "125: \n126:     const deleted = await database.$executeRaw`\n127:       DELETE FROM tenant_crm.crm_scoring_rules\n128:       WHERE id = ${id}::uuid AND tenant_id = ${tenantId}::uuid\n129:     `;"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "Lead is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/crm/scoring/calculate/route.ts:129: UPDATE tenant_crm.leads",
@@ -4361,6 +5179,28 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "CrmScoringRule is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/crm/scoring/route.ts:155: INSERT INTO tenant_crm.crm_scoring_rules",
+        "kind=raw_sql_write",
+        "table=crm_scoring_rules",
+        "153:     >(\n154:       Prisma.sql`\n155:         INSERT INTO tenant_crm.crm_scoring_rules\n156:           (tenant_id, rule_name, field, condition, value, points, is_active, priority)\n157:         VALUES"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/events/import/server-to-server/route.ts:231: INSERT INTO tenant_events.venues (tenant_id, id, name, address, is_active)",
+        "kind=raw_sql_write",
+        "table=venues",
+        "229:   await database.$executeRaw(\n230:     Prisma.sql`\n231:       INSERT INTO tenant_events.venues (tenant_id, id, name, address, is_active)\n232:       VALUES (${tenantId}, ${venueId}, ${venueName}, ${venueAddress || null}, true)\n233:     `"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "Event is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/events/import/server-to-server/route.ts:335: INSERT INTO tenant_events.events (",
@@ -4378,6 +5218,17 @@
         "kind=raw_sql_write",
         "table=event_guests",
         "444:     await database.$executeRaw(\n445:       Prisma.sql`\n446:         INSERT INTO tenant_events.event_guests (\n447:           tenant_id,\n448:           id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TimelineTask is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/events/import/server-to-server/route.ts:492: INSERT INTO tenant_events.timeline_tasks (",
+        "kind=raw_sql_write",
+        "table=timeline_tasks",
+        "490:     await database.$executeRaw(\n491:       Prisma.sql`\n492:         INSERT INTO tenant_events.timeline_tasks (\n493:           tenant_id,\n494:           id,"
       ]
     },
     {
@@ -4495,10 +5346,10 @@
       "id": "entity-writes.offender",
       "message": "Recipe is changed outside the approved Manifest store path",
       "details": [
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:455: error instanceof Error ? error.message : \"Failed to update recipe\";",
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:69: error instanceof Error ? error.message : \"Failed to update recipe\";",
         "kind=raw_sql_write",
         "table=recipe",
-        "453: \n454:     const message =\n455:       error instanceof Error ? error.message : \"Failed to update recipe\";\n456:     return manifestErrorResponse(message, 500);\n457:   }"
+        "67: \n68:     const message =\n69:       error instanceof Error ? error.message : \"Failed to update recipe\";\n70:     return manifestErrorResponse(message, 500);\n71:   }"
       ]
     },
     {
@@ -4779,12 +5630,34 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "TrainingCompletion is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/training/complete/route.ts:140: INSERT INTO tenant_staff.training_completions (",
+        "kind=raw_sql_write",
+        "table=training_completions",
+        "138:       >(\n139:         Prisma.sql`\n140:           INSERT INTO tenant_staff.training_completions (\n141:             tenant_id,\n142:             assignment_id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "TrainingAssignment is changed outside the approved Manifest store path",
       "details": [
         "apps/api/app/api/training/complete/route.ts:165: UPDATE tenant_staff.training_assignments",
         "kind=raw_sql_write",
         "table=training_assignments",
         "163:       await database.$executeRaw(\n164:         Prisma.sql`\n165:           UPDATE tenant_staff.training_assignments\n166:           SET status = 'in_progress', updated_at = NOW()\n167:           WHERE tenant_id = ${tenantId}"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TrainingCompletion is changed outside the approved Manifest store path",
+      "details": [
+        "apps/api/app/api/training/complete/route.ts:205: INSERT INTO tenant_staff.training_completions (",
+        "kind=raw_sql_write",
+        "table=training_completions",
+        "203:       >(\n204:         Prisma.sql`\n205:           INSERT INTO tenant_staff.training_completions (\n206:             tenant_id,\n207:             assignment_id,"
       ]
     },
     {
@@ -5101,6 +5974,102 @@
     {
       "level": "FAIL",
       "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/venues/[id]/edit/page.tsx:149: toast.error(\"Failed to update venue\", {",
+        "kind=raw_sql_write",
+        "table=venue",
+        "apps/app surface: yes",
+        "147:       router.push(`/crm/venues/${venueId}`);\n148:     } catch (error) {\n149:       toast.error(\"Failed to update venue\", {\n150:         description: error instanceof Error ? error.message : \"Unknown error\",\n151:       });"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Venue is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/crm/venues/[id]/edit/page.tsx:171: <CommandBandLede>Update venue information.</CommandBandLede>",
+        "kind=raw_sql_write",
+        "table=venue",
+        "apps/app surface: yes",
+        "169:           <MonoLabel tone=\"dark\">Operations / CRM / Venues</MonoLabel>\n170:           <DisplayHeading size=\"md\">Edit Venue</DisplayHeading>\n171:           <CommandBandLede>Update venue information.</CommandBandLede>\n172:         </CommandBandHeader>\n173:       </CommandBand>"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TimelineTask is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:146: `INSERT INTO tenant_events.timeline_tasks (",
+        "kind=raw_sql_write",
+        "table=timeline_tasks",
+        "apps/app surface: yes",
+        "144:     Array<{ id: string; title: string }>\n145:   >(\n146:     `INSERT INTO tenant_events.timeline_tasks (\n147:         tenant_id,\n148:         event_id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TimelineTask is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:284: const updateQuery = `UPDATE tenant_events.timeline_tasks SET ${updates.join(\", \")} WHERE tenant_id = $${tenantParamIndex} AND id = $${idParamIndex} AND event_id = $${eventIdParamIndex}`;",
+        "kind=raw_sql_write",
+        "table=timeline_tasks",
+        "apps/app surface: yes",
+        "282:   values.push(tenantId, input.id, input.eventId);\n283: \n284:   const updateQuery = `UPDATE tenant_events.timeline_tasks SET ${updates.join(\", \")} WHERE tenant_id = $${tenantParamIndex} AND id = $${idParamIndex} AND event_id = $${eventIdParamIndex}`;\n285: \n286:   await database.$executeRawUnsafe(updateQuery, ...values);"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TimelineTask is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:303: `UPDATE tenant_events.timeline_tasks",
+        "kind=raw_sql_write",
+        "table=timeline_tasks",
+        "apps/app surface: yes",
+        "301: \n302:   await database.$executeRawUnsafe(\n303:     `UPDATE tenant_events.timeline_tasks\n304:      SET deleted_at = NOW()\n305:      WHERE tenant_id = $1"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventStaffAssignment is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:505: `INSERT INTO tenant_events.event_staff_assignments (",
+        "kind=raw_sql_write",
+        "table=event_staff_assignments",
+        "apps/app surface: yes",
+        "503: \n504:   await database.$executeRawUnsafe(\n505:     `INSERT INTO tenant_events.event_staff_assignments (\n506:        tenant_id, event_id, employee_id, role, created_at, updated_at\n507:      ) VALUES ($1, $2, $3, $4, NOW(), NOW())`,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "TimelineTask is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/[eventId]/battle-board/actions/tasks.ts:587: `UPDATE tenant_events.timeline_tasks",
+        "kind=raw_sql_write",
+        "table=timeline_tasks",
+        "apps/app surface: yes",
+        "585:   for (const [taskId, result] of results) {\n586:     await database.$executeRawUnsafe(\n587:       `UPDATE tenant_events.timeline_tasks\n588:        SET is_on_critical_path = $1,\n589:            slack_minutes = $2,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/actions.ts:376: INSERT INTO tenant_events.event_imports (",
+        "kind=raw_sql_write",
+        "table=event_imports",
+        "apps/app surface: yes",
+        "374:   await database.$executeRaw(\n375:     Prisma.sql`\n376:       INSERT INTO tenant_events.event_imports (\n377:         tenant_id,\n378:         id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
       "message": "EventSummary is changed outside the approved Manifest store path",
       "details": [
         "apps/app/app/(authenticated)/events/actions/event-summary.ts:343: INSERT INTO tenant_events.event_summaries (",
@@ -5144,6 +6113,18 @@
         "table=events",
         "apps/app surface: yes",
         "141:     try {\n142:       const defaultVenueName = `${event.name} Venue`;\n143:       await database.$executeRaw`UPDATE tenant_events.events\n144:          SET venue_name = ${defaultVenueName}, updated_at = NOW()\n145:          WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid`;"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventStaffAssignment is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/actions/setup-event-completely.ts:271: await database.$executeRaw`INSERT INTO tenant_events.event_staff_assignments (",
+        "kind=raw_sql_write",
+        "table=event_staff_assignments",
+        "apps/app surface: yes",
+        "269:         if (alreadyAssigned.length > 0) continue;\n270: \n271:         await database.$executeRaw`INSERT INTO tenant_events.event_staff_assignments (\n272:              tenant_id, event_id, employee_id, role, created_at, updated_at\n273:            ) VALUES (${tenantId}::uuid, ${eventId}::uuid, ${emp.id}::uuid, 'staff', NOW(), NOW())`;"
       ]
     },
     {
@@ -5264,6 +6245,54 @@
         "table=prep_tasks",
         "apps/app surface: yes",
         "612:   await database.$executeRaw(\n613:     Prisma.sql`\n614:       INSERT INTO tenant_kitchen.prep_tasks (\n615:         tenant_id,\n616:         id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:1228: INSERT INTO tenant_events.event_imports (",
+        "kind=raw_sql_write",
+        "table=event_imports",
+        "apps/app surface: yes",
+        "1226:     await database.$executeRaw(\n1227:       Prisma.sql`\n1228:         INSERT INTO tenant_events.event_imports (\n1229:           tenant_id,\n1230:           id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "EventImport is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/importer.ts:1290: INSERT INTO tenant_events.event_imports (",
+        "kind=raw_sql_write",
+        "table=event_imports",
+        "apps/app surface: yes",
+        "1288:   await database.$executeRaw(\n1289:     Prisma.sql`\n1290:       INSERT INTO tenant_events.event_imports (\n1291:         tenant_id,\n1292:         id,"
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Report is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/reports/[reportId]/report-editor-client.tsx:201: throw new Error(\"Failed to update report\");",
+        "kind=raw_sql_write",
+        "table=report",
+        "apps/app surface: yes",
+        "199: \n200:       if (!response.ok) {\n201:         throw new Error(\"Failed to update report\");\n202:       }\n203: "
+      ]
+    },
+    {
+      "level": "FAIL",
+      "id": "entity-writes.offender",
+      "message": "Report is changed outside the approved Manifest store path",
+      "details": [
+        "apps/app/app/(authenticated)/events/reports/[reportId]/report-editor-client.tsx:207: toast.error(\"Failed to update report\");",
+        "kind=raw_sql_write",
+        "table=report",
+        "apps/app surface: yes",
+        "205:       router.refresh();\n206:     } catch (error) {\n207:       toast.error(\"Failed to update report\");\n208:       console.error(error);\n209:     } finally {"
       ]
     },
     {
@@ -6285,7 +7314,7 @@
     {
       "level": "INFO",
       "id": "entity-writes.approved-store-writes",
-      "message": "363 entity writes are inside approved Manifest store files",
+      "message": "390 entity writes are inside approved Manifest store files",
       "details": []
     },
     {
@@ -6982,9 +8011,19 @@
       "id": "raw-sql.executor-review",
       "message": "Raw SQL executor found outside approved store files; review whether it mutates Manifest-owned data",
       "details": [
-        "apps/app/app/(authenticated)/events/actions.ts:448: await database.$executeRaw(",
+        "apps/app/app/(authenticated)/events/actions.ts:130: await tx.$queryRaw(",
         "apps/app surface: yes",
-        "446:   const fileBuffer = Buffer.from(await file.arrayBuffer());\n447: \n448:   await database.$executeRaw(\n449:     Prisma.sql`\n450:       INSERT INTO tenant_events.event_imports ("
+        "128: \n129:   // Event numbers are human-facing; do not let two simultaneous creates race.\n130:   await tx.$queryRaw(\n131:     Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${lockKey})::bigint)`\n132:   );"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "raw-sql.executor-review",
+      "message": "Raw SQL executor found outside approved store files; review whether it mutates Manifest-owned data",
+      "details": [
+        "apps/app/app/(authenticated)/events/actions.ts:374: await database.$executeRaw(",
+        "apps/app surface: yes",
+        "372:   const content = Buffer.from(await file.arrayBuffer());\n373: \n374:   await database.$executeRaw(\n375:     Prisma.sql`\n376:       INSERT INTO tenant_events.event_imports ("
       ]
     },
     {
@@ -7946,9 +8985,9 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/accounting/payments/route.ts:262: const processResult = await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:267: const processResult = await manifestRuntime.runCommand(",
         "api route: yes",
-        "260:     });\n261: \n262:     const processResult = await manifestRuntime.runCommand(\n263:       \"process\",\n264:       { gatewayTransactionId: paymentNumber },"
+        "265:     });\n266: \n267:     const processResult = await manifestRuntime.runCommand(\n268:       \"process\",\n269:       { gatewayTransactionId: paymentNumber },"
       ]
     },
     {
@@ -7956,9 +8995,9 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/accounting/payments/route.ts:287: const applyResult = await manifestRuntime.runCommand(",
+        "apps/api/app/api/accounting/payments/route.ts:292: const applyResult = await manifestRuntime.runCommand(",
         "api route: yes",
-        "285: \n286:     // Apply payment to the linked invoice\n287:     const applyResult = await manifestRuntime.runCommand(\n288:       \"applyPayment\",\n289:       { paymentAmount: body.amount, paymentId: payment.id },"
+        "290: \n291:     // Apply payment to the linked invoice\n292:     const applyResult = await manifestRuntime.runCommand(\n293:       \"applyPayment\",\n294:       { paymentAmount: body.amount, paymentId: payment.id },"
       ]
     },
     {
@@ -8135,9 +9174,8 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:177: const updateResult = await runtime.runCommand(",
-        "api route: yes",
-        "175:         }\n176: \n177:         const updateResult = await runtime.runCommand(\n178:           \"update\",\n179:           {"
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:328: const ingredientResult = await runtime.runCommand(",
+        "326: \n327:   for (const ingredient of ingredients) {\n328:     const ingredientResult = await runtime.runCommand(\n329:       \"create\",\n330:       {"
       ]
     },
     {
@@ -8145,9 +9183,8 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:244: const versionResult = await runtime.runCommand(",
-        "api route: yes",
-        "242: \n243:       // 3. Create new RecipeVersion\n244:       const versionResult = await runtime.runCommand(\n245:         \"create\",\n246:         {"
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:379: const stepResult = await runtime.runCommand(",
+        "377: \n378:   for (const step of body.steps || []) {\n379:     const stepResult = await runtime.runCommand(\n380:       \"create\",\n381:       {"
       ]
     },
     {
@@ -8155,9 +9192,8 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:346: const ingredientResult = await runtime.runCommand(",
-        "api route: yes",
-        "344:         for (const ingredient of allIngredients) {\n345:           const recipeIngredientId = crypto.randomUUID();\n346:           const ingredientResult = await runtime.runCommand(\n347:             \"create\",\n348:             {"
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:455: const updateResult = await runtime.runCommand(",
+        "453:       }\n454: \n455:       const updateResult = await runtime.runCommand(\n456:         \"update\",\n457:         buildRecipeUpdatePayload(body, currentRecipe, recipeId),"
       ]
     },
     {
@@ -8165,9 +9201,8 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/route.ts:385: const stepResult = await runtime.runCommand(",
-        "api route: yes",
-        "383:       for (const step of stepsToCreate) {\n384:         const stepId = crypto.randomUUID();\n385:         const stepResult = await runtime.runCommand(\n386:           \"create\",\n387:           {"
+        "apps/api/app/api/kitchen/recipes/[id]/composite/update-with-version/service.ts:473: const versionResult = await runtime.runCommand(",
+        "471:     }\n472: \n473:     const versionResult = await runtime.runCommand(\n474:       \"create\",\n475:       buildVersionCreatePayload("
       ]
     },
     {
@@ -8864,8 +9899,8 @@
       "id": "run-command.direct-caller",
       "message": "Direct runtime.runCommand call outside the shared command path",
       "details": [
-        "manifest/runtime/src/runtime-engine.ts:94: const result = await super.runCommand(commandName, input, options);",
-        "92:     options: RunCommandOptions = {}\n93:   ): Promise<CommandResult> {\n94:     const result = await super.runCommand(commandName, input, options);\n95: \n96:     // Fire the telemetry hook only when there is something to report."
+        "manifest/runtime/src/runtime-engine.ts:102: const result = await super.runCommand(commandName, input, options);",
+        "100:     options: RunCommandOptions = {}\n101:   ): Promise<CommandResult> {\n102:     const result = await super.runCommand(commandName, input, options);\n103: \n104:     // Fire the telemetry hook only when there is something to report."
       ]
     },
     {
@@ -9020,11 +10055,43 @@
     {
       "level": "WARN",
       "id": "read-routes.aliases",
+      "message": "BankAccount appears to have multiple base read routes",
+      "details": [
+        "/api/accounting/bank-accounts/[id] -> apps/api/app/api/accounting/bank-accounts/[id]/route.ts",
+        "/api/accounting/bank-accounts/list -> apps/api/app/api/accounting/bank-accounts/list/route.ts",
+        "/api/payroll/bank-accounts/list -> apps/api/app/api/payroll/bank-accounts/list/route.ts",
+        "/api/payroll/bank-accounts -> apps/api/app/api/payroll/bank-accounts/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
       "message": "Invoice appears to have multiple base read routes",
       "details": [
         "/api/accounting/invoices/[id] -> apps/api/app/api/accounting/invoices/[id]/route.ts",
+        "/api/accounting/invoices/list -> apps/api/app/api/accounting/invoices/list/route.ts",
         "/api/accounting/invoices -> apps/api/app/api/accounting/invoices/route.ts",
         "/api/integrations/goodshuffle/invoices -> apps/api/app/api/integrations/goodshuffle/invoices/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "PaymentMethod appears to have multiple base read routes",
+      "details": [
+        "/api/accounting/payment-methods/[id] -> apps/api/app/api/accounting/payment-methods/[id]/route.ts",
+        "/api/accounting/payment-methods/list -> apps/api/app/api/accounting/payment-methods/list/route.ts",
+        "/api/accounting/payment-methods -> apps/api/app/api/accounting/payment-methods/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "Payment appears to have multiple base read routes",
+      "details": [
+        "/api/accounting/payments/[id] -> apps/api/app/api/accounting/payments/[id]/route.ts",
+        "/api/accounting/payments/list -> apps/api/app/api/accounting/payments/list/route.ts",
+        "/api/accounting/payments -> apps/api/app/api/accounting/payments/route.ts"
       ]
     },
     {
@@ -9038,6 +10105,20 @@
         "/api/staff/schedules/[id] -> apps/api/app/api/staff/schedules/[id]/route.ts",
         "/api/staff/schedules/list -> apps/api/app/api/staff/schedules/list/route.ts",
         "/api/staff/schedules -> apps/api/app/api/staff/schedules/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "Report appears to have multiple base read routes",
+      "details": [
+        "/api/administrative/reports/[id] -> apps/api/app/api/administrative/reports/[id]/route.ts",
+        "/api/administrative/reports/list -> apps/api/app/api/administrative/reports/list/route.ts",
+        "/api/events/reports/[id] -> apps/api/app/api/events/reports/[id]/route.ts",
+        "/api/events/reports/list -> apps/api/app/api/events/reports/list/route.ts",
+        "/api/events/reports -> apps/api/app/api/events/reports/route.ts",
+        "/api/inventory/audit/reports -> apps/api/app/api/inventory/audit/reports/route.ts",
+        "/api/kitchen/waste/reports -> apps/api/app/api/kitchen/waste/reports/route.ts"
       ]
     },
     {
@@ -9093,11 +10174,33 @@
     {
       "level": "WARN",
       "id": "read-routes.aliases",
+      "message": "Venue appears to have multiple base read routes",
+      "details": [
+        "/api/crm/venues/[id] -> apps/api/app/api/crm/venues/[id]/route.ts",
+        "/api/crm/venues -> apps/api/app/api/crm/venues/route.ts",
+        "/api/events/venues/[id] -> apps/api/app/api/events/venues/[id]/route.ts",
+        "/api/events/venues/list -> apps/api/app/api/events/venues/list/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
       "message": "BattleBoard appears to have multiple base read routes",
       "details": [
         "/api/events/battle-boards/[id] -> apps/api/app/api/events/battle-boards/[id]/route.ts",
         "/api/events/battle-boards/list -> apps/api/app/api/events/battle-boards/list/route.ts",
         "/api/events/battle-boards -> apps/api/app/api/events/battle-boards/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "BudgetAlert appears to have multiple base read routes",
+      "details": [
+        "/api/events/budget-alerts/[id] -> apps/api/app/api/events/budget-alerts/[id]/route.ts",
+        "/api/events/budget-alerts/list -> apps/api/app/api/events/budget-alerts/list/route.ts",
+        "/api/procurement/budget-alerts/[id] -> apps/api/app/api/procurement/budget-alerts/[id]/route.ts",
+        "/api/procurement/budget-alerts/list -> apps/api/app/api/procurement/budget-alerts/list/route.ts"
       ]
     },
     {
@@ -9110,6 +10213,8 @@
         "/api/events/budgets -> apps/api/app/api/events/budgets/route.ts",
         "/api/procurement/budget/[id] -> apps/api/app/api/procurement/budget/[id]/route.ts",
         "/api/procurement/budget/list -> apps/api/app/api/procurement/budget/list/route.ts",
+        "/api/procurement/budgets/[id] -> apps/api/app/api/procurement/budgets/[id]/route.ts",
+        "/api/procurement/budgets/list -> apps/api/app/api/procurement/budgets/list/route.ts",
         "/api/staff/budgets/[id] -> apps/api/app/api/staff/budgets/[id]/route.ts",
         "/api/staff/budgets -> apps/api/app/api/staff/budgets/route.ts"
       ]
@@ -9129,6 +10234,26 @@
     {
       "level": "WARN",
       "id": "read-routes.aliases",
+      "message": "Equipment appears to have multiple base read routes",
+      "details": [
+        "/api/facilities/equipment/[id] -> apps/api/app/api/facilities/equipment/[id]/route.ts",
+        "/api/facilities/equipment/list -> apps/api/app/api/facilities/equipment/list/route.ts",
+        "/api/kitchen/equipment/list -> apps/api/app/api/kitchen/equipment/list/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "Facility appears to have multiple base read routes",
+      "details": [
+        "/api/facilities/facilities/[id] -> apps/api/app/api/facilities/facilities/[id]/route.ts",
+        "/api/facilities/facilities/list -> apps/api/app/api/facilities/facilities/list/route.ts",
+        "/api/facilities/list -> apps/api/app/api/facilities/list/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
       "message": "PurchaseOrder appears to have multiple base read routes",
       "details": [
         "/api/inventory/purchase-orders/[id] -> apps/api/app/api/inventory/purchase-orders/[id]/route.ts",
@@ -9136,6 +10261,16 @@
         "/api/inventory/purchase-orders -> apps/api/app/api/inventory/purchase-orders/route.ts",
         "/api/procurement/purchase-orders/[id] -> apps/api/app/api/procurement/purchase-orders/[id]/route.ts",
         "/api/procurement/purchase-orders/list -> apps/api/app/api/procurement/purchase-orders/list/route.ts"
+      ]
+    },
+    {
+      "level": "WARN",
+      "id": "read-routes.aliases",
+      "message": "ReorderSuggestion appears to have multiple base read routes",
+      "details": [
+        "/api/inventory/reorder-suggestions/[id] -> apps/api/app/api/inventory/reorder-suggestions/[id]/route.ts",
+        "/api/inventory/reorder-suggestions/list -> apps/api/app/api/inventory/reorder-suggestions/list/route.ts",
+        "/api/inventory/reorder-suggestions -> apps/api/app/api/inventory/reorder-suggestions/route.ts"
       ]
     },
     {

@@ -450,12 +450,13 @@ export async function createManifestRuntime(
   //    When undefined (no DB), the engine skips audit/outbox silently.
   const engine = new ManifestRuntimeEngine(
     ir,
-    { user, eventCollector, telemetry },
+    { user, tenantId: user.tenantId, eventCollector, telemetry },
     {
       storeProvider,
       idempotencyStore,
       customBuiltins: createCustomBuiltins(),
       middleware,
+      requireTenantContext: true,
       ...(auditSink ? { auditSink } : {}),
       ...(outboxStore ? { outboxStore } : {}),
     }

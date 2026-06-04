@@ -22,7 +22,7 @@
 | 3 | ~~32~~ **16** IR entities without Prisma model | **CORRECTED** | 173 of 189 IR entities match a Prisma model. **16 have no Prisma model**: AiEventSetupSession, AutomatedFollowup, Budget, Deal, EntityVersion, EventWaitlistEntry, FacilitySchedule, FacilityWorkOrder, LogisticsDispatch, PerformancePrediction, SampleData, StaffPerformance, Vendor, VersionApproval, VersionedEntity, WorkforceOptimization. Prior count of 23 was stale -- 7 now have models. Additionally **15 entities have models but wrong accessor names** (list in Task 0.1). |
 | 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
 | 5 | ~~371~~ **301** direct-write violations | **CONFIRMED** | 191 API mutation calls across 80 files + 110 server action writes across 28 files = 301 total. 12 hybrid files. |
-| 6 | 3 of 19 RuntimeOptions wired (5 of 19 wired or passthrough) | **CONFIRMED** | Factory wires 3 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`. 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
+| 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **70** of 93 switch-case stores are pure boilerplate | **CONFIRMED** | 93 switch cases; 70 pure boilerplate, 27 with custom logic. |
 | 8 | 0 reactions defined | **CONFIRMED** | `reactions: []` at IR top level |
 | 9 | 1 saga (ProcessInvoicePayment) | **CONFIRMED** | `sagas: [{"name": "ProcessInvoicePayment", "steps": [...]}]` |
@@ -352,9 +352,9 @@
 
 ### Runtime Wiring
 
-- Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins }` only (3 of 19 directly wired)
-- **5 of 19 RuntimeOptions properties wired or passthrough** (3 wired + 2 passthrough: evaluationLimits, deterministicMode)
-- **14 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
+- Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional) }` (5 of 19 directly wired)
+- **7 of 19 RuntimeOptions properties wired or passthrough** (5 wired + 2 passthrough: evaluationLimits, deterministicMode)
+- **12 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
 - Custom outbox implementation duplicates upstream `OutboxStore` contract
@@ -441,6 +441,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 10.4: Delete dead code (~4,971 LOC removed)** | rules-engine/ (5 files), entity-graph/ (7 files), packages/services/ all deleted. Zero consumers confirmed. Re-exports removed from index.ts. |
 | 2026-06-04 | **Task 7.4a: RBAC middleware replaces Proxy-based permission guard** | `createRbacMiddleware()` registered as Manifest-native `before-guard` middleware. Factory no longer wraps engine in `createPermissionGuard` Proxy — returns raw engine with middleware pipeline. COMMAND_PERMISSION_MAP and AI_APPROVAL_COMMANDS preserved, allow-by-default behavior unchanged. 2560/2560 tests pass. API+runtime typecheck GREEN. |
 | 2026-06-04 | **Task 7.4b: Identity middleware wired into lifecycle pipeline** | `createIdentityMiddleware` registered as Manifest-native `before-policy` middleware. Factory no longer pre-resolves user roles — role resolution runs inside the engine lifecycle where policies/guards can reference `context.userRole`. Legacy `resolveUserRole` function removed. Role policies always loaded for tenant (not gated on pre-resolved role). Duplicate VendorContract removed from ENTITIES_WITH_SPECIFIC_STORES. Pipeline order: identity (before-policy) → RBAC (before-guard) → audit/outbox (after-emit). 2560/2560 tests pass (1 pre-existing payment-env failure). API+runtime typecheck GREEN. Tag v0.12.73. |
+| 2026-06-04 | **Task 7.1 + 7.2: Wire auditSink + outboxStore from upstream** | PostgresAuditSink + PostgresOutboxStore wired via singleton pg.Pool. Custom createAuditOutboxMiddleware removed from pipeline. Schema bootstrap (manifest_audit_records + manifest_outbox_entries) is idempotent. Graceful fallback when DATABASE_URL absent (test envs). Factory: auditSink and outboxStore passed as RuntimeOptions. 2560/2560 tests pass. API+runtime typecheck GREEN. |
 
 ---
 
@@ -452,8 +453,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `idempotencyStore` | Command idempotency dedup | WIRED (conditionally; routes don't pass key yet) | -- |
 | `customBuiltins` | Plugin-provided expression builtins | WIRED | -- |
 | `middleware` | Lifecycle hooks (before-guard, before-policy, before-action, after-emit) | NOT WIRED | 7.4 |
-| `auditSink` | Durable audit record emission | NOT WIRED (engine has emitAudit built-in) | 7.1 |
-| `outboxStore` | Transactional event persistence | NOT WIRED (custom implementation duplicates upstream) | 7.2 |
+| `auditSink` | Durable audit record emission | **WIRED** (PostgresAuditSink, conditional on DATABASE_URL) | -- |
+| `outboxStore` | Transactional event persistence | **WIRED** (PostgresOutboxStore, conditional on DATABASE_URL) | -- |
 | `approvalStore` | Multi-stage approval persistence | NOT WIRED | 7.5 |
 | `requireTenantContext` | Fail if tenantId absent | NOT WIRED | 7.3 |
 | `flagProvider` | Feature flag resolver for `flag()` builtin | NOT WIRED | 7.6 |
@@ -528,7 +529,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 10. **Only 1 saga, 0 reactions defined:** 936 events available for reaction-driven side effects.
 
-11. **Custom outbox duplicates upstream:** Factory has its own `createPrismaOutboxWriter` (~60 lines) duplicating upstream `OutboxStore`.
+11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
 12. **Idempotency store deliberately disabled:** Generated routes do not pass `idempotencyKey`, so the store would reject commands.
 
@@ -1460,7 +1461,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Dead code total (graph + rules-engine + services) | **~2400+ lines** | same | -- |
 | CLI scripts using manifest | 13 of **40** (**33%**) | 13/37 | CORRECTED: 40 CLI commands total (was 35-37) |
 | GenericPrismaStore | Available (233 LOC), NOT used at runtime | same | -- |
-| RuntimeOptions wired | **5 of 19** (3 wired + 2 passthrough) | same | -- |
+| RuntimeOptions wired | **7 of 19** (5 wired + 2 passthrough) | same | -- |
 | Direct-write violations (API) | **191** across 80 files | same | -- |
 | Direct-write violations (server actions) | **110** across 28 files | same | -- |
 | Direct-write violations (packages) | 9+ in notifications + others | same | -- |
@@ -1599,3 +1600,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Seventeenth revision:** 8 more Task 0.6 source bugs resolved. PayrollLineItem duplicate stub discovered and removed. ChartOfAccount.isLeaf corrected (was misattributed to PayrollPeriod). EventStaff/EventStaffAssignment merge recommended with detailed exploration. Remaining Task 0.6 status: kitchen tags, BudgetLineItem, Dish margin, Client.defaultPaymentTerms already fixed; EmployeeAvailability not a bug; Recipe hasVersion/tagCount deferred. Task 0.3 (16 missing Prisma models) fully explored and ready. |
 | 2026-06-04 | **Task 7.4c + 10.4 (21st revision):** Audit/outbox middleware replaces telemetry-embedded outbox writes. Dead code deleted: rules-engine/, entity-graph/, packages/services/ (~4,971 LOC). New: `manifest/runtime/src/middleware/audit-outbox-middleware.ts`. Modified: `manifest/runtime-factory.ts` (simplified telemetry, added audit middleware to pipeline). Deleted: 12 dead code files + 1 empty package. |
 | 2026-06-04 | **Task 7.4a (20th revision):** RBAC middleware replaces Proxy-based permission guard. `createRbacMiddleware()` wired as `before-guard` middleware in factory. Proxy wrapping removed. COMMAND_PERMISSION_MAP preserved. 2560/2560 tests pass, typecheck GREEN. New files: `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/middleware/index.ts`. Modified: `manifest/runtime/src/manifest-runtime-factory.ts`. |
+| 2026-06-04 | **Task 7.1 + 7.2 (22nd revision):** PostgresAuditSink + PostgresOutboxStore wired from upstream. New pg-pool.ts provides singleton pg.Pool with idempotent schema bootstrap. Custom createAuditOutboxMiddleware removed from pipeline. RuntimeOptions now wires 5 of 19 properties directly (storeProvider, idempotencyStore, customBuiltins, auditSink, outboxStore). |
