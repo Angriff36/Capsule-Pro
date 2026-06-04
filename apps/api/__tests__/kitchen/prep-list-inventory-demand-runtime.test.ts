@@ -4,7 +4,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { createCustomBuiltins } from "@repo/manifest-runtime/runtime-engine";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
-import { createPrepInventoryDemandMiddleware } from "@repo/manifest-runtime/middleware";
+import { createPrepInventoryDemandMiddleware } from "@repo/manifest-runtime/middleware/prep-inventory-demand-middleware";
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
