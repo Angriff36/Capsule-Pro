@@ -17,12 +17,14 @@
 import type {
   CommandResult,
   EmittedEvent,
+  Middleware,
   RuntimeEngine,
   RuntimeOptions,
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { createCustomBuiltins } from "./manifest-builtins";
-import { createPermissionGuard, loadRolePolicies } from "./permission-guard";
+import { createRbacMiddleware } from "./middleware";
+import { loadRolePolicies } from "./permission-guard";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
@@ -494,26 +496,40 @@ export async function createManifestRuntime(
       })
     : undefined;
 
-  // 7. Assemble the runtime engine.
-  //    customBuiltins injects the project's deterministic expression helpers
-  //    (daysBetween/percent/containsAny/…) so guards and computed properties
-  //    can call them. This is the single registration site — every runtime
-  //    construction path flows through this factory, so all callers
-  //    (apps/api, apps/app, MCP server) get an identical builtin set.
-  const engine = new ManifestRuntimeEngine(
-    ir,
-    { user: resolvedUser, eventCollector, telemetry },
-    { storeProvider, idempotencyStore, customBuiltins: createCustomBuiltins() }
-  );
-
-  // 8. Wrap with RBAC permission guard.
-  //    Loads custom role policies for the tenant and intercepts runCommand
-  //    calls to verify the user's role has the required permission.
-  //    Commands without a mapping in COMMAND_PERMISSION_MAP are allowed through.
+  // 7. Load role policies for RBAC middleware.
+  //    Role policies are loaded once per factory invocation (per-request) and
+  //    injected into the RBAC middleware. This replaces the old Proxy-based
+  //    createPermissionGuard that wrapped the engine externally.
   const rolePolicies = resolvedUser.role
     ? await loadRolePolicies(prismaForLookups as any, resolvedUser.tenantId)
     : [];
-  return createPermissionGuard(engine, { rolePolicies });
+
+  // 8. Build middleware pipeline.
+  //    Middleware runs INSIDE the Manifest engine lifecycle, replacing the
+  //    external Proxy wrapper. The RBAC middleware fires at 'before-guard'
+  //    (after policies, before guards) to enforce command-level authorization.
+  //    This is composable — future middleware (audit, identity) can be added here.
+  const middleware: Middleware[] = [
+    createRbacMiddleware({ rolePolicies }),
+  ];
+
+  // 9. Assemble the runtime engine.
+  //    customBuiltins injects the project's deterministic expression helpers
+  //    (daysBetween/percent/containsAny/…) so guards and computed properties
+  //    can call them. The middleware pipeline is passed directly to the engine
+  //    via RuntimeOptions — no Proxy wrapping needed.
+  const engine = new ManifestRuntimeEngine(
+    ir,
+    { user: resolvedUser, eventCollector, telemetry },
+    {
+      storeProvider,
+      idempotencyStore,
+      customBuiltins: createCustomBuiltins(),
+      middleware,
+    }
+  );
+
+  return engine;
 }
 
 // Re-export types that consumers may need.
