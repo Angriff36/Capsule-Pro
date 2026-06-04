@@ -37,8 +37,8 @@ entity Dish {
 
   computed hasPrice: boolean = self.pricePerPerson > 0
   computed hasCost: boolean = self.costPerPerson > 0
-  computed margin: number = self.pricePerPerson > 0 and self.costPerPerson > 0 ? self.pricePerPerson - self.costPerPerson : 0
-  computed marginPercent: number = self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0
+  computed margin: money = self.pricePerPerson > 0 and self.costPerPerson > 0 ? self.pricePerPerson - self.costPerPerson : 0
+  computed marginPercent: decimal = self.pricePerPerson > 0 and self.costPerPerson > 0 ? ((self.pricePerPerson - self.costPerPerson) / self.pricePerPerson) * 100 : 0
   computed hasLeadTime: boolean = self.minPrepLeadDays > 0
   computed isDeactivated: boolean = self.isActive == false
   computed isAvailable: boolean = self.isActive and self.isEightySix == false
@@ -84,7 +84,7 @@ entity Dish {
     }
   }
 
-  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: string, allergens: string, pricePerPerson: number, costPerPerson: number) {
+  command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: string, allergens: string, pricePerPerson: money, costPerPerson: money) {
     guard name != null and name != "" "Dish name is required"
     guard recipeId != null and recipeId != "" "Recipe ID is required"
     guard pricePerPerson >= 0 "Price per person cannot be negative"
@@ -159,7 +159,7 @@ entity Dish {
     emit DishDeactivated
   }
 
-  command updatePricing(pricePerPerson: number, costPerPerson: number, userId: string) {
+  command updatePricing(pricePerPerson: money, costPerPerson: money, userId: string) {
     guard self.isActive "Cannot update pricing on a deactivated dish"
     guard pricePerPerson >= 0 "Price per person cannot be negative"
     guard costPerPerson >= 0 "Cost per person cannot be negative"

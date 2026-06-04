@@ -87,6 +87,23 @@ export function containsAny(...args: unknown[]): boolean {
 }
 
 /**
+ * Remove a tag from a comma-separated tag string.
+ * Handles tag at start, middle, or end of the string.
+ * Returns the cleaned string with no leading/trailing commas and no double commas.
+ * If the tag is not found, returns the original string unchanged.
+ *
+ * Usage in manifest: `mutate tags = removeTagFromString(self.tags, tag)`
+ */
+export function removeTagFromString(...args: unknown[]): string {
+  const tags = typeof args[0] === "string" ? args[0] : "";
+  const tag = typeof args[1] === "string" ? args[1] : "";
+  if (tag === "" || tags === "") return tags;
+
+  const parts = tags.split(",").filter((t) => t !== tag);
+  return parts.join(",");
+}
+
+/**
  * Build the map of custom builtins handed to the runtime engine via
  * `RuntimeOptions.customBuiltins`. This is the single source of truth for the
  * project's custom expression functions; every runtime construction path
@@ -100,5 +117,6 @@ export function createCustomBuiltins(): Map<string, CustomBuiltin> {
     ["addDays", addDays],
     ["percent", percent],
     ["containsAny", containsAny],
+    ["removeTagFromString", removeTagFromString],
   ]);
 }

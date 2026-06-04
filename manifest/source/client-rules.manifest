@@ -52,7 +52,7 @@ entity Client {
     }
   }
 
-  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: decimal, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
     guard clientType != null and clientType != "" "Client type is required"
 
     // Guards (command params) — not block constraints on `self`, which still
@@ -87,7 +87,7 @@ entity Client {
     emit ClientCreated
   }
 
-  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
+  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: decimal, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
     guard self.deletedAt == null "Cannot update an archived client"
 
     mutate companyName = companyName

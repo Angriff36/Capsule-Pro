@@ -56,7 +56,7 @@ entity EventBudget {
     }
   }
 
-  command create(eventId: string, totalBudgetAmount: number, notes: string) {
+  command create(eventId: string, totalBudgetAmount: money, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard totalBudgetAmount >= 0 "Budget amount must be non-negative"
 
@@ -73,7 +73,7 @@ entity EventBudget {
     emit EventBudgetCreated
   }
 
-  command update(totalBudgetAmount: number, totalActualAmount: number, notes: string) {
+  command update(totalBudgetAmount: money, totalActualAmount: money, notes: string) {
     guard self.status != "finalized" "Cannot update finalized budget"
     guard totalBudgetAmount >= 0 "Budget amount must be non-negative"
 
@@ -168,7 +168,7 @@ entity BudgetLineItem {
     }
   }
 
-  command create(budgetId: string, category: string, name: string, description: string, budgetedAmount: number, sortOrder: number, notes: string) {
+  command create(budgetId: string, category: string, name: string, description: string, budgetedAmount: money, sortOrder: number, notes: string) {
     guard budgetId != null and budgetId != "" "Budget ID is required"
     guard category != null and category != "" "Category is required"
     guard name != null and name != "" "Line item name is required"
@@ -189,7 +189,7 @@ entity BudgetLineItem {
     emit BudgetLineItemCreated
   }
 
-  command update(budgetedAmount: number, actualAmount: number, description: string, notes: string) {
+  command update(budgetedAmount: money, actualAmount: money, description: string, notes: string) {
     guard budgetedAmount >= 0 "Budgeted amount must be non-negative"
     guard actualAmount >= 0 "Actual amount must be non-negative"
 

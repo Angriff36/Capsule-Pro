@@ -8,6 +8,7 @@ import {
   daysBetween,
   hoursBetween,
   percent,
+  removeTagFromString,
 } from "../manifest-builtins.js";
 
 const DAY = 86_400_000;
@@ -118,10 +119,44 @@ describe("custom builtins — pure functions", () => {
     });
   });
 
-  it("createCustomBuiltins registers exactly the five project helpers", () => {
+  describe("removeTagFromString", () => {
+    it("removes a tag from the middle of a comma-separated string", () => {
+      expect(removeTagFromString("urgent,cleanup,prep", "cleanup")).toBe("urgent,prep");
+    });
+
+    it("removes a tag from the start", () => {
+      expect(removeTagFromString("urgent,cleanup", "urgent")).toBe("cleanup");
+    });
+
+    it("removes a tag from the end", () => {
+      expect(removeTagFromString("urgent,cleanup", "cleanup")).toBe("urgent");
+    });
+
+    it("removes the only tag, producing empty string", () => {
+      expect(removeTagFromString("urgent", "urgent")).toBe("");
+    });
+
+    it("returns original string when tag is not found", () => {
+      expect(removeTagFromString("urgent,cleanup", "missing")).toBe("urgent,cleanup");
+    });
+
+    it("returns empty string when tags input is empty", () => {
+      expect(removeTagFromString("", "urgent")).toBe("");
+    });
+
+    it("returns original string when tag param is empty", () => {
+      expect(removeTagFromString("urgent,cleanup", "")).toBe("urgent,cleanup");
+    });
+
+    it("removes all occurrences of duplicate tag", () => {
+      expect(removeTagFromString("urgent,cleanup,urgent", "urgent")).toBe("cleanup");
+    });
+  });
+
+  it("createCustomBuiltins registers exactly the six project helpers", () => {
     const map = createCustomBuiltins();
     expect([...map.keys()].sort()).toEqual(
-      ["addDays", "containsAny", "daysBetween", "hoursBetween", "percent"].sort()
+      ["addDays", "containsAny", "daysBetween", "hoursBetween", "percent", "removeTagFromString"].sort()
     );
   });
 });

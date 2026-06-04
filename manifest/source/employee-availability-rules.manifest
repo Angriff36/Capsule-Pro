@@ -30,7 +30,7 @@ entity EmployeeAvailability {
   constraint requireEndTime: self.endTime != "" "End time is required"
   constraint validDayOfWeek: self.dayOfWeek >= 0 and self.dayOfWeek <= 6 "Day of week must be between 0 and 6"
 
-  command create(employeeId: string, dayOfWeek: number, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
+  command create(employeeId: string, dayOfWeek: int, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard startTime != null and startTime != "" "Start time is required"
     guard endTime != null and endTime != "" "End time is required"
@@ -50,7 +50,7 @@ entity EmployeeAvailability {
     emit EmployeeAvailabilityCreated
   }
 
-  command update(dayOfWeek: number, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
+  command update(dayOfWeek: int, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
     guard self.deletedAt == null "Cannot update a deleted availability record"
     guard self.isSuspended == false "Cannot update a suspended availability record — reinstate first"
 
@@ -110,7 +110,7 @@ event EmployeeAvailabilityCreated: "staff.employee-availability.created" {
   availabilityId: string
   tenantId: string
   employeeId: string
-  dayOfWeek: number
+  dayOfWeek: int
   createdAt: number
 }
 

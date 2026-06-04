@@ -150,8 +150,9 @@ entity KitchenTask {
 
   command addTag(tag: string) {
     guard tag != null and tag != ""
+    guard not (self.tags contains tag) "Tag already exists"
 
-    mutate tags = self.tags + "," + tag
+    mutate tags = self.tags == "" ? tag : self.tags + "," + tag
     mutate updatedAt = now()
 
     emit KitchenTaskTagAdded
@@ -159,7 +160,9 @@ entity KitchenTask {
 
   command removeTag(tag: string) {
     guard tag != null and tag != ""
+    guard self.tags contains tag "Tag not found"
 
+    mutate tags = removeTagFromString(self.tags, tag)
     mutate updatedAt = now()
 
     emit KitchenTaskTagRemoved

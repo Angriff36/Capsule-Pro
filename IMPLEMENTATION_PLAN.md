@@ -37,18 +37,18 @@
 | **ENTITIES_WITH_SPECIFIC_STORES: 96 entries (95 unique)** | VendorContract appears twice (lines 199 and 226 in factory). Benign but indicates copy-paste drift. | `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **0 of 15 advanced RuntimeOptions features used in production** | middleware, auditSink, outboxStore, approvalStore, requireTenantContext, flagProvider, jobQueue, profiling, generateId, deterministicMode, evaluationLimits, requireValidProvenance, expectedIRHash, wasmEvaluator, encryptionProvider -- NONE wired in the primary factory | `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **2 features partially wired but not forwarded** | `deterministicMode` and `evaluationLimits` are defined in `KitchenOpsContext` and passed by 7 `create*Runtime` functions, but the primary factory does NOT forward them | `manifest/runtime/src/index.ts:260-269`, `manifest/runtime/src/manifest-runtime-factory.ts:503-506` |
-| **Event.create eventDate type mismatch**: `datetime` property but `number` param | Runtime compares datetime as number (`eventDate > 0`). Epoch-ms vs ISO string ambiguity. | `manifest/source/event-rules.manifest` |
-| **Event.create tags type mismatch**: `array<string>` property but `string` param | String assigned to array-typed property; runtime behavior undefined. | `manifest/source/event-rules.manifest` |
+| **Event.create eventDate type mismatch**: `datetime` property but `number` param | RESOLVED 2026-06-04 — Fixed: `eventDate: number` → `datetime` in create (L68), update (L88), updateDate (L174); guards `>0` → `!=null`. | `manifest/source/event-rules.manifest` |
+| **Event.create tags type mismatch**: `array<string>` property but `string` param | RESOLVED 2026-06-04 — Fixed: `tags: string` → `array<string>` in create (L68) and update (L88). | `manifest/source/event-rules.manifest` |
 | **Event has 10 dead properties**: budget, ticketPrice, ticketTier, eventFormat, accessibilityOptions, featuredMediaUrl, venueEntityId, assignedTo, locationId, venueId (partially) | Declared but never mutated by any command. Either add commands or remove declarations. | `manifest/source/event-rules.manifest` |
 | **EventProfitability missing belongsTo Event** | `eventId` is a foreign-key property with no relationship block. Blocks relationship traversal. | `manifest/source/event-rules.manifest` |
 | **EventSummary missing belongsTo Event** | Same -- `eventId` without relationship. Array-as-string anti-pattern for JSON fields. | `manifest/source/event-rules.manifest` |
 | **BudgetLineItem missing belongsTo EventBudget** | `budgetId` has no `relationship belongsTo budget: EventBudget`. | `manifest/source/event-budget-rules.manifest` |
-| **EventBudget.variancePercentage never computed** | Property is `decimal`, stays at default `0`. Used in computed `varianceExceedsThreshold` and constraints `warnHighVariance`/`blockFinalizeHighVariance` -- all evaluate against zero, making them ineffective. | `manifest/source/event-budget-rules.manifest` |
-| **EventBudget.update missing variancePercentage recomputation** | `update` computes `varianceAmount` but NOT `variancePercentage`. | `manifest/source/event-budget-rules.manifest` |
-| **EventGuest.rsvpDecline overwrites notes** | `mutate notes = reason` destroys existing notes. Should append or use a separate `declineReason` field. | `manifest/source/event-guest-rules.manifest` |
-| **EventContract.cancel silently drops canceledBy** | Param accepted but property does not exist -- data lost silently. | `manifest/source/event-contract-rules.manifest` |
-| **EventContract expiresAt: number into datetime** | Type coercion issue identical to Event.create eventDate. | `manifest/source/event-contract-rules.manifest` |
-| **EventDish quantity: number into int** | Parameter type mismatch with property type. | `manifest/source/event-dish-rules.manifest` |
+| **EventBudget.variancePercentage never computed** | RESOLVED 2026-06-04 — Fixed: converted from stale property (always 0) to computed using `percent(self.varianceAmount, self.totalBudgetAmount)` builtin. 3 previously ineffective constraints now active. | `manifest/source/event-budget-rules.manifest` |
+| **EventBudget.update missing variancePercentage recomputation** | RESOLVED 2026-06-04 — Resolved by variancePercentage becoming computed (no separate mutation needed). | `manifest/source/event-budget-rules.manifest` |
+| **EventGuest.rsvpDecline overwrites notes** | RESOLVED 2026-06-04 — Fixed: Added `declineReason` property; mutation changed from `notes = reason` to `declineReason = reason`. | `manifest/source/event-guest-rules.manifest` |
+| **EventContract.cancel silently drops canceledBy** | RESOLVED 2026-06-04 — Fixed: Added missing `canceledBy: string` property; cancel command now persists it. | `manifest/source/event-contract-rules.manifest` |
+| **EventContract expiresAt: number into datetime** | RESOLVED 2026-06-04 — Fixed: `expiresAt: number` → `datetime` in create (L43) and update (L62). | `manifest/source/event-contract-rules.manifest` |
+| **EventDish quantity: number into int** | RESOLVED 2026-06-04 — Fixed: `quantity: number` → `int` and `sortOrder: number` → `int` in create, updateQuantity, updateCourse + event payloads. | `manifest/source/event-dish-rules.manifest` |
 | **BudgetLineItem.update bare number arithmetic into money** | `varianceAmount = actualAmount - budgetedAmount` uses bare `number` params into `money` property. | `manifest/source/event-budget-rules.manifest` |
 | **Event properties: 10 never mutated by any command** | Dead declarations add confusion and false surface area for tooling. | `manifest/source/event-rules.manifest` |
 | **EventStaff / EventStaffAssignment duplicate IR entities** | Both exist with overlapping purpose (eventId + staffMemberId + role + shift + status). Both have separate Prisma models. Must consolidate or explicitly differentiate. | IR + `schema.prisma` |
@@ -128,7 +128,7 @@
 | **MEDIUM: Rules engine and entity graph are dead code** | rules-engine/ (5 files, ~1000 LOC, 0 consumers), entity-graph/ (7 files, ~1400 LOC, 0 consumers, `buildGraphFromIR` is stub). Total: 12 files, ~2400 lines. | Runtime analysis |
 | **MEDIUM: CollectionCase.dunningStage arithmetic on string** | `self.dunningStage + 1` on string type produces NaN. | `manifest/source/collection-rules.manifest` |
 | **MEDIUM: 12 hybrid files (partial migration started)** | 11 API + 1 app files contain BOTH direct Prisma writes AND manifest calls. Lowest-effort migration targets -- Manifest wiring already exists. | API analysis |
-| **MEDIUM: Client.tags/ApiKey.scopes string-into-array mismatch** | `array<string>` property mutated from `string` param. Same anti-pattern as Event.tags. Also role-policy-rules permissions default is string `'[]'`. | Source analysis |
+| **MEDIUM: Client.tags/ApiKey.scopes string-into-array mismatch** | RESOLVED 2026-06-04 — Client.tags fixed in first batch (L55, L90). Event.tags fixed in second batch (L68, L88). RolePolicy.permissions fixed: `string = "[]"` → `array<string> = []`; computed uses `length()`. | Source analysis |
 | **LOW: 30 Prisma models use snake_case model names** | Convention violation: `audit_config`, `sms_logs`, `open_shifts` etc. Adds noise to accessor resolution. 179 models have @@map, 47 don't. | Schema analysis |
 | **LOW: Finance domain inconsistent status casing** | Invoice/Payment/Collections use UPPERCASE (PAID, SENT), other domains use lowercase, Payroll mixes both. | Source analysis |
 | **LOW: CLI adoption 35% (13/37 commands)** | 24 unused including high-value DX: watch, migrate, harness, coverage, docs, diagram, lint-routes, mock, changelog, fmt. No manifest.config.yaml exists. | CLI analysis |
@@ -148,7 +148,7 @@
 | **Procurement domain: type mismatches beyond datetime** | PurchaseOrderItem.create: quantityOrdered `number`->`decimal`, unitId `number`->`int`, unitCost `number`->`money`. PurchaseOrder timestamps as `number`. | Source audit |
 | **Notifications domain: universal datetime-as-number** | NotificationRules: ALL event timestamps (createdAt, readAt, dismissedAt, deletedAt) as `number`. EmailWorkflow: transition bugs and state machine issues. | Source audit |
 | **Kitchen domain: datetime + logic bugs** | KitchenTask.updateDueDate: dueDate `number` into `datetime`. PrepList.createFromSeed/reopen: finalizedAt mutated to `0` instead of `null`. RecipeVersion tagCount hardcoded 0, hasVersion always true (reconfirmed). | Source audit |
-| **Inventory domain: datetime + type mismatches** | InventoryItem.totalValue: `int * money` declared as `number` instead of `money`. InventoryItem.reserve: quantity `number` into decimal/int. WasteEntry.reasonId: `int` property but `number` param. | Source audit |
+| **Inventory domain: datetime + type mismatches** | InventoryItem.totalValue: `int * money` declared as `number` instead of `money`. InventoryItem.reserve: quantity `number` into decimal/int. WasteEntry.reasonId: RESOLVED 2026-06-04 — Fixed: `reasonId: number` → `int` in create command. | Source audit |
 | **CRM domain: decimal/number mismatches** | Client.defaultPaymentTerms: `decimal` property but `number` params in create/update. Client tags: string into array\<string\>. CRM event timestamps as `number`. | Source audit |
 | **Logistics domain: datetime mismatches** | Driver.licenseExpiry: `number` param into `datetime` (in create, update, renewLicense). Shipment tracking timestamps: `number` into `datetime`. | Source audit |
 | **Admin domain: string/datetime + string/array mismatches** | AdminTask.dueDate: typed `string` instead of `datetime`. RolePolicy permissions: default `'[]'` string into `array<string>`. | Source audit |
@@ -418,6 +418,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 0.2: Fix build.mjs broken path, stale compilerVersion, dead variable** | `pnpm manifest:build` completes all 4 steps. Line 170 path fixed (swapped segments), compilerVersion 0.3.8→2.2.0 in both build.mjs+compile.mjs, dead CODE_OUTPUT_DIR removed. |
 | 2026-06-04 | **Producer-level InvariantError→401 auth fix** | Moved from generated dispatcher to `manifest/scripts/generate.mjs` (the producer) per constitution §10/§16. Fix now survives regeneration. |
 | 2026-06-04 | **Task 0.6: 7 HIGH-priority source type mismatches fixed** | VendorContract (lastComplianceReview decimal→datetime, startDate/endDate number→datetime), ProcurementBudget (periodStart/periodEnd decimal→datetime), Client (tags string→array), CateringOrder (deliveryDate number→datetime), PurchaseOrderItem (quantityOrdered number→decimal, unitCost number→money), Driver (licenseExpiry number→datetime). IR recompiled: 189 entities, 952 commands. API+runtime typecheck GREEN. 2527/2527 tests pass (1 pre-existing env-var failure). |
+| 2026-06-04 | **Task 0.6: 11 more source bugs fixed (event, contract, budget, role-policy, waste-entry)** | Event (eventDate/tags type fixes across 3 commands), EventContract (canceledBy property added + expiresAt fix), EventDish (quantity/sortOrder int fixes), EventGuest (rsvpDecline no longer overwrites notes), EventBudget (variancePercentage now computed, activates 3 constraints), RolePolicy (permissions array fix), WasteEntry (reasonId int fix). IR 189/952. All green. |
 
 ---
 
@@ -694,16 +695,16 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** Multiple `.manifest` source files across all domains.
 - **Subtasks:**
   - [ ] **Kitchen task bugs**: `removeTag` does NOT remove the tag (broken mutate). `addTag` has string concatenation bugs (`,tag` on empty, no dedup). File: `manifest/source/kitchen-task-rules.manifest`.
-  - [ ] **Event.create eventDate type**: `eventDate: number` parameter type but property is `datetime`. `eventDate > 0` treats datetime as number. File: `manifest/source/event-rules.manifest`.
-  - [ ] **Event.create tags type**: `tags: string` parameter but property is `array<string>`. File: `manifest/source/event-rules.manifest`.
-  - [ ] **EventBudget variance**: `variancePercentage` is never computed from `varianceAmount / totalBudgetAmount * 100`, stays at `0`. All constraints evaluating against it are ineffective. File: `manifest/source/event-budget-rules.manifest`.
-  - [ ] **EventBudget.update**: computes `varianceAmount` but NOT `variancePercentage`. File: `manifest/source/event-budget-rules.manifest`.
+  - [x] **Event.create eventDate type**: Fixed: `eventDate: number` → `datetime` in create (L68), update (L88), updateDate (L174); guards `>0` → `!=null`. — ✅ DONE 2026-06-04
+  - [x] **Event.create tags type**: Fixed: `tags: string` → `array<string>` in create (L68) and update (L88). — ✅ DONE 2026-06-04
+  - [x] **EventBudget variance**: Fixed: `variancePercentage` converted from stale property (always 0) to computed using `percent(self.varianceAmount, self.totalBudgetAmount)` builtin. 3 previously ineffective constraints now active. — ✅ DONE 2026-06-04
+  - [x] **EventBudget.update**: Resolved by variancePercentage becoming computed (no separate mutation needed). — ✅ DONE 2026-06-04
   - [ ] **EventProfitability**: `budgetedGrossMarginPct` and `actualGrossMarginPct` never computed/mutated. File: `manifest/source/event-rules.manifest` (profitability section).
-  - [ ] **EventGuest.rsvpDecline**: `mutate notes = reason` OVERWRITES existing notes. Should append or use separate field. File: `manifest/source/event-guest-rules.manifest`.
-  - [ ] **EventContract.cancel**: `canceledBy` param is silently dropped (property does not exist). File: `manifest/source/event-contract-rules.manifest`.
+  - [x] **EventGuest.rsvpDecline**: Fixed: Added `declineReason` property; mutation changed from `notes = reason` to `declineReason = reason`. — ✅ DONE 2026-06-04
+  - [x] **EventContract.cancel**: Fixed: Added missing `canceledBy: string` property; cancel command now persists it. — ✅ DONE 2026-06-04
   - [ ] **BudgetLineItem.update**: bare `number` arithmetic into `money` property. File: `manifest/source/event-budget-rules.manifest`.
-  - [ ] **EventContract**: `expiresAt: number` into `datetime` property. File: `manifest/source/event-contract-rules.manifest`.
-  - [ ] **EventDish**: `quantity: number` into `int` property. File: `manifest/source/event-dish-rules.manifest`.
+  - [x] **EventContract expiresAt: number into datetime**: Fixed: `expiresAt: number` → `datetime` in create (L43) and update (L62). — ✅ DONE 2026-06-04
+  - [x] **EventDish quantity: number into int**: Fixed: `quantity: number` → `int` and `sortOrder: number` → `int` in create, updateQuantity, updateCourse + event payloads. — ✅ DONE 2026-06-04
   - [ ] **Event dead properties**: `budget`, `ticketPrice`, `ticketTier`, `eventFormat`, `accessibilityOptions`, `featuredMediaUrl`, `locationId`, `venueId`, `venueEntityId`, `assignedTo` declared but never set by any command. Either add commands or remove. File: `manifest/source/event-rules.manifest`.
   - [ ] **CRITICAL: CateringOrder transition property mismatch**: `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken. File: `manifest/source/catering-order-rules.manifest:54-57`.
   - [ ] **CRITICAL: VendorContract blockModifyActive prevents ALL mutations**: Entity-level block constraint fires on EVERY command when status=="active", including legitimate ones (compliance updates, SLA breach recording, renewal). File: `manifest/source/vendor-contract-rules.manifest:57-62`.
@@ -726,9 +727,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - [ ] **MEDIUM: Dish margin/marginPercent bare number arithmetic**: Uses bare number on money fields. IR analysis.
   - [ ] **MEDIUM: PayrollPeriod.isLeaf inverted logic**: `self.parentId == ""` means root (no parent), but "leaf" means no children. File: `manifest/source/payroll-rules.manifest`.
   - [ ] **MEDIUM: Client.defaultPaymentTerms `decimal` property but `number` params**: In create/update. File: `manifest/source/client-rules.manifest`.
-  - [ ] **MEDIUM: RolePolicy permissions default `'[]'` string into `array<string>`**: Same string-into-array anti-pattern. File: `manifest/source/role-policy-rules.manifest`.
+  - [x] **MEDIUM: RolePolicy permissions default `'[]'` string into `array<string>`**: Fixed: property `string = "[]"` → `array<string> = []`; commands accept `array<string>`; computed uses `length()` instead of string comparison. — ✅ DONE 2026-06-04
   - [ ] **MEDIUM: EmployeeAvailability.dayOfWeek as `number` but compared as string**: Index mismatch. File: `manifest/source/employee-availability.manifest`.
-  - [ ] **MEDIUM: WasteEntry.reasonId `int` property but `number` param**: Type coercion issue. File: `manifest/source/waste-entry-rules.manifest`.
+  - [x] **MEDIUM: WasteEntry.reasonId `int` property but `number` param**: Fixed: `reasonId: number` → `int` in create command. — ✅ DONE 2026-06-04
 
 ### 0.7 Resolve EventStaff / EventStaffAssignment duplicate
 - **Done when:** Either (a) one entity is removed and the other absorbs all properties/commands, or (b) both are explicitly differentiated with documented justification.
