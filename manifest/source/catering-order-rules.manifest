@@ -51,10 +51,15 @@ entity CateringOrder {
   computed isFullyStaffed: boolean = self.staffAssigned >= self.staffRequired
   computed hasDeposit: boolean = self.depositRequired and self.depositPaid
 
-  transition status from "draft" to ["confirmed", "cancelled"]
-  transition status from "confirmed" to ["in_progress", "cancelled"]
-  transition status from "in_progress" to ["delivered", "cancelled"]
-  transition status from "delivered" to ["completed"]
+  // State machine governs the `orderStatus` property (NOT a phantom `status`
+  // property, which does not exist on this entity). `delivered -> cancelled` is
+  // included to match the `cancel` command's guard, which permits cancelling any
+  // non-completed, non-cancelled order. See
+  // apps/api/__tests__/events/catering-order-lifecycle.test.ts.
+  transition orderStatus from "draft" to ["confirmed", "cancelled"]
+  transition orderStatus from "confirmed" to ["in_progress", "cancelled"]
+  transition orderStatus from "in_progress" to ["delivered", "cancelled"]
+  transition orderStatus from "delivered" to ["completed", "cancelled"]
 
   constraint validOrderNumber: self.orderNumber != null and self.orderNumber != "" "Order number is required"
   constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "delivered", "completed", "cancelled"] "Status must be valid"
@@ -79,12 +84,12 @@ entity CateringOrder {
     }
   }
 
-  constraint blockCancelIfCompleted:block self.orderStatus == "completed" {
-    messageTemplate: "Cannot cancel order {orderNumber} - order is already completed"
-    details: {
-      orderNumber: self.orderNumber
-    }
-  }
+  // NOTE: entity-level `blockCancelIfCompleted:block self.orderStatus == "completed"` was
+  // removed here. As an entity-level block constraint it fired on ALL commands (including
+  // confirm, startPrep, deliver, etc.) rather than only `cancel`, because entity-level
+  // :block constraints run before every command mutation. The `cancel` command already
+  // prevents cancelling a completed order via `guard self.orderStatus != "completed"`, so
+  // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
   command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: number, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
     guard orderNumber != null and orderNumber != "" "Order number is required"

@@ -54,12 +54,13 @@ entity VendorContract {
   constraint validStatus: self.status in ["draft", "pending_approval", "pending_activation", "active", "expired", "terminated", "cancelled"] "Invalid contract status"
   constraint validContractType: self.contractType in ["purchase", "service", "lease", "maintenance", "consulting", "distribution"] "Invalid contract type"
   constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
-  constraint blockModifyActive:block self.status == "active" {
-    messageTemplate: "Cannot modify active contract '{contractNumber}'"
-    details: {
-      contractNumber: self.contractNumber
-    }
-  }
+  // NOTE: an entity-level `blockModifyActive:block self.status == "active"` was
+  // removed here. As an entity-level block constraint it fired whenever a command
+  // mutated `status` on an active contract — which broke the legitimate
+  // active-contract lifecycle (notably `terminate`, plus the approve/activate
+  // path into "active"). Editing the TERMS of an active contract is already
+  // prevented by `command update`'s `guard self.status == "draft"`, so no
+  // protection is lost. See apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts.
 
   command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: number, endDate: number, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, currencyCode: string, contractUrl: string, notes: string) {
     guard contractNumber != null and contractNumber != "" "Contract number is required"
