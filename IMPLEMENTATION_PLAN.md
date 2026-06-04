@@ -35,7 +35,7 @@
 | Finding | Impact | Source |
 |---|---|---|
 | **ENTITIES_WITH_SPECIFIC_STORES: 95 unique entries** | ✅ DONE — duplicate VendorContract removed (was at lines 199 and 226). | `manifest/runtime/src/manifest-runtime-factory.ts` |
-| **0 of 15 advanced RuntimeOptions features used in production** | middleware, auditSink, outboxStore, approvalStore, requireTenantContext, flagProvider, jobQueue, profiling, generateId, deterministicMode, evaluationLimits, requireValidProvenance, expectedIRHash, wasmEvaluator, encryptionProvider -- NONE wired in the primary factory | `manifest/runtime/src/manifest-runtime-factory.ts` |
+| **1 of 15 advanced RuntimeOptions features used in production (middleware WIRED)** | ~~middleware~~ (WIRED — identity at before-policy, RBAC at before-guard, audit/outbox at after-emit), auditSink, outboxStore, approvalStore, requireTenantContext, flagProvider, jobQueue, profiling, generateId, deterministicMode, evaluationLimits, requireValidProvenance, expectedIRHash, wasmEvaluator, encryptionProvider -- 1 of 15 wired in the primary factory | `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **2 features partially wired but not forwarded** | `deterministicMode` and `evaluationLimits` are defined in `KitchenOpsContext` and passed by 7 `create*Runtime` functions, but the primary factory does NOT forward them | `manifest/runtime/src/index.ts:260-269`, `manifest/runtime/src/manifest-runtime-factory.ts:503-506` |
 | **Event.create eventDate type mismatch**: `datetime` property but `number` param | RESOLVED 2026-06-04 — Fixed: `eventDate: number` → `datetime` in create (L68), update (L88), updateDate (L174); guards `>0` → `!=null`. | `manifest/source/event-rules.manifest` |
 | **Event.create tags type mismatch**: `array<string>` property but `string` param | RESOLVED 2026-06-04 — Fixed: `tags: string` → `array<string>` in create (L68) and update (L88). | `manifest/source/event-rules.manifest` |
@@ -440,6 +440,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.4c: Audit/outbox middleware replaces telemetry-embedded outbox writes** | `createAuditOutboxMiddleware()` at `after-emit` hook persists emitted events to outbox. Factory telemetry hooks simplified to caller-provided hooks only. Outbox logic moved from post-hoc telemetry to engine lifecycle. 2560/2560 tests pass. |
 | 2026-06-04 | **Task 10.4: Delete dead code (~4,971 LOC removed)** | rules-engine/ (5 files), entity-graph/ (7 files), packages/services/ all deleted. Zero consumers confirmed. Re-exports removed from index.ts. |
 | 2026-06-04 | **Task 7.4a: RBAC middleware replaces Proxy-based permission guard** | `createRbacMiddleware()` registered as Manifest-native `before-guard` middleware. Factory no longer wraps engine in `createPermissionGuard` Proxy — returns raw engine with middleware pipeline. COMMAND_PERMISSION_MAP and AI_APPROVAL_COMMANDS preserved, allow-by-default behavior unchanged. 2560/2560 tests pass. API+runtime typecheck GREEN. |
+| 2026-06-04 | **Task 7.4b: Identity middleware wired into lifecycle pipeline** | `createIdentityMiddleware` registered as Manifest-native `before-policy` middleware. Factory no longer pre-resolves user roles — role resolution runs inside the engine lifecycle where policies/guards can reference `context.userRole`. Legacy `resolveUserRole` function removed. Role policies always loaded for tenant (not gated on pre-resolved role). Duplicate VendorContract removed from ENTITIES_WITH_SPECIFIC_STORES. Pipeline order: identity (before-policy) → RBAC (before-guard) → audit/outbox (after-emit). 2560/2560 tests pass (1 pre-existing payment-env failure). API+runtime typecheck GREEN. Tag v0.12.73. |
 
 ---
 
@@ -1001,7 +1002,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`.
 - **Subtasks:**
   - [x] **7.4a -- RBAC:** `before-guard` middleware replaces `createPermissionGuard` proxy. — ✅ DONE 2026-06-04
-  - [ ] **7.4b -- Identity:** `before-policy` with `contextPatch` replaces `resolveUserRole`.
+  - [x] **7.4b -- Identity:** `before-policy` with `contextPatch` replaces `resolveUserRole`. — ✅ DONE 2026-06-04
   - [x] **7.4c -- Audit:** `after-emit` middleware replaces post-hoc telemetry handler. — ✅ DONE 2026-06-04
   - [ ] **7.4d -- Bootstrap:** `before-policy` patch replaces `bootstrapCreateCommand` workaround.
   - [ ] Delete hand-rolled equivalents after each migration proven.

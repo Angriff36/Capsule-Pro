@@ -27,7 +27,8 @@
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.54.0",
-    "hono": "^4.12.23"
+    "hono": "^4.12.23",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

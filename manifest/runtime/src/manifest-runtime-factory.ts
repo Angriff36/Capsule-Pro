@@ -21,14 +21,16 @@ import type {
   RuntimeEngine,
   RuntimeOptions,
 } from "@angriff36/manifest";
+import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
+import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
-  createAuditOutboxMiddleware,
   createIdentityMiddleware,
   createRbacMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
+import { ensureManifestSchema, getPool } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
@@ -402,32 +404,50 @@ export async function createManifestRuntime(
 
   // 8. Build middleware pipeline.
   //    Middleware runs INSIDE the Manifest engine lifecycle, replacing both
-  //    the external Proxy wrapper (RBAC), pre-engine role resolution (identity),
-  //    and the telemetry-embedded outbox writes. Pipeline order:
+  //    the external Proxy wrapper (RBAC) and pre-engine role resolution.
+  //    Pipeline order:
   //    - before-policy: Identity enrichment (resolve user role from DB)
   //    - before-guard:  RBAC permission check (command-level authorization)
-  //    - after-emit:    Audit/outbox persistence (durable event delivery)
+  //    Note: after-emit audit/outbox persistence is now handled by the engine
+  //    natively via auditSink + outboxStore RuntimeOptions (step 9).
   const middleware: Middleware[] = [
     createIdentityMiddleware({
       prisma: prismaForLookups,
       captureException: deps.captureException,
     }),
     createRbacMiddleware({ rolePolicies }),
-    createAuditOutboxMiddleware({
-      prisma: deps.prisma,
-      prismaOverride: deps.prismaOverride ?? null,
-      tenantId: user.tenantId,
-      log: deps.log,
-      captureException: deps.captureException,
-      createOutboxWriter: createPrismaOutboxWriter,
-    }),
   ];
 
-  // 9. Assemble the runtime engine.
+  // 9. Bootstrap upstream Manifest Postgres adapters.
+  //    PostgresAuditSink provides durable audit records for every governed
+  //    command (constitution §12). PostgresOutboxStore provides production-
+  //    grade transactional event persistence with FOR UPDATE SKIP LOCKED
+  //    dispatch. Both share the singleton pg.Pool from pg-pool.ts.
+  //    Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
+  //    GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
+  //    CI without DB). The engine still works — just without persistent audit
+  //    or outbox delivery.
+  const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  let auditSink: PostgresAuditSink | undefined;
+  let outboxStore: PostgresOutboxStore | undefined;
+  if (dbUrl) {
+    await ensureManifestSchema();
+    const pool = getPool();
+    auditSink = new PostgresAuditSink({ pool });
+    outboxStore = new PostgresOutboxStore({
+      pool,
+      projectSubject: true,
+    });
+  }
+
+  // 10. Assemble the runtime engine.
   //    customBuiltins injects the project's deterministic expression helpers
   //    (daysBetween/percent/containsAny/…) so guards and computed properties
   //    can call them. The middleware pipeline is passed directly to the engine
   //    via RuntimeOptions — no Proxy wrapping needed.
+  //    auditSink and outboxStore are the official upstream Postgres adapters,
+  //    replacing the previous custom outbox writer middleware.
+  //    When undefined (no DB), the engine skips audit/outbox silently.
   const engine = new ManifestRuntimeEngine(
     ir,
     { user, eventCollector, telemetry },
@@ -436,6 +456,8 @@ export async function createManifestRuntime(
       idempotencyStore,
       customBuiltins: createCustomBuiltins(),
       middleware,
+      ...(auditSink ? { auditSink } : {}),
+      ...(outboxStore ? { outboxStore } : {}),
     }
   );
 
