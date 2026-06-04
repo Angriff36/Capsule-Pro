@@ -87,7 +87,7 @@ entity PrepTask {
 
     mutate status = "open"
     mutate claimedBy = ""
-    mutate claimedAt = 0
+    mutate claimedAt = null
     mutate stationId = ""
 
     emit PrepTaskUnclaimed
@@ -134,7 +134,7 @@ entity PrepTask {
 
     mutate status = "open"
     mutate claimedBy = ""
-    mutate claimedAt = 0
+    mutate claimedAt = null
     mutate stationId = ""
 
     emit PrepTaskReleased

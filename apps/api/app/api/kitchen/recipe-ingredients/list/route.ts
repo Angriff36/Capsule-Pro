@@ -26,7 +26,7 @@ const recipeIngredients = await database.recipeIngredient.findMany({
         deletedAt: null
       },
     orderBy: {
-      id: "desc",
+      createdAt: "desc",
     },
   });
 

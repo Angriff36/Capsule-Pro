@@ -25,7 +25,7 @@ const payments = await database.payment.findMany({
         tenantId
       },
     orderBy: {
-      id: "desc",
+      createdAt: "desc",
     },
   });
 

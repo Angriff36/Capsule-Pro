@@ -38,7 +38,7 @@ entity TimeEntry {
     mutate locationId = locationId
     mutate shiftId = shiftId
     mutate clockIn = now()
-    mutate clockOut = 0
+    mutate clockOut = null
     mutate breakMinutes = 0
     mutate notes = notes
 

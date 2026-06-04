@@ -46,7 +46,7 @@ entity SampleData {
     // This command validates guards, emits events, and records the operation
     mutate isSeeded = true
     mutate seededAt = now()
-    mutate clearedAt = 0
+    mutate clearedAt = null
     
     // Statistics will be populated by the effect
     mutate eventsCreated = 2
@@ -87,7 +87,7 @@ entity SampleData {
     // Effect will handle the clear + seed sequence
     mutate isSeeded = true
     mutate seededAt = now()
-    mutate clearedAt = 0
+    mutate clearedAt = null
     
     mutate eventsCreated = 2
     mutate clientsCreated = 1

@@ -25,7 +25,7 @@ const invoices = await database.invoice.findMany({
         tenantId
       },
     orderBy: {
-      id: "desc",
+      createdAt: "desc",
     },
   });
 

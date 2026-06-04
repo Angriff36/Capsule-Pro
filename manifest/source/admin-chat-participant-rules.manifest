@@ -21,7 +21,7 @@ entity AdminChatParticipant {
   }
 
   command unarchive() {
-    mutate archivedAt = 0
+    mutate archivedAt = null
 
     emit ChatParticipantUnarchived
   }

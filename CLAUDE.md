@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
+[proactive bridge @ 96% context — saved before compacting]
 Files (1):
-  manifest/source/payroll-rules.manifest (edit)
+  manifest/source/recipe-rules.manifest (edit)
 
 # === END COGNILAYER ===

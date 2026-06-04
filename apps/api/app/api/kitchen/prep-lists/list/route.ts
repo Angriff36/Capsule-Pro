@@ -25,7 +25,7 @@ const prepLists = await database.prepList.findMany({
         tenantId
       },
     orderBy: {
-      id: "desc",
+      createdAt: "desc",
     },
   });
 

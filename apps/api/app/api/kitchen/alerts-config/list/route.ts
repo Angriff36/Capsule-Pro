@@ -25,7 +25,7 @@ const alertsConfigs = await database.alertsConfig.findMany({
         tenantId
       },
     orderBy: {
-      id: "desc",
+      createdAt: "desc",
     },
   });
 

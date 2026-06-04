@@ -177,7 +177,7 @@ entity PrepList {
     mutate totalItems = validInstructionLines
     mutate status = "draft"
     mutate generatedAt = now()
-    mutate finalizedAt = 0
+    mutate finalizedAt = null
     mutate isActive = true
 
     emit PrepListSeedImported
@@ -187,7 +187,7 @@ entity PrepList {
     guard self.status == "finalized" or self.status == "completed" "Can only reopen finalized or completed prep lists"
 
     mutate status = "draft"
-    mutate finalizedAt = 0
+    mutate finalizedAt = null
     mutate notes = reason
 
     emit PrepListReopened
@@ -311,7 +311,7 @@ entity PrepListItem {
     guard self.isCompleted == true "Item is not completed"
 
     mutate isCompleted = false
-    mutate completedAt = 0
+    mutate completedAt = null
     mutate completedBy = ""
 
     emit PrepListItemUncompleted
@@ -341,7 +341,7 @@ entity PrepListItem {
     mutate recipeVersionId = recipeVersionId
     mutate sortOrder = sortOrder
     mutate isCompleted = false
-    mutate completedAt = 0
+    mutate completedAt = null
     mutate completedBy = ""
 
     emit PrepListItemCreated
