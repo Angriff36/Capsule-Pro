@@ -166,8 +166,49 @@ function parseModelBlock(body) {
     if (field.map) result.columnMappings[field.name] = field.map;
     if (field.db) result.dbAttributes[field.name] = field.db;
 
+    // Fix 2 & 4: Filter and fix field default attributes
+    const isStringField = /^String(\??|\[\])?$/.test(field.type);
+    const isDateTimeField = /^DateTime(\??)$/.test(field.type);
+    const isListField = /\[\]$/.test(field.type);
+
+    if (field.defaults) {
+      const fixedDefaults = [];
+      for (const d of field.defaults) {
+        const m = d.match(/^@default\((.+)\)$/s);
+        if (!m) { fixedDefaults.push(d); continue; }
+        const inner = m[1];
+
+        // Fix 4: Skip @default(now()) on DateTime fields.
+        // PrismaProjection generates DateTime fields as String from IR,
+        // so now() becomes invalid in the generated schema.
+        if (inner === "now()" && isDateTimeField) continue;
+
+        // Fix 4: Skip @default([...]) -- PrismaProjection flattens list types to
+        // scalar, so list defaults become invalid in the generated schema.
+        if (inner.startsWith("[")) continue;
+
+        // Fix 2: Wrap bare identifiers in quotes.
+        // PrismaProjection generates ALL fields as String from IR, so enum defaults
+        // like @default(ACTIVE) must become @default("ACTIVE") for the generated schema.
+        // A bare identifier: not already quoted, not a function call (dbgenerated, now, etc),
+        // not bool, not number, not a list.
+        const isQuoted = /^"/.test(inner);
+        const isFuncCall = /\(.*\)$/.test(inner);
+        const isBool = inner === "true" || inner === "false";
+        const isNumber = /^-?\d+(\.\d+)?$/.test(inner);
+        const isList = /^\[/.test(inner);
+
+        if (!isQuoted && !isFuncCall && !isBool && !isNumber && !isList) {
+          fixedDefaults.push('@default("' + inner + '")');
+        } else {
+          fixedDefaults.push(d);
+        }
+      }
+      field.defaults = fixedDefaults;
+    }
+
     const attrs = [];
-    if (field.defaults) attrs.push(...field.defaults);
+    if (field.defaults && field.defaults.length > 0) attrs.push(...field.defaults);
     if (field.updatedAt) attrs.push("@updatedAt");
     if (attrs.length > 0) result.fieldAttributes[field.name] = attrs;
 
@@ -186,6 +227,40 @@ function parseModelBlock(body) {
         result.foreignKeys[field.relation.fields[i]] = field.relation.references[i];
       }
     }
+  }
+
+  // Fix 1: Remap index field names from snake_case column names to camelCase field names
+  // Build reverse mapping: column name -> field name
+  // Only include entries where the field name is actually different (non-identity)
+  const reverseColMap = {};
+  for (const [fieldName, colName] of Object.entries(result.columnMappings)) {
+    if (fieldName !== colName) {
+      reverseColMap[colName] = fieldName;
+    }
+  }
+  // Also build a set of all field names that are already camelCase (no underscores)
+  const camelFieldNames = new Set(
+    result.fields.map((f) => f.name).filter((n) => !n.includes("_"))
+  );
+
+  // Convert snake_case to camelCase
+  const snakeToCamel = (s) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+
+  const remapIndexFields = (fields) =>
+    fields.map((f) => {
+      // 1. Exact match in reverse column mapping (mapped fields with different names)
+      if (reverseColMap[f]) return reverseColMap[f];
+      // 2. Already camelCase and a known field name (no conversion needed)
+      if (camelFieldNames.has(f)) return f;
+      // 3. Snake_case -> convert to camelCase (IR/PrismaProjection convention)
+      if (f.includes("_")) return snakeToCamel(f);
+      return f;
+    });
+
+  result.indexes = result.indexes.map(remapIndexFields);
+  result.uniqueIndexes = result.uniqueIndexes.map(remapIndexFields);
+  if (result.compositeId) {
+    result.compositeId = remapIndexFields(result.compositeId);
   }
 
   return result;

@@ -27,6 +27,7 @@ import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
 import { createCustomBuiltins } from "./manifest-builtins";
 import {
   createIdentityMiddleware,
+  createPrepInventoryDemandMiddleware,
   createRbacMiddleware,
 } from "./middleware";
 import { loadRolePolicies } from "./permission-guard";
@@ -410,12 +411,18 @@ export async function createManifestRuntime(
   //    - before-guard:  RBAC permission check (command-level authorization)
   //    Note: after-emit audit/outbox persistence is now handled by the engine
   //    natively via auditSink + outboxStore RuntimeOptions (step 9).
+  let engine: ManifestRuntimeEngine;
   const middleware: Middleware[] = [
     createIdentityMiddleware({
       prisma: prismaForLookups,
       captureException: deps.captureException,
     }),
     createRbacMiddleware({ rolePolicies }),
+    createPrepInventoryDemandMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
   ];
 
   // 9. Bootstrap upstream Manifest Postgres adapters.
@@ -448,7 +455,7 @@ export async function createManifestRuntime(
   //    auditSink and outboxStore are the official upstream Postgres adapters,
   //    replacing the previous custom outbox writer middleware.
   //    When undefined (no DB), the engine skips audit/outbox silently.
-  const engine = new ManifestRuntimeEngine(
+  engine = new ManifestRuntimeEngine(
     ir,
     { user, tenantId: user.tenantId, eventCollector, telemetry },
     {

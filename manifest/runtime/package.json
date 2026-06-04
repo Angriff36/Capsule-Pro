@@ -16,6 +16,7 @@
     "./prisma-json-store": "./src/prisma-json-store.ts",
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
+    "./middleware": "./src/middleware/index.ts",
     "./commands-registry": "./src/commands-registry.ts",
     "./command-resolver": "./src/command-resolver.ts",
     "./run-manifest-command-core": "./src/run-manifest-command-core.ts",

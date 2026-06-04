@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 97% context — saved before compacting]
+[proactive bridge @ 90% context — saved before compacting]
 Files (1):
-  manifest/runtime/src/pg-pool.ts (edit)
+  manifest/runtime/src/manifest-runtime-factory.ts (edit)
 
 # === END COGNILAYER ===
