@@ -487,28 +487,28 @@ event ProposalTemplateCreated: "crm.proposal_template.created" {
   templateId: string
   tenantId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProposalTemplateUpdated: "crm.proposal_template.updated" {
   templateId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProposalTemplateActivated: "crm.proposal_template.activated" {
   templateId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event ProposalTemplateDeactivated: "crm.proposal_template.deactivated" {
   templateId: string
   tenantId: string
   name: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event InteractionAttachmentCreated: "crm.interaction_attachment.created" {
@@ -519,7 +519,7 @@ event InteractionAttachmentCreated: "crm.interaction_attachment.created" {
   fileType: string
   fileSizeBytes: number
   uploadedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InteractionAttachmentRemoved: "crm.interaction_attachment.removed" {
@@ -528,7 +528,7 @@ event InteractionAttachmentRemoved: "crm.interaction_attachment.removed" {
   clientInteractionId: string
   fileName: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event CrmScoringRuleCreated: "crm.scoring_rule.created" {
@@ -537,7 +537,7 @@ event CrmScoringRuleCreated: "crm.scoring_rule.created" {
   name: string
   criterion: string
   points: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event CrmScoringRuleUpdated: "crm.scoring_rule.updated" {
@@ -546,21 +546,21 @@ event CrmScoringRuleUpdated: "crm.scoring_rule.updated" {
   name: string
   criterion: string
   points: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CrmScoringRuleActivated: "crm.scoring_rule.activated" {
   ruleId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event CrmScoringRuleDeactivated: "crm.scoring_rule.deactivated" {
   ruleId: string
   tenantId: string
   name: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event ReportCreated: "admin.report.created" {
@@ -570,7 +570,7 @@ event ReportCreated: "admin.report.created" {
   reportType: string
   isShared: boolean
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ReportUpdated: "admin.report.updated" {
@@ -578,7 +578,7 @@ event ReportUpdated: "admin.report.updated" {
   tenantId: string
   name: string
   reportType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ReportShared: "admin.report.shared" {
@@ -586,7 +586,7 @@ event ReportShared: "admin.report.shared" {
   tenantId: string
   name: string
   userId: string
-  sharedAt: number
+  sharedAt: datetime
 }
 
 event ReportRemoved: "admin.report.removed" {
@@ -594,7 +594,7 @@ event ReportRemoved: "admin.report.removed" {
   tenantId: string
   name: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event DocumentCreated: "admin.document.created" {
@@ -605,14 +605,14 @@ event DocumentCreated: "admin.document.created" {
   entityType: string
   entityId: string
   uploadedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DocumentParsed: "admin.document.parsed" {
   documentId: string
   tenantId: string
   name: string
-  parsedAt: number
+  parsedAt: datetime
 }
 
 event DocumentFailed: "admin.document.failed" {
@@ -620,7 +620,7 @@ event DocumentFailed: "admin.document.failed" {
   tenantId: string
   name: string
   reason: string
-  failedAt: number
+  failedAt: datetime
 }
 
 event DocumentRemoved: "admin.document.removed" {
@@ -628,7 +628,7 @@ event DocumentRemoved: "admin.document.removed" {
   tenantId: string
   name: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event AdminChatThreadCreated: "admin.chat_thread.created" {
@@ -636,7 +636,7 @@ event AdminChatThreadCreated: "admin.chat_thread.created" {
   tenantId: string
   subject: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AdminChatThreadArchived: "admin.chat_thread.archived" {
@@ -644,7 +644,7 @@ event AdminChatThreadArchived: "admin.chat_thread.archived" {
   tenantId: string
   subject: string
   userId: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event AdminChatThreadReopened: "admin.chat_thread.reopened" {
@@ -652,7 +652,7 @@ event AdminChatThreadReopened: "admin.chat_thread.reopened" {
   tenantId: string
   subject: string
   userId: string
-  reopenedAt: number
+  reopenedAt: datetime
 }
 
 event AdminChatMessageSent: "admin.chat_message.sent" {
@@ -660,7 +660,7 @@ event AdminChatMessageSent: "admin.chat_message.sent" {
   tenantId: string
   adminChatThreadId: string
   senderId: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event AdminChatMessageRemoved: "admin.chat_message.removed" {
@@ -668,5 +668,5 @@ event AdminChatMessageRemoved: "admin.chat_message.removed" {
   tenantId: string
   adminChatThreadId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

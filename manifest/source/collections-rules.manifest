@@ -87,7 +87,7 @@ entity CollectionCase {
     emit CollectionStatusChanged
   }
 
-  command recordPayment(amount: number, paymentId: string, paymentDate: number) {
+  command recordPayment(amount: number, paymentId: string, paymentDate: datetime) {
     guard amount > 0 "Payment amount must be positive"
     guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
     mutate collectedAmount = self.collectedAmount + amount
@@ -244,7 +244,7 @@ entity CollectionAction {
   constraint valid_status: self.status in ["PENDING", "COMPLETED", "FAILED", "SKIPPED"] "Invalid status"
 
   // Commands
-  command complete(outcome: string, promiseAmount: number, promiseDate: number, nextActionDate: number) {
+  command complete(outcome: string, promiseAmount: number, promiseDate: datetime, nextActionDate: datetime) {
     guard self.status == "PENDING" "Can only complete pending actions"
     mutate status = "COMPLETED"
     mutate completedAt = now()
@@ -323,7 +323,7 @@ entity CollectionPaymentPlan {
   constraint completed_valid: self.completedInstallments <= self.installmentCount "Completed cannot exceed total"
 
   // Commands
-  command recordInstallment(amount: number, paymentDate: number) {
+  command recordInstallment(amount: number, paymentDate: datetime) {
     guard self.status == "ACTIVE" "Can only record payments for active plans"
     guard amount == self.installmentAmount "Payment must match installment amount"
     mutate completedInstallments = self.completedInstallments + 1
@@ -472,7 +472,7 @@ event ActionSkipped: "collections.action.skipped" {
 event ActionRescheduled: "collections.action.rescheduled" {
   actionId: string
   caseId: string
-  newDate: number
+  newDate: datetime
 }
 
 event InstallmentRecorded: "collections.payment-plan.installment-recorded" {

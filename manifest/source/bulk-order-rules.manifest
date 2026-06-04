@@ -163,7 +163,7 @@ event BulkOrderRuleCreated: "inventory.bulk-order-rule.created" {
   minimumQuantity: number
   ruleType: string
   action: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
@@ -174,7 +174,7 @@ event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
   minimumQuantity: number
   ruleType: string
   action: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BulkOrderRuleActivated: "inventory.bulk-order-rule.activated" {
@@ -182,7 +182,7 @@ event BulkOrderRuleActivated: "inventory.bulk-order-rule.activated" {
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event BulkOrderRuleSuspended: "inventory.bulk-order-rule.suspended" {
@@ -191,7 +191,7 @@ event BulkOrderRuleSuspended: "inventory.bulk-order-rule.suspended" {
   catalogEntryId: string
   ruleName: string
   reason: string
-  suspendedAt: number
+  suspendedAt: datetime
 }
 
 event BulkOrderRulePriorityAdjusted: "inventory.bulk-order-rule.priority-adjusted" {
@@ -200,7 +200,7 @@ event BulkOrderRulePriorityAdjusted: "inventory.bulk-order-rule.priority-adjuste
   catalogEntryId: string
   ruleName: string
   newPriority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BulkOrderRuleDeactivated: "inventory.bulk-order-rule.deactivated" {
@@ -209,5 +209,5 @@ event BulkOrderRuleDeactivated: "inventory.bulk-order-rule.deactivated" {
   catalogEntryId: string
   ruleName: string
   reason: string
-  deletedAt: number
+  deletedAt: datetime
 }

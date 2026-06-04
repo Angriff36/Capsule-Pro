@@ -87,7 +87,7 @@ event NotificationCreated: "notification.created" {
   notificationType: string
   title: string
   hasAction: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event NotificationMarkedRead: "notification.marked_read" {
@@ -96,7 +96,7 @@ event NotificationMarkedRead: "notification.marked_read" {
   recipientEmployeeId: string
   title: string
   userId: string
-  readAt: number
+  readAt: datetime
 }
 
 event NotificationDismissed: "notification.dismissed" {
@@ -105,7 +105,7 @@ event NotificationDismissed: "notification.dismissed" {
   recipientEmployeeId: string
   title: string
   userId: string
-  dismissedAt: number
+  dismissedAt: datetime
 }
 
 event NotificationDeleted: "notification.deleted" {
@@ -114,5 +114,5 @@ event NotificationDeleted: "notification.deleted" {
   recipientEmployeeId: string
   title: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

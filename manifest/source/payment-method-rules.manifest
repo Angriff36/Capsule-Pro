@@ -141,7 +141,7 @@ event PaymentMethodCreated: "payment-method.created" {
   paymentMethodId: string
   clientId: string
   type: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PaymentMethodSetDefault: "payment-method.set-default" {

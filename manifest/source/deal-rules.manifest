@@ -32,7 +32,7 @@ entity Deal {
   constraint positiveValue: self.value >= 0 "Deal value cannot be negative"
   constraint validProbability: self.probability >= 0 and self.probability <= 100 "Probability must be between 0 and 100"
 
-  command create(leadId: string, title: string, value: number, currency: string, stage: string, probability: number, expectedCloseDate: number, assignedTo: string, notes: string) {
+  command create(leadId: string, title: string, value: number, currency: string, stage: string, probability: number, expectedCloseDate: datetime, assignedTo: string, notes: string) {
     guard leadId != null and leadId != "" "Lead ID is required"
     guard title != null and title != "" "Deal title is required"
     guard value >= 0 "Deal value cannot be negative"
@@ -133,7 +133,7 @@ event DealCreated: "crm.deal.created" {
   title: string
   value: number
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DealStageUpdated: "crm.deal.stage.updated" {
@@ -142,46 +142,46 @@ event DealStageUpdated: "crm.deal.stage.updated" {
   oldStage: string
   newStage: string
   notes: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DealValueUpdated: "crm.deal.value.updated" {
   dealId: string
   value: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DealProbabilityUpdated: "crm.deal.probability.updated" {
   dealId: string
   probability: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DealAssigned: "crm.deal.assigned" {
   dealId: string
   assignedTo: string
   assignedBy: string
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event DealClosed: "crm.deal.closed" {
   dealId: string
   leadId: string
   status: string
-  actualCloseDate: number
-  closedAt: number
+  actualCloseDate: datetime
+  closedAt: datetime
 }
 
 event DealAbandoned: "crm.deal.abandoned" {
   dealId: string
   leadId: string
   reason: string
-  abandonedAt: number
+  abandonedAt: datetime
 }
 
 event DealReopened: "crm.deal.reopened" {
   dealId: string
   leadId: string
   reason: string
-  reopenedAt: number
+  reopenedAt: datetime
 }

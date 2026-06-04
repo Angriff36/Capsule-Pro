@@ -135,14 +135,14 @@ event AllergenWarningCreated: "kitchen.allergen-warning.created" {
   affectedGuests: string
   severity: string
   notes: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AllergenWarningAcknowledged: "kitchen.allergen-warning.acknowledged" {
   allergenWarningId: string
   tenantId: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
   notes: string
 }
 
@@ -150,7 +150,7 @@ event AllergenWarningResolved: "kitchen.allergen-warning.resolved" {
   allergenWarningId: string
   tenantId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
   notes: string
 }
 
@@ -159,7 +159,7 @@ event AllergenWarningOverridden: "kitchen.allergen-warning.overridden" {
   tenantId: string
   overrideReason: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event AllergenWarningEscalated: "kitchen.allergen-warning.escalated" {
@@ -169,7 +169,7 @@ event AllergenWarningEscalated: "kitchen.allergen-warning.escalated" {
   allergens: string
   escalatedTo: string
   reason: string
-  escalatedAt: number
+  escalatedAt: datetime
 }
 
 event AllergenWarningDeleted: "kitchen.allergen-warning.deleted" {
@@ -177,5 +177,5 @@ event AllergenWarningDeleted: "kitchen.allergen-warning.deleted" {
   tenantId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

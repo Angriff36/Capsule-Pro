@@ -134,7 +134,7 @@ event WasteEntryCreated: "kitchen.waste-entry.created" {
   loggedBy: string
   unitCost: number
   totalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event WasteEntryUpdated: "kitchen.waste-entry.updated" {
@@ -144,14 +144,14 @@ event WasteEntryUpdated: "kitchen.waste-entry.updated" {
   locationId: string
   unitCost: number
   totalCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event WasteEntryDeleted: "kitchen.waste-entry.deleted" {
   wasteEntryId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event WasteEntryApproved: "kitchen.waste-entry.approved" {
@@ -160,7 +160,7 @@ event WasteEntryApproved: "kitchen.waste-entry.approved" {
   inventoryItemId: string
   totalCost: number
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event WasteEntryVoided: "kitchen.waste-entry.voided" {
@@ -169,5 +169,5 @@ event WasteEntryVoided: "kitchen.waste-entry.voided" {
   inventoryItemId: string
   voidedBy: string
   reason: string
-  voidedAt: number
+  voidedAt: datetime
 }

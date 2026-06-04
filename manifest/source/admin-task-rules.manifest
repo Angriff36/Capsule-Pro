@@ -113,21 +113,21 @@ event AdminTaskCreated: "admin.task.created" {
   status: string
   priority: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AdminTaskUpdated: "admin.task.updated" {
   taskId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event AdminTaskStatusChanged: "admin.task.status-changed" {
   taskId: string
   status: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event AdminTaskDeleted: "admin.task.deleted" {
   taskId: string
-  deletedAt: number
+  deletedAt: datetime
 }

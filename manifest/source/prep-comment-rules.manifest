@@ -121,7 +121,7 @@ event PrepCommentCreated: "kitchen.prepcomment.created" {
   taskId: string
   employeeId: string
   commentText: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepCommentEdited: "kitchen.prepcomment.edited" {
@@ -129,26 +129,26 @@ event PrepCommentEdited: "kitchen.prepcomment.edited" {
   tenantId: string
   taskId: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepCommentResolved: "kitchen.prepcomment.resolved" {
   commentId: string
   taskId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event PrepCommentUnresolved: "kitchen.prepcomment.unresolved" {
   commentId: string
   taskId: string
   unresolvedBy: string
-  unresolvedAt: number
+  unresolvedAt: datetime
 }
 
 event PrepCommentDeleted: "kitchen.prepcomment.deleted" {
   commentId: string
   taskId: string
   deletedBy: string
-  deletedAt: number
+  deletedAt: datetime
 }

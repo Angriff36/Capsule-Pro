@@ -287,7 +287,7 @@ event MenuCreated: "kitchen.menu.created" {
   tenantId: string
   name: string
   category: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event MenuUpdated: "kitchen.menu.updated" {
@@ -295,7 +295,7 @@ event MenuUpdated: "kitchen.menu.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MenuPublished: "kitchen.menu.published" {
@@ -303,7 +303,7 @@ event MenuPublished: "kitchen.menu.published" {
   tenantId: string
   name: string
   publishedBy: string
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event MenuUnpublished: "kitchen.menu.unpublished" {
@@ -311,7 +311,7 @@ event MenuUnpublished: "kitchen.menu.unpublished" {
   tenantId: string
   name: string
   reason: string
-  unpublishedAt: number
+  unpublishedAt: datetime
 }
 
 event MenuArchived: "kitchen.menu.archived" {
@@ -319,7 +319,7 @@ event MenuArchived: "kitchen.menu.archived" {
   tenantId: string
   name: string
   reason: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event MenuRestored: "kitchen.menu.restored" {
@@ -327,7 +327,7 @@ event MenuRestored: "kitchen.menu.restored" {
   tenantId: string
   name: string
   reason: string
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event MenuPricingUpdated: "kitchen.menu.pricing.updated" {
@@ -337,7 +337,7 @@ event MenuPricingUpdated: "kitchen.menu.pricing.updated" {
   newBasePrice: number
   oldPricePerPerson: number
   newPricePerPerson: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MenuMarkedSeasonal: "kitchen.menu.marked-seasonal" {
@@ -346,7 +346,7 @@ event MenuMarkedSeasonal: "kitchen.menu.marked-seasonal" {
   name: string
   seasonLabel: string
   seasonYear: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MenuDishAdded: "kitchen.menu.dish_added" {
@@ -355,7 +355,7 @@ event MenuDishAdded: "kitchen.menu.dish_added" {
   dishId: string
   menuDishId: string
   course: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event MenuDishRemoved: "kitchen.menudish.removed" {
@@ -364,7 +364,7 @@ event MenuDishRemoved: "kitchen.menudish.removed" {
   dishId: string
   tenantId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event MenuDishUpdated: "kitchen.menu.dish_updated" {
@@ -375,7 +375,7 @@ event MenuDishUpdated: "kitchen.menu.dish_updated" {
   course: string
   sortOrder: number
   isOptional: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MenuDishPriceOverrideSet: "kitchen.menudish.price-override-set" {
@@ -384,12 +384,12 @@ event MenuDishPriceOverrideSet: "kitchen.menudish.price-override-set" {
   dishId: string
   tenantId: string
   priceOverride: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MenuDishesReordered: "kitchen.menu.dishes_reordered" {
   menuId: string
   tenantId: string
   dishIdsJson: string
-  reorderedAt: number
+  reorderedAt: datetime
 }

@@ -114,7 +114,7 @@ policy ManagersCanSeedSampleData execute: user.role in ["manager", "admin"] and 
 event SampleDataSeeded: "tenant.sampledata.seeded" {
   tenantId: string
   seededBy: string
-  seededAt: number
+  seededAt: datetime
   eventsCreated: number
   clientsCreated: number
   usersCreated: number
@@ -125,11 +125,11 @@ event SampleDataCleared: "tenant.sampledata.cleared" {
   tenantId: string
   clearedBy: string
   reason: string
-  clearedAt: number
+  clearedAt: datetime
 }
 
 event SampleDataReseeded: "tenant.sampledata.reseeded" {
   tenantId: string
   reseededBy: string
-  reseededAt: number
+  reseededAt: datetime
 }

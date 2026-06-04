@@ -203,7 +203,7 @@ event TimeEntryClockedOut: "staff.timeentry.clocked_out" {
   clockOut: number
   totalHours: number
   breakMinutes: number
-  clockedOutAt: number
+  clockedOutAt: datetime
 }
 
 event TimeEntryAdded: "staff.timeentry.added" {
@@ -215,7 +215,7 @@ event TimeEntryAdded: "staff.timeentry.added" {
   clockOut: number
   totalHours: number
   breakMinutes: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event TimeEntryDeleted: "staff.timeentry.deleted" {
@@ -224,7 +224,7 @@ event TimeEntryDeleted: "staff.timeentry.deleted" {
   employeeId: string
   deletedBy: string
   reason: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event TimecardEditRequested: "staff.timecard.edit.requested" {
@@ -235,7 +235,7 @@ event TimecardEditRequested: "staff.timecard.edit.requested" {
   reason: string
   requestedClockIn: number
   requestedClockOut: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event TimecardEditApproved: "staff.timecard.edit.approved" {
@@ -243,7 +243,7 @@ event TimecardEditApproved: "staff.timecard.edit.approved" {
   timeEntryId: string
   employeeId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event TimecardEditRejected: "staff.timecard.edit.rejected" {
@@ -252,5 +252,5 @@ event TimecardEditRejected: "staff.timecard.edit.rejected" {
   employeeId: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }

@@ -152,14 +152,14 @@ event InvoiceSent: "invoice.sent" {
   clientId: string
   eventId: string
   amount: number
-  dueDate: number
+  dueDate: datetime
 }
 
 event InvoiceViewed: "invoice.viewed" {
   invoiceId: string
   invoiceNumber: string
   clientId: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event PaymentApplied: "invoice.payment-applied" {

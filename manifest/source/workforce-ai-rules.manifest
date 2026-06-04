@@ -106,25 +106,25 @@ event WorkforceOptimizationCreated: "workforce.optimization.created" {
   tenantId: string
   locationId: string
   optimizationType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event WorkforceOptimizationStarted: "workforce.optimization.started" {
   optimizationId: string
   tenantId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event WorkforceOptimizationCompleted: "workforce.optimization.completed" {
   optimizationId: string
   tenantId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event WorkforceOptimizationFailed: "workforce.optimization.failed" {
   optimizationId: string
   tenantId: string
-  failedAt: number
+  failedAt: datetime
   error: string
 }
 
@@ -135,7 +135,7 @@ event PerformancePredictionCreated: "workforce.prediction.created" {
   predictionType: string
   predictionScore: number
   confidence: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
@@ -143,5 +143,5 @@ event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
   tenantId: string
   assignmentsCount: number
   totalEstimatedCost: number
-  optimizedAt: number
+  optimizedAt: datetime
 }

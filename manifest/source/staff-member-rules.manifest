@@ -79,7 +79,7 @@ event StaffMemberCreated: "staff.staff-member.created" {
   tenantId: string
   displayName: string
   role: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event StaffMemberUpdated: "staff.staff-member.updated" {
@@ -87,20 +87,20 @@ event StaffMemberUpdated: "staff.staff-member.updated" {
   tenantId: string
   displayName: string
   role: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event StaffMemberDeactivated: "staff.staff-member.deactivated" {
   staffMemberId: string
   tenantId: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event StaffMemberReactivated: "staff.staff-member.reactivated" {
   staffMemberId: string
   tenantId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }
 
 event StaffMemberRoleChanged: "staff.staff-member.role-changed" {
@@ -108,5 +108,5 @@ event StaffMemberRoleChanged: "staff.staff-member.role-changed" {
   tenantId: string
   role: string
   changedBy: string
-  changedAt: number
+  changedAt: datetime
 }

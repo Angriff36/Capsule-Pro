@@ -70,32 +70,32 @@ event VenueCreated: "events.venue.created" {
   tenantId: string
   name: string
   capacity: number
-  createdAt: number
+  createdAt: datetime
 }
 event VenueUpdated: "events.venue.updated" {
   venueId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event VenueActivated: "events.venue.activated" {
   venueId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 event VenueDeactivated: "events.venue.deactivated" {
   venueId: string
   tenantId: string
   name: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 event VenueCapacityUpdated: "events.venue.capacity_updated" {
   venueId: string
   tenantId: string
   capacity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 entity EventStaffAssignment {
@@ -169,14 +169,14 @@ event EventStaffAssignmentAssigned: "events.staff_assignment.assigned" {
   eventId: string
   staffMemberId: string
   role: string
-  assignedAt: number
+  assignedAt: datetime
 }
 event EventStaffAssignmentConfirmed: "events.staff_assignment.confirmed" {
   assignmentId: string
   tenantId: string
   eventId: string
   staffMemberId: string
-  confirmedAt: number
+  confirmedAt: datetime
 }
 event EventStaffAssignmentCancelled: "events.staff_assignment.cancelled" {
   assignmentId: string
@@ -184,14 +184,14 @@ event EventStaffAssignmentCancelled: "events.staff_assignment.cancelled" {
   eventId: string
   staffMemberId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 event EventStaffAssignmentShiftUpdated: "events.staff_assignment.shift_updated" {
   assignmentId: string
   tenantId: string
   eventId: string
   staffMemberId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event EventStaffAssignmentRoleUpdated: "events.staff_assignment.role_updated" {
   assignmentId: string
@@ -199,7 +199,7 @@ event EventStaffAssignmentRoleUpdated: "events.staff_assignment.role_updated" {
   eventId: string
   staffMemberId: string
   role: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 entity EventTimeline {
@@ -262,29 +262,29 @@ event EventTimelineCreated: "events.timeline.created" {
   tenantId: string
   eventId: string
   title: string
-  scheduledAt: number
-  createdAt: number
+  scheduledAt: datetime
+  createdAt: datetime
 }
 event EventTimelineUpdated: "events.timeline.updated" {
   timelineId: string
   tenantId: string
   eventId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event EventTimelineReordered: "events.timeline.reordered" {
   timelineId: string
   tenantId: string
   eventId: string
   newSortOrder: number
-  updatedAt: number
+  updatedAt: datetime
 }
 event EventTimelineRemoved: "events.timeline.removed" {
   timelineId: string
   tenantId: string
   eventId: string
   title: string
-  removedAt: number
+  removedAt: datetime
 }
 
 entity TimelineTask {
@@ -374,7 +374,7 @@ event TimelineTaskCreated: "events.timeline_task.created" {
   eventId: string
   title: string
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 event TimelineTaskStarted: "events.timeline_task.started" {
   taskId: string
@@ -382,7 +382,7 @@ event TimelineTaskStarted: "events.timeline_task.started" {
   eventId: string
   title: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 event TimelineTaskCompleted: "events.timeline_task.completed" {
   taskId: string
@@ -390,42 +390,42 @@ event TimelineTaskCompleted: "events.timeline_task.completed" {
   eventId: string
   title: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 event TimelineTaskBlocked: "events.timeline_task.blocked" {
   taskId: string
   tenantId: string
   eventId: string
   reason: string
-  blockedAt: number
+  blockedAt: datetime
 }
 event TimelineTaskUnblocked: "events.timeline_task.unblocked" {
   taskId: string
   tenantId: string
   eventId: string
   userId: string
-  unblockedAt: number
+  unblockedAt: datetime
 }
 event TimelineTaskReordered: "events.timeline_task.reordered" {
   taskId: string
   tenantId: string
   eventId: string
   newSortOrder: number
-  updatedAt: number
+  updatedAt: datetime
 }
 event TimelineTaskReassigned: "events.timeline_task.reassigned" {
   taskId: string
   tenantId: string
   eventId: string
   newAssignedTo: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event TimelineTaskRemoved: "events.timeline_task.removed" {
   taskId: string
   tenantId: string
   eventId: string
   title: string
-  removedAt: number
+  removedAt: datetime
 }
 
 entity EventImport {
@@ -510,13 +510,13 @@ event EventImportCreated: "events.import.created" {
   source: string
   fileName: string
   totalRows: number
-  createdAt: number
+  createdAt: datetime
 }
 event EventImportProcessingStarted: "events.import.processing_started" {
   importId: string
   tenantId: string
   source: string
-  startedAt: number
+  startedAt: datetime
 }
 event EventImportCompleted: "events.import.completed" {
   importId: string
@@ -525,21 +525,21 @@ event EventImportCompleted: "events.import.completed" {
   totalRows: number
   importedRows: number
   skippedRows: number
-  completedAt: number
+  completedAt: datetime
 }
 event EventImportFailed: "events.import.failed" {
   importId: string
   tenantId: string
   source: string
   errorMessage: string
-  failedAt: number
+  failedAt: datetime
 }
 event EventImportRetried: "events.import.retried" {
   importId: string
   tenantId: string
   source: string
   userId: string
-  retriedAt: number
+  retriedAt: datetime
 }
 
 entity EventFollowup {
@@ -607,7 +607,7 @@ event EventFollowupCreated: "events.followup.created" {
   eventId: string
   type: string
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 event EventFollowupCompleted: "events.followup.completed" {
   followupId: string
@@ -615,15 +615,15 @@ event EventFollowupCompleted: "events.followup.completed" {
   eventId: string
   type: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 event EventFollowupRescheduled: "events.followup.rescheduled" {
   followupId: string
   tenantId: string
   eventId: string
-  newDueAt: number
+  newDueAt: datetime
   reason: string
-  rescheduledAt: number
+  rescheduledAt: datetime
 }
 event EventFollowupCancelled: "events.followup.cancelled" {
   followupId: string
@@ -631,7 +631,7 @@ event EventFollowupCancelled: "events.followup.cancelled" {
   eventId: string
   type: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 entity BoardProjection {
@@ -696,7 +696,7 @@ event BoardProjectionCreated: "board.projection.created" {
   boardId: string
   entityType: string
   entityId: string
-  createdAt: number
+  createdAt: datetime
 }
 event BoardProjectionMoved: "board.projection.moved" {
   projectionId: string
@@ -704,7 +704,7 @@ event BoardProjectionMoved: "board.projection.moved" {
   boardId: string
   positionX: number
   positionY: number
-  updatedAt: number
+  updatedAt: datetime
 }
 event BoardProjectionResized: "board.projection.resized" {
   projectionId: string
@@ -712,7 +712,7 @@ event BoardProjectionResized: "board.projection.resized" {
   boardId: string
   width: number
   height: number
-  updatedAt: number
+  updatedAt: datetime
 }
 event BoardProjectionRemoved: "board.projection.removed" {
   projectionId: string
@@ -720,7 +720,7 @@ event BoardProjectionRemoved: "board.projection.removed" {
   boardId: string
   entityType: string
   entityId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 entity BoardAnnotation {
@@ -767,20 +767,20 @@ event BoardAnnotationCreated: "board.annotation.created" {
   tenantId: string
   boardId: string
   text: string
-  createdAt: number
+  createdAt: datetime
 }
 event BoardAnnotationUpdated: "board.annotation.updated" {
   annotationId: string
   tenantId: string
   boardId: string
   text: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event BoardAnnotationRemoved: "board.annotation.removed" {
   annotationId: string
   tenantId: string
   boardId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 entity Note {
@@ -832,17 +832,17 @@ event NoteCreated: "tenant.note.created" {
   title: string
   entityType: string
   entityId: string
-  createdAt: number
+  createdAt: datetime
 }
 event NoteUpdated: "tenant.note.updated" {
   noteId: string
   tenantId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 event NoteRemoved: "tenant.note.removed" {
   noteId: string
   tenantId: string
   title: string
-  removedAt: number
+  removedAt: datetime
 }

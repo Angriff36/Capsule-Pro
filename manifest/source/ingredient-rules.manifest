@@ -124,7 +124,7 @@ entity Ingredient {
   }
 
   // Record a received lot number and expiry date for food-safety / FIFO tracking.
-  command recordLot(lotNumber: string, receivedAt: number, expiresAt: number) {
+  command recordLot(lotNumber: string, receivedAt: datetime, expiresAt: datetime) {
     guard self.isActive "Cannot record a lot for a deactivated ingredient"
     guard lotNumber != null and lotNumber != "" "Lot number is required"
 
@@ -181,14 +181,14 @@ event IngredientCreated: "kitchen.ingredient.created" {
   category: string
   allergens: string
   shelfLifeDays: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event IngredientUpdated: "kitchen.ingredient.updated" {
   ingredientId: string
   name: string
   category: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientDeactivated: "kitchen.ingredient.deactivated" {
@@ -196,7 +196,7 @@ event IngredientDeactivated: "kitchen.ingredient.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event IngredientReactivated: "kitchen.ingredient.reactivated" {
@@ -204,7 +204,7 @@ event IngredientReactivated: "kitchen.ingredient.reactivated" {
   tenantId: string
   name: string
   userId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }
 
 event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
@@ -212,7 +212,7 @@ event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   name: string
   allergens: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
@@ -221,7 +221,7 @@ event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
   shelfLifeDays: number
   storageInstructions: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientLotRecorded: "kitchen.ingredient.lot.recorded" {
@@ -229,7 +229,7 @@ event IngredientLotRecorded: "kitchen.ingredient.lot.recorded" {
   tenantId: string
   name: string
   lotNumber: string
-  receivedAt: number
+  receivedAt: datetime
 }
 
 event IngredientRecallFlagged: "kitchen.ingredient.recall.flagged" {
@@ -238,7 +238,7 @@ event IngredientRecallFlagged: "kitchen.ingredient.recall.flagged" {
   name: string
   recallReason: string
   userId: string
-  recalledAt: number
+  recalledAt: datetime
 }
 
 event IngredientRecallCleared: "kitchen.ingredient.recall.cleared" {
@@ -247,5 +247,5 @@ event IngredientRecallCleared: "kitchen.ingredient.recall.cleared" {
   name: string
   clearanceNote: string
   userId: string
-  clearedAt: number
+  clearedAt: datetime
 }

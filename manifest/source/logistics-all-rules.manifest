@@ -189,7 +189,7 @@ entity Vehicle {
   }
 
   // Send vehicle to maintenance workshop; blocks dispatch until returned
-  command sendToMaintenance(reason: string, nextMaintenanceDate: number) {
+  command sendToMaintenance(reason: string, nextMaintenanceDate: datetime) {
     guard self.status in ["available", "out_of_service"] "Vehicle must be available or out of service to send to maintenance"
     guard reason != null and reason != "" "Reason is required"
 
@@ -199,7 +199,7 @@ entity Vehicle {
   }
 
   // Return vehicle to fleet after maintenance; record service dates
-  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceDate: number) {
+  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceDate: datetime) {
     guard self.status == "maintenance" "Vehicle is not in maintenance"
 
     mutate status = "available"
@@ -469,18 +469,18 @@ event DriverCreated: "logistics.driver.created" {
   driverId: string
   tenantId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DriverDeleted: "logistics.driver.deleted" {
   driverId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event DriverUpdated: "logistics.driver.updated" {
   driverId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DriverLicenseRenewed: "logistics.driver.license-renewed" {
@@ -488,20 +488,20 @@ event DriverLicenseRenewed: "logistics.driver.license-renewed" {
   tenantId: string
   licenseNumber: string
   licenseExpiry: number
-  renewedAt: number
+  renewedAt: datetime
 }
 
 event DriverSuspended: "logistics.driver.suspended" {
   driverId: string
   tenantId: string
   reason: string
-  suspendedAt: number
+  suspendedAt: datetime
 }
 
 event DriverReactivated: "logistics.driver.reactivated" {
   driverId: string
   tenantId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }
 
 event VehicleCreated: "logistics.vehicle.created" {
@@ -509,39 +509,39 @@ event VehicleCreated: "logistics.vehicle.created" {
   tenantId: string
   name: string
   type: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event VehicleDeleted: "logistics.vehicle.deleted" {
   vehicleId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event VehicleUpdated: "logistics.vehicle.updated" {
   vehicleId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event VehicleSentToMaintenance: "logistics.vehicle.sent-to-maintenance" {
   vehicleId: string
   tenantId: string
   reason: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event VehicleReturnedFromMaintenance: "logistics.vehicle.returned-from-maintenance" {
   vehicleId: string
   tenantId: string
-  nextMaintenanceDate: number
-  returnedAt: number
+  nextMaintenanceDate: datetime
+  returnedAt: datetime
 }
 
 event VehicleRetired: "logistics.vehicle.retired" {
   vehicleId: string
   tenantId: string
   reason: string
-  retiredAt: number
+  retiredAt: datetime
 }
 
 event LogisticsRouteCreated: "logistics.route.created" {
@@ -549,18 +549,18 @@ event LogisticsRouteCreated: "logistics.route.created" {
   tenantId: string
   name: string
   scheduledStart: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event LogisticsRouteDeleted: "logistics.route.deleted" {
   routeId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event LogisticsRouteUpdated: "logistics.route.updated" {
   routeId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LogisticsRouteStarted: "logistics.route.started" {
@@ -568,14 +568,14 @@ event LogisticsRouteStarted: "logistics.route.started" {
   tenantId: string
   driverId: string
   vehicleId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event LogisticsRouteStopCompleted: "logistics.route.stop-completed" {
   routeId: string
   tenantId: string
   completedStops: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event LogisticsRouteDelayRecorded: "logistics.route.delay-recorded" {
@@ -583,25 +583,25 @@ event LogisticsRouteDelayRecorded: "logistics.route.delay-recorded" {
   tenantId: string
   delayMinutes: number
   reason: string
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event LogisticsRouteCompleted: "logistics.route.completed" {
   routeId: string
   tenantId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event LogisticsRouteCancelled: "logistics.route.cancelled" {
   routeId: string
   tenantId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event LogisticsRouteOptimized: "logistics.route.optimized" {
   routeId: string
-  optimizedAt: number
+  optimizedAt: datetime
 }
 
 event LogisticsDispatchAssigned: "logistics.dispatch.assigned" {
@@ -610,7 +610,7 @@ event LogisticsDispatchAssigned: "logistics.dispatch.assigned" {
   routeId: string
   driverId: string
   vehicleId: string
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event LogisticsDispatchDeparted: "logistics.dispatch.departed" {
@@ -618,7 +618,7 @@ event LogisticsDispatchDeparted: "logistics.dispatch.departed" {
   tenantId: string
   routeId: string
   driverId: string
-  departedAt: number
+  departedAt: datetime
 }
 
 event LogisticsDispatchDelivered: "logistics.dispatch.delivered" {
@@ -626,7 +626,7 @@ event LogisticsDispatchDelivered: "logistics.dispatch.delivered" {
   tenantId: string
   routeId: string
   actualDeliveryTime: number
-  deliveredAt: number
+  deliveredAt: datetime
 }
 
 event LogisticsDispatchFailed: "logistics.dispatch.failed" {
@@ -634,7 +634,7 @@ event LogisticsDispatchFailed: "logistics.dispatch.failed" {
   tenantId: string
   routeId: string
   reason: string
-  failedAt: number
+  failedAt: datetime
 }
 
 event LogisticsDispatchReassigned: "logistics.dispatch.reassigned" {
@@ -642,5 +642,5 @@ event LogisticsDispatchReassigned: "logistics.dispatch.reassigned" {
   tenantId: string
   newDriverId: string
   newVehicleId: string
-  reassignedAt: number
+  reassignedAt: datetime
 }

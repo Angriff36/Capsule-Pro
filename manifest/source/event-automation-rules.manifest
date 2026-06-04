@@ -25,7 +25,7 @@ entity AutomatedFollowup {
   constraint validType: self.type in ["email", "sms", "push"] "Invalid followup type"
   constraint validStatus: self.status in ["pending", "sent", "failed", "skipped"] "Invalid followup status"
 
-  command create(eventId: string, type: string, scheduledDate: number, recipientId: string, subject: string, body: string, templateId: string) {
+  command create(eventId: string, type: string, scheduledDate: datetime, recipientId: string, subject: string, body: string, templateId: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard type in ["email", "sms", "push"] "Invalid followup type"
 
@@ -41,7 +41,7 @@ entity AutomatedFollowup {
     emit FollowupCreated
   }
 
-  command complete(sentDate: number) {
+  command complete(sentDate: datetime) {
     guard self.status == "pending" "Only pending followups can be completed"
 
     mutate status = "sent"
@@ -110,7 +110,7 @@ entity EventTimelineItem {
   constraint validItemType: self.itemType in ["task", "milestone", "reminder", "note"] "Invalid timeline item type"
   constraint validStatus: self.status in ["pending", "in_progress", "completed", "cancelled", "blocked"] "Invalid timeline item status"
 
-  command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
+  command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: datetime, sortOrder: number) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Title is required"
 
@@ -176,7 +176,7 @@ entity EventTimelineItem {
     emit TimelineItemCompleted
   }
 
-  command updateItem(title: string, description: string, itemType: string, assignedTo: string, dueDate: number, sortOrder: number) {
+  command updateItem(title: string, description: string, itemType: string, assignedTo: string, dueDate: datetime, sortOrder: number) {
     guard title != null and title != "" "Title is required"
     guard self.status != "completed" "Cannot update a completed timeline item"
 
@@ -287,41 +287,41 @@ event FollowupCreated: "event.followup.created" {
   followupId: string
   eventId: string
   type: string
-  scheduledDate: number
-  createdAt: number
+  scheduledDate: datetime
+  createdAt: datetime
 }
 
 event FollowupSent: "event.followup.sent" {
   followupId: string
   eventId: string
-  sentDate: number
+  sentDate: datetime
 }
 
 event FollowupGenerated: "event.followup.generated" {
   followupId: string
   eventId: string
-  generatedAt: number
+  generatedAt: datetime
 }
 
 event FollowupFailed: "event.followup.failed" {
   followupId: string
   eventId: string
   errorMessage: string
-  failedAt: number
+  failedAt: datetime
 }
 
 event FollowupRetried: "event.followup.retried" {
   followupId: string
   eventId: string
   userId: string
-  retriedAt: number
+  retriedAt: datetime
 }
 
 event FollowupSkipped: "event.followup.skipped" {
   followupId: string
   eventId: string
   reason: string
-  skippedAt: number
+  skippedAt: datetime
 }
 
 event TimelineItemCreated: "event.timeline.item.created" {
@@ -329,54 +329,54 @@ event TimelineItemCreated: "event.timeline.item.created" {
   eventId: string
   title: string
   itemType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TimelineItemStarted: "event.timeline.item.started" {
   itemId: string
   eventId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event TimelineItemBlocked: "event.timeline.item.blocked" {
   itemId: string
   eventId: string
   reason: string
-  blockedAt: number
+  blockedAt: datetime
 }
 
 event TimelineItemUnblocked: "event.timeline.item.unblocked" {
   itemId: string
   eventId: string
   userId: string
-  unblockedAt: number
+  unblockedAt: datetime
 }
 
 event TimelineItemReordered: "event.timeline.item.reordered" {
   itemId: string
   eventId: string
   newSortOrder: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TimelineItemDeleted: "event.timeline.item.deleted" {
   itemId: string
   eventId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event TimelineItemCompleted: "event.timeline.item.completed" {
   itemId: string
   eventId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event TimelineItemUpdated: "event.timeline.item.updated" {
   itemId: string
   eventId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event WaitlistGuestAdded: "event.waitlist.guest.added" {
@@ -384,21 +384,21 @@ event WaitlistGuestAdded: "event.waitlist.guest.added" {
   eventId: string
   guestName: string
   partySize: number
-  addedAt: number
+  addedAt: datetime
 }
 
 event WaitlistGuestNotified: "event.waitlist.guest.notified" {
   entryId: string
   eventId: string
   guestName: string
-  notifiedAt: number
+  notifiedAt: datetime
 }
 
 event WaitlistGuestPromoted: "event.waitlist.guest.promoted" {
   entryId: string
   eventId: string
   guestName: string
-  promotedAt: number
+  promotedAt: datetime
 }
 
 event WaitlistGuestSeated: "event.waitlist.guest.seated" {
@@ -406,7 +406,7 @@ event WaitlistGuestSeated: "event.waitlist.guest.seated" {
   eventId: string
   guestName: string
   partySize: number
-  seatedAt: number
+  seatedAt: datetime
 }
 
 event WaitlistGuestCancelled: "event.waitlist.guest.cancelled" {
@@ -414,7 +414,7 @@ event WaitlistGuestCancelled: "event.waitlist.guest.cancelled" {
   eventId: string
   guestName: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event WaitlistRsvpUpdated: "event.waitlist.rsvp.updated" {
@@ -422,5 +422,5 @@ event WaitlistRsvpUpdated: "event.waitlist.rsvp.updated" {
   eventId: string
   guestName: string
   newStatus: string
-  updatedAt: number
+  updatedAt: datetime
 }

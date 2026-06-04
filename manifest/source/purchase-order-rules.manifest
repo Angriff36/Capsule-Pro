@@ -235,7 +235,7 @@ event PurchaseOrderCreated: "purchasing.po.created" {
   poNumber: string
   vendorId: string
   locationId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseOrderSubmitted: "purchasing.po.submitted" {
@@ -245,7 +245,7 @@ event PurchaseOrderSubmitted: "purchasing.po.submitted" {
   submittedBy: string
   itemCount: number
   total: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PurchaseOrderApproved: "purchasing.po.approved" {
@@ -254,7 +254,7 @@ event PurchaseOrderApproved: "purchasing.po.approved" {
   vendorId: string
   userId: string
   total: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseOrderRejected: "purchasing.po.rejected" {
@@ -263,7 +263,7 @@ event PurchaseOrderRejected: "purchasing.po.rejected" {
   vendorId: string
   userId: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event PurchaseOrderCancelled: "purchasing.po.cancelled" {
@@ -272,7 +272,7 @@ event PurchaseOrderCancelled: "purchasing.po.cancelled" {
   vendorId: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PurchaseOrderOrdered: "purchasing.po.ordered" {
@@ -280,7 +280,7 @@ event PurchaseOrderOrdered: "purchasing.po.ordered" {
   poNumber: string
   vendorId: string
   userId: string
-  orderedAt: number
+  orderedAt: datetime
 }
 
 event PurchaseOrderReceived: "purchasing.po.received" {
@@ -288,7 +288,7 @@ event PurchaseOrderReceived: "purchasing.po.received" {
   poNumber: string
   vendorId: string
   receivedBy: string
-  receivedAt: number
+  receivedAt: datetime
 }
 
 event PurchaseOrderItemCreated: "purchasing.po.item.created" {
@@ -298,7 +298,7 @@ event PurchaseOrderItemCreated: "purchasing.po.item.created" {
   quantityOrdered: number
   unitCost: number
   totalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
@@ -307,12 +307,12 @@ event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
   quantityOrdered: number
   unitCost: number
   totalCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PurchaseOrderItemRemoved: "purchasing.po.item.removed" {
   purchaseOrderItemId: string
   purchaseOrderId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

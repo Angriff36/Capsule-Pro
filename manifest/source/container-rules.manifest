@@ -119,14 +119,14 @@ event ContainerCreated: "kitchen.container.created" {
   capacityWeightG: number
   capacityPortions: number
   isReusable: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event ContainerUpdated: "kitchen.container.updated" {
   containerId: string
   name: string
   containerType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ContainerDeactivated: "kitchen.container.deactivated" {
@@ -134,7 +134,7 @@ event ContainerDeactivated: "kitchen.container.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event ContainerReactivated: "kitchen.container.reactivated" {
@@ -142,7 +142,7 @@ event ContainerReactivated: "kitchen.container.reactivated" {
   tenantId: string
   name: string
   userId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }
 
 event ContainerRelocated: "kitchen.container.relocated" {
@@ -152,5 +152,5 @@ event ContainerRelocated: "kitchen.container.relocated" {
   oldLocationId: string
   newLocationId: string
   userId: string
-  relocatedAt: number
+  relocatedAt: datetime
 }

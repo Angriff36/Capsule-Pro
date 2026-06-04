@@ -33,7 +33,7 @@ entity Schedule {
 
   constraint validStatus: self.status in ["draft", "approved", "published", "closed"] "Invalid schedule status"
 
-  command create(locationId: string, scheduleDate: number, notes: string) {
+  command create(locationId: string, scheduleDate: datetime, notes: string) {
     guard scheduleDate != null and scheduleDate > 0 "Schedule date is required"
 
     mutate locationId = locationId
@@ -45,7 +45,7 @@ entity Schedule {
     emit ScheduleCreated
   }
 
-  command update(scheduleDate: number, locationId: string, notes: string) {
+  command update(scheduleDate: datetime, locationId: string, notes: string) {
     guard self.status in ["draft", "approved"] "Can only update draft or approved schedules"
 
     mutate scheduleDate = scheduleDate
@@ -241,22 +241,22 @@ event ScheduleCreated: "staff.schedule.created" {
   scheduleId: string
   tenantId: string
   locationId: string
-  scheduleDate: number
-  createdAt: number
+  scheduleDate: datetime
+  createdAt: datetime
 }
 
 event ScheduleUpdated: "staff.schedule.updated" {
   scheduleId: string
-  scheduleDate: number
+  scheduleDate: datetime
   locationId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ScheduleApproved: "staff.schedule.approved" {
   scheduleId: string
   tenantId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event ScheduleReopened: "staff.schedule.reopened" {
@@ -264,22 +264,22 @@ event ScheduleReopened: "staff.schedule.reopened" {
   tenantId: string
   userId: string
   reason: string
-  reopenedAt: number
+  reopenedAt: datetime
 }
 
 event SchedulePublished: "staff.schedule.published" {
   scheduleId: string
-  scheduleDate: number
+  scheduleDate: datetime
   shiftCount: number
   publishedBy: string
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event ScheduleClosed: "staff.schedule.closed" {
   scheduleId: string
-  scheduleDate: number
+  scheduleDate: datetime
   userId: string
-  closedAt: number
+  closedAt: datetime
 }
 
 event ScheduleShiftCreated: "staff.schedule.shift.created" {
@@ -290,7 +290,7 @@ event ScheduleShiftCreated: "staff.schedule.shift.created" {
   shiftStart: number
   shiftEnd: number
   roleDuringShift: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ScheduleShiftUpdated: "staff.schedule.shift.updated" {
@@ -300,7 +300,7 @@ event ScheduleShiftUpdated: "staff.schedule.shift.updated" {
   shiftStart: number
   shiftEnd: number
   roleDuringShift: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ScheduleShiftSwapOffered: "staff.schedule.shift.swap-offered" {
@@ -309,7 +309,7 @@ event ScheduleShiftSwapOffered: "staff.schedule.shift.swap-offered" {
   scheduleId: string
   fromEmployeeId: string
   toEmployeeId: string
-  offeredAt: number
+  offeredAt: datetime
 }
 
 event ScheduleShiftSwapAccepted: "staff.schedule.shift.swap-accepted" {
@@ -317,21 +317,21 @@ event ScheduleShiftSwapAccepted: "staff.schedule.shift.swap-accepted" {
   tenantId: string
   scheduleId: string
   newEmployeeId: string
-  acceptedAt: number
+  acceptedAt: datetime
 }
 
 event ScheduleShiftSwapDeclined: "staff.schedule.shift.swap-declined" {
   shiftId: string
   tenantId: string
   scheduleId: string
-  declinedAt: number
+  declinedAt: datetime
 }
 
 event ScheduleShiftSwapCancelled: "staff.schedule.shift.swap-cancelled" {
   shiftId: string
   tenantId: string
   scheduleId: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event ScheduleShiftRemoved: "staff.schedule.shift.removed" {
@@ -339,5 +339,5 @@ event ScheduleShiftRemoved: "staff.schedule.shift.removed" {
   scheduleId: string
   employeeId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

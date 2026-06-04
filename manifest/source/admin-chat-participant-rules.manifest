@@ -39,7 +39,7 @@ policy AdminChatManagement execute: user.role in ["manager", "admin", "staff", "
 
 event ChatParticipantArchived: "admin.chat-participant.archived" {
   participantId: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
@@ -48,5 +48,5 @@ event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
 
 event ChatHistoryCleared: "admin.chat-participant.history-cleared" {
   participantId: string
-  clearedAt: number
+  clearedAt: datetime
 }

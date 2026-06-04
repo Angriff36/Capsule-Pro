@@ -245,7 +245,7 @@ event InventoryReserved: "kitchen.inventory.reserved" {
   quantity: number
   eventId: string
   userId: string
-  reservedAt: number
+  reservedAt: datetime
 }
 
 event InventoryConsumed: "kitchen.inventory.consumed" {
@@ -254,7 +254,7 @@ event InventoryConsumed: "kitchen.inventory.consumed" {
   quantity: number
   lotId: string
   userId: string
-  consumedAt: number
+  consumedAt: datetime
 }
 
 event InventoryWasted: "kitchen.inventory.wasted" {
@@ -264,7 +264,7 @@ event InventoryWasted: "kitchen.inventory.wasted" {
   reason: string
   lotId: string
   userId: string
-  wastedAt: number
+  wastedAt: datetime
 }
 
 event InventoryAdjusted: "kitchen.inventory.adjusted" {
@@ -273,7 +273,7 @@ event InventoryAdjusted: "kitchen.inventory.adjusted" {
   quantity: number
   reason: string
   userId: string
-  adjustedAt: number
+  adjustedAt: datetime
 }
 
 event InventoryRestocked: "kitchen.inventory.restocked" {
@@ -282,7 +282,7 @@ event InventoryRestocked: "kitchen.inventory.restocked" {
   quantity: number
   costPerUnit: number
   userId: string
-  restockedAt: number
+  restockedAt: datetime
 }
 
 event InventoryItemCreated: "kitchen.inventory.created" {
@@ -292,7 +292,7 @@ event InventoryItemCreated: "kitchen.inventory.created" {
   name: string
   itemType: string
   category: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
@@ -301,5 +301,5 @@ event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
   quantity: number
   eventId: string
   userId: string
-  releasedAt: number
+  releasedAt: datetime
 }

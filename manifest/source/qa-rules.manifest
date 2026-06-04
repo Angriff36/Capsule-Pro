@@ -129,7 +129,7 @@ entity QACorrectiveAction {
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "in_progress", "resolved", "escalated", "dismissed"] "Invalid action status"
 
-  command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: number) {
+  command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: datetime) {
     guard checkId != null and checkId != "" "Check ID is required"
     guard description != null and description != "" "Description is required"
     guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
@@ -244,14 +244,14 @@ event QACheckCreated: "kitchen.qa.check.created" {
   tenantId: string
   checkType: string
   location: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event QACheckCompleted: "kitchen.qa.check.completed" {
   checkId: string
   result: string
   inspector: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event QACheckFailed: "kitchen.qa.check.failed" {
@@ -260,14 +260,14 @@ event QACheckFailed: "kitchen.qa.check.failed" {
   checkType: string
   location: string
   inspector: string
-  failedAt: number
+  failedAt: datetime
 }
 
 event QACheckReinspectionRequired: "kitchen.qa.check.reinspection-required" {
   checkId: string
   tenantId: string
   reason: string
-  flaggedAt: number
+  flaggedAt: datetime
 }
 
 event QACheckReinspected: "kitchen.qa.check.reinspected" {
@@ -275,7 +275,7 @@ event QACheckReinspected: "kitchen.qa.check.reinspected" {
   tenantId: string
   result: string
   inspector: string
-  reinspectedAt: number
+  reinspectedAt: datetime
 }
 
 event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
@@ -284,7 +284,7 @@ event CorrectiveActionCreated: "kitchen.qa.corrective.created" {
   description: string
   priority: string
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CorrectiveActionAssigned: "kitchen.qa.corrective.assigned" {
@@ -292,7 +292,7 @@ event CorrectiveActionAssigned: "kitchen.qa.corrective.assigned" {
   tenantId: string
   checkId: string
   assignedTo: string
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event CorrectiveActionEscalated: "kitchen.qa.corrective.escalated" {
@@ -301,14 +301,14 @@ event CorrectiveActionEscalated: "kitchen.qa.corrective.escalated" {
   checkId: string
   escalatedTo: string
   escalationReason: string
-  escalatedAt: number
+  escalatedAt: datetime
 }
 
 event CorrectiveActionResolved: "kitchen.qa.corrective.resolved" {
   actionId: string
   checkId: string
   resolutionNotes: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event CorrectiveActionDismissed: "kitchen.qa.corrective.dismissed" {
@@ -316,7 +316,7 @@ event CorrectiveActionDismissed: "kitchen.qa.corrective.dismissed" {
   tenantId: string
   checkId: string
   reason: string
-  dismissedAt: number
+  dismissedAt: datetime
 }
 
 event TemperatureLogged: "kitchen.temperature.logged" {
@@ -326,5 +326,5 @@ event TemperatureLogged: "kitchen.temperature.logged" {
   temperature: number
   unit: string
   recordedBy: string
-  loggedAt: number
+  loggedAt: datetime
 }

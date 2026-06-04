@@ -251,8 +251,8 @@ event CateringOrderCreated: "events.catering_order.created" {
   customerId: string
   eventId: string
   guestCount: number
-  deliveryDate: number
-  createdAt: number
+  deliveryDate: datetime
+  createdAt: datetime
 }
 
 event CateringOrderUpdated: "events.catering_order.updated" {
@@ -261,7 +261,7 @@ event CateringOrderUpdated: "events.catering_order.updated" {
   orderNumber: string
   totalAmount: number
   guestCount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CateringOrderConfirmed: "events.catering_order.confirmed" {
@@ -271,7 +271,7 @@ event CateringOrderConfirmed: "events.catering_order.confirmed" {
   totalAmount: number
   depositPaid: boolean
   userId: string
-  confirmedAt: number
+  confirmedAt: datetime
 }
 
 event CateringOrderDepositRecorded: "events.catering_order.deposit_recorded" {
@@ -280,16 +280,16 @@ event CateringOrderDepositRecorded: "events.catering_order.deposit_recorded" {
   orderNumber: string
   depositAmount: number
   paymentReference: string
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event CateringOrderDeliveryScheduled: "events.catering_order.delivery_scheduled" {
   orderId: string
   tenantId: string
   orderNumber: string
-  deliveryDate: number
+  deliveryDate: datetime
   deliveryTime: string
-  scheduledAt: number
+  scheduledAt: datetime
 }
 
 event CateringOrderCancelled: "events.catering_order.cancelled" {
@@ -297,7 +297,7 @@ event CateringOrderCancelled: "events.catering_order.cancelled" {
   tenantId: string
   orderNumber: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event CateringOrderPrepStarted: "catering.order.prep_started" {
@@ -305,7 +305,7 @@ event CateringOrderPrepStarted: "catering.order.prep_started" {
   tenantId: string
   eventId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event CateringOrderDelivered: "catering.order.delivered" {
@@ -314,7 +314,7 @@ event CateringOrderDelivered: "catering.order.delivered" {
   eventId: string
   orderNumber: string
   userId: string
-  deliveredAt: number
+  deliveredAt: datetime
 }
 
 event CateringOrderCompleted: "catering.order.completed" {
@@ -322,5 +322,5 @@ event CateringOrderCompleted: "catering.order.completed" {
   tenantId: string
   eventId: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }

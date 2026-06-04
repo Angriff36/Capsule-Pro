@@ -170,7 +170,7 @@ event InventorySupplierCreated: "inventory.supplier.created" {
   name: string
   supplierNumber: string
   paymentTerms: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventorySupplierUpdated: "inventory.supplier.updated" {
@@ -178,7 +178,7 @@ event InventorySupplierUpdated: "inventory.supplier.updated" {
   name: string
   contactPerson: string
   email: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event InventorySupplierDeactivated: "inventory.supplier.deactivated" {
@@ -187,7 +187,7 @@ event InventorySupplierDeactivated: "inventory.supplier.deactivated" {
   userId: string
   reason: string
   openPOCount: number
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event InventorySupplierApproved: "inventory.supplier.approved" {
@@ -195,7 +195,7 @@ event InventorySupplierApproved: "inventory.supplier.approved" {
   tenantId: string
   name: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event InventorySupplierSuspended: "inventory.supplier.suspended" {
@@ -205,7 +205,7 @@ event InventorySupplierSuspended: "inventory.supplier.suspended" {
   suspendedBy: string
   reason: string
   openPOCount: number
-  suspendedAt: number
+  suspendedAt: datetime
 }
 
 event InventorySupplierReinstated: "inventory.supplier.reinstated" {
@@ -213,7 +213,7 @@ event InventorySupplierReinstated: "inventory.supplier.reinstated" {
   tenantId: string
   name: string
   reinstatedBy: string
-  reinstatedAt: number
+  reinstatedAt: datetime
 }
 
 event InventorySupplierBlacklisted: "inventory.supplier.blacklisted" {
@@ -223,5 +223,5 @@ event InventorySupplierBlacklisted: "inventory.supplier.blacklisted" {
   blacklistedBy: string
   reason: string
   openPOCount: number
-  blacklistedAt: number
+  blacklistedAt: datetime
 }

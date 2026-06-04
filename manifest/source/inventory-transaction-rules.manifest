@@ -138,7 +138,7 @@ event InventoryTransactionCreated: "inventory.transaction.created" {
   referenceId: string
   reason: string
   employeeId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventoryTransactionReversed: "inventory.transaction.reversed" {
@@ -149,7 +149,7 @@ event InventoryTransactionReversed: "inventory.transaction.reversed" {
   quantity: number
   reversedBy: string
   reason: string
-  reversedAt: number
+  reversedAt: datetime
 }
 
 event InventoryTransactionCostAdjusted: "inventory.transaction.cost-adjusted" {
@@ -159,5 +159,5 @@ event InventoryTransactionCostAdjusted: "inventory.transaction.cost-adjusted" {
   oldUnitCost: number
   newUnitCost: number
   reason: string
-  adjustedAt: number
+  adjustedAt: datetime
 }

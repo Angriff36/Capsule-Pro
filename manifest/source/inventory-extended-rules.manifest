@@ -254,7 +254,7 @@ entity InventoryForecast {
   constraint confidenceRange: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
   constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
 
-  command create(inventoryItemId: string, forecastDate: number, projectedQuantity: decimal, confidence: decimal) {
+  command create(inventoryItemId: string, forecastDate: datetime, projectedQuantity: decimal, confidence: decimal) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard forecastDate != null and forecastDate > 0 "Forecast date is required"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
@@ -330,7 +330,7 @@ entity ForecastInput {
   constraint nonNegativeUsage: self.actualUsage >= 0 "Actual usage cannot be negative"
   constraint requireSource: self.source != "" "Data source is required"
 
-  command create(inventoryItemId: string, inputDate: number, actualUsage: decimal, source: string) {
+  command create(inventoryItemId: string, inputDate: datetime, actualUsage: decimal, source: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard inputDate != null and inputDate > 0 "Input date is required"
     guard actualUsage >= 0 "Actual usage cannot be negative"
@@ -794,7 +794,7 @@ entity AuditSchedule {
   }
 
   // Record a completed run and advance the next scheduled run date.
-  command recordRun(nextRunAt: number) {
+  command recordRun(nextRunAt: datetime) {
     guard self.isActive "Cannot record a run for an inactive schedule"
     guard nextRunAt != null and nextRunAt > 0 "Next run date is required"
 
@@ -834,21 +834,21 @@ event StorageLocationCreated: "inventory.storage_location.created" {
   locationId: string
   name: string
   storageType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event StorageLocationUpdated: "inventory.storage_location.updated" {
   storageLocationId: string
   name: string
   storageType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event StorageLocationDeactivated: "inventory.storage_location.deactivated" {
   storageLocationId: string
   name: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event InventoryStockCreated: "inventory.stock.created" {
@@ -858,7 +858,7 @@ event InventoryStockCreated: "inventory.stock.created" {
   storageLocationId: string
   quantityOnHand: number
   unitId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventoryStockAdjusted: "inventory.stock.adjusted" {
@@ -869,7 +869,7 @@ event InventoryStockAdjusted: "inventory.stock.adjusted" {
   delta: number
   newQty: number
   reason: string
-  adjustedAt: number
+  adjustedAt: datetime
 }
 
 event InventoryStockRecounted: "inventory.stock.recounted" {
@@ -879,7 +879,7 @@ event InventoryStockRecounted: "inventory.stock.recounted" {
   previousQty: number
   newQty: number
   countedBy: string
-  recountedAt: number
+  recountedAt: datetime
 }
 
 event InventoryAlertTriggered: "inventory.alert.triggered" {
@@ -889,31 +889,31 @@ event InventoryAlertTriggered: "inventory.alert.triggered" {
   alertType: string
   severity: string
   message: string
-  triggeredAt: number
+  triggeredAt: datetime
 }
 
 event InventoryAlertAcknowledged: "inventory.alert.acknowledged" {
   alertId: string
   inventoryItemId: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event InventoryAlertResolved: "inventory.alert.resolved" {
   alertId: string
   inventoryItemId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event InventoryForecastCreated: "inventory.forecast.created" {
   forecastId: string
   tenantId: string
   inventoryItemId: string
-  forecastDate: number
+  forecastDate: datetime
   projectedQuantity: number
   confidence: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventoryForecastUpdated: "inventory.forecast.updated" {
@@ -921,17 +921,17 @@ event InventoryForecastUpdated: "inventory.forecast.updated" {
   inventoryItemId: string
   projectedQuantity: number
   confidence: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ForecastInputCreated: "inventory.forecast.input.created" {
   inputId: string
   tenantId: string
   inventoryItemId: string
-  inputDate: number
+  inputDate: datetime
   actualUsage: number
   source: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ReorderSuggestionCreated: "inventory.reorder.suggestion.created" {
@@ -940,7 +940,7 @@ event ReorderSuggestionCreated: "inventory.reorder.suggestion.created" {
   inventoryItemId: string
   suggestedQuantity: number
   reason: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ReorderSuggestionAccepted: "inventory.reorder.suggestion.accepted" {
@@ -948,14 +948,14 @@ event ReorderSuggestionAccepted: "inventory.reorder.suggestion.accepted" {
   inventoryItemId: string
   suggestedQuantity: number
   acceptedBy: string
-  acceptedAt: number
+  acceptedAt: datetime
 }
 
 event ReorderSuggestionDismissed: "inventory.reorder.suggestion.dismissed" {
   suggestionId: string
   inventoryItemId: string
   dismissedBy: string
-  dismissedAt: number
+  dismissedAt: datetime
 }
 
 event VendorContactCreated: "inventory.vendor.contact.created" {
@@ -965,7 +965,7 @@ event VendorContactCreated: "inventory.vendor.contact.created" {
   name: string
   role: string
   isPrimary: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event VendorContactUpdated: "inventory.vendor.contact.updated" {
@@ -974,14 +974,14 @@ event VendorContactUpdated: "inventory.vendor.contact.updated" {
   name: string
   role: string
   isPrimary: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event VendorContactRemoved: "inventory.vendor.contact.removed" {
   contactId: string
   inventorySupplierId: string
   removedBy: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event VendorRatingCreated: "inventory.vendor.rating.created" {
@@ -991,7 +991,7 @@ event VendorRatingCreated: "inventory.vendor.rating.created" {
   category: string
   score: number
   ratedBy: string
-  ratedAt: number
+  ratedAt: datetime
 }
 
 event VendorRatingUpdated: "inventory.vendor.rating.updated" {
@@ -999,7 +999,7 @@ event VendorRatingUpdated: "inventory.vendor.rating.updated" {
   inventorySupplierId: string
   category: string
   score: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TransferItemAdded: "inventory.transfer.item.added" {
@@ -1009,7 +1009,7 @@ event TransferItemAdded: "inventory.transfer.item.added" {
   inventoryItemId: string
   quantity: number
   unitId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TransferItemQuantityUpdated: "inventory.transfer.item.quantity_updated" {
@@ -1017,7 +1017,7 @@ event TransferItemQuantityUpdated: "inventory.transfer.item.quantity_updated" {
   inventoryTransferId: string
   inventoryItemId: string
   newQuantity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TransferItemRemoved: "inventory.transfer.item.removed" {
@@ -1025,7 +1025,7 @@ event TransferItemRemoved: "inventory.transfer.item.removed" {
   inventoryTransferId: string
   inventoryItemId: string
   removedBy: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event ProcurementBudgetCreated: "procurement.budget.created" {
@@ -1035,14 +1035,14 @@ event ProcurementBudgetCreated: "procurement.budget.created" {
   budgetAmount: number
   periodStart: number
   periodEnd: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProcurementBudgetUpdated: "procurement.budget.updated" {
   budgetId: string
   name: string
   budgetAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProcurementBudgetSpendRecorded: "procurement.budget.spend_recorded" {
@@ -1050,7 +1050,7 @@ event ProcurementBudgetSpendRecorded: "procurement.budget.spend_recorded" {
   amount: number
   reference: string
   newSpentAmount: number
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event ProcurementBudgetClosed: "procurement.budget.closed" {
@@ -1058,7 +1058,7 @@ event ProcurementBudgetClosed: "procurement.budget.closed" {
   name: string
   closedBy: string
   finalSpentAmount: number
-  closedAt: number
+  closedAt: datetime
 }
 
 event ProcurementBudgetAlertTriggered: "procurement.budget.alert.triggered" {
@@ -1067,14 +1067,14 @@ event ProcurementBudgetAlertTriggered: "procurement.budget.alert.triggered" {
   procurementBudgetId: string
   thresholdPct: number
   message: string
-  triggeredAt: number
+  triggeredAt: datetime
 }
 
 event ProcurementBudgetAlertAcknowledged: "procurement.budget.alert.acknowledged" {
   alertId: string
   procurementBudgetId: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event AuditScheduleCreated: "inventory.audit_schedule.created" {
@@ -1082,36 +1082,36 @@ event AuditScheduleCreated: "inventory.audit_schedule.created" {
   tenantId: string
   name: string
   frequency: string
-  nextRunAt: number
-  createdAt: number
+  nextRunAt: datetime
+  createdAt: datetime
 }
 
 event AuditScheduleUpdated: "inventory.audit_schedule.updated" {
   scheduleId: string
   name: string
   frequency: string
-  nextRunAt: number
-  updatedAt: number
+  nextRunAt: datetime
+  updatedAt: datetime
 }
 
 event AuditScheduleDeactivated: "inventory.audit_schedule.deactivated" {
   scheduleId: string
   name: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event AuditScheduleActivated: "inventory.audit_schedule.activated" {
   scheduleId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event AuditScheduleRunRecorded: "inventory.audit_schedule.run-recorded" {
   scheduleId: string
   name: string
-  lastRunAt: number
-  nextRunAt: number
+  lastRunAt: datetime
+  nextRunAt: datetime
 }
 
 event InventoryAlertEscalated: "inventory.alert.escalated" {
@@ -1119,7 +1119,7 @@ event InventoryAlertEscalated: "inventory.alert.escalated" {
   inventoryItemId: string
   newSeverity: string
   escalatedBy: string
-  escalatedAt: number
+  escalatedAt: datetime
 }
 
 event InventoryForecastPublished: "inventory.forecast.published" {
@@ -1128,7 +1128,7 @@ event InventoryForecastPublished: "inventory.forecast.published" {
   inventoryItemId: string
   projectedQuantity: number
   confidence: number
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event InventoryForecastApproved: "inventory.forecast.approved" {
@@ -1136,7 +1136,7 @@ event InventoryForecastApproved: "inventory.forecast.approved" {
   tenantId: string
   inventoryItemId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event ReorderSuggestionAutoAccepted: "inventory.reorder.suggestion.auto-accepted" {
@@ -1145,5 +1145,5 @@ event ReorderSuggestionAutoAccepted: "inventory.reorder.suggestion.auto-accepted
   inventoryItemId: string
   suggestedQuantity: number
   triggeredBy: string
-  acceptedAt: number
+  acceptedAt: datetime
 }

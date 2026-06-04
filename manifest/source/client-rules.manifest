@@ -296,14 +296,14 @@ event ClientCreated: "crm.client.created" {
   displayName: string
   source: string
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ClientUpdated: "crm.client.updated" {
   clientId: string
   tenantId: string
   displayName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ClientArchived: "crm.client.archived" {
@@ -312,7 +312,7 @@ event ClientArchived: "crm.client.archived" {
   displayName: string
   reason: string
   userId: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event ClientReactivated: "crm.client.reactivated" {
@@ -320,7 +320,7 @@ event ClientReactivated: "crm.client.reactivated" {
   tenantId: string
   displayName: string
   userId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }
 
 // ClientContact events
@@ -330,7 +330,7 @@ event ClientContactCreated: "crm.client_contact.created" {
   clientId: string
   fullName: string
   isPrimary: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event ClientContactUpdated: "crm.client_contact.updated" {
@@ -338,7 +338,7 @@ event ClientContactUpdated: "crm.client_contact.updated" {
   tenantId: string
   clientId: string
   fullName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ClientContactRemoved: "crm.client_contact.removed" {
@@ -348,7 +348,7 @@ event ClientContactRemoved: "crm.client_contact.removed" {
   fullName: string
   reason: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event ClientContactSetPrimary: "crm.client_contact.set_primary" {
@@ -357,7 +357,7 @@ event ClientContactSetPrimary: "crm.client_contact.set_primary" {
   clientId: string
   fullName: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 // ClientPreference events
@@ -367,7 +367,7 @@ event ClientPreferenceCreated: "crm.client_preference.created" {
   clientId: string
   preferenceType: string
   preferenceKey: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ClientPreferenceUpdated: "crm.client_preference.updated" {
@@ -376,7 +376,7 @@ event ClientPreferenceUpdated: "crm.client_preference.updated" {
   clientId: string
   preferenceType: string
   preferenceKey: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ClientPreferenceRemoved: "crm.client_preference.removed" {
@@ -386,5 +386,5 @@ event ClientPreferenceRemoved: "crm.client_preference.removed" {
   preferenceType: string
   preferenceKey: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

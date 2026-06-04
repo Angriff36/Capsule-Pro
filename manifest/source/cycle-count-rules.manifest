@@ -33,7 +33,7 @@ entity CycleCountSession {
 
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
 
-  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: number, notes: string, userId: string) {
+  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
 
@@ -328,14 +328,14 @@ event CycleCountSessionCreated: "inventory.cyclecount.session.created" {
   sessionName: string
   countType: string
   createdById: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CycleCountSessionStarted: "inventory.cyclecount.session.started" {
   sessionId: string
   sessionName: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
@@ -345,7 +345,7 @@ event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
   countedItems: number
   totalVariance: number
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
@@ -353,7 +353,7 @@ event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
   sessionName: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
@@ -361,7 +361,7 @@ event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
   tenantId: string
   locationId: string
   userId: string
-  finalizedAt: number
+  finalizedAt: datetime
 }
 
 event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
@@ -373,7 +373,7 @@ event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
   countedQuantity: number
   variance: number
   countedById: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
@@ -384,7 +384,7 @@ event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
   countedQuantity: number
   variance: number
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
@@ -395,7 +395,7 @@ event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
   variance: number
   variancePct: number
   verifiedById: string
-  verifiedAt: number
+  verifiedAt: datetime
 }
 
 event CycleCountRecordRemoved: "inventory.cyclecount.record.removed" {
@@ -404,7 +404,7 @@ event CycleCountRecordRemoved: "inventory.cyclecount.record.removed" {
   itemId: string
   itemName: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event VarianceReportCreated: "inventory.variance.report.created" {
@@ -415,7 +415,7 @@ event VarianceReportCreated: "inventory.variance.report.created" {
   variance: number
   variancePct: number
   accuracyScore: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event VarianceReportReviewed: "inventory.variance.report.reviewed" {
@@ -423,7 +423,7 @@ event VarianceReportReviewed: "inventory.variance.report.reviewed" {
   sessionId: string
   itemName: string
   userId: string
-  reviewedAt: number
+  reviewedAt: datetime
 }
 
 event VarianceReportApproved: "inventory.variance.report.approved" {
@@ -433,7 +433,7 @@ event VarianceReportApproved: "inventory.variance.report.approved" {
   adjustmentType: string
   adjustmentAmount: number
   userId: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event VarianceReportRejected: "inventory.variance.report.rejected" {
@@ -442,5 +442,5 @@ event VarianceReportRejected: "inventory.variance.report.rejected" {
   itemName: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }

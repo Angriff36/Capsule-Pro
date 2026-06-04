@@ -68,15 +68,15 @@ event ChartOfAccountCreated: "accounting.chart-of-account.created" {
   accountNumber: string
   accountName: string
   accountType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ChartOfAccountUpdated: "accounting.chart-of-account.updated" {
   accountId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ChartOfAccountDeactivated: "accounting.chart-of-account.deactivated" {
   accountId: string
-  updatedAt: number
+  updatedAt: datetime
 }

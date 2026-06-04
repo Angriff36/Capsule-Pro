@@ -204,7 +204,7 @@ event StationCreated: "kitchen.station.created" {
   name: string
   stationType: string
   capacity: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event StationTaskAssigned: "kitchen.station.task.assigned" {
@@ -214,7 +214,7 @@ event StationTaskAssigned: "kitchen.station.task.assigned" {
   taskName: string
   currentTaskCount: number
   capacity: number
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event StationTaskRemoved: "kitchen.station.task.removed" {
@@ -222,7 +222,7 @@ event StationTaskRemoved: "kitchen.station.task.removed" {
   stationName: string
   taskId: string
   currentTaskCount: number
-  removedAt: number
+  removedAt: datetime
 }
 
 event StationCapacityUpdated: "kitchen.station.capacity.updated" {
@@ -231,7 +231,7 @@ event StationCapacityUpdated: "kitchen.station.capacity.updated" {
   oldCapacity: number
   newCapacity: number
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event StationDeactivated: "kitchen.station.deactivated" {
@@ -240,14 +240,14 @@ event StationDeactivated: "kitchen.station.deactivated" {
   reason: string
   activeTaskCount: number
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event StationActivated: "kitchen.station.activated" {
   stationId: string
   stationName: string
   userId: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
@@ -255,7 +255,7 @@ event StationEquipmentUpdated: "kitchen.station.equipment.updated" {
   stationName: string
   equipmentList: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event StationMaintenanceStarted: "kitchen.station.maintenance.started" {
@@ -264,7 +264,7 @@ event StationMaintenanceStarted: "kitchen.station.maintenance.started" {
   stationName: string
   reason: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event StationMaintenanceEnded: "kitchen.station.maintenance.ended" {
@@ -272,5 +272,5 @@ event StationMaintenanceEnded: "kitchen.station.maintenance.ended" {
   tenantId: string
   stationName: string
   userId: string
-  endedAt: number
+  endedAt: datetime
 }

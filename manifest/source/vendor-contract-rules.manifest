@@ -236,22 +236,22 @@ event VendorContractCreated: "procurement.vendor_contract.created" {
   vendorId: string
   vendorName: string
   contractType: string
-  startDate: number
-  endDate: number
-  createdAt: number
+  startDate: datetime
+  endDate: datetime
+  createdAt: datetime
 }
 
 event VendorContractUpdated: "procurement.vendor_contract.updated" {
   contractId: string
   contractNumber: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event VendorContractSubmitted: "procurement.vendor_contract.submitted" {
   contractId: string
   contractNumber: string
   vendorId: string
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event VendorContractApproved: "procurement.vendor_contract.approved" {
@@ -259,7 +259,7 @@ event VendorContractApproved: "procurement.vendor_contract.approved" {
   contractNumber: string
   vendorId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event VendorContractRejected: "procurement.vendor_contract.rejected" {
@@ -268,13 +268,13 @@ event VendorContractRejected: "procurement.vendor_contract.rejected" {
   vendorId: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event VendorContractActivated: "procurement.vendor_contract.activated" {
   contractId: string
   contractNumber: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event VendorContractTerminated: "procurement.vendor_contract.terminated" {
@@ -283,15 +283,15 @@ event VendorContractTerminated: "procurement.vendor_contract.terminated" {
   vendorId: string
   terminatedBy: string
   reason: string
-  terminatedAt: number
+  terminatedAt: datetime
 }
 
 event VendorContractRenewed: "procurement.vendor_contract.renewed" {
   contractId: string
   contractNumber: string
   vendorId: string
-  newEndDate: number
-  renewedAt: number
+  newEndDate: datetime
+  renewedAt: datetime
 }
 
 event VendorContractComplianceUpdated: "procurement.vendor_contract.compliance_updated" {
@@ -302,7 +302,7 @@ event VendorContractComplianceUpdated: "procurement.vendor_contract.compliance_u
   slaBreachCount: number
   onTimeDeliveryRate: number
   qualityRating: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event VendorContractSlaBreachRecorded: "procurement.vendor_contract.sla_breach" {
@@ -312,5 +312,5 @@ event VendorContractSlaBreachRecorded: "procurement.vendor_contract.sla_breach" 
   breachType: string
   breachCount: number
   newComplianceScore: number
-  recordedAt: number
+  recordedAt: datetime
 }

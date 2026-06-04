@@ -269,7 +269,7 @@ event PrepTaskPlanWorkflowCreated: "prep.task.plan.workflow.created" {
   tenantId: string
   eventId: string
   idempotencyKey: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepTaskPlanWorkflowGeneratingStarted: "prep.task.plan.workflow.generating.started" {
@@ -299,7 +299,7 @@ event PrepTaskPlanWorkflowReviewingCompleted: "prep.task.plan.workflow.reviewing
   approvedCount: number
   rejectedCount: number
   reviewedBy: string
-  reviewedAt: number
+  reviewedAt: datetime
 }
 
 event PrepTaskPlanWorkflowApprovingStarted: "prep.task.plan.workflow.approving.started" {
@@ -313,7 +313,7 @@ event PrepTaskPlanWorkflowApproved: "prep.task.plan.workflow.approved" {
   workflowId: string
   tenantId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
   approvedCount: number
 }
 
@@ -321,7 +321,7 @@ event PrepTaskPlanWorkflowRejected: "prep.task.plan.workflow.rejected" {
   workflowId: string
   tenantId: string
   reasons: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event PrepTaskPlanWorkflowInstantiatingStarted: "prep.task.plan.workflow.instantiating.started" {
@@ -348,7 +348,7 @@ event PrepTaskPlanWorkflowCompleted: "prep.task.plan.workflow.completed" {
   tenantId: string
   eventId: string
   instantiatedCount: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event PrepTaskPlanWorkflowFailed: "prep.task.plan.workflow.failed" {
@@ -356,14 +356,14 @@ event PrepTaskPlanWorkflowFailed: "prep.task.plan.workflow.failed" {
   tenantId: string
   errors: string
   failedAtStep: number
-  failedAt: number
+  failedAt: datetime
 }
 
 event PrepTaskPlanWorkflowCancelled: "prep.task.plan.workflow.cancelled" {
   workflowId: string
   tenantId: string
   reasons: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PrepTaskPlanWorkflowRetried: "prep.task.plan.workflow.retried" {
@@ -378,5 +378,5 @@ event PrepTaskPlanWorkflowQuickApproved: "prep.task.plan.workflow.quick.approved
   eventId: string
   approvedBy: string
   approvedCount: number
-  approvedAt: number
+  approvedAt: datetime
 }

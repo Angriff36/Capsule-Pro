@@ -384,7 +384,7 @@ event CommandBoardCreated: "board.command_board.created" {
   name: string
   status: string
   isTemplate: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardUpdated: "board.command_board.updated" {
@@ -392,7 +392,7 @@ event CommandBoardUpdated: "board.command_board.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardActivated: "board.command_board.activated" {
@@ -400,7 +400,7 @@ event CommandBoardActivated: "board.command_board.activated" {
   tenantId: string
   name: string
   userId: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event CommandBoardDeactivated: "board.command_board.deactivated" {
@@ -409,7 +409,7 @@ event CommandBoardDeactivated: "board.command_board.deactivated" {
   boardName: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 // CommandBoardCard events
@@ -422,7 +422,7 @@ event CommandBoardCardCreated: "board.card.created" {
   status: string
   positionX: number
   positionY: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardCardUpdated: "board.card.updated" {
@@ -433,7 +433,7 @@ event CommandBoardCardUpdated: "board.card.updated" {
   oldStatus: string
   newStatus: string
   version: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardCardMoved: "board.card.moved" {
@@ -444,7 +444,7 @@ event CommandBoardCardMoved: "board.card.moved" {
   oldPositionY: number
   newPositionX: number
   newPositionY: number
-  movedAt: number
+  movedAt: datetime
 }
 
 event CommandBoardCardResized: "board.card.resized" {
@@ -455,7 +455,7 @@ event CommandBoardCardResized: "board.card.resized" {
   oldHeight: number
   newWidth: number
   newHeight: number
-  resizedAt: number
+  resizedAt: datetime
 }
 
 event CommandBoardCardDeleted: "board.card.deleted" {
@@ -464,7 +464,7 @@ event CommandBoardCardDeleted: "board.card.deleted" {
   tenantId: string
   title: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardGroup events
@@ -474,7 +474,7 @@ event CommandBoardGroupCreated: "board.group.created" {
   tenantId: string
   name: string
   color: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardGroupUpdated: "board.group.updated" {
@@ -482,7 +482,7 @@ event CommandBoardGroupUpdated: "board.group.updated" {
   boardId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardGroupDeleted: "board.group.deleted" {
@@ -491,7 +491,7 @@ event CommandBoardGroupDeleted: "board.group.deleted" {
   tenantId: string
   name: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardConnection events
@@ -502,7 +502,7 @@ event CommandBoardConnectionCreated: "board.connection.created" {
   fromCardId: string
   toCardId: string
   relationshipType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardConnectionDeleted: "board.connection.deleted" {
@@ -512,7 +512,7 @@ event CommandBoardConnectionDeleted: "board.connection.deleted" {
   fromCardId: string
   toCardId: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardLayout events
@@ -522,7 +522,7 @@ event CommandBoardLayoutCreated: "board.layout.created" {
   tenantId: string
   userId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardLayoutUpdated: "board.layout.updated" {
@@ -530,7 +530,7 @@ event CommandBoardLayoutUpdated: "board.layout.updated" {
   boardId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardLayoutDeleted: "board.layout.deleted" {
@@ -539,5 +539,5 @@ event CommandBoardLayoutDeleted: "board.layout.deleted" {
   tenantId: string
   name: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

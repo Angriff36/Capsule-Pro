@@ -82,7 +82,7 @@ event EventDishCreated: "events.event-dish.created" {
   dishId: string
   quantity: int
   courseLabel: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventDishQuantityUpdated: "events.event-dish.quantity-updated" {
@@ -91,7 +91,7 @@ event EventDishQuantityUpdated: "events.event-dish.quantity-updated" {
   eventId: string
   dishId: string
   quantity: int
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventDishCourseUpdated: "events.event-dish.course-updated" {
@@ -100,7 +100,7 @@ event EventDishCourseUpdated: "events.event-dish.course-updated" {
   eventId: string
   courseLabel: string
   sortOrder: int
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventDishNotesUpdated: "events.event-dish.notes-updated" {
@@ -108,7 +108,7 @@ event EventDishNotesUpdated: "events.event-dish.notes-updated" {
   tenantId: string
   eventId: string
   notes: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventDishRemoved: "events.event-dish.removed" {
@@ -118,5 +118,5 @@ event EventDishRemoved: "events.event-dish.removed" {
   dishId: string
   reason: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

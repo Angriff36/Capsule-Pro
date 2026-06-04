@@ -94,31 +94,31 @@ event KnowledgeBaseEntryCreated: "knowledgebase.entry.created" {
   title: string
   category: string
   authorId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event KnowledgeBaseEntryDeleted: "knowledgebase.entry.deleted" {
   entryId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event KnowledgeBaseEntryUpdated: "knowledgebase.entry.updated" {
   entryId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KnowledgeBaseEntryPublished: "knowledgebase.entry.published" {
   entryId: string
   title: string
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event KnowledgeBaseEntryUnpublished: "knowledgebase.entry.unpublished" {
   entryId: string
   title: string
   reason: string
-  unpublishedAt: number
+  unpublishedAt: datetime
 }
 
 event KnowledgeBaseEntryViewed: "knowledgebase.entry.viewed" {

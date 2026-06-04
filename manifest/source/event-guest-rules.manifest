@@ -143,7 +143,7 @@ event EventGuestCreated: "kitchen.event-guest.created" {
   allergenRestrictions: string
   specialMealRequired: boolean
   mealPreference: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventGuestUpdated: "kitchen.event-guest.updated" {
@@ -156,7 +156,7 @@ event EventGuestUpdated: "kitchen.event-guest.updated" {
   specialMealRequired: boolean
   mealPreference: string
   tableAssignment: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventGuestRsvpConfirmed: "kitchen.event-guest.rsvp-confirmed" {
@@ -164,7 +164,7 @@ event EventGuestRsvpConfirmed: "kitchen.event-guest.rsvp-confirmed" {
   tenantId: string
   eventId: string
   guestName: string
-  rsvpAt: number
+  rsvpAt: datetime
 }
 
 event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
@@ -173,7 +173,7 @@ event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
   eventId: string
   guestName: string
   reason: string
-  rsvpAt: number
+  rsvpAt: datetime
 }
 
 event EventGuestCheckedIn: "kitchen.event-guest.checked-in" {
@@ -181,7 +181,7 @@ event EventGuestCheckedIn: "kitchen.event-guest.checked-in" {
   tenantId: string
   eventId: string
   guestName: string
-  checkedInAt: number
+  checkedInAt: datetime
 }
 
 event EventGuestTableAssigned: "kitchen.event-guest.table-assigned" {
@@ -189,7 +189,7 @@ event EventGuestTableAssigned: "kitchen.event-guest.table-assigned" {
   tenantId: string
   eventId: string
   tableAssignment: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventGuestDeleted: "kitchen.event-guest.deleted" {
@@ -198,5 +198,5 @@ event EventGuestDeleted: "kitchen.event-guest.deleted" {
   eventId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

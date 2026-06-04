@@ -124,7 +124,7 @@ entity KitchenTask {
     emit KitchenTaskSummaryUpdated
   }
 
-  command updateDueDate(dueDate: number) {
+  command updateDueDate(dueDate: datetime) {
     mutate dueDate = dueDate
 
     emit KitchenTaskDueDateUpdated
@@ -162,7 +162,7 @@ entity KitchenTask {
     emit KitchenTaskCanceled
   }
 
-  command create(title: string, summary: string, priority: number, complexity: number, tags: string, dueDate: number) {
+  command create(title: string, summary: string, priority: number, complexity: number, tags: string, dueDate: datetime) {
     guard title != null and title != "" "Task title is required"
     guard summary != null and summary != "" "Task summary is required"
     guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
@@ -190,26 +190,26 @@ policy AnyoneCanView execute: true "Anyone can view kitchen tasks"
 event KitchenTaskClaimed: "kitchen.kitchentask.claimed" {
   taskId: string
   userId: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event KitchenTaskStarted: "kitchen.kitchentask.started" {
   taskId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event KitchenTaskCompleted: "kitchen.kitchentask.completed" {
   taskId: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event KitchenTaskReleased: "kitchen.kitchentask.released" {
   taskId: string
   previousUserId: string
   reason: string
-  releasedAt: number
+  releasedAt: datetime
 }
 
 event KitchenTaskReassigned: "kitchen.kitchentask.reassigned" {
@@ -217,64 +217,64 @@ event KitchenTaskReassigned: "kitchen.kitchentask.reassigned" {
   previousUserId: string
   newUserId: string
   reassignedBy: string
-  reassignedAt: number
+  reassignedAt: datetime
 }
 
 event KitchenTaskPriorityUpdated: "kitchen.kitchentask.priority.updated" {
   taskId: string
   oldPriority: number
   newPriority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskComplexityUpdated: "kitchen.kitchentask.complexity.updated" {
   taskId: string
   oldComplexity: number
   newComplexity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskTitleUpdated: "kitchen.kitchentask.title.updated" {
   taskId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskSummaryUpdated: "kitchen.kitchentask.summary.updated" {
   taskId: string
   summary: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskDueDateUpdated: "kitchen.kitchentask.duedate.updated" {
   taskId: string
-  dueDate: number
-  updatedAt: number
+  dueDate: datetime
+  updatedAt: datetime
 }
 
 event KitchenTaskTagsUpdated: "kitchen.kitchentask.tags.updated" {
   taskId: string
   tags: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskTagAdded: "kitchen.kitchentask.tag.added" {
   taskId: string
   tag: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event KitchenTaskTagRemoved: "kitchen.kitchentask.tag.removed" {
   taskId: string
   tag: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event KitchenTaskCanceled: "kitchen.kitchentask.canceled" {
   taskId: string
   reason: string
   canceledBy: string
-  canceledAt: number
+  canceledAt: datetime
 }
 
 event KitchenTaskCreated: "kitchen.kitchentask.created" {
@@ -282,5 +282,5 @@ event KitchenTaskCreated: "kitchen.kitchentask.created" {
   tenantId: string
   title: string
   priority: number
-  createdAt: number
+  createdAt: datetime
 }

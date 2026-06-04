@@ -159,24 +159,24 @@ event BudgetCreated: "procurement.budget.created" {
   name: string
   totalAmount: number
   fiscalYear: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event BudgetDeleted: "procurement.budget.deleted" {
   budgetId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event BudgetUpdated: "procurement.budget.updated" {
   budgetId: string
   name: string
   allocatedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BudgetRefreshed: "procurement.budget.refreshed" {
   budgetId: string
-  refreshedAt: number
+  refreshedAt: datetime
 }
 
 event BudgetApproved: "procurement.budget.approved" {
@@ -185,7 +185,7 @@ event BudgetApproved: "procurement.budget.approved" {
   name: string
   allocatedAmount: number
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event BudgetLocked: "procurement.budget.locked" {
@@ -193,7 +193,7 @@ event BudgetLocked: "procurement.budget.locked" {
   tenantId: string
   name: string
   lockedBy: string
-  lockedAt: number
+  lockedAt: datetime
 }
 
 event BudgetLineItemAdded: "procurement.budget.line_item_added" {
@@ -202,7 +202,7 @@ event BudgetLineItemAdded: "procurement.budget.line_item_added" {
   lineItemName: string
   amount: number
   category: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event BudgetVarianceRecorded: "procurement.budget.variance_recorded" {
@@ -210,5 +210,5 @@ event BudgetVarianceRecorded: "procurement.budget.variance_recorded" {
   tenantId: string
   allocatedAmount: number
   actualSpent: number
-  recordedAt: number
+  recordedAt: datetime
 }

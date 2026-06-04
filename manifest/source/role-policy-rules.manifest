@@ -70,7 +70,7 @@ event RolePolicyCreated: "admin.role-policy.created" {
   tenantId: string
   roleId: string
   roleName: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RolePolicyUpdated: "admin.role-policy.updated" {
@@ -79,7 +79,7 @@ event RolePolicyUpdated: "admin.role-policy.updated" {
   roleId: string
   roleName: string
   isActive: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RolePolicyPermissionGranted: "admin.role-policy.permission_granted" {
@@ -88,7 +88,7 @@ event RolePolicyPermissionGranted: "admin.role-policy.permission_granted" {
   roleId: string
   permission: string
   grantedBy: string
-  grantedAt: number
+  grantedAt: datetime
 }
 
 event RolePolicyPermissionRevoked: "admin.role-policy.permission_revoked" {
@@ -97,5 +97,5 @@ event RolePolicyPermissionRevoked: "admin.role-policy.permission_revoked" {
   roleId: string
   permission: string
   revokedBy: string
-  revokedAt: number
+  revokedAt: datetime
 }

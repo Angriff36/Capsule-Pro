@@ -108,12 +108,12 @@ event EmployeeCertificationCreated: "staff.employee-certification.created" {
   employeeId: string
   certificationType: string
   certificationName: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EmployeeCertificationUpdated: "staff.employee-certification.updated" {
   certificationId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EmployeeCertificationRenewed: "staff.employee-certification.renewed" {
@@ -121,14 +121,14 @@ event EmployeeCertificationRenewed: "staff.employee-certification.renewed" {
   tenantId: string
   employeeId: string
   expiryDate: string
-  renewedAt: number
+  renewedAt: datetime
 }
 
 event EmployeeCertificationExpired: "staff.employee-certification.expired" {
   certificationId: string
   tenantId: string
   employeeId: string
-  expiredAt: number
+  expiredAt: datetime
 }
 
 event EmployeeCertificationRevoked: "staff.employee-certification.revoked" {
@@ -136,10 +136,10 @@ event EmployeeCertificationRevoked: "staff.employee-certification.revoked" {
   tenantId: string
   employeeId: string
   reason: string
-  revokedAt: number
+  revokedAt: datetime
 }
 
 event EmployeeCertificationDeleted: "staff.employee-certification.deleted" {
   certificationId: string
-  deletedAt: number
+  deletedAt: datetime
 }

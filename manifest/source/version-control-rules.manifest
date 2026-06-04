@@ -236,7 +236,7 @@ event VersionedEntityRegistered: "version.entity.registered" {
   entityType: string
   entityId: string
   entityName: string
-  registeredAt: number
+  registeredAt: datetime
 }
 
 event VersionedEntityLocked: "version.entity.locked" {
@@ -245,7 +245,7 @@ event VersionedEntityLocked: "version.entity.locked" {
   entityType: string
   entityId: string
   reason: string
-  lockedAt: number
+  lockedAt: datetime
 }
 
 event VersionedEntityUnlocked: "version.entity.unlocked" {
@@ -253,7 +253,7 @@ event VersionedEntityUnlocked: "version.entity.unlocked" {
   tenantId: string
   entityType: string
   entityId: string
-  unlockedAt: number
+  unlockedAt: datetime
 }
 
 event VersionedEntityRenamed: "version.entity.renamed" {
@@ -261,7 +261,7 @@ event VersionedEntityRenamed: "version.entity.renamed" {
   tenantId: string
   oldName: string
   newName: string
-  renamedAt: number
+  renamedAt: datetime
 }
 
 event EntityVersionCreated: "version.entity.created" {
@@ -274,7 +274,7 @@ event EntityVersionCreated: "version.entity.created" {
   changeType: string
   changeReason: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EntityVersionApproved: "version.entity.approved" {
@@ -282,7 +282,7 @@ event EntityVersionApproved: "version.entity.approved" {
   tenantId: string
   versionedEntityId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event EntityVersionRejected: "version.entity.rejected" {
@@ -291,7 +291,7 @@ event EntityVersionRejected: "version.entity.rejected" {
   versionedEntityId: string
   rejectedBy: string
   rejectionReason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event EntityVersionRestored: "version.entity.restored" {
@@ -304,7 +304,7 @@ event EntityVersionRestored: "version.entity.restored" {
   fromVersion: number
   toVersion: number
   restoredBy: string
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event VersionApprovalRequested: "version.approval.requested" {
@@ -312,7 +312,7 @@ event VersionApprovalRequested: "version.approval.requested" {
   tenantId: string
   entityVersionId: string
   approverId: string
-  requestedAt: number
+  requestedAt: datetime
 }
 
 event VersionApprovalCompleted: "version.approval.completed" {
@@ -321,7 +321,7 @@ event VersionApprovalCompleted: "version.approval.completed" {
   entityVersionId: string
   approverId: string
   comments: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event VersionApprovalRejected: "version.approval.rejected" {
@@ -330,12 +330,12 @@ event VersionApprovalRejected: "version.approval.rejected" {
   entityVersionId: string
   approverId: string
   rejectionReason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event VersionApprovalCancelled: "version.approval.cancelled" {
   approvalId: string
   tenantId: string
   entityVersionId: string
-  cancelledAt: number
+  cancelledAt: datetime
 }

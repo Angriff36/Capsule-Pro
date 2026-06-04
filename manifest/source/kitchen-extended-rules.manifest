@@ -99,7 +99,7 @@ entity TemperatureLog {
     }
   }
 
-  command create(equipmentId: string, recordedBy: string, temperature: number, recordedAt: number, withinRange: boolean, notes: string) {
+  command create(equipmentId: string, recordedBy: string, temperature: number, recordedAt: datetime, withinRange: boolean, notes: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard recordedBy != null and recordedBy != "" "Recorder employee ID is required"
 
@@ -139,7 +139,7 @@ entity TemperatureReading {
     }
   }
 
-  command create(probeId: string, temperature: number, recordedAt: number, withinRange: boolean) {
+  command create(probeId: string, temperature: number, recordedAt: datetime, withinRange: boolean) {
     guard probeId != null and probeId != "" "Probe ID is required"
 
     mutate probeId = probeId
@@ -240,7 +240,7 @@ entity IoTAlert {
   constraint validSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
   constraint requireMessage: self.message != "" "Alert message is required"
 
-  command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: number) {
+  command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: datetime) {
     guard probeId != null and probeId != "" "Probe ID is required"
     guard ruleId != null and ruleId != "" "Rule ID is required"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
@@ -308,7 +308,7 @@ entity CorrectiveAction {
   constraint requireSourceId: self.sourceId != "" "Source ID is required"
   constraint requireDescription: self.description != "" "Description is required"
 
-  command create(sourceType: string, sourceId: string, description: string, dueAt: number) {
+  command create(sourceType: string, sourceId: string, description: string, dueAt: datetime) {
     guard sourceType != null and sourceType != "" "Source type is required"
     guard sourceId != null and sourceId != "" "Source ID is required"
     guard description != null and description != "" "Description is required"
@@ -491,7 +491,7 @@ entity KitchenTaskClaim {
   constraint requireKitchenTaskId: self.kitchenTaskId != "" "Kitchen task ID is required"
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
 
-  command claim(kitchenTaskId: string, employeeId: string, claimedAt: number) {
+  command claim(kitchenTaskId: string, employeeId: string, claimedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
@@ -536,7 +536,7 @@ entity KitchenTaskProgress {
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
   constraint validProgressPct: self.progressPct >= 0 and self.progressPct <= 100 "Progress percentage must be between 0 and 100"
 
-  command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: number) {
+  command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard status != null and status != "" "Status is required"
@@ -829,27 +829,27 @@ event TemperatureProbeCreated: "kitchen.temperatureprobe.created" {
   name: string
   equipmentId: string
   location: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TemperatureProbeCalibrated: "kitchen.temperatureprobe.calibrated" {
   probeId: string
   calibratedBy: string
-  calibratedAt: number
+  calibratedAt: datetime
 }
 
 event TemperatureProbeThresholdsUpdated: "kitchen.temperatureprobe.thresholds.updated" {
   probeId: string
   minThreshold: number
   maxThreshold: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TemperatureProbeDeactivated: "kitchen.temperatureprobe.deactivated" {
   probeId: string
   reason: string
   deactivatedBy: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event TemperatureLogCreated: "kitchen.temperaturelog.created" {
@@ -859,7 +859,7 @@ event TemperatureLogCreated: "kitchen.temperaturelog.created" {
   recordedBy: string
   temperature: number
   withinRange: boolean
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event TemperatureReadingCreated: "kitchen.temperaturereading.created" {
@@ -868,7 +868,7 @@ event TemperatureReadingCreated: "kitchen.temperaturereading.created" {
   probeId: string
   temperature: number
   withinRange: boolean
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event IotAlertRuleCreated: "kitchen.iotalertrule.created" {
@@ -877,7 +877,7 @@ event IotAlertRuleCreated: "kitchen.iotalertrule.created" {
   equipmentId: string
   metric: string
   severity: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event IotAlertRuleUpdated: "kitchen.iotalertrule.updated" {
@@ -885,14 +885,14 @@ event IotAlertRuleUpdated: "kitchen.iotalertrule.updated" {
   metric: string
   threshold: number
   severity: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IotAlertRuleDeactivated: "kitchen.iotalertrule.deactivated" {
   ruleId: string
   reason: string
   deactivatedBy: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event IoTAlertCreated: "kitchen.iotalert.created" {
@@ -902,19 +902,19 @@ event IoTAlertCreated: "kitchen.iotalert.created" {
   ruleId: string
   severity: string
   value: number
-  triggeredAt: number
+  triggeredAt: datetime
 }
 
 event IoTAlertAcknowledged: "kitchen.iotalert.acknowledged" {
   alertId: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event IoTAlertResolved: "kitchen.iotalert.resolved" {
   alertId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event CorrectiveActionCreated: "kitchen.correctiveaction.created" {
@@ -922,26 +922,26 @@ event CorrectiveActionCreated: "kitchen.correctiveaction.created" {
   tenantId: string
   sourceType: string
   sourceId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CorrectiveActionAssigned: "kitchen.correctiveaction.assigned" {
   actionId: string
   assignedTo: string
   assignedBy: string
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event CorrectiveActionStarted: "kitchen.correctiveaction.started" {
   actionId: string
   startedBy: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event CorrectiveActionClosed: "kitchen.correctiveaction.closed" {
   actionId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event QualityCheckCreated: "kitchen.qualitycheck.created" {
@@ -949,27 +949,27 @@ event QualityCheckCreated: "kitchen.qualitycheck.created" {
   tenantId: string
   checkType: string
   performedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event QualityCheckPassed: "kitchen.qualitycheck.passed" {
   checkId: string
   passedBy: string
-  passedAt: number
+  passedAt: datetime
 }
 
 event QualityCheckFailed: "kitchen.qualitycheck.failed" {
   checkId: string
   failedBy: string
   notes: string
-  failedAt: number
+  failedAt: datetime
 }
 
 event QualityCheckReinspected: "kitchen.qualitycheck.reinspected" {
   checkId: string
   requestedBy: string
   reason: string
-  reinspectedAt: number
+  reinspectedAt: datetime
 }
 
 event QualityCheckItemCreated: "kitchen.qualitycheckitem.created" {
@@ -977,7 +977,7 @@ event QualityCheckItemCreated: "kitchen.qualitycheckitem.created" {
   tenantId: string
   qualityCheckId: string
   criterion: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event QualityCheckItemResultRecorded: "kitchen.qualitycheckitem.result.recorded" {
@@ -985,7 +985,7 @@ event QualityCheckItemResultRecorded: "kitchen.qualitycheckitem.result.recorded"
   qualityCheckId: string
   passed: boolean
   recordedBy: string
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event KitchenTaskClaimCreated: "kitchen.kitchentaskclaim.created" {
@@ -993,7 +993,7 @@ event KitchenTaskClaimCreated: "kitchen.kitchentaskclaim.created" {
   tenantId: string
   kitchenTaskId: string
   employeeId: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event KitchenTaskClaimReleased: "kitchen.kitchentaskclaim.released" {
@@ -1002,7 +1002,7 @@ event KitchenTaskClaimReleased: "kitchen.kitchentaskclaim.released" {
   employeeId: string
   releasedBy: string
   reason: string
-  releasedAt: number
+  releasedAt: datetime
 }
 
 event KitchenTaskProgressRecorded: "kitchen.kitchentaskprogress.created" {
@@ -1012,7 +1012,7 @@ event KitchenTaskProgressRecorded: "kitchen.kitchentaskprogress.created" {
   employeeId: string
   status: string
   progressPct: number
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event TaskBundleCreated: "kitchen.taskbundle.created" {
@@ -1020,20 +1020,20 @@ event TaskBundleCreated: "kitchen.taskbundle.created" {
   tenantId: string
   name: string
   eventId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TaskBundleUpdated: "kitchen.taskbundle.updated" {
   bundleId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TaskBundleArchived: "kitchen.taskbundle.archived" {
   bundleId: string
   archivedBy: string
   reason: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event TaskBundleItemAdded: "kitchen.taskbundleitem.added" {
@@ -1042,7 +1042,7 @@ event TaskBundleItemAdded: "kitchen.taskbundleitem.added" {
   taskBundleId: string
   kitchenTaskId: string
   sortOrder: number
-  addedAt: number
+  addedAt: datetime
 }
 
 event TaskBundleItemRemoved: "kitchen.taskbundleitem.removed" {
@@ -1051,27 +1051,27 @@ event TaskBundleItemRemoved: "kitchen.taskbundleitem.removed" {
   kitchenTaskId: string
   removedBy: string
   reason: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event BulkCombineRuleCreated: "kitchen.bulkcombinerule.created" {
   ruleId: string
   tenantId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event BulkCombineRuleUpdated: "kitchen.bulkcombinerule.updated" {
   ruleId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BulkCombineRuleDeactivated: "kitchen.bulkcombinerule.deactivated" {
   ruleId: string
   reason: string
   deactivatedBy: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event MethodVideoCreated: "kitchen.methodvideo.created" {
@@ -1079,14 +1079,14 @@ event MethodVideoCreated: "kitchen.methodvideo.created" {
   tenantId: string
   prepMethodId: string
   title: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event MethodVideoUpdated: "kitchen.methodvideo.updated" {
   videoId: string
   title: string
   url: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event MethodVideoRemoved: "kitchen.methodvideo.removed" {
@@ -1094,7 +1094,7 @@ event MethodVideoRemoved: "kitchen.methodvideo.removed" {
   prepMethodId: string
   removedBy: string
   reason: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event PrepListImportCreated: "kitchen.preplistimport.created" {
@@ -1102,17 +1102,17 @@ event PrepListImportCreated: "kitchen.preplistimport.created" {
   tenantId: string
   source: string
   fileName: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepListImportCompleted: "kitchen.preplistimport.completed" {
   importId: string
   rowsImported: number
-  importedAt: number
+  importedAt: datetime
 }
 
 event PrepListImportFailed: "kitchen.preplistimport.failed" {
   importId: string
   errorMessage: string
-  failedAt: number
+  failedAt: datetime
 }

@@ -104,12 +104,12 @@ event EmployeeAvailabilityCreated: "staff.employee-availability.created" {
   tenantId: string
   employeeId: string
   dayOfWeek: int
-  createdAt: number
+  createdAt: datetime
 }
 
 event EmployeeAvailabilityUpdated: "staff.employee-availability.updated" {
   availabilityId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EmployeeAvailabilitySuspended: "staff.employee-availability.suspended" {
@@ -117,17 +117,17 @@ event EmployeeAvailabilitySuspended: "staff.employee-availability.suspended" {
   tenantId: string
   employeeId: string
   reason: string
-  suspendedAt: number
+  suspendedAt: datetime
 }
 
 event EmployeeAvailabilityReinstated: "staff.employee-availability.reinstated" {
   availabilityId: string
   tenantId: string
   employeeId: string
-  reinstatedAt: number
+  reinstatedAt: datetime
 }
 
 event EmployeeAvailabilityDeleted: "staff.employee-availability.deleted" {
   availabilityId: string
-  deletedAt: number
+  deletedAt: datetime
 }

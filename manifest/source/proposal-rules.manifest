@@ -69,7 +69,7 @@ entity Proposal {
     }
   }
 
-  command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
+  command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
     guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
 
@@ -105,7 +105,7 @@ entity Proposal {
     emit ProposalCreated
   }
 
-  command update(title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
+  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
     guard self.deletedAt == null "Cannot update a deleted proposal"
     guard self.isDraft "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
@@ -329,7 +329,7 @@ event ProposalCreated: "crm.proposal.created" {
   clientId: string
   leadId: string
   title: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProposalUpdated: "crm.proposal.updated" {
@@ -338,7 +338,7 @@ event ProposalUpdated: "crm.proposal.updated" {
   proposalNumber: string
   title: string
   total: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProposalSent: "crm.proposal.sent" {
@@ -350,7 +350,7 @@ event ProposalSent: "crm.proposal.sent" {
   total: number
   validUntil: number
   userId: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event ProposalViewed: "crm.proposal.viewed" {
@@ -359,7 +359,7 @@ event ProposalViewed: "crm.proposal.viewed" {
   proposalNumber: string
   title: string
   viewedByInfo: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event ProposalAccepted: "crm.proposal.accepted" {
@@ -370,7 +370,7 @@ event ProposalAccepted: "crm.proposal.accepted" {
   title: string
   total: number
   userId: string
-  acceptedAt: number
+  acceptedAt: datetime
 }
 
 event ProposalRejected: "crm.proposal.rejected" {
@@ -382,7 +382,7 @@ event ProposalRejected: "crm.proposal.rejected" {
   total: number
   reason: string
   userId: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event ProposalWithdrawn: "crm.proposal.withdrawn" {
@@ -392,7 +392,7 @@ event ProposalWithdrawn: "crm.proposal.withdrawn" {
   title: string
   reason: string
   userId: string
-  withdrawnAt: number
+  withdrawnAt: datetime
 }
 
 // ProposalLineItem events
@@ -405,7 +405,7 @@ event ProposalLineItemCreated: "crm.proposal_line_item.created" {
   quantity: number
   unitPrice: number
   totalPrice: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
@@ -416,7 +416,7 @@ event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
   quantity: number
   unitPrice: number
   totalPrice: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
@@ -425,5 +425,5 @@ event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
   proposalId: string
   description: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

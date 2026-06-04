@@ -137,7 +137,7 @@ event TimeOffRequestCreated: "staff.time-off-request.created" {
   startDate: string
   endDate: string
   requestType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TimeOffBalanceAttached: "staff.time-off-request.balance-attached" {
@@ -146,20 +146,20 @@ event TimeOffBalanceAttached: "staff.time-off-request.balance-attached" {
   employeeId: string
   balanceSnapshot: number
   balanceUnit: string
-  attachedAt: number
+  attachedAt: datetime
 }
 
 event TimeOffRequestApproved: "staff.time-off-request.approved" {
   requestId: string
   processedBy: string
-  processedAt: number
+  processedAt: datetime
 }
 
 event TimeOffRequestRejected: "staff.time-off-request.rejected" {
   requestId: string
   processedBy: string
   rejectionReason: string
-  processedAt: number
+  processedAt: datetime
 }
 
 event TimeOffRequestReconsidered: "staff.time-off-request.reconsidered" {
@@ -167,15 +167,15 @@ event TimeOffRequestReconsidered: "staff.time-off-request.reconsidered" {
   tenantId: string
   employeeId: string
   reason: string
-  reconsideredAt: number
+  reconsideredAt: datetime
 }
 
 event TimeOffRequestCancelled: "staff.time-off-request.cancelled" {
   requestId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TimeOffRequestDeleted: "staff.time-off-request.deleted" {
   requestId: string
-  deletedAt: number
+  deletedAt: datetime
 }

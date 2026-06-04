@@ -105,7 +105,7 @@ entity PrepTask {
     emit PrepTaskStarted
   }
 
-  command complete(quantityCompleted: number, userId: string, completedAt: number) {
+  command complete(quantityCompleted: number, userId: string, completedAt: datetime) {
     guard quantityCompleted != null and quantityCompleted >= 0 "Completed quantity must be non-negative"
     guard self.status == "in_progress" "Can only complete in-progress tasks"
     guard self.claimedBy == userId or userId == "" "Only claimer can complete task"
@@ -194,7 +194,7 @@ entity PrepTask {
     emit PrepTaskCanceled
   }
 
-  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
+  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: datetime, dueByDate: datetime, notes: string, ingredients: string) {
     guard name != null and name != "" "Task name is required"
     guard eventId != null and eventId != "" "Event ID is required"
     // prepListId is optional — AI-generated tasks may not have a prep list yet
@@ -238,7 +238,7 @@ entity PrepTask {
     emit PrepTaskAssignmentUpdated
   }
 
-  command updateDueDate(dueByDate: number) {
+  command updateDueDate(dueByDate: datetime) {
     mutate dueByDate = dueByDate
 
     emit PrepTaskDueDateUpdated
@@ -256,34 +256,34 @@ event PrepTaskClaimed: "kitchen.preptask.claimed" {
   taskId: string
   userId: string
   stationId: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event PrepTaskStarted: "kitchen.preptask.started" {
   taskId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event PrepTaskCompleted: "kitchen.preptask.completed" {
   taskId: string
   userId: string
   quantityCompleted: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event PrepTaskUnclaimed: "kitchen.preptask.unclaimed" {
   taskId: string
   userId: string
   reason: string
-  unclaimedAt: number
+  unclaimedAt: datetime
 }
 
 event PrepTaskReleased: "kitchen.preptask.released" {
   taskId: string
   previousUserId: string
   reason: string
-  releasedAt: number
+  releasedAt: datetime
 }
 
 event PrepTaskReassigned: "kitchen.preptask.reassigned" {
@@ -291,7 +291,7 @@ event PrepTaskReassigned: "kitchen.preptask.reassigned" {
   previousUserId: string
   newUserId: string
   reassignedBy: string
-  reassignedAt: number
+  reassignedAt: datetime
 }
 
 event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
@@ -299,7 +299,7 @@ event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
   oldQuantityTotal: number
   newQuantityTotal: number
   quantityCompleted: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskCreated: "kitchen.preptask.created" {
@@ -309,40 +309,40 @@ event PrepTaskCreated: "kitchen.preptask.created" {
   name: string
   taskType: string
   priority: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepTaskCanceled: "kitchen.preptask.canceled" {
   taskId: string
   reason: string
   canceledBy: string
-  canceledAt: number
+  canceledAt: datetime
 }
 
 event PrepTaskStatusUpdated: "kitchen.preptask.status.updated" {
   taskId: string
   oldStatus: string
   newStatus: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskPriorityUpdated: "kitchen.preptask.priority.updated" {
   taskId: string
   oldPriority: number
   newPriority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskAssignmentUpdated: "kitchen.preptask.assignment.updated" {
   taskId: string
   oldClaimedBy: string
   newClaimedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskDueDateUpdated: "kitchen.preptask.duedate.updated" {
   taskId: string
-  oldDueByDate: number
-  newDueByDate: number
-  updatedAt: number
+  oldDueByDate: datetime
+  newDueByDate: datetime
+  updatedAt: datetime
 }

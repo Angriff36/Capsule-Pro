@@ -79,7 +79,7 @@ event RateLimitConfigCreated: "admin.rate_limit.created" {
   maxRequests: number
   burstAllowance: number
   priority: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RateLimitConfigUpdated: "admin.rate_limit.updated" {
@@ -92,7 +92,7 @@ event RateLimitConfigUpdated: "admin.rate_limit.updated" {
   burstAllowance: number
   priority: number
   isActive: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
@@ -101,7 +101,7 @@ event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
   name: string
   endpointPattern: string
   reason: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event RateLimitConfigActivated: "admin.rate_limit.activated" {
@@ -109,7 +109,7 @@ event RateLimitConfigActivated: "admin.rate_limit.activated" {
   tenantId: string
   name: string
   endpointPattern: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
@@ -117,5 +117,5 @@ event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
   tenantId: string
   name: string
   endpointPattern: string
-  updatedAt: number
+  updatedAt: datetime
 }

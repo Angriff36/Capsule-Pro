@@ -376,7 +376,7 @@ event RecipeCreated: "kitchen.recipe.created" {
   recipeId: string
   tenantId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeUpdated: "kitchen.recipe.updated" {
@@ -384,7 +384,7 @@ event RecipeUpdated: "kitchen.recipe.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeDeactivated: "kitchen.recipe.deactivated" {
@@ -392,14 +392,14 @@ event RecipeDeactivated: "kitchen.recipe.deactivated" {
   tenantId: string
   name: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event RecipeActivated: "kitchen.recipe.activated" {
   recipeId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event RecipeVersionCreated: "kitchen.recipe.version.created" {
@@ -408,7 +408,7 @@ event RecipeVersionCreated: "kitchen.recipe.version.created" {
   tenantId: string
   versionNumber: number
   yieldQuantity: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeVersionPublished: "kitchen.recipe.version.published" {
@@ -417,7 +417,7 @@ event RecipeVersionPublished: "kitchen.recipe.version.published" {
   tenantId: string
   versionNumber: number
   publishedBy: string
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event RecipeVersionRetracted: "kitchen.recipe.version.retracted" {
@@ -426,7 +426,7 @@ event RecipeVersionRetracted: "kitchen.recipe.version.retracted" {
   tenantId: string
   versionNumber: number
   reason: string
-  retractedAt: number
+  retractedAt: datetime
 }
 
 event RecipeVersionApproved: "kitchen.recipe.version.approved" {
@@ -435,7 +435,7 @@ event RecipeVersionApproved: "kitchen.recipe.version.approved" {
   tenantId: string
   versionNumber: number
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event RecipeVersionRestored: "kitchen.recipe.version.restored" {
@@ -444,7 +444,7 @@ event RecipeVersionRestored: "kitchen.recipe.version.restored" {
   recipeId: string
   tenantId: string
   versionNumber: number
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
@@ -453,7 +453,7 @@ event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
   tenantId: string
   totalCost: number
   costPerYield: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
@@ -462,7 +462,7 @@ event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
   ingredientId: string
   tenantId: string
   quantity: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
@@ -471,7 +471,7 @@ event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
   ingredientId: string
   oldQuantity: number
   newQuantity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
@@ -480,7 +480,7 @@ event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
   ingredientId: string
   tenantId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
@@ -489,7 +489,7 @@ event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor
   tenantId: string
   oldWasteFactor: number
   newWasteFactor: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeStepCreated: "kitchen.recipe.step.created" {
@@ -498,7 +498,7 @@ event RecipeStepCreated: "kitchen.recipe.step.created" {
   tenantId: string
   stepNumber: number
   instruction: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeStepUpdated: "kitchen.recipe.step.updated" {
@@ -508,7 +508,7 @@ event RecipeStepUpdated: "kitchen.recipe.step.updated" {
   stepNumber: number
   oldInstruction: string
   newInstruction: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeStepRemoved: "kitchen.recipe.step.removed" {
@@ -516,7 +516,7 @@ event RecipeStepRemoved: "kitchen.recipe.step.removed" {
   recipeVersionId: string
   tenantId: string
   stepNumber: number
-  removedAt: number
+  removedAt: datetime
 }
 
 event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
@@ -524,7 +524,7 @@ event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   tenantId: string
   oldAllergens: string
   newAllergens: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientCreated: "kitchen.ingredient.created" {
@@ -533,7 +533,7 @@ event IngredientCreated: "kitchen.ingredient.created" {
   name: string
   category: string
   allergens: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DishCreated: "kitchen.dish.created" {
@@ -541,7 +541,7 @@ event DishCreated: "kitchen.dish.created" {
   tenantId: string
   name: string
   recipeId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DishPricingUpdated: "kitchen.dish.pricing.updated" {
@@ -551,7 +551,7 @@ event DishPricingUpdated: "kitchen.dish.pricing.updated" {
   newPrice: number
   oldCost: number
   newCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
@@ -561,5 +561,5 @@ event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
   newMinDays: number
   oldMaxDays: number
   newMaxDays: number
-  updatedAt: number
+  updatedAt: datetime
 }

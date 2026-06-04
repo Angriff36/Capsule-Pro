@@ -54,7 +54,7 @@ entity ClientInteraction {
     }
   }
 
-  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: number, subject: string, description: string, followUpDate: number, correlationId: string) {
+  command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
     guard subject != null and subject != "" "Subject is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard interactionType != null and interactionType != "" "Interaction type is required"
@@ -82,7 +82,7 @@ entity ClientInteraction {
     emit ClientInteractionCreated
   }
 
-  command update(interactionType: string, interactionDate: number, subject: string, description: string, followUpDate: number, correlationId: string) {
+  command update(interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
     guard self.deletedAt == null "Cannot update a deleted interaction"
     guard subject != null and subject != "" "Subject is required"
 
@@ -122,7 +122,7 @@ entity ClientInteraction {
     emit ClientInteractionCompleted
   }
 
-  command schedule(followUpDate: number, assignedTo: string) {
+  command schedule(followUpDate: datetime, assignedTo: string) {
     guard self.deletedAt == null "Cannot schedule a deleted interaction"
     guard self.status in ["open", "overdue"] "Can only schedule open or overdue interactions"
     guard followUpDate != null "Follow-up date is required"
@@ -177,8 +177,8 @@ event ClientInteractionCreated: "crm.interaction.created" {
   employeeId: string
   interactionType: string
   subject: string
-  followUpDate: number
-  createdAt: number
+  followUpDate: datetime
+  createdAt: datetime
 }
 
 event ClientInteractionUpdated: "crm.interaction.updated" {
@@ -188,8 +188,8 @@ event ClientInteractionUpdated: "crm.interaction.updated" {
   leadId: string
   subject: string
   interactionType: string
-  followUpDate: number
-  updatedAt: number
+  followUpDate: datetime
+  updatedAt: datetime
 }
 
 event ClientInteractionCompleted: "crm.interaction.completed" {
@@ -202,7 +202,7 @@ event ClientInteractionCompleted: "crm.interaction.completed" {
   interactionType: string
   completionNotes: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event ClientInteractionScheduled: "crm.interaction.scheduled" {
@@ -212,8 +212,8 @@ event ClientInteractionScheduled: "crm.interaction.scheduled" {
   leadId: string
   employeeId: string
   subject: string
-  followUpDate: number
-  scheduledAt: number
+  followUpDate: datetime
+  scheduledAt: datetime
 }
 
 event ClientInteractionMarkedOverdue: "crm.interaction.marked_overdue" {
@@ -222,8 +222,8 @@ event ClientInteractionMarkedOverdue: "crm.interaction.marked_overdue" {
   clientId: string
   leadId: string
   subject: string
-  followUpDate: number
-  markedAt: number
+  followUpDate: datetime
+  markedAt: datetime
 }
 
 event ClientInteractionEscalated: "crm.interaction.escalated" {
@@ -234,5 +234,5 @@ event ClientInteractionEscalated: "crm.interaction.escalated" {
   subject: string
   escalatedTo: string
   reason: string
-  escalatedAt: number
+  escalatedAt: datetime
 }

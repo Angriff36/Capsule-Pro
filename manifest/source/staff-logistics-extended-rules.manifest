@@ -339,7 +339,7 @@ entity ActionMilestone {
   constraint validStatus: self.status in ["pending", "met", "missed"] "Invalid milestone status"
   constraint requireTitle: self.title != "" "Milestone title is required"
 
-  command create(disciplinaryActionId: string, title: string, dueAt: number) {
+  command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
     guard dueAt != null and dueAt > 0 "Due date is required"
@@ -457,7 +457,7 @@ entity TrainingCompletion {
 
   constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
 
-  command create(employeeId: string, trainingModuleId: string, completedAt: number, score: number, passed: boolean) {
+  command create(employeeId: string, trainingModuleId: string, completedAt: datetime, score: number, passed: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard trainingModuleId != null and trainingModuleId != "" "Training module ID is required"
     guard score >= 0 and score <= 100 "Score must be between 0 and 100"
@@ -636,7 +636,7 @@ entity DeliveryRoute {
   constraint requireName: self.name != "" "Route name is required"
   constraint distancePositive: self.distanceMiles >= 0 "Distance cannot be negative"
 
-  command create(name: string, driverId: string, routeDate: number, totalStops: number, distanceMiles: number) {
+  command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
     guard name != null and name != "" "Route name is required"
     guard routeDate != null and routeDate > 0 "Route date is required"
 
@@ -700,7 +700,7 @@ entity RouteStop {
   constraint requireAddress: self.address != "" "Address is required"
   constraint sequencePositive: self.sequence >= 0 "Sequence must be non-negative"
 
-  command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: number) {
+  command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
     guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"
     guard address != null and address != "" "Address is required"
     guard scheduledAt != null and scheduledAt > 0 "Scheduled arrival time is required"
@@ -812,7 +812,7 @@ entity PreventiveMaintenanceSchedule {
   constraint requireName: self.name != "" "Schedule name is required"
   constraint requireFrequency: self.frequency != "" "Frequency is required"
 
-  command create(equipmentId: string, name: string, frequency: string, nextDueAt: number) {
+  command create(equipmentId: string, name: string, frequency: string, nextDueAt: datetime) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard name != null and name != "" "Schedule name is required"
     guard frequency != null and frequency != "" "Frequency is required"
@@ -827,7 +827,7 @@ entity PreventiveMaintenanceSchedule {
     emit MaintenanceScheduleCreated
   }
 
-  command update(name: string, frequency: string, nextDueAt: number) {
+  command update(name: string, frequency: string, nextDueAt: datetime) {
     guard self.isActive "Cannot update an inactive maintenance schedule"
     guard name != null and name != "" "Schedule name is required"
     guard frequency != null and frequency != "" "Frequency is required"
@@ -840,7 +840,7 @@ entity PreventiveMaintenanceSchedule {
     emit MaintenanceScheduleUpdated
   }
 
-  command complete(nextDueAt: number) {
+  command complete(nextDueAt: datetime) {
     guard self.isActive "Cannot complete an inactive maintenance schedule"
     guard nextDueAt != null and nextDueAt > 0 "Next due date is required for recurrence"
 
@@ -882,7 +882,7 @@ event TimecardApprovalCreated: "hr.timecard.approval.created" {
   tenantId: string
   employeeId: string
   payrollPeriodId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TimecardApproved: "hr.timecard.approved" {
@@ -891,7 +891,7 @@ event TimecardApproved: "hr.timecard.approved" {
   employeeId: string
   payrollPeriodId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event TimecardRejected: "hr.timecard.rejected" {
@@ -901,7 +901,7 @@ event TimecardRejected: "hr.timecard.rejected" {
   payrollPeriodId: string
   rejectedBy: string
   notes: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event TimecardBulkApproved: "hr.timecard.bulk-approved" {
@@ -910,7 +910,7 @@ event TimecardBulkApproved: "hr.timecard.bulk-approved" {
   employeeId: string
   payrollPeriodId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PayrollLineItemCreated: "payroll.lineitem.created" {
@@ -920,7 +920,7 @@ event PayrollLineItemCreated: "payroll.lineitem.created" {
   employeeId: string
   grossPay: number
   netPay: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PayrollLineItemUpdated: "payroll.lineitem.updated" {
@@ -930,7 +930,7 @@ event PayrollLineItemUpdated: "payroll.lineitem.updated" {
   employeeId: string
   grossPay: number
   netPay: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TipPoolCreated: "hr.tippool.created" {
@@ -938,14 +938,14 @@ event TipPoolCreated: "hr.tippool.created" {
   tenantId: string
   eventId: string
   totalTips: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event TipPoolAllocated: "hr.tippool.allocated" {
   tipPoolId: string
   tenantId: string
   totalTips: number
-  allocatedAt: number
+  allocatedAt: datetime
 }
 
 event TipPoolDistributed: "hr.tippool.distributed" {
@@ -954,20 +954,20 @@ event TipPoolDistributed: "hr.tippool.distributed" {
   employeeId: string
   amount: number
   distributedBy: string
-  distributedAt: number
+  distributedAt: datetime
 }
 
 event TipPoolDistributionFinalized: "hr.tippool.distribution-finalized" {
   tipPoolId: string
   tenantId: string
   distributedBy: string
-  finalizedAt: number
+  finalizedAt: datetime
 }
 
 event TipPoolClosed: "hr.tippool.closed" {
   tipPoolId: string
   tenantId: string
-  closedAt: number
+  closedAt: datetime
 }
 
 event DisciplinaryActionCreated: "hr.disciplinary.created" {
@@ -977,14 +977,14 @@ event DisciplinaryActionCreated: "hr.disciplinary.created" {
   actionType: string
   severity: string
   issuedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DisciplinaryActionAcknowledged: "hr.disciplinary.acknowledged" {
   actionId: string
   tenantId: string
   employeeId: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event DisciplinaryActionEscalated: "hr.disciplinary.escalated" {
@@ -993,14 +993,14 @@ event DisciplinaryActionEscalated: "hr.disciplinary.escalated" {
   employeeId: string
   escalatedTo: string
   escalationReason: string
-  escalatedAt: number
+  escalatedAt: datetime
 }
 
 event DisciplinaryActionClosed: "hr.disciplinary.closed" {
   actionId: string
   tenantId: string
   employeeId: string
-  closedAt: number
+  closedAt: datetime
 }
 
 event ActionMilestoneCreated: "hr.milestone.created" {
@@ -1008,22 +1008,22 @@ event ActionMilestoneCreated: "hr.milestone.created" {
   tenantId: string
   disciplinaryActionId: string
   title: string
-  dueAt: number
-  createdAt: number
+  dueAt: datetime
+  createdAt: datetime
 }
 
 event ActionMilestoneMet: "hr.milestone.met" {
   milestoneId: string
   tenantId: string
   disciplinaryActionId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event ActionMilestoneMissed: "hr.milestone.missed" {
   milestoneId: string
   tenantId: string
   disciplinaryActionId: string
-  missedAt: number
+  missedAt: datetime
 }
 
 event PerformanceReviewCreated: "hr.review.created" {
@@ -1032,7 +1032,7 @@ event PerformanceReviewCreated: "hr.review.created" {
   employeeId: string
   reviewerId: string
   reviewPeriod: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PerformanceReviewSubmitted: "hr.review.submitted" {
@@ -1040,21 +1040,21 @@ event PerformanceReviewSubmitted: "hr.review.submitted" {
   tenantId: string
   employeeId: string
   overallRating: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PerformanceReviewSignedOff: "hr.review.signed-off" {
   reviewId: string
   tenantId: string
   employeeId: string
-  signedOffAt: number
+  signedOffAt: datetime
 }
 
 event PerformanceReviewAcknowledged: "hr.review.acknowledged" {
   reviewId: string
   tenantId: string
   employeeId: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event TrainingCompletionRecorded: "hr.training.completion.recorded" {
@@ -1064,7 +1064,7 @@ event TrainingCompletionRecorded: "hr.training.completion.recorded" {
   trainingModuleId: string
   score: number
   passed: boolean
-  completedAt: number
+  completedAt: datetime
 }
 
 event OnboardingTaskCreated: "hr.onboarding.task.created" {
@@ -1072,20 +1072,20 @@ event OnboardingTaskCreated: "hr.onboarding.task.created" {
   tenantId: string
   title: string
   sortOrder: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event OnboardingTaskUpdated: "hr.onboarding.task.updated" {
   taskId: string
   tenantId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event OnboardingTaskRemoved: "hr.onboarding.task.removed" {
   taskId: string
   tenantId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event OnboardingCompletionCreated: "hr.onboarding.completion.created" {
@@ -1093,7 +1093,7 @@ event OnboardingCompletionCreated: "hr.onboarding.completion.created" {
   tenantId: string
   employeeId: string
   onboardingTaskId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event OnboardingCompletionCompleted: "hr.onboarding.completion.completed" {
@@ -1101,7 +1101,7 @@ event OnboardingCompletionCompleted: "hr.onboarding.completion.completed" {
   tenantId: string
   employeeId: string
   onboardingTaskId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event OpenShiftCreated: "schedule.openshift.created" {
@@ -1111,7 +1111,7 @@ event OpenShiftCreated: "schedule.openshift.created" {
   role: string
   shiftStart: number
   shiftEnd: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event OpenShiftClaimed: "schedule.openshift.claimed" {
@@ -1119,14 +1119,14 @@ event OpenShiftClaimed: "schedule.openshift.claimed" {
   tenantId: string
   scheduleId: string
   claimedBy: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event OpenShiftCancelled: "schedule.openshift.cancelled" {
   shiftId: string
   tenantId: string
   scheduleId: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event DeliveryRouteCreated: "logistics.deliveryroute.created" {
@@ -1134,27 +1134,27 @@ event DeliveryRouteCreated: "logistics.deliveryroute.created" {
   tenantId: string
   name: string
   driverId: string
-  routeDate: number
-  createdAt: number
+  routeDate: datetime
+  createdAt: datetime
 }
 
 event DeliveryRouteStarted: "logistics.deliveryroute.started" {
   routeId: string
   tenantId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event DeliveryRouteCompleted: "logistics.deliveryroute.completed" {
   routeId: string
   tenantId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event DeliveryRouteDriverAssigned: "logistics.deliveryroute.driver.assigned" {
   routeId: string
   tenantId: string
   driverId: string
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event RouteStopCreated: "logistics.routestop.created" {
@@ -1163,21 +1163,21 @@ event RouteStopCreated: "logistics.routestop.created" {
   deliveryRouteId: string
   address: string
   sequence: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RouteStopArrived: "logistics.routestop.arrived" {
   stopId: string
   tenantId: string
   deliveryRouteId: string
-  arrivedAt: number
+  arrivedAt: datetime
 }
 
 event RouteStopCompleted: "logistics.routestop.completed" {
   stopId: string
   tenantId: string
   deliveryRouteId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event RouteStopReordered: "logistics.routestop.reordered" {
@@ -1185,7 +1185,7 @@ event RouteStopReordered: "logistics.routestop.reordered" {
   tenantId: string
   deliveryRouteId: string
   sequence: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PaymentRefundAttemptCreated: "payments.refund.attempt.created" {
@@ -1194,7 +1194,7 @@ event PaymentRefundAttemptCreated: "payments.refund.attempt.created" {
   paymentId: string
   amount: number
   reason: string
-  attemptedAt: number
+  attemptedAt: datetime
 }
 
 event PaymentRefundAttemptSucceeded: "payments.refund.attempt.succeeded" {
@@ -1202,7 +1202,7 @@ event PaymentRefundAttemptSucceeded: "payments.refund.attempt.succeeded" {
   tenantId: string
   paymentId: string
   amount: number
-  succeededAt: number
+  succeededAt: datetime
 }
 
 event PaymentRefundAttemptFailed: "payments.refund.attempt.failed" {
@@ -1210,7 +1210,7 @@ event PaymentRefundAttemptFailed: "payments.refund.attempt.failed" {
   tenantId: string
   paymentId: string
   amount: number
-  failedAt: number
+  failedAt: datetime
 }
 
 event MaintenanceScheduleCreated: "facilities.maintenance.schedule.created" {
@@ -1219,29 +1219,29 @@ event MaintenanceScheduleCreated: "facilities.maintenance.schedule.created" {
   equipmentId: string
   name: string
   frequency: string
-  nextDueAt: number
-  createdAt: number
+  nextDueAt: datetime
+  createdAt: datetime
 }
 
 event MaintenanceScheduleUpdated: "facilities.maintenance.schedule.updated" {
   scheduleId: string
   tenantId: string
   equipmentId: string
-  nextDueAt: number
-  updatedAt: number
+  nextDueAt: datetime
+  updatedAt: datetime
 }
 
 event MaintenanceScheduleCompleted: "facilities.maintenance.schedule.completed" {
   scheduleId: string
   tenantId: string
   equipmentId: string
-  nextDueAt: number
-  completedAt: number
+  nextDueAt: datetime
+  completedAt: datetime
 }
 
 event MaintenanceScheduleDeactivated: "facilities.maintenance.schedule.deactivated" {
   scheduleId: string
   tenantId: string
   equipmentId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }

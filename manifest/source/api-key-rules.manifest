@@ -28,7 +28,7 @@ entity ApiKey {
   constraint requireHashedKey: self.hashedKey != null and self.hashedKey != "" "Hashed key is required"
   constraint requireCreatedBy: self.createdByUserId != null and self.createdByUserId != "" "Created by user ID is required"
 
-  command create(name: string, keyPrefix: string, hashedKey: string, scopes: string, expiresAt: number, createdByUserId: string) {
+  command create(name: string, keyPrefix: string, hashedKey: string, scopes: string, expiresAt: datetime, createdByUserId: string) {
     guard name != null and name != "" "API key name is required"
     guard keyPrefix != null and keyPrefix != "" "Key prefix is required"
     guard hashedKey != null and hashedKey != "" "Hashed key is required"
@@ -62,7 +62,7 @@ entity ApiKey {
     emit ApiKeyCreated
   }
 
-  command update(name: string, scopes: string, expiresAt: number) {
+  command update(name: string, scopes: string, expiresAt: datetime) {
     guard self.deletedAt == null "Cannot update a deleted API key"
     guard self.revokedAt == null "Cannot update a revoked API key"
 
@@ -157,9 +157,9 @@ event ApiKeyCreated: "admin.api_key.created" {
   name: string
   keyPrefix: string
   scopes: string
-  expiresAt: number
+  expiresAt: datetime
   createdByUserId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ApiKeyUpdated: "admin.api_key.updated" {
@@ -168,8 +168,8 @@ event ApiKeyUpdated: "admin.api_key.updated" {
   name: string
   keyPrefix: string
   scopes: string
-  expiresAt: number
-  updatedAt: number
+  expiresAt: datetime
+  updatedAt: datetime
 }
 
 event ApiKeyRevoked: "admin.api_key.revoked" {
@@ -179,7 +179,7 @@ event ApiKeyRevoked: "admin.api_key.revoked" {
   keyPrefix: string
   reason: string
   revokedBy: string
-  revokedAt: number
+  revokedAt: datetime
 }
 
 event ApiKeyDeleted: "admin.api_key.deleted" {
@@ -189,7 +189,7 @@ event ApiKeyDeleted: "admin.api_key.deleted" {
   keyPrefix: string
   reason: string
   deletedBy: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event ApiKeyUsed: "admin.api_key.used" {
@@ -197,5 +197,5 @@ event ApiKeyUsed: "admin.api_key.used" {
   tenantId: string
   name: string
   keyPrefix: string
-  lastUsedAt: number
+  lastUsedAt: datetime
 }

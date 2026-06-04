@@ -271,13 +271,13 @@ event PurchaseRequisitionCreated: "procurement.requisition.created" {
   requestedBy: string
   department: string
   priority: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseRequisitionUpdated: "procurement.requisition.updated" {
   requisitionId: string
   requisitionNumber: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
@@ -286,7 +286,7 @@ event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
   submittedBy: string
   itemCount: number
   estimatedTotal: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_approved" {
@@ -294,7 +294,7 @@ event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_appro
   requisitionNumber: string
   approvedBy: string
   estimatedTotal: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_approved" {
@@ -302,7 +302,7 @@ event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_appro
   requisitionNumber: string
   approvedBy: string
   estimatedTotal: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseRequisitionRejected: "procurement.requisition.rejected" {
@@ -310,14 +310,14 @@ event PurchaseRequisitionRejected: "procurement.requisition.rejected" {
   requisitionNumber: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event PurchaseRequisitionConverted: "procurement.requisition.converted" {
   requisitionId: string
   requisitionNumber: string
   purchaseOrderId: string
-  convertedAt: number
+  convertedAt: datetime
 }
 
 event PurchaseRequisitionCancelled: "procurement.requisition.cancelled" {
@@ -325,7 +325,7 @@ event PurchaseRequisitionCancelled: "procurement.requisition.cancelled" {
   requisitionNumber: string
   cancelledBy: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
@@ -336,7 +336,7 @@ event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
   quantityRequested: number
   estimatedUnitCost: number
   estimatedTotalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
@@ -346,11 +346,11 @@ event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
   quantityRequested: number
   estimatedUnitCost: number
   estimatedTotalCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PurchaseRequisitionItemRemoved: "procurement.requisition.item.removed" {
   requisitionItemId: string
   requisitionId: string
-  removedAt: number
+  removedAt: datetime
 }

@@ -179,17 +179,17 @@ event LaborBudgetCreated: "staff.labor-budget.created" {
   budgetId: string
   tenantId: string
   budgetAmount: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event LaborBudgetUpdated: "staff.labor-budget.updated" {
   budgetId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LaborBudgetDeleted: "staff.labor-budget.deleted" {
   budgetId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event BudgetAlertCreated: "staff.budget-alert.created" {
@@ -199,18 +199,18 @@ event BudgetAlertCreated: "staff.budget-alert.created" {
   alertType: string
   thresholdPct: number
   actualPct: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event BudgetAlertAcknowledged: "staff.budget-alert.acknowledged" {
   alertId: string
   acknowledgedBy: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event BudgetAlertResolved: "staff.budget-alert.resolved" {
   alertId: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event LaborBudgetApproved: "staff.labor-budget.approved" {
@@ -219,18 +219,18 @@ event LaborBudgetApproved: "staff.labor-budget.approved" {
   locationId: string
   budgetAmount: number
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event LaborBudgetActualRecorded: "staff.labor-budget.actual_recorded" {
   budgetId: string
   tenantId: string
   actualAmount: number
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event LaborBudgetClosed: "staff.labor-budget.closed" {
   budgetId: string
   tenantId: string
-  closedAt: number
+  closedAt: datetime
 }

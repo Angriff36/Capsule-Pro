@@ -395,7 +395,7 @@ event EventConfirmed: "events.event.confirmed" {
   eventName: string
   guestCount: number
   userId: string
-  confirmedAt: number
+  confirmedAt: datetime
 }
 
 // Event entity events
@@ -404,10 +404,10 @@ event EventCreated: "events.event.created" {
   tenantId: string
   title: string
   eventType: string
-  eventDate: number
+  eventDate: datetime
   guestCount: number
   clientId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventUpdated: "events.event.updated" {
@@ -416,7 +416,7 @@ event EventUpdated: "events.event.updated" {
   title: string
   eventType: string
   guestCount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventCancelled: "events.event.cancelled" {
@@ -424,14 +424,14 @@ event EventCancelled: "events.event.cancelled" {
   tenantId: string
   title: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event EventArchived: "events.event.archived" {
   eventId: string
   tenantId: string
   title: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event EventGuestCountUpdated: "events.event.guest_count_updated" {
@@ -440,16 +440,16 @@ event EventGuestCountUpdated: "events.event.guest_count_updated" {
   title: string
   oldGuestCount: number
   newGuestCount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventDateUpdated: "events.event.date_updated" {
   eventId: string
   tenantId: string
   title: string
-  oldEventDate: number
-  newEventDate: number
-  updatedAt: number
+  oldEventDate: datetime
+  newEventDate: datetime
+  updatedAt: datetime
 }
 
 event EventLocationUpdated: "events.event.location_updated" {
@@ -458,7 +458,7 @@ event EventLocationUpdated: "events.event.location_updated" {
   title: string
   oldVenueName: string
   newVenueName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventFinalized: "events.event.finalized" {
@@ -466,7 +466,7 @@ event EventFinalized: "events.event.finalized" {
   tenantId: string
   title: string
   userId: string
-  finalizedAt: number
+  finalizedAt: datetime
 }
 
 event EventUnfinalized: "events.event.unfinalized" {
@@ -475,7 +475,7 @@ event EventUnfinalized: "events.event.unfinalized" {
   title: string
   userId: string
   reason: string
-  unfinalizedAt: number
+  unfinalizedAt: datetime
 }
 
 // Profitability events
@@ -485,7 +485,7 @@ event EventProfitabilityCreated: "events.profitability.created" {
   eventId: string
   budgetedRevenue: number
   budgetedTotalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventProfitabilityUpdated: "events.profitability.updated" {
@@ -495,7 +495,7 @@ event EventProfitabilityUpdated: "events.profitability.updated" {
   actualRevenue: number
   actualTotalCost: number
   actualGrossMargin: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventProfitabilityRecalculated: "events.profitability.recalculated" {
@@ -503,7 +503,7 @@ event EventProfitabilityRecalculated: "events.profitability.recalculated" {
   tenantId: string
   eventId: string
   calculationMethod: string
-  calculatedAt: number
+  calculatedAt: datetime
 }
 
 // Summary events
@@ -511,19 +511,19 @@ event EventSummaryCreated: "events.summary.created" {
   summaryId: string
   tenantId: string
   eventId: string
-  generatedAt: number
+  generatedAt: datetime
 }
 
 event EventSummaryUpdated: "events.summary.updated" {
   summaryId: string
   tenantId: string
   eventId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventSummaryRefreshed: "events.summary.refreshed" {
   summaryId: string
   tenantId: string
   eventId: string
-  generatedAt: number
+  generatedAt: datetime
 }

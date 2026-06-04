@@ -143,13 +143,13 @@ event TrainingModuleCreated: "staff.training-module.created" {
   title: string
   category: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TrainingModuleUpdated: "staff.training-module.updated" {
   moduleId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TrainingModulePublished: "staff.training-module.published" {
@@ -157,7 +157,7 @@ event TrainingModulePublished: "staff.training-module.published" {
   tenantId: string
   title: string
   version: number
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event TrainingModuleVersioned: "staff.training-module.versioned" {
@@ -165,24 +165,24 @@ event TrainingModuleVersioned: "staff.training-module.versioned" {
   tenantId: string
   version: number
   changeNotes: string
-  versionedAt: number
+  versionedAt: datetime
 }
 
 event TrainingModuleArchived: "staff.training-module.archived" {
   moduleId: string
   tenantId: string
   title: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event TrainingModuleUnarchived: "staff.training-module.unarchived" {
   moduleId: string
   tenantId: string
   title: string
-  unarchivedAt: number
+  unarchivedAt: datetime
 }
 
 event TrainingModuleDeleted: "staff.training-module.deleted" {
   moduleId: string
-  deletedAt: number
+  deletedAt: datetime
 }

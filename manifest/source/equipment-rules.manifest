@@ -72,7 +72,7 @@ entity Equipment {
     }
   }
 
-  command scheduleMaintenance(scheduledDate: number, maintenanceType: string, notes: string, userId: string) {
+  command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, notes: string, userId: string) {
     guard self.status != "retired" "Cannot schedule maintenance for retired equipment"
     guard scheduledDate != null and scheduledDate > 0 "Scheduled date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
@@ -91,7 +91,7 @@ entity Equipment {
     emit EquipmentMaintenanceScheduled
   }
 
-  command recordMaintenance(maintenanceDate: number, maintenanceType: string, performedBy: string, cost: number, notes: string) {
+  command recordMaintenance(maintenanceDate: datetime, maintenanceType: string, performedBy: string, cost: number, notes: string) {
     guard maintenanceDate != null and maintenanceDate > 0 "Maintenance date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
 
@@ -146,7 +146,7 @@ entity Equipment {
     emit EquipmentUsageRecorded
   }
 
-  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: number, warrantyExpiry: number, maintenanceIntervalDays: number, maxUsageHours: number, notes: string) {
+  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: number, maintenanceIntervalDays: number, maxUsageHours: number, notes: string) {
     guard name != null and name != "" "Equipment name is required"
     guard locationId != null and locationId != "" "Location ID is required"
     guard type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
@@ -232,7 +232,7 @@ entity MaintenanceWorkOrder {
     }
   }
 
-  command assign(assignedTo: string, scheduledDate: number, estimatedCost: number) {
+  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: number) {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
     guard self.status == "open" "Can only assign open work orders"
 
@@ -282,7 +282,7 @@ entity MaintenanceWorkOrder {
     emit MaintenanceWorkOrderStatusUpdated
   }
 
-  command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, estimatedCost: number, scheduledDate: number) {
+  command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, estimatedCost: number, scheduledDate: datetime) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard equipmentName != null and equipmentName != "" "Equipment name is required"
     guard title != null and title != "" "Work order title is required"
@@ -325,26 +325,26 @@ event EquipmentCreated: "equipment.created" {
   locationId: string
   name: string
   type: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EquipmentMaintenanceScheduled: "equipment.maintenance.scheduled" {
   equipmentId: string
   equipmentName: string
-  scheduledDate: number
+  scheduledDate: datetime
   maintenanceType: string
   scheduledBy: string
-  scheduledAt: number
+  scheduledAt: datetime
 }
 
 event EquipmentMaintenanceRecorded: "equipment.maintenance.recorded" {
   equipmentId: string
   equipmentName: string
-  maintenanceDate: number
+  maintenanceDate: datetime
   maintenanceType: string
   performedBy: string
   cost: number
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event EquipmentStatusUpdated: "equipment.status.updated" {
@@ -354,7 +354,7 @@ event EquipmentStatusUpdated: "equipment.status.updated" {
   newStatus: string
   reason: string
   updatedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EquipmentConditionUpdated: "equipment.condition.updated" {
@@ -364,7 +364,7 @@ event EquipmentConditionUpdated: "equipment.condition.updated" {
   newCondition: string
   notes: string
   updatedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EquipmentUsageRecorded: "equipment.usage.recorded" {
@@ -374,7 +374,7 @@ event EquipmentUsageRecorded: "equipment.usage.recorded" {
   totalUsageHours: number
   usagePercentage: number
   recordedBy: string
-  recordedAt: number
+  recordedAt: datetime
 }
 
 event EquipmentRetired: "equipment.retired" {
@@ -383,7 +383,7 @@ event EquipmentRetired: "equipment.retired" {
   condition: string
   reason: string
   retiredBy: string
-  retiredAt: number
+  retiredAt: datetime
 }
 
 event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
@@ -393,7 +393,7 @@ event MaintenanceWorkOrderCreated: "maintenance.workorder.created" {
   title: string
   type: string
   priority: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
@@ -401,16 +401,16 @@ event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
   equipmentId: string
   equipmentName: string
   assignedTo: string
-  scheduledDate: number
+  scheduledDate: datetime
   estimatedCost: number
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event MaintenanceWorkOrderStarted: "maintenance.workorder.started" {
   workOrderId: string
   equipmentId: string
   startedBy: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
@@ -420,7 +420,7 @@ event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
   actualCost: number
   partsUsed: string
   completedBy: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event MaintenanceWorkOrderStatusUpdated: "maintenance.workorder.status.updated" {
@@ -430,5 +430,5 @@ event MaintenanceWorkOrderStatusUpdated: "maintenance.workorder.status.updated" 
   newStatus: string
   reason: string
   updatedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }

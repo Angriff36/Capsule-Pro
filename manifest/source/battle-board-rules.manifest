@@ -140,7 +140,7 @@ event BattleBoardCreated: "events.battle_board.created" {
   boardType: string
   eventId: string
   isTemplate: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event BattleBoardDishAdded: "events.battle_board.dish_added" {
@@ -149,7 +149,7 @@ event BattleBoardDishAdded: "events.battle_board.dish_added" {
   boardName: string
   dishData: string
   userId: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event BattleBoardDishRemoved: "events.battle_board.dish_removed" {
@@ -158,7 +158,7 @@ event BattleBoardDishRemoved: "events.battle_board.dish_removed" {
   boardName: string
   dishId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event BattleBoardVoteCast: "events.battle_board.vote_cast" {
@@ -167,7 +167,7 @@ event BattleBoardVoteCast: "events.battle_board.vote_cast" {
   boardName: string
   userId: string
   voteData: string
-  votedAt: number
+  votedAt: datetime
 }
 
 event BattleBoardOpened: "kitchen.battleboard.opened" {
@@ -176,7 +176,7 @@ event BattleBoardOpened: "kitchen.battleboard.opened" {
   boardName: string
   dishCount: number
   userId: string
-  openedAt: number
+  openedAt: datetime
 }
 
 event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
@@ -184,7 +184,7 @@ event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
   tenantId: string
   boardName: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event BattleBoardFinalized: "events.battle_board.finalized" {
@@ -192,5 +192,5 @@ event BattleBoardFinalized: "events.battle_board.finalized" {
   tenantId: string
   boardName: string
   userId: string
-  finalizedAt: number
+  finalizedAt: datetime
 }

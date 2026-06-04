@@ -62,15 +62,15 @@ event EmailWorkflowCreated: "collaboration.email-workflow.created" {
   tenantId: string
   name: string
   triggerType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EmailWorkflowUpdated: "collaboration.email-workflow.updated" {
   workflowId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EmailWorkflowDeleted: "collaboration.email-workflow.deleted" {
   workflowId: string
-  deletedAt: number
+  deletedAt: datetime
 }

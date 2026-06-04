@@ -99,7 +99,7 @@ event WorkflowCreated: "workflow.created" {
   name: string
   triggerType: string
   isActive: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event WorkflowUpdated: "workflow.updated" {
@@ -108,7 +108,7 @@ event WorkflowUpdated: "workflow.updated" {
   oldName: string
   newName: string
   triggerType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event WorkflowActivated: "workflow.activated" {
@@ -117,7 +117,7 @@ event WorkflowActivated: "workflow.activated" {
   workflowName: string
   triggerType: string
   userId: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event WorkflowDeactivated: "workflow.deactivated" {
@@ -126,5 +126,5 @@ event WorkflowDeactivated: "workflow.deactivated" {
   workflowName: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }

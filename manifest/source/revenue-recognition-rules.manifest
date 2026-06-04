@@ -58,7 +58,7 @@ entity RevenueRecognitionSchedule {
   constraint validMethod: self.method in ["IMMEDIATE", "PROPORTIONAL", "MILESTONE_BASED", "PERCENTAGE_COMPLETE", "STRAIGHT_LINE", "SERVICE_PERIOD"] "Method must be valid"
 
   // Commands
-  command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: number, endDate: number, recognitionPeriod: number, description: string, notes: string) {
+  command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
     guard eventId != null and eventId != "" "Event ID is required"
     guard contractId != null and contractId != "" "Contract ID is required"
@@ -219,7 +219,7 @@ entity RevenueRecognitionLine {
   constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "SKIPPED", "CANCELLED"] "Status must be valid"
 
   // Commands
-  command create(scheduleId: string, sequence: number, amount: number, dueDate: number, milestoneId: string, milestoneName: string, description: string, notes: string) {
+  command create(scheduleId: string, sequence: number, amount: number, dueDate: datetime, milestoneId: string, milestoneName: string, description: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard amount > 0 "Line amount must be positive"
     guard sequence >= 0 "Sequence must be non-negative"
@@ -276,7 +276,7 @@ event RecognitionStarted: "finance.revenue-recognition.started" {
   invoiceId: string
   totalAmount: number
   method: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
@@ -286,7 +286,7 @@ event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
   amount: number
   recognizedAmount: number
   remainingAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionCompleted: "finance.revenue-recognition.completed" {
@@ -295,7 +295,7 @@ event RecognitionCompleted: "finance.revenue-recognition.completed" {
   invoiceId: string
   recognizedAmount: number
   totalAmount: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
@@ -306,7 +306,7 @@ event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
   amount: number
   completedMilestones: number
   totalMilestones: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" {
@@ -316,7 +316,7 @@ event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" 
   percentage: number
   recognizedAmount: number
   totalAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionPaused: "finance.revenue-recognition.paused" {
@@ -324,14 +324,14 @@ event RecognitionPaused: "finance.revenue-recognition.paused" {
   tenantId: string
   invoiceId: string
   recognizedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionResumed: "finance.revenue-recognition.resumed" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
@@ -340,16 +340,16 @@ event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
   invoiceId: string
   reason: string
   recognizedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ScheduleAdjusted: "finance.revenue-recognition.schedule_adjusted" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  newEndDate: number
+  newEndDate: datetime
   newAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LineCreated: "finance.revenue-recognition.line_created" {
@@ -358,7 +358,7 @@ event LineCreated: "finance.revenue-recognition.line_created" {
   scheduleId: string
   sequence: number
   amount: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event LineRecognized: "finance.revenue-recognition.line_recognized" {
@@ -366,7 +366,7 @@ event LineRecognized: "finance.revenue-recognition.line_recognized" {
   tenantId: string
   scheduleId: string
   amount: number
-  recognizedAt: number
+  recognizedAt: datetime
 }
 
 event LineSkipped: "finance.revenue-recognition.line_skipped" {
@@ -374,12 +374,12 @@ event LineSkipped: "finance.revenue-recognition.line_skipped" {
   tenantId: string
   scheduleId: string
   reason: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LineCancelled: "finance.revenue-recognition.line_cancelled" {
   lineId: string
   tenantId: string
   scheduleId: string
-  updatedAt: number
+  updatedAt: datetime
 }

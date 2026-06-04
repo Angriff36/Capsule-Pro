@@ -40,7 +40,7 @@ entity Shipment {
 
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
-  command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: number, carrier: string, shippingMethod: string, notes: string) {
+  command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
     guard shipmentNumber != null and shipmentNumber != "" "Shipment number is required"
 
     mutate shipmentNumber = shipmentNumber
@@ -59,7 +59,7 @@ entity Shipment {
     emit ShipmentCreated
   }
 
-  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: number, shippingCost: number, notes: string) {
+  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: datetime, shippingCost: number, notes: string) {
     guard self.status != "delivered" "Cannot update a delivered shipment"
     guard self.status != "cancelled" "Cannot update a cancelled shipment"
 
@@ -73,7 +73,7 @@ entity Shipment {
     emit ShipmentUpdated
   }
 
-  command schedule(userId: string, scheduledDate: number) {
+  command schedule(userId: string, scheduledDate: datetime) {
     guard self.status == "draft" "Can only schedule draft shipments"
 
     constraint blockNoItems:block self.totalItems == 0 {
@@ -172,7 +172,7 @@ entity ShipmentItem {
 
   constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
 
-  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: number) {
+  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"
@@ -235,7 +235,7 @@ event ShipmentCreated: "purchasing.shipment.created" {
   shipmentNumber: string
   supplierId: string
   locationId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ShipmentUpdated: "purchasing.shipment.updated" {
@@ -243,7 +243,7 @@ event ShipmentUpdated: "purchasing.shipment.updated" {
   shipmentNumber: string
   trackingNumber: string
   carrier: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ShipmentDelivered: "purchasing.shipment.delivered" {
@@ -254,7 +254,7 @@ event ShipmentDelivered: "purchasing.shipment.delivered" {
   receivedBy: string
   totalItems: number
   totalValue: number
-  deliveredAt: number
+  deliveredAt: datetime
 }
 
 event ShipmentCancelled: "purchasing.shipment.cancelled" {
@@ -262,7 +262,7 @@ event ShipmentCancelled: "purchasing.shipment.cancelled" {
   shipmentNumber: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event ShipmentScheduled: "purchasing.shipment.scheduled" {
@@ -270,7 +270,7 @@ event ShipmentScheduled: "purchasing.shipment.scheduled" {
   tenantId: string
   purchaseOrderId: string
   userId: string
-  scheduledAt: number
+  scheduledAt: datetime
 }
 
 event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
@@ -278,7 +278,7 @@ event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
   tenantId: string
   purchaseOrderId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event ShipmentShipped: "purchasing.shipment.shipped" {
@@ -287,7 +287,7 @@ event ShipmentShipped: "purchasing.shipment.shipped" {
   purchaseOrderId: string
   trackingNumber: string
   userId: string
-  shippedAt: number
+  shippedAt: datetime
 }
 
 event ShipmentItemCreated: "purchasing.shipment.item.created" {
@@ -296,7 +296,7 @@ event ShipmentItemCreated: "purchasing.shipment.item.created" {
   itemId: string
   quantityShipped: number
   unitCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event ShipmentItemReceived: "purchasing.shipment.item.received" {
@@ -307,5 +307,5 @@ event ShipmentItemReceived: "purchasing.shipment.item.received" {
   quantityDamaged: number
   condition: string
   userId: string
-  receivedAt: number
+  receivedAt: datetime
 }

@@ -109,7 +109,7 @@ event SmsAutomationRuleCreated: "sms.automation.rule.created" {
   triggerType: string
   isActive: boolean
   priority: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event SmsAutomationRuleUpdated: "sms.automation.rule.updated" {
@@ -119,26 +119,26 @@ event SmsAutomationRuleUpdated: "sms.automation.rule.updated" {
   triggerType: string
   isActive: boolean
   priority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event SmsAutomationRuleActivated: "sms.automation.rule.activated" {
   ruleId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event SmsAutomationRuleDeactivated: "sms.automation.rule.deactivated" {
   ruleId: string
   tenantId: string
   name: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event SmsAutomationRuleDeleted: "sms.automation.rule.deleted" {
   ruleId: string
   tenantId: string
   name: string
-  deletedAt: number
+  deletedAt: datetime
 }

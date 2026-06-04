@@ -116,14 +116,14 @@ event TrainingAssignmentCreated: "staff.training-assignment.created" {
   employeeId: string
   assignedToAll: boolean
   assignedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TrainingStarted: "staff.training-assignment.started" {
   assignmentId: string
   tenantId: string
   employeeId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event TrainingCompleted: "staff.training-assignment.completed" {
@@ -132,7 +132,7 @@ event TrainingCompleted: "staff.training-assignment.completed" {
   employeeId: string
   moduleId: string
   score: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event TrainingWaived: "staff.training-assignment.waived" {
@@ -140,24 +140,24 @@ event TrainingWaived: "staff.training-assignment.waived" {
   tenantId: string
   employeeId: string
   reason: string
-  waivedAt: number
+  waivedAt: datetime
 }
 
 event TrainingMarkedOverdue: "staff.training-assignment.overdue" {
   assignmentId: string
   tenantId: string
   employeeId: string
-  markedAt: number
+  markedAt: datetime
 }
 
 event TrainingDueDateExtended: "staff.training-assignment.due-date-extended" {
   assignmentId: string
   tenantId: string
   dueDate: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event TrainingAssignmentDeleted: "staff.training-assignment.deleted" {
   assignmentId: string
-  deletedAt: number
+  deletedAt: datetime
 }

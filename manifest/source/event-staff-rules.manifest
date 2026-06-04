@@ -128,7 +128,7 @@ event EventStaffAssigned: "events.event-staff.assigned" {
   role: string
   shiftStart: number
   shiftEnd: number
-  assignedAt: number
+  assignedAt: datetime
 }
 
 event EventStaffConfirmed: "events.event-staff.confirmed" {
@@ -136,7 +136,7 @@ event EventStaffConfirmed: "events.event-staff.confirmed" {
   tenantId: string
   eventId: string
   staffMemberId: string
-  confirmedAt: number
+  confirmedAt: datetime
 }
 
 event EventStaffShiftUpdated: "events.event-staff.shift-updated" {
@@ -145,7 +145,7 @@ event EventStaffShiftUpdated: "events.event-staff.shift-updated" {
   eventId: string
   shiftStart: number
   shiftEnd: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventStaffRoleUpdated: "events.event-staff.role-updated" {
@@ -153,7 +153,7 @@ event EventStaffRoleUpdated: "events.event-staff.role-updated" {
   tenantId: string
   eventId: string
   role: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EventStaffCheckedIn: "events.event-staff.checked-in" {
@@ -161,7 +161,7 @@ event EventStaffCheckedIn: "events.event-staff.checked-in" {
   tenantId: string
   eventId: string
   staffMemberId: string
-  checkedInAt: number
+  checkedInAt: datetime
 }
 
 event EventStaffCheckedOut: "events.event-staff.checked-out" {
@@ -169,7 +169,7 @@ event EventStaffCheckedOut: "events.event-staff.checked-out" {
   tenantId: string
   eventId: string
   staffMemberId: string
-  checkedOutAt: number
+  checkedOutAt: datetime
 }
 
 event EventStaffNoShow: "events.event-staff.no-show" {
@@ -178,7 +178,7 @@ event EventStaffNoShow: "events.event-staff.no-show" {
   eventId: string
   staffMemberId: string
   reason: string
-  markedAt: number
+  markedAt: datetime
 }
 
 event EventStaffUnassigned: "events.event-staff.unassigned" {
@@ -187,5 +187,5 @@ event EventStaffUnassigned: "events.event-staff.unassigned" {
   eventId: string
   staffMemberId: string
   reason: string
-  unassignedAt: number
+  unassignedAt: datetime
 }

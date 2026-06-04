@@ -134,31 +134,31 @@ event TransferCreated: "inventory.transfer.created" {
   fromLocationId: string
   toLocationId: string
   requestedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event TransferApproved: "inventory.transfer.approved" {
   transferId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event TransferShipped: "inventory.transfer.shipped" {
   transferId: string
   shippedBy: string
-  shippedAt: number
+  shippedAt: datetime
 }
 
 event TransferReceived: "inventory.transfer.received" {
   transferId: string
   receivedBy: string
-  receivedAt: number
+  receivedAt: datetime
 }
 
 event TransferCancelled: "inventory.transfer.cancelled" {
   transferId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event TransferPartiallyReceived: "inventory.transfer.partially-received" {
@@ -166,12 +166,12 @@ event TransferPartiallyReceived: "inventory.transfer.partially-received" {
   receivedBy: string
   receivedItems: string
   notes: string
-  receivedAt: number
+  receivedAt: datetime
 }
 
 event TransferDiscrepancyFlagged: "inventory.transfer.discrepancy-flagged" {
   transferId: string
   reportedBy: string
   discrepancyNotes: string
-  flaggedAt: number
+  flaggedAt: datetime
 }

@@ -74,7 +74,7 @@ event EmailTemplateCreated: "email_template.created" {
   name: string
   templateType: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EmailTemplateUpdated: "email_template.updated" {
@@ -83,7 +83,7 @@ event EmailTemplateUpdated: "email_template.updated" {
   name: string
   templateType: string
   updatedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event EmailTemplateDeleted: "email_template.deleted" {
@@ -91,5 +91,5 @@ event EmailTemplateDeleted: "email_template.deleted" {
   tenantId: string
   name: string
   deletedBy: string
-  deletedAt: number
+  deletedAt: datetime
 }

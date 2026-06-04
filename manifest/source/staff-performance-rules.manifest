@@ -136,7 +136,7 @@ event PerformanceReviewCreated: "staff.performance.created" {
   employeeId: string
   reviewType: string
   reviewerId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PerformanceReviewUpdated: "staff.performance.updated" {
@@ -144,7 +144,7 @@ event PerformanceReviewUpdated: "staff.performance.updated" {
   employeeId: string
   reviewType: string
   reviewerId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PerformanceReviewSubmittedForReview: "staff.performance.submitted-for-review" {
@@ -152,7 +152,7 @@ event PerformanceReviewSubmittedForReview: "staff.performance.submitted-for-revi
   tenantId: string
   employeeId: string
   reviewerId: string
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PerformanceReviewSentBackToDraft: "staff.performance.sent-back-to-draft" {
@@ -160,25 +160,25 @@ event PerformanceReviewSentBackToDraft: "staff.performance.sent-back-to-draft" {
   tenantId: string
   employeeId: string
   reason: string
-  sentBackAt: number
+  sentBackAt: datetime
 }
 
 event PerformanceReviewCompleted: "staff.performance.completed" {
   reviewId: string
   employeeId: string
   rating: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event PerformanceReviewAcknowledged: "staff.performance.acknowledged" {
   reviewId: string
   tenantId: string
   employeeId: string
-  acknowledgedAt: number
+  acknowledgedAt: datetime
 }
 
 event PerformanceReviewRemoved: "staff.performance.removed" {
   reviewId: string
   employeeId: string
-  removedAt: number
+  removedAt: datetime
 }

@@ -97,7 +97,7 @@ event PrepMethodCreated: "kitchen.prepmethod.created" {
   category: string
   estimatedDurationMinutes: number
   requiresCertification: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepMethodUpdated: "kitchen.prepmethod.updated" {
@@ -106,7 +106,7 @@ event PrepMethodUpdated: "kitchen.prepmethod.updated" {
   category: string
   estimatedDurationMinutes: number
   requiresCertification: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
@@ -114,7 +114,7 @@ event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event PrepMethodReactivated: "kitchen.prepmethod.reactivated" {
@@ -122,5 +122,5 @@ event PrepMethodReactivated: "kitchen.prepmethod.reactivated" {
   tenantId: string
   name: string
   userId: string
-  reactivatedAt: number
+  reactivatedAt: datetime
 }

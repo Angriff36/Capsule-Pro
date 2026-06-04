@@ -228,7 +228,7 @@ event EventImportWorkflowCreated: "event.import.workflow.created" {
   workflowId: string
   tenantId: string
   idempotencyKey: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventImportWorkflowParsingStarted: "event.import.workflow.parsing.started" {
@@ -304,7 +304,7 @@ event EventImportWorkflowCompleted: "event.import.workflow.completed" {
   workflowId: string
   tenantId: string
   eventId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event EventImportWorkflowFailed: "event.import.workflow.failed" {
@@ -312,7 +312,7 @@ event EventImportWorkflowFailed: "event.import.workflow.failed" {
   tenantId: string
   errors: string
   failedAtStep: number
-  failedAt: number
+  failedAt: datetime
 }
 
 event EventImportWorkflowPaused: "event.import.workflow.paused" {

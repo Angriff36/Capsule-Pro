@@ -152,32 +152,32 @@ event VendorCreated: "procurement.vendor.created" {
   tenantId: string
   name: string
   type: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event VendorDeleted: "procurement.vendor.deleted" {
   vendorId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event VendorUpdated: "procurement.vendor.updated" {
   vendorId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event VendorContactAdded: "procurement.vendor.contact.added" {
   vendorId: string
   contactName: string
   role: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event VendorRated: "procurement.vendor.rated" {
   vendorId: string
   score: number
   averageRating: number
-  ratedAt: number
+  ratedAt: datetime
 }
 
 event VendorApproved: "procurement.vendor.approved" {
@@ -185,7 +185,7 @@ event VendorApproved: "procurement.vendor.approved" {
   tenantId: string
   name: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event VendorSuspended: "procurement.vendor.suspended" {
@@ -194,7 +194,7 @@ event VendorSuspended: "procurement.vendor.suspended" {
   name: string
   suspendedBy: string
   reason: string
-  suspendedAt: number
+  suspendedAt: datetime
 }
 
 event VendorBlacklisted: "procurement.vendor.blacklisted" {
@@ -203,5 +203,5 @@ event VendorBlacklisted: "procurement.vendor.blacklisted" {
   name: string
   blacklistedBy: string
   reason: string
-  blacklistedAt: number
+  blacklistedAt: datetime
 }

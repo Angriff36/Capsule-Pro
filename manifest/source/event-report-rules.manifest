@@ -164,7 +164,7 @@ event EventReportCreated: "events.report.created" {
   eventId: string
   name: string
   version: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventReportSubmitted: "events.report.submitted" {
@@ -173,7 +173,7 @@ event EventReportSubmitted: "events.report.submitted" {
   eventId: string
   name: string
   completion: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event EventReportApproved: "events.report.approved" {
@@ -183,7 +183,7 @@ event EventReportApproved: "events.report.approved" {
   name: string
   reviewedBy: string
   reviewNotes: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event EventReportRejected: "events.report.rejected" {
@@ -193,7 +193,7 @@ event EventReportRejected: "events.report.rejected" {
   name: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event EventReportCompleted: "events.report.completed" {
@@ -201,7 +201,7 @@ event EventReportCompleted: "events.report.completed" {
   tenantId: string
   eventId: string
   name: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event EventReportProgressUpdated: "events.report.progress_updated" {
@@ -209,5 +209,5 @@ event EventReportProgressUpdated: "events.report.progress_updated" {
   tenantId: string
   eventId: string
   completion: number
-  updatedAt: number
+  updatedAt: datetime
 }

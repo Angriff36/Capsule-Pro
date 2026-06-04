@@ -42,7 +42,7 @@ entity AiEventSetupSession {
     emit AiEventSetupSessionParsed
   }
 
-  command confirm(title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
+  command confirm(title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
     guard self.status == "parsed" "Can only confirm parsed sessions"
     
     mutate parsedTitle = title
@@ -94,32 +94,32 @@ policy AiEventSetupExecute execute: user.role in ["event_coordinator", "manager"
 event AiEventSetupSessionParsed: "ai-event-setup.session.parsed" {
   sessionId: string
   originalInput: string
-  parsedAt: number
+  parsedAt: datetime
 }
 
 event AiEventSetupSessionConfirmed: "ai-event-setup.session.confirmed" {
   sessionId: string
   title: string
-  eventDate: number
+  eventDate: datetime
   guestCount: number
-  confirmedAt: number
+  confirmedAt: datetime
 }
 
 event AiEventSetupSessionCreated: "ai-event-setup.session.created" {
   sessionId: string
   eventId: string
   title: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AiEventSetupSessionCancelled: "ai-event-setup.session.cancelled" {
   sessionId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event AiEventSetupSessionUpdated: "ai-event-setup.session.updated" {
   sessionId: string
   confidence: number
-  updatedAt: number
+  updatedAt: datetime
 }

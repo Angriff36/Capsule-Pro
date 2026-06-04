@@ -196,7 +196,7 @@ entity FacilityAsset {
     }
   }
 
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: number, purchasePrice: number, serialNumber: string, notes: string) {
+  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: number, serialNumber: string, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -230,7 +230,7 @@ entity FacilityAsset {
   }
 
   // Send asset to maintenance — blocks it from being assigned to events
-  command sendToMaintenance(reason: string, nextMaintenanceAt: number) {
+  command sendToMaintenance(reason: string, nextMaintenanceAt: datetime) {
     guard self.status == "operational" "Only an operational asset can be sent to maintenance"
     guard reason != null and reason != "" "Reason is required"
 
@@ -240,7 +240,7 @@ entity FacilityAsset {
   }
 
   // Return asset to service; record when it was serviced and when it's next due
-  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceAt: number) {
+  command returnFromMaintenance(maintenanceNotes: string, nextMaintenanceAt: datetime) {
     guard self.status == "maintenance" "Asset is not in maintenance"
 
     mutate status = "operational"
@@ -298,7 +298,7 @@ entity FacilitySchedule {
   transition status from "scheduled" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
 
-  command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
+  command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard facilityId != null and facilityId != "" "Facility ID is required"
 
@@ -322,7 +322,7 @@ entity FacilitySchedule {
     emit FacilityScheduleDeleted
   }
 
-  command edit(title: string, description: string, scheduleType: string, startDate: number, endDate: number, assignedTo: string, notes: string) {
+  command edit(title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard self.status == "scheduled" "Can only edit a scheduled (not yet started) schedule"
 
@@ -413,7 +413,7 @@ entity FacilityWorkOrder {
   transition status from "assigned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
 
-  command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: number, notes: string) {
+  command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
 
     mutate facilityId = facilityId
@@ -434,7 +434,7 @@ entity FacilityWorkOrder {
   }
 
   // Assign to a maintenance tech and lock in the scheduled date
-  command assign(assignedTo: string, scheduledDate: number, estimatedCost: number) {
+  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: number) {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
     guard self.status == "open" "Work order must be open to assign"
 
@@ -490,31 +490,31 @@ event FacilityCreated: "facility.created" {
   tenantId: string
   name: string
   type: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event FacilityDeleted: "facility.deleted" {
   facilityId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event FacilityUpdated: "facility.updated" {
   facilityId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event FacilitySentToMaintenance: "facility.sent-to-maintenance" {
   facilityId: string
   tenantId: string
   reason: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event FacilityRestoredFromMaintenance: "facility.restored-from-maintenance" {
   facilityId: string
   tenantId: string
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event FacilityAreaCreated: "facility.area.created" {
@@ -522,31 +522,31 @@ event FacilityAreaCreated: "facility.area.created" {
   tenantId: string
   name: string
   areaType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event FacilityAreaDeleted: "facility.area.deleted" {
   areaId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event FacilityAreaUpdated: "facility.area.updated" {
   areaId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event FacilityAreaClosedForMaintenance: "facility.area.closed-for-maintenance" {
   areaId: string
   tenantId: string
   reason: string
-  closedAt: number
+  closedAt: datetime
 }
 
 event FacilityAreaReopened: "facility.area.reopened" {
   areaId: string
   tenantId: string
-  reopenedAt: number
+  reopenedAt: datetime
 }
 
 event FacilityAssetCreated: "facility.asset.created" {
@@ -554,39 +554,39 @@ event FacilityAssetCreated: "facility.asset.created" {
   tenantId: string
   name: string
   assetType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event FacilityAssetDeleted: "facility.asset.deleted" {
   assetId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event FacilityAssetUpdated: "facility.asset.updated" {
   assetId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event FacilityAssetSentToMaintenance: "facility.asset.sent-to-maintenance" {
   assetId: string
   tenantId: string
   reason: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event FacilityAssetReturnedFromMaintenance: "facility.asset.returned-from-maintenance" {
   assetId: string
   tenantId: string
-  nextMaintenanceAt: number
-  returnedAt: number
+  nextMaintenanceAt: datetime
+  returnedAt: datetime
 }
 
 event FacilityAssetRetired: "facility.asset.retired" {
   assetId: string
   tenantId: string
   reason: string
-  retiredAt: number
+  retiredAt: datetime
 }
 
 event FacilityScheduleCreated: "facility.schedule.created" {
@@ -595,38 +595,38 @@ event FacilityScheduleCreated: "facility.schedule.created" {
   facilityId: string
   title: string
   scheduleType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event FacilityScheduleDeleted: "facility.schedule.deleted" {
   scheduleId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event FacilityScheduleUpdated: "facility.schedule.updated" {
   scheduleId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event FacilityScheduleStarted: "facility.schedule.started" {
   scheduleId: string
   tenantId: string
   assignedTo: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event FacilityScheduleCompleted: "facility.schedule.completed" {
   scheduleId: string
   completionNotes: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event FacilityScheduleCancelled: "facility.schedule.cancelled" {
   scheduleId: string
   tenantId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event FacilityWorkOrderCreated: "facility.workorder.created" {
@@ -635,34 +635,34 @@ event FacilityWorkOrderCreated: "facility.workorder.created" {
   facilityId: string
   title: string
   priority: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event FacilityWorkOrderAssigned: "facility.workorder.assigned" {
   workOrderId: string
   tenantId: string
   assignedTo: string
-  scheduledDate: number
-  assignedAt: number
+  scheduledDate: datetime
+  assignedAt: datetime
 }
 
 event FacilityWorkOrderStarted: "facility.workorder.started" {
   workOrderId: string
   tenantId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event FacilityWorkOrderCompleted: "facility.workorder.completed" {
   workOrderId: string
   tenantId: string
   actualCost: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event FacilityWorkOrderCancelled: "facility.workorder.cancelled" {
   workOrderId: string
   tenantId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }

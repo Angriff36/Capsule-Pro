@@ -211,7 +211,7 @@ event ContractCreated: "events.contract.created" {
   clientId: string
   title: string
   status: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ContractUpdated: "events.contract.updated" {
@@ -219,7 +219,7 @@ event ContractUpdated: "events.contract.updated" {
   tenantId: string
   eventId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ContractSent: "events.contract.sent" {
@@ -228,7 +228,7 @@ event ContractSent: "events.contract.sent" {
   eventId: string
   clientId: string
   sentBy: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event ContractViewed: "events.contract.viewed" {
@@ -236,7 +236,7 @@ event ContractViewed: "events.contract.viewed" {
   tenantId: string
   eventId: string
   clientId: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event ContractSigned: "events.contract.signed" {
@@ -244,14 +244,14 @@ event ContractSigned: "events.contract.signed" {
   tenantId: string
   eventId: string
   clientId: string
-  signedAt: number
+  signedAt: datetime
 }
 
 event ContractExpired: "events.contract.expired" {
   contractId: string
   tenantId: string
   eventId: string
-  expiredAt: number
+  expiredAt: datetime
 }
 
 event ContractCancelled: "events.contract.cancelled" {
@@ -260,7 +260,7 @@ event ContractCancelled: "events.contract.cancelled" {
   eventId: string
   reason: string
   canceledBy: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event ContractDeleted: "events.contract.deleted" {
@@ -269,7 +269,7 @@ event ContractDeleted: "events.contract.deleted" {
   eventId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // Signature events
@@ -279,7 +279,7 @@ event SignatureCreated: "events.contract.signature_created" {
   tenantId: string
   signerName: string
   signerEmail: string
-  signedAt: number
+  signedAt: datetime
 }
 
 event SignatureVerified: "events.contract.signature_verified" {
@@ -287,7 +287,7 @@ event SignatureVerified: "events.contract.signature_verified" {
   contractId: string
   tenantId: string
   verifiedBy: string
-  verifiedAt: number
+  verifiedAt: datetime
 }
 
 event SignatureInvalidated: "events.contract.signature_invalidated" {
@@ -296,7 +296,7 @@ event SignatureInvalidated: "events.contract.signature_invalidated" {
   tenantId: string
   reason: string
   userId: string
-  invalidatedAt: number
+  invalidatedAt: datetime
 }
 
 event SignatureDeleted: "events.contract.signature_deleted" {
@@ -306,5 +306,5 @@ event SignatureDeleted: "events.contract.signature_deleted" {
   signerName: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

@@ -113,7 +113,7 @@ event DocumentVersionCreated: "document.version.created" {
   tenantId: string
   versionNumber: number
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DocumentVersionContentUpdated: "document.version.content_updated" {
@@ -121,7 +121,7 @@ event DocumentVersionContentUpdated: "document.version.content_updated" {
   documentId: string
   tenantId: string
   changeDescription: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DocumentVersionApproved: "document.version.approved" {
@@ -129,7 +129,7 @@ event DocumentVersionApproved: "document.version.approved" {
   documentId: string
   tenantId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event DocumentVersionPublished: "document.version.published" {
@@ -137,7 +137,7 @@ event DocumentVersionPublished: "document.version.published" {
   documentId: string
   tenantId: string
   publishedBy: string
-  publishedAt: number
+  publishedAt: datetime
 }
 
 event DocumentVersionSuperseded: "document.version.superseded" {
@@ -145,7 +145,7 @@ event DocumentVersionSuperseded: "document.version.superseded" {
   documentId: string
   tenantId: string
   newVersionId: string
-  supersededAt: number
+  supersededAt: datetime
 }
 
 event DocumentVersionRestored: "document.version.restored" {
@@ -153,5 +153,5 @@ event DocumentVersionRestored: "document.version.restored" {
   documentId: string
   tenantId: string
   versionNumber: number
-  restoredAt: number
+  restoredAt: datetime
 }
