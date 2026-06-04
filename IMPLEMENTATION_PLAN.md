@@ -435,6 +435,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 2.8: Adopt timestamps modifier (ROOT FIX for datetime-as-number)** | All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate removed (350 property declarations + 1041 mutate lines). createdAt/updatedAt auto-injected as readonly datetime. IR 189/952. All green. |
 | 2026-06-04 | **Task 2.7: Fix 988 datetime-as-number occurrences across 90 manifest sources** | Event payload (923) and command param (69) timestamp fields changed from number to datetime across all domains. IR 189/952. API+runtime typecheck GREEN. 2535/2535 tests pass. |
 | 2026-06-04 | **Task 2.4: ENTITY_DOMAIN_MAP consolidation** | 3 stale copies eliminated; generate-route-manifest.ts imports canonical 189-entry map; mcp-server re-exports; build.mjs delegates to compile.mjs. |
+| 2026-06-05 | **Task 2.5 Phase 1-2: PrismaProjection pipeline verified and wired** | Two-phase pipeline: `derive-options` (173/189 matched, 154 full coverage) + `generate-schema` (258 models, prisma validate passes). Three pnpm scripts added: `manifest:derive-options`, `manifest:generate-schema`, `manifest:schema:full`. 16 accessor-override entities need remapping. Relations stripped (validation-only). Pipeline idempotent. API typecheck 0, 2562 tests pass. |
 | 2026-06-04 | **Task 2.6: Remove duplicate VendorContract** | Duplicate entry at line 226 removed from ENTITIES_WITH_SPECIFIC_STORES. |
 | 2026-06-04 | **Task 0.4: ~104 relationship declarations across 60+ entities** | Expanded from 12 to ~104 declarations. Event pilot (27), kitchen (30), inventory (25), staff/logistics/CRM/finance/collections/facilities/command-board (37). |
 | 2026-06-04 | **Task 7.4c: Audit/outbox middleware replaces telemetry-embedded outbox writes** | `createAuditOutboxMiddleware()` at `after-emit` hook persists emitted events to outbox. Factory telemetry hooks simplified to caller-provided hooks only. Outbox logic moved from post-hoc telemetry to engine lifecycle. 2560/2560 tests pass. |
@@ -801,7 +802,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** `grep -r "ENTITY_DOMAIN_MAP" manifest/scripts/ packages/mcp-server/` shows only imports from canonical map. Event command routes resolve to correct paths.
 - **Source to change:** `manifest/scripts/generate-route-manifest.ts`, `packages/mcp-server/src/lib/entity-domain-map.ts`, `manifest/scripts/build.mjs`.
 
-### 2.5 Wire PrismaProjection to generate schema from IR
+### 2.5 Wire PrismaProjection to generate schema from IR — ✅ PHASE 1-2 DONE 2026-06-05
+- **✅ PHASE 1-2 DONE 2026-06-05.** The two-phase PrismaProjection pipeline is verified and wired:
+  - `pnpm manifest:derive-options` — Phase 1: Parses committed `schema.prisma`, cross-references with IR, produces `prisma-options.generated.json` (10,794 lines) with tableMappings, columnMappings, dbAttributes, fieldAttributes, precision, indexes, foreignKeys, multiSchema for all 189 entities.
+  - `pnpm manifest:generate-schema` — Phase 2: Runs PrismaProjection with derived options, applies 6+ post-processing fix passes, assembles full schema with header + enums + generated models + infra-core pass-through, validates with `prisma validate`.
+  - `pnpm manifest:schema:full` — Combined: derive + generate in one command.
+  - **Results:** 173/189 entities matched (16 need entity→model name remapping for accessor overrides), 154 with full coverage (table+schema+db+cols), 258 total models (189 generated + 69 infra-core), `prisma validate` passes, Prisma Client generates successfully. Pipeline is idempotent (regeneration produces byte-identical output).
+  - **Remaining:** 16 accessor-override entities need entity→model name remapping in derive script; relations are stripped (validation-only output); CI drift gate not yet wired.
 - **Done when:** `pnpm manifest:generate` produces Prisma models for all 189 durable entities. Generated schema includes proper field types, `@@map` directives, composite keys, and relationships. CI drift check compares generated vs committed.
 - **Why:** ALL entities are now durable. The Prisma projection can finally emit all models. Pilot harness exists for 4 entities (RateLimitConfig, Event, StaffMember, EventStaff); needs expansion to all 189.
 - **Backpressure:** `pnpm manifest:try-prisma` succeeds for all 189 entities. `pnpm db:check` shows zero drift.
