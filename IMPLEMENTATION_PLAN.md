@@ -314,6 +314,7 @@
 | **Command Board simulation apply/merge routes are COMPLEX** | 517-604 lines each, multi-model transactions across CommandBoard + related entities. Deferred from Task 8.2 batch 2 — needs dedicated migration pass with careful transaction handling. | `apps/api/app/api/command-board/simulations/[id]/apply/route.ts`, `apps/api/app/api/command-board/simulations/[id]/merge/route.ts` |
 | **Governance migration pre-validation pattern established** | Routes with business rules requiring pre-command checks (active-events 409, self-revocation prevention, duplicate-name checks, scope validation) preserve pre-validation logic BEFORE calling `runManifestCommand`. Pattern is clean and compliant with constitution §4 (pre-validation is not a governed write). | `apps/api/app/api/settings/api-keys/*/route.ts`, `apps/api/app/api/crm/venues/[id]/route.ts` |
 | **Task 8.2 batch 2: 10 mutate handlers across 9 route files** | ApiKey (5), Venue (3), CommandBoard simulations (2). Total migrated across both batches: 15 handlers in 14 files. Remaining: ~176 violations across ~66 files. | This session |
+| **Task 8.2 batch 3: 5 accounting + 1 procurement route migrated to Manifest runtime** | CollectionCase create, Invoice create, PaymentMethod create/update/patch/delete, RevenueRecognitionSchedule create, PurchaseOrder approve/reject. PaymentMethod manifest source: added update/remove commands + events. Test suite: 2582 tests pass, 0 typecheck errors. Total migrated across all batches: 21 handlers in 19 files. Remaining: ~166 violations across ~60 files. | This session |
 
 ### Package & IR
 
@@ -404,7 +405,7 @@
 
 ### Governance
 
-- **~176 direct-write violations in API routes** + **110 in server actions** = **~286 total** (down from 301). 15 mutate handlers across 14 route files migrated to Manifest runtime (Task 8.2 batches 1-2 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~166 direct-write violations in API routes** + **110 in server actions** = **~276 total** (down from 301). 21 mutate handlers across 19 route files migrated to Manifest runtime (Task 8.2 batches 1-3 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
 - `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
@@ -496,6 +497,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 8.2 progress: 5 hybrid files migrated to Manifest-only** | 4 SmsAutomationRule files (activate, deactivate, create, update/delete) + 1 EventContract send route. Redundant direct Prisma writes removed. Manifest commands already handle mutations. |
 | 2026-06-05 | **Task 8.2 progress (batch 2): 10 mutate handlers migrated across 9 route files** | ApiKey (5 routes: create/update/softDelete/revoke/rotate), Venue (3 routes: create/update/deactivate), CommandBoard simulations (2 routes: discard/delete). Pre-validation preserved where needed. Mobile domain entities NOT in IR — blocked. Command Board apply/merge deferred (complex multi-model transactions). 118 test files, 2583+ tests passing, 0 typecheck errors. |
 | 2026-06-05 | **Task 8.4: Kitchen task claim routes migrated to Manifest-only** | `POST /api/kitchen/tasks/[id]/claim` and `POST /api/kitchen/tasks/[id]/unclaim` migrated from hybrid to Manifest-only. Redundant direct Prisma writes removed. Task assignment now flows through governed lifecycle (RBAC, audit, events). |
+| 2026-06-05 | **Task 8.2 batch 3: 5 accounting routes + 1 procurement route migrated to Manifest runtime** | CollectionCase create, Invoice create, PaymentMethod create/update/patch/delete, RevenueRecognitionSchedule create. PaymentMethod manifest source: added update/remove commands + events. Test suite updated for payment-method-patch-actions. Plus procurement approvals: PurchaseOrder approve/reject. 2582 tests pass, 0 typecheck errors. Total: 21 mutate handlers in 19 route files across all batches. |
 
 ---
 
@@ -1164,6 +1166,16 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - Test suite: 118 test files, 2583+ tests passing, 0 typecheck errors.
     - **Key discovery:** Mobile domain entities (PushToken, NotificationPreference, AppSettings) are NOT in the Manifest IR — cannot be migrated until entity definitions are added to manifest/source/. Command Board simulation apply/merge routes are COMPLEX (517-604 lines each, multi-model transactions) — deferred to a later pass.
   - **Total migrated across both batches:** 15 mutate handlers in 14 route files. Remaining: ~176 violations across ~66 files.
+  - **Progress 2026-06-05 (batch 3):** 5 more accounting route files + 1 procurement route migrated:
+    - `POST /api/accounting/collections/cases` — create → `runManifestCommand({entity:"CollectionCase", command:"create"})`
+    - `POST /api/accounting/invoices` — create → `runManifestCommand({entity:"Invoice", command:"create"})`
+    - `POST /api/accounting/payment-methods` — create → `runManifestCommand({entity:"PaymentMethod", command:"create"})`
+    - `PUT/PATCH/DELETE /api/accounting/payment-methods/[id]` — update/patch actions/delete → `runManifestCommand({entity:"PaymentMethod", command:"..."})`
+    - `POST /api/accounting/revenue-recognition/schedules` — create → `runManifestCommand({entity:"RevenueRecognitionSchedule", command:"create"})`
+    - `POST /api/procurement/approvals/action` — approve/reject → `runManifestCommand({entity:"PurchaseOrder", command:"approve"/"reject"})`
+    - PaymentMethod manifest source: added `update`/`remove` commands + events. Test suite updated for payment-method-patch-actions.
+    - 2582 tests pass, 0 typecheck errors.
+  - **Total migrated across all batches:** 21 mutate handlers in 19 route files. Remaining: ~166 violations across ~60 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
