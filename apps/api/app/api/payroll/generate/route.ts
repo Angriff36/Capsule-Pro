@@ -1,14 +1,13 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import {
   GeneratePayrollRequestSchema,
   PayrollService,
-  PrismaPayrollDataSource,
 } from "@repo/payroll-engine";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { ManifestPayrollDataSource } from "@/lib/payroll/manifest-payroll-data-source";
 
 /**
  * POST /api/payroll/generate
@@ -95,8 +94,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create payroll service with Prisma data source
-    const dataSource = new PrismaPayrollDataSource(database);
+    // Create payroll service with Manifest-governed data source
+    // (reads delegate to Prisma, writes route through Manifest runtime)
+    const currentUser = await resolveCurrentUser(request);
+    const dataSource = new ManifestPayrollDataSource({
+      id: userId,
+      tenantId,
+      role: currentUser.role,
+    });
     const payrollService = new PayrollService({
       dataSource,
       defaultJurisdiction: "US",
