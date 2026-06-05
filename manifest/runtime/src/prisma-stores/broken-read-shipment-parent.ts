@@ -55,7 +55,7 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
         id,
         shipmentNumber:
           asNullableString(data.shipmentNumber) ?? `SHP-${Date.now()}`,
-        status: (asNullableString(data.status) ?? "draft") as any,
+        status: (asNullableString(data.status) ?? "draft") as "draft" | "scheduled" | "preparing" | "in_transit" | "delivered" | "cancelled",
         eventId: asNullableString(data.eventId),
         supplierId: asNullableString(data.supplierId),
         locationId: asNullableString(data.locationId),

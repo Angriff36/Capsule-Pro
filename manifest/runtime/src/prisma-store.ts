@@ -7,6 +7,7 @@
  */
 
 import type { Store } from "@angriff36/manifest";
+import { toDecimalInput } from "./prisma-stores/shared";
 import type {
   AllergenWarning,
   KitchenTask,
@@ -1700,10 +1701,10 @@ export class MenuPrismaStore implements Store<EntityInstance> {
         category: (data.category as string) || null,
         isActive: (data.isActive as boolean) ?? true,
         basePrice: data.basePrice
-          ? new Prisma.Decimal(data.basePrice as number)
+          ? toDecimalInput(data.basePrice)
           : null,
         pricePerPerson: data.pricePerPerson
-          ? new Prisma.Decimal(data.pricePerPerson as number)
+          ? toDecimalInput(data.pricePerPerson)
           : null,
         minGuests: (data.minGuests as number) || null,
         maxGuests: (data.maxGuests as number) || null,
@@ -1725,10 +1726,10 @@ export class MenuPrismaStore implements Store<EntityInstance> {
           category: data.category as string | null | undefined,
           isActive: data.isActive as boolean | undefined,
           basePrice: data.basePrice
-            ? new Prisma.Decimal(data.basePrice as number)
+            ? toDecimalInput(data.basePrice)
             : undefined,
           pricePerPerson: data.pricePerPerson
-            ? new Prisma.Decimal(data.pricePerPerson as number)
+            ? toDecimalInput(data.pricePerPerson)
             : undefined,
           minGuests: data.minGuests as number | null | undefined,
           maxGuests: data.maxGuests as number | null | undefined,
