@@ -447,6 +447,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 10.5: Outbox consolidation — unsafe helper removed** | Bundle-claim route outbox events moved inside transaction (data loss risk eliminated). Unsafe standalone `createOutboxEvent` removed from shared-task-helpers (0 callers). 3 implementations → 2. API typecheck 0, 2574 tests pass. |
 | 2026-06-05 | **Task 10.1: Legacy dead code already deleted** | Confirmed legacy 3,205-line manifest-runtime.ts was deleted in prior commit. 66-line re-export is thin wrapper. 0 legacy consumers remain. |
 | 2026-06-05 | **Task 9.2: First 2 Manifest reactions implemented** | `on PaymentProcessed run Invoice.applyPayment` + `on PaymentRefunded run Invoice.recordRefund`. Cross-entity updates now flow through governed Manifest lifecycle instead of raw Prisma. IR: 2 reactions (was 0). API typecheck 0, 2574 tests pass. |
+| 2026-06-05 | **Task 3.4: Store-level bug fixes (MenuPrismaStore + ShipmentPrismaStore)** | MenuPrismaStore uses toDecimalInput() (was raw new Prisma.Decimal). ShipmentPrismaStore status properly typed (was as any). AllergenWarning toCommaString confirmed alive. 2574 tests pass. |
 
 ---
 
@@ -873,8 +874,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/runtime/src/prisma-store.ts` + `prisma-stores/` directory.
 - **Note:** Retain `prisma-stores/shared.ts` coercion helpers until GenericPrismaStore has equivalent coercion.
 
-### 3.4 Fix store-level bugs discovered in audit
-- **Done when:** `ShipmentPrismaStore` no longer uses `as any` cast on status. `BattleBoardPrismaStore` uses camelCase field names consistent with other stores. `AllergenWarningPrismaStore.toCommaString` dead code removed. User and ShipmentItem have proper switch cases or are removed from ENTITIES_WITH_SPECIFIC_STORES. MenuPrismaStore uses `toDecimalInput()` instead of raw `new Prisma.Decimal()`.
+### 3.4 Fix store-level bugs discovered in audit — ✅ PARTIALLY DONE 2026-06-05
+- **✅ DONE 2026-06-05.** MenuPrismaStore: 4 `new Prisma.Decimal()` calls replaced with `toDecimalInput()` from shared helper. ShipmentPrismaStore: `as any` cast replaced with proper union type. AllergenWarningPrismaStore `toCommaString` confirmed NOT dead code (properly used). BattleBoardPrismaStore snake_case inconsistency remains (lower priority, cosmetic).
 - **Why:** Store bugs found: (a) Shipment status cast bypasses type safety, (b) BattleBoard snake_case inconsistency, (c) dead code in AllergenWarning, (d) User/ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but no switch case (latent bugs), (e) MenuPrismaStore inconsistent Decimal usage.
 - **Source to change:** `manifest/runtime/src/prisma-stores/` relevant files, `manifest/runtime/src/prisma-store.ts`.
 
