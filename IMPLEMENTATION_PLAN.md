@@ -296,7 +296,7 @@
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
 - IR: **189 entities (ALL durable)**, 952 commands (905 with non-empty guards, 950 with non-empty emits, 2 without emits, 132 with non-empty constraints), 936 events, 241 policies, 92 source files
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
-- **0 reactions** defined (feature available but unused)
+- **2 reactions** defined (finance: Payment→Invoice applyPayment + refund). Target: 5+ high-value reactions.
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
 - **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. 34 entities have transitions but 65 status entities lack them
@@ -446,6 +446,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.1 + 7.2: Wire auditSink + outboxStore from upstream** | PostgresAuditSink + PostgresOutboxStore wired via singleton pg.Pool. Custom createAuditOutboxMiddleware removed from pipeline. Schema bootstrap (manifest_audit_records + manifest_outbox_entries) is idempotent. Graceful fallback when DATABASE_URL absent (test envs). Factory: auditSink and outboxStore passed as RuntimeOptions. 2560/2560 tests pass. API+runtime typecheck GREEN. |
 | 2026-06-05 | **Task 10.5: Outbox consolidation — unsafe helper removed** | Bundle-claim route outbox events moved inside transaction (data loss risk eliminated). Unsafe standalone `createOutboxEvent` removed from shared-task-helpers (0 callers). 3 implementations → 2. API typecheck 0, 2574 tests pass. |
 | 2026-06-05 | **Task 10.1: Legacy dead code already deleted** | Confirmed legacy 3,205-line manifest-runtime.ts was deleted in prior commit. 66-line re-export is thin wrapper. 0 legacy consumers remain. |
+| 2026-06-05 | **Task 9.2: First 2 Manifest reactions implemented** | `on PaymentProcessed run Invoice.applyPayment` + `on PaymentRefunded run Invoice.recordRefund`. Cross-entity updates now flow through governed Manifest lifecycle instead of raw Prisma. IR: 2 reactions (was 0). API typecheck 0, 2574 tests pass. |
 
 ---
 
@@ -1111,10 +1112,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Graph output for Event includes related entities (EventStaff, EventBudget, etc.).
 - **Source to change:** `manifest/runtime/src/entity-graph/graph-builder.ts`.
 
-### 9.2 Wire reactions (event-driven side effects)
-- **Done when:** At least 5 reactions defined and executing through Manifest runtime.
-- **Why:** 936 events defined, 0 reactions -- the biggest feature gap. Cross-entity effects are currently inline Prisma writes in API routes. Manifest docs confirm reactions support: declarative event-to-command binding (`on EventName run Entity.command`), resolve expressions, condition guards, batch mode. High-value candidates: inventory updates on order events, notification triggers on status changes, profitability recalculation on invoice payment.
-- **Source to change:** `manifest/source/*.manifest` -- add `reaction` blocks.
+### 9.2 Wire reactions (event-driven side effects) — ✅ STARTED 2026-06-05 (2 of 5+ implemented)
+- **✅ STARTED 2026-06-05.** First 2 reactions implemented in `manifest/source/reactions.manifest`:
+  1. `on PaymentProcessed run Invoice.applyPayment` — resolves `payload.invoiceId`, maps `paymentAmount` and `paymentId`. Replaces raw Prisma writes in Stripe webhook handler.
+  2. `on PaymentRefunded run Invoice.recordRefund` — resolves `payload.invoiceId`, maps `refundAmount` and `paymentId`. Ensures invoice consistency on refund.
+  IR compiled: 189 entities, 952 commands, 936 events, **2 reactions** (was 0). API typecheck 0, 2574 tests pass. Remaining high-value candidates: Shipment.delivered → InventoryTransaction, PurchaseOrder.received → InventoryTransaction, WasteEntry.approved → InventoryItem.adjust.
 
 ### 9.3 Expand saga orchestration for multi-step workflows
 - **Done when:** At least 3 sagas beyond the existing ProcessInvoicePayment.
@@ -1445,7 +1447,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | IR commands | 952 (905 with guards, 950 with emits, 2 without emits) | 952 | -- |
 | IR events | 936 | 936 | -- |
 | IR sagas | 1 (ProcessInvoicePayment) | 1 | -- |
-| IR reactions | 0 | 0 | -- |
+| IR reactions | **2** (Payment→Invoice, PaymentRefund→Invoice) | 0 | NEW: first reactions adopted |
 | IR relationships | 8 entities (12 declarations) | 8 | -- |
 | IR entities with FK props but no relationship | **152** | 152 | -- |
 | IR entities with transitions | 34 | 34 | -- |
