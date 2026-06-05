@@ -298,27 +298,6 @@ export function createTaskClaim(
   });
 }
 
-/**
- * Create an outbox event for real-time updates.
- */
-export function createOutboxEvent(
-  tenantId: string,
-  taskId: string,
-  eventType: string,
-  payload: Prisma.InputJsonValue
-): Promise<Prisma.OutboxEventGetPayload<Record<string, never>>> {
-  return database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "KitchenTask",
-      aggregateId: taskId,
-      eventType,
-      payload,
-      status: "pending" as const,
-    },
-  });
-}
-
 // ============ Status Mapping Helpers ============
 
 /**

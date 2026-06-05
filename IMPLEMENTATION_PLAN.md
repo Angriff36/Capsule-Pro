@@ -444,6 +444,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.4a: RBAC middleware replaces Proxy-based permission guard** | `createRbacMiddleware()` registered as Manifest-native `before-guard` middleware. Factory no longer wraps engine in `createPermissionGuard` Proxy — returns raw engine with middleware pipeline. COMMAND_PERMISSION_MAP and AI_APPROVAL_COMMANDS preserved, allow-by-default behavior unchanged. 2560/2560 tests pass. API+runtime typecheck GREEN. |
 | 2026-06-04 | **Task 7.4b: Identity middleware wired into lifecycle pipeline** | `createIdentityMiddleware` registered as Manifest-native `before-policy` middleware. Factory no longer pre-resolves user roles — role resolution runs inside the engine lifecycle where policies/guards can reference `context.userRole`. Legacy `resolveUserRole` function removed. Role policies always loaded for tenant (not gated on pre-resolved role). Duplicate VendorContract removed from ENTITIES_WITH_SPECIFIC_STORES. Pipeline order: identity (before-policy) → RBAC (before-guard) → audit/outbox (after-emit). 2560/2560 tests pass (1 pre-existing payment-env failure). API+runtime typecheck GREEN. Tag v0.12.73. |
 | 2026-06-04 | **Task 7.1 + 7.2: Wire auditSink + outboxStore from upstream** | PostgresAuditSink + PostgresOutboxStore wired via singleton pg.Pool. Custom createAuditOutboxMiddleware removed from pipeline. Schema bootstrap (manifest_audit_records + manifest_outbox_entries) is idempotent. Graceful fallback when DATABASE_URL absent (test envs). Factory: auditSink and outboxStore passed as RuntimeOptions. 2560/2560 tests pass. API+runtime typecheck GREEN. |
+| 2026-06-05 | **Task 10.5: Outbox consolidation — unsafe helper removed** | Bundle-claim route outbox events moved inside transaction (data loss risk eliminated). Unsafe standalone `createOutboxEvent` removed from shared-task-helpers (0 callers). 3 implementations → 2. API typecheck 0, 2574 tests pass. |
+| 2026-06-05 | **Task 10.1: Legacy dead code already deleted** | Confirmed legacy 3,205-line manifest-runtime.ts was deleted in prior commit. 66-line re-export is thin wrapper. 0 legacy consumers remain. |
 
 ---
 
@@ -549,7 +551,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 19. **EventStaff / EventStaffAssignment duplicate entities:** Both exist in IR with overlapping purpose. Both have separate Prisma models. Must consolidate or differentiate.
 
-20. **Legacy manifest-runtime.ts (3,205 lines) is dead code:** Superseded by factory but still present. 60+ `as any` casts, 50+ command wrappers, 240-line event switch.
+20. **~~Legacy manifest-runtime.ts (3,205 lines) is dead code~~ RESOLVED (prior session):** Deleted in commit `147091035`. 66-line re-export is thin wrapper. No legacy consumers remain.
 
 21. **Permission guard is whitelist-based, not deny-by-default:** Commands NOT in `COMMAND_PERMISSION_MAP` pass through unrestricted. (Proxy replaced by middleware in Task 7.4a — middleware uses same map)
 
@@ -589,7 +591,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 39. **559+ datetime-as-number source mismatches (UNIVERSAL):** Event timestamp fields typed as `number` while entity property is `datetime` -- confirmed in EVERY domain: Finance, Payroll, Staff, Procurement, Notifications, Kitchen, Inventory, CRM, Logistics, Admin, Infra/Quality. 9 datetime fields mutated to literal `0`. Task 2.7.
 
-40. **3 outbox implementations:** canonical (tx-safe), kitchen helpers (NO tx safety), manifest batch. Kitchen routes use unsafe version. Task 10.5.
+40. **~~3 outbox implementations~~ RESOLVED 2026-06-05 (Task 10.5):** Unsafe kitchen helper removed. 2 implementations remain (canonical tx-safe + manifest batch writer). Bundle-claim route now uses transactional outbox.
 
 41. **27 projections available (not 9, not 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10.
 
@@ -1216,10 +1218,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Why:** Several code modules duplicate functionality that Manifest provides. The audit found significant type-safety gaps (`as any` usage) and code hygiene issues.
 
-### 10.1 Delete legacy manifest-runtime.ts (3,205 lines of dead code)
-- **Done when:** `manifest/runtime/src/manifest-runtime.ts` (3,205 lines) is deleted or archived. All imports verified to use the factory instead. The 66-line re-export at the package entry handles any remaining references.
-- **Why:** The legacy file contains 60+ `as any` casts, 50+ per-entity command wrappers, deprecated `PostgresStore` via dynamic `require()`, and a 240-line event switch statement. It is superseded by the 521-line factory but still present and importable.
-- **Backpressure:** `pnpm --filter manifest-runtime typecheck` green. No imports of legacy functions.
+### 10.1 Delete legacy manifest-runtime.ts (3,205 lines of dead code) — ✅ ALREADY DONE (prior session)
+- **✅ ALREADY DONE.** The legacy 3,205-line `manifest-runtime.ts` was deleted in a prior commit (`147091035`). The current 66-line re-export at `manifest/runtime/src/manifest-runtime.ts` is a thin wrapper importing from `./index`. No active consumers import the legacy code. All 82 API consumers import from `@/lib/manifest-runtime` (the API shim).
+- **Done when:** `manifest/runtime/src/manifest-runtime.ts` (3,205 lines) is deleted or archived. All imports verified to use the factory instead.
+- **Why:** The legacy file contained 60+ `as any` casts, 50+ per-entity command wrappers, deprecated `PostgresStore` via dynamic `require()`, and a 240-line event switch statement. It was superseded by the 521-line factory.
 - **Source to change:** `manifest/runtime/src/manifest-runtime.ts`.
 
 ### 10.2 Recipe engine consolidation
@@ -1234,7 +1236,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 ### 10.4 Delete confirmed dead code (rules-engine, entity-graph, packages/services)
 - **✅ DONE 2026-06-04.** Removed rules-engine/ (5 files, ~1000 LOC), entity-graph/ (7 files, ~1400 LOC), and packages/services/ (empty). Re-exports removed from index.ts. 2560/2560 tests pass.
 
-### 10.5 Outbox duplication consolidation
+### 10.5 Outbox duplication consolidation — ✅ DONE 2026-06-05
+- **✅ DONE 2026-06-05.** Bundle-claim route outbox events moved inside `$transaction` callback (was created AFTER transaction — data loss risk on crash). Unsafe standalone `createOutboxEvent` function removed from `shared-task-helpers.ts` (0 remaining callers — all callers use canonical `@repo/realtime` version or direct `tx.outboxEvent.create`). `manifest-plans.ts` direct database calls are standalone operations (no correlated mutations) — lower risk, acceptable. 3 implementations reduced to 2 (canonical + manifest batch writer), 1 unsafe helper removed.
 - **Done when:** Only one `createOutboxEvent` implementation exists. Kitchen task routes use transactional-safe version.
 - **Why:** 3 separate `createOutboxEvent` functions write to the same `outboxEvent` table. Kitchen task claim routes use a duplicate version (`shared-task-helpers.ts`) that lacks transactional safety (uses global singleton, not tx client). Events could be lost on failure.
 - **Source to change:** Replace `apps/api/app/api/kitchen/tasks/shared-task-helpers.ts` local `createOutboxEvent` with import from `@repo/realtime/src/outbox/create.ts`.
@@ -1416,7 +1419,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
 12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9.
 13. **Source type correctness** -- zero datetime-as-number mismatches, zero datetime-mutated-to-0, zero number-into-decimal/money/int mismatches.
-14. **Dead code eliminated** -- rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts removed or rebuilt with consumers. ~~legacy manifest-command-handler.ts~~ REMOVED (Task 10.13).
+14. **Dead code eliminated** — ✅ rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts, legacy manifest-runtime.ts (3,205 lines), unsafe outbox helper all removed.
 15. **Single command handler** -- legacy manifest-command-handler.ts removed, all paths use execute-command.ts. DONE (Task 10.13).
 16. **ENTITY_DOMAIN_MAP coverage 100%** -- all 189 entities mapped in canonical map (DONE), stale copies eliminated (DONE 2026-06-04).
 17. **Script hygiene** -- all scripts reachable via package.json or removed (generate-all-routes.mjs, dead CODE_OUTPUT_DIR, build.mjs compile delegation).
@@ -1430,6 +1433,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 25. **Runtime tooling wired** -- Profiler export wired to factory (not just RuntimeOption). REPL available via `pnpm manifest:repl`. Time-travel debugger evaluated with adoption decision.
 26. **Tenant isolation dual-layer** -- IR-level `tenant` declaration in source files + `requireTenantContext: true` RuntimeOption both active.
 27. **AI tooling evaluated** -- conformance test generator, IR validator, and NL transpiler assessed for adoption with decisions documented.
+28. **Outbox consolidation** — ✅ unsafe standalone `createOutboxEvent` removed; bundle-claim route uses transactional outbox; 3 implementations → 2.
 
 ---
 

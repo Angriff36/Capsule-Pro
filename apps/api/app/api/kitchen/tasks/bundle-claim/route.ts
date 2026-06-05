@@ -21,7 +21,6 @@ import {
   type ApiSuccessResponse,
   createErrorResponse,
   createManifestRuntime,
-  createOutboxEvent,
   loadTaskIntoManifest,
   mapManifestStatusToPrisma,
 } from "../shared-task-helpers";
@@ -230,6 +229,24 @@ export async function POST(request: Request) {
           });
         }
 
+        // Create outbox event inside transaction for atomic real-time updates
+        await tx.outboxEvent.create({
+          data: {
+            tenantId,
+            aggregateType: "KitchenTask",
+            aggregateId: task.id,
+            eventType: "kitchen.task.claimed",
+            payload: {
+              taskId: task.id,
+              claimId: claim.id,
+              employeeId: userId,
+              status: "in_progress",
+              bundleClaim: true,
+            },
+            status: "pending",
+          },
+        });
+
         claimedTasks.push({
           taskId: task.id,
           claimId: claim.id,
@@ -237,22 +254,6 @@ export async function POST(request: Request) {
         });
       }
     });
-
-    // Step 7: Create outbox events for real-time updates (after successful transaction)
-    for (const claimed of claimedTasks) {
-      await createOutboxEvent(
-        tenantId,
-        claimed.taskId,
-        "kitchen.task.claimed",
-        {
-          taskId: claimed.taskId,
-          claimId: claimed.claimId,
-          employeeId: userId,
-          status: "in_progress" as const,
-          bundleClaim: true,
-        } as Prisma.InputJsonValue
-      );
-    }
 
     // Fire-and-forget SMS triggers for each claimed task
     const fullName =

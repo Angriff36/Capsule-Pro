@@ -259,10 +259,10 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
+[proactive bridge @ 86% context — saved before compacting]
 Files (3):
-  apps/api/__tests__/kitchen/manifest-event-preplist-seed-runtime.test.ts (edit)
-  manifest/source/event-rules.manifest (edit)
-  C:/Users/Ryan/.claude/plans/structured-sleeping-manatee-agent-ac5a9b382f5289604.md (create)
+  apps/api/__tests__/accounting/payment-create-idempotency.test.ts (edit)
+  manifest/scripts/derive-prisma-options.mjs (edit)
+  manifest/scripts/generate-full-schema.mjs (edit)
 
 # === END COGNILAYER ===
