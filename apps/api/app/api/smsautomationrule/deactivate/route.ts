@@ -77,30 +77,22 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
-    // Update the rule in the database
-    const rule = await database.sms_automation_rules.update({
-      where: { tenant_id_id: { tenant_id: tenantId, id } },
-      data: {
-        is_active: false,
-      },
-    });
-
     return manifestSuccessResponse({
       rule: {
-        id: rule.id,
-        tenantId: rule.tenant_id,
-        name: rule.name,
-        description: rule.description,
-        triggerType: rule.trigger_type,
-        triggerConfig: rule.trigger_config,
-        templateId: rule.template_id,
-        customMessage: rule.custom_message,
-        recipientType: rule.recipient_type,
-        recipientConfig: rule.recipient_config,
-        isActive: rule.is_active,
-        priority: rule.priority,
-        createdAt: rule.created_at?.toISOString() ?? null,
-        updatedAt: rule.updated_at?.toISOString() ?? null,
+        id: existingRule.id,
+        tenantId: existingRule.tenant_id,
+        name: existingRule.name,
+        description: existingRule.description,
+        triggerType: existingRule.trigger_type,
+        triggerConfig: existingRule.trigger_config,
+        templateId: existingRule.template_id,
+        customMessage: existingRule.custom_message,
+        recipientType: existingRule.recipient_type,
+        recipientConfig: existingRule.recipient_config,
+        isActive: false,
+        priority: existingRule.priority,
+        createdAt: existingRule.created_at?.toISOString() ?? null,
+        updatedAt: new Date().toISOString(),
       },
       events: result.emittedEvents,
     });

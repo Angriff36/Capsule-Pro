@@ -131,7 +131,6 @@ export async function PATCH(
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
-    // Update the rule in the database
     const {
       name,
       description,
@@ -144,37 +143,22 @@ export async function PATCH(
       priority,
     } = body;
 
-    const rule = await database.sms_automation_rules.update({
-      where: { tenant_id_id: { tenant_id: tenantId, id } },
-      data: {
-        name,
-        description,
-        trigger_config: triggerConfig,
-        template_id: templateId,
-        custom_message: customMessage,
-        recipient_type: recipientType,
-        recipient_config: recipientConfig,
-        is_active: isActive,
-        priority,
-      },
-    });
-
     return manifestSuccessResponse({
       rule: {
-        id: rule.id,
-        tenantId: rule.tenant_id,
-        name: rule.name,
-        description: rule.description,
-        triggerType: rule.trigger_type,
-        triggerConfig: rule.trigger_config,
-        templateId: rule.template_id,
-        customMessage: rule.custom_message,
-        recipientType: rule.recipient_type,
-        recipientConfig: rule.recipient_config,
-        isActive: rule.is_active,
-        priority: rule.priority,
-        createdAt: rule.created_at?.toISOString() ?? null,
-        updatedAt: rule.updated_at?.toISOString() ?? null,
+        id: existingRule.id,
+        tenantId: existingRule.tenant_id,
+        name: name ?? existingRule.name,
+        description: description ?? existingRule.description,
+        triggerType: existingRule.trigger_type,
+        triggerConfig: triggerConfig ?? existingRule.trigger_config,
+        templateId: templateId ?? existingRule.template_id,
+        customMessage: customMessage ?? existingRule.custom_message,
+        recipientType: recipientType ?? existingRule.recipient_type,
+        recipientConfig: recipientConfig ?? existingRule.recipient_config,
+        isActive: isActive ?? existingRule.is_active,
+        priority: priority ?? existingRule.priority,
+        createdAt: existingRule.created_at?.toISOString() ?? null,
+        updatedAt: new Date().toISOString(),
       },
       events: result.emittedEvents,
     });
@@ -244,15 +228,6 @@ export async function DELETE(
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
-
-    // Soft delete the rule in the database
-    await database.sms_automation_rules.update({
-      where: { tenant_id_id: { tenant_id: tenantId, id } },
-      data: {
-        deleted_at: new Date(),
-        is_active: false,
-      },
-    });
 
     return manifestSuccessResponse({
       success: true,

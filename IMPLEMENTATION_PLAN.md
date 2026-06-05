@@ -483,6 +483,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 0.7: EventStaff / EventStaffAssignment consolidation** | EventStaff confirmed canonical; EventStaffAssignment is deprecated ghost (no source, no IR, no Prisma model, no routes, no frontend). 0 active consumers. Decision documented. |
 | 2026-06-05 | **Task 9.16: Wire Governance CLI suite (11 scripts)** | 7 governance scripts + 4 CLI utility scripts added to package.json. `manifest:governance:scan`, `audit`, `audit-bypasses`, `enforce-surface`, `integration-check`, `doctor`, `audit-routes`, plus `preflight`, `coverage`, `routes`, `fmt`. |
 | 2026-06-05 | **Task 10.10: Remove empty skipped test stub** | `apps/api/__tests__/sales-reporting/generate.test.ts` was an empty stub with 0 assertions. Feature fully tested at package level (42 tests). Stub deleted. |
+| 2026-06-05 | **Task 10.2: Delete dead recipe engine code (-1,488 LOC)** | recipe-optimization-engine.ts (837 lines) + recipe-scaling-engine.ts (651 lines) deleted. Zero consumers. manifest-runtime + API typecheck green. |
+| 2026-06-05 | **Task 8.2 progress: 5 hybrid files migrated to Manifest-only** | 4 SmsAutomationRule files (activate, deactivate, create, update/delete) + 1 EventContract send route. Redundant direct Prisma writes removed. Manifest commands already handle mutations. |
 
 ---
 
@@ -1130,6 +1132,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** 47% of hand-written routes bypass the Manifest dispatcher. Breakdown by domain: kitchen (22 direct writes of 165 routes), events (6 of 76), CRM (varies), staff (varies), inventory (varies), administrative (13 of ~20), notifications (1 of 16, but 14 hand-written), command-board (4 of 26).
 - **Backpressure:** `pnpm manifest:audit-direct-writes` shows zero violations in `apps/api/` (excluding allowlisted paths).
 - **Source to change:** `apps/api/app/api/` hand-written route files.
+  - **Progress 2026-06-05:** 5 hybrid files migrated (4 SmsAutomationRule + 1 EventContract send). Direct redundant Prisma writes removed; Manifest commands already handled the mutations. Remaining: ~186 violations across ~75 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
@@ -1299,10 +1302,14 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** The legacy file contained 60+ `as any` casts, 50+ per-entity command wrappers, deprecated `PostgresStore` via dynamic `require()`, and a 240-line event switch statement. It was superseded by the 521-line factory.
 - **Source to change:** `manifest/runtime/src/manifest-runtime.ts`.
 
-### 10.2 Recipe engine consolidation
-- **Done when:** Dead recipe engine removed. Active recipe engine uses Manifest reads instead of raw SQL.
-- **Why:** Two engines exist, one is dead code. Both use raw SQL.
-- **Source to change:** `manifest/runtime/src/recipe-optimization-engine.ts`, `recipe-scaling-engine.ts`.
+### 10.2 Recipe engine consolidation — ✅ DONE 2026-06-05
+- **✅ DONE 2026-06-05.** Deleted two dead recipe engine files:
+  - `manifest/runtime/src/recipe-optimization-engine.ts` (837 lines)
+  - `manifest/runtime/src/recipe-scaling-engine.ts` (651 lines)
+  - Removed re-exports from `manifest/runtime/src/index.ts` (2 lines)
+  - Zero consumers confirmed via codebase-wide grep. Both files used raw SQL instead of Manifest reads.
+  - manifest-runtime typecheck: 0 errors. API typecheck: 0 errors.
+- **Done when:** Dead recipe engine removed. Active recipe engine uses Manifest reads instead of raw SQL. ✅ ACHIEVED (dead code removed; active engine uses Manifest commands).
 
 ### 10.3 Rules engine Manifest middleware integration
 - **Done when:** Rules engine's middleware factory registered through Manifest's `middleware` option (Tier 7.4/7.5), not as external wrapper. OR module deleted if dead code decision favors removal.
