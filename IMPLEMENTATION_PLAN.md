@@ -24,7 +24,7 @@
 | 5 | ~~371~~ **301** direct-write violations | **CONFIRMED** | 191 API mutation calls across 80 files + 110 server action writes across 28 files = 301 total. 12 hybrid files. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **70~~81** entities use GenericPrismaStore | **UPDATED** | 81 of 94 switch-case entities now route to GenericPrismaStore (was 70 boilerplate). Only **13 with custom logic** remain (was 23). |
-| 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **7 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ ✅ MET. |
+| 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
 | 9 | 1 saga (ProcessInvoicePayment) | **CONFIRMED** | `sagas: [{"name": "ProcessInvoicePayment", "steps": [...]}]` |
 | 10 | **1,330** generated client functions, **0** consumers | **CONFIRMED** | `manifest-client.generated.ts` has 1,330 exported async functions. Prior audit incorrectly reported 2-3 consumers. Codebase-wide grep confirms zero files import from it. |
 | 11 | prisma-store.ts: 3,061 lines, **94** switch cases | **CONFIRMED** (11th rev: was 93, re-counted as 94) | Verified line count and switch-case count |
@@ -312,7 +312,7 @@
 - IR: **189 entities (ALL durable)**, 952 commands (905 with non-empty guards, 950 with non-empty emits, 2 without emits, 132 with non-empty constraints), 936 events, 241 policies, 92 source files
 - **952/952 commands have policies bound** (was 0/952 before Task 8.6). 189/189 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
-- **7 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ high-value reactions ✅ MET.
+- **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
 - **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
@@ -474,6 +474,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware. Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. |
 | 2026-06-05 | **Task 3.3 Phase 1: Delete dead prisma-stores (~11,210 LOC)** | 39 dead store files deleted. prisma-stores/ reduced from 45→6 files. 81/94 entities already route to GenericPrismaStore. Zero external imports of deleted files confirmed. API+runtime typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 7.6 partial: Wire generateId + now RuntimeOptions** | Two RuntimeOptions wired: generateId (randomUUID from node:crypto) and now (Date.now). Total wired: 9/19 (was 7). API+runtime typecheck 0, 2591 tests pass. |
+| 2026-06-05 | **Task 9.2 COMPLETE: 3 new reactions (10 total, target 5+ exceeded)** | ShipmentItemReceived→InventoryItem.restock, LeadConvertedToClient→Deal.create, ProposalAccepted→Event.create. Cross-entity governed side effects replace manual orchestration. IR: 10 reactions. API typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 7.3: requireTenantContext — confirmed already wired** | requireTenantContext: true at line 466 of manifest-runtime-factory.ts. Engine rejects commands without tenant via MISSING_TENANT_CONTEXT. IR-level tenant declarations (automatic tenant scoping) are a separate enhancement, not security-critical. |
 
 ---
@@ -560,7 +561,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
-10. **Only 1 saga, 7 reactions defined (was 0):** 936 events available for reaction-driven side effects.
+10. **1 saga, 10 reactions defined (was 0):** 936 events available for reaction-driven side effects.
 
 11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
