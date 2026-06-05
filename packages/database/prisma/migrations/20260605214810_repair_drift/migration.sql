@@ -1,0 +1,7 @@
+ALTER TABLE "tenant_events"."battle_boards" ADD COLUMN IF NOT EXISTS "client_id" TEXT,
+ADD COLUMN IF NOT EXISTS "event_date" TIMESTAMPTZ(6),
+ADD COLUMN IF NOT EXISTS "guest_count" INTEGER,
+ADD COLUMN IF NOT EXISTS "inherited_context" TEXT,
+ADD COLUMN IF NOT EXISTS "location_id" TEXT,
+ADD COLUMN IF NOT EXISTS "venue_address" TEXT,
+ADD COLUMN IF NOT EXISTS "venue_name" TEXT;
