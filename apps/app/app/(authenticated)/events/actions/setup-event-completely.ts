@@ -3,7 +3,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // ── Types ────────────────────────────────────────────────────────────────
 
@@ -255,11 +257,14 @@ export async function setupEventCompletely(
          ORDER BY created_at DESC
          LIMIT 2`;
 
+      // Resolve user context for Manifest command invocation
+      const currentUser = await requireCurrentUser();
+
       let assigned = 0;
       const names: string[] = [];
 
       for (const emp of employees) {
-        // Check for existing assignment (avoid duplicates)
+        // Check for existing assignment (avoid duplicates — read-only check)
         const alreadyAssigned = await database.$queryRaw<
           Array<{ id: string }>
         >`SELECT id
@@ -268,11 +273,25 @@ export async function setupEventCompletely(
 
         if (alreadyAssigned.length > 0) continue;
 
-        await database.$executeRaw`INSERT INTO tenant_events.event_staff (
-             tenantId, eventId, staffMemberId, role, createdAt, updatedAt
-           ) VALUES (${tenantId}::uuid, ${eventId}::uuid, ${emp.id}::uuid, 'staff', NOW(), NOW())`;
-        assigned++;
-        names.push(`${emp.first_name} ${emp.last_name}`);
+        // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
+        const assignResult = await runManifestCommand({
+          entity: "EventStaff",
+          command: "assign",
+          body: {
+            eventId,
+            staffMemberId: emp.id,
+            role: "staff",
+            notes: "",
+            shiftStart: 0,
+            shiftEnd: 0,
+          },
+          user: { id: currentUser.id, tenantId: currentUser.tenantId, role: currentUser.role },
+        });
+
+        if (assignResult.ok) {
+          assigned++;
+          names.push(`${emp.first_name} ${emp.last_name}`);
+        }
       }
 
       if (assigned > 0) {

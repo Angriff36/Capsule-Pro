@@ -3,7 +3,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { getTenantIdForOrg } from "../../../../../lib/tenant";
+import {
+  runManifestCommand,
+} from "@/lib/manifest-command";
 
 export interface CreateTimelineTaskInput {
   eventId: string;
@@ -449,24 +453,9 @@ export async function addEventStaff(
   employeeId: string,
   role = "staff"
 ) {
-  const { orgId } = await auth();
+  const user = await requireCurrentUser();
 
-  if (!orgId) {
-    throw new Error("Unauthorized");
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Verify the event exists and belongs to this tenant
-  const event = await database.event.findFirst({
-    where: { tenantId, id: eventId },
-  });
-
-  if (!event) {
-    throw new Error("Event not found");
-  }
-
-  // Verify the employee exists and is active
+  // Verify the employee exists and is active (read-only check before command)
   const employee = await database.$queryRawUnsafe<
     Array<{ id: string; first_name: string; last_name: string }>
   >(
@@ -476,7 +465,7 @@ export async function addEventStaff(
        AND id = $2
        AND deleted_at IS NULL
        AND is_active = true`,
-    tenantId,
+    user.tenantId,
     employeeId
   );
 
@@ -484,32 +473,25 @@ export async function addEventStaff(
     throw new Error("Employee not found or inactive");
   }
 
-  // Check for existing assignment (avoid duplicates)
-  const existing = await database.$queryRawUnsafe<Array<{ id: string }>>(
-    `SELECT id
-     FROM tenant_events.event_staff
-     WHERE tenantId = $1
-       AND eventId = $2
-       AND staffMemberId = $3
-       AND deletedAt IS NULL`,
-    tenantId,
-    eventId,
-    employeeId
-  );
+  // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
+  const result = await runManifestCommand({
+    entity: "EventStaff",
+    command: "assign",
+    body: {
+      eventId,
+      staffMemberId: employeeId,
+      role,
+      notes: "",
+      shiftStart: 0,
+      shiftEnd: 0,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 
-  if (existing.length > 0) {
-    throw new Error("Employee is already assigned to this event");
+  if (!result.ok) {
+    // Manifest handles duplicate detection via guards/constraints
+    throw new Error(`Failed to assign staff: ${result.message}`);
   }
-
-  await database.$executeRawUnsafe(
-    `INSERT INTO tenant_events.event_staff (
-       tenantId, eventId, staffMemberId, role, createdAt, updatedAt
-     ) VALUES ($1, $2, $3, $4, NOW(), NOW())`,
-    tenantId,
-    eventId,
-    employeeId,
-    role
-  );
 
   revalidatePath(`/events/${eventId}/battle-board`);
 
