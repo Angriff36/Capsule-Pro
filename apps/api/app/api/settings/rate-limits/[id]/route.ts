@@ -11,7 +11,6 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
@@ -63,91 +62,28 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 /**
  * PATCH /api/settings/rate-limits/[id]
- * Update a rate limit configuration
+ * Update a rate limit configuration via Manifest command
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { id } = await params;
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    const { id } = await params;
-    const body = await request.json();
-
-    // Verify ownership
-    const existing = await database.rateLimitConfig.findFirst({
-      where: { id, tenantId, deletedAt: null },
-    });
-
-    if (!existing) {
-      return manifestErrorResponse("Rate limit configuration not found", 404);
-    }
-
-    // Validate fields if provided
-    if (body.windowMs !== undefined && body.windowMs <= 0) {
-      return manifestErrorResponse("Window duration must be positive", 400);
-    }
-    if (body.maxRequests !== undefined && body.maxRequests <= 0) {
-      return manifestErrorResponse("Max requests must be positive", 400);
-    }
-    if (body.endpointPattern !== undefined && !body.endpointPattern.trim()) {
-      return manifestErrorResponse("Endpoint pattern is required", 400);
-    }
-
-    const updateData: Record<string, unknown> = {};
-    const allowedFields = [
-      "name",
-      "endpointPattern",
-      "windowMs",
-      "maxRequests",
-      "burstAllowance",
-      "priority",
-      "isActive",
-    ];
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
-    }
-
-    const config = await database.rateLimitConfig.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        endpointPattern: true,
-        windowMs: true,
-        maxRequests: true,
-        burstAllowance: true,
-        priority: true,
-        isActive: true,
-        updatedAt: true,
-      },
-    });
-
-    log.info("[rate-limits/update] Updated rate limit config", {
-      tenantId,
-      configId: config.id,
-      name: config.name,
-    });
-
-    return NextResponse.json(config);
-  } catch (error) {
-    captureException(error);
-    log.error("[rate-limits/update] Error", { error });
-    return manifestErrorResponse(
-      "Failed to update rate limit configuration",
-      500
-    );
-  }
+  return runManifestCommand({
+    entity: "RateLimitConfig",
+    command: "update",
+    body: {
+      id,
+      name: rawBody.name ?? "",
+      endpointPattern: rawBody.endpointPattern ?? "",
+      windowMs: rawBody.windowMs ?? 60_000,
+      maxRequests: rawBody.maxRequests ?? 100,
+      burstAllowance: rawBody.burstAllowance ?? 0,
+      priority: rawBody.priority ?? 0,
+      isActive: rawBody.isActive ?? true,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }
 
 /**
