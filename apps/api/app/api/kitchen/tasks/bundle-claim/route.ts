@@ -3,27 +3,15 @@
  *
  * POST /api/kitchen/tasks/bundle-claim
  *
- * Atomically claims multiple tasks in a single transaction.
- * All tasks must be available for the claim to succeed.
- * If any task is already claimed or fails, the entire operation rolls back.
+ * Claims multiple tasks by delegating each to the Manifest runtime.
+ * Each task is claimed independently via runManifestCommand.
  */
 
-import { auth } from "@repo/auth/server";
-import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
-import { claimPrepTask } from "@repo/manifest-runtime";
-import { hasBlockingConstraints } from "@repo/manifest-runtime/api-response";
 import { triggerTaskAssignedSms } from "@repo/notifications";
-import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  type ApiSuccessResponse,
-  createErrorResponse,
-  createManifestRuntime,
-  loadTaskIntoManifest,
-  mapManifestStatusToPrisma,
-} from "../shared-task-helpers";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -33,7 +21,6 @@ interface BundleClaimRequest {
 
 interface ClaimedTask {
   taskId: string;
-  claimId: string;
   status: string;
 }
 
@@ -43,34 +30,9 @@ interface FailedTask {
 }
 
 export async function POST(request: Request) {
-  // Step 1: Authenticate and extract context
-  const { orgId, userId: clerkId } = await auth();
-  if (!(orgId && clerkId)) {
-    return NextResponse.json(
-      { success: false, message: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const user = await resolveCurrentUser(request);
 
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Get current user by Clerk ID
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: clerkId }],
-    },
-  });
-
-  if (!currentUser) {
-    return NextResponse.json(
-      { success: false, message: "User not found in database" },
-      { status: 400 }
-    );
-  }
-
-  const userId = currentUser.id;
-
-  // Step 2: Parse and validate request body
+  // Parse and validate request body
   let body: BundleClaimRequest;
   try {
     body = await request.json();
@@ -98,16 +60,31 @@ export async function POST(request: Request) {
     );
   }
 
-  // Step 3: Pre-check all tasks for existing claims (fail fast)
-  const existingClaims = await database.kitchenTaskClaim.findMany({
-    where: {
-      AND: [{ tenantId }, { taskId: { in: taskIds } }, { releasedAt: null }],
-    },
-    select: {
-      taskId: true,
-    },
-  });
+  // Pre-check: verify tasks exist and are not already claimed
+  const [tasks, existingClaims] = await Promise.all([
+    database.kitchenTask.findMany({
+      where: {
+        AND: [
+          { tenantId: user.tenantId },
+          { id: { in: taskIds } },
+          { deletedAt: null },
+        ],
+      },
+      select: { id: true, title: true, dueDate: true },
+    }),
+    database.kitchenTaskClaim.findMany({
+      where: {
+        AND: [
+          { tenantId: user.tenantId },
+          { taskId: { in: taskIds } },
+          { releasedAt: null },
+        ],
+      },
+      select: { taskId: true },
+    }),
+  ]);
 
+  // Check for already-claimed tasks
   if (existingClaims.length > 0) {
     const alreadyClaimedIds = existingClaims.map((c) => c.taskId);
     return NextResponse.json(
@@ -121,13 +98,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Step 4: Fetch all tasks
-  const tasks = await database.prepTask.findMany({
-    where: {
-      AND: [{ tenantId }, { id: { in: taskIds } }, { deletedAt: null }],
-    },
-  });
-
+  // Check for missing tasks
   const foundTaskIds = new Set(tasks.map((t) => t.id));
   const missingTaskIds = taskIds.filter((id) => !foundTaskIds.has(id));
 
@@ -143,187 +114,95 @@ export async function POST(request: Request) {
     );
   }
 
-  // Step 5: Create Manifest runtime (shared for all tasks)
-  const runtimeResult = await createManifestRuntime({
-    tenantId,
-    userId,
-    userRole: currentUser.role,
-  });
-
-  if (!(runtimeResult.success && runtimeResult.runtime)) {
-    return createErrorResponse(
-      runtimeResult.error?.message ?? "Failed to create runtime",
-      runtimeResult.error?.status ?? 500
-    );
-  }
-
-  const runtime = runtimeResult.runtime;
+  // Claim each task via Manifest runtime
   const claimedTasks: ClaimedTask[] = [];
   const failedTasks: FailedTask[] = [];
 
-  // Step 6: Process each task atomically using database transaction
-  // We use a transaction to ensure all-or-nothing semantics
-  try {
-    await database.$transaction(async (tx) => {
-      for (const task of tasks) {
-        // Load task into Manifest
-        await loadTaskIntoManifest(
-          runtime,
-          task as Prisma.PrepTaskGetPayload<Record<string, never>>
-        );
-
-        // Execute claim command
-        const result = await claimPrepTask(runtime, task.id, userId, "");
-
-        // Check for blocking constraints
-        if (hasBlockingConstraints(result)) {
-          failedTasks.push({
-            taskId: task.id,
-            reason: "Constraint violation",
-          });
-          // Roll back the entire transaction by throwing
-          throw new Error(`Constraint violation for task ${task.id}`);
-        }
-
-        // Get instance for status
-        const instance = await runtime.getInstance("PrepTask", task.id);
-        if (!instance) {
-          failedTasks.push({
-            taskId: task.id,
-            reason: "Failed to get instance",
-          });
-          throw new Error(`Failed to get instance for task ${task.id}`);
-        }
-
-        // Update task status via transaction
-        await tx.prepTask.update({
-          where: { tenantId_id: { tenantId, id: task.id } },
-          data: {
-            status: mapManifestStatusToPrisma(instance.status as string),
-          },
-        });
-
-        // Create claim record via transaction
-        const claim = await tx.kitchenTaskClaim.create({
-          data: {
-            tenantId,
-            taskId: task.id,
-            employeeId: userId,
-          },
-        });
-
-        // Create progress entry if status changed
-        if (task.status !== "in_progress") {
-          const fullName =
-            `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
-          await tx.kitchenTaskProgress.create({
-            data: {
-              tenantId,
-              taskId: task.id,
-              employeeId: userId,
-              progressType: "status_change",
-              oldStatus: task.status,
-              newStatus: "in_progress",
-              notes: `Task claimed by ${fullName} (bundle)`,
-            },
-          });
-        }
-
-        // Create outbox event inside transaction for atomic real-time updates
-        await tx.outboxEvent.create({
-          data: {
-            tenantId,
-            aggregateType: "KitchenTask",
-            aggregateId: task.id,
-            eventType: "kitchen.task.claimed",
-            payload: {
-              taskId: task.id,
-              claimId: claim.id,
-              employeeId: userId,
-              status: "in_progress",
-              bundleClaim: true,
-            },
-            status: "pending",
-          },
-        });
-
-        claimedTasks.push({
-          taskId: task.id,
-          claimId: claim.id,
-          status: "in_progress",
-        });
-      }
+  for (const taskId of taskIds) {
+    const response = await runManifestCommand({
+      entity: "KitchenTask",
+      command: "claim",
+      body: {
+        id: taskId,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    // Fire-and-forget SMS triggers for each claimed task
+    if (response.ok) {
+      claimedTasks.push({
+        taskId,
+        status: "in_progress",
+      });
+    } else {
+      // Parse error message from response
+      let reason = "Unknown error";
+      try {
+        const body = await response.json();
+        reason = body.message || body.error || "Unknown error";
+      } catch {
+        // Use default reason
+      }
+      failedTasks.push({ taskId, reason });
+    }
+  }
+
+  // Fire-and-forget SMS triggers for each claimed task
+  if (claimedTasks.length > 0) {
+    const taskMap = new Map(tasks.map((t) => [t.id, t]));
     const fullName =
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+      `${user.firstName || ""} ${user.lastName || ""}`.trim();
     for (const claimed of claimedTasks) {
-      const task = tasks.find((t) => t.id === claimed.taskId);
+      const task = taskMap.get(claimed.taskId);
       triggerTaskAssignedSms({
-        tenantId,
+        tenantId: user.tenantId,
         taskId: claimed.taskId,
-        taskName: task?.name ?? "Unknown task",
-        employeeId: userId,
+        taskName: task?.title ?? "Unknown task",
+        employeeId: user.id,
         employeeName: fullName,
-        dueDate: task?.dueByDate?.toISOString(),
+        dueDate: task?.dueDate?.toISOString(),
       }).catch(() => {});
     }
+  }
 
-    // Step 8: Return success response
-    const successResponse: ApiSuccessResponse<{
-      claimed: ClaimedTask[];
-      totalClaimed: number;
-    }> = {
-      success: true,
-      data: {
-        claimed: claimedTasks,
-        totalClaimed: claimedTasks.length,
-      },
-    };
-
-    return NextResponse.json(successResponse, { status: 201 });
-  } catch (error) {
-    captureException(error);
-    // Transaction failed - all changes rolled back
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-
-    // Check if it was a constraint violation
-    if (errorMessage.includes("Constraint violation")) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Bundle claim failed due to constraint violation",
-          errorCode: "CONSTRAINT_VIOLATION",
-          failedTasks,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Check if it was an instance error
-    if (errorMessage.includes("Failed to get instance")) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Bundle claim failed - could not process some tasks",
-          errorCode: "PROCESSING_ERROR",
-          failedTasks,
-        },
-        { status: 500 }
-      );
-    }
-
-    // Generic error
+  // Return results
+  if (failedTasks.length === 0) {
     return NextResponse.json(
       {
-        success: false,
-        message: "Bundle claim failed",
-        errorCode: "BUNDLE_CLAIM_FAILED",
-        details: errorMessage,
+        success: true,
+        data: {
+          claimed: claimedTasks,
+          totalClaimed: claimedTasks.length,
+        },
       },
-      { status: 500 }
+      { status: 201 }
     );
   }
+
+  // Partial failure
+  if (claimedTasks.length > 0) {
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          claimed: claimedTasks,
+          totalClaimed: claimedTasks.length,
+        },
+        partialFailure: true,
+        failedTasks,
+      },
+      { status: 207 }
+    );
+  }
+
+  // Total failure
+  return NextResponse.json(
+    {
+      success: false,
+      message: "Bundle claim failed",
+      errorCode: "BUNDLE_CLAIM_FAILED",
+      failedTasks,
+    },
+    { status: 400 }
+  );
 }

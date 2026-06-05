@@ -290,11 +290,6 @@
       "method": "updateMany"
     },
     {
-      "file": "apps/api/app/api/kitchen/tasks/shared-task-helpers.ts",
-      "entity": "PrepTask",
-      "method": "update"
-    },
-    {
       "file": "apps/api/app/api/procurement/approvals/action/route.ts",
       "entity": "PurchaseOrder",
       "method": "update"
