@@ -259,13 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 88% context — saved before compacting]
-Files (6):
-  manifest/source/collections-rules.manifest (edit)
-  manifest/source/reactions.manifest (edit)
-  manifest/source/budget-rules.manifest (edit)
-  manifest/source/labor-budget-rules.manifest (edit)
+[proactive bridge @ 95% context — saved before compacting]
+Files (1):
   IMPLEMENTATION_PLAN.md (edit)
-  manifest/source/event-rules.manifest (edit)
 
 # === END COGNILAYER ===

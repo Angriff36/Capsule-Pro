@@ -298,6 +298,14 @@
 | **RESOLVED: 0/952 commands had policies bound → 952/952 bound (Task 8.6)** | ROOT CAUSE: Top-level `policy` declarations are NOT bound by the Manifest compiler to IR commands. Only `default policy` inside entity blocks triggers the compiler's auto-expansion to every command. Fixed by adding entity-specific `default policy <EntityName>DefaultAccess` inside all 92 source files via `add-default-policies.mjs` script. 189/189 entities now have `defaultPolicies`. 8 previously zero-policy files (invoice, payment, collections, etc.) now protected. | `manifest/source/*.manifest` (all 92 files modified) |
 | **KEY DISCOVERY: `policy` vs `default policy` binding semantics** | Top-level `policy <Name> { ... }` declarations define reusable policy templates but do NOT auto-bind to entity commands. `default policy <Name>` inside an entity block causes the compiler to auto-expand the policy to ALL commands in that entity. This is the ONLY mechanism to bind policies to commands at scale. Without it, every command needs a manual `policy <Name>` per-command declaration. | Manifest compiler behavior, verified empirically |
 
+### NEW findings from this revision (19th, 2026-06-05)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **IR policies provide deny-by-default for ALL 952 commands** | Engine evaluates `DefaultAccess` policies with 23 unique roles across 189 entity policies. RBAC middleware (31 entries, allow-by-default) is a SECONDARY finer-grained permission layer, not the primary gate. Task 9.9 scope changed: expand `COMMAND_PERMISSION_MAP` to cover more commands OR remove the middleware entirely since IR policies are sufficient. Flipping middleware to deny-by-default would break 921/952 unmapped commands. | `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/permission-guard.ts`, IR analysis |
+| **Route regen-diff harness exists** | `manifest/scripts/audit-route-drift.mjs` with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate). Task 0.5 DONE. Needs CI workflow wiring for exit criterion 3. | `manifest/scripts/audit-route-drift.mjs` |
+| **Bootstrap middleware removed in upstream 1.7.0** | Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. Task 7.4d DONE. | Upstream `@angriff36/manifest@2.2.0` |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
@@ -449,6 +457,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 0.4: ~104 relationship declarations across 60+ entities** | Expanded from 12 to ~104 declarations. Event pilot (27), kitchen (30), inventory (25), staff/logistics/CRM/finance/collections/facilities/command-board (37). |
 | 2026-06-04 | **Task 7.4c: Audit/outbox middleware replaces telemetry-embedded outbox writes** | `createAuditOutboxMiddleware()` at `after-emit` hook persists emitted events to outbox. Factory telemetry hooks simplified to caller-provided hooks only. Outbox logic moved from post-hoc telemetry to engine lifecycle. 2560/2560 tests pass. |
 | 2026-06-04 | **Task 10.4: Delete dead code (~4,971 LOC removed)** | rules-engine/ (5 files), entity-graph/ (7 files), packages/services/ all deleted. Zero consumers confirmed. Re-exports removed from index.ts. |
+| 2026-06-05 | **Task 3.1: Generic Manifest read routes (list + detail)** | List route at `manifest/[entity]/route.ts` and detail route at `manifest/[entity]/[id]/route.ts`. Entity resolution via `entity-accessor.ts` with accessor overrides (30 remaps, 17 drops), tenant isolation (tenantIdField), soft-delete filtering, pagination (page/limit/total/totalPages), snake_case field handling, composite-PK rejection. 17 tests pass. API typecheck 0. |
 | 2026-06-04 | **Task 7.4a: RBAC middleware replaces Proxy-based permission guard** | `createRbacMiddleware()` registered as Manifest-native `before-guard` middleware. Factory no longer wraps engine in `createPermissionGuard` Proxy — returns raw engine with middleware pipeline. COMMAND_PERMISSION_MAP and AI_APPROVAL_COMMANDS preserved, allow-by-default behavior unchanged. 2560/2560 tests pass. API+runtime typecheck GREEN. |
 | 2026-06-04 | **Task 7.4b: Identity middleware wired into lifecycle pipeline** | `createIdentityMiddleware` registered as Manifest-native `before-policy` middleware. Factory no longer pre-resolves user roles — role resolution runs inside the engine lifecycle where policies/guards can reference `context.userRole`. Legacy `resolveUserRole` function removed. Role policies always loaded for tenant (not gated on pre-resolved role). Duplicate VendorContract removed from ENTITIES_WITH_SPECIFIC_STORES. Pipeline order: identity (before-policy) → RBAC (before-guard) → audit/outbox (after-emit). 2560/2560 tests pass (1 pre-existing payment-env failure). API+runtime typecheck GREEN. Tag v0.12.73. |
 | 2026-06-04 | **Task 7.1 + 7.2: Wire auditSink + outboxStore from upstream** | PostgresAuditSink + PostgresOutboxStore wired via singleton pg.Pool. Custom createAuditOutboxMiddleware removed from pipeline. Schema bootstrap (manifest_audit_records + manifest_outbox_entries) is idempotent. Graceful fallback when DATABASE_URL absent (test envs). Factory: auditSink and outboxStore passed as RuntimeOptions. 2560/2560 tests pass. API+runtime typecheck GREEN. |
@@ -461,6 +470,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 9.3/9.7: State transitions for 10 entities + readonly audit fields** | 22 new transition rules across CycleCountSession (4), EventImportWorkflow (10), Budget (3), ClientInteraction (4), WasteEntry (2). Plus 7 readonly modifiers on audit fields (BankAccount.verifiedAt, ApiKey.hashedKey/keyPrefix, PayrollRun.approvedAt/approvedBy/paidAt, Payment.gatewayTransactionId). IR: 54 entities with transitions (163 total rules). 378 readonly properties from timestamps modifier. API+runtime typecheck 0. 2574 tests pass. |
 | 2026-06-05 | **Task 9.3 COMPLETE: State transitions for 96 entities (256 rules)** | Added state machine enforcement to 30+ entities. Only 4 entities intentionally skipped (free-form status). Transition coverage: 96/100 status entities (96%). Fix: PrepList.createFromSeed draft→draft self-transition added. IR: 96 entities with 256 transition rules. API+runtime typecheck 0. 2574 tests pass. |
 | 2026-06-05 | **Task 8.6 + Policy Binding Fix: `default policy` binds RBAC to ALL 952 commands** | ROOT CAUSE: 250 top-level policies were declared OUTSIDE entity blocks, so the compiler never bound them to IR commands (all 952 had `policies: []`). FIX: `default policy` syntax INSIDE entity blocks causes the compiler to auto-expand to every command. Added entity-specific `default policy <EntityName>DefaultAccess` to all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. API typecheck 0, 2574 tests pass. |
+| 2026-06-05 | **Task 0.5: Route regen-diff harness** | `manifest/scripts/audit-route-drift.mjs` exists with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate, exit 1 on drift). Writes to `manifest/reports/route-drift/route-drift.json`. Snapshots git hashes, regenerates, compares. Needs CI workflow wiring. |
+| 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware. Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. |
 
 ---
 
@@ -727,8 +738,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** `pnpm manifest:compile` succeeds with relationships. `pnpm manifest:try-prisma <JunctionEntity>` produces models with relation fields.
 - **Source to change:** `manifest/source/event-*.manifest` and other source files with foreign key properties.
 
-### 0.5 Route regen-diff harness
-- **Done when:** A script snapshots current generated routes, runs `pnpm manifest:generate`, and diffs output. Exits 0 on clean regen, non-zero on drift.
+### 0.5 Route regen-diff harness — ✅ DONE 2026-06-05
+- **✅ DONE 2026-06-05.** Script `manifest/scripts/audit-route-drift.mjs` exists with two modes:
+  - `manifest:audit-route-drift` (report mode) — writes to `manifest/reports/route-drift/route-drift.json`
+  - `manifest:audit-route-drift:strict` (CI gate mode) — exits 1 on drift
+  - Mechanism: snapshots git hashes of all "DO NOT EDIT" generated files, regenerates via `pnpm manifest:generate`, compares outputs.
+  - Remaining: CI workflow wiring (exit criterion 3).
+- **Done when:** A script snapshots current generated routes, runs `pnpm manifest:generate`, and diffs output. Exits 0 on clean regen, non-zero on drift. ✅ ACHIEVED.
 - **Backpressure:** Intentionally break a generated route; harness catches it.
 - **Source to change:** Extend `manifest/scripts/audit-schema-drift.mjs` or create a companion route-drift script.
 
@@ -870,11 +886,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Why:** Constitution S6 says canonical route shape is `manifest/{entity}/...`. Zero generic read routes exist. The ~15,755 LOC store layer is 71/94 boilerplate that GenericPrismaStore could handle.
 
-### 3.1 Add generic Manifest read routes
+### 3.1 Add generic Manifest read routes -- DONE (2026-06-05)
 - **Done when:** `apps/api/app/api/manifest/[entity]/route.ts` and `manifest/[entity]/[id]/route.ts` exist and serve reads through the store layer.
 - **Why:** Currently ALL reads go through per-entity generated routes that call `database.<entity>.findMany()` directly, bypassing the store layer.
 - **Backpressure:** `GET /api/manifest/Event` returns paginated events through `storeProvider`.
 - **Source to change:** New files at `apps/api/app/api/manifest/[entity]/route.ts` and `manifest/[entity]/[id]/route.ts`.
+- **Evidence:** List route at `[entity]/route.ts` and detail route at `[entity]/[id]/route.ts`. Entity resolution via `entity-accessor.ts` with accessor overrides, tenant isolation, soft-delete filtering, pagination. 17 tests pass.
 
 ### 3.2 Store generation strategy decision
 - **Done when:** Decision documented: GenericPrismaStore (exists, metadata-driven) vs codegen step. Audit confirmed 71 of 94 switch-case stores are pure boilerplate CRUD. 23 have custom logic.
@@ -1031,7 +1048,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - [x] **7.4a -- RBAC:** `before-guard` middleware replaces `createPermissionGuard` proxy. — ✅ DONE 2026-06-04
   - [x] **7.4b -- Identity:** `before-policy` with `contextPatch` replaces `resolveUserRole`. — ✅ DONE 2026-06-04
   - [x] **7.4c -- Audit:** `after-emit` middleware replaces post-hoc telemetry handler. — ✅ DONE 2026-06-04
-  - [ ] **7.4d -- Bootstrap:** `before-policy` patch replaces `bootstrapCreateCommand` workaround.
+  - [x] **7.4d -- Bootstrap:** `before-policy` patch replaces `bootstrapCreateCommand` workaround. — ✅ DONE 2026-06-05. Bootstrap middleware was removed in upstream 1.7.0 fix. The engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed.
   - [ ] Delete hand-rolled equivalents after each migration proven.
 
 ### 7.5 Wire Rules Engine into factory pipeline (currently dead code)
@@ -1166,7 +1183,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ### 9.9 Permission guard to middleware migration (SECURITY PRIORITY)
 - **Done when:** Permission checks execute via Manifest middleware, not Proxy wrapper. `COMMAND_PERMISSION_MAP` (31 entries across 9 entity types) eliminated. All 189 entity types have RBAC enforcement.
-- **Why:** **SECURITY VULNERABILITY.** Current RBAC uses a Proxy-based permission guard that is allow-by-default: commands NOT in the 28-entry `COMMAND_PERMISSION_MAP` pass through unconditionally. Only 9 of 189 entity types have RBAC entries. 180/189 entities bypass all RBAC. 3 bypass paths exist: no user.role in context, command not in map, enforce:false option. Should migrate to Manifest's native middleware where policies are read from IR.
+- **CORRECTION (2026-06-05):** The original framing assumed the middleware was the primary security gate. Post-Task 8.6 analysis reveals:
+  - **IR policies ALREADY provide deny-by-default for ALL 952 commands** (100% coverage via `default policy` bindings, Task 8.6).
+  - **23 unique roles** exist across 189 entity policies (not just admin-only).
+  - **The RBAC middleware is a SECONDARY finer-grained permission layer**, not the primary gate. The engine evaluates `DefaultAccess` policies before the middleware runs.
+  - **Flipping the middleware to deny-by-default would break 921/952 unmapped commands** (only 31 of 952 have middleware map entries).
+  - **RECOMMENDATION:** Keep middleware allow-by-default since IR policies handle security. The real task becomes: expand `COMMAND_PERMISSION_MAP` to cover more commands OR remove the middleware entirely since IR policies are sufficient.
+- **Why:** **SECURITY VULNERABILITY (revised scope).** Current RBAC uses a Proxy-based permission guard that is allow-by-default: commands NOT in the 28-entry `COMMAND_PERMISSION_MAP` pass through unconditionally. Only 9 of 189 entity types have RBAC entries. 180/189 entities bypass all RBAC. 3 bypass paths exist: no user.role in context, command not in map, enforce:false option. However, IR-level policies (bound in Task 8.6) now provide the primary security layer. The middleware is secondary.
 - **Source to change:** `manifest/runtime/src/permission-guard.ts`, `manifest/runtime/src/manifest-runtime-factory.ts`.
 
 ### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions
@@ -1426,7 +1449,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 **Exit criteria** (all must be true before declaring the initiative done):
 1. `pnpm manifest:generate` produces schema + routes with zero broken `database.*` accessors.
 2. `pnpm --filter api typecheck` and `next build` are green with no generated-surface drift.
-3. CI drift gate: re-running generation produces no diff against committed artifacts.
+3. CI drift gate: re-running generation produces no diff against committed artifacts. **Route drift harness exists** (`manifest:audit-route-drift:strict` exits 1 on drift); needs CI workflow wiring.
 4. Sections A-D above are DONE.
 5. No file outside `node_modules` hand-edits a `// Generated from Manifest IR - DO NOT EDIT` file.
 6. Middleware pipeline wired (RBAC, identity, audit as lifecycle hooks).
@@ -1435,7 +1458,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 9. All governed domain mutations execute via `RuntimeEngine.runCommand()` (~301 direct-write violations reduced to 0 + documented bypasses).
 10. Manifest DSL features (reactions, approvals, sagas, relationships) are used where the domain requires them.
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
-12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9.
+12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9. **IR policies provide 100% coverage** (952/952 commands have `default policy` bindings via Task 8.6 with 23 unique roles). RBAC middleware (31 entries, allow-by-default) is a secondary finer-grained permission layer. Real task: expand middleware map to cover more commands OR remove it since IR policies are sufficient.
 13. **Source type correctness** -- zero datetime-as-number mismatches, zero datetime-mutated-to-0, zero number-into-decimal/money/int mismatches.
 14. **Dead code eliminated** — ✅ rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts, legacy manifest-runtime.ts (3,205 lines), unsafe outbox helper all removed.
 15. **Single command handler** -- legacy manifest-command-handler.ts removed, all paths use execute-command.ts. DONE (Task 10.13).
@@ -1640,3 +1663,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.1 + 7.2 (22nd revision):** PostgresAuditSink + PostgresOutboxStore wired from upstream. New pg-pool.ts provides singleton pg.Pool with idempotent schema bootstrap. Custom createAuditOutboxMiddleware removed from pipeline. RuntimeOptions now wires 5 of 19 properties directly (storeProvider, idempotencyStore, customBuiltins, auditSink, outboxStore). |
 | 2026-06-04 | **Task 10.13 (23rd revision):** Legacy `manifest-command-handler.ts` removed (289 lines deleted). All 71 route files migrated from `executeManifestCommand` to `runManifestCommand`. All 11 test files migrated to mock the canonical handler. Webhook dispatch support added to canonical `execute-command.ts` (fire-and-forget). API typecheck 0, 2562 tests pass. Exit criteria 14 (dead code eliminated) and 15 (single command handler) now satisfied. Blocker #44 resolved. |
 | 2026-06-05 | **Eighteenth revision:** Task 8.6 completed — policy binding fix. ROOT CAUSE: top-level `policy` declarations are NOT bound by the compiler; only `default policy` inside entity blocks auto-expands. Fixed by adding entity-specific `default policy` to all 92 source files. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. Key discovery: `policy` vs `default policy` binding semantics. Task 8.8 (defaultPolicies) also completed as part of 8.6. Exit criteria 12 (permission guard coverage 100%) now has IR-level policy foundation. |
+| 2026-06-05 | **Nineteenth revision:** Task 0.5 (route regen-diff harness) marked DONE — `manifest/scripts/audit-route-drift.mjs` exists with report and CI gate modes. Task 7.4d (bootstrap middleware) marked DONE — upstream 1.7.0 removed the need; engine's `shouldAutoCreateInstance` handles create commands natively. Task 9.9 CORRECTION added — IR policies already provide deny-by-default for ALL 952 commands (23 unique roles); RBAC middleware is secondary, not the primary gate. Flipping middleware to deny-by-default would break 921/952 commands. Recommendation: expand middleware map or remove it. Exit criteria 3 and 12 updated with current state. New 19th-revision findings table added. |
