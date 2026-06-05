@@ -1715,31 +1715,6 @@
     "commandId": "EventStaff.updateShift"
   },
   {
-    "entity": "EventStaffAssignment",
-    "command": "assign",
-    "commandId": "EventStaffAssignment.assign"
-  },
-  {
-    "entity": "EventStaffAssignment",
-    "command": "cancel",
-    "commandId": "EventStaffAssignment.cancel"
-  },
-  {
-    "entity": "EventStaffAssignment",
-    "command": "confirm",
-    "commandId": "EventStaffAssignment.confirm"
-  },
-  {
-    "entity": "EventStaffAssignment",
-    "command": "updateRole",
-    "commandId": "EventStaffAssignment.updateRole"
-  },
-  {
-    "entity": "EventStaffAssignment",
-    "command": "updateShift",
-    "commandId": "EventStaffAssignment.updateShift"
-  },
-  {
     "entity": "EventSummary",
     "command": "create",
     "commandId": "EventSummary.create"

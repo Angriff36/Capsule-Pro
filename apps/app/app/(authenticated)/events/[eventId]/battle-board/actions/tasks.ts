@@ -425,11 +425,11 @@ export async function getAvailableEmployees(eventId: string) {
         AND e.deleted_at IS NULL
         AND e.is_active = true
         AND NOT EXISTS (
-          SELECT 1 FROM tenant_events.event_staff_assignments esa
-          WHERE esa.tenant_id = e.tenant_id
-            AND esa.employeeId = e.id
-            AND esa.event_id = $2
-            AND esa.deleted_at IS NULL
+          SELECT 1 FROM tenant_events.event_staff esa
+          WHERE esa.tenantId = e.tenant_id
+            AND esa.staffMemberId = e.id
+            AND esa.eventId = $2
+            AND esa.deletedAt IS NULL
         )
       ORDER BY e.first_name, e.last_name`,
     tenantId,
@@ -487,11 +487,11 @@ export async function addEventStaff(
   // Check for existing assignment (avoid duplicates)
   const existing = await database.$queryRawUnsafe<Array<{ id: string }>>(
     `SELECT id
-     FROM tenant_events.event_staff_assignments
-     WHERE tenant_id = $1
-       AND event_id = $2
-       AND employee_id = $3
-       AND deleted_at IS NULL`,
+     FROM tenant_events.event_staff
+     WHERE tenantId = $1
+       AND eventId = $2
+       AND staffMemberId = $3
+       AND deletedAt IS NULL`,
     tenantId,
     eventId,
     employeeId
@@ -502,8 +502,8 @@ export async function addEventStaff(
   }
 
   await database.$executeRawUnsafe(
-    `INSERT INTO tenant_events.event_staff_assignments (
-       tenant_id, event_id, employee_id, role, created_at, updated_at
+    `INSERT INTO tenant_events.event_staff (
+       tenantId, eventId, staffMemberId, role, createdAt, updatedAt
      ) VALUES ($1, $2, $3, $4, NOW(), NOW())`,
     tenantId,
     eventId,

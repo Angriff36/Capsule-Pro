@@ -159,7 +159,7 @@ export function boardProjectionDetailPath(id: string): string {
 
 /** GET /api/budget/list */
 export function budgetListPath(): string {
-  return "/api/manifest/budget/commands/list";
+  return "/api/manifest/Budget/commands/list";
 }
 
 /** GET /api/budget/:id */
@@ -409,7 +409,7 @@ export function cycleCountSessionDetailPath(id: string): string {
 
 /** GET /api/deal/list */
 export function dealListPath(): string {
-  return "/api/manifest/deal/commands/list";
+  return "/api/manifest/Deal/commands/list";
 }
 
 /** GET /api/deal/:id */
@@ -449,7 +449,7 @@ export function dishDetailPath(id: string): string {
 
 /** GET /api/document/list */
 export function documentListPath(): string {
-  return "/api/manifest/document/commands/list";
+  return "/api/manifest/Document/commands/list";
 }
 
 /** GET /api/document/:id */
@@ -469,7 +469,7 @@ export function documentVersionDetailPath(id: string): string {
 
 /** GET /api/driver/list */
 export function driverListPath(): string {
-  return "/api/manifest/driver/commands/list";
+  return "/api/manifest/Driver/commands/list";
 }
 
 /** GET /api/driver/:id */
@@ -539,7 +539,7 @@ export function entityVersionDetailPath(id: string): string {
 
 /** GET /api/equipment/list */
 export function equipmentListPath(): string {
-  return "/api/manifest/equipment/commands/list";
+  return "/api/manifest/Equipment/commands/list";
 }
 
 /** GET /api/equipment/:id */
@@ -657,16 +657,6 @@ export function eventStaffDetailPath(id: string): string {
   return "/api/eventstaff/" + encodeURIComponent(id);
 }
 
-/** GET /api/eventstaffassignment/list */
-export function eventStaffAssignmentListPath(): string {
-  return "/api/manifest/eventstaffassignment/commands/list";
-}
-
-/** GET /api/eventstaffassignment/:id */
-export function eventStaffAssignmentDetailPath(id: string): string {
-  return "/api/eventstaffassignment/" + encodeURIComponent(id);
-}
-
 /** GET /api/eventsummary/list */
 export function eventSummaryListPath(): string {
   return "/api/manifest/eventsummary/commands/list";
@@ -709,7 +699,7 @@ export function eventWaitlistEntryDetailPath(id: string): string {
 
 /** GET /api/facility/list */
 export function facilityListPath(): string {
-  return "/api/manifest/facility/commands/list";
+  return "/api/manifest/Facility/commands/list";
 }
 
 /** GET /api/facility/:id */
@@ -869,7 +859,7 @@ export function inventoryTransferItemDetailPath(id: string): string {
 
 /** GET /api/invoice/list */
 export function invoiceListPath(): string {
-  return "/api/manifest/invoice/commands/list";
+  return "/api/manifest/Invoice/commands/list";
 }
 
 /** GET /api/invoice/:id */
@@ -1019,7 +1009,7 @@ export function methodVideoDetailPath(id: string): string {
 
 /** GET /api/note/list */
 export function noteListPath(): string {
-  return "/api/manifest/note/commands/list";
+  return "/api/manifest/Note/commands/list";
 }
 
 /** GET /api/note/:id */
@@ -1079,7 +1069,7 @@ export function overrideAuditDetailPath(id: string): string {
 
 /** GET /api/payment/list */
 export function paymentListPath(): string {
-  return "/api/manifest/payment/commands/list";
+  return "/api/manifest/Payment/commands/list";
 }
 
 /** GET /api/payment/:id */
@@ -1349,7 +1339,7 @@ export function purchaseRequisitionItemDetailPath(id: string): string {
 
 /** GET /api/qacheck/list */
 export function qACheckListPath(): string {
-  return "/api/manifest/qacheck/commands/list";
+  return "/api/manifest/QACheck/commands/list";
 }
 
 /** GET /api/qacheck/:id */
@@ -1459,7 +1449,7 @@ export function reorderSuggestionDetailPath(id: string): string {
 
 /** GET /api/report/list */
 export function reportListPath(): string {
-  return "/api/manifest/report/commands/list";
+  return "/api/manifest/Report/commands/list";
 }
 
 /** GET /api/report/:id */
@@ -1769,7 +1759,7 @@ export function varianceReportDetailPath(id: string): string {
 
 /** GET /api/vehicle/list */
 export function vehicleListPath(): string {
-  return "/api/manifest/vehicle/commands/list";
+  return "/api/manifest/Vehicle/commands/list";
 }
 
 /** GET /api/vehicle/:id */
@@ -1779,7 +1769,7 @@ export function vehicleDetailPath(id: string): string {
 
 /** GET /api/vendor/list */
 export function vendorListPath(): string {
-  return "/api/manifest/vendor/commands/list";
+  return "/api/manifest/Vendor/commands/list";
 }
 
 /** GET /api/vendor/:id */
@@ -1829,7 +1819,7 @@ export function vendorRatingDetailPath(id: string): string {
 
 /** GET /api/venue/list */
 export function venueListPath(): string {
-  return "/api/manifest/venue/commands/list";
+  return "/api/manifest/Venue/commands/list";
 }
 
 /** GET /api/venue/:id */
@@ -2251,44 +2241,44 @@ export function boardProjectionResizePath(): string {
   return "/api/manifest/boardprojection/commands/resize";
 }
 
-/** POST /api/manifest/budget/commands/add-line-item */
+/** POST /api/manifest/Budget/commands/add-line-item */
 export function budgetAddLineItemPath(): string {
-  return "/api/manifest/budget/commands/add-line-item";
+  return "/api/manifest/Budget/commands/add-line-item";
 }
 
-/** POST /api/manifest/budget/commands/approve */
+/** POST /api/manifest/Budget/commands/approve */
 export function budgetApprovePath(): string {
-  return "/api/manifest/budget/commands/approve";
+  return "/api/manifest/Budget/commands/approve";
 }
 
-/** POST /api/manifest/budget/commands/create */
+/** POST /api/manifest/Budget/commands/create */
 export function budgetCreatePath(): string {
-  return "/api/manifest/budget/commands/create";
+  return "/api/manifest/Budget/commands/create";
 }
 
-/** POST /api/manifest/budget/commands/lock */
+/** POST /api/manifest/Budget/commands/lock */
 export function budgetLockPath(): string {
-  return "/api/manifest/budget/commands/lock";
+  return "/api/manifest/Budget/commands/lock";
 }
 
-/** POST /api/manifest/budget/commands/record-variance */
+/** POST /api/manifest/Budget/commands/record-variance */
 export function budgetRecordVariancePath(): string {
-  return "/api/manifest/budget/commands/record-variance";
+  return "/api/manifest/Budget/commands/record-variance";
 }
 
-/** POST /api/manifest/budget/commands/refresh */
+/** POST /api/manifest/Budget/commands/refresh */
 export function budgetRefreshPath(): string {
-  return "/api/manifest/budget/commands/refresh";
+  return "/api/manifest/Budget/commands/refresh";
 }
 
-/** POST /api/manifest/budget/commands/remove */
+/** POST /api/manifest/Budget/commands/remove */
 export function budgetRemovePath(): string {
-  return "/api/manifest/budget/commands/remove";
+  return "/api/manifest/Budget/commands/remove";
 }
 
-/** POST /api/manifest/budget/commands/update */
+/** POST /api/manifest/Budget/commands/update */
 export function budgetUpdatePath(): string {
-  return "/api/manifest/budget/commands/update";
+  return "/api/manifest/Budget/commands/update";
 }
 
 /** POST /api/manifest/budgetalert/commands/acknowledge */
@@ -2861,44 +2851,44 @@ export function cycleCountSessionStartPath(): string {
   return "/api/manifest/cyclecountsession/commands/start";
 }
 
-/** POST /api/manifest/deal/commands/abandon */
+/** POST /api/manifest/Deal/commands/abandon */
 export function dealAbandonPath(): string {
-  return "/api/manifest/deal/commands/abandon";
+  return "/api/manifest/Deal/commands/abandon";
 }
 
-/** POST /api/manifest/deal/commands/assign */
+/** POST /api/manifest/Deal/commands/assign */
 export function dealAssignPath(): string {
-  return "/api/manifest/deal/commands/assign";
+  return "/api/manifest/Deal/commands/assign";
 }
 
-/** POST /api/manifest/deal/commands/close */
+/** POST /api/manifest/Deal/commands/close */
 export function dealClosePath(): string {
-  return "/api/manifest/deal/commands/close";
+  return "/api/manifest/Deal/commands/close";
 }
 
-/** POST /api/manifest/deal/commands/create */
+/** POST /api/manifest/Deal/commands/create */
 export function dealCreatePath(): string {
-  return "/api/manifest/deal/commands/create";
+  return "/api/manifest/Deal/commands/create";
 }
 
-/** POST /api/manifest/deal/commands/reopen */
+/** POST /api/manifest/Deal/commands/reopen */
 export function dealReopenPath(): string {
-  return "/api/manifest/deal/commands/reopen";
+  return "/api/manifest/Deal/commands/reopen";
 }
 
-/** POST /api/manifest/deal/commands/update-probability */
+/** POST /api/manifest/Deal/commands/update-probability */
 export function dealUpdateProbabilityPath(): string {
-  return "/api/manifest/deal/commands/update-probability";
+  return "/api/manifest/Deal/commands/update-probability";
 }
 
-/** POST /api/manifest/deal/commands/update-stage */
+/** POST /api/manifest/Deal/commands/update-stage */
 export function dealUpdateStagePath(): string {
-  return "/api/manifest/deal/commands/update-stage";
+  return "/api/manifest/Deal/commands/update-stage";
 }
 
-/** POST /api/manifest/deal/commands/update-value */
+/** POST /api/manifest/Deal/commands/update-value */
 export function dealUpdateValuePath(): string {
-  return "/api/manifest/deal/commands/update-value";
+  return "/api/manifest/Deal/commands/update-value";
 }
 
 /** POST /api/manifest/deliveryroute/commands/assign-driver */
@@ -2991,24 +2981,24 @@ export function dishUpdatePricingPath(): string {
   return "/api/manifest/Dish/commands/update-pricing";
 }
 
-/** POST /api/manifest/document/commands/create */
+/** POST /api/manifest/Document/commands/create */
 export function documentCreatePath(): string {
-  return "/api/manifest/document/commands/create";
+  return "/api/manifest/Document/commands/create";
 }
 
-/** POST /api/manifest/document/commands/mark-failed */
+/** POST /api/manifest/Document/commands/mark-failed */
 export function documentMarkFailedPath(): string {
-  return "/api/manifest/document/commands/mark-failed";
+  return "/api/manifest/Document/commands/mark-failed";
 }
 
-/** POST /api/manifest/document/commands/mark-parsed */
+/** POST /api/manifest/Document/commands/mark-parsed */
 export function documentMarkParsedPath(): string {
-  return "/api/manifest/document/commands/mark-parsed";
+  return "/api/manifest/Document/commands/mark-parsed";
 }
 
-/** POST /api/manifest/document/commands/remove */
+/** POST /api/manifest/Document/commands/remove */
 export function documentRemovePath(): string {
-  return "/api/manifest/document/commands/remove";
+  return "/api/manifest/Document/commands/remove";
 }
 
 /** POST /api/manifest/documentversion/commands/approve */
@@ -3041,34 +3031,34 @@ export function documentVersionUpdateContentPath(): string {
   return "/api/manifest/documentversion/commands/update-content";
 }
 
-/** POST /api/manifest/driver/commands/create */
+/** POST /api/manifest/Driver/commands/create */
 export function driverCreatePath(): string {
-  return "/api/manifest/driver/commands/create";
+  return "/api/manifest/Driver/commands/create";
 }
 
-/** POST /api/manifest/driver/commands/reactivate */
+/** POST /api/manifest/Driver/commands/reactivate */
 export function driverReactivatePath(): string {
-  return "/api/manifest/driver/commands/reactivate";
+  return "/api/manifest/Driver/commands/reactivate";
 }
 
-/** POST /api/manifest/driver/commands/remove */
+/** POST /api/manifest/Driver/commands/remove */
 export function driverRemovePath(): string {
-  return "/api/manifest/driver/commands/remove";
+  return "/api/manifest/Driver/commands/remove";
 }
 
-/** POST /api/manifest/driver/commands/renew-license */
+/** POST /api/manifest/Driver/commands/renew-license */
 export function driverRenewLicensePath(): string {
-  return "/api/manifest/driver/commands/renew-license";
+  return "/api/manifest/Driver/commands/renew-license";
 }
 
-/** POST /api/manifest/driver/commands/suspend */
+/** POST /api/manifest/Driver/commands/suspend */
 export function driverSuspendPath(): string {
-  return "/api/manifest/driver/commands/suspend";
+  return "/api/manifest/Driver/commands/suspend";
 }
 
-/** POST /api/manifest/driver/commands/update */
+/** POST /api/manifest/Driver/commands/update */
 export function driverUpdatePath(): string {
-  return "/api/manifest/driver/commands/update";
+  return "/api/manifest/Driver/commands/update";
 }
 
 /** POST /api/manifest/emailtemplate/commands/create */
@@ -3191,39 +3181,39 @@ export function entityVersionRestorePath(): string {
   return "/api/manifest/entityversion/commands/restore";
 }
 
-/** POST /api/manifest/equipment/commands/create */
+/** POST /api/manifest/Equipment/commands/create */
 export function equipmentCreatePath(): string {
-  return "/api/manifest/equipment/commands/create";
+  return "/api/manifest/Equipment/commands/create";
 }
 
-/** POST /api/manifest/equipment/commands/record-maintenance */
+/** POST /api/manifest/Equipment/commands/record-maintenance */
 export function equipmentRecordMaintenancePath(): string {
-  return "/api/manifest/equipment/commands/record-maintenance";
+  return "/api/manifest/Equipment/commands/record-maintenance";
 }
 
-/** POST /api/manifest/equipment/commands/record-usage */
+/** POST /api/manifest/Equipment/commands/record-usage */
 export function equipmentRecordUsagePath(): string {
-  return "/api/manifest/equipment/commands/record-usage";
+  return "/api/manifest/Equipment/commands/record-usage";
 }
 
-/** POST /api/manifest/equipment/commands/retire */
+/** POST /api/manifest/Equipment/commands/retire */
 export function equipmentRetirePath(): string {
-  return "/api/manifest/equipment/commands/retire";
+  return "/api/manifest/Equipment/commands/retire";
 }
 
-/** POST /api/manifest/equipment/commands/schedule-maintenance */
+/** POST /api/manifest/Equipment/commands/schedule-maintenance */
 export function equipmentScheduleMaintenancePath(): string {
-  return "/api/manifest/equipment/commands/schedule-maintenance";
+  return "/api/manifest/Equipment/commands/schedule-maintenance";
 }
 
-/** POST /api/manifest/equipment/commands/update-condition */
+/** POST /api/manifest/Equipment/commands/update-condition */
 export function equipmentUpdateConditionPath(): string {
-  return "/api/manifest/equipment/commands/update-condition";
+  return "/api/manifest/Equipment/commands/update-condition";
 }
 
-/** POST /api/manifest/equipment/commands/update-status */
+/** POST /api/manifest/Equipment/commands/update-status */
 export function equipmentUpdateStatusPath(): string {
-  return "/api/manifest/equipment/commands/update-status";
+  return "/api/manifest/Equipment/commands/update-status";
 }
 
 /** POST /api/manifest/Event/commands/archive */
@@ -3616,31 +3606,6 @@ export function eventStaffUpdateShiftPath(): string {
   return "/api/manifest/eventstaff/commands/update-shift";
 }
 
-/** POST /api/manifest/eventstaffassignment/commands/assign */
-export function eventStaffAssignmentAssignPath(): string {
-  return "/api/manifest/eventstaffassignment/commands/assign";
-}
-
-/** POST /api/manifest/eventstaffassignment/commands/cancel */
-export function eventStaffAssignmentCancelPath(): string {
-  return "/api/manifest/eventstaffassignment/commands/cancel";
-}
-
-/** POST /api/manifest/eventstaffassignment/commands/confirm */
-export function eventStaffAssignmentConfirmPath(): string {
-  return "/api/manifest/eventstaffassignment/commands/confirm";
-}
-
-/** POST /api/manifest/eventstaffassignment/commands/update-role */
-export function eventStaffAssignmentUpdateRolePath(): string {
-  return "/api/manifest/eventstaffassignment/commands/update-role";
-}
-
-/** POST /api/manifest/eventstaffassignment/commands/update-shift */
-export function eventStaffAssignmentUpdateShiftPath(): string {
-  return "/api/manifest/eventstaffassignment/commands/update-shift";
-}
-
 /** POST /api/manifest/eventsummary/commands/create */
 export function eventSummaryCreatePath(): string {
   return "/api/manifest/eventsummary/commands/create";
@@ -3746,29 +3711,29 @@ export function eventWaitlistEntryUpdateRsvpPath(): string {
   return "/api/manifest/eventwaitlistentry/commands/update-rsvp";
 }
 
-/** POST /api/manifest/facility/commands/create */
+/** POST /api/manifest/Facility/commands/create */
 export function facilityCreatePath(): string {
-  return "/api/manifest/facility/commands/create";
+  return "/api/manifest/Facility/commands/create";
 }
 
-/** POST /api/manifest/facility/commands/edit */
+/** POST /api/manifest/Facility/commands/edit */
 export function facilityEditPath(): string {
-  return "/api/manifest/facility/commands/edit";
+  return "/api/manifest/Facility/commands/edit";
 }
 
-/** POST /api/manifest/facility/commands/remove */
+/** POST /api/manifest/Facility/commands/remove */
 export function facilityRemovePath(): string {
-  return "/api/manifest/facility/commands/remove";
+  return "/api/manifest/Facility/commands/remove";
 }
 
-/** POST /api/manifest/facility/commands/restore-from-maintenance */
+/** POST /api/manifest/Facility/commands/restore-from-maintenance */
 export function facilityRestoreFromMaintenancePath(): string {
-  return "/api/manifest/facility/commands/restore-from-maintenance";
+  return "/api/manifest/Facility/commands/restore-from-maintenance";
 }
 
-/** POST /api/manifest/facility/commands/send-to-maintenance */
+/** POST /api/manifest/Facility/commands/send-to-maintenance */
 export function facilitySendToMaintenancePath(): string {
-  return "/api/manifest/facility/commands/send-to-maintenance";
+  return "/api/manifest/Facility/commands/send-to-maintenance";
 }
 
 /** POST /api/manifest/facilityarea/commands/close-for-maintenance */
@@ -4131,54 +4096,54 @@ export function inventoryTransferItemUpdateQuantityPath(): string {
   return "/api/manifest/inventorytransferitem/commands/update-quantity";
 }
 
-/** POST /api/manifest/invoice/commands/apply-payment */
+/** POST /api/manifest/Invoice/commands/apply-payment */
 export function invoiceApplyPaymentPath(): string {
-  return "/api/manifest/invoice/commands/apply-payment";
+  return "/api/manifest/Invoice/commands/apply-payment";
 }
 
-/** POST /api/manifest/invoice/commands/mark-as-paid */
+/** POST /api/manifest/Invoice/commands/mark-as-paid */
 export function invoiceMarkAsPaidPath(): string {
-  return "/api/manifest/invoice/commands/mark-as-paid";
+  return "/api/manifest/Invoice/commands/mark-as-paid";
 }
 
-/** POST /api/manifest/invoice/commands/mark-overdue */
+/** POST /api/manifest/Invoice/commands/mark-overdue */
 export function invoiceMarkOverduePath(): string {
-  return "/api/manifest/invoice/commands/mark-overdue";
+  return "/api/manifest/Invoice/commands/mark-overdue";
 }
 
-/** POST /api/manifest/invoice/commands/mark-viewed */
+/** POST /api/manifest/Invoice/commands/mark-viewed */
 export function invoiceMarkViewedPath(): string {
-  return "/api/manifest/invoice/commands/mark-viewed";
+  return "/api/manifest/Invoice/commands/mark-viewed";
 }
 
-/** POST /api/manifest/invoice/commands/record-refund */
+/** POST /api/manifest/Invoice/commands/record-refund */
 export function invoiceRecordRefundPath(): string {
-  return "/api/manifest/invoice/commands/record-refund";
+  return "/api/manifest/Invoice/commands/record-refund";
 }
 
-/** POST /api/manifest/invoice/commands/send */
+/** POST /api/manifest/Invoice/commands/send */
 export function invoiceSendPath(): string {
-  return "/api/manifest/invoice/commands/send";
+  return "/api/manifest/Invoice/commands/send";
 }
 
-/** POST /api/manifest/invoice/commands/send-reminder */
+/** POST /api/manifest/Invoice/commands/send-reminder */
 export function invoiceSendReminderPath(): string {
-  return "/api/manifest/invoice/commands/send-reminder";
+  return "/api/manifest/Invoice/commands/send-reminder";
 }
 
-/** POST /api/manifest/invoice/commands/update-line-items */
+/** POST /api/manifest/Invoice/commands/update-line-items */
 export function invoiceUpdateLineItemsPath(): string {
-  return "/api/manifest/invoice/commands/update-line-items";
+  return "/api/manifest/Invoice/commands/update-line-items";
 }
 
-/** POST /api/manifest/invoice/commands/void-invoice */
+/** POST /api/manifest/Invoice/commands/void-invoice */
 export function invoiceVoidInvoicePath(): string {
-  return "/api/manifest/invoice/commands/void-invoice";
+  return "/api/manifest/Invoice/commands/void-invoice";
 }
 
-/** POST /api/manifest/invoice/commands/write-off */
+/** POST /api/manifest/Invoice/commands/write-off */
 export function invoiceWriteOffPath(): string {
-  return "/api/manifest/invoice/commands/write-off";
+  return "/api/manifest/Invoice/commands/write-off";
 }
 
 /** POST /api/manifest/iotalert/commands/acknowledge */
@@ -4556,19 +4521,19 @@ export function methodVideoUpdatePath(): string {
   return "/api/manifest/methodvideo/commands/update";
 }
 
-/** POST /api/manifest/note/commands/create */
+/** POST /api/manifest/Note/commands/create */
 export function noteCreatePath(): string {
-  return "/api/manifest/note/commands/create";
+  return "/api/manifest/Note/commands/create";
 }
 
-/** POST /api/manifest/note/commands/remove */
+/** POST /api/manifest/Note/commands/remove */
 export function noteRemovePath(): string {
-  return "/api/manifest/note/commands/remove";
+  return "/api/manifest/Note/commands/remove";
 }
 
-/** POST /api/manifest/note/commands/update */
+/** POST /api/manifest/Note/commands/update */
 export function noteUpdatePath(): string {
-  return "/api/manifest/note/commands/update";
+  return "/api/manifest/Note/commands/update";
 }
 
 /** POST /api/manifest/Notification/commands/create */
@@ -4641,49 +4606,49 @@ export function overrideAuditCreatePath(): string {
   return "/api/manifest/overrideaudit/commands/create";
 }
 
-/** POST /api/manifest/payment/commands/mark-chargeback */
+/** POST /api/manifest/Payment/commands/mark-chargeback */
 export function paymentMarkChargebackPath(): string {
-  return "/api/manifest/payment/commands/mark-chargeback";
+  return "/api/manifest/Payment/commands/mark-chargeback";
 }
 
-/** POST /api/manifest/payment/commands/mark-fraud-failed */
+/** POST /api/manifest/Payment/commands/mark-fraud-failed */
 export function paymentMarkFraudFailedPath(): string {
-  return "/api/manifest/payment/commands/mark-fraud-failed";
+  return "/api/manifest/Payment/commands/mark-fraud-failed";
 }
 
-/** POST /api/manifest/payment/commands/mark-fraud-passed */
+/** POST /api/manifest/Payment/commands/mark-fraud-passed */
 export function paymentMarkFraudPassedPath(): string {
-  return "/api/manifest/payment/commands/mark-fraud-passed";
+  return "/api/manifest/Payment/commands/mark-fraud-passed";
 }
 
-/** POST /api/manifest/payment/commands/mark-fraud-reviewed */
+/** POST /api/manifest/Payment/commands/mark-fraud-reviewed */
 export function paymentMarkFraudReviewedPath(): string {
-  return "/api/manifest/payment/commands/mark-fraud-reviewed";
+  return "/api/manifest/Payment/commands/mark-fraud-reviewed";
 }
 
-/** POST /api/manifest/payment/commands/partial-refund */
+/** POST /api/manifest/Payment/commands/partial-refund */
 export function paymentPartialRefundPath(): string {
-  return "/api/manifest/payment/commands/partial-refund";
+  return "/api/manifest/Payment/commands/partial-refund";
 }
 
-/** POST /api/manifest/payment/commands/process */
+/** POST /api/manifest/Payment/commands/process */
 export function paymentProcessPath(): string {
-  return "/api/manifest/payment/commands/process";
+  return "/api/manifest/Payment/commands/process";
 }
 
-/** POST /api/manifest/payment/commands/process-failed */
+/** POST /api/manifest/Payment/commands/process-failed */
 export function paymentProcessFailedPath(): string {
-  return "/api/manifest/payment/commands/process-failed";
+  return "/api/manifest/Payment/commands/process-failed";
 }
 
-/** POST /api/manifest/payment/commands/refund */
+/** POST /api/manifest/Payment/commands/refund */
 export function paymentRefundPath(): string {
-  return "/api/manifest/payment/commands/refund";
+  return "/api/manifest/Payment/commands/refund";
 }
 
-/** POST /api/manifest/payment/commands/update-fraud-status */
+/** POST /api/manifest/Payment/commands/update-fraud-status */
 export function paymentUpdateFraudStatusPath(): string {
-  return "/api/manifest/payment/commands/update-fraud-status";
+  return "/api/manifest/Payment/commands/update-fraud-status";
 }
 
 /** POST /api/manifest/paymentmethod/commands/create */
@@ -5366,29 +5331,29 @@ export function purchaseRequisitionItemUpdatePath(): string {
   return "/api/manifest/purchaserequisitionitem/commands/update";
 }
 
-/** POST /api/manifest/qacheck/commands/complete */
+/** POST /api/manifest/QACheck/commands/complete */
 export function qACheckCompletePath(): string {
-  return "/api/manifest/qacheck/commands/complete";
+  return "/api/manifest/QACheck/commands/complete";
 }
 
-/** POST /api/manifest/qacheck/commands/create */
+/** POST /api/manifest/QACheck/commands/create */
 export function qACheckCreatePath(): string {
-  return "/api/manifest/qacheck/commands/create";
+  return "/api/manifest/QACheck/commands/create";
 }
 
-/** POST /api/manifest/qacheck/commands/fail */
+/** POST /api/manifest/QACheck/commands/fail */
 export function qACheckFailPath(): string {
-  return "/api/manifest/qacheck/commands/fail";
+  return "/api/manifest/QACheck/commands/fail";
 }
 
-/** POST /api/manifest/qacheck/commands/reinspect */
+/** POST /api/manifest/QACheck/commands/reinspect */
 export function qACheckReinspectPath(): string {
-  return "/api/manifest/qacheck/commands/reinspect";
+  return "/api/manifest/QACheck/commands/reinspect";
 }
 
-/** POST /api/manifest/qacheck/commands/require-reinspection */
+/** POST /api/manifest/QACheck/commands/require-reinspection */
 export function qACheckRequireReinspectionPath(): string {
-  return "/api/manifest/qacheck/commands/require-reinspection";
+  return "/api/manifest/QACheck/commands/require-reinspection";
 }
 
 /** POST /api/manifest/qacorrectiveaction/commands/assign */
@@ -5581,24 +5546,24 @@ export function reorderSuggestionDismissPath(): string {
   return "/api/manifest/reordersuggestion/commands/dismiss";
 }
 
-/** POST /api/manifest/report/commands/create */
+/** POST /api/manifest/Report/commands/create */
 export function reportCreatePath(): string {
-  return "/api/manifest/report/commands/create";
+  return "/api/manifest/Report/commands/create";
 }
 
-/** POST /api/manifest/report/commands/remove */
+/** POST /api/manifest/Report/commands/remove */
 export function reportRemovePath(): string {
-  return "/api/manifest/report/commands/remove";
+  return "/api/manifest/Report/commands/remove";
 }
 
-/** POST /api/manifest/report/commands/share */
+/** POST /api/manifest/Report/commands/share */
 export function reportSharePath(): string {
-  return "/api/manifest/report/commands/share";
+  return "/api/manifest/Report/commands/share";
 }
 
-/** POST /api/manifest/report/commands/update */
+/** POST /api/manifest/Report/commands/update */
 export function reportUpdatePath(): string {
-  return "/api/manifest/report/commands/update";
+  return "/api/manifest/Report/commands/update";
 }
 
 /** POST /api/manifest/revenuerecognitionline/commands/cancel */
@@ -6321,74 +6286,74 @@ export function varianceReportReviewPath(): string {
   return "/api/manifest/variancereport/commands/review";
 }
 
-/** POST /api/manifest/vehicle/commands/create */
+/** POST /api/manifest/Vehicle/commands/create */
 export function vehicleCreatePath(): string {
-  return "/api/manifest/vehicle/commands/create";
+  return "/api/manifest/Vehicle/commands/create";
 }
 
-/** POST /api/manifest/vehicle/commands/remove */
+/** POST /api/manifest/Vehicle/commands/remove */
 export function vehicleRemovePath(): string {
-  return "/api/manifest/vehicle/commands/remove";
+  return "/api/manifest/Vehicle/commands/remove";
 }
 
-/** POST /api/manifest/vehicle/commands/retire */
+/** POST /api/manifest/Vehicle/commands/retire */
 export function vehicleRetirePath(): string {
-  return "/api/manifest/vehicle/commands/retire";
+  return "/api/manifest/Vehicle/commands/retire";
 }
 
-/** POST /api/manifest/vehicle/commands/return-from-maintenance */
+/** POST /api/manifest/Vehicle/commands/return-from-maintenance */
 export function vehicleReturnFromMaintenancePath(): string {
-  return "/api/manifest/vehicle/commands/return-from-maintenance";
+  return "/api/manifest/Vehicle/commands/return-from-maintenance";
 }
 
-/** POST /api/manifest/vehicle/commands/send-to-maintenance */
+/** POST /api/manifest/Vehicle/commands/send-to-maintenance */
 export function vehicleSendToMaintenancePath(): string {
-  return "/api/manifest/vehicle/commands/send-to-maintenance";
+  return "/api/manifest/Vehicle/commands/send-to-maintenance";
 }
 
-/** POST /api/manifest/vehicle/commands/update */
+/** POST /api/manifest/Vehicle/commands/update */
 export function vehicleUpdatePath(): string {
-  return "/api/manifest/vehicle/commands/update";
+  return "/api/manifest/Vehicle/commands/update";
 }
 
-/** POST /api/manifest/vendor/commands/add-contact */
+/** POST /api/manifest/Vendor/commands/add-contact */
 export function vendorAddContactPath(): string {
-  return "/api/manifest/vendor/commands/add-contact";
+  return "/api/manifest/Vendor/commands/add-contact";
 }
 
-/** POST /api/manifest/vendor/commands/approve */
+/** POST /api/manifest/Vendor/commands/approve */
 export function vendorApprovePath(): string {
-  return "/api/manifest/vendor/commands/approve";
+  return "/api/manifest/Vendor/commands/approve";
 }
 
-/** POST /api/manifest/vendor/commands/blacklist */
+/** POST /api/manifest/Vendor/commands/blacklist */
 export function vendorBlacklistPath(): string {
-  return "/api/manifest/vendor/commands/blacklist";
+  return "/api/manifest/Vendor/commands/blacklist";
 }
 
-/** POST /api/manifest/vendor/commands/create */
+/** POST /api/manifest/Vendor/commands/create */
 export function vendorCreatePath(): string {
-  return "/api/manifest/vendor/commands/create";
+  return "/api/manifest/Vendor/commands/create";
 }
 
-/** POST /api/manifest/vendor/commands/rate */
+/** POST /api/manifest/Vendor/commands/rate */
 export function vendorRatePath(): string {
-  return "/api/manifest/vendor/commands/rate";
+  return "/api/manifest/Vendor/commands/rate";
 }
 
-/** POST /api/manifest/vendor/commands/remove */
+/** POST /api/manifest/Vendor/commands/remove */
 export function vendorRemovePath(): string {
-  return "/api/manifest/vendor/commands/remove";
+  return "/api/manifest/Vendor/commands/remove";
 }
 
-/** POST /api/manifest/vendor/commands/suspend */
+/** POST /api/manifest/Vendor/commands/suspend */
 export function vendorSuspendPath(): string {
-  return "/api/manifest/vendor/commands/suspend";
+  return "/api/manifest/Vendor/commands/suspend";
 }
 
-/** POST /api/manifest/vendor/commands/update */
+/** POST /api/manifest/Vendor/commands/update */
 export function vendorUpdatePath(): string {
-  return "/api/manifest/vendor/commands/update";
+  return "/api/manifest/Vendor/commands/update";
 }
 
 /** POST /api/manifest/vendorcatalog/commands/create */
@@ -6496,29 +6461,29 @@ export function vendorRatingUpdatePath(): string {
   return "/api/manifest/vendorrating/commands/update";
 }
 
-/** POST /api/manifest/venue/commands/activate */
+/** POST /api/manifest/Venue/commands/activate */
 export function venueActivatePath(): string {
-  return "/api/manifest/venue/commands/activate";
+  return "/api/manifest/Venue/commands/activate";
 }
 
-/** POST /api/manifest/venue/commands/create */
+/** POST /api/manifest/Venue/commands/create */
 export function venueCreatePath(): string {
-  return "/api/manifest/venue/commands/create";
+  return "/api/manifest/Venue/commands/create";
 }
 
-/** POST /api/manifest/venue/commands/deactivate */
+/** POST /api/manifest/Venue/commands/deactivate */
 export function venueDeactivatePath(): string {
-  return "/api/manifest/venue/commands/deactivate";
+  return "/api/manifest/Venue/commands/deactivate";
 }
 
-/** POST /api/manifest/venue/commands/update */
+/** POST /api/manifest/Venue/commands/update */
 export function venueUpdatePath(): string {
-  return "/api/manifest/venue/commands/update";
+  return "/api/manifest/Venue/commands/update";
 }
 
-/** POST /api/manifest/venue/commands/update-capacity */
+/** POST /api/manifest/Venue/commands/update-capacity */
 export function venueUpdateCapacityPath(): string {
-  return "/api/manifest/venue/commands/update-capacity";
+  return "/api/manifest/Venue/commands/update-capacity";
 }
 
 /** POST /api/manifest/versionapproval/commands/approve */
@@ -6705,7 +6670,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BoardAnnotation.get.detail", path: "/api/boardannotation/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BoardProjection.get.list", path: "/api/manifest/boardprojection/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BoardProjection.get.detail", path: "/api/boardprojection/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Budget.get.list", path: "/api/manifest/budget/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Budget.get.list", path: "/api/manifest/Budget/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Budget.get.detail", path: "/api/budget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.list", path: "/api/manifest/budgetalert/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.detail", path: "/api/budgetalert/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6755,7 +6720,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountRecord.get.detail", path: "/api/cyclecountrecord/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CycleCountSession.get.list", path: "/api/manifest/cyclecountsession/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CycleCountSession.get.detail", path: "/api/cyclecountsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Deal.get.list", path: "/api/manifest/deal/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Deal.get.list", path: "/api/manifest/Deal/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Deal.get.detail", path: "/api/deal/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "DeliveryRoute.get.list", path: "/api/manifest/deliveryroute/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "DeliveryRoute.get.detail", path: "/api/deliveryroute/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6763,11 +6728,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "DisciplinaryAction.get.detail", path: "/api/disciplinaryaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.list", path: "/api/manifest/Dish/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.detail", path: "/api/dish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Document.get.list", path: "/api/manifest/document/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Document.get.list", path: "/api/manifest/Document/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Document.get.detail", path: "/api/document/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "DocumentVersion.get.list", path: "/api/manifest/documentversion/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "DocumentVersion.get.detail", path: "/api/documentversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Driver.get.list", path: "/api/manifest/driver/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Driver.get.list", path: "/api/manifest/Driver/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Driver.get.detail", path: "/api/driver/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailTemplate.get.list", path: "/api/manifest/emailtemplate/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailTemplate.get.detail", path: "/api/emailtemplate/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6781,7 +6746,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EmployeeDeduction.get.detail", path: "/api/employeededuction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EntityVersion.get.list", path: "/api/manifest/entityversion/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EntityVersion.get.detail", path: "/api/entityversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Equipment.get.list", path: "/api/manifest/equipment/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Equipment.get.list", path: "/api/manifest/Equipment/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Equipment.get.detail", path: "/api/equipment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Event.get.list", path: "/api/manifest/Event/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Event.get.detail", path: "/api/event/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6805,8 +6770,6 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventReport.get.detail", path: "/api/eventreport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventStaff.get.list", path: "/api/manifest/eventstaff/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventStaff.get.detail", path: "/api/eventstaff/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "EventStaffAssignment.get.list", path: "/api/manifest/eventstaffassignment/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "EventStaffAssignment.get.detail", path: "/api/eventstaffassignment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.list", path: "/api/manifest/eventsummary/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.detail", path: "/api/eventsummary/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventTimeline.get.list", path: "/api/manifest/eventtimeline/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6815,7 +6778,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventTimelineItem.get.detail", path: "/api/eventtimelineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventWaitlistEntry.get.list", path: "/api/manifest/eventwaitlistentry/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventWaitlistEntry.get.detail", path: "/api/eventwaitlistentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Facility.get.list", path: "/api/manifest/facility/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Facility.get.list", path: "/api/manifest/Facility/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Facility.get.detail", path: "/api/facility/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "FacilityArea.get.list", path: "/api/manifest/facilityarea/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "FacilityArea.get.detail", path: "/api/facilityarea/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6847,7 +6810,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventoryTransfer.get.detail", path: "/api/inventorytransfer/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransferItem.get.list", path: "/api/manifest/inventorytransferitem/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransferItem.get.detail", path: "/api/inventorytransferitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Invoice.get.list", path: "/api/manifest/invoice/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Invoice.get.list", path: "/api/manifest/Invoice/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Invoice.get.detail", path: "/api/invoice/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "IoTAlert.get.list", path: "/api/manifest/iotalert/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "IoTAlert.get.detail", path: "/api/iotalert/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6877,7 +6840,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "MenuDish.get.detail", path: "/api/menudish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "MethodVideo.get.list", path: "/api/manifest/methodvideo/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "MethodVideo.get.detail", path: "/api/methodvideo/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Note.get.list", path: "/api/manifest/note/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Note.get.list", path: "/api/manifest/Note/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Note.get.detail", path: "/api/note/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Notification.get.list", path: "/api/manifest/Notification/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Notification.get.detail", path: "/api/notification/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6889,7 +6852,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "OpenShift.get.detail", path: "/api/openshift/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "OverrideAudit.get.list", path: "/api/manifest/overrideaudit/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "OverrideAudit.get.detail", path: "/api/overrideaudit/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Payment.get.list", path: "/api/manifest/payment/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Payment.get.list", path: "/api/manifest/Payment/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Payment.get.detail", path: "/api/payment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PaymentMethod.get.list", path: "/api/manifest/paymentmethod/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PaymentMethod.get.detail", path: "/api/paymentmethod/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6943,7 +6906,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisition.get.detail", path: "/api/purchaserequisition/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.list", path: "/api/manifest/purchaserequisitionitem/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.detail", path: "/api/purchaserequisitionitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "QACheck.get.list", path: "/api/manifest/qacheck/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "QACheck.get.list", path: "/api/manifest/QACheck/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "QACheck.get.detail", path: "/api/qacheck/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "QACorrectiveAction.get.list", path: "/api/manifest/qacorrectiveaction/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "QACorrectiveAction.get.detail", path: "/api/qacorrectiveaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -6965,7 +6928,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeVersion.get.detail", path: "/api/recipeversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ReorderSuggestion.get.list", path: "/api/manifest/reordersuggestion/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ReorderSuggestion.get.detail", path: "/api/reordersuggestion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Report.get.list", path: "/api/manifest/report/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Report.get.list", path: "/api/manifest/Report/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Report.get.detail", path: "/api/report/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RevenueRecognitionLine.get.list", path: "/api/manifest/revenuerecognitionline/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RevenueRecognitionLine.get.detail", path: "/api/revenuerecognitionline/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -7027,9 +6990,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "User.get.detail", path: "/api/user/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.list", path: "/api/manifest/variancereport/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.detail", path: "/api/variancereport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Vehicle.get.list", path: "/api/manifest/vehicle/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vehicle.get.list", path: "/api/manifest/Vehicle/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Vehicle.get.detail", path: "/api/vehicle/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Vendor.get.list", path: "/api/manifest/vendor/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Vendor.get.list", path: "/api/manifest/Vendor/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Vendor.get.detail", path: "/api/vendor/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.list", path: "/api/manifest/vendorcatalog/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.detail", path: "/api/vendorcatalog/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -7039,7 +7002,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VendorContract.get.detail", path: "/api/vendorcontract/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorRating.get.list", path: "/api/manifest/vendorrating/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorRating.get.detail", path: "/api/vendorrating/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
-  { id: "Venue.get.list", path: "/api/manifest/venue/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Venue.get.list", path: "/api/manifest/Venue/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Venue.get.detail", path: "/api/venue/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VersionApproval.get.list", path: "/api/manifest/versionapproval/commands/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VersionApproval.get.detail", path: "/api/versionapproval/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -7123,14 +7086,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BoardProjection.move", path: "/api/manifest/boardprojection/commands/move", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BoardProjection.remove", path: "/api/manifest/boardprojection/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BoardProjection.resize", path: "/api/manifest/boardprojection/commands/resize", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.addLineItem", path: "/api/manifest/budget/commands/add-line-item", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.approve", path: "/api/manifest/budget/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.create", path: "/api/manifest/budget/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.lock", path: "/api/manifest/budget/commands/lock", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.recordVariance", path: "/api/manifest/budget/commands/record-variance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.refresh", path: "/api/manifest/budget/commands/refresh", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.remove", path: "/api/manifest/budget/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Budget.update", path: "/api/manifest/budget/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.addLineItem", path: "/api/manifest/Budget/commands/add-line-item", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.approve", path: "/api/manifest/Budget/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.create", path: "/api/manifest/Budget/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.lock", path: "/api/manifest/Budget/commands/lock", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.recordVariance", path: "/api/manifest/Budget/commands/record-variance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.refresh", path: "/api/manifest/Budget/commands/refresh", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.remove", path: "/api/manifest/Budget/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Budget.update", path: "/api/manifest/Budget/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetAlert.acknowledge", path: "/api/manifest/budgetalert/commands/acknowledge", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetAlert.create", path: "/api/manifest/budgetalert/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetAlert.markResolved", path: "/api/manifest/budgetalert/commands/mark-resolved", method: "POST", source: "command", auth: true, tenant: true },
@@ -7245,14 +7208,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountSession.create", path: "/api/manifest/cyclecountsession/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountSession.finalize", path: "/api/manifest/cyclecountsession/commands/finalize", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountSession.start", path: "/api/manifest/cyclecountsession/commands/start", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.abandon", path: "/api/manifest/deal/commands/abandon", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.assign", path: "/api/manifest/deal/commands/assign", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.close", path: "/api/manifest/deal/commands/close", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.create", path: "/api/manifest/deal/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.reopen", path: "/api/manifest/deal/commands/reopen", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.updateProbability", path: "/api/manifest/deal/commands/update-probability", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.updateStage", path: "/api/manifest/deal/commands/update-stage", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Deal.updateValue", path: "/api/manifest/deal/commands/update-value", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.abandon", path: "/api/manifest/Deal/commands/abandon", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.assign", path: "/api/manifest/Deal/commands/assign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.close", path: "/api/manifest/Deal/commands/close", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.create", path: "/api/manifest/Deal/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.reopen", path: "/api/manifest/Deal/commands/reopen", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.updateProbability", path: "/api/manifest/Deal/commands/update-probability", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.updateStage", path: "/api/manifest/Deal/commands/update-stage", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Deal.updateValue", path: "/api/manifest/Deal/commands/update-value", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DeliveryRoute.assignDriver", path: "/api/manifest/deliveryroute/commands/assign-driver", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DeliveryRoute.complete", path: "/api/manifest/deliveryroute/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DeliveryRoute.create", path: "/api/manifest/deliveryroute/commands/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -7271,22 +7234,22 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Dish.update", path: "/api/manifest/Dish/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updateLeadTime", path: "/api/manifest/Dish/commands/update-lead-time", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updatePricing", path: "/api/manifest/Dish/commands/update-pricing", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Document.create", path: "/api/manifest/document/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Document.markFailed", path: "/api/manifest/document/commands/mark-failed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Document.markParsed", path: "/api/manifest/document/commands/mark-parsed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Document.remove", path: "/api/manifest/document/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Document.create", path: "/api/manifest/Document/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Document.markFailed", path: "/api/manifest/Document/commands/mark-failed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Document.markParsed", path: "/api/manifest/Document/commands/mark-parsed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Document.remove", path: "/api/manifest/Document/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.approve", path: "/api/manifest/documentversion/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.create", path: "/api/manifest/documentversion/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.markPublished", path: "/api/manifest/documentversion/commands/mark-published", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.restore", path: "/api/manifest/documentversion/commands/restore", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.supersede", path: "/api/manifest/documentversion/commands/supersede", method: "POST", source: "command", auth: true, tenant: true },
   { id: "DocumentVersion.updateContent", path: "/api/manifest/documentversion/commands/update-content", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.create", path: "/api/manifest/driver/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.reactivate", path: "/api/manifest/driver/commands/reactivate", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.remove", path: "/api/manifest/driver/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.renewLicense", path: "/api/manifest/driver/commands/renew-license", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.suspend", path: "/api/manifest/driver/commands/suspend", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Driver.update", path: "/api/manifest/driver/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.create", path: "/api/manifest/Driver/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.reactivate", path: "/api/manifest/Driver/commands/reactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.remove", path: "/api/manifest/Driver/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.renewLicense", path: "/api/manifest/Driver/commands/renew-license", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.suspend", path: "/api/manifest/Driver/commands/suspend", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Driver.update", path: "/api/manifest/Driver/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.create", path: "/api/manifest/emailtemplate/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.softDelete", path: "/api/manifest/emailtemplate/commands/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailTemplate.update", path: "/api/manifest/emailtemplate/commands/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -7311,13 +7274,13 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EntityVersion.create", path: "/api/manifest/entityversion/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EntityVersion.reject", path: "/api/manifest/entityversion/commands/reject", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EntityVersion.restore", path: "/api/manifest/entityversion/commands/restore", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.create", path: "/api/manifest/equipment/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.recordMaintenance", path: "/api/manifest/equipment/commands/record-maintenance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.recordUsage", path: "/api/manifest/equipment/commands/record-usage", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.retire", path: "/api/manifest/equipment/commands/retire", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.scheduleMaintenance", path: "/api/manifest/equipment/commands/schedule-maintenance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.updateCondition", path: "/api/manifest/equipment/commands/update-condition", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Equipment.updateStatus", path: "/api/manifest/equipment/commands/update-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.create", path: "/api/manifest/Equipment/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.recordMaintenance", path: "/api/manifest/Equipment/commands/record-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.recordUsage", path: "/api/manifest/Equipment/commands/record-usage", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.retire", path: "/api/manifest/Equipment/commands/retire", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.scheduleMaintenance", path: "/api/manifest/Equipment/commands/schedule-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.updateCondition", path: "/api/manifest/Equipment/commands/update-condition", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Equipment.updateStatus", path: "/api/manifest/Equipment/commands/update-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.archive", path: "/api/manifest/Event/commands/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.cancel", path: "/api/manifest/Event/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.confirm", path: "/api/manifest/Event/commands/confirm", method: "POST", source: "command", auth: true, tenant: true },
@@ -7396,11 +7359,6 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventStaff.unassign", path: "/api/manifest/eventstaff/commands/unassign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.updateRole", path: "/api/manifest/eventstaff/commands/update-role", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.updateShift", path: "/api/manifest/eventstaff/commands/update-shift", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "EventStaffAssignment.assign", path: "/api/manifest/eventstaffassignment/commands/assign", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "EventStaffAssignment.cancel", path: "/api/manifest/eventstaffassignment/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "EventStaffAssignment.confirm", path: "/api/manifest/eventstaffassignment/commands/confirm", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "EventStaffAssignment.updateRole", path: "/api/manifest/eventstaffassignment/commands/update-role", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "EventStaffAssignment.updateShift", path: "/api/manifest/eventstaffassignment/commands/update-shift", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.create", path: "/api/manifest/eventsummary/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.refresh", path: "/api/manifest/eventsummary/commands/refresh", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.update", path: "/api/manifest/eventsummary/commands/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -7422,11 +7380,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventWaitlistEntry.promote", path: "/api/manifest/eventwaitlistentry/commands/promote", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventWaitlistEntry.seat", path: "/api/manifest/eventwaitlistentry/commands/seat", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventWaitlistEntry.updateRsvp", path: "/api/manifest/eventwaitlistentry/commands/update-rsvp", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Facility.create", path: "/api/manifest/facility/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Facility.edit", path: "/api/manifest/facility/commands/edit", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Facility.remove", path: "/api/manifest/facility/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Facility.restoreFromMaintenance", path: "/api/manifest/facility/commands/restore-from-maintenance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Facility.sendToMaintenance", path: "/api/manifest/facility/commands/send-to-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.create", path: "/api/manifest/Facility/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.edit", path: "/api/manifest/Facility/commands/edit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.remove", path: "/api/manifest/Facility/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.restoreFromMaintenance", path: "/api/manifest/Facility/commands/restore-from-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Facility.sendToMaintenance", path: "/api/manifest/Facility/commands/send-to-maintenance", method: "POST", source: "command", auth: true, tenant: true },
   { id: "FacilityArea.closeForMaintenance", path: "/api/manifest/facilityarea/commands/close-for-maintenance", method: "POST", source: "command", auth: true, tenant: true },
   { id: "FacilityArea.create", path: "/api/manifest/facilityarea/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "FacilityArea.edit", path: "/api/manifest/facilityarea/commands/edit", method: "POST", source: "command", auth: true, tenant: true },
@@ -7499,16 +7457,16 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventoryTransferItem.addItem", path: "/api/manifest/inventorytransferitem/commands/add-item", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventoryTransferItem.removeItem", path: "/api/manifest/inventorytransferitem/commands/remove-item", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventoryTransferItem.updateQuantity", path: "/api/manifest/inventorytransferitem/commands/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.applyPayment", path: "/api/manifest/invoice/commands/apply-payment", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.markAsPaid", path: "/api/manifest/invoice/commands/mark-as-paid", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.markOverdue", path: "/api/manifest/invoice/commands/mark-overdue", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.markViewed", path: "/api/manifest/invoice/commands/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.recordRefund", path: "/api/manifest/invoice/commands/record-refund", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.send", path: "/api/manifest/invoice/commands/send", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.sendReminder", path: "/api/manifest/invoice/commands/send-reminder", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.updateLineItems", path: "/api/manifest/invoice/commands/update-line-items", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.voidInvoice", path: "/api/manifest/invoice/commands/void-invoice", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Invoice.writeOff", path: "/api/manifest/invoice/commands/write-off", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.applyPayment", path: "/api/manifest/Invoice/commands/apply-payment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.markAsPaid", path: "/api/manifest/Invoice/commands/mark-as-paid", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.markOverdue", path: "/api/manifest/Invoice/commands/mark-overdue", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.markViewed", path: "/api/manifest/Invoice/commands/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.recordRefund", path: "/api/manifest/Invoice/commands/record-refund", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.send", path: "/api/manifest/Invoice/commands/send", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.sendReminder", path: "/api/manifest/Invoice/commands/send-reminder", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.updateLineItems", path: "/api/manifest/Invoice/commands/update-line-items", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.voidInvoice", path: "/api/manifest/Invoice/commands/void-invoice", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.writeOff", path: "/api/manifest/Invoice/commands/write-off", method: "POST", source: "command", auth: true, tenant: true },
   { id: "IoTAlert.acknowledge", path: "/api/manifest/iotalert/commands/acknowledge", method: "POST", source: "command", auth: true, tenant: true },
   { id: "IoTAlert.create", path: "/api/manifest/iotalert/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "IoTAlert.markResolved", path: "/api/manifest/iotalert/commands/mark-resolved", method: "POST", source: "command", auth: true, tenant: true },
@@ -7584,9 +7542,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "MethodVideo.create", path: "/api/manifest/methodvideo/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "MethodVideo.remove", path: "/api/manifest/methodvideo/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "MethodVideo.update", path: "/api/manifest/methodvideo/commands/update", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Note.create", path: "/api/manifest/note/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Note.remove", path: "/api/manifest/note/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Note.update", path: "/api/manifest/note/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Note.create", path: "/api/manifest/Note/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Note.remove", path: "/api/manifest/Note/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Note.update", path: "/api/manifest/Note/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Notification.create", path: "/api/manifest/Notification/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Notification.markDismissed", path: "/api/manifest/Notification/commands/mark-dismissed", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Notification.markRead", path: "/api/manifest/Notification/commands/mark-read", method: "POST", source: "command", auth: true, tenant: true },
@@ -7601,15 +7559,15 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "OpenShift.create", path: "/api/manifest/openshift/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.authorize", path: "/api/manifest/overrideaudit/commands/authorize", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.create", path: "/api/manifest/overrideaudit/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.markChargeback", path: "/api/manifest/payment/commands/mark-chargeback", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.markFraudFailed", path: "/api/manifest/payment/commands/mark-fraud-failed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.markFraudPassed", path: "/api/manifest/payment/commands/mark-fraud-passed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.markFraudReviewed", path: "/api/manifest/payment/commands/mark-fraud-reviewed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.partialRefund", path: "/api/manifest/payment/commands/partial-refund", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.process", path: "/api/manifest/payment/commands/process", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.processFailed", path: "/api/manifest/payment/commands/process-failed", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.refund", path: "/api/manifest/payment/commands/refund", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Payment.updateFraudStatus", path: "/api/manifest/payment/commands/update-fraud-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markChargeback", path: "/api/manifest/Payment/commands/mark-chargeback", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markFraudFailed", path: "/api/manifest/Payment/commands/mark-fraud-failed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markFraudPassed", path: "/api/manifest/Payment/commands/mark-fraud-passed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markFraudReviewed", path: "/api/manifest/Payment/commands/mark-fraud-reviewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.partialRefund", path: "/api/manifest/Payment/commands/partial-refund", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.process", path: "/api/manifest/Payment/commands/process", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.processFailed", path: "/api/manifest/Payment/commands/process-failed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.refund", path: "/api/manifest/Payment/commands/refund", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.updateFraudStatus", path: "/api/manifest/Payment/commands/update-fraud-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.create", path: "/api/manifest/paymentmethod/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.flagForFraud", path: "/api/manifest/paymentmethod/commands/flag-for-fraud", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.markAsDefault", path: "/api/manifest/paymentmethod/commands/mark-as-default", method: "POST", source: "command", auth: true, tenant: true },
@@ -7746,11 +7704,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisitionItem.create", path: "/api/manifest/purchaserequisitionitem/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.remove", path: "/api/manifest/purchaserequisitionitem/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.update", path: "/api/manifest/purchaserequisitionitem/commands/update", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "QACheck.complete", path: "/api/manifest/qacheck/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "QACheck.create", path: "/api/manifest/qacheck/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "QACheck.fail", path: "/api/manifest/qacheck/commands/fail", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "QACheck.reinspect", path: "/api/manifest/qacheck/commands/reinspect", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "QACheck.requireReinspection", path: "/api/manifest/qacheck/commands/require-reinspection", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.complete", path: "/api/manifest/QACheck/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.create", path: "/api/manifest/QACheck/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.fail", path: "/api/manifest/QACheck/commands/fail", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.reinspect", path: "/api/manifest/QACheck/commands/reinspect", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "QACheck.requireReinspection", path: "/api/manifest/QACheck/commands/require-reinspection", method: "POST", source: "command", auth: true, tenant: true },
   { id: "QACorrectiveAction.assign", path: "/api/manifest/qacorrectiveaction/commands/assign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "QACorrectiveAction.create", path: "/api/manifest/qacorrectiveaction/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "QACorrectiveAction.dismiss", path: "/api/manifest/qacorrectiveaction/commands/dismiss", method: "POST", source: "command", auth: true, tenant: true },
@@ -7789,10 +7747,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ReorderSuggestion.autoAccept", path: "/api/manifest/reordersuggestion/commands/auto-accept", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ReorderSuggestion.create", path: "/api/manifest/reordersuggestion/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ReorderSuggestion.dismiss", path: "/api/manifest/reordersuggestion/commands/dismiss", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Report.create", path: "/api/manifest/report/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Report.remove", path: "/api/manifest/report/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Report.share", path: "/api/manifest/report/commands/share", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Report.update", path: "/api/manifest/report/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Report.create", path: "/api/manifest/Report/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Report.remove", path: "/api/manifest/Report/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Report.share", path: "/api/manifest/Report/commands/share", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Report.update", path: "/api/manifest/Report/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RevenueRecognitionLine.cancel", path: "/api/manifest/revenuerecognitionline/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RevenueRecognitionLine.create", path: "/api/manifest/revenuerecognitionline/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RevenueRecognitionLine.recognize", path: "/api/manifest/revenuerecognitionline/commands/recognize", method: "POST", source: "command", auth: true, tenant: true },
@@ -7937,20 +7895,20 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VarianceReport.create", path: "/api/manifest/variancereport/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.reject", path: "/api/manifest/variancereport/commands/reject", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.review", path: "/api/manifest/variancereport/commands/review", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.create", path: "/api/manifest/vehicle/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.remove", path: "/api/manifest/vehicle/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.retire", path: "/api/manifest/vehicle/commands/retire", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.returnFromMaintenance", path: "/api/manifest/vehicle/commands/return-from-maintenance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.sendToMaintenance", path: "/api/manifest/vehicle/commands/send-to-maintenance", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vehicle.update", path: "/api/manifest/vehicle/commands/update", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.addContact", path: "/api/manifest/vendor/commands/add-contact", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.approve", path: "/api/manifest/vendor/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.blacklist", path: "/api/manifest/vendor/commands/blacklist", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.create", path: "/api/manifest/vendor/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.rate", path: "/api/manifest/vendor/commands/rate", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.remove", path: "/api/manifest/vendor/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.suspend", path: "/api/manifest/vendor/commands/suspend", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Vendor.update", path: "/api/manifest/vendor/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.create", path: "/api/manifest/Vehicle/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.remove", path: "/api/manifest/Vehicle/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.retire", path: "/api/manifest/Vehicle/commands/retire", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.returnFromMaintenance", path: "/api/manifest/Vehicle/commands/return-from-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.sendToMaintenance", path: "/api/manifest/Vehicle/commands/send-to-maintenance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vehicle.update", path: "/api/manifest/Vehicle/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.addContact", path: "/api/manifest/Vendor/commands/add-contact", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.approve", path: "/api/manifest/Vendor/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.blacklist", path: "/api/manifest/Vendor/commands/blacklist", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.create", path: "/api/manifest/Vendor/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.rate", path: "/api/manifest/Vendor/commands/rate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.remove", path: "/api/manifest/Vendor/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.suspend", path: "/api/manifest/Vendor/commands/suspend", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Vendor.update", path: "/api/manifest/Vendor/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.create", path: "/api/manifest/vendorcatalog/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.deactivate", path: "/api/manifest/vendorcatalog/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.reactivate", path: "/api/manifest/vendorcatalog/commands/reactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -7972,11 +7930,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VendorContract.updateCompliance", path: "/api/manifest/vendorcontract/commands/update-compliance", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorRating.create", path: "/api/manifest/vendorrating/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorRating.update", path: "/api/manifest/vendorrating/commands/update", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Venue.activate", path: "/api/manifest/venue/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Venue.create", path: "/api/manifest/venue/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Venue.deactivate", path: "/api/manifest/venue/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Venue.update", path: "/api/manifest/venue/commands/update", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "Venue.updateCapacity", path: "/api/manifest/venue/commands/update-capacity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.activate", path: "/api/manifest/Venue/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.create", path: "/api/manifest/Venue/commands/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.deactivate", path: "/api/manifest/Venue/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.update", path: "/api/manifest/Venue/commands/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.updateCapacity", path: "/api/manifest/Venue/commands/update-capacity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VersionApproval.approve", path: "/api/manifest/versionapproval/commands/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VersionApproval.cancel", path: "/api/manifest/versionapproval/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VersionApproval.create", path: "/api/manifest/versionapproval/commands/create", method: "POST", source: "command", auth: true, tenant: true },

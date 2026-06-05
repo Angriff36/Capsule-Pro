@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: manifest/runtime/src/manifest-runtime-factory.ts (edit), packages/database/prisma/migrations/20260605074938_add_event_staff_attendance_columns/migration.sql (edit), packages/database/prisma/migrations/20260605074938_add_event_staff_attendance_columns/migration.sql (create), manifest/scripts/entity-domain-map.mjs (edit), packages/database/prisma/schema.prisma (edit)
+[proactive bridge @ 90% context — saved before compacting]
+Files (1):
+  apps/api/app/api/events/[eventId]/run-sheet/route.ts (edit)
 
 # === END COGNILAYER ===

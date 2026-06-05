@@ -27,7 +27,7 @@ vi.mock("@repo/database", () => ({
     inventoryItem: {
       findMany: vi.fn(),
     },
-    eventStaffAssignment: {
+    eventStaff: {
       findMany: vi.fn(),
     },
     $queryRaw: vi.fn(),
@@ -66,8 +66,8 @@ const mockDishFindMany = vi.mocked(database.dish.findMany);
 const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany);
 const mockInventoryAlertFindMany = vi.mocked(database.inventoryAlert.findMany);
 const mockInventoryItemFindMany = vi.mocked(database.inventoryItem.findMany);
-const mockEventStaffAssignmentFindMany = vi.mocked(
-  database.eventStaffAssignment.findMany
+const mockEventStaffFindMany = vi.mocked(
+  database.eventStaff.findMany
 );
 const mockQueryRaw = vi.mocked(database.$queryRaw);
 
@@ -91,7 +91,7 @@ describe("AI Suggestions API", () => {
     mockPrepTaskFindMany.mockResolvedValue([]);
     mockInventoryAlertFindMany.mockResolvedValue([]);
     mockInventoryItemFindMany.mockResolvedValue([]);
-    mockEventStaffAssignmentFindMany.mockResolvedValue([]);
+    mockEventStaffFindMany.mockResolvedValue([]);
     mockQueryRaw.mockResolvedValue([]);
   });
 
@@ -517,7 +517,7 @@ describe("AI Suggestion Types", () => {
     mockPrepTaskFindMany.mockResolvedValue([]);
     mockInventoryAlertFindMany.mockResolvedValue([]);
     mockInventoryItemFindMany.mockResolvedValue([]);
-    mockEventStaffAssignmentFindMany.mockResolvedValue([]);
+    mockEventStaffFindMany.mockResolvedValue([]);
     mockQueryRaw.mockResolvedValue([]);
   });
 

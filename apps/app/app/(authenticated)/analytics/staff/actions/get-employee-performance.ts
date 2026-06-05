@@ -185,11 +185,11 @@ export async function getEmployeePerformance(
     Array<{ event_count: string }>
   >(
     `
-    SELECT COUNT(DISTINCT event_id) as event_count
-    FROM tenant_events.event_staff_assignments
-    WHERE tenant_id = $1
-      AND employee_id = $2
-      AND deleted_at IS NULL
+    SELECT COUNT(DISTINCT eventId) as event_count
+    FROM tenant_events.event_staff
+    WHERE tenantId = $1
+      AND staffMemberId = $2
+      AND deletedAt IS NULL
     `,
     tenantId,
     employeeId
@@ -404,10 +404,10 @@ export async function getEmployeePerformanceSummary(): Promise<EmployeePerforman
       GROUP BY employee_id
     ) client_stats ON u.id = client_stats.employeeId
     LEFT JOIN (
-      SELECT employee_id, COUNT(DISTINCT event_id) as event_count
-      FROM tenant_events.event_staff_assignments
-      WHERE tenant_id = $1 AND deleted_at IS NULL
-      GROUP BY employee_id
+      SELECT staffMemberId as employee_id, COUNT(DISTINCT eventId) as event_count
+      FROM tenant_events.event_staff
+      WHERE tenantId = $1 AND deletedAt IS NULL
+      GROUP BY staffMemberId
     ) event_stats ON u.id = event_stats.employeeId
     WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
     `,
@@ -742,10 +742,10 @@ export async function getEmployeeList(
       GROUP BY employee_id
     ) client_stats ON u.id = client_stats.employeeId
     LEFT JOIN (
-      SELECT employee_id, COUNT(DISTINCT event_id) as event_count
-      FROM tenant_events.event_staff_assignments
-      WHERE tenant_id = $1 AND deleted_at IS NULL
-      GROUP BY employee_id
+      SELECT staffMemberId as employee_id, COUNT(DISTINCT eventId) as event_count
+      FROM tenant_events.event_staff
+      WHERE tenantId = $1 AND deletedAt IS NULL
+      GROUP BY staffMemberId
     ) event_stats ON u.id = event_stats.employeeId
     WHERE u.tenant_id = $1 AND u.deleted_at IS NULL
     `,

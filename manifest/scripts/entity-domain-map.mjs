@@ -140,7 +140,6 @@ export const ENTITY_DOMAIN_MAP = {
   CrmScoringRule: "crm/scoring-rules",
   Deal: "crm/deals",
   Venue: "events/venues",
-  EventStaffAssignment: "events/staff-assignments",
   EventTimeline: "events/timelines",
   TimelineTask: "events/timeline-tasks",
   EventImport: "events/imports",

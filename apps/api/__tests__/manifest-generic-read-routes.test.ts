@@ -205,9 +205,9 @@ describe("Generic Manifest read routes", () => {
     });
 
     it("should use overridden accessor for EventStaff", async () => {
-      // EventStaff maps to eventStaffAssignment
+      // EventStaff maps to eventStaff
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (database as any).eventStaffAssignment = {
+      (database as any).eventStaff = {
         count: vi.fn().mockResolvedValue(0),
         findMany: vi.fn().mockResolvedValue([]),
       };

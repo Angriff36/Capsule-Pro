@@ -54,7 +54,6 @@
     "EventSummary": "event_summaries",
     "EventStaff": "event_staff",
     "Venue": "venues",
-    "EventStaffAssignment": "event_staff_assignments",
     "EventTimeline": "event_timeline",
     "TimelineTask": "timeline_tasks",
     "EventImport": "event_imports",
@@ -892,16 +891,6 @@
       "cateringNotes": "catering_notes",
       "layoutImageUrl": "layout_image_url",
       "isActive": "is_active",
-      "createdAt": "created_at",
-      "updatedAt": "updated_at",
-      "deletedAt": "deleted_at"
-    },
-    "EventStaffAssignment": {
-      "tenantId": "tenant_id",
-      "eventId": "event_id",
-      "employeeId": "employee_id",
-      "startTime": "start_time",
-      "endTime": "end_time",
       "createdAt": "created_at",
       "updatedAt": "updated_at",
       "deletedAt": "deleted_at"
@@ -2947,17 +2936,6 @@
       "updatedAt": "Timestamptz(6)",
       "deletedAt": "Timestamptz(6)"
     },
-    "EventStaffAssignment": {
-      "tenantId": "Uuid",
-      "id": "Uuid",
-      "eventId": "Uuid",
-      "employeeId": "Uuid",
-      "startTime": "Timestamptz(6)",
-      "endTime": "Timestamptz(6)",
-      "createdAt": "Timestamptz(6)",
-      "updatedAt": "Timestamptz(6)",
-      "deletedAt": "Timestamptz(6)"
-    },
     "EventTimeline": {
       "tenantId": "Uuid",
       "id": "Uuid",
@@ -4704,7 +4682,7 @@
         "@default(\"MEDIUM\")"
       ],
       "dunningStage": [
-        "@default(\"CURRENT\")"
+        "@default(0)"
       ],
       "daysOverdue": [
         "@default(0)"
@@ -5467,6 +5445,9 @@
       ],
       "status": [
         "@default(\"assigned\")"
+      ],
+      "noShowReason": [
+        "@default(\"\")"
       ]
     },
     "Venue": {
@@ -5481,14 +5462,6 @@
       ],
       "isActive": [
         "@default(true)"
-      ],
-      "updatedAt": [
-        "@updatedAt"
-      ]
-    },
-    "EventStaffAssignment": {
-      "id": [
-        "@default(dbgenerated(\"gen_random_uuid()\"))"
       ],
       "updatedAt": [
         "@updatedAt"
@@ -8736,14 +8709,6 @@
         "id"
       ]
     ],
-    "EventStaffAssignment": [
-      [
-        "eventId"
-      ],
-      [
-        "employeeId"
-      ]
-    ],
     "EventTimeline": [
       [
         "eventId"
@@ -9847,9 +9812,6 @@
     "Venue": {
       "tenantId": "id"
     },
-    "EventStaffAssignment": {
-      "tenantId": "id"
-    },
     "EventTimeline": {
       "tenantId": "id"
     },
@@ -10226,7 +10188,6 @@
       "EventSummary": "tenant_events",
       "EventStaff": "tenant_events",
       "Venue": "tenant",
-      "EventStaffAssignment": "tenant_events",
       "EventTimeline": "tenant_events",
       "TimelineTask": "tenant_events",
       "EventImport": "tenant_events",
@@ -10586,10 +10547,6 @@
       "id"
     ],
     "Venue": [
-      "tenantId",
-      "id"
-    ],
-    "EventStaffAssignment": [
       "tenantId",
       "id"
     ],

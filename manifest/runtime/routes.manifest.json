@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-04T08:56:54.750Z",
+  "generatedAt": "2026-06-05T10:51:56.064Z",
   "basePath": "/api",
   "routes": [
     {
@@ -1950,36 +1950,6 @@
       "source": {
         "kind": "entity-read",
         "entity": "EventStaff"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.get.list",
-      "path": "/api/eventstaffassignment/list",
-      "method": "GET",
-      "params": [],
-      "source": {
-        "kind": "entity-read",
-        "entity": "EventStaffAssignment"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.get.detail",
-      "path": "/api/eventstaffassignment/:id",
-      "method": "GET",
-      "params": [
-        {
-          "name": "id",
-          "type": "string",
-          "location": "path"
-        }
-      ],
-      "source": {
-        "kind": "entity-read",
-        "entity": "EventStaffAssignment"
       },
       "auth": true,
       "tenant": true
@@ -5706,7 +5676,7 @@
         },
         {
           "name": "dueAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -6118,7 +6088,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -6522,7 +6492,7 @@
         },
         {
           "name": "expiresAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -6625,7 +6595,7 @@
         },
         {
           "name": "expiresAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -6710,7 +6680,7 @@
       "params": [
         {
           "name": "nextRunAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -6762,7 +6732,7 @@
       "params": [
         {
           "name": "sentDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -6794,7 +6764,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7513,7 +7483,7 @@
         },
         {
           "name": "amount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7577,7 +7547,7 @@
         },
         {
           "name": "totalAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7629,7 +7599,7 @@
       "params": [
         {
           "name": "actualSpent",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7699,7 +7669,7 @@
         },
         {
           "name": "allocatedAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7832,7 +7802,7 @@
         },
         {
           "name": "budgetedAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -7884,13 +7854,13 @@
       "params": [
         {
           "name": "budgetedAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "actualAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -8309,7 +8279,7 @@
         },
         {
           "name": "deliveryDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -8461,7 +8431,7 @@
       "params": [
         {
           "name": "deliveryDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -8798,7 +8768,7 @@
         },
         {
           "name": "defaultPaymentTerms",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -8946,7 +8916,7 @@
         },
         {
           "name": "defaultPaymentTerms",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9234,7 +9204,7 @@
         },
         {
           "name": "interactionDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9252,7 +9222,7 @@
         },
         {
           "name": "followUpDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9317,7 +9287,7 @@
       "params": [
         {
           "name": "followUpDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9349,7 +9319,7 @@
         },
         {
           "name": "interactionDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9367,7 +9337,7 @@
         },
         {
           "name": "followUpDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -9495,13 +9465,13 @@
         },
         {
           "name": "promiseDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "nextActionDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -9750,7 +9720,7 @@
         },
         {
           "name": "paymentDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -10063,7 +10033,7 @@
         },
         {
           "name": "paymentDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -11153,7 +11123,7 @@
         },
         {
           "name": "dueAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -11499,7 +11469,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -11673,7 +11643,7 @@
         },
         {
           "name": "expectedCloseDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -11836,7 +11806,7 @@
         },
         {
           "name": "routeDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -12076,13 +12046,13 @@
         },
         {
           "name": "pricePerPerson",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "costPerPerson",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -12319,13 +12289,13 @@
       "params": [
         {
           "name": "pricePerPerson",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "costPerPerson",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -12634,7 +12604,7 @@
         },
         {
           "name": "licenseExpiry",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -12699,7 +12669,7 @@
         },
         {
           "name": "licenseExpiry",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -12769,7 +12739,7 @@
         },
         {
           "name": "licenseExpiry",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13033,7 +13003,7 @@
         },
         {
           "name": "dayOfWeek",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13129,7 +13099,7 @@
       "params": [
         {
           "name": "dayOfWeek",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13659,7 +13629,7 @@
         },
         {
           "name": "purchaseDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13703,7 +13673,7 @@
       "params": [
         {
           "name": "maintenanceDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13799,7 +13769,7 @@
       "params": [
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -13978,7 +13948,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -14014,6 +13984,30 @@
         },
         {
           "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budget",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ticketPrice",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ticketTier",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventFormat",
           "type": "string",
           "location": "body",
           "required": true
@@ -14104,7 +14098,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -14143,6 +14137,30 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "budget",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ticketPrice",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ticketTier",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventFormat",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -14160,7 +14178,7 @@
       "params": [
         {
           "name": "newEventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -14264,7 +14282,7 @@
         },
         {
           "name": "totalBudgetAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -14310,13 +14328,13 @@
       "params": [
         {
           "name": "totalBudgetAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "totalActualAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -14410,7 +14428,7 @@
         },
         {
           "name": "expiresAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -14539,7 +14557,7 @@
         },
         {
           "name": "expiresAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -14571,7 +14589,7 @@
         },
         {
           "name": "quantity",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -14589,7 +14607,7 @@
         },
         {
           "name": "sortOrder",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -14641,7 +14659,7 @@
         },
         {
           "name": "sortOrder",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -14681,7 +14699,7 @@
       "params": [
         {
           "name": "quantity",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -15972,148 +15990,6 @@
       "tenant": true
     },
     {
-      "id": "EventStaffAssignment.assign",
-      "path": "/api/manifest/EventStaffAssignment/commands/assign",
-      "method": "POST",
-      "params": [
-        {
-          "name": "eventId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "staffMemberId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "role",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shiftStart",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shiftEnd",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "EventStaffAssignment",
-        "command": "assign"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.cancel",
-      "path": "/api/manifest/EventStaffAssignment/commands/cancel",
-      "method": "POST",
-      "params": [
-        {
-          "name": "reason",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "EventStaffAssignment",
-        "command": "cancel"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.confirm",
-      "path": "/api/manifest/EventStaffAssignment/commands/confirm",
-      "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "EventStaffAssignment",
-        "command": "confirm"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.updateRole",
-      "path": "/api/manifest/EventStaffAssignment/commands/update-role",
-      "method": "POST",
-      "params": [
-        {
-          "name": "role",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "EventStaffAssignment",
-        "command": "updateRole"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "EventStaffAssignment.updateShift",
-      "path": "/api/manifest/EventStaffAssignment/commands/update-shift",
-      "method": "POST",
-      "params": [
-        {
-          "name": "shiftStart",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shiftEnd",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "EventStaffAssignment",
-        "command": "updateShift"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
       "id": "EventSummary.create",
       "path": "/api/manifest/EventSummary/commands/create",
       "method": "POST",
@@ -16430,7 +16306,7 @@
         },
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -16553,7 +16429,7 @@
         },
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17080,7 +16956,7 @@
         },
         {
           "name": "purchaseDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17157,7 +17033,7 @@
         },
         {
           "name": "nextMaintenanceAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -17183,7 +17059,7 @@
         },
         {
           "name": "nextMaintenanceAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -17317,13 +17193,13 @@
         },
         {
           "name": "startDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "endDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17373,13 +17249,13 @@
         },
         {
           "name": "startDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "endDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17450,7 +17326,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17576,7 +17452,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17628,7 +17504,7 @@
         },
         {
           "name": "inputDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -17820,13 +17696,13 @@
         },
         {
           "name": "receivedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "expiresAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -18148,7 +18024,7 @@
         },
         {
           "name": "forecastDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -19473,7 +19349,7 @@
         },
         {
           "name": "triggeredAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -19737,7 +19613,7 @@
         },
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -19869,7 +19745,7 @@
       "params": [
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -19981,7 +19857,7 @@
         },
         {
           "name": "claimedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -20057,7 +19933,7 @@
         },
         {
           "name": "recordedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -20269,7 +20145,7 @@
         },
         {
           "name": "budgetAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -20307,7 +20183,7 @@
       "params": [
         {
           "name": "actualAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -20358,7 +20234,7 @@
         },
         {
           "name": "budgetAmount",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -20478,7 +20354,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -20578,7 +20454,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -21067,7 +20943,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -21173,7 +21049,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -22763,6 +22639,30 @@
           "type": "number",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "hoursRegular",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "hoursOvertime",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rateRegular",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rateOvertime",
+          "type": "number",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -22798,6 +22698,30 @@
         },
         {
           "name": "hoursWorked",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "hoursRegular",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "hoursOvertime",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rateRegular",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rateOvertime",
           "type": "number",
           "location": "body",
           "required": true
@@ -24024,7 +23948,7 @@
         },
         {
           "name": "completedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -24092,13 +24016,13 @@
         },
         {
           "name": "startByDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "dueByDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -24248,7 +24172,7 @@
       "params": [
         {
           "name": "dueByDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -24685,7 +24609,7 @@
       "params": [
         {
           "name": "nextDueAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -24723,7 +24647,7 @@
         },
         {
           "name": "nextDueAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -24768,7 +24692,7 @@
         },
         {
           "name": "nextDueAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -25183,7 +25107,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25323,7 +25247,7 @@
         },
         {
           "name": "eventDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25887,7 +25811,7 @@
         },
         {
           "name": "quantityOrdered",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25899,7 +25823,7 @@
         },
         {
           "name": "unitCost",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25945,13 +25869,13 @@
       "params": [
         {
           "name": "quantityOrdered",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "unitCost",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -26551,7 +26475,7 @@
         },
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -27813,7 +27737,7 @@
         },
         {
           "name": "dueDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28024,13 +27948,13 @@
         },
         {
           "name": "startDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "endDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28344,7 +28268,7 @@
         },
         {
           "name": "scheduledAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -28509,7 +28433,7 @@
         },
         {
           "name": "scheduleDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28581,7 +28505,7 @@
       "params": [
         {
           "name": "scheduleDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28855,7 +28779,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -28931,7 +28855,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -29015,7 +28939,7 @@
         },
         {
           "name": "estimatedDeliveryDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -29083,7 +29007,7 @@
         },
         {
           "name": "expirationDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -30181,7 +30105,7 @@
         },
         {
           "name": "recordedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -30341,7 +30265,7 @@
         },
         {
           "name": "recordedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -31343,7 +31267,7 @@
         },
         {
           "name": "completedAt",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -31620,7 +31544,7 @@
         },
         {
           "name": "hireDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -31684,7 +31608,7 @@
         },
         {
           "name": "terminationDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -32057,7 +31981,7 @@
         },
         {
           "name": "nextMaintenanceDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -32083,7 +32007,7 @@
         },
         {
           "name": "nextMaintenanceDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -33025,13 +32949,13 @@
         },
         {
           "name": "startDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "endDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -33163,7 +33087,7 @@
         },
         {
           "name": "newEndDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -33229,7 +33153,7 @@
       "params": [
         {
           "name": "endDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -33760,7 +33684,7 @@
         },
         {
           "name": "reasonId",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -34125,7 +34049,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -34233,7 +34157,7 @@
         },
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -34253,7 +34177,7 @@
       "params": [
         {
           "name": "scheduledDate",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },

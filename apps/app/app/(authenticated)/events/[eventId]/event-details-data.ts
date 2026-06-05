@@ -79,7 +79,7 @@ interface EventDishRow {
  */
 export const getEventStaffCount = cache(
   async (tenantId: string, eventId: string) => {
-    return database.eventStaffAssignment.count({
+    return database.eventStaff.count({
       where: {
         tenantId,
         eventId,

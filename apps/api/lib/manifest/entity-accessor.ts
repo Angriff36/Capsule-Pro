@@ -19,7 +19,7 @@ import { database } from "@repo/database";
 /** Entity names whose Prisma accessor differs from naive camelCase, or null to drop (no table). */
 const ENTITY_ACCESSOR_OVERRIDES: Record<string, string | null> = {
   // Remaps — accessor name mismatches (Prisma's own "Did you mean" suggestions)
-  EventStaff: "eventStaffAssignment",
+  EventStaff: "eventStaff",
   EventImportWorkflow: "eventImport",
   BankAccount: "employeeBankAccount",
   LogisticsRoute: "deliveryRoute",

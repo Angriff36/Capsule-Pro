@@ -762,7 +762,7 @@ model CollectionCase {
   collectedAmount Decimal @map("collected_amount") @db.Decimal(12, 2) @default(0)
   status String @default("ACTIVE")
   priority String @default("MEDIUM")
-  dunningStage String @map("dunning_stage") @default("CURRENT")
+  dunningStage Int @map("dunning_stage") @default(0)
   daysOverdue Int @map("days_overdue") @default(0)
   agingBucket String? @map("aging_bucket") @default("")
   assignedTo String? @map("assigned_to") @db.Uuid @default("")
@@ -1825,27 +1825,6 @@ model Venue {
   @@schema("tenant")
 
   @@unique([tenantId, id])
-}
-
-model EventStaffAssignment {
-  id String @db.Uuid @default(dbgenerated("gen_random_uuid()"))
-  tenantId String @map("tenant_id") @db.Uuid
-  eventId String @map("event_id") @db.Uuid
-  staffMemberId String
-  role String? @default("")
-  shiftStart DateTime?
-  shiftEnd DateTime?
-  status String? @default("assigned")
-  notes String? @default("")
-  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
-  createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
-  updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt
-
-
-  @@map("event_staff_assignments")
-  @@id([tenantId, id])
-  @@index([eventId])
-  @@schema("tenant_events")
 }
 
 model EventTimeline {
@@ -4792,20 +4771,21 @@ model PerformancePrediction {
 // ===== INFRA-CORE PASS-THROUGH MODELS (not from IR) =====
 
 model Account {
-  id                             String                          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name                           String
-  slug                           String                          @unique
-  defaultTimezone                String                          @default("UTC") @map("default_timezone")
-  weekStart                      Int                             @default(1) @map("week_start") @db.SmallInt
-  subscriptionTier               String                          @default("trial") @map("subscription_tier")
-  subscriptionStatus             String                          @default("active") @map("subscription_status")
-  maxLocations                   Int                             @default(1) @map("max_locations") @db.SmallInt
-  maxEmployees                   Int                             @default(10) @map("max_employees") @db.SmallInt
-  createdAt                      DateTime                        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                      DateTime                        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt                      DateTime?                       @map("deleted_at") @db.Timestamptz(6)
-  locations                      Location[]
-  userPreferences                UserPreference[]
+  id                 String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  slug               String                @unique
+  defaultTimezone    String                @default("UTC") @map("default_timezone")
+  weekStart          Int                   @default(1) @map("week_start") @db.SmallInt
+  subscriptionTier   String                @default("trial") @map("subscription_tier")
+  subscriptionStatus String                @default("active") @map("subscription_status")
+  maxLocations       Int                   @default(1) @map("max_locations") @db.SmallInt
+  maxEmployees       Int                   @default(10) @map("max_employees") @db.SmallInt
+  createdAt          DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime              @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?             @map("deleted_at") @db.Timestamptz(6)
+  locations          Location[]
+  userPreferences    UserPreference[]
+
   cycleCountAuditLogs            CycleCountAuditLog[]
   employeeLocations              EmployeeLocation[]
   supplierSyncLogs               SupplierSyncLog[]

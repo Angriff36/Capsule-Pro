@@ -68,7 +68,7 @@ function getPrismaModelForEntity(entityType: string, db: typeof database): any {
     RecipeIngredient: "recipeIngredient",
     MenuDish: "menuDish",
     PrepComment: "prepComment",
-    EventStaffAssignment: "eventStaffAssignment",
+    EventStaff: "eventStaff",
     EventTimeline: "eventTimeline",
     EventImport: "eventImport",
     BoardProjection: "boardProjection",
@@ -326,7 +326,7 @@ async function restoreDependentEntities(
     Array<{ dependentEntity: string; field: string }>
   > = {
     Event: [
-      { dependentEntity: "EventStaffAssignment", field: "eventId" },
+      { dependentEntity: "EventStaff", field: "eventId" },
       { dependentEntity: "EventTimeline", field: "eventId" },
       { dependentEntity: "EventBudget", field: "eventId" },
       { dependentEntity: "EventProfitability", field: "eventId" },

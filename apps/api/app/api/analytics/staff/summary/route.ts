@@ -162,10 +162,10 @@ async function fetchEmployeePerformanceData(
       GROUP BY employee_id
     ) client_stats ON u.id = client_stats.employee_id
     LEFT JOIN (
-      SELECT employee_id, COUNT(DISTINCT event_id) as event_count
-      FROM tenant_events.event_staff_assignments
-      WHERE tenant_id = ${tenantId} AND deleted_at IS NULL
-      GROUP BY employee_id
+      SELECT staffMemberId as employee_id, COUNT(DISTINCT eventId) as event_count
+      FROM tenant_events.event_staff
+      WHERE tenantId = ${tenantId} AND deletedAt IS NULL
+      GROUP BY staffMemberId
     ) event_stats ON u.id = event_stats.employee_id
     WHERE u.tenant_id = ${tenantId} AND u.deleted_at IS NULL
   `;

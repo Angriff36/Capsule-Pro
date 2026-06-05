@@ -237,8 +237,8 @@ export async function setupEventCompletely(
     const existingStaff = await database.$queryRaw<
       Array<{ cnt: bigint }>
     >`SELECT COUNT(*) as cnt
-       FROM tenant_events.event_staff_assignments
-       WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND deleted_at IS NULL`;
+       FROM tenant_events.event_staff
+       WHERE tenantId = ${tenantId}::uuid AND eventId = ${eventId}::uuid AND deletedAt IS NULL`;
 
     if (Number(existingStaff[0].cnt) > 0) {
       result.steps.staffAssigned = {
@@ -263,13 +263,13 @@ export async function setupEventCompletely(
         const alreadyAssigned = await database.$queryRaw<
           Array<{ id: string }>
         >`SELECT id
-           FROM tenant_events.event_staff_assignments
-           WHERE tenant_id = ${tenantId}::uuid AND event_id = ${eventId}::uuid AND employee_id = ${emp.id}::uuid AND deleted_at IS NULL`;
+           FROM tenant_events.event_staff
+           WHERE tenantId = ${tenantId}::uuid AND eventId = ${eventId}::uuid AND staffMemberId = ${emp.id}::uuid AND deletedAt IS NULL`;
 
         if (alreadyAssigned.length > 0) continue;
 
-        await database.$executeRaw`INSERT INTO tenant_events.event_staff_assignments (
-             tenant_id, event_id, employee_id, role, created_at, updated_at
+        await database.$executeRaw`INSERT INTO tenant_events.event_staff (
+             tenantId, eventId, staffMemberId, role, createdAt, updatedAt
            ) VALUES (${tenantId}::uuid, ${eventId}::uuid, ${emp.id}::uuid, 'staff', NOW(), NOW())`;
         assigned++;
         names.push(`${emp.first_name} ${emp.last_name}`);

@@ -108,18 +108,15 @@ const AnalyticsStaffPage = async () => {
         breakMinutes: true,
       },
     }),
-    database.eventStaffAssignment.findMany({
+    database.eventStaff.findMany({
       where: {
         tenantId,
         deletedAt: null,
-        OR: [
-          { startTime: { gte: ninetyDaysAgo } },
-          { createdAt: { gte: ninetyDaysAgo } },
-        ],
+        createdAt: { gte: ninetyDaysAgo },
       },
       select: {
-        employeeId: true,
-        startTime: true,
+        staffMemberId: true,
+        shiftStart: true,
         createdAt: true,
       },
     }),
@@ -207,15 +204,15 @@ const AnalyticsStaffPage = async () => {
   }
 
   for (const assignment of eventAssignments) {
-    const current = metricsByEmployee.get(assignment.employeeId);
+    const current = metricsByEmployee.get(assignment.staffMemberId);
     if (!current) {
       continue;
     }
 
     current.eventAssignments += 1;
     updateLastActivity(
-      assignment.employeeId,
-      assignment.startTime ?? assignment.createdAt
+      assignment.staffMemberId,
+      assignment.createdAt
     );
   }
 

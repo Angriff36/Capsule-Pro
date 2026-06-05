@@ -49,7 +49,7 @@ const RESTORABLE_ENTITIES = [
   "Menu",
   "MenuDish",
   "PrepComment",
-  "EventStaffAssignment",
+  "EventStaff",
   "EventTimeline",
   "EventImport",
   "BattleBoard",
@@ -158,7 +158,7 @@ const ENTITY_DISPLAY_NAMES: Record<RestorableEntity, string> = {
   Menu: "Menu",
   MenuDish: "Menu Dish",
   PrepComment: "Prep Comment",
-  EventStaffAssignment: "Event Staff Assignment",
+  EventStaff: "Event Staff",
   EventTimeline: "Event Timeline",
   EventImport: "Event Import",
   BattleBoard: "Battle Board",
@@ -376,8 +376,8 @@ const ENTITY_QUERIES: Record<
     sql: `SELECT id, tenant_id, deleted_at, 'PrepComment' as entity_name, id::text as display_name FROM prep_comments WHERE tenant_id = $1 AND deleted_at IS NOT NULL`,
     displayNameColumn: "id",
   },
-  EventStaffAssignment: {
-    sql: `SELECT id, tenant_id, deleted_at, 'EventStaffAssignment' as entity_name, id::text as display_name FROM event_staff_assignments WHERE tenant_id = $1 AND deleted_at IS NOT NULL`,
+  EventStaff: {
+    sql: `SELECT id, tenant_id, deleted_at, 'EventStaff' as entity_name, id::text as display_name FROM event_staff WHERE tenant_id = $1 AND deleted_at IS NOT NULL`,
     displayNameColumn: "id",
   },
   EventTimeline: {
@@ -780,7 +780,7 @@ function getPrismaModelForEntity(
     Menu: "menu",
     MenuDish: "menuDish",
     PrepComment: "prepComment",
-    EventStaffAssignment: "eventStaffAssignment",
+    EventStaff: "eventStaff",
     EventTimeline: "eventTimeline",
     EventImport: "eventImport",
     BattleBoard: "battleBoard",
