@@ -5,6 +5,7 @@
  *
  * Generates a shipment with packing list from an event's prep lists.
  * Maps prep list ingredients to inventory items and validates stock availability.
+ * Shipment and item creation delegated to manifest runtime.
  */
 
 import { auth } from "@repo/auth/server";
@@ -13,7 +14,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface InventoryRequirement {
   inventoryItemId: string;
@@ -175,19 +177,13 @@ export async function POST(
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
+    const user = await resolveCurrentUser(request);
 
     const { eventId } = await params;
 
     // Verify event exists
     const event = await database.event.findFirst({
-      where: { tenantId, id: eventId, deletedAt: null },
+      where: { tenantId: user.tenantId, id: eventId, deletedAt: null },
       select: { id: true, title: true, eventDate: true, locationId: true },
     });
 
@@ -202,7 +198,7 @@ export async function POST(
     const { locationId, scheduledDate, notes, validateStock = true } = body;
 
     // Get inventory requirements from prep lists
-    const requirements = await getEventInventoryRequirements(tenantId, eventId);
+    const requirements = await getEventInventoryRequirements(user.tenantId, eventId);
 
     if (requirements.length === 0) {
       return NextResponse.json(
@@ -235,45 +231,78 @@ export async function POST(
     }
 
     // Generate shipment number
-    const shipmentNumber = await generateShipmentNumber(tenantId);
+    const shipmentNumber = await generateShipmentNumber(user.tenantId);
 
     // Determine location (use provided location or event's location)
     const shipToLocationId = locationId || event.locationId;
+    const totalValue = requirements.reduce(
+      (sum, req) => sum + req.requiredQuantity * req.unitCost,
+      0
+    );
 
-    // Create shipment with items
-    const shipment = await database.shipment.create({
-      data: {
-        tenantId,
+    // Delegate shipment creation to manifest runtime
+    const shipmentResult = await runManifestCommand({
+      entity: "Shipment",
+      command: "create",
+      body: {
+        tenantId: user.tenantId,
         shipmentNumber,
-        status: "draft",
+        supplierId: "",
+        locationId: shipToLocationId || "",
         eventId: event.id,
-        locationId: shipToLocationId,
         scheduledDate: scheduledDate
           ? new Date(scheduledDate)
           : event.eventDate,
+        carrier: "",
+        shippingMethod: "",
         notes: notes || `Packing list generated from event: ${event.title}`,
-        totalItems: requirements.length,
-        totalValue: requirements.reduce(
-          (sum, req) => sum + req.requiredQuantity * req.unitCost,
-          0
-        ),
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    // Create shipment items
-    const _shipmentItems = await database.shipmentItem.createMany({
-      data: requirements.map((req) => ({
-        tenantId,
-        shipmentId: shipment.id,
-        itemId: req.inventoryItemId,
-        quantityShipped: req.requiredQuantity,
-        quantityReceived: 0,
-        quantityDamaged: 0,
-        unitCost: req.unitCost,
-        totalCost: req.requiredQuantity * req.unitCost,
-        condition: "good",
-      })),
-    });
+    if (shipmentResult.status >= 400) {
+      return shipmentResult;
+    }
+
+    // Extract the created shipment ID from the manifest result
+    const shipmentData = await shipmentResult.json();
+    const shipmentId = shipmentData?.id || shipmentData?.data?.id;
+
+    if (!shipmentId) {
+      return NextResponse.json(
+        { message: "Failed to create shipment" },
+        { status: 500 }
+      );
+    }
+
+    // Create shipment items via manifest runtime
+    const itemResults = await Promise.all(
+      requirements.map((req) =>
+        runManifestCommand({
+          entity: "ShipmentItem",
+          command: "create",
+          body: {
+            tenantId: user.tenantId,
+            shipmentId,
+            itemId: req.inventoryItemId,
+            quantityShipped: req.requiredQuantity,
+            unitId: 0,
+            unitCost: req.unitCost,
+            lotNumber: "",
+            expirationDate: new Date(),
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        })
+      )
+    );
+
+    // Check for any item creation failures
+    const failedItems = itemResults.filter((r) => r.status >= 400);
+    if (failedItems.length > 0) {
+      log.warn(
+        `[ShipmentGenerate] ${failedItems.length}/${requirements.length} items failed to create`
+      );
+    }
 
     // Build warnings
     const warnings: string[] = [];
@@ -294,9 +323,9 @@ export async function POST(
 
     const response: GenerateShipmentResponse = {
       shipment: {
-        id: shipment.id,
-        shipmentNumber: shipment.shipmentNumber,
-        status: shipment.status,
+        id: shipmentId,
+        shipmentNumber,
+        status: "draft",
       },
       items: requirements.map((req) => ({
         id: req.inventoryItemId,

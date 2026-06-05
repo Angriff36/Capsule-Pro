@@ -2,15 +2,20 @@
  * Cycle Count Finalization API Endpoint
  *
  * POST /api/inventory/cycle-count/sessions/[sessionId]/finalize - Finalize a session
+ *
+ * Delegates session status mutation to manifest runtime (CycleCountSession.finalize).
+ * Side effects (variance reports, inventory adjustments, audit log) remain in-route
+ * pending migration to event handlers.
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -164,30 +169,24 @@ interface RouteContext {
  * 2. Creates inventory adjustments for variances
  * 3. Updates inventory item quantities
  * 4. Creates an audit log entry
- * 5. Marks the session as finalized
+ * 5. Marks the session as finalized (via manifest runtime)
  */
-export async function POST(request: Request, context: RouteContext) {
+export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(orgId && userId)) {
+    const { orgId } = await auth();
+    if (!orgId) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
+    const user = await resolveCurrentUser(request);
 
     const { id: sessionId } = await context.params;
-    const body = await request.json();
+    const body = await request.json().catch(() => ({})) as Record<string, unknown>;
 
     // Find the session by sessionId (not id)
     const session = await database.cycleCountSession.findFirst({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         sessionId,
         deletedAt: null,
       },
@@ -207,22 +206,10 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Get the user's database ID
-    const user = await database.user.findFirst({
-      where: {
-        tenantId,
-        authUserId: userId,
-      },
-    });
-
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
-    }
-
     // Fetch all records for this session
     const records = await database.cycleCountRecord.findMany({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         sessionId: session.id,
         deletedAt: null,
       },
@@ -242,7 +229,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     // Generate variance reports
     const varianceReports = records.map((record) =>
-      generateVarianceReport(record, tenantId, session)
+      generateVarianceReport(record, user.tenantId, session)
     );
 
     await database.varianceReport.createMany({
@@ -268,32 +255,51 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     // Process inventory adjustments for records with variance
-    await processInventoryAdjustments(tenantId, session, records);
+    await processInventoryAdjustments(user.tenantId, session, records);
 
-    // Update session to finalized
-    const updatedSession = await database.cycleCountSession.update({
+    // Delegate session finalization to manifest runtime
+    // NOTE: The manifest finalize command sets status="finalized", finalizedAt, approvedById.
+    // The totalVariance, variancePercentage, countedItems, totalItems, and notes updates
+    // are done via a direct Prisma write here because the manifest command only handles
+    // the status transition. TODO: Move these property mutations into the manifest command
+    // or an event handler once the manifest DSL supports computed property updates.
+    await database.cycleCountSession.update({
       where: {
         tenantId_id: {
-          tenantId,
+          tenantId: user.tenantId,
           id: session.id,
         },
       },
       data: {
-        status: "finalized",
-        finalizedAt: new Date(),
-        approvedById: user.id,
-        notes: body.notes || session.notes,
         totalVariance,
         variancePercentage,
         countedItems: records.length,
         totalItems: records.length,
+        notes: (body.notes as string) || session.notes,
       },
     });
 
+    const manifestResult = await runManifestCommand({
+      entity: "CycleCountSession",
+      command: "finalize",
+      body: {
+        id: session.id,
+        tenantId: user.tenantId,
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    // If manifest command returned an error, forward it
+    if (manifestResult.status >= 400) {
+      return manifestResult;
+    }
+
     // Create audit log entry
+    // TODO: Migrate audit log to manifest event handler
     await database.cycleCountAuditLog.create({
       data: {
-        tenantId,
+        tenantId: user.tenantId,
         sessionId: session.id,
         action: "finalize",
         entityType: "CycleCountSession",
@@ -314,12 +320,12 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     return NextResponse.json({
-      id: updatedSession.id,
-      session_id: updatedSession.sessionId,
-      status: updatedSession.status,
-      total_variance: toNumber(updatedSession.totalVariance),
-      variance_percentage: toNumber(updatedSession.variancePercentage),
-      finalized_at: updatedSession.finalizedAt,
+      id: session.id,
+      session_id: session.sessionId,
+      status: "finalized",
+      total_variance: totalVariance,
+      variance_percentage: variancePercentage,
+      finalized_at: new Date(),
     });
   } catch (error) {
     captureException(error);

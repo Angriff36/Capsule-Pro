@@ -259,14 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 85% context — saved before compacting]
-Files (7):
-  C:/Users/Ryan/.claude/plans/vivid-wandering-flamingo.md (create)
-  C:/Users/Ryan/.claude/plans/vivid-wandering-flamingo.md (edit)
-  apps/api/app/api/payroll/approvals/[approvalId]/route.ts (edit)
-  apps/api/__tests__/payroll/approvals-role-guard.test.ts (create)
-  apps/api/__tests__/payroll/approvals-role-guard.test.ts (edit)
-  apps/api/lib/payroll/manifest-payroll-data-source.ts (create)
-  apps/api/lib/payroll/manifest-payroll-data-source.ts (edit)
+[proactive bridge @ 90% context — saved before compacting]
+Files (1):
+  apps/api/app/api/events/budgets/route.ts (create)
 
 # === END COGNILAYER ===

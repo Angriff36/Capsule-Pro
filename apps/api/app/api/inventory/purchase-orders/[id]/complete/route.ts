@@ -2,6 +2,15 @@
  * Complete Purchase Order Receiving Workflow
  *
  * POST   /api/inventory/purchase-orders/[id]/complete      - Complete receiving and update inventory
+ *
+ * TODO(manifest-migration): This route performs multi-entity orchestration (update PO items,
+ * create inventory transactions, update inventory quantities, change PO status) that does not
+ * map to a single manifest command. The available PurchaseOrder.markReceived command only
+ * handles the PO header status change. Migrating this route requires either:
+ *   1. A new "completeReceiving" command that orchestrates item updates + inventory mutations,
+ *      or
+ *   2. Event handlers on PurchaseOrderReceived that perform the inventory side effects.
+ * Until then, this route remains hybrid (direct Prisma writes).
  */
 
 import { auth } from "@repo/auth/server";
