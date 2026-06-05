@@ -1,9 +1,18 @@
+/**
+ * IoT Alert Rules API Routes
+ *
+ * POST creates rules via Manifest runtime.
+ * GET reads bypass runtime per constitution §10.
+ */
+
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireCurrentUser } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 const createAlertRuleSchema = z.object({
   name: z.string().min(1),
@@ -24,7 +33,7 @@ const createAlertRuleSchema = z.object({
 
 /**
  * GET /api/kitchen/iot/alert-rules
- * List alert rules for the current tenant.
+ * List alert rules for the current tenant (read — bypasses Manifest per §10).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -50,6 +59,8 @@ export async function GET(request: NextRequest) {
       where.isActive = isActiveParam === "true";
     }
 
+    // Use database directly for reads (bypasses Manifest per constitution §10)
+    const { database } = await import("@/lib/database");
     const rules = await database.iotAlertRule.findMany({
       where,
       orderBy: { name: "asc" },
@@ -68,11 +79,11 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/kitchen/iot/alert-rules
- * Create a new alert rule.
+ * Create a new alert rule via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
   try {
-    const { tenantId } = await requireCurrentUser();
+    const { tenantId, id: userId } = await requireCurrentUser();
 
     const body = await request.json();
     const parsed = createAlertRuleSchema.safeParse(body);
@@ -84,14 +95,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rule = await database.iotAlertRule.create({
-      data: {
-        tenantId,
-        ...parsed.data,
-      },
-    });
+    const data = parsed.data;
 
-    return NextResponse.json({ rule }, { status: 201 });
+    // Delegate creation to Manifest runtime
+    return runManifestCommand({
+      entity: "IotAlertRule",
+      command: "create",
+      body: {
+        name: data.name,
+        equipmentId: data.equipmentId,
+        metric: data.sensorType, // route uses sensorType as metric
+        sensorType: data.sensorType,
+        condition: data.condition,
+        threshold: data.threshold ?? 0,
+        thresholdMin: data.thresholdMin ?? 0,
+        thresholdMax: data.thresholdMax ?? 0,
+        comparison: data.condition, // route uses condition as comparison operator
+        severity: data.severity,
+        durationMs: data.durationMs,
+        alertAction: data.alertAction,
+        isActive: data.isActive,
+        notifyRoles: data.notifyRoles?.join(",") ?? "",
+        notifyChannels: data.notifyChannels?.join(",") ?? "",
+        description: data.description ?? "",
+      },
+      user: { id: userId, tenantId, role: "" },
+    });
   } catch (error) {
     captureException(error);
     log.error("Create IoT alert rule error:", error);

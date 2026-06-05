@@ -1,14 +1,25 @@
+/**
+ * IoT Alerts API Routes
+ *
+ * POST creates alerts via Manifest runtime (after alert number generation pre-processing).
+ * Email notification dispatch runs as a post-create side-effect (not a governed write).
+ * GET reads bypass runtime per constitution §10.
+ */
+
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { sendEmailNotification } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/kitchen/iot/alerts
- * List active IoT alerts
+ * List active IoT alerts (read — bypasses Manifest per §10).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -52,7 +63,7 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/kitchen/iot/alerts
- * Create/trigger an IoT alert
+ * Create/trigger an IoT alert via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -76,26 +87,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate alert number
+    // Pre-processing: generate alert number (read — bypasses Manifest per §10)
     const alertCount = await database.ioTAlert.count({ where: { tenantId } });
     const alertNumber = `ALT-${String(alertCount + 1).padStart(6, "0")}`;
 
-    const alert = await database.ioTAlert.create({
-      data: {
-        tenantId,
-        alertNumber,
+    // Delegate creation to Manifest runtime
+    const result = await runManifestCommand({
+      entity: "IoTAlert",
+      command: "create",
+      body: {
         probeId,
-        alertType,
+        ruleId: "",
         severity: severity || "warning",
-        title: alertType,
         message,
-        temperature,
-        status: "active",
+        value: 0,
         triggeredAt: new Date(),
+        alertNumber,
+        alertType,
+        title: alertType,
+        temperature: temperature ?? 0,
       },
+      user: { id: userId, tenantId, role: "" },
     });
 
-    // Dispatch email notification to active managers/kitchen staff
+    // Post-create side-effect: dispatch email notification to managers/kitchen staff
     try {
       const staff = await database.user.findMany({
         where: {
@@ -117,7 +132,7 @@ export async function POST(request: NextRequest) {
         const tempStr =
           temperature != null ? `${Number(temperature).toFixed(1)}°F` : "N/A";
         const subject = `[IoT Alert] ${alertType} — ${probeId ?? "Unknown probe"}`;
-        const body = [
+        const emailBody = [
           "<h2>IoT Temperature Alert</h2>",
           `<p><strong>Alert:</strong> ${alertType}</p>`,
           `<p><strong>Probe:</strong> ${probeId ?? "Unknown"}</p>`,
@@ -139,7 +154,7 @@ export async function POST(request: NextRequest) {
           notificationType: "iot_alert",
           recipients,
           subject,
-          body,
+          body: emailBody,
         });
       }
     } catch (notifError) {
@@ -148,7 +163,7 @@ export async function POST(request: NextRequest) {
       log.error("IoT alert notification dispatch failed:", notifError);
     }
 
-    return NextResponse.json({ alert });
+    return NextResponse.json({ alert: result });
   } catch (error) {
     captureException(error);
     log.error("Create IoT alert error:", error);

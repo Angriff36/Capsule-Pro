@@ -169,12 +169,22 @@ entity IotAlertRule {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
+  property required name: string
   property required equipmentId: string
   property required metric: string
+  property required sensorType: string
+  property required condition: string
   property required threshold: decimal
+  property thresholdMin: decimal = 0
+  property thresholdMax: decimal = 0
   property required comparison: string
   property required severity: string
+  property durationMs: int = 0
+  property alertAction: string = "notification"
   property isActive: boolean = true
+  property notifyRoles: string = ""
+  property notifyChannels: string = ""
+  property description: string = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
@@ -186,18 +196,28 @@ entity IotAlertRule {
   constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
 
   default policy IotAlertRuleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(equipmentId: string, metric: string, threshold: number, comparison: string, severity: string) {
+  command create(name: string, equipmentId: string, metric: string, sensorType: string, condition: string, threshold: decimal, thresholdMin: decimal, thresholdMax: decimal, comparison: string, severity: string, durationMs: int, alertAction: string, isActive: boolean, notifyRoles: string, notifyChannels: string, description: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard metric != null and metric != "" "Metric is required"
     guard comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
 
+    mutate name = name
     mutate equipmentId = equipmentId
     mutate metric = metric
+    mutate sensorType = sensorType
+    mutate condition = condition
     mutate threshold = threshold
+    mutate thresholdMin = thresholdMin
+    mutate thresholdMax = thresholdMax
     mutate comparison = comparison
     mutate severity = severity
-    mutate isActive = true
+    mutate durationMs = durationMs
+    mutate alertAction = alertAction
+    mutate isActive = isActive
+    mutate notifyRoles = notifyRoles
+    mutate notifyChannels = notifyChannels
+    mutate description = description
 
     emit IotAlertRuleCreated
   }
@@ -235,12 +255,16 @@ entity IoTAlert {
   property required id: string
   property required tenantId: string
   property required probeId: string
-  property required ruleId: string
+  property ruleId: string = ""
   property required severity: string
   property required message: string
   property required value: decimal
   property required status: string = "active"
   property required triggeredAt: datetime
+  property alertNumber: string = ""
+  property alertType: string = ""
+  property title: string = ""
+  property temperature: decimal = 0
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
   timestamps
@@ -261,9 +285,8 @@ entity IoTAlert {
   relationship belongsTo rule: IotAlertRule fields [tenantId, ruleId] references [tenantId, id]
 
   default policy IoTAlertDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
-  command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: datetime) {
+  command create(probeId: string, ruleId: string, severity: string, message: string, value: decimal, triggeredAt: datetime, alertNumber: string, alertType: string, title: string, temperature: decimal) {
     guard probeId != null and probeId != "" "Probe ID is required"
-    guard ruleId != null and ruleId != "" "Rule ID is required"
     guard severity in ["info", "warning", "critical"] "Invalid severity level"
     guard message != null and message != "" "Alert message is required"
 
@@ -274,6 +297,10 @@ entity IoTAlert {
     mutate value = value
     mutate status = "active"
     mutate triggeredAt = triggeredAt
+    mutate alertNumber = alertNumber
+    mutate alertType = alertType
+    mutate title = title
+    mutate temperature = temperature
 
     emit IoTAlertCreated
   }

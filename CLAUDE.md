@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 89% context — saved before compacting]
+[proactive bridge @ 88% context — saved before compacting]
 Files (1):
-  claude-code-plans/task_plan.md (create)
+  apps/api/app/api/accounting/invoices/route.ts (edit)
 
 # === END COGNILAYER ===

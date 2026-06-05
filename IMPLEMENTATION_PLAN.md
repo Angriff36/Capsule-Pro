@@ -405,7 +405,7 @@
 
 ### Governance
 
-- **~166 direct-write violations in API routes** + **110 in server actions** = **~276 total** (down from 301). 21 mutate handlers across 19 route files migrated to Manifest runtime (Task 8.2 batches 1-3 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~160 direct-write violations in API routes** + **110 in server actions** = **~270 total** (down from 301). 26 mutate handlers across 22 route files migrated to Manifest runtime (Task 8.2 batches 1-4 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
 - `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
@@ -481,6 +481,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 9.3 COMPLETE: State transitions for 96 entities (256 rules)** | Added state machine enforcement to 30+ entities. Only 4 entities intentionally skipped (free-form status). Transition coverage: 96/100 status entities (96%). Fix: PrepList.createFromSeed draft→draft self-transition added. IR: 96 entities with 256 transition rules. API+runtime typecheck 0. 2574 tests pass. |
 | 2026-06-05 | **Task 8.6 + Policy Binding Fix: `default policy` binds RBAC to ALL 952 commands** | ROOT CAUSE: 250 top-level policies were declared OUTSIDE entity blocks, so the compiler never bound them to IR commands (all 952 had `policies: []`). FIX: `default policy` syntax INSIDE entity blocks causes the compiler to auto-expand to every command. Added entity-specific `default policy <EntityName>DefaultAccess` to all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. API typecheck 0, 2574 tests pass. |
 | 2026-06-05 | **Task 0.5: Route regen-diff harness** | `manifest/scripts/audit-route-drift.mjs` exists with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate, exit 1 on drift). Writes to `manifest/reports/route-drift/route-drift.json`. Snapshots git hashes, regenerates, compares. Needs CI workflow wiring. |
+| 2026-06-05 | **Task 8.2 batch 4: 4 route files migrated (IoTAlert, IoTAlertRule, InteractionAttachment POST+DELETE)** | IoTAlert/IotAlertRule manifest sources expanded with missing properties. File upload/download side-effects preserved as pre/post-processing. API typecheck 0, 2582 tests pass. |
 | 2026-06-05 | **Task 8.1: Payroll governance migration (4 phases)** | 3 routes migrated to Manifest runtime. ManifestPayrollDataSource governs payroll generation writes. Tax route documented as approved bypass. API typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware. Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. |
 | 2026-06-05 | **Task 3.3 Phase 1: Delete dead prisma-stores (~11,210 LOC)** | 39 dead store files deleted. prisma-stores/ reduced from 45→6 files. 81/94 entities already route to GenericPrismaStore. Zero external imports of deleted files confirmed. API+runtime typecheck 0, 2591 tests pass. |
@@ -1175,7 +1176,16 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `POST /api/procurement/approvals/action` — approve/reject → `runManifestCommand({entity:"PurchaseOrder", command:"approve"/"reject"})`
     - PaymentMethod manifest source: added `update`/`remove` commands + events. Test suite updated for payment-method-patch-actions.
     - 2582 tests pass, 0 typecheck errors.
-  - **Total migrated across all batches:** 21 mutate handlers in 19 route files. Remaining: ~166 violations across ~60 files.
+  - **Progress 2026-06-05 (batch 4):** 3 more route files migrated to Manifest runtime:
+    - `POST /api/kitchen/iot/alerts` — create → `runManifestCommand({entity:"IoTAlert", command:"create"})`. Post-create email notification dispatch preserved as side-effect. Alert number generation preserved as pre-processing.
+    - `POST /api/kitchen/iot/alert-rules` — create → `runManifestCommand({entity:"IotAlertRule", command:"create"})`. Zod validation preserved.
+    - `POST /api/crm/clients/interactions/attachments` — create → `runManifestCommand({entity:"InteractionAttachment", command:"create"})`. File upload to storage preserved as pre-processing.
+    - `DELETE /api/crm/clients/interactions/attachments` — remove → `runManifestCommand({entity:"InteractionAttachment", command:"remove"})`. Storage file deletion preserved as pre-processing.
+    - IoTAlert manifest source expanded: added `alertNumber`, `alertType`, `title`, `temperature` properties + expanded create command params.
+    - IotAlertRule manifest source expanded: added `name`, `sensorType`, `condition`, `thresholdMin`, `thresholdMax`, `durationMs`, `alertAction`, `notifyRoles`, `notifyChannels`, `description` properties + expanded create command params.
+    - Inventory batch route NOT migrated: uses `updateMany`/`deleteMany` batch ops with no Manifest equivalent. Deferred.
+    - IR recompiled: 188 entities, 950 commands. API typecheck 0, 2582 tests pass.
+  - **Total migrated across all batches:** 26 mutate handlers in 22 route files. Remaining: ~160 violations across ~58 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
