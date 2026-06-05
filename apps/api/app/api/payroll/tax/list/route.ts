@@ -1,4 +1,7 @@
 // Get tax configuration
+// GOVERNANCE NOTE: TaxConfiguration is infrastructure (not governed domain state).
+// No Manifest entity exists for it. Approved bypass per constitution §2.
+// Tax config writes are tenant-scoped infrastructure operations, not domain mutations.
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
