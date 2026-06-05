@@ -23,3 +23,68 @@ on PaymentRefunded run Invoice.recordRefund
     refundAmount: payload.refundAmount
     paymentId: payload.paymentId
   }
+
+// ── Inventory: WasteEntry → InventoryItem ────────────────────────────────────
+
+// When a waste entry is created, automatically reduce the inventory item's stock.
+// Replaces raw Prisma update in apps/api/app/api/kitchen/waste/entries/route.ts
+// that bypasses governance. The WasteEntryCreated event carries the exact
+// inventoryItemId, quantity, and loggedBy needed for the waste command.
+on WasteEntryCreated run InventoryItem.waste
+  resolve payload.inventoryItemId
+  params {
+    quantity: payload.quantity
+    reason: "waste entry"
+    lotId: ""
+    userId: payload.loggedBy
+  }
+
+// ── Collections: CollectionPayment → Invoice ─────────────────────────────────
+
+// When a collection case records a payment against an invoice, automatically
+// apply it through the governed Invoice.applyPayment command. This ensures
+// invoice amountPaid/amountDue stay consistent with collection activity.
+// Uses caseId as the payment reference for traceability.
+on CollectionPaymentRecorded run Invoice.applyPayment
+  resolve payload.invoiceId
+  params {
+    paymentAmount: payload.amount
+    paymentId: payload.caseId
+  }
+
+// ── Events: Contract → Event confirmation ────────────────────────────────────
+
+// When a client signs an event contract, automatically confirm the event.
+// Replaces manual event confirmation that was disconnected from contract signing.
+// Uses a system-level userId since this is an automatic cascade from contract signing.
+on ContractSigned run Event.confirm
+  resolve payload.eventId
+  params {
+    userId: "system"
+  }
+
+// ── Equipment: MaintenanceWorkOrder → Equipment maintenance record ────────
+
+// When a maintenance work order is completed, automatically record the maintenance
+// event on the parent equipment. This updates lastMaintenanceDate, calculates
+// nextMaintenanceDate, and keeps the equipment maintenance history current.
+on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
+  resolve payload.equipmentId
+  params {
+    maintenanceDate: payload.completedAt
+    maintenanceType: "corrective"
+    performedBy: payload.completedBy
+    cost: payload.actualCost
+    notes: "Auto-recorded from work order completion"
+  }
+
+// When maintenance work is completed, automatically transition the equipment
+// back to active status. Ensures equipment availability tracking stays current
+// without requiring a separate manual status update.
+on MaintenanceWorkOrderCompleted run Equipment.updateStatus
+  resolve payload.equipmentId
+  params {
+    newStatus: "active"
+    reason: "Maintenance work order completed"
+    userId: payload.completedBy
+  }

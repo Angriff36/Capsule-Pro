@@ -49,7 +49,7 @@
 | **EventContract.cancel silently drops canceledBy** | RESOLVED 2026-06-04 — Fixed: Added missing `canceledBy: string` property; cancel command now persists it. | `manifest/source/event-contract-rules.manifest` |
 | **EventContract expiresAt: number into datetime** | RESOLVED 2026-06-04 — Fixed: `expiresAt: number` → `datetime` in create (L43) and update (L62). | `manifest/source/event-contract-rules.manifest` |
 | **EventDish quantity: number into int** | RESOLVED 2026-06-04 — Fixed: `quantity: number` → `int` and `sortOrder: number` → `int` in create, updateQuantity, updateCourse + event payloads. | `manifest/source/event-dish-rules.manifest` |
-| **BudgetLineItem.update bare number arithmetic into money** | `varianceAmount = actualAmount - budgetedAmount` uses bare `number` params into `money` property. | `manifest/source/event-budget-rules.manifest` |
+| **BudgetLineItem.update bare number arithmetic into money** | **RESOLVED 2026-06-05** — Fixed: budget-rules.manifest (5 params number→money) + labor-budget-rules.manifest (4 params + 1 computed number→money). | `manifest/source/event-budget-rules.manifest` |
 | **Event properties: 10 never mutated by any command** | Dead declarations add confusion and false surface area for tooling. | `manifest/source/event-rules.manifest` |
 | **EventStaff / EventStaffAssignment duplicate IR entities** | Both exist with overlapping purpose (eventId + staffMemberId + role + shift + status). Both have separate Prisma models. Must consolidate or explicitly differentiate. | IR + `schema.prisma` |
 | **Rules engine middleware factory exported but never called** | `createRulesEngineMiddleware()` at `manifest/runtime/src/rules-engine/runtime-integration.ts` is never imported outside its module. Complete, tested rules engine sitting unused. | `manifest/runtime/src/rules-engine/runtime-integration.ts` |
@@ -87,7 +87,7 @@
 | **HIGH: PayrollRun reject overwrites approvedBy** | `reject` command mutates `approvedBy = rejectedBy`, losing original approver. | `manifest/source/payroll-rules.manifest:250-255` |
 | **HIGH: VendorContract startDate/endDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `startDate: number, endDate: number` → `datetime` in create (L65), update (L96), renew (L176); guard `startDate > 0` → `startDate != null`. | `manifest/source/vendor-contract-rules.manifest:64,73` |
 | **HIGH: CateringOrder deliveryDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `deliveryDate: number` → `datetime` in create (L94) and scheduleDelivery (L182). | `manifest/source/catering-order-rules.manifest:96` |
-| **HIGH: PayrollLineItem hours/rate typed as money** | Should be decimal/float (hours and rates, not currency). | `manifest/source/payroll-rules.manifest:279-283` |
+| **HIGH: PayrollLineItem hours/rate typed as money** | **RESOLVED 2026-06-04** — Hours/rate fields already typed as decimal (not money). Pre-audit finding was stale. | `manifest/source/payroll-rules.manifest:279-283` |
 | **MEDIUM: RecipeVersion tagCount hardcoded to 0** | Never counts actual tags. | `manifest/source/recipe-rules.manifest` |
 | **MEDIUM: Recipe hasVersion always returns true** | Never checks actual versions. | `manifest/source/recipe-rules.manifest` |
 | **MEDIUM: InventoryItem totalValue typed number** | Should be money (int * money). | IR analysis |
@@ -127,7 +127,7 @@
 | **HIGH: payroll-engine 100% disconnected from Manifest** | Sets PayrollRun.status to "completed" (not a valid Manifest state). Constructor strips `$transaction` -- cannot be retrofitted without signature change. Zero Manifest awareness. | `packages/payroll-engine/` |
 | **MEDIUM: 25 projections exist (not 9)** | 17 undocumented projections: llm-context (MCP integration), materialized-views (reporting), health (K8s), graphql, analytics. High-value candidates for adoption. | `node_modules/@angriff36/manifest/dist/manifest/projections/` |
 | **MEDIUM: Rules engine and entity graph are dead code** | rules-engine/ (5 files, ~1000 LOC, 0 consumers), entity-graph/ (7 files, ~1400 LOC, 0 consumers, `buildGraphFromIR` is stub). Total: 12 files, ~2400 lines. | Runtime analysis |
-| **MEDIUM: CollectionCase.dunningStage arithmetic on string** | `self.dunningStage + 1` on string type produces NaN. | `manifest/source/collection-rules.manifest` |
+| **MEDIUM: CollectionCase.dunningStage arithmetic on string** | **RESOLVED 2026-06-05** — Fixed: dunningStage changed from string to int; escalateDunning guarded to <5; resetDunning param string→int; escalateToLegal 'LEGAL'→5. | `manifest/source/collection-rules.manifest` |
 | **MEDIUM: 12 hybrid files (partial migration started)** | 11 API + 1 app files contain BOTH direct Prisma writes AND manifest calls. Lowest-effort migration targets -- Manifest wiring already exists. | API analysis |
 | **MEDIUM: Client.tags/ApiKey.scopes string-into-array mismatch** | RESOLVED 2026-06-04 — Client.tags fixed in first batch (L55, L90). Event.tags fixed in second batch (L68, L88). RolePolicy.permissions fixed: `string = "[]"` → `array<string> = []`; computed uses `length()`. | Source analysis |
 | **LOW: 30 Prisma models use snake_case model names** | Convention violation: `audit_config`, `sms_logs`, `open_shifts` etc. Adds noise to accessor resolution. 179 models have @@map, 47 don't. | Schema analysis |
@@ -296,7 +296,7 @@
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
 - IR: **189 entities (ALL durable)**, 952 commands (905 with non-empty guards, 950 with non-empty emits, 2 without emits, 132 with non-empty constraints), 936 events, 241 policies, 92 source files
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
-- **2 reactions** defined (finance: Payment→Invoice applyPayment + refund). Target: 5+ high-value reactions.
+- **7 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ high-value reactions ✅ MET.
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
 - **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. 34 entities have transitions but 65 status entities lack them
@@ -448,6 +448,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 10.1: Legacy dead code already deleted** | Confirmed legacy 3,205-line manifest-runtime.ts was deleted in prior commit. 66-line re-export is thin wrapper. 0 legacy consumers remain. |
 | 2026-06-05 | **Task 9.2: First 2 Manifest reactions implemented** | `on PaymentProcessed run Invoice.applyPayment` + `on PaymentRefunded run Invoice.recordRefund`. Cross-entity updates now flow through governed Manifest lifecycle instead of raw Prisma. IR: 2 reactions (was 0). API typecheck 0, 2574 tests pass. |
 | 2026-06-05 | **Task 3.4: Store-level bug fixes (MenuPrismaStore + ShipmentPrismaStore)** | MenuPrismaStore uses toDecimalInput() (was raw new Prisma.Decimal). ShipmentPrismaStore status properly typed (was as any). AllergenWarning toCommaString confirmed alive. 2574 tests pass. |
+| 2026-06-05 | **Task 0.6 + 9.2: Source bug fixes + 2 equipment maintenance reactions** | CollectionCase.dunningStage string→int (was NaN on arithmetic); Budget/LaborBudget number→money type fixes (9 param declarations); 2 new reactions: MaintenanceWorkOrderCompleted→Equipment.recordMaintenance + Equipment.updateStatus. IR: 189/952/936/7 reactions. API+runtime typecheck 0. 2574 tests pass. |
 
 ---
 
@@ -559,7 +560,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 22. **API shim is 376 lines, not a thin wrapper:** Contains additional runtime construction logic.
 
-23. **EventBudget.variancePercentage never computed:** Stays at `0`. All constraints evaluating against it are ineffective.
+23. **~~EventBudget.variancePercentage never computed~~ RESOLVED 2026-06-04:** Converted from stale property (always 0) to computed using `percent()` builtin. 3 previously ineffective constraints now active.
 
 24. **Rules engine middleware factory never called:** Complete rules engine at `manifest/runtime/src/rules-engine/` is exported but never imported or wired.
 
@@ -591,7 +592,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 38. **Permission guard allow-by-default (SECURITY):** Only 9/189 entity types have RBAC entries (28 command entries total). 180/189 bypass all permission checks. 3 bypass paths. Task 9.9.
 
-39. **559+ datetime-as-number source mismatches (UNIVERSAL):** Event timestamp fields typed as `number` while entity property is `datetime` -- confirmed in EVERY domain: Finance, Payroll, Staff, Procurement, Notifications, Kitchen, Inventory, CRM, Logistics, Admin, Infra/Quality. 9 datetime fields mutated to literal `0`. Task 2.7.
+39. **~~559+ datetime-as-number source mismatches (UNIVERSAL)~~ RESOLVED 2026-06-04 (Task 2.7/2.8):** Task 2.7 fixed 988 datetime-as-number occurrences across 90 manifest sources. Task 2.8 adopted `timestamps` modifier for all 189 entities (-1,202 lines of boilerplate). All event payload timestamps now correctly typed `datetime`.
 
 40. **~~3 outbox implementations~~ RESOLVED 2026-06-05 (Task 10.5):** Unsafe kitchen helper removed. 2 implementations remain (canonical tx-safe + manifest batch writer). Bundle-claim route now uses transactional outbox.
 

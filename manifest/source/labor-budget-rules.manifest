@@ -22,7 +22,7 @@ entity LaborBudget {
   computed isDeleted: boolean = self.deletedAt != null
   computed isApproved: boolean = self.status == "approved"
   computed isOverBudget: boolean = self.actualAmount > self.budgetAmount
-  computed varianceAmount: number = self.actualAmount - self.budgetAmount
+  computed varianceAmount: money = self.actualAmount - self.budgetAmount
 
   constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
   constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
@@ -37,7 +37,7 @@ entity LaborBudget {
     }
   }
 
-  command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string, createdBy: string) {
+  command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: money, budgetType: string, notes: string, createdBy: string) {
     guard budgetAmount > 0 "Budget amount must be positive"
 
     mutate locationId = locationId
@@ -51,7 +51,7 @@ entity LaborBudget {
     emit LaborBudgetCreated
   }
 
-  command update(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string) {
+  command update(locationId: string, periodStart: string, periodEnd: string, budgetAmount: money, budgetType: string, notes: string) {
     guard self.deletedAt == null "Cannot update a deleted budget"
 
     mutate locationId = locationId
@@ -84,7 +84,7 @@ entity LaborBudget {
     emit LaborBudgetApproved
   }
 
-  command recordActual(actualAmount: number) {
+  command recordActual(actualAmount: money) {
     guard self.status == "approved" "Can only record actuals on approved budgets"
     guard self.deletedAt == null "Cannot update a deleted budget"
     guard actualAmount >= 0 "Actual amount must be non-negative"

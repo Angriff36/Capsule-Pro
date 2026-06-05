@@ -19,7 +19,7 @@ entity Budget {
   property lockedAt: datetime
   timestamps
 
-  computed remainingAmount: number = self.allocatedAmount - self.spentAmount
+  computed remainingAmount: money = self.allocatedAmount - self.spentAmount
   computed percentUsed: number = percent(self.spentAmount, self.allocatedAmount)
   computed isOverBudget: boolean = self.spentAmount > self.allocatedAmount
 
@@ -36,7 +36,7 @@ entity Budget {
     }
   }
 
-  command create(name: string, description: string, fiscalYear: number, totalAmount: number, category: string, departmentId: string) {
+  command create(name: string, description: string, fiscalYear: number, totalAmount: money, category: string, departmentId: string) {
     guard name != null and name != "" "Budget name is required"
     guard totalAmount > 0 "Total amount must be positive"
 
@@ -61,7 +61,7 @@ entity Budget {
     emit BudgetDeleted
   }
 
-  command update(name: string, description: string, fiscalYear: number, allocatedAmount: number, category: string, departmentId: string) {
+  command update(name: string, description: string, fiscalYear: number, allocatedAmount: money, category: string, departmentId: string) {
     guard name != null and name != "" "Budget name is required"
     guard allocatedAmount >= self.spentAmount "Cannot reduce allocation below spent amount"
 
@@ -104,7 +104,7 @@ entity Budget {
     emit BudgetLocked
   }
 
-  command addLineItem(lineItemName: string, amount: number, category: string) {
+  command addLineItem(lineItemName: string, amount: money, category: string) {
     guard self.status in ["draft", "active"] "Cannot add line items to a closed or archived budget"
     guard lineItemName != null and lineItemName != "" "Line item name is required"
     guard amount >= 0 "Line item amount must be non-negative"
@@ -124,7 +124,7 @@ entity Budget {
     emit BudgetLineItemAdded
   }
 
-  command recordVariance(actualSpent: number, note: string) {
+  command recordVariance(actualSpent: money, note: string) {
     guard self.status in ["active", "closed"] "Can only record variance on active or closed budgets"
     guard actualSpent >= 0 "Actual spent must be non-negative"
 

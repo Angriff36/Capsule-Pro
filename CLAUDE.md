@@ -259,10 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 86% context — saved before compacting]
-Files (3):
-  apps/api/__tests__/accounting/payment-create-idempotency.test.ts (edit)
-  manifest/scripts/derive-prisma-options.mjs (edit)
-  manifest/scripts/generate-full-schema.mjs (edit)
+[proactive bridge @ 100% context — saved before compacting]
+Files (1):
+  manifest/source/reactions.manifest (edit)
 
 # === END COGNILAYER ===
