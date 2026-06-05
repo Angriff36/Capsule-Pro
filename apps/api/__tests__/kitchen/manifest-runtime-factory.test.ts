@@ -321,22 +321,16 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
-    it("routes all 14 dedicated entities to PrismaStore", async () => {
+    it("routes all 5 dedicated entities to PrismaStore", async () => {
+      // Only entities with genuine custom logic (cross-table queries,
+      // non-standard delete semantics, transactional multi-table writes)
+      // remain in ENTITIES_WITH_SPECIFIC_STORES. All others use GenericPrismaStore.
       const dedicatedEntities = [
         "PrepTask",
-        "Recipe",
-        "RecipeVersion",
-        "Ingredient",
-        "RecipeIngredient",
-        "Dish",
-        "Menu",
-        "MenuDish",
-        "PrepList",
-        "PrepListItem",
-        "Station",
-        "InventoryItem",
         "KitchenTask",
-        "Event",
+        "PrepTaskPlanWorkflow",
+        "Station",
+        "InventoryTransfer",
       ];
 
       const deps = makeDeps();
