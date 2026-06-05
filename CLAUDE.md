@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 95% context — saved before compacting]
+[proactive bridge @ 89% context — saved before compacting]
 Files (1):
-  manifest/source/api-key-rules.manifest (edit)
+  claude-code-plans/task_plan.md (create)
 
 # === END COGNILAYER ===

@@ -54,7 +54,7 @@ entity PaymentMethod {
   constraint default_for_active_only: self.isDefault == false or self.status == "ACTIVE" "Only active payment methods can be default"
 
   // State transitions
-  transition status from "ACTIVE" to ["EXPIRED", "INVALID", "FRAUDULENT"]
+  transition status from "ACTIVE" to ["EXPIRED", "INVALID", "FRAUDULENT", "REMOVED"]
   transition status from "EXPIRED" to ["ACTIVE"]
 
   // Commands
@@ -137,6 +137,21 @@ entity PaymentMethod {
     mutate externalMethodId = newToken
     emit PaymentMethodTokenUpdated
   }
+
+  command update(cardLastFour: string, cardNetwork: string, isDefault: boolean) {
+    guard self.status != "FRAUDULENT" "Cannot update a fraudulent payment method"
+    mutate cardLastFour = cardLastFour
+    mutate cardNetwork = cardNetwork
+    mutate isDefault = isDefault
+    emit PaymentMethodUpdated
+  }
+
+  command remove() {
+    guard self.status != "FRAUDULENT" "Cannot remove a fraudulent payment method"
+    mutate status = "REMOVED"
+    mutate isDefault = false
+    emit PaymentMethodRemoved
+  }
 }
 
 store PaymentMethod in durable
@@ -191,4 +206,14 @@ event PaymentMethodVerificationFailed: "payment-method.verification-failed" {
   paymentMethodId: string
   clientId: string
   reason: string
+}
+
+event PaymentMethodUpdated: "payment-method.updated" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodRemoved: "payment-method.removed" {
+  paymentMethodId: string
+  clientId: string
 }

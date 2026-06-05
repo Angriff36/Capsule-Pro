@@ -2801,6 +2801,16 @@
   },
   {
     "entity": "PaymentMethod",
+    "command": "remove",
+    "commandId": "PaymentMethod.remove"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "update",
+    "commandId": "PaymentMethod.update"
+  },
+  {
+    "entity": "PaymentMethod",
     "command": "updateToken",
     "commandId": "PaymentMethod.updateToken"
   },

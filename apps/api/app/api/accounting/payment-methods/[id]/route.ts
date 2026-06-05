@@ -1,22 +1,18 @@
 /**
  * Single Payment Method API Routes
  *
- * Handles operations on individual payment methods.
- *
- * Schema (see packages/database/prisma/schema.prisma model PaymentMethod):
- * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault, status
- * - createdAt, updatedAt, deletedAt
- *
- * `status` is a free-text column with values: ACTIVE | VERIFIED | FLAGGED |
- * EXPIRED. Card expiry month/year fields are NOT in the schema — do not
- * reintroduce references to them without a matching migration.
+ * GET    /api/accounting/payment-methods/[id]  - Get payment method (Prisma read)
+ * PUT    /api/accounting/payment-methods/[id]  - Update payment method (Manifest runtime)
+ * PATCH  /api/accounting/payment-methods/[id]  - Command actions (Manifest runtime)
+ * DELETE /api/accounting/payment-methods/[id]  - Remove payment method (Manifest runtime)
  */
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   getDisplayInfo,
   type PaymentMethodResponse,
@@ -69,7 +65,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 /**
  * PUT /api/accounting/payment-methods/[id]
- * Update a payment method
+ * Update a payment method via Manifest runtime.
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
@@ -77,6 +73,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
+    // Pre-validation: check existence and access
     const paymentMethod = await database.paymentMethod.findFirst({
       where: {
         tenantId,
@@ -94,7 +91,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     validatePaymentMethodAccess(paymentMethod, tenantId);
 
-    // If setting as default, unset other defaults for this client
+    // Pre-validation: if setting as default, unset other defaults for this client
     if (body.isDefault === true) {
       await database.paymentMethod.updateMany({
         where: {
@@ -109,34 +106,18 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       });
     }
 
-    // Update allowed fields only - only fields that exist in the schema
-    const updateData: Record<string, unknown> = {};
-    if (body.cardLastFour !== undefined) {
-      updateData.cardLastFour = body.cardLastFour;
-    }
-    if (body.cardNetwork !== undefined) {
-      updateData.cardNetwork = body.cardNetwork;
-    }
-    if (body.isDefault !== undefined) {
-      updateData.isDefault = body.isDefault;
-    }
-
-    const updatedPaymentMethod = await database.paymentMethod.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "PaymentMethod",
+      command: "update",
+      body: {
+        id,
+        cardLastFour: body.cardLastFour ?? paymentMethod.cardLastFour ?? "",
+        cardNetwork: body.cardNetwork ?? paymentMethod.cardNetwork ?? "",
+        isDefault: body.isDefault ?? paymentMethod.isDefault,
       },
-      data: updateData,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-
-    const response: PaymentMethodResponse = {
-      ...updatedPaymentMethod,
-      displayInfo: getDisplayInfo(updatedPaymentMethod),
-    };
-
-    return NextResponse.json<PaymentMethodResponse>(response);
   } catch (error) {
     captureException(error);
     log.error("Error updating payment method", { error });
@@ -149,7 +130,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 /**
  * PATCH /api/accounting/payment-methods/[id]
- * Handle payment method command actions
+ * Handle payment method command actions via Manifest runtime.
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
@@ -157,6 +138,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const { id } = await context.params;
     const body = await request.json();
 
+    // Pre-validation: check existence and access
     const paymentMethod = await database.paymentMethod.findFirst({
       where: { tenantId, id, deletedAt: null },
     });
@@ -170,10 +152,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     validatePaymentMethodAccess(paymentMethod, tenantId);
 
+    const user = await resolveCurrentUser(request);
     const action = body.action;
 
+    // Map HTTP actions to Manifest commands
+    const commandMap: Record<string, { command: string; body: Record<string, unknown> }> = {
+      "mark-as-default": { command: "markAsDefault", body: { id } },
+      "verify": { command: "verify", body: { id, method: body.method || "manual" } },
+      "flag-for-fraud": { command: "flagForFraud", body: { id, reason: body.reason || "" } },
+      "mark-expired": { command: "markExpired", body: { id } },
+      "remove": { command: "remove", body: { id } },
+    };
+
+    const mapped = commandMap[action];
+    if (!mapped) {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    }
+
+    // Pre-validation for mark-as-default: unset other defaults for this client
     if (action === "mark-as-default") {
-      // Unset other defaults for this client
       await database.paymentMethod.updateMany({
         where: {
           tenantId,
@@ -183,69 +180,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         },
         data: { isDefault: false },
       });
-
-      const updated = await database.paymentMethod.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { isDefault: true, updatedAt: new Date() },
-      });
-
-      const response: PaymentMethodResponse = {
-        ...updated,
-        displayInfo: getDisplayInfo(updated),
-      };
-      return NextResponse.json<PaymentMethodResponse>(response);
     }
 
-    if (action === "verify") {
-      const updated = await database.paymentMethod.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { status: "VERIFIED", updatedAt: new Date() },
-      });
-
-      const response: PaymentMethodResponse = {
-        ...updated,
-        displayInfo: getDisplayInfo(updated),
-      };
-      return NextResponse.json<PaymentMethodResponse>(response);
-    }
-
-    if (action === "flag-for-fraud") {
-      const updated = await database.paymentMethod.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { status: "FLAGGED", updatedAt: new Date() },
-      });
-
-      const response: PaymentMethodResponse = {
-        ...updated,
-        displayInfo: getDisplayInfo(updated),
-      };
-      return NextResponse.json<PaymentMethodResponse>(response);
-    }
-
-    if (action === "mark-expired") {
-      const updated = await database.paymentMethod.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { status: "EXPIRED", updatedAt: new Date() },
-      });
-
-      const response: PaymentMethodResponse = {
-        ...updated,
-        displayInfo: getDisplayInfo(updated),
-      };
-      return NextResponse.json<PaymentMethodResponse>(response);
-    }
-
-    if (action === "remove") {
-      // Soft delete
-      await database.paymentMethod.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-
-      return NextResponse.json({ success: true });
-    }
-
-    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+    return runManifestCommand({
+      entity: "PaymentMethod",
+      command: mapped.command,
+      body: mapped.body,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error handling payment method action", { error });
@@ -258,13 +200,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 /**
  * DELETE /api/accounting/payment-methods/[id]
- * Delete (soft delete) a payment method
+ * Remove (soft delete) a payment method via Manifest runtime.
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
     const { id } = await context.params;
 
+    // Pre-validation: check existence and access
     const paymentMethod = await database.paymentMethod.findFirst({
       where: {
         tenantId,
@@ -282,20 +225,13 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     validatePaymentMethodAccess(paymentMethod, tenantId);
 
-    // Soft delete
-    await database.paymentMethod.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "PaymentMethod",
+      command: "remove",
+      body: { id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-
-    return NextResponse.json({ success: true });
   } catch (error) {
     captureException(error);
     log.error("Error deleting payment method", { error });

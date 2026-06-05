@@ -1,7 +1,8 @@
 /**
  * Collection Cases API Routes
  *
- * Handles collections management for overdue invoices
+ * Handles collections management for overdue invoices.
+ * POST creates via Manifest runtime; GET reads bypass runtime per constitution §10.
  */
 
 import { database } from "@repo/database";
@@ -9,7 +10,10 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireTenantId } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 // Validation schemas
 const createCaseSchema = z.object({
@@ -27,15 +31,13 @@ const createCaseSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional(),
 });
 
-type CreateCaseInput = z.infer<typeof createCaseSchema>;
-
 /**
  * GET /api/accounting/collections/cases
  * List all collection cases
  */
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = await requireTenantId();
+    const user = await resolveCurrentUser(request);
     const { searchParams } = new URL(request.url);
 
     const page = Math.max(1, Number(searchParams.get("page") || "1"));
@@ -48,7 +50,7 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get("clientId");
 
     const where: Record<string, unknown> = {
-      tenantId,
+      tenantId: user.tenantId,
       deletedAt: null,
     };
 
@@ -118,11 +120,11 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/accounting/collections/cases
- * Create a new collection case
+ * Create a new collection case via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await requireTenantId();
+    const user = await resolveCurrentUser(request);
     const body = await request.json();
 
     const parseResult = createCaseSchema.safeParse(body);
@@ -134,10 +136,10 @@ export async function POST(request: NextRequest) {
     }
     const validated = parseResult.data;
 
-    // Verify invoice exists and belongs to tenant
+    // Verify invoice exists and belongs to tenant (read — bypasses Manifest per §10)
     const invoice = await database.invoice.findFirst({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         id: validated.invoiceId,
         deletedAt: null,
       },
@@ -147,10 +149,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    // Check if case already exists for this invoice
+    // Check if case already exists for this invoice (read — bypasses Manifest per §10)
     const existing = await database.collectionCase.findFirst({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         invoiceId: validated.invoiceId,
         deletedAt: null,
       },
@@ -166,10 +168,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create the collection case
-    const collectionCase = await database.collectionCase.create({
-      data: {
-        tenantId,
+    // Delegate creation to Manifest runtime
+    return runManifestCommand({
+      entity: "CollectionCase",
+      command: "create",
+      body: {
+        tenantId: user.tenantId,
         invoiceId: validated.invoiceId,
         invoiceNumber: validated.invoiceNumber,
         eventId: validated.eventId,
@@ -180,27 +184,17 @@ export async function POST(request: NextRequest) {
         collectedAmount: 0,
         status: "ACTIVE",
         priority: validated.priority ?? "MEDIUM",
-        dunningStage: "CURRENT",
         daysOverdue: validated.daysOverdue ?? 0,
-        agingBucket: validated.agingBucket,
-        notes: validated.notes,
-        metadata: JSON.parse(JSON.stringify(validated.metadata ?? {})),
-        assignedTo: null,
+        agingBucket: validated.agingBucket ?? "",
+        notes: validated.notes ?? "",
+        metadata: JSON.stringify(validated.metadata ?? {}),
+        assignedTo: "",
         hasPaymentPlan: false,
         isDisputed: false,
         isEscalatedToLegal: false,
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-
-    return NextResponse.json(
-      {
-        ...collectionCase,
-        collectionPercentage: 0,
-        isHighRisk: false,
-        isCritical: false,
-      },
-      { status: 201 }
-    );
   } catch (error) {
     captureException(error);
     log.error("Error creating collection case:", error);

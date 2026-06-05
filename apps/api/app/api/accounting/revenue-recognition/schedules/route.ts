@@ -2,14 +2,15 @@
  * Revenue Recognition Schedules API Routes
  *
  * GET  /api/accounting/revenue-recognition/schedules      - List schedules
- * POST /api/accounting/revenue-recognition/schedules      - Create schedule
+ * POST /api/accounting/revenue-recognition/schedules      - Create schedule (via Manifest runtime)
  */
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -70,49 +71,15 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/accounting/revenue-recognition/schedules
- * Create a new revenue recognition schedule
+ * Create a new revenue recognition schedule via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
-  try {
-    const tenantId = await requireTenantId();
-    const body = await request.json();
-
-    const schedule = await database.revenueRecognitionSchedule.create({
-      data: {
-        tenantId,
-        invoiceId: body.invoiceId,
-        eventId: body.eventId,
-        contractId: body.contractId ?? null,
-        clientId: body.clientId,
-        totalAmount: body.totalAmount,
-        recognizedAmount: body.recognizedAmount ?? 0,
-        remainingAmount: body.remainingAmount,
-        method: body.method,
-        status: body.status ?? "PENDING",
-        startDate: new Date(body.startDate),
-        endDate: new Date(body.endDate),
-        recognitionPeriod: body.recognitionPeriod,
-        serviceStartDate: body.serviceStartDate
-          ? new Date(body.serviceStartDate)
-          : null,
-        serviceEndDate: body.serviceEndDate
-          ? new Date(body.serviceEndDate)
-          : null,
-        totalMilestones: body.totalMilestones ?? 0,
-        completedMilestones: body.completedMilestones ?? 0,
-        description: body.description ?? null,
-        notes: body.notes ?? null,
-        metadata: body.metadata ?? {},
-      },
-    });
-
-    return NextResponse.json({ data: schedule }, { status: 201 });
-  } catch (error) {
-    captureException(error);
-    log.error("Error creating revenue recognition schedule:", error);
-    return NextResponse.json(
-      { error: "Failed to create revenue recognition schedule" },
-      { status: 500 }
-    );
-  }
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "RevenueRecognitionSchedule",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

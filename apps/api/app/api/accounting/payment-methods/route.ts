@@ -1,18 +1,16 @@
 /**
  * Payment Methods API Routes
  *
- * Handles payment method storage and management.
- *
- * NOTE: The Prisma PaymentMethod model has been simplified to:
- * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
- * - createdAt, updatedAt, deletedAt
+ * GET  /api/accounting/payment-methods        - List payment methods (Prisma read)
+ * POST /api/accounting/payment-methods        - Create payment method (Manifest runtime)
  */
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   getDisplayInfo,
   type PaymentMethodListResponse,
@@ -95,20 +93,20 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/accounting/payment-methods
- * Create a new payment method
+ * Create a new payment method via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await requireTenantId();
-    const body = await request.json();
+    const body = await request.json() as Record<string, unknown>;
 
     validateCreatePaymentMethodRequest(body);
 
-    // Verify client exists and belongs to tenant
+    // Pre-validation: verify client exists and belongs to tenant (constitution §10)
     const client = await database.client.findFirst({
       where: {
         tenantId,
-        id: body.clientId,
+        id: body.clientId as string,
         deletedAt: null,
       },
     });
@@ -117,12 +115,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    // If setting as default, unset other defaults for this client
+    // If setting as default, unset other defaults for this client (pre-validation)
     if (body.isDefault) {
       await database.paymentMethod.updateMany({
         where: {
           tenantId,
-          clientId: body.clientId,
+          clientId: body.clientId as string,
           isDefault: true,
         },
         data: {
@@ -131,24 +129,28 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create payment method - only use fields that exist in the schema
-    const paymentMethod = await database.paymentMethod.create({
-      data: {
-        tenantId,
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "PaymentMethod",
+      command: "create",
+      body: {
         clientId: body.clientId,
         type: body.type,
-        cardLastFour: body.cardLastFour || null,
-        cardNetwork: body.cardNetwork || null,
-        isDefault: body.isDefault,
+        externalMethodId: body.externalMethodId ?? "",
+        cardLastFour: body.cardLastFour ?? "",
+        cardNetwork: body.cardNetwork ?? "",
+        cardExpiryMonth: body.cardExpiryMonth ?? 0,
+        cardExpiryYear: body.cardExpiryYear ?? 0,
+        cardHolderName: body.cardHolderName ?? "",
+        bankAccountLastFour: body.bankAccountLastFour ?? "",
+        bankAccountType: body.bankAccountType ?? "",
+        bankRoutingNumber: body.bankRoutingNumber ?? "",
+        walletProvider: body.walletProvider ?? "",
+        walletEmail: body.walletEmail ?? "",
+        nickname: body.nickname ?? "",
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
-
-    const response: PaymentMethodResponse = {
-      ...paymentMethod,
-      displayInfo: getDisplayInfo(paymentMethod),
-    };
-
-    return NextResponse.json<PaymentMethodResponse>(response, { status: 201 });
   } catch (error) {
     captureException(error);
     log.error("Error creating payment method:", error);

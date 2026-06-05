@@ -70,6 +70,12 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 | `app/api/rolepolicy/revoke/route.ts` | RolePolicy | ctx.userId→user.id (revokedBy) |
 | `app/api/rolepolicy/update/route.ts` | RolePolicy | transformBody inlined |
 
+### Migrated (2 routes, 2026-06-05) — Task 8.2
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/accounting/payment-methods/route.ts` | PaymentMethod | POST create → Manifest; GET unchanged (Prisma read) |
+| `app/api/accounting/payment-methods/[id]/route.ts` | PaymentMethod | PUT update, PATCH actions (markAsDefault/verify/flagForFraud/markExpired/remove), DELETE remove → Manifest; GET unchanged (Prisma read) |
+
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
 - All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`
