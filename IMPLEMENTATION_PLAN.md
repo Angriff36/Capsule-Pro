@@ -1206,6 +1206,35 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** App uses `database.*` singleton for direct writes. 28 files with direct `database.*` calls bypass governance.
 - **Backpressure:** `pnpm manifest:audit-direct-writes` shows zero violations in `apps/app/`.
 - **Source to change:** `apps/app/app/(authenticated)/**/actions*.ts` files.
+  - **Progress 2026-06-05 (batch 1 — events/createEvent BattleBoard):** The `createEvent` server
+    action (`apps/app/app/(authenticated)/events/actions.ts`) no longer writes the event's
+    `BattleBoard` via direct Prisma inside its `$transaction`. The board is now created through the
+    governed `runManifestCommand({ entity: "BattleBoard", command: "create", ... })` path (in-process
+    runtime via `apps/app/lib/manifest-command.ts`), consuming the committed Task 8.9 parent-context
+    propagation (BattleBoard is the first adopter — it inherits the parent Event's date/client/venue/
+    guest context server-side). Board creation is non-fatal (try/catch) so it never blocks event
+    creation. The actor is resolved via `requireCurrentUser()` (needed for the command's `user`
+    context). **The `Event` row itself remains a documented direct write** — routing it through
+    `Event.create` needs `templateId` added to the Event manifest source and the `eventNumber`
+    advisory-lock numbering reworked; tracked as a follow-up. `updateEvent`/`assignClientToEvent`/
+    `deleteEvent`/`attachEventImport` in the same file are still direct writes (future batches).
+  - **Test-infra fix (root cause) shipped with batch 1:** `apps/app/vitest.config.mts` aliased
+    `@repo/manifest-runtime` to the package **root**, so Vite prefix-replacement broke every subpath
+    export (`@repo/manifest-runtime/run-manifest-command-core`, `/manifest-runtime-factory`, …) — any
+    app test transitively importing a server action that uses `manifest-command.ts` failed to load.
+    `events/actions.test.ts` was the first to hit it. Fixed by pointing the alias at the package's
+    `src/` dir (the `exports` map uniformly maps every subpath to `./src/<subpath>`). `tsc` already
+    resolved these via the exports map; only Vitest was affected. Also updated `events/actions.test.ts`
+    to stub `requireCurrentUser` (now called before validation).
+  - **Stale command-board tests repaired (workflow rule 6):** two pre-existing failures unrelated to
+    this batch — (a) `simulation-plan-aliases.test.ts` asserted `Venue.create` was NOT a canonical
+    pair, but Task 8.2's CRM migration made `Venue` a governed entity with a real `create` command;
+    (b) `simulation-plan-aliases.test.ts` + `tool-registry-context.test.ts` expected the old
+    per-domain route `/api/command-board/cards/commands/create`, but command-board chat was
+    canonicalized to the constitution §6 dispatcher shape `/api/manifest/CommandBoardCard/commands/create`.
+    Test expectations updated to match the (correct) current behavior.
+  - **Verification:** `pnpm --filter app typecheck` exit 0; full `apps/app` vitest suite 280/280 pass
+    (was 277/280 with 3 stale failures before this increment).
 
 ### 8.4 Package-specific governance migration
 - **Done when:** `supplier-connectors` (5 direct writes on VendorCatalog -- governed entity), `sentry-integration` (2 writes on SentryFixJob -- infrastructure, NOT governed), `payroll-engine` (covered by 8.1), `notifications` (1 direct write on EmailWorkflow -- governed entity; emailLog/sms_logs/notification_preferences writes are infrastructure logs, not governed), `packages/database/src/vendor-cost-service.ts` (1 documented bypass on InventoryItem with explicit GOVERNANCE NOTE -- downstream mechanical effect of governed VendorCatalog commands) route writes through Manifest or are documented as intentionally ungoverned. `packages/realtime/` (outbox is infrastructure, not governed). `packages/services/` removed (confirmed truly empty -- no package.json, no source files).

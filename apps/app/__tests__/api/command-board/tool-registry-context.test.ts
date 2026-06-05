@@ -596,7 +596,11 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
       "CommandBoardCard.create executed successfully"
     );
     const data = result.data as { routePath: string };
-    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
+    // Commands resolve to the constitution §6 canonical dispatcher shape
+    // (POST /api/manifest/{entity}/commands/{command}), not a per-domain route.
+    expect(data.routePath).toBe(
+      "/api/manifest/CommandBoardCard/commands/create"
+    );
   });
 
   it("uses context userId when not provided in args", async () => {

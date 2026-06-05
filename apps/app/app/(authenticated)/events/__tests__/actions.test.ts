@@ -5,7 +5,25 @@ describe("createEvent validation", () => {
   const mockTenantId = "test-tenant-id";
   const mockFormData = new FormData();
 
+  // createEvent resolves the actor via requireCurrentUser() BEFORE validation
+  // (it needs user.id/role to dispatch the governed BattleBoard.create command).
+  // Stub it so the validation-error paths under test are reachable without a
+  // live Clerk session. The governed command itself is never hit here — every
+  // case returns at schema validation, before any create.
+  const mockCurrentUser = {
+    id: "test-user-id",
+    tenantId: mockTenantId,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  };
+
   beforeEach(() => {
+    vi.spyOn(tenantModule, "requireCurrentUser").mockResolvedValue(
+      mockCurrentUser
+    );
+
     mockFormData.delete("title");
     mockFormData.delete("eventType");
     mockFormData.delete("eventDate");
