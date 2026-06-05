@@ -104,7 +104,7 @@
 | **realtime package outbox duplicates manifest/runtime outbox** | Duplicate outbox implementation. | `packages/realtime/` |
 | **packages/services/ is EMPTY** | Should be removed from monorepo. | `packages/services/` |
 | **152 entities have FK properties but no relationships** | Far larger than prior "21 event-domain" estimate. Top gap entities: CycleCountRecord (5 FKs), InventoryTransaction (5 FKs), PrepListItem (5 FKs), WasteEntry (5 FKs). | IR analysis |
-| **54 entities with transitions (163 total rules)** | ~11 entities with status properties still lack transitions. Top gaps: cycle-count, event-automation, inventory-transfer-received. | IR analysis |
+| **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.** | | IR analysis |
 | **563/611 computed properties have empty dependencies** | 92.1% may not recalculate correctly when upstream values change. | IR analysis |
 | **0 overrideable constraints out of 583 total** | No constraint is marked overrideable despite the feature being available. | IR analysis |
 | **irHash and contentHash are EMPTY** | No IR integrity verification possible. `requireValidProvenance` would fail if wired. | IR provenance analysis |
@@ -299,7 +299,7 @@
 - **7 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ high-value reactions ✅ MET.
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
-- **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. **54 entities with transitions (163 total rules)**. ~11 entities with status properties still lack transitions. Top gaps remain in: cycle-count, event-automation, inventory-transfer-received.
+- **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
 - 563/611 computed properties have empty `dependencies` (92.1% may not recalculate correctly)
 - `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
@@ -451,6 +451,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 0.6 + 9.2: Source bug fixes + 2 equipment maintenance reactions** | CollectionCase.dunningStage string→int (was NaN on arithmetic); Budget/LaborBudget number→money type fixes (9 param declarations); 2 new reactions: MaintenanceWorkOrderCompleted→Equipment.recordMaintenance + Equipment.updateStatus. IR: 189/952/936/7 reactions. API+runtime typecheck 0. 2574 tests pass. |
 | 2026-06-05 | **Task 9.3 + 0.7: State transitions for 5 entities + searchable modifiers** | Added state machine enforcement to InventoryTransfer (4 rules), Proposal (3 rules), Lead (4 rules), PurchaseRequisition (4 rules), EventBudget (2 rules) — total 17 new transition rules across 5 entities. Added `searchable` modifier to 7 properties (Event.title, Client.companyName/notes, VendorCatalog.itemName, Lead.companyName/contactName/notes). IR: 49 entities with transitions (141 total rules). API+runtime typecheck 0. 2574 tests pass. Note: compiler v2.2.0 accepts `searchable` syntax but doesn't emit it to IR modifiers yet (forward-compatible source). |
 | 2026-06-05 | **Task 9.3/9.7: State transitions for 10 entities + readonly audit fields** | 22 new transition rules across CycleCountSession (4), EventImportWorkflow (10), Budget (3), ClientInteraction (4), WasteEntry (2). Plus 7 readonly modifiers on audit fields (BankAccount.verifiedAt, ApiKey.hashedKey/keyPrefix, PayrollRun.approvedAt/approvedBy/paidAt, Payment.gatewayTransactionId). IR: 54 entities with transitions (163 total rules). 378 readonly properties from timestamps modifier. API+runtime typecheck 0. 2574 tests pass. |
+| 2026-06-05 | **Task 9.3 COMPLETE: State transitions for 96 entities (256 rules)** | Added state machine enforcement to 30+ entities. Only 4 entities intentionally skipped (free-form status). Transition coverage: 96/100 status entities (96%). Fix: PrepList.createFromSeed draft→draft self-transition added. IR: 96 entities with 256 transition rules. API+runtime typecheck 0. 2574 tests pass. |
 
 ---
 
@@ -1454,8 +1455,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | IR reactions | **2** (Payment→Invoice, PaymentRefund→Invoice) | 0 | NEW: first reactions adopted |
 | IR relationships | 8 entities (12 declarations) | 8 | -- |
 | IR entities with FK props but no relationship | **152** | 152 | -- |
-| IR entities with transitions | 34 | 34 | -- |
-| IR status entities lacking transitions | 65 | 65 | -- |
+| IR entities with transitions | 96 | 96 | -- |
+| IR status entities lacking transitions | 4 | 4 | -- |
 | IR computed properties with empty dependencies | 563/611 (92.1%) | 563/611 | -- |
 | IR overrideable constraints | 0/583 | 0/583 | -- |
 | IR source files | 92 | 92 | -- |
