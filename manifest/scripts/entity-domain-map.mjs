@@ -241,11 +241,6 @@ export function toCamelCase(value) {
 //   null    → entity has NO Prisma table; do not emit a `database.*` read route (drop the file).
 //
 // Each entry is verified — NOT guessed (constitution: never invent Prisma accessors):
-//   EventStaff           model EventStaffAssignment @@map("event_staff_assignments")
-//                        (packages/database/prisma/schema.prisma:1394) →
-//                        accessor `eventStaffAssignment`. Confirmed by store header
-//                        manifest/runtime/src/prisma-stores/broken-read-batch09-event-staff-summary.ts
-//                        ("manifest entity \"EventStaff\" → tenant_events.event_staff_assignments").
 //   EventImportWorkflow  model EventImport @@map("event_imports")
 //                        (packages/database/prisma/schema.prisma:1437) →
 //                        accessor `eventImport`. Confirmed by store header
@@ -254,7 +249,6 @@ export function toCamelCase(value) {
 // (This corrects the stale phase-out-registry.md claim that EventImportWorkflow "has no table by
 //  design" — the event_imports table exists, so the route is REMAPPED, not deleted.)
 export const ENTITY_ACCESSOR_OVERRIDES = {
-  EventStaff: "eventStaffAssignment",
   EventImportWorkflow: "eventImport",
 
   // ─── Renamed Prisma models (verified same domain concept; remap) ───

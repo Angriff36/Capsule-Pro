@@ -6403,6 +6403,10 @@ model EventStaff {
   shiftStart    Int?      @default(0)
   shiftEnd      Int?      @default(0)
   status        String?   @default("assigned")
+  confirmedAt   DateTime?
+  checkedInAt   DateTime?
+  checkedOutAt  DateTime?
+  noShowReason  String?   @default("")
   createdAt     DateTime?
   updatedAt     DateTime?
   deletedAt     DateTime?

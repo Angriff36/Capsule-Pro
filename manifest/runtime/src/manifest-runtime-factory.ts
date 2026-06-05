@@ -46,9 +46,16 @@ import { ManifestRuntimeEngine } from "./runtime-engine";
 
 /**
  * Minimal structural type for the full Prisma client.
- * Includes $transaction for outbox writes when no override is provided.
- * Role resolution has moved to identity-middleware.ts; the user.findFirst
- * signature here is kept for consumers that still reference it.
+ *
+ * Includes only the delegates that the factory accesses directly:
+ * - `user` for identity resolution (identity-middleware)
+ * - `$transaction` for outbox writes when no override is provided
+ *
+ * Store constructors (PrismaStore, PrismaJsonStore, PrismaIdempotencyStore)
+ * and loadRolePolicies() expect PrismaClient-specific types in their signatures.
+ * The factory intentionally avoids importing `@repo/database`, so it cannot
+ * reference `PrismaClient` directly.  Instead, `asStoreClient()` provides a
+ * centralized structural cast for all PrismaClient-shaped parameters.
  */
 export interface PrismaLike {
   user: {
@@ -62,13 +69,41 @@ export interface PrismaLike {
 }
 
 /**
- * Type for transaction client passed as prismaOverride.
- * Transaction clients omit $transaction since nesting is not allowed.
- * The factory only uses this client for entity writes (store + outbox),
- * not for lookups (which use the main prisma client).
+ * Structural type for the Prisma transaction client passed as prismaOverride.
+ *
+ * Transaction clients are produced by `prisma.$transaction(fn => ...)` and
+ * expose the same model delegates as PrismaClient but without `$transaction`
+ * (nesting is not allowed).  At runtime, the transaction client is a full
+ * PrismaClient delegate, but we only declare the model-accessor pattern
+ * needed for duck-typed store writes.
+ *
+ * Uses an index signature so callers can pass the raw Prisma transaction
+ * client without explicit casting at the call site.
  */
-// biome-ignore lint/suspicious/noExplicitAny: Transaction client shape varies by Prisma version; callers inject structurally-compatible clients.
-export type PrismaTransactionClient = any;
+export type PrismaTransactionClient = {
+  [model: string]: unknown;
+};
+
+/**
+ * Centralized structural cast from PrismaLike to the prisma type expected by
+ * store constructors.
+ *
+ * Store constructors declare `prisma: PrismaClient` in their config types.
+ * This factory intentionally avoids importing `@repo/database`, so it cannot
+ * reference `PrismaClient` directly.  At runtime, PrismaLike is a structural
+ * superset of what the stores need — they use duck-typed model-delegate access
+ * (`prisma[entityName].findMany()` etc.) which works on both the full
+ * PrismaClient and the transaction client produced by `$transaction`.
+ *
+ * This function is the single place where the structural mismatch is bridged.
+ * The generic parameter `TPrisma` is inferred from each call site, keeping
+ * the assertion narrow and auditable.
+ */
+function asStoreClient<TPrisma>(
+  prisma: PrismaLike | PrismaTransactionClient,
+): TPrisma {
+  return prisma as TPrisma;
+}
 
 /** Minimal structured logger the factory needs. */
 export interface ManifestRuntimeLogger {
@@ -116,8 +151,11 @@ export interface CreateManifestRuntimeDeps {
   /** Structured logger. */
   log: ManifestRuntimeLogger;
   /** Error capture function (e.g. Sentry.captureException). Returns event id. */
-  // biome-ignore lint/suspicious/noExplicitAny: Must accept Sentry's captureException signature which uses a specific hint type, not `unknown`.
-  captureException: (err: unknown, context?: any) => unknown;
+  // The second parameter uses `never` so that Sentry's
+  // `(err: unknown, hint?: ExclusiveEventHintOrCaptureContext) => string`
+  // is assignable under strictFunctionTypes contravariance rules.
+  // `never` is the bottom type — every concrete type satisfies it.
+  captureException: (err: unknown, context?: never) => unknown;
   /** Telemetry hooks for observability. */
   telemetry?: ManifestTelemetryHooks;
   /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
@@ -330,9 +368,8 @@ export async function createManifestRuntime(
         user.tenantId
       );
 
-      // biome-ignore lint/suspicious/noExplicitAny: PrismaStoreConfig expects the full PrismaClient; callers inject a structurally-compatible superset.
       const config: PrismaStoreConfig = {
-        prisma: prismaForWrites as any,
+        prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prismaForWrites),
         entityName,
         tenantId: user.tenantId,
         outboxWriter,
@@ -352,9 +389,8 @@ export async function createManifestRuntime(
         `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
       );
     }
-    // biome-ignore lint/suspicious/noExplicitAny: PrismaJsonStore expects the full PrismaClient; callers inject a structurally-compatible superset.
     return new PrismaJsonStore({
-      prisma: prismaForWrites as any,
+      prisma: asStoreClient<ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]>(prismaForWrites),
       tenantId: user.tenantId,
       entityType: entityName,
     });
@@ -386,10 +422,9 @@ export async function createManifestRuntime(
   //
   //    Phase 2: When generated routes are updated to pass idempotencyKey,
   //    re-enable the default store creation.
-  // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
   const idempotencyStore = deps.idempotency
     ? new PrismaIdempotencyStore({
-        prisma: prismaForWrites as any,
+        prisma: asStoreClient<ConstructorParameters<typeof PrismaIdempotencyStore>[0]["prisma"]>(prismaForWrites),
         tenantId: user.tenantId,
       })
     : undefined;
@@ -400,7 +435,7 @@ export async function createManifestRuntime(
   //    the role may not be known at factory construction time. The RBAC
   //    middleware (before-guard) uses these policies against the resolved role.
   const rolePolicies = await loadRolePolicies(
-    prismaForLookups as any,
+    asStoreClient<Parameters<typeof loadRolePolicies>[0]>(prismaForLookups),
     user.tenantId
   );
 
