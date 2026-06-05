@@ -38,12 +38,13 @@ export function getPool(): Pool {
 }
 
 /**
- * Ensure Manifest audit and outbox tables exist.
+ * Ensure Manifest audit, outbox, and approval tables exist.
  *
  * Uses CREATE TABLE IF NOT EXISTS — idempotent and safe for concurrent
  * execution across multiple processes. Companion schemas match those shipped
- * in @angriff36/manifest/src/manifest/audit/sinks/postgres.sql and
- * @angriff36/manifest/src/manifest/outbox/stores/postgres.sql.
+ * in @angriff36/manifest/src/manifest/audit/sinks/postgres.sql,
+ * @angriff36/manifest/src/manifest/outbox/stores/postgres.sql, and
+ * @angriff36/manifest/src/manifest/approval/stores/postgres.sql.
  *
  * Called once per process lifetime (subsequent calls are no-ops).
  */
@@ -127,6 +128,40 @@ export async function ensureManifestSchema(): Promise<void> {
     CREATE INDEX IF NOT EXISTS idx_manifest_outbox_subject_id
       ON manifest_outbox_entries (subject_id)
       WHERE subject_id IS NOT NULL
+  `);
+
+  // -- Approval requests table ----------------------------------------------
+  // Companion schema: @angriff36/manifest/src/manifest/approval/stores/postgres.sql
+  // One row per approval request, keyed by `${entity}:${instanceId}:${approvalName}`.
+  // required_stages and grants are JSONB for flexible schema evolution.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS manifest_approval_requests (
+      request_key       TEXT PRIMARY KEY,
+      entity            TEXT NOT NULL,
+      instance_id       TEXT NOT NULL,
+      approval_name     TEXT NOT NULL,
+      command           TEXT NOT NULL,
+      status            TEXT NOT NULL DEFAULT 'pending',
+      required_stages   JSONB NOT NULL DEFAULT '[]',
+      grants            JSONB NOT NULL DEFAULT '[]',
+      requested_at      BIGINT NOT NULL,
+      expires_at        BIGINT,
+      denied_by         TEXT,
+      denied_reason     TEXT,
+      inserted_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_manifest_approval_status
+      ON manifest_approval_requests (status)
+      WHERE status = 'pending'
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_manifest_approval_expires
+      ON manifest_approval_requests (expires_at)
+      WHERE status = 'pending' AND expires_at IS NOT NULL
   `);
 
   _schemaEnsured = true;

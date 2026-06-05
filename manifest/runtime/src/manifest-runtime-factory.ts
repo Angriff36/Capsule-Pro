@@ -22,6 +22,7 @@ import type {
   RuntimeOptions,
 } from "@angriff36/manifest";
 import { randomUUID } from "node:crypto";
+import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
@@ -160,6 +161,20 @@ export interface CreateManifestRuntimeDeps {
   telemetry?: ManifestTelemetryHooks;
   /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
   idempotency?: { failureTtlMs?: number };
+
+  // -- Forwarded RuntimeOptions (Task 7.6) --
+  // These are passthrough fields that the engine supports but the factory
+  // does not otherwise provide defaults for. Callers may set them to
+  // override engine behavior without modifying the factory itself.
+
+  /** Throw on effect boundaries (useful in testing). */
+  deterministicMode?: boolean;
+  /** Limit expression evaluation depth/steps (guard against pathological expressions). */
+  evaluationLimits?: { maxExpressionDepth?: number; maxEvaluationSteps?: number };
+  /** Feature-flag resolver for the `flag()` builtin. Without it, `flag()` returns false. */
+  flagProvider?: (name: string) => unknown;
+  /** Per-command profiling toggle + callback. */
+  profiling?: { enabled?: boolean; onProfileComplete?: (profile: unknown) => void; detailed?: boolean };
 }
 
 /** Context passed by the caller describing the acting user. */
@@ -473,6 +488,7 @@ export async function createManifestRuntime(
   const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
   let auditSink: PostgresAuditSink | undefined;
   let outboxStore: PostgresOutboxStore | undefined;
+  let approvalStore: PostgresApprovalStore | undefined;
   if (dbUrl) {
     await ensureManifestSchema();
     const pool = getPool();
@@ -481,6 +497,7 @@ export async function createManifestRuntime(
       pool,
       projectSubject: true,
     });
+    approvalStore = new PostgresApprovalStore({ pool });
   }
 
   // 10. Assemble the runtime engine.
@@ -504,6 +521,11 @@ export async function createManifestRuntime(
       now: () => Date.now(),
       ...(auditSink ? { auditSink } : {}),
       ...(outboxStore ? { outboxStore } : {}),
+      ...(approvalStore ? { approvalStore } : {}),
+      ...(deps.deterministicMode !== undefined && { deterministicMode: deps.deterministicMode }),
+      ...(deps.evaluationLimits && { evaluationLimits: deps.evaluationLimits }),
+      ...(deps.profiling && { profiling: deps.profiling }),
+      ...(deps.flagProvider && { flagProvider: deps.flagProvider }),
     }
   );
 
