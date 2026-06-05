@@ -88,3 +88,60 @@ on MaintenanceWorkOrderCompleted run Equipment.updateStatus
     reason: "Maintenance work order completed"
     userId: payload.completedBy
   }
+
+// ── Procurement: Shipment receiving → Inventory restock ────────────────────
+
+// When a shipment line item is confirmed received, automatically restock the
+// inventory item. Replaces manual stock updates in receiving workflows.
+// Per-item granularity (not per-shipment) ensures accurate quantity tracking.
+on ShipmentItemReceived run InventoryItem.restock
+  resolve payload.itemId
+  params {
+    quantity: payload.quantityReceived
+    costPerUnit: 0
+    userId: payload.userId
+  }
+
+// ── CRM: Lead conversion → Deal creation ──────────────────────────────────
+
+// When a lead is converted to a client, automatically create a deal in the
+// sales pipeline. Ensures no converted lead falls through the cracks.
+// The deal starts in "new" stage with the lead's estimated value.
+on LeadConvertedToClient run Deal.create
+  resolve payload.leadId
+  params {
+    leadId: payload.leadId
+    title: payload.companyName
+    value: payload.estimatedValue
+    currency: "USD"
+    stage: "new"
+    probability: 25
+    expectedCloseDate: now()
+    assignedTo: ""
+    notes: "Auto-created from lead conversion"
+  }
+
+// ── Sales: Proposal acceptance → Event creation ───────────────────────────
+
+// When a client accepts a proposal, automatically create an event planning
+// record. Eliminates manual proposal-to-event handoff and ensures accepted
+// proposals immediately enter the event planning workflow.
+on ProposalAccepted run Event.create
+  resolve payload.proposalId
+  params {
+    clientId: payload.clientId
+    eventNumber: payload.proposalNumber
+    title: payload.title
+    eventType: ""
+    eventDate: now()
+    guestCount: 1
+    venueName: ""
+    venueAddress: ""
+    notes: "Auto-created from accepted proposal"
+    tags: []
+    status: "draft"
+    budget: payload.total
+    ticketPrice: 0
+    ticketTier: ""
+    eventFormat: ""
+  }
