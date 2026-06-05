@@ -93,6 +93,12 @@ entity AdminTask {
     emit AdminTaskStatusChanged
   }
 
+  // State transitions
+  transition status from "backlog" to ["todo", "cancelled"]
+  transition status from "todo" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["todo", "done", "cancelled"]
+  transition status from "cancelled" to ["backlog"]
+
   command softDelete() {
     guard self.deletedAt == null "Task is already deleted"
 

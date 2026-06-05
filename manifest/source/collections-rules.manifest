@@ -258,6 +258,9 @@ entity CollectionAction {
   constraint valid_direction: self.direction in ["INBOUND", "OUTBOUND"] "Invalid direction"
   constraint valid_status: self.status in ["PENDING", "COMPLETED", "FAILED", "SKIPPED"] "Invalid status"
 
+  // State transitions
+  transition status from "PENDING" to ["COMPLETED", "FAILED", "SKIPPED"]
+
   // Commands
   command complete(outcome: string, promiseAmount: number, promiseDate: datetime, nextActionDate: datetime) {
     guard self.status == "PENDING" "Can only complete pending actions"
@@ -338,6 +341,9 @@ entity CollectionPaymentPlan {
   constraint amount_positive: self.totalAmount > 0 and self.installmentAmount > 0 "Amounts must be positive"
   constraint installments_valid: self.installmentCount > 0 "Must have at least one installment"
   constraint completed_valid: self.completedInstallments <= self.installmentCount "Completed cannot exceed total"
+
+  // State transitions
+  transition status from "ACTIVE" to ["COMPLETED", "DEFAULTED", "CANCELLED"]
 
   // Commands
   command recordInstallment(amount: number, paymentDate: datetime) {

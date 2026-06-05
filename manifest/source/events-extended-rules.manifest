@@ -121,6 +121,10 @@ entity EventStaffAssignment {
   constraint requireStaff: self.staffMemberId != "" "Staff member ID is required"
   constraint validStatus: self.status in ["assigned", "confirmed", "cancelled"] "Status must be assigned, confirmed, or cancelled"
 
+  // State transitions
+  transition status from "assigned" to ["confirmed", "cancelled"]
+  transition status from "confirmed" to ["cancelled"]
+
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
@@ -316,6 +320,11 @@ entity TimelineTask {
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireTitle: self.title != "" "Task title is required"
   constraint validStatus: self.status in ["pending", "in_progress", "done", "blocked"] "Status must be pending, in_progress, done, or blocked"
+
+  // State transitions
+  transition status from "pending" to ["in_progress"]
+  transition status from "in_progress" to ["done", "blocked"]
+  transition status from "blocked" to ["in_progress"]
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
@@ -571,6 +580,9 @@ entity EventFollowup {
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireType: self.type != "" "Followup type is required"
   constraint validStatus: self.status in ["pending", "done", "cancelled"] "Status must be pending, done, or cancelled"
+
+  // State transitions
+  transition status from "pending" to ["done", "cancelled"]
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 

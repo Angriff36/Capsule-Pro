@@ -173,6 +173,9 @@ entity VersionApproval {
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Status must be pending, approved, or rejected"
 
+  // State transitions
+  transition status from "pending" to ["approved", "rejected", "cancelled"]
+
   constraint warnPendingTooLong:warn self.isPending and self.waitingTime > 604800000 {
     messageTemplate: "Approval pending for {days} days - may need follow-up"
     details: {

@@ -322,6 +322,10 @@ entity Document {
     }
   }
 
+  // State transitions
+  transition status from "uploaded" to ["parsing"]
+  transition status from "parsing" to ["parsed", "failed"]
+
   command create(name: string, documentType: string, fileUrl: string, fileSizeBytes: int, entityType: string, entityId: string, uploadedBy: string) {
     guard name != null and name != "" "Document name is required"
     guard fileUrl != null and fileUrl != "" "File URL is required"
@@ -388,6 +392,10 @@ entity AdminChatThread {
   constraint requireSubject: self.subject != null and self.subject != "" "Thread subject is required"
   constraint validStatus: self.status in ["open", "archived"] "Thread status must be open or archived"
   constraint requireCreatedBy: self.createdBy != null and self.createdBy != "" "Created by is required"
+
+  // State transitions
+  transition status from "open" to ["archived"]
+  transition status from "archived" to ["open"]
 
   command create(subject: string, createdBy: string) {
     guard subject != null and subject != "" "Thread subject is required"

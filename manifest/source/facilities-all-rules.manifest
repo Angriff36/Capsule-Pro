@@ -24,6 +24,10 @@ entity Facility {
   constraint validType: self.type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
 
+  // State transitions
+  transition status from "active" to ["inactive", "maintenance"]
+  transition status from "maintenance" to ["active"]
+
   command create(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
     guard name != null and name != "" "Facility name is required"
     guard type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
@@ -106,6 +110,10 @@ entity FacilityArea {
 
   relationship belongsTo facility: Facility fields [tenantId, venueId] references [tenantId, id]
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid area status"
+
+  // State transitions
+  transition status from "active" to ["inactive", "maintenance"]
+  transition status from "maintenance" to ["active"]
 
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
     guard name != null and name != "" "Area name is required"
@@ -192,6 +200,10 @@ entity FacilityAsset {
   relationship belongsTo facility: Facility fields [tenantId, facilityId] references [tenantId, id]
   relationship belongsTo area: FacilityArea fields [tenantId, areaId] references [tenantId, id]
   constraint validStatus: self.status in ["operational", "maintenance", "retired", "sold"] "Invalid asset status"
+
+  // State transitions
+  transition status from "operational" to ["maintenance", "retired", "sold"]
+  transition status from "maintenance" to ["operational", "retired", "sold"]
 
   constraint warnMaintenanceOverdue:warn self.maintenanceOverdue {
     messageTemplate: "Asset '{assetName}' is overdue for maintenance"

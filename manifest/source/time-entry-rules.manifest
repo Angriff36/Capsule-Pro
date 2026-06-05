@@ -132,6 +132,9 @@ entity TimecardEditRequest {
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid edit request status"
 
+  // State transitions
+  transition status from "pending" to ["approved", "rejected"]
+
   command create(timeEntryId: string, employeeId: string, requestedClockIn: number, requestedClockOut: number, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"

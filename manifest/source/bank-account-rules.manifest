@@ -96,6 +96,11 @@ entity BankAccount {
     emit BankAccountVerificationRetried
   }
 
+  // State transitions
+  transition status from "pending_verification" to ["active", "verification_failed"]
+  transition status from "verification_failed" to ["pending_verification"]
+  transition status from "active" to ["inactive"]
+
   store BankAccount in durable
 }
 

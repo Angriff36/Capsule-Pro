@@ -40,6 +40,10 @@ entity Driver {
     }
   }
 
+  // State transitions
+  transition status from "active" to ["inactive", "suspended"]
+  transition status from "suspended" to ["active"]
+
   command create(firstName: string, lastName: string, email: string, phone: string, licenseNumber: string, licenseExpiry: datetime, notes: string) {
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
@@ -138,6 +142,12 @@ entity Vehicle {
 
   constraint validType: self.type in ["delivery", "cargo", "refrigerated", "passenger"] "Invalid vehicle type"
   constraint validStatus: self.status in ["available", "in_use", "maintenance", "out_of_service", "retired"] "Invalid vehicle status"
+
+  // State transitions
+  transition status from "available" to ["in_use", "maintenance", "out_of_service", "retired"]
+  transition status from "in_use" to ["available", "maintenance", "out_of_service"]
+  transition status from "maintenance" to ["available", "out_of_service", "retired"]
+  transition status from "out_of_service" to ["available", "maintenance", "retired"]
 
   constraint warnMaintenanceDue:warn self.maintenanceDue and self.status != "maintenance" and self.status != "retired" {
     messageTemplate: "Vehicle '{vehicleName}' is due for maintenance"

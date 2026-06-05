@@ -33,6 +33,11 @@ entity AiEventSetupSession {
   constraint validStatus: self.status in ["pending", "parsed", "confirmed", "created", "cancelled"] "Status must be valid"
   constraint validConfidence: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
 
+  // State transitions
+  transition status from "pending" to ["parsed", "cancelled"]
+  transition status from "parsed" to ["confirmed", "cancelled"]
+  transition status from "confirmed" to ["created"]
+
   command parse(originalInput: string) {
     guard originalInput != null and originalInput != "" "Original input is required"
     

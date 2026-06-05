@@ -86,6 +86,11 @@ entity AutomatedFollowup {
 
     emit FollowupSkipped
   }
+
+  // State transitions
+  transition status from "pending" to ["sent", "failed", "skipped"]
+  transition status from "failed" to ["pending"]
+
   store AutomatedFollowup in durable
 }
 
@@ -193,6 +198,12 @@ entity EventTimelineItem {
 
     emit TimelineItemUpdated
   }
+
+  // State transitions
+  transition status from "pending" to ["in_progress", "completed", "cancelled"]
+  transition status from "in_progress" to ["blocked", "completed", "cancelled"]
+  transition status from "blocked" to ["in_progress", "cancelled"]
+
   store EventTimelineItem in durable
 }
 
@@ -284,6 +295,12 @@ entity EventWaitlistEntry {
 
     emit WaitlistRsvpUpdated
   }
+
+  // State transitions
+  transition status from "waiting" to ["notified", "confirmed", "cancelled"]
+  transition status from "notified" to ["confirmed", "cancelled"]
+  transition status from "confirmed" to ["seated", "cancelled"]
+
   store EventWaitlistEntry in durable
 }
 

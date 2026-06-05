@@ -52,6 +52,12 @@ entity Payment {
   constraint amount_positive: self.amount > 0 "Payment amount must be positive"
   constraint valid_currency: self.currency in ["USD", "EUR", "GBP", "CAD"] "Currency must be supported"
 
+  // State transitions
+  transition status from "PENDING" to ["PROCESSING", "COMPLETED", "FAILED"]
+  transition status from "PROCESSING" to ["COMPLETED", "FAILED"]
+  transition status from "COMPLETED" to ["REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK"]
+  transition status from "PARTIALLY_REFUNDED" to ["REFUNDED", "CHARGEBACK"]
+
   // Commands
   command process(gatewayTransactionId: string) {
     guard self.status == "PENDING" or self.status == "PROCESSING" "Can only process pending or processing payments"

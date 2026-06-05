@@ -27,6 +27,10 @@ entity LaborBudget {
   constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
   constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
 
+  // State transitions
+  transition status from "draft" to ["approved"]
+  transition status from "approved" to ["closed"]
+
   constraint warnOverBudget:warn self.isOverBudget {
     messageTemplate: "Labor budget for location {locationId} is over by {varianceAmount}"
     details: {

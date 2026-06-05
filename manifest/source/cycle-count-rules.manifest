@@ -263,6 +263,10 @@ entity VarianceReport {
 
   constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted", "rejected"] "Invalid variance report status"
 
+  // State transitions
+  transition status from "pending" to ["reviewed", "rejected"]
+  transition status from "reviewed" to ["approved", "rejected"]
+
   command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"

@@ -63,6 +63,12 @@ entity PrepList {
     }
   }
 
+  // State transitions
+  // draft→draft allowed: createFromSeed re-initializes a draft prep list in place
+  transition status from "draft" to ["draft", "finalized", "cancelled"]
+  transition status from "finalized" to ["completed", "cancelled", "draft"]
+  transition status from "completed" to ["draft", "cancelled"]
+
   command update(newName: string, newDietaryRestrictions: string, newNotes: string) {
     guard self.status == "draft" "Can only update draft prep lists"
 

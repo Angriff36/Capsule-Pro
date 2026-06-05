@@ -339,6 +339,9 @@ entity ActionMilestone {
   constraint validStatus: self.status in ["pending", "met", "missed"] "Invalid milestone status"
   constraint requireTitle: self.title != "" "Milestone title is required"
 
+  // State transitions
+  transition status from "pending" to ["met", "missed"]
+
   relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
 
   command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
@@ -541,6 +544,9 @@ entity OnboardingCompletion {
 
   constraint validStatus: self.status in ["pending", "completed"] "Invalid onboarding completion status"
 
+  // State transitions
+  transition status from "pending" to ["completed"]
+
   command create(employeeId: string, onboardingTaskId: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard onboardingTaskId != null and onboardingTaskId != "" "Onboarding task ID is required"
@@ -582,6 +588,9 @@ entity OpenShift {
 
   constraint validStatus: self.status in ["open", "claimed", "cancelled"] "Invalid open shift status"
   constraint requireRole: self.role != "" "Role is required for an open shift"
+
+  // State transitions
+  transition status from "open" to ["claimed", "cancelled"]
 
   relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
 
@@ -643,6 +652,10 @@ entity DeliveryRoute {
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid delivery route status"
   constraint requireName: self.name != "" "Route name is required"
   constraint distancePositive: self.distanceMiles >= 0 "Distance cannot be negative"
+
+  // State transitions
+  transition status from "planned" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed"]
 
   command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
     guard name != null and name != "" "Route name is required"
@@ -708,6 +721,10 @@ entity RouteStop {
   constraint requireAddress: self.address != "" "Address is required"
   constraint sequencePositive: self.sequence >= 0 "Sequence must be non-negative"
 
+  // State transitions
+  transition status from "pending" to ["arrived"]
+  transition status from "arrived" to ["completed"]
+
   relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, deliveryRouteId] references [tenantId, id]
 
   command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
@@ -771,6 +788,9 @@ entity PaymentRefundAttempt {
 
   constraint validStatus: self.status in ["pending", "succeeded", "failed"] "Invalid refund attempt status"
   constraint amountPositive: self.amount > 0 "Refund amount must be positive"
+
+  // State transitions
+  transition status from "pending" to ["succeeded", "failed"]
 
   command create(paymentId: string, amount: number, reason: string) {
     guard paymentId != null and paymentId != "" "Payment ID is required"

@@ -249,6 +249,10 @@ entity IoTAlert {
   constraint validSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
   constraint requireMessage: self.message != "" "Alert message is required"
 
+  // State transitions
+  transition status from "active" to ["acknowledged", "resolved"]
+  transition status from "acknowledged" to ["resolved"]
+
   relationship belongsTo probe: TemperatureProbe fields [tenantId, probeId] references [tenantId, id]
   relationship belongsTo rule: IotAlertRule fields [tenantId, ruleId] references [tenantId, id]
 

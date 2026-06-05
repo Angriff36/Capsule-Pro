@@ -19,6 +19,10 @@ entity WorkforceOptimization {
   constraint validOptimizationType: self.optimizationType in ["schedule", "assignment", "performance"] "Invalid optimization type"
   constraint validStatus: self.status in ["pending", "in_progress", "completed", "failed"] "Invalid status"
 
+  // State transitions
+  transition status from "pending" to ["in_progress", "failed"]
+  transition status from "in_progress" to ["completed", "failed"]
+
   command create(locationId: string, optimizationType: string) {
     guard locationId != null "Location ID is required"
     guard optimizationType != null "Optimization type is required"

@@ -21,6 +21,10 @@ entity KnowledgeBaseEntry {
   constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid entry status"
   constraint validCategory: self.category in ["general", "policies", "procedures", "recipes", "safety", "training", "other"] "Invalid category"
 
+  // State transitions
+  transition status from "draft" to ["published", "archived"]
+  transition status from "published" to ["draft", "archived"]
+
   command create(title: string, category: string, content: string, tags: string, authorId: string) {
     guard title != null and title != "" "Title is required"
     guard authorId != null and authorId != "" "Author ID is required"

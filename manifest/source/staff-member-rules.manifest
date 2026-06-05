@@ -21,6 +21,10 @@ entity StaffMember {
   constraint requireDisplayName: self.displayName != null and self.displayName != "" "Display name is required"
   constraint validStatus: self.status in ["active", "inactive"] "Status must be active or inactive"
 
+  // State transitions
+  transition status from "active" to ["inactive"]
+  transition status from "inactive" to ["active"]
+
   command create(displayName: string, email: string, phone: string, role: string) {
     guard displayName != null and displayName != "" "Display name is required"
 

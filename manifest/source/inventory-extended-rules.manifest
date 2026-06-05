@@ -179,6 +179,10 @@ entity InventoryAlert {
   constraint validSeverity: self.severity in ["low", "medium", "high", "critical"] "Invalid alert severity"
   constraint validAlertType: self.alertType in ["low_stock", "out_of_stock", "expiry_warning", "expiry_critical", "overstock"] "Invalid alert type"
 
+  // State transitions
+  transition status from "active" to ["acknowledged"]
+  transition status from "acknowledged" to ["resolved"]
+
   command create(inventoryItemId: string, alertType: string, severity: string, message: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
     guard alertType != null and alertType != "" "Alert type is required"
@@ -260,6 +264,10 @@ entity InventoryForecast {
 
   constraint confidenceRange: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
   constraint nonNegativeProjection: self.projectedQuantity >= 0 "Projected quantity cannot be negative"
+
+  // State transitions
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["approved"]
 
   command create(inventoryItemId: string, forecastDate: datetime, projectedQuantity: decimal, confidence: decimal) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
@@ -376,6 +384,9 @@ entity ReorderSuggestion {
 
   constraint validStatus: self.status in ["pending", "accepted", "dismissed"] "Invalid reorder suggestion status"
   constraint positiveSuggestedQty: self.suggestedQuantity > 0 "Suggested quantity must be positive"
+
+  // State transitions
+  transition status from "pending" to ["accepted", "dismissed"]
 
   relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
@@ -624,6 +635,9 @@ entity ProcurementBudget {
   constraint validStatus: self.status in ["active", "closed"] "Invalid budget status"
   constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
   constraint nonNegativeSpent: self.spentAmount >= 0 "Spent amount cannot be negative"
+
+  // State transitions
+  transition status from "active" to ["closed"]
 
   constraint warnOverBudget:warn self.isOverBudget {
     messageTemplate: "Procurement budget '{name}' is over budget (spent {spent}, limit {limit})"

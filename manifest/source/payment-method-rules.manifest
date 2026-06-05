@@ -53,6 +53,10 @@ entity PaymentMethod {
   // Constraints
   constraint default_for_active_only: self.isDefault == false or self.status == "ACTIVE" "Only active payment methods can be default"
 
+  // State transitions
+  transition status from "ACTIVE" to ["EXPIRED", "INVALID", "FRAUDULENT"]
+  transition status from "EXPIRED" to ["ACTIVE"]
+
   // Commands
   command create(clientId: string, type: string, externalMethodId: string, cardLastFour: string, cardNetwork: string, cardExpiryMonth: number, cardExpiryYear: number, cardHolderName: string, bankAccountLastFour: string, bankAccountType: string, bankRoutingNumber: string, walletProvider: string, walletEmail: string, nickname: string) {
     guard clientId != null and clientId != "" "Client ID is required"

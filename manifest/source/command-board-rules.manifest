@@ -21,6 +21,10 @@ entity CommandBoard {
   constraint validName: self.name != null and self.name != "" "Board name is required"
   constraint validStatus: self.status in ["draft", "active", "archived"] "Status must be valid"
 
+  // State transitions
+  transition status from "draft" to ["active"]
+  transition status from "active" to ["archived"]
+
   command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: string) {
     guard name != null and name != "" "Board name is required"
 
