@@ -7,8 +7,8 @@ entity ApiKey {
   property required id: string
   property required tenantId: string
   property required name: string = ""
-  property required keyPrefix: string = ""
-  property required hashedKey: string = ""
+  readonly property required keyPrefix: string = ""
+  readonly property required hashedKey: string = ""
   property required scopes: array<string>
   property lastUsedAt: datetime
   property expiresAt: datetime = now()

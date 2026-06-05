@@ -26,6 +26,10 @@ entity Budget {
   constraint validStatus: self.status in ["draft", "active", "closed", "archived"] "Invalid budget status"
   constraint positiveAllocation: self.allocatedAmount >= 0 "Allocated amount cannot be negative"
 
+  transition status from "draft" to ["active", "archived"]
+  transition status from "active" to ["closed"]
+  transition status from "closed" to ["archived"]
+
   constraint warnOverBudget:block self.isOverBudget and self.status == "active" {
     messageTemplate: "Budget '{budgetName}' is over by {overAmount}"
     details: {

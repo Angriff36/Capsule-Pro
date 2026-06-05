@@ -13,7 +13,7 @@ entity BankAccount {
   property bankName: string = ""
   property isDefault: boolean = false
   property status: string = "active"
-  property verifiedAt: datetime
+  readonly property verifiedAt: datetime
   property verificationFailedAt: datetime
   property verificationFailureReason: string = ""
   timestamps

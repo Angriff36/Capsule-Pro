@@ -171,10 +171,10 @@ entity PayrollRun {
   property totalGross: money = 0
   property totalDeductions: money = 0
   property totalNet: money = 0
-  property approvedBy: string = ""
-  property approvedAt: datetime
+  readonly property approvedBy: string = ""
+  readonly property approvedAt: datetime
   property rejectedBy: string = ""
-  property paidAt: datetime
+  readonly property paidAt: datetime
   property rejectReason: string = ""
   timestamps
   property deletedAt: datetime

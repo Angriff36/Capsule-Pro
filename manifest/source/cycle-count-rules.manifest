@@ -36,6 +36,11 @@ entity CycleCountSession {
 
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
 
+  transition status from "draft" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["finalized"]
+  transition status from "cancelled" to ["draft"]
+
   command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"

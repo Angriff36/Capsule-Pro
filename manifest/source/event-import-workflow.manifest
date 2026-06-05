@@ -34,6 +34,16 @@ entity EventImportWorkflow {
   constraint validStep: self.currentStep >= 0 and self.currentStep <= self.totalSteps
   constraint hasIdempotencyKey: self.idempotencyKey != "" "Idempotency key is required for workflow tracking"
 
+  transition status from "created" to ["parsing", "paused", "cancelled"]
+  transition status from "parsing" to ["extracting", "failed", "paused"]
+  transition status from "extracting" to ["validating", "failed", "paused"]
+  transition status from "validating" to ["proposing", "failed", "paused"]
+  transition status from "proposing" to ["reserving", "failed", "paused"]
+  transition status from "reserving" to ["activating", "failed", "paused"]
+  transition status from "activating" to ["completed", "failed", "paused"]
+  transition status from "failed" to ["parsing", "extracting", "validating", "proposing", "reserving", "activating", "cancelled"]
+  transition status from "paused" to ["parsing", "extracting", "validating", "proposing", "reserving", "activating", "cancelled"]
+
   // Commands
 
   // Step 1: Initialize workflow with input data

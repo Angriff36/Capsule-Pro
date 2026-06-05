@@ -18,7 +18,7 @@ entity Payment {
   property required clientId: string = ""
 
   // Gateway/processor information
-  property gatewayTransactionId: string = ""
+  readonly property gatewayTransactionId: string = ""
   property gatewayPaymentMethodId: string = ""
   property processor: string = ""
   property processorResponseCode: string = ""

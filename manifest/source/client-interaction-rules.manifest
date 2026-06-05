@@ -47,6 +47,11 @@ entity ClientInteraction {
   constraint validStatus: self.status in ["open", "scheduled", "overdue", "completed", "escalated"] "Invalid interaction status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority level"
 
+  transition status from "open" to ["scheduled", "overdue", "completed", "escalated"]
+  transition status from "scheduled" to ["overdue", "completed", "escalated"]
+  transition status from "overdue" to ["scheduled", "completed", "escalated"]
+  transition status from "escalated" to ["open", "scheduled", "completed"]
+
   constraint warnOverdueFollowUp:warn self.isFollowUpOverdue {
     messageTemplate: "Follow-up for '{subject}' is overdue (due {followUpDate})"
     details: {
