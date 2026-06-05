@@ -259,8 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
-Files (1):
-  apps/api/app/api/events/[eventId]/run-sheet/route.ts (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===

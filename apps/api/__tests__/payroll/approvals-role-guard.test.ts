@@ -2,10 +2,11 @@
  * Payroll approval PUT role-guard tests (P1.AM).
  *
  * Why this matters: PUT /api/payroll/approvals/[approvalId] mutates payroll
- * run state (approve / reject) and writes an immutable approval-history row.
- * Before P1.AM, the only gate was `auth().orgId` — any authenticated user in
- * the tenant (incl. a staff-role workflow user) could mark a payroll run
- * approved, releasing money. These tests pin:
+ * run state (approve / reject) via Manifest runtime and writes an immutable
+ * approval-history row through governed commands. The route uses
+ * requireApiManager for auth gating and runManifestCommand for writes.
+ *
+ * These tests pin:
  *   - staff role → 403, no DB write
  *   - manager role → handler proceeds past the guard
  *   - missing session → 401, no DB write
@@ -17,25 +18,29 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockDatabase } = vi.hoisted(() => ({
+const { mockDatabase, mockRunManifestCommand } = vi.hoisted(() => ({
   mockDatabase: {
     $queryRaw: vi.fn(),
   },
+  mockRunManifestCommand: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
   database: mockDatabase,
   Prisma: { sql: (s: TemplateStringsArray, ..._args: unknown[]) => s.join("") },
 }));
-vi.mock("@/app/lib/tenant", () => ({
-  requireCurrentUser: vi.fn(),
+vi.mock("@/app/lib/auth-roles", () => ({
+  requireApiManager: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mockRunManifestCommand,
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@repo/observability/log", () => ({
   log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 
-import { requireCurrentUser } from "@/app/lib/tenant";
+import { requireApiManager } from "@/app/lib/auth-roles";
 
 const APPROVAL_ID = "a1111111-1111-4111-a111-111111111111";
 const TENANT = "tenant-1";
@@ -64,13 +69,14 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockDatabase.$queryRaw.mockReset();
+    mockRunManifestCommand.mockReset();
   });
 
   it("returns 403 for staff role and never queries the approval table", async () => {
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      ...baseUser,
-      role: "staff",
-    });
+    vi.mocked(requireApiManager).mockResolvedValue({
+      ok: false,
+      response: new Response(JSON.stringify({ message: "Forbidden" }), { status: 403 }),
+    } as Awaited<ReturnType<typeof requireApiManager>>);
 
     const { PUT } = await import(
       "@/app/api/payroll/approvals/[approvalId]/route"
@@ -79,10 +85,14 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
 
     expect(res.status).toBe(403);
     expect(mockDatabase.$queryRaw).not.toHaveBeenCalled();
+    expect(mockRunManifestCommand).not.toHaveBeenCalled();
   });
 
   it("returns 401 when no session can be resolved", async () => {
-    vi.mocked(requireCurrentUser).mockRejectedValue(new Error("no session"));
+    vi.mocked(requireApiManager).mockResolvedValue({
+      ok: false,
+      response: new Response(JSON.stringify({ message: "Unauthorized" }), { status: 401 }),
+    } as Awaited<ReturnType<typeof requireApiManager>>);
 
     const { PUT } = await import(
       "@/app/api/payroll/approvals/[approvalId]/route"
@@ -91,12 +101,14 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
 
     expect(res.status).toBe(401);
     expect(mockDatabase.$queryRaw).not.toHaveBeenCalled();
+    expect(mockRunManifestCommand).not.toHaveBeenCalled();
   });
 
   it("admits a manager and proceeds to the approval lookup (404 path)", async () => {
-    vi.mocked(requireCurrentUser).mockResolvedValue({
-      ...baseUser,
-      role: "finance_manager",
+    vi.mocked(requireApiManager).mockResolvedValue({
+      ok: true,
+      user: { ...baseUser, role: "finance_manager" },
+      tenantId: TENANT,
     });
     // Approval not found — proves the guard let us through to the lookup.
     mockDatabase.$queryRaw.mockResolvedValueOnce([]);
@@ -108,5 +120,6 @@ describe("PUT /api/payroll/approvals/[approvalId] — role guard", () => {
 
     expect(res.status).toBe(404);
     expect(mockDatabase.$queryRaw).toHaveBeenCalledTimes(1);
+    expect(mockRunManifestCommand).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,10 @@
  * Payroll Approval Details API Endpoints
  *
  * PUT    /api/payroll/approvals/[approvalId]      - Update approval status (approve/reject)
+ *
+ * Governance: Routes all writes through Manifest runtime (Task 8.1).
+ * PayrollRun.approve/reject enforces state transitions, RBAC, audit trail.
+ * PayrollApprovalHistory.create records the approval action.
  */
 
 import { database, Prisma } from "@repo/database";
@@ -11,19 +15,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireApiManager } from "@/app/lib/auth-roles";
 import { InvariantError, invariant } from "@/app/lib/invariant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type PayrollRunStatus =
-  | "pending"
-  | "processing"
-  | "completed"
-  | "approved"
-  | "rejected"
-  | "finalized"
-  | "paid"
-  | "failed";
 
 const UpdateApprovalSchema = z.object({
   status: z.enum(["approved", "rejected"]),
@@ -39,6 +34,9 @@ interface RouteContext {
 
 /**
  * PUT /api/payroll/approvals/[approvalId] - Update approval status
+ *
+ * Flows: reads approval history for context → Manifest command for PayrollRun
+ * status change → Manifest command for approval history audit record.
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
@@ -71,7 +69,7 @@ export async function PUT(request: Request, context: RouteContext) {
     // Validate UUID format
     invariant(UUID_REGEX.test(approvalId), "approvalId must be a valid UUID");
 
-    // Check if the approval history entry exists
+    // Read: check if the approval history entry exists and get payroll run context
     const approvalResult = await database.$queryRaw<
       { id: string; payroll_run_id: string; previous_status: string }[]
     >(
@@ -92,7 +90,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     const approval = approvalResult[0];
     const payrollRunId = approval.payroll_run_id;
-    const currentStatus = approval.previous_status as PayrollRunStatus;
+    const currentStatus = approval.previous_status;
 
     // When rejecting, require rejectReason
     if (status === "rejected" && !rejectReason) {
@@ -110,14 +108,68 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
-    // Update the payroll run status
+    // Governed write: update PayrollRun status via Manifest runtime
+    const runCommand =
+      status === "approved" ? "approve" : "reject";
+    const runBody =
+      status === "approved"
+        ? { id: payrollRunId, approvedBy: approvedBy || userId }
+        : { id: payrollRunId, rejectedBy: userId, rejectReason: rejectReason || "" };
+
+    const runResult = await runManifestCommand({
+      entity: "PayrollRun",
+      command: runCommand,
+      body: runBody,
+      user: {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
+      },
+      instanceId: payrollRunId,
+    });
+
+    if (runResult.status >= 400) {
+      const errorBody = await runResult.json().catch(() => ({ message: "Command failed" }));
+      return NextResponse.json(
+        { message: `Failed to update payroll run: ${(errorBody as Record<string, unknown>).message ?? "unknown error"}` },
+        { status: runResult.status }
+      );
+    }
+
+    // Governed write: record approval history via Manifest runtime
+    const historyBody = {
+      payrollRunId,
+      action: status,
+      previousStatus: currentStatus ?? "",
+      newStatus: status,
+      performedBy: approvedBy || userId,
+      reason: rejectReason || "",
+    };
+
+    const historyResult = await runManifestCommand({
+      entity: "PayrollApprovalHistory",
+      command: "create",
+      body: historyBody,
+      user: {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
+      },
+    });
+
+    // Best-effort history creation — don't fail the approval if history write fails
+    if (historyResult.status >= 400) {
+      log.error("Failed to create approval history record:", { historyBody, status: historyResult.status });
+    }
+
+    // Read back the updated run for the response
     const updatedRuns = await database.$queryRaw<
       {
         id: string;
         tenant_id: string;
         payroll_period_id: string;
         run_date: Date;
-        status: PayrollRunStatus;
+        status: string;
         total_gross: number;
         total_deductions: number;
         total_net: number;
@@ -130,55 +182,26 @@ export async function PUT(request: Request, context: RouteContext) {
       }[]
     >(
       Prisma.sql`
-        UPDATE tenant_staff.payroll_runs
-        SET
-          status = ${status},
-          approved_by = ${approvedBy || userId},
-          approved_at = CASE
-            WHEN ${status} = 'approved' THEN NOW()
-            ELSE approved_at
-          END,
-          reject_reason = ${rejectReason || null},
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${payrollRunId}::uuid
-          AND deleted_at IS NULL
-        RETURNING
+        SELECT
           id, tenant_id, payroll_period_id, run_date, status,
           total_gross, total_deductions, total_net,
           approved_by, approved_at, paid_at, reject_reason,
           created_at, updated_at
+        FROM tenant_staff.payroll_runs
+        WHERE tenant_id = ${tenantId}
+          AND id = ${payrollRunId}::uuid
+          AND deleted_at IS NULL
       `
     );
 
     if (!updatedRuns || updatedRuns.length === 0) {
       return NextResponse.json(
-        { message: "Failed to update payroll run" },
+        { message: "Payroll run updated but could not read back" },
         { status: 500 }
       );
     }
 
     const updatedRun = updatedRuns[0];
-
-    // Create approval history entry
-    await database.$queryRaw(
-      Prisma.sql`
-        INSERT INTO tenant_staff.payroll_approval_history (
-          tenant_id, payroll_run_id, action, previous_status, new_status,
-          performed_by, performed_at, reason
-        )
-        VALUES (
-          ${tenantId},
-          ${payrollRunId}::uuid,
-          ${status},
-          ${currentStatus},
-          ${status},
-          ${approvedBy || userId},
-          ${new Date()},
-          ${rejectReason || null}
-        )
-      `
-    );
 
     const response = {
       id: updatedRun.id,
