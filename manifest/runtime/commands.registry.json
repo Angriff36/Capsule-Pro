@@ -4606,6 +4606,11 @@
   },
   {
     "entity": "Venue",
+    "command": "softDelete",
+    "commandId": "Venue.softDelete"
+  },
+  {
+    "entity": "Venue",
     "command": "update",
     "commandId": "Venue.update"
   },

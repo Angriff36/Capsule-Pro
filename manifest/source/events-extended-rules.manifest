@@ -6,12 +6,31 @@ entity Venue {
   property required id: string
   property required tenantId: string
   property required name: string = ""
-  property address: string = ""
+  // Columns reconciled with the real `venues` table (packages/database/prisma/
+  // schema.prisma) so the governed create/update commands carry the FULL field
+  // surface the CRM venue UI writes — no silent field loss when crm/venues
+  // server actions route through Manifest (constitution §9). Property names match
+  // the Prisma model field names so GenericPrismaStore maps them 1:1.
+  property venueType: string = "other"
+  property addressLine1: string = ""
+  property addressLine2: string = ""
+  property city: string = ""
+  property stateProvince: string = ""
+  property postalCode: string = ""
+  property countryCode: string = ""
   property capacity: int = 0
   property contactName: string = ""
   property contactPhone: string = ""
-  property notes: string = ""
+  property contactEmail: string = ""
+  property accessNotes: string = ""
+  property cateringNotes: string = ""
+  property layoutImageUrl: string = ""
+  property required tags: array<string>
   property isActive: boolean = true
+  // equipmentList / preferredVendors (Json? columns) are intentionally NOT
+  // modeled here: the venue UI never sets them, so they stay out of the governed
+  // command surface and default to NULL in the DB — exactly matching the prior
+  // `Prisma.JsonNull` behavior, with zero JSON object/string double-encoding risk.
   timestamps
   property deletedAt: datetime
 
@@ -21,28 +40,52 @@ entity Venue {
   constraint positiveCapacity: self.capacity >= 0 "Capacity cannot be negative"
 
   default policy VenueDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
+  command create(name: string, venueType: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, capacity: int, contactName: string, contactPhone: string, contactEmail: string, accessNotes: string, cateringNotes: string, layoutImageUrl: string, tags: array<string>) {
     guard name != null and name != "" "Venue name is required"
     guard capacity >= 0 "Capacity cannot be negative"
     mutate name = name
-    mutate address = address
+    mutate venueType = venueType
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
     mutate capacity = capacity
     mutate contactName = contactName
     mutate contactPhone = contactPhone
-    mutate notes = notes
+    mutate contactEmail = contactEmail
+    mutate accessNotes = accessNotes
+    mutate cateringNotes = cateringNotes
+    mutate layoutImageUrl = layoutImageUrl
+    mutate tags = tags
     mutate isActive = true
     emit VenueCreated
   }
-  command update(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
-    guard self.isActive "Cannot update a deactivated venue"
+  // Guard on deletedAt (not isActive): the CRM edit form edits ANY non-deleted
+  // venue, including reactivating a deactivated one, so update must not be blocked
+  // on `self.isActive`. isActive is a plain editable field here (matches Client).
+  command update(name: string, venueType: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, capacity: int, contactName: string, contactPhone: string, contactEmail: string, accessNotes: string, cateringNotes: string, layoutImageUrl: string, tags: array<string>, isActive: boolean) {
+    guard self.deletedAt == null "Cannot update a deleted venue"
     guard name != null and name != "" "Venue name is required"
     guard capacity >= 0 "Capacity cannot be negative"
     mutate name = name
-    mutate address = address
+    mutate venueType = venueType
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
     mutate capacity = capacity
     mutate contactName = contactName
     mutate contactPhone = contactPhone
-    mutate notes = notes
+    mutate contactEmail = contactEmail
+    mutate accessNotes = accessNotes
+    mutate cateringNotes = cateringNotes
+    mutate layoutImageUrl = layoutImageUrl
+    mutate tags = tags
+    mutate isActive = isActive
     emit VenueUpdated
   }
   command activate() {
@@ -60,6 +103,16 @@ entity Venue {
     guard capacity >= 0 "Capacity cannot be negative"
     mutate capacity = capacity
     emit VenueCapacityUpdated
+  }
+  // Soft delete — mirrors the prior `deleteVenue` server action (sets deletedAt,
+  // distinct from deactivate which only flips isActive). The cross-entity
+  // "block delete when linked active events exist" check stays in the server
+  // action as a read-guard (constitution §10 allows reads); the governed write is
+  // this command.
+  command softDelete() {
+    guard self.deletedAt == null "Venue is already deleted"
+    mutate deletedAt = now()
+    emit VenueDeleted
   }
   store Venue in durable
 }
@@ -97,6 +150,11 @@ event VenueCapacityUpdated: "events.venue.capacity_updated" {
   tenantId: string
   capacity: number
   updatedAt: datetime
+}
+event VenueDeleted: "events.venue.deleted" {
+  venueId: string
+  tenantId: string
+  deletedAt: datetime
 }
 
 entity EventTimeline {

@@ -104,3 +104,21 @@ which official method to use. Greps find divergence but not the canonical path.
 4. Repo divergence from the official method (hand-rolled wrappers, hand-authored schema vs the Prisma
    projection) is SUSPECT/legacy until the planning files prove it's required.
 This is enforced at the top of manifest/AGENTS.md. It has wasted the user's time repeatedly. Stop it.
+
+## Lesson 11: "Commands exist in the IR" ≠ a clean migration target — verify field parity first
+
+**Date:** 2026-06-05
+**What happened:** An Explore agent rated `crm/venues` a "9/10 clean" server-action migration target
+because `Venue.create`/`Venue.update` existed in the IR. They did — but the Manifest `Venue` entity
+was a stripped-down model: it declared `address`/`notes` (NOT real `venues` columns) and was MISSING
+14 columns the UI actually writes (venueType, addressLine1/2, city, …, tags). Routing the action
+through the old command as-is would have SILENTLY DROPPED all of those fields.
+**Root cause:** "command exists" was treated as "entity matches reality." The Manifest entities in
+this repo are frequently simplified vs their rich Prisma tables (same root cause as the
+Driver/Vehicle/Facility/AdminTask drift blockers).
+**Rule:** Before migrating a governed write, verify field parity across THREE places: (a) the data the
+server action writes, (b) the Prisma model columns (`grep "model X" schema.prisma`), (c) the Manifest
+entity properties + command params. If they disagree, the target is drift-blocked — reconcile the
+Manifest entity to the schema FIRST (use `Client` as the template for rich CRM entities; property
+names must match Prisma field names so GenericPrismaStore maps 1:1), then migrate. Json columns the UI
+never sets stay OUT of the command surface (default NULL — lossless, no object/string double-encoding).

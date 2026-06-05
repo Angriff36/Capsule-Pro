@@ -1,5 +1,43 @@
 # Current Task
 
+## Venue governance migration (Task 8.3) + Manifest↔Prisma drift reconciliation — 2026-06-05
+
+**Why:** `crm/venues/actions.ts` has 3 direct `database.venue` writes (create/update/soft-delete),
+violating constitution §9. The Manifest `Venue` entity was a stripped-down model with `address`/`notes`
+props that are NOT real `venues` columns and missing 14 real columns the UI writes — so Venue was
+drift-blocked. Reconciling it to the real schema unblocks the governed-write migration with zero field
+loss. `equipmentList`/`preferredVendors` (Json) are DB-only (never set by the venue UI) → excluded
+from the command surface, default to null (lossless), avoids the JSON landmine.
+
+- [x] Runtime conformance test (venue-governance.test.ts): create persists all fields; update works on
+      an inactive venue (regression guard for old `guard self.isActive`); softDelete sets deletedAt +
+      blocks later update; assert real commands.registry.json has Venue.create/update/softDelete.
+- [x] Reconcile Venue entity in events-extended-rules.manifest (Client template); update guard
+      self.isActive→self.deletedAt==null; add softDelete() + VenueDeleted event.
+- [x] `pnpm manifest:compile`; verified Venue-scoped diff (only Venue.softDelete added to registry).
+- [x] Migrate crm/venues/actions.ts (create/update/softDelete) via requireCurrentUser + runManifestCommand.
+- [x] Verify: try-prisma Venue (field names parity), manifest-runtime test (49 pass) + typecheck (0),
+      api typecheck (0), app typecheck (0), parent-context:strict (0). Route-drift gate: 0 drift.
+- [ ] Update IMPLEMENTATION_PLAN.md (subagent). Commit, push, tag.
+
+### Review
+- Migrated all 3 governed writes in `crm/venues/actions.ts` (create/update/soft-delete) through the
+  Manifest runtime; removed the file from the direct-writes audit report (backlog −1 file).
+- Root reconciliation: the Manifest `Venue` entity was drift-blocked — it declared `address`/`notes`
+  (NOT real `venues` columns) and was missing 14 real columns. Reconciled it to match the schema field
+  names 1:1 so GenericPrismaStore persists the full field surface. `equipmentList`/`preferredVendors`
+  (Json, never set by the venue UI) intentionally excluded from the command surface → default NULL,
+  lossless vs the prior `Prisma.JsonNull`, and avoids JSON object/string double-encoding.
+- Fixed a latent behavior bug while reconciling: the old `update` command guarded `self.isActive`,
+  which would have BLOCKED editing/reactivating a deactivated venue (the edit form supports this).
+  Changed to `guard self.deletedAt == null` (Client pattern).
+- Verification: 49 runtime tests pass; api+app+runtime typecheck 0; parent-context strict 0; route
+  regen drift 0. Pre-existing aggregate gates (direct-writes:strict 57 files, schema-drift:strict 177)
+  remain red — that is the documented Task 8.2/8.3 + Phase 2/3 backlog, not introduced here; my change
+  reduced the direct-write set and added zero schema-drift violations (Venue is skipped/not_in_registry).
+
+---
+
 ## cp-092 — Feature Inventory — 2026-04-13
 
 **Goal:** Inventory all routes, map feature modules, and identify data tables/models touched.
