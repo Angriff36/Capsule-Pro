@@ -5,7 +5,8 @@ import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { requireTenantId } from "../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { createEventSchema, updateEventSchema } from "./validation";
 
@@ -228,7 +229,8 @@ export const createEvent = async (
   _prevState: CreateEventState,
   formData: FormData
 ): Promise<CreateEventState> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const rawData = readCreateEvent(formData);
   const parsed = createEventSchema.safeParse(rawData);
 
@@ -239,8 +241,12 @@ export const createEvent = async (
   let createdId: string;
 
   try {
-    const created = await database.$transaction(async (tx) => {
-      const event = await tx.event.create({
+    // NOTE: the Event row is still written directly here (pre-existing §9
+    // direct-write; tracked in IMPLEMENTATION_PLAN.md as a follow-up to route
+    // through Event.create — it needs templateId added to the Event manifest
+    // source and the eventNumber advisory-lock numbering reworked).
+    const event = await database.$transaction(async (tx) => {
+      return tx.event.create({
         data: {
           tenantId,
           eventNumber: await nextEventNumber(tx, tenantId),
@@ -249,24 +255,36 @@ export const createEvent = async (
           templateId: rawData.templateId,
         },
       });
-
-      await tx.battleBoard.create({
-        data: {
-          tenantId,
-          eventId: event.id,
-          board_name: `${event.title} - Battle Board`,
-          board_type: "event-specific",
-          boardData: {},
-        },
-      });
-
-      return event;
     });
 
-    createdId = created.id;
+    createdId = event.id;
   } catch (error) {
     console.error("[createEvent] Database error:", error);
     return { error: "Failed to create event. Please try again." };
+  }
+
+  // Auto-create the event's battle board through the governed Manifest command
+  // (constitution §9 — no direct Prisma write). Parent-context propagation
+  // resolves the just-created Event and inherits its date/client/venue/guest
+  // context onto the board, so the board never re-collects event-owned data.
+  // Non-fatal: a board failure must not block event creation. See
+  // specs/parent-context-propagation.md.
+  try {
+    const boardResult = await runManifestCommand({
+      entity: "BattleBoard",
+      command: "create",
+      body: {
+        boardName: `${parsed.data.title} - Battle Board`,
+        boardType: "event-specific",
+        eventId: createdId,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!boardResult.ok) {
+      console.error("[createEvent] battle board create failed:", boardResult.message);
+    }
+  } catch (error) {
+    console.error("[createEvent] battle board create error:", error);
   }
 
   revalidateEvent(createdId);
