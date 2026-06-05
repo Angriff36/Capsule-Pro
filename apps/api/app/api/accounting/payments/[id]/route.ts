@@ -15,9 +15,10 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireApiManager } from "@/app/lib/auth-roles";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
 import { translatePrismaError } from "@/lib/prisma-error";
 import { checkRateLimit } from "@/middleware/rate-limiter";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   captureException,
   type PaymentResponse,
@@ -26,6 +27,11 @@ import {
   validateRefundRequest,
 } from "../validation";
 import { processPaymentGateway, refundPaymentGateway } from "./gateway";
+
+// This route constructs the Manifest runtime (createManifestRuntime), which depends on
+// Node-only APIs (Prisma, node:crypto). Pin it to the Node.js runtime so it never gets
+// bundled for the Edge runtime.
+export const runtime = "nodejs";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -173,62 +179,40 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     const isCompleted = gatewayResult.success;
 
-    // Update payment status
-    const updatedPayment = await database.payment.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        status: isCompleted ? "COMPLETED" : "FAILED",
-        processedAt: new Date(),
-        completedAt: isCompleted ? new Date() : null,
-        gatewayTransactionId: gatewayResult.transactionId,
-      },
+    // Resolve current user for Manifest runtime context
+    const user = await resolveCurrentUser(request);
+
+    // Update payment status via Manifest runtime — invoice update handled by
+    // PaymentProcessed reaction (on PaymentProcessed run Invoice.applyPayment).
+    const manifestRuntime = await createManifestRuntime({
+      user: { id: user.id, tenantId, role: user.role },
     });
 
-    // If payment completed, update invoice
-    if (isCompleted && payment.invoiceId) {
-      const invoice = await database.invoice.findFirst({
-        where: {
-          tenantId,
-          id: payment.invoiceId,
-          deletedAt: null,
-        },
+    const manifestResult = await manifestRuntime.runCommand(
+      isCompleted ? "process" : "processFailed",
+      { gatewayTransactionId: gatewayResult.transactionId },
+      { entityName: "Payment", instanceId: id }
+    );
+
+    if (!manifestResult.success) {
+      log.error("Payment.process via Manifest failed", {
+        paymentId: id,
+        error: manifestResult.error,
       });
-
-      if (invoice) {
-        const paymentAmount = Number(payment.amount);
-        const currentAmountPaid = Number(invoice.amountPaid);
-        const currentAmountDue = Number(invoice.amountDue);
-
-        await database.invoice.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: payment.invoiceId,
-            },
-          },
-          data: {
-            amountPaid: currentAmountPaid + paymentAmount,
-            amountDue: currentAmountDue - paymentAmount,
-            status:
-              Math.abs(currentAmountDue - paymentAmount) < 0.01
-                ? "PAID"
-                : "PARTIALLY_PAID",
-            ...(Math.abs(currentAmountDue - paymentAmount) < 0.01
-              ? { paidAt: new Date() }
-              : {}),
-          },
-        });
-      }
+      return NextResponse.json(
+        { error: `Payment processing failed: ${manifestResult.error ?? "manifest rejection"}` },
+        { status: 500 }
+      );
     }
 
+    // Re-fetch payment for response (Manifest owns the mutation now)
+    const updatedPayment = await database.payment.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
     return NextResponse.json<PaymentResponse>({
-      ...updatedPayment,
-      amount: updatedPayment.amount.toString(),
+      ...updatedPayment!,
+      amount: updatedPayment!.amount.toString(),
     });
   } catch (error) {
     captureException(error);
@@ -381,64 +365,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Update payment
-    const updatedPayment = await database.payment.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        status: isFullRefund ? "REFUNDED" : "PARTIALLY_REFUNDED",
-        refundedAt: new Date(),
-      },
+    // Update payment via Manifest runtime — invoice update handled by
+    // PaymentRefunded reaction (on PaymentRefunded run Invoice.recordRefund).
+    const user = await resolveCurrentUser(request);
+
+    const manifestRuntime = await createManifestRuntime({
+      user: { id: user.id, tenantId, role: user.role },
     });
 
-    // Update invoice to reflect refund — re-derive status + paidAt from the
-    // post-refund balance so a refunded invoice never stays marked PAID.
-    if (payment.invoiceId) {
-      const invoice = await database.invoice.findFirst({
-        where: {
-          tenantId,
-          id: payment.invoiceId,
-          deletedAt: null,
-        },
+    const manifestResult = await manifestRuntime.runCommand(
+      isFullRefund ? "refund" : "partialRefund",
+      { refundAmount: effectiveRefund, reason: String(body.reason) },
+      { entityName: "Payment", instanceId: id }
+    );
+
+    if (!manifestResult.success) {
+      log.error("Payment.refund via Manifest failed", {
+        paymentId: id,
+        error: manifestResult.error,
       });
-
-      if (invoice) {
-        const currentAmountPaid = Number(invoice.amountPaid);
-        const currentAmountDue = Number(invoice.amountDue);
-
-        const newAmountPaid = currentAmountPaid - effectiveRefund;
-        const newAmountDue = currentAmountDue + effectiveRefund;
-
-        // Re-derive invoice status. If no money is left on file, fall back
-        // to SENT (the pre-payment receivable state). If some money still
-        // remains, the invoice is PARTIALLY_PAID. paidAt is cleared in both
-        // cases because the invoice is no longer fully paid.
-        const newStatus = newAmountPaid <= 0.01 ? "SENT" : "PARTIALLY_PAID";
-
-        await database.invoice.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: payment.invoiceId,
-            },
-          },
-          data: {
-            amountPaid: newAmountPaid,
-            amountDue: newAmountDue,
-            status: newStatus,
-            paidAt: null,
-          },
-        });
-      }
+      return NextResponse.json(
+        { error: `Refund failed: ${manifestResult.error ?? "manifest rejection"}` },
+        { status: 500 }
+      );
     }
 
+    // Re-fetch payment for response (Manifest owns the mutation now)
+    const updatedPayment = await database.payment.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
     return NextResponse.json<PaymentResponse>({
-      ...updatedPayment,
-      amount: updatedPayment.amount.toString(),
+      ...updatedPayment!,
+      amount: updatedPayment!.amount.toString(),
     });
   } catch (error) {
     captureException(error);

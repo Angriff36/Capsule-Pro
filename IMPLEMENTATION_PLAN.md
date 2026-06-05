@@ -405,7 +405,7 @@
 
 ### Governance
 
-- **~160 direct-write violations in API routes** + **110 in server actions** = **~270 total** (down from 301). 26 mutate handlers across 22 route files migrated to Manifest runtime (Task 8.2 batches 1-4 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~155 direct-write violations in API routes** + **110 in server actions** = **~265 total** (down from 301). 31 mutate handlers across 24 route files migrated to Manifest runtime (Task 8.2 batches 1-5 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
 - `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
@@ -499,6 +499,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 8.2 progress (batch 2): 10 mutate handlers migrated across 9 route files** | ApiKey (5 routes: create/update/softDelete/revoke/rotate), Venue (3 routes: create/update/deactivate), CommandBoard simulations (2 routes: discard/delete). Pre-validation preserved where needed. Mobile domain entities NOT in IR — blocked. Command Board apply/merge deferred (complex multi-model transactions). 118 test files, 2583+ tests passing, 0 typecheck errors. |
 | 2026-06-05 | **Task 8.4: Kitchen task claim routes migrated to Manifest-only** | `POST /api/kitchen/tasks/[id]/claim` and `POST /api/kitchen/tasks/[id]/unclaim` migrated from hybrid to Manifest-only. Redundant direct Prisma writes removed. Task assignment now flows through governed lifecycle (RBAC, audit, events). |
 | 2026-06-05 | **Task 8.2 batch 3: 5 accounting routes + 1 procurement route migrated to Manifest runtime** | CollectionCase create, Invoice create, PaymentMethod create/update/patch/delete, RevenueRecognitionSchedule create. PaymentMethod manifest source: added update/remove commands + events. Test suite updated for payment-method-patch-actions. Plus procurement approvals: PurchaseOrder approve/reject. 2582 tests pass, 0 typecheck errors. Total: 21 mutate handlers in 19 route files across all batches. |
+| 2026-06-05 | **Task 8.2 batch 5: Payment process/refund + revenue-recognition schedule actions migrated** | PUT/POST payments/[id] route: Payment process/refund through Manifest runtime, invoice updates via reactions. PATCH revenue-recognition schedules: start/recognize/cancel through Manifest runtime. 31 total mutate handlers in 24 route files. API typecheck 0, 2582 tests pass. |
 
 ---
 
@@ -1185,7 +1186,19 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - IotAlertRule manifest source expanded: added `name`, `sensorType`, `condition`, `thresholdMin`, `thresholdMax`, `durationMs`, `alertAction`, `notifyRoles`, `notifyChannels`, `description` properties + expanded create command params.
     - Inventory batch route NOT migrated: uses `updateMany`/`deleteMany` batch ops with no Manifest equivalent. Deferred.
     - IR recompiled: 188 entities, 950 commands. API typecheck 0, 2582 tests pass.
-  - **Total migrated across all batches:** 26 mutate handlers in 22 route files. Remaining: ~160 violations across ~58 files.
+  - **Progress 2026-06-05 (batch 5):** 5 more mutate handlers migrated across 3 route files:
+    - `PATCH /api/accounting/revenue-recognition/schedules/[id]` — 3 actions migrated:
+      - `start` → `runManifestCommand({ entity: "RevenueRecognitionSchedule", command: "startRecognition" })`
+      - `recognize` → Multi-step Manifest: `RevenueRecognitionLine.create` + `RevenueRecognitionSchedule.recognizeAmount` + `completeIfFullyRecognized` (if fully recognized)
+      - `cancel` → `runManifestCommand({ entity: "RevenueRecognitionSchedule", command: "cancel" })`
+    - `PUT /api/accounting/payments/[id]` (process) → `manifestRuntime.runCommand("process" | "processFailed")`. Invoice update delegated to `on PaymentProcessed run Invoice.applyPayment` reaction.
+    - `POST /api/accounting/payments/[id]` (refund) → `manifestRuntime.runCommand("refund" | "partialRefund")`. Invoice update delegated to `on PaymentRefunded run Invoice.recordRefund` reaction.
+    - RevenueRecognitionLine.create now routes through Manifest (was direct Prisma).
+    - 5 test files updated for new mock patterns (manifest-runtime, resolveCurrentUser).
+    - Actions NOT migrated (documented): revenue-recognition `reverse` (no Manifest command), `adjust` (partial command match), default field updates.
+    - PaymentRefundAttempt audit rows kept as direct Prisma (infrastructure trail, not governed entity).
+    - 2582 tests pass, 0 typecheck errors.
+  - **Total migrated across all batches:** 31 mutate handlers in 24 route files. Remaining: ~155 violations across ~56 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
