@@ -188,6 +188,8 @@
     "manifest:audit-schema-drift:strict": "node manifest/scripts/audit-schema-drift.mjs --strict",
     "manifest:audit-route-drift": "node manifest/scripts/audit-route-drift.mjs",
     "manifest:audit-route-drift:strict": "node manifest/scripts/audit-route-drift.mjs --strict",
+    "manifest:audit-parent-context": "node manifest/scripts/audit-parent-context.mjs",
+    "manifest:audit-parent-context:strict": "node manifest/scripts/audit-parent-context.mjs --strict",
     "manifest:mcp": "manifest-mcp",
     "manifest:governance:enforce-surface": "pnpm exec manifest enforce-surface",
     "manifest:governance:integration-check": "pnpm exec manifest integration-check",

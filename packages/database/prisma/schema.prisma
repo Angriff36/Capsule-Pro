@@ -1463,6 +1463,16 @@ model BattleBoard {
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+  // Parent-context snapshot inherited from the linked Event at create time
+  // (parent-context propagation). Plain text — no @db.Uuid — so denormalized
+  // values never fail uuid coercion. See specs/parent-context-propagation.md.
+  eventDate            DateTime? @map("event_date") @db.Timestamptz(6)
+  clientId             String?   @map("client_id")
+  guestCount           Int?      @map("guest_count")
+  venueName            String?   @map("venue_name")
+  venueAddress         String?   @map("venue_address")
+  locationId           String?   @map("location_id")
+  inheritedContext     String?   @map("inherited_context")
   tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])

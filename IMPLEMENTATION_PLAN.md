@@ -1236,6 +1236,22 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** At least 5 entities use `defaultPolicies`. Newly added commands are automatically protected.
 - **Source to change:** `manifest/source/*.manifest`.
 
+### 8.9 Parent-context propagation — ✅ DONE 2026-06-05
+- **✅ DONE 2026-06-05.** A single generic, IR-relationship-driven choke point now inherits parent-owned context onto child `create` commands, so a child created from a parent (e.g. BattleBoard from Event) supplies only the parent FK + child-specific overrides and the parent's date/client/venue/guest fields are loaded server-side and copied as defaults. Eliminates the drift class where each child surface holds a divergent hand-copied snapshot of the parent's facts and the UI re-collects data the system already owns.
+  - **Mechanism:** `manifest/runtime/src/parent-context-resolver.ts` — runs in `run-manifest-command-core.ts` BEFORE `runtime.runCommand` (the engine snapshots the create body before middleware fires, so this is the only point where inherited fields reach storage). Best-effort: wrapped in try/catch, never blocks a create.
+  - **Inheritance gate:** copies a parent property onto the child only if the field is NOT a child create parameter (user-facing input), NOT in `ALWAYS_EXCLUDED` (id/tenantId/status/timestamps/inheritedContext), NOT an FK column, the parent owns a same-name **scalar** property of matching type, the child body has no meaningful value already (child override wins), and the parent value is non-empty. Records provenance in `inheritedContext` JSON.
+  - **First adopter:** BattleBoard (`battle-board-rules.manifest` + `battle_boards` plain-text snapshot columns + `belongsTo event: Event`).
+  - **Governance + backpressure:** `manifest/governance/parent-context-overrides.json` documents exceptions in two categories — `FALSE_POSITIVE` (coincidental name match) and `BASELINE` (genuine pre-existing candidates, listed in 8.10 below). `pnpm manifest:audit-parent-context:strict` exits non-zero on any undocumented violation; currently **0 violations**.
+  - **Spec:** `specs/parent-context-propagation.md` (the why, the invariant, the rules, and how to add a new adopter).
+  - **Verification:** runtime + api typecheck 0; 44 runtime parent-context tests pass; `battle-board-parent-context.test.ts` passes within the full api suite (2597 passed); audit-strict clean.
+
+### 8.10 Migrate BASELINE parent-context candidates (follow-up to 8.9)
+- **Done when:** Each `BASELINE` entry in `manifest/governance/parent-context-overrides.json` is migrated to inherit its parent-owned field(s) server-side (declare the field as a non-create-param property + add the `belongsTo` relationship + recompile), then removed from the overrides file. `pnpm manifest:audit-parent-context:strict` stays at 0 violations throughout.
+- **Why:** These children currently REQUIRE, as user input, a field their `belongsTo` parent already owns — the exact drift the 8.9 mechanism removes. They predate the mechanism and are tracked rather than forced, so each can migrate independently.
+- **Candidates (parent → inferable field):** `Proposal` (Event → clientId/eventDate/eventType/venueName/venueAddress — strongest), `CateringOrder` (Event → venueName/venueAddress), `RevenueRecognitionSchedule` (Invoice/Event → eventId/clientId), `Shipment` (Event → locationId), `WasteEntry` (Event → locationId), `PrepTask` (PrepList → eventId), `FacilityWorkOrder` (FacilityAsset → facilityId/areaId), `ScheduleShift` (Schedule → locationId), `TimelineTask` (Event → assignedTo), `EventFollowup` (Event → assignedTo), `EventContract` (Event → clientId).
+- **Backpressure:** For each migrated child, a create with only the parent FK + child input persists the inherited field (mirror the BattleBoard test).
+- **Source to change:** the child's `manifest/source/*.manifest` + `packages/database/prisma/schema.prisma` (if a snapshot column is missing) + remove the entry from `parent-context-overrides.json`.
+
 ---
 
 ## TIER 9 -- ENTITY GRAPH & ADVANCED FEATURES

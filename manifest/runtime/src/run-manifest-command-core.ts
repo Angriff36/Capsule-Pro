@@ -9,6 +9,7 @@
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
+import { resolveParentContext } from "./parent-context-resolver";
 
 export interface ManifestUserContext {
   id: string;
@@ -119,6 +120,19 @@ export async function runManifestCommandCore(
 
     const command = resolved.command;
     const runtime = await deps.createRuntime({ user, entityName: entity });
+
+    // Parent-context propagation: for a `create` carrying a parent FK (e.g.
+    // BattleBoard.create with eventId), load the parent server-side and inherit
+    // the parent-owned fields the child declares but does not accept as input.
+    // Runs here — before runCommand — because the engine snapshots the create
+    // body before any middleware fires. Never let inference break a create.
+    if (command === "create") {
+      try {
+        await resolveParentContext(runtime, { entity, command, body });
+      } catch {
+        // Inference is best-effort; proceed with the un-enriched body.
+      }
+    }
 
     // Resolve which instance an instance-scoped verb targets. The canonical
     // dispatcher forwards the request body but no explicit instanceId, so verbs

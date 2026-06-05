@@ -22,12 +22,26 @@ entity BattleBoard {
   property dishCount: int = 0
   property deletedAt: datetime
 
+  // Parent-context snapshot (inherited from the linked Event at create time).
+  // These are NOT create-command parameters: they can only be populated by
+  // parent-context propagation, so the board never asks the user to re-enter
+  // event-owned data. See specs/parent-context-propagation.md.
+  property eventDate: datetime
+  property clientId: string = ""
+  property guestCount: int = 0
+  property venueName: string = ""
+  property venueAddress: string = ""
+  property locationId: string = ""
+  property inheritedContext: string = "{}"
+
   computed isOpen: boolean = self.status == "open"
   computed isVoting: boolean = self.status == "voting"
   computed isFinalized: boolean = self.status == "finalized"
   computed isDraft: boolean = self.status == "draft"
   computed hasData: boolean = self.boardData != "{}" and self.boardData != ""
   computed hasDocument: boolean = self.documentUrl != "" and self.documentUrl != null
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint validBoardName: self.boardName != null and self.boardName != "" "Board name is required"
   constraint validStatus: self.status in ["draft", "open", "voting", "finalized"] "Status must be valid"

@@ -1,0 +1,138 @@
+{
+  "$comment": "Documented override reasons for the parent-context propagation audit (manifest/scripts/audit-parent-context.mjs). A child `create` command should INHERIT parent-owned context via parent-context propagation (specs/parent-context-propagation.md), not require it as user input. Each entry below records WHY a required create parameter that name+type-matches a belongsTo-parent property is acceptable. Two categories: (1) FALSE_POSITIVE — coincidental name match; the child value is semantically independent of the parent's. (2) BASELINE — a genuine propagation candidate that predates the propagation mechanism (2026-06-05); tracked in IMPLEMENTATION_PLAN.md for follow-up migration. New, undocumented cases must be fixed (inherit server-side) or added here with a reason. BattleBoard is intentionally ABSENT: its create inherits event context and requires no parent-owned input.",
+  "overrides": {
+    "AllergenWarning": {
+      "fields": ["allergens"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A warning's allergen string is authored for the warning, not copied from the Dish's allergen list.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "ClientContact": {
+      "fields": ["firstName", "lastName", "email", "phone"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A contact's own PII is distinct from the Client (company/account) record's fields with the same names.",
+      "owner": "crm",
+      "reviewed": "2026-06-05"
+    },
+    "VendorContact": {
+      "fields": ["email", "phone"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A vendor contact's own email/phone is distinct from the InventorySupplier record's contact fields.",
+      "owner": "procurement",
+      "reviewed": "2026-06-05"
+    },
+    "Dish": {
+      "fields": ["category"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A dish's menu category is independent of the source Recipe's category.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "PrepListItem": {
+      "fields": ["category", "allergens"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Prep-line category/allergens are denormalized per source (Ingredient/Dish/RecipeVersion) and provided explicitly; not a single inferable parent value.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "IotAlertRule": {
+      "fields": ["condition", "isActive"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A rule's condition/isActive are the rule's own configuration, not inherited from the Equipment it monitors.",
+      "owner": "facilities",
+      "reviewed": "2026-06-05"
+    },
+    "IoTAlert": {
+      "fields": ["severity"],
+      "category": "FALSE_POSITIVE",
+      "reason": "An alert's severity is evaluated per-event, not copied from the IotAlertRule's name-matching field.",
+      "owner": "facilities",
+      "reviewed": "2026-06-05"
+    },
+    "TimecardEditRequest": {
+      "fields": ["employeeId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "The requesting employee is supplied by the caller; coincidental name match with TimeEntry.employeeId.",
+      "owner": "staff",
+      "reviewed": "2026-06-05"
+    },
+    "CateringOrder": {
+      "fields": ["venueName", "venueAddress"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): venue is inferable from the linked Event. Candidate for parent-context propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "EventContract": {
+      "fields": ["clientId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): clientId is inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "TimelineTask": {
+      "fields": ["assignedTo"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "EventFollowup": {
+      "fields": ["assignedTo"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "FacilityWorkOrder": {
+      "fields": ["facilityId", "areaId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): facility/area inferable from the FacilityAsset. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "facilities",
+      "reviewed": "2026-06-05"
+    },
+    "PrepTask": {
+      "fields": ["eventId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): eventId inferable from the linked PrepList. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "Proposal": {
+      "fields": ["clientId", "eventDate", "eventType", "venueName", "venueAddress"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): client/date/type/venue inferable from the linked Event. Strong candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "RevenueRecognitionSchedule": {
+      "fields": ["eventId", "clientId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): eventId/clientId inferable from the linked Invoice/Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "accounting",
+      "reviewed": "2026-06-05"
+    },
+    "ScheduleShift": {
+      "fields": ["locationId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the parent Schedule. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "staff",
+      "reviewed": "2026-06-05"
+    },
+    "Shipment": {
+      "fields": ["locationId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "logistics",
+      "reviewed": "2026-06-05"
+    },
+    "WasteEntry": {
+      "fields": ["locationId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    }
+  }
+}
