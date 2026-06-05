@@ -5,7 +5,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { DatePicker } from "@repo/design-system/components/ui/date-picker";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { CreateEventState } from "../actions";
 import { eventStatuses } from "../constants";
 
@@ -57,6 +57,7 @@ export const EventForm = ({
 }: EventFormProps) => {
   const isEdit = Boolean(event?.id);
   const [state, formAction, isPending] = useActionState(action, null);
+  const [eventDate, setEventDate] = useState(formatDateValue(event?.eventDate));
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -128,10 +129,11 @@ export const EventForm = ({
             Event date
           </label>
           <DatePicker
-            defaultValue={formatDateValue(event?.eventDate)}
             id="eventDate"
             name="eventDate"
+            onChange={(changeEvent) => setEventDate(changeEvent.target.value)}
             required
+            value={eventDate}
           />
         </div>
 
