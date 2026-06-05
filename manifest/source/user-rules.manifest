@@ -31,6 +31,7 @@ entity User {
   constraint validRole: self.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Invalid user role"
   constraint validEmploymentType: self.employmentType in ["full_time", "part_time", "contractor", "temp"] "Invalid employment type"
 
+  default policy UserDefaultAccess execute: user.role in ["manager", "admin"] "User management"
   command create(email: string, firstName: string, lastName: string, role: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, hireDate: datetime, employeeNumber: string) {
     guard email != null and email != "" "Email is required"
     guard firstName != null and firstName != "" "First name is required"

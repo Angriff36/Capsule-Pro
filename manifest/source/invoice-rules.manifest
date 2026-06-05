@@ -63,6 +63,7 @@ entity Invoice {
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
 
   // Commands
+  default policy InvoiceDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Invoice management"
   command send(clientContactId: string) {
     guard self.status == "DRAFT" "Can only send draft invoices"
     guard self.amountDue > 0 "Cannot send invoices with zero balance"

@@ -30,6 +30,7 @@ entity ProposalTemplate {
     }
   }
 
+  default policy ProposalTemplateDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(name: string, description: string, headerHtml: string, footerHtml: string, defaultTerms: string) {
     guard name != null and name != "" "Template name is required"
 
@@ -110,6 +111,7 @@ entity InteractionAttachment {
     }
   }
 
+  default policy InteractionAttachmentDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(clientInteractionId: string, fileName: string, fileUrl: string, fileType: string, fileSizeBytes: int, uploadedBy: string) {
     guard clientInteractionId != null and clientInteractionId != "" "Client interaction ID is required"
     guard fileName != null and fileName != "" "File name is required"
@@ -167,6 +169,7 @@ entity CrmScoringRule {
     }
   }
 
+  default policy CrmScoringRuleDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(name: string, criterion: string, points: int) {
     guard name != null and name != "" "Scoring rule name is required"
     guard criterion != null and criterion != "" "Criterion is required"
@@ -237,6 +240,7 @@ entity Report {
   constraint requireName: self.name != null and self.name != "" "Report name is required"
   constraint requireReportType: self.reportType != null and self.reportType != "" "Report type is required"
 
+  default policy ReportDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(name: string, reportType: string, queryConfig: string, displayConfig: string, isShared: boolean, createdBy: string) {
     guard name != null and name != "" "Report name is required"
     guard reportType != null and reportType != "" "Report type is required"
@@ -326,6 +330,7 @@ entity Document {
   transition status from "uploaded" to ["parsing"]
   transition status from "parsing" to ["parsed", "failed"]
 
+  default policy DocumentDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(name: string, documentType: string, fileUrl: string, fileSizeBytes: int, entityType: string, entityId: string, uploadedBy: string) {
     guard name != null and name != "" "Document name is required"
     guard fileUrl != null and fileUrl != "" "File URL is required"
@@ -397,6 +402,7 @@ entity AdminChatThread {
   transition status from "open" to ["archived"]
   transition status from "archived" to ["open"]
 
+  default policy AdminChatThreadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(subject: string, createdBy: string) {
     guard subject != null and subject != "" "Thread subject is required"
     guard createdBy != null and createdBy != "" "Created by is required"
@@ -448,6 +454,7 @@ entity AdminChatMessage {
   constraint requireSender: self.senderId != null and self.senderId != "" "Sender ID is required"
   constraint requireBody: self.body != null and self.body != "" "Message body is required"
 
+  default policy AdminChatMessageDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
   command create(adminChatThreadId: string, senderId: string, body: string) {
     guard adminChatThreadId != null and adminChatThreadId != "" "Chat thread ID is required"
     guard senderId != null and senderId != "" "Sender ID is required"

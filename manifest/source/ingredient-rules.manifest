@@ -48,6 +48,7 @@ entity Ingredient {
     }
   }
 
+  default policy IngredientDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Ingredient management"
   command create(name: string, category: string, defaultUnitId: number, densityGPerMl: number, shelfLifeDays: number, storageInstructions: string, allergens: string) {
     guard name != null and name != "" "Ingredient name is required"
     guard defaultUnitId != null and defaultUnitId > 0 "Default unit ID is required"

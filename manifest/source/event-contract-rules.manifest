@@ -42,6 +42,7 @@ entity EventContract {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
+  default policy EventContractDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard clientId != null and clientId != "" "Client ID is required"
@@ -158,6 +159,7 @@ entity ContractSignature {
 
   relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
 
+  default policy ContractSignatureDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, signerRole: string, ipAddress: string) {
     guard contractId != null and contractId != "" "Contract ID is required"
     guard signatureData != null and signatureData != "" "Signature data is required"

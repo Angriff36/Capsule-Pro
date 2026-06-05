@@ -41,6 +41,7 @@ entity LaborBudget {
     }
   }
 
+  default policy LaborBudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
   command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: money, budgetType: string, notes: string, createdBy: string) {
     guard budgetAmount > 0 "Budget amount must be positive"
 
@@ -139,6 +140,7 @@ entity BudgetAlert {
 
   constraint validAlertType: self.alertType in ["threshold_warning", "threshold_exceeded", "overage", "critical"] "Invalid alert type"
 
+  default policy BudgetAlertDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Labor budget management"
   command create(budgetId: string, alertType: string, thresholdPct: number, actualPct: number, message: string) {
     guard budgetId != null and budgetId != "" "Budget ID is required"
     guard alertType != null and alertType != "" "Alert type is required"

@@ -67,6 +67,7 @@ entity PurchaseRequisition {
     }
   }
 
+  default policy PurchaseRequisitionDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
     guard requestedBy != null and requestedBy != "" "Requester is required"
@@ -205,6 +206,7 @@ entity PurchaseRequisitionItem {
   constraint positiveQuantity: self.quantityRequested > 0 "Quantity requested must be positive"
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
+  default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: number, unitId: number, estimatedUnitCost: number, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
     guard requisitionId != null and requisitionId != "" "Requisition ID is required"
     guard itemId != null and itemId != "" "Item ID is required"

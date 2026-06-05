@@ -29,6 +29,7 @@ entity EmployeeCertification {
   constraint requireIssuedDate: self.issuedDate != "" "Issued date is required"
   constraint validStatus: self.status in ["active", "expired", "revoked"] "Invalid certification status"
 
+  default policy EmployeeCertificationDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Employee certifications"
   command create(employeeId: string, certificationType: string, certificationName: string, issuedDate: string, expiryDate: string, documentUrl: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard certificationType != null and certificationType != "" "Certification type is required"

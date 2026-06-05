@@ -32,6 +32,7 @@ entity PrepMethod {
     }
   }
 
+  default policy PrepMethodDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep method management"
   command create(name: string, category: string, description: string, estimatedDurationMinutes: number, requiresCertification: string) {
     guard name != null and name != "" "Prep method name is required"
     guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"

@@ -38,6 +38,7 @@ entity VendorCatalog {
   constraint validCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"] "Invalid currency"
   constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
 
+  default policy VendorCatalogDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor catalog"
   command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string) {
     guard itemNumber != null and itemNumber != "" "Item number is required"
     guard itemName != null and itemName != "" "Item name is required"

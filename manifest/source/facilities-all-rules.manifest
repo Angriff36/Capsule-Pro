@@ -28,6 +28,7 @@ entity Facility {
   transition status from "active" to ["inactive", "maintenance"]
   transition status from "maintenance" to ["active"]
 
+  default policy FacilityDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
     guard name != null and name != "" "Facility name is required"
     guard type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
@@ -115,6 +116,7 @@ entity FacilityArea {
   transition status from "active" to ["inactive", "maintenance"]
   transition status from "maintenance" to ["active"]
 
+  default policy FacilityAreaDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(venueId: string, name: string, code: string, areaType: string, floor: string, description: string, squareFeet: number) {
     guard name != null and name != "" "Area name is required"
 
@@ -213,6 +215,7 @@ entity FacilityAsset {
     }
   }
 
+  default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: number, serialNumber: string, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
@@ -318,6 +321,7 @@ entity FacilitySchedule {
   transition status from "scheduled" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
 
+  default policy FacilityScheduleDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(facilityId: string, areaId: string, title: string, description: string, scheduleType: string, startDate: datetime, endDate: datetime, assignedTo: string, notes: string) {
     guard title != null and title != "" "Schedule title is required"
     guard facilityId != null and facilityId != "" "Facility ID is required"
@@ -437,6 +441,7 @@ entity FacilityWorkOrder {
   transition status from "assigned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
 
+  default policy FacilityWorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
   command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
 

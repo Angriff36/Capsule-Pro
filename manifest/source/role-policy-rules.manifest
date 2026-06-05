@@ -19,6 +19,7 @@ entity RolePolicy {
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 
+  default policy RolePolicyDefaultAccess execute: user.role in ["admin", "owner"] "Role policy management"
   command create(roleId: string, roleName: string, permissions: array<string>, description: string) {
     guard roleId != null and roleId != "" "Role ID is required"
 

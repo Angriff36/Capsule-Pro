@@ -23,6 +23,7 @@ entity WorkforceOptimization {
   transition status from "pending" to ["in_progress", "failed"]
   transition status from "in_progress" to ["completed", "failed"]
 
+  default policy WorkforceOptimizationDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
   command create(locationId: string, optimizationType: string) {
     guard locationId != null "Location ID is required"
     guard optimizationType != null "Optimization type is required"
@@ -79,6 +80,7 @@ entity PerformancePrediction {
   constraint validConfidence: self.confidence in ["low", "medium", "high"] "Invalid confidence level"
   constraint validScore: self.predictionScore >= 0 and self.predictionScore <= 100 "Prediction score must be 0-100"
 
+  default policy PerformancePredictionDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
   command create(employeeId: string, predictionType: string, predictionHorizon: number, predictionScore: number, confidence: string, factors: string) {
     guard employeeId != null "Employee ID is required"
     guard predictionType != null "Prediction type is required"

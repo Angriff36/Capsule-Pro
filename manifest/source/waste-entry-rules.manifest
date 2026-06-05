@@ -41,6 +41,7 @@ entity WasteEntry {
   transition status from "logged" to ["approved", "voided"]
   transition status from "approved" to ["voided"]
 
+  default policy WasteEntryDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Waste tracking"
   command create(inventoryItemId: string, reasonId: int, quantity: number, unitId: number, locationId: string, eventId: string, loggedBy: string, unitCost: number, notes: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item is required"
     guard reasonId != null and reasonId > 0 "Waste reason is required"

@@ -20,6 +20,7 @@ entity Workflow {
   constraint validName: self.name != null and self.name != "" "Workflow name is required"
   constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
 
+  default policy WorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Workflow management"
   command create(name: string, description: string, triggerType: string, triggerConfig: string) {
     guard name != null and name != "" "Workflow name is required"
     guard triggerType != null and triggerType != "" "Trigger type is required"

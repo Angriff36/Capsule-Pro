@@ -40,6 +40,7 @@ entity Budget {
     }
   }
 
+  default policy BudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Budget management"
   command create(name: string, description: string, fiscalYear: number, totalAmount: money, category: string, departmentId: string) {
     guard name != null and name != "" "Budget name is required"
     guard totalAmount > 0 "Total amount must be positive"

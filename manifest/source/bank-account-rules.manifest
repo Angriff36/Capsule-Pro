@@ -24,6 +24,7 @@ entity BankAccount {
   constraint validAccountType: self.accountType in ["checking", "savings"] "Invalid account type"
   constraint validStatus: self.status in ["active", "inactive", "pending_verification", "verification_failed"] "Invalid bank account status"
 
+  default policy BankAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Bank account management"
   command create(employeeId: string, accountHolderName: string, accountNumber: string, routingNumber: string, accountType: string, bankName: string, isDefault: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard accountHolderName != null and accountHolderName != "" "Account holder name is required"

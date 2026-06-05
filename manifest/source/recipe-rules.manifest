@@ -22,6 +22,7 @@ entity Recipe {
 
   constraint validName: self.name != null and self.name != "" "Recipe name is required"
 
+  default policy RecipeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string[]) {
     guard newName != null and newName != "" "Recipe name is required"
 
@@ -142,6 +143,7 @@ entity RecipeVersion {
     }
   }
 
+  default policy RecipeVersionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command create(yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
     guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
     guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
@@ -257,6 +259,7 @@ entity RecipeIngredient {
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
   constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
 
+  default policy RecipeIngredientDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command updateQuantity(newQuantity: number, newUnit: number) {
     guard newQuantity != null and newQuantity > 0 "Quantity must be positive"
 
@@ -339,6 +342,7 @@ entity RecipeStep {
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
 
+  default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: number, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string, tips: string, videoUrl: string, imageUrl: string) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard stepNumber > 0 "Step number must be positive"

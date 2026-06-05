@@ -20,6 +20,7 @@ entity Venue {
   constraint requireName: self.name != "" "Venue name is required"
   constraint positiveCapacity: self.capacity >= 0 "Capacity cannot be negative"
 
+  default policy VenueDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(name: string, address: string, capacity: int, contactName: string, contactPhone: string, notes: string) {
     guard name != null and name != "" "Venue name is required"
     guard capacity >= 0 "Capacity cannot be negative"
@@ -128,6 +129,7 @@ entity EventStaffAssignment {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
+  default policy EventStaffAssignmentDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command assign(eventId: string, staffMemberId: string, role: string, shiftStart: datetime, shiftEnd: datetime, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
@@ -231,6 +233,7 @@ entity EventTimeline {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy EventTimelineDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, title: string, scheduledAt: datetime, durationMinutes: int, notes: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Title is required"
@@ -328,6 +331,7 @@ entity TimelineTask {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy TimelineTaskDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, title: string, dueAt: datetime, assignedTo: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Task title is required"
@@ -474,6 +478,7 @@ entity EventImport {
   constraint nonNegativeRows: self.totalRows >= 0 "Total rows cannot be negative"
   constraint nonNegativeImportedRows: self.importedRows >= 0 "Imported rows cannot be negative"
 
+  default policy EventImportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(source: string, fileName: string, totalRows: int) {
     guard source != null and source != "" "Import source is required"
     guard fileName != null and fileName != "" "File name is required"
@@ -586,6 +591,7 @@ entity EventFollowup {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy EventFollowupDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, type: string, dueAt: datetime, assignedTo: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard type != null and type != "" "Followup type is required"
@@ -675,6 +681,7 @@ entity BoardProjection {
   constraint positiveWidth: self.width > 0 "Width must be positive"
   constraint positiveHeight: self.height > 0 "Height must be positive"
 
+  default policy BoardProjectionDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(boardId: string, entityType: string, entityId: string, positionX: decimal, positionY: decimal, width: decimal, height: decimal) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard entityType != null and entityType != "" "Entity type is required"
@@ -758,6 +765,7 @@ entity BoardAnnotation {
 
   constraint requireBoard: self.boardId != "" "Board ID is required"
 
+  default policy BoardAnnotationDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(boardId: string, text: string, positionX: decimal, positionY: decimal, color: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     mutate boardId = boardId
@@ -820,6 +828,7 @@ entity Note {
 
   constraint requireTitle: self.title != "" "Note title is required"
 
+  default policy NoteDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(title: string, content: string, color: string, tags: string[], entityType: string, entityId: string) {
     guard title != null and title != "" "Note title is required"
     mutate title = title

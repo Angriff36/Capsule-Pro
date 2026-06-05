@@ -38,6 +38,7 @@ entity InventorySupplier {
   constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
   constraint validQualificationStatus: self.qualificationStatus in ["pending", "approved", "suspended", "blacklisted"] "Invalid qualification status"
 
+  default policy InventorySupplierDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(name: string, supplierNumber: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: string) {
     guard name != null and name != "" "Supplier name is required"
 

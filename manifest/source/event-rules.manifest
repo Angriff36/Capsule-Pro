@@ -73,6 +73,7 @@ entity Event {
   // already enforced on the relevant commands: `cancel` guards
   // status != completed/archived/cancelled; `archive` guards status == completed.
 
+  default policy EventDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: number, ticketPrice: number, ticketTier: string, eventFormat: string) {
     // All params are optional — AI and forms can provide any subset
     // Defaults are applied at the store layer (EventPrismaStore.create)
@@ -293,6 +294,7 @@ entity EventProfitability {
     }
   }
 
+  default policy EventProfitabilityDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, budgetedRevenue: number, budgetedFoodCost: number, budgetedLaborCost: number, budgetedOverhead: number, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 
@@ -364,6 +366,7 @@ entity EventSummary {
 
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
 
+  default policy EventSummaryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, highlights: string, issues: string, financialPerformance: string, clientFeedback: string, insights: string, overallSummary: string) {
     guard eventId != null and eventId != "" "Event ID is required"
 

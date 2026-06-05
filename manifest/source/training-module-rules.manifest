@@ -37,6 +37,7 @@ entity TrainingModule {
   constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid module status"
   constraint validContentType: self.contentType in ["document", "video", "quiz", "interactive", "checklist"] "Invalid content type"
 
+  default policy TrainingModuleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Training modules"
   command create(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, createdBy: string) {
     guard title != null and title != "" "Title is required"
     guard contentType in ["document", "video", "quiz", "interactive", "checklist"] "Invalid content type"

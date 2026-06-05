@@ -28,6 +28,7 @@ entity ApiKey {
   constraint requireHashedKey: self.hashedKey != null and self.hashedKey != "" "Hashed key is required"
   constraint requireCreatedBy: self.createdByUserId != null and self.createdByUserId != "" "Created by user ID is required"
 
+  default policy ApiKeyDefaultAccess execute: user.role in ["manager", "admin"] "API key management"
   command create(name: string, keyPrefix: string, hashedKey: string, scopes: string, expiresAt: datetime, createdByUserId: string) {
     guard name != null and name != "" "API key name is required"
     guard keyPrefix != null and keyPrefix != "" "Key prefix is required"

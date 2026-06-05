@@ -27,6 +27,7 @@ entity AutomatedFollowup {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy AutomatedFollowupDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, type: string, scheduledDate: datetime, recipientId: string, subject: string, body: string, templateId: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard type in ["email", "sms", "push"] "Invalid followup type"
@@ -119,6 +120,7 @@ entity EventTimelineItem {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy EventTimelineItemDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command createItem(eventId: string, title: string, description: string, itemType: string, assignedTo: string, dueDate: datetime, sortOrder: number) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard title != null and title != "" "Title is required"
@@ -235,6 +237,7 @@ entity EventWaitlistEntry {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy EventWaitlistEntryDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command addGuest(eventId: string, guestName: string, email: string, phone: string, partySize: number, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"

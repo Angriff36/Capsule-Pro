@@ -29,6 +29,7 @@ entity EmployeeAvailability {
   constraint requireEndTime: self.endTime != "" "End time is required"
   constraint validDayOfWeek: self.dayOfWeek >= 0 and self.dayOfWeek <= 6 "Day of week must be between 0 and 6"
 
+  default policy EmployeeAvailabilityDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Employee availability"
   command create(employeeId: string, dayOfWeek: int, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard startTime != null and startTime != "" "Start time is required"

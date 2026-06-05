@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-04, comprehensive audit -- 17th revision)
+## Validation Baseline (2026-06-05, comprehensive audit -- 18th revision)
 
 ### Claim Verification Matrix
 
@@ -24,7 +24,7 @@
 | 5 | ~~371~~ **301** direct-write violations | **CONFIRMED** | 191 API mutation calls across 80 files + 110 server action writes across 28 files = 301 total. 12 hybrid files. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **70~~81** entities use GenericPrismaStore | **UPDATED** | 81 of 94 switch-case entities now route to GenericPrismaStore (was 70 boilerplate). Only **13 with custom logic** remain (was 23). |
-| 8 | 0 reactions defined | **CONFIRMED** | `reactions: []` at IR top level |
+| 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **7 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ ✅ MET. |
 | 9 | 1 saga (ProcessInvoicePayment) | **CONFIRMED** | `sagas: [{"name": "ProcessInvoicePayment", "steps": [...]}]` |
 | 10 | **1,330** generated client functions, **0** consumers | **CONFIRMED** | `manifest-client.generated.ts` has 1,330 exported async functions. Prior audit incorrectly reported 2-3 consumers. Codebase-wide grep confirms zero files import from it. |
 | 11 | prisma-store.ts: 3,061 lines, **94** switch cases | **CONFIRMED** (11th rev: was 93, re-counted as 94) | Verified line count and switch-case count |
@@ -108,7 +108,7 @@
 | **563/611 computed properties have empty dependencies** | 92.1% may not recalculate correctly when upstream values change. | IR analysis |
 | **0 overrideable constraints out of 583 total** | No constraint is marked overrideable despite the feature being available. | IR analysis |
 | **irHash and contentHash are EMPTY** | No IR integrity verification possible. `requireValidProvenance` would fail if wired. | IR provenance analysis |
-| **241 top-level policies exist but all 189 entities have empty `policies: []`** | Policies defined at top level but no entity binds them. | IR analysis |
+| **RESOLVED: 0/952 commands had policies bound → 952/952 bound** | ROOT CAUSE: Top-level `policy` declarations are NOT bound by the compiler. Only `default policy` inside entity blocks auto-expands. Fixed by moving/adding policies inside entity blocks across all 92 source files. | `manifest/source/*.manifest` (all files modified) |
 | **TanStack Query IS installed with QueryProvider** | But only events domain uses it (5 files). 162 other apiFetch files get zero caching. Prior audit incorrectly said "no data caching installed". | `apps/app/app/providers/` |
 | **Generated client has 0 consumers** | Prior audit incorrectly reported 2-3 consumers. No file imports from `manifest-client.generated.ts`. 9th revision re-confirmed with grep. | Codebase-wide grep |
 | **81% of API URLs are hardcoded strings** | 211 hardcoded paths vs ~50 typed path builders. 6 files use typed routes. | Frontend analysis |
@@ -291,10 +291,18 @@
 | **EventStaff vs EventStaffAssignment: MERGE recommended** | Both model same domain (staff assigned to event). EventStaff is superset with 8 commands + attendance tracking vs 5 commands. Migration already half-done (staff-slice.ts comment says "REPLACES the legacy EventStaffAssignmentPrismaStore"). Hand-written routes cross-wired (events/staff queries eventStaffAssignment table). Recommend merge into EventStaff, data migration, then drop event_staff_assignments. | Exploration across IR, schema, stores, routes, frontend |
 | **Task 0.6 remaining bugs: 4 already fixed, 1 not a bug, 1 deferred** | Kitchen tags (fixed by removeTagFromString builtin), BudgetLineItem (fixed), Dish margin (fixed), Client.defaultPaymentTerms (fixed). EmployeeAvailability.dayOfWeek is NOT a bug (int is correct). Recipe hasVersion/tagCount DEFERRED (needs cross-entity relationship). | Source exploration |
 
+### NEW findings from this revision (18th, 2026-06-05)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **RESOLVED: 0/952 commands had policies bound → 952/952 bound (Task 8.6)** | ROOT CAUSE: Top-level `policy` declarations are NOT bound by the Manifest compiler to IR commands. Only `default policy` inside entity blocks triggers the compiler's auto-expansion to every command. Fixed by adding entity-specific `default policy <EntityName>DefaultAccess` inside all 92 source files via `add-default-policies.mjs` script. 189/189 entities now have `defaultPolicies`. 8 previously zero-policy files (invoice, payment, collections, etc.) now protected. | `manifest/source/*.manifest` (all 92 files modified) |
+| **KEY DISCOVERY: `policy` vs `default policy` binding semantics** | Top-level `policy <Name> { ... }` declarations define reusable policy templates but do NOT auto-bind to entity commands. `default policy <Name>` inside an entity block causes the compiler to auto-expand the policy to ALL commands in that entity. This is the ONLY mechanism to bind policies to commands at scale. Without it, every command needs a manual `policy <Name>` per-command declaration. | Manifest compiler behavior, verified empirically |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
 - IR: **189 entities (ALL durable)**, 952 commands (905 with non-empty guards, 950 with non-empty emits, 2 without emits, 132 with non-empty constraints), 936 events, 241 policies, 92 source files
+- **952/952 commands have policies bound** (was 0/952 before Task 8.6). 189/189 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **7 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2). Target: 5+ high-value reactions ✅ MET.
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
@@ -303,7 +311,7 @@
 - 563/611 computed properties have empty `dependencies` (92.1% may not recalculate correctly)
 - `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
-- 241 top-level policies exist but all 189 entities have empty `policies: []`
+- 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
 - 0 overrideable constraints out of 583 total
 - **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
 - **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
@@ -452,6 +460,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 9.3 + 0.7: State transitions for 5 entities + searchable modifiers** | Added state machine enforcement to InventoryTransfer (4 rules), Proposal (3 rules), Lead (4 rules), PurchaseRequisition (4 rules), EventBudget (2 rules) — total 17 new transition rules across 5 entities. Added `searchable` modifier to 7 properties (Event.title, Client.companyName/notes, VendorCatalog.itemName, Lead.companyName/contactName/notes). IR: 49 entities with transitions (141 total rules). API+runtime typecheck 0. 2574 tests pass. Note: compiler v2.2.0 accepts `searchable` syntax but doesn't emit it to IR modifiers yet (forward-compatible source). |
 | 2026-06-05 | **Task 9.3/9.7: State transitions for 10 entities + readonly audit fields** | 22 new transition rules across CycleCountSession (4), EventImportWorkflow (10), Budget (3), ClientInteraction (4), WasteEntry (2). Plus 7 readonly modifiers on audit fields (BankAccount.verifiedAt, ApiKey.hashedKey/keyPrefix, PayrollRun.approvedAt/approvedBy/paidAt, Payment.gatewayTransactionId). IR: 54 entities with transitions (163 total rules). 378 readonly properties from timestamps modifier. API+runtime typecheck 0. 2574 tests pass. |
 | 2026-06-05 | **Task 9.3 COMPLETE: State transitions for 96 entities (256 rules)** | Added state machine enforcement to 30+ entities. Only 4 entities intentionally skipped (free-form status). Transition coverage: 96/100 status entities (96%). Fix: PrepList.createFromSeed draft→draft self-transition added. IR: 96 entities with 256 transition rules. API+runtime typecheck 0. 2574 tests pass. |
+| 2026-06-05 | **Task 8.6 + Policy Binding Fix: `default policy` binds RBAC to ALL 952 commands** | ROOT CAUSE: 250 top-level policies were declared OUTSIDE entity blocks, so the compiler never bound them to IR commands (all 952 had `policies: []`). FIX: `default policy` syntax INSIDE entity blocks causes the compiler to auto-expand to every command. Added entity-specific `default policy <EntityName>DefaultAccess` to all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. API typecheck 0, 2574 tests pass. |
 
 ---
 
@@ -537,7 +546,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
-10. **Only 1 saga, 0 reactions defined:** 936 events available for reaction-driven side effects.
+10. **Only 1 saga, 7 reactions defined (was 0):** 936 events available for reaction-driven side effects.
 
 11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
@@ -569,7 +578,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 25. **Entity graph returns empty graph:** `buildGraphFromIR()` needs IR relationships to populate. Module exists but produces no useful output.
 
-26. **Manifest vNext features available but unused:** defaultPolicies, command-level constraints, constraint severity/codes, overrideable constraints, entity concurrency, state transitions -- all defined in spec but zero adoption.
+26. **Manifest vNext features available but unused:** ~~defaultPolicies~~ (RESOLVED 2026-06-05, Task 8.6 — all 189 entities use defaultPolicies), command-level constraints, constraint severity/codes, overrideable constraints, entity concurrency, state transitions (96 entities now have transitions) -- all defined in spec.
 
 27. **~~CateringOrder transition property mismatch~~ RESOLVED 2026-06-04:** `transition status` references wrong property name (`status` vs `orderStatus`). ALL state machine enforcement silently broken.
 
@@ -1088,8 +1097,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** `pnpm test:conformance` passes and is wired to CI.
 - **Source to change:** New test file in CI pipeline.
 
-### 8.6 Fill command-level policies
-- **Done when:** All 952 commands have meaningful policies (not empty `[]`). At minimum, Invoice must have policies preventing unauthorized void/write-off.
+### 8.6 Fill command-level policies — ✅ DONE 2026-06-05
+- **✅ DONE 2026-06-05.** ROOT CAUSE: 250 top-level `policy` declarations existed OUTSIDE entity blocks, so the Manifest compiler never bound them to IR commands (all 952 had `policies: []`). FIX: `default policy` syntax INSIDE entity blocks causes the compiler to auto-expand to every command. Added entity-specific `default policy <EntityName>DefaultAccess` to all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. API typecheck 0, 2574 tests pass.
+- **Done when:** All 952 commands have meaningful policies (not empty `[]`). At minimum, Invoice must have policies preventing unauthorized void/write-off. ✅ ACHIEVED.
 - **Why:** Policies exist at entity level only; command-level policies are all empty. Invoice has ZERO policies despite 10 commands including `voidInvoice`, `writeOff`, `applyPayment`.
 - **Backpressure:** `grep -r '"policies": \[\]' manifest/ir/` returns 0 matches.
 - **Source to change:** `manifest/source/*.manifest` -- add policy blocks to commands.
@@ -1099,7 +1109,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** 247 rules, 96 marked "pending manifest migration".
 - **Source to change:** `manifest/governance/write-route-infra-allowlist.json`.
 
-### 8.8 Adopt defaultPolicies for entity-level RBAC
+### 8.8 Adopt defaultPolicies for entity-level RBAC — ✅ DONE 2026-06-05 (via Task 8.6)
+- **✅ DONE 2026-06-05.** All 189 entities now use `defaultPolicies` via `default policy` syntax inside entity blocks. Task 8.6 implemented this as part of the policy binding fix. Newly added commands are automatically protected.
 - **Done when:** Entities that share the same policy across all commands use `defaultPolicies` declarations instead of per-command repetition.
 - **Why:** Manifest spec defines `defaultPolicies` -- array of policy names applied to all bound commands unless overridden at command level. Currently zero entities use this. Reduces duplication and ensures new commands inherit protection automatically.
 - **Backpressure:** At least 5 entities use `defaultPolicies`. Newly added commands are automatically protected.
@@ -1444,7 +1455,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-04, 17th revision)
+## Codebase Metrics (verified 2026-06-05, 18th revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1558,7 +1569,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 17. **notifications package ungoverned:** 9+ direct DB writes across 4 files (emailLog, sms_logs, notification_preferences, emailWorkflow) bypassing Manifest. Task 8.4.
 
-18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). 241 top-level policies exist but all 189 entities have empty `policies: []`. 0 overrideable constraints out of 583 total. Task 0.4, 8.6, 9.8.
+18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). 0 overrideable constraints out of 583 total. Task 0.4, 9.8.
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 
@@ -1579,6 +1590,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 27. **~~`timestamps` entity modifier prevents datetime-as-number bug class~~ RESOLVED 2026-06-04:** Official docs at `/language/timestamps` describe a modifier that auto-injects createdAt/updatedAt as readonly datetime properties with runtime population via `getNow()` and Prisma projection as `@default(now())`/`@updatedAt`. ZERO entities use it -- all 189 hand-declare these fields, creating the 559+ datetime-as-number mismatch opportunities. Adopting `timestamps` is the ROOT FIX that prevents this entire class of bugs from recurring. Task 2.8.
 
 28. **Event payloads use `number` for ALL timestamps (root cause of datetime-as-number in event channel):** The `now()` builtin returns epoch-ms (number). All 936 events carry timestamp fields as `number` in their payloads (916 timestamp fields total). Entity properties are correctly `datetime` (741 fields). The mismatch is in the event emission layer: `mutate updatedAt = now()` correctly sets a `datetime` property, but the corresponding `emit` event payload declares the field as `number`. This is a Manifest compiler/runtime behavior -- event payloads mirror the runtime value type (number from `now()`), not the declared entity property type (datetime). The `timestamps` modifier (Task 2.8) fixes createdAt/updatedAt automatically but does NOT fix custom timestamp fields in events (e.g., `archivedAt`, `completedAt`, `deactivatedAt`). Those require either: (a) changing event payload type declarations in `.manifest` source, or (b) Manifest upstream fixing `now()` to return `datetime` instead of `number`. Task 2.7 source fixes remain necessary for event-level datetime mismatches.
+
+29. **~~Top-level policies never bound to IR commands~~ RESOLVED 2026-06-05 (Task 8.6):** ROOT CAUSE: 250 top-level `policy` declarations existed OUTSIDE entity blocks, so the Manifest compiler never bound them to IR commands (all 952 had `policies: []`). The Manifest compiler requires `default policy` syntax INSIDE entity blocks to auto-expand policies to every command. Top-level `policy` declarations only define reusable templates -- they do NOT auto-bind. FIX: Added entity-specific `default policy <EntityName>DefaultAccess` inside all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. This was the ROOT CAUSE of the permission guard allow-by-default vulnerability (Root Cause #23) at the IR level. Task 8.6.
 
 ---
 
@@ -1626,3 +1639,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 7.4a (20th revision):** RBAC middleware replaces Proxy-based permission guard. `createRbacMiddleware()` wired as `before-guard` middleware in factory. Proxy wrapping removed. COMMAND_PERMISSION_MAP preserved. 2560/2560 tests pass, typecheck GREEN. New files: `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/middleware/index.ts`. Modified: `manifest/runtime/src/manifest-runtime-factory.ts`. |
 | 2026-06-04 | **Task 7.1 + 7.2 (22nd revision):** PostgresAuditSink + PostgresOutboxStore wired from upstream. New pg-pool.ts provides singleton pg.Pool with idempotent schema bootstrap. Custom createAuditOutboxMiddleware removed from pipeline. RuntimeOptions now wires 5 of 19 properties directly (storeProvider, idempotencyStore, customBuiltins, auditSink, outboxStore). |
 | 2026-06-04 | **Task 10.13 (23rd revision):** Legacy `manifest-command-handler.ts` removed (289 lines deleted). All 71 route files migrated from `executeManifestCommand` to `runManifestCommand`. All 11 test files migrated to mock the canonical handler. Webhook dispatch support added to canonical `execute-command.ts` (fire-and-forget). API typecheck 0, 2562 tests pass. Exit criteria 14 (dead code eliminated) and 15 (single command handler) now satisfied. Blocker #44 resolved. |
+| 2026-06-05 | **Eighteenth revision:** Task 8.6 completed — policy binding fix. ROOT CAUSE: top-level `policy` declarations are NOT bound by the compiler; only `default policy` inside entity blocks auto-expands. Fixed by adding entity-specific `default policy` to all 92 source files. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. Key discovery: `policy` vs `default policy` binding semantics. Task 8.8 (defaultPolicies) also completed as part of 8.6. Exit criteria 12 (permission guard coverage 100%) now has IR-level policy foundation. |

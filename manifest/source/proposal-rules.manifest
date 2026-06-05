@@ -76,6 +76,7 @@ entity Proposal {
     }
   }
 
+  default policy ProposalDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
   command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
     guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
@@ -272,6 +273,7 @@ entity ProposalLineItem {
     }
   }
 
+  default policy ProposalLineItemDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
   command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
     guard proposalId != null and proposalId != "" "Proposal ID is required"
     guard description != null and description != "" "Description is required"

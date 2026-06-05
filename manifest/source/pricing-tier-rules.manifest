@@ -41,6 +41,7 @@ entity PricingTier {
     }
   }
 
+  default policy PricingTierDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Pricing tier management"
   command create(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number) {
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"

@@ -47,6 +47,7 @@ entity EventImportWorkflow {
   // Commands
 
   // Step 1: Initialize workflow with input data
+  default policy EventImportWorkflowDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(idempotencyKey: string, inputData: string) {
     guard self.status == "" or self.status == null "Workflow already initialized"
     guard idempotencyKey != "" "Idempotency key is required"

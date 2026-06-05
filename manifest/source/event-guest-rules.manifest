@@ -40,6 +40,7 @@ entity EventGuest {
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
+  default policy EventGuestDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"

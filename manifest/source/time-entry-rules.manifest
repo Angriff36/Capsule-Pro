@@ -25,6 +25,7 @@ entity TimeEntry {
 
   relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
 
+  default policy TimeEntryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
 
@@ -135,6 +136,7 @@ entity TimecardEditRequest {
   // State transitions
   transition status from "pending" to ["approved", "rejected"]
 
+  default policy TimecardEditRequestDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
   command create(timeEntryId: string, employeeId: string, requestedClockIn: number, requestedClockOut: number, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"

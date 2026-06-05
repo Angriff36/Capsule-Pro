@@ -72,6 +72,7 @@ entity Equipment {
     }
   }
 
+  default policy EquipmentDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
   command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, notes: string, userId: string) {
     guard self.status != "retired" "Cannot schedule maintenance for retired equipment"
     guard scheduledDate != null and scheduledDate > 0 "Scheduled date is required"
@@ -238,6 +239,7 @@ entity MaintenanceWorkOrder {
     }
   }
 
+  default policy MaintenanceWorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
   command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: number) {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
     guard self.status == "open" "Can only assign open work orders"

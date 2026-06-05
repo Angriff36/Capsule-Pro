@@ -47,6 +47,7 @@ entity BulkOrderRule {
     }
   }
 
+  default policy BulkOrderRuleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Bulk order management"
   command create(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number) {
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"

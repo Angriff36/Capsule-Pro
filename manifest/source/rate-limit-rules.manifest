@@ -18,6 +18,7 @@ entity RateLimitConfig {
   constraint requireName: self.name != "" "Rate limit name is required"
   constraint requireEndpointPattern: self.endpointPattern != "" "Endpoint pattern is required"
 
+  default policy RateLimitConfigDefaultAccess execute: user.role in ["admin"] "Rate limit configuration"
   command create(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0) {
     guard name != "" "Rate limit name is required"
     guard endpointPattern != "" "Endpoint pattern is required"

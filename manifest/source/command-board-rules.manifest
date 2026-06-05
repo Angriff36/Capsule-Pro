@@ -25,6 +25,7 @@ entity CommandBoard {
   transition status from "draft" to ["active"]
   transition status from "active" to ["archived"]
 
+  default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: string) {
     guard name != null and name != "" "Board name is required"
 
@@ -122,6 +123,7 @@ entity CommandBoardCard {
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
 
+  default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
@@ -229,6 +231,7 @@ entity CommandBoardGroup {
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
 
+  default policy CommandBoardGroupDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard name != null and name != "" "Group name is required"
@@ -294,6 +297,7 @@ entity CommandBoardConnection {
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
 
+  default policy CommandBoardConnectionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard fromCardId != null and fromCardId != "" "Source card ID is required"
@@ -343,6 +347,7 @@ entity CommandBoardLayout {
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
 
+  default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard userId != null and userId != "" "User ID is required"

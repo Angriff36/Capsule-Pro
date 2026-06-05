@@ -24,6 +24,7 @@ entity EventDish {
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
 
+  default policy EventDishDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, dishId: string, quantity: int, notes: string, courseLabel: string, sortOrder: int) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard dishId != null and dishId != "" "Dish ID is required"

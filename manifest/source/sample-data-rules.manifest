@@ -38,6 +38,7 @@ entity SampleData {
   // SEED COMMAND
   // Creates sample data for new organizations to explore the platform
   // ─────────────────────────────────────────────────────────────────────────
+  default policy SampleDataDefaultAccess execute: user.role in ["manager", "admin"] "Sample data generation"
   command seed(requestedBy: string) {
     guard requestedBy != null and requestedBy != "" "User ID is required"
     guard self.isSeeded == false "Sample data already exists for this tenant"

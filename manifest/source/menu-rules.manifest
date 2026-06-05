@@ -61,6 +61,7 @@ entity Menu {
     }
   }
 
+  default policy MenuDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Menu management"
   command create(name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number) {
     guard name != null and name != "" "Menu name is required"
     guard basePrice >= 0 "Base price must be non-negative"
@@ -229,6 +230,7 @@ entity MenuDish {
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
   constraint validCourse: self.course == "" or self.course in ["appetizer", "salad", "soup", "entree", "side", "dessert", "beverage", "action_station"] "Course must be a recognized value or empty"
 
+  default policy MenuDishDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Menu management"
   command create(menuId: string, dishId: string, course: string, sortOrder: number, isOptional: boolean) {
     guard menuId != null and menuId != "" "Menu ID is required"
     guard dishId != null and dishId != "" "Dish ID is required"

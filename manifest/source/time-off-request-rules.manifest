@@ -39,6 +39,7 @@ entity TimeOffRequest {
   constraint requireRequestType: self.requestType != "" "Request type is required"
   constraint validStatus: self.status in ["PENDING", "APPROVED", "REJECTED", "CANCELLED"] "Invalid request status"
 
+  default policy TimeOffRequestDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time off requests"
   command create(employeeId: string, startDate: string, endDate: string, reason: string, requestType: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard startDate != null and startDate != "" "Start date is required"

@@ -53,6 +53,7 @@ entity WorkOrder {
     }
   }
 
+  default policy WorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Work order management"
   command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, scheduledDate: datetime) {
     guard title != null and title != "" "Title is required"
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"

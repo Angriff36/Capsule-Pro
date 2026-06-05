@@ -36,6 +36,7 @@ entity TrainingAssignment {
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   constraint validStatus: self.status in ["assigned", "in_progress", "completed", "waived", "overdue"] "Invalid training assignment status"
 
+  default policy TrainingAssignmentDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Training assignments"
   command create(moduleId: string, employeeId: string, assignedToAll: boolean, assignedBy: string, dueDate: string) {
     guard moduleId != null and moduleId != "" "Module ID is required"
 

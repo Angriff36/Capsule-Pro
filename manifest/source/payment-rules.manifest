@@ -59,6 +59,7 @@ entity Payment {
   transition status from "PARTIALLY_REFUNDED" to ["REFUNDED", "CHARGEBACK"]
 
   // Commands
+  default policy PaymentDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Payment processing"
   command process(gatewayTransactionId: string) {
     guard self.status == "PENDING" or self.status == "PROCESSING" "Can only process pending or processing payments"
     mutate status = "COMPLETED"

@@ -62,6 +62,7 @@ entity ClientInteraction {
     }
   }
 
+  default policy ClientInteractionDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client interaction tracking"
   command create(clientId: string, leadId: string, employeeId: string, interactionType: string, interactionDate: datetime, subject: string, description: string, followUpDate: datetime, correlationId: string) {
     guard subject != null and subject != "" "Subject is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"

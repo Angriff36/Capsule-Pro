@@ -20,6 +20,7 @@ entity EmailTemplate {
   constraint requireName: self.name != "" "Template name is required"
   constraint requireSubject: self.subject != "" "Template subject is required"
 
+  default policy EmailTemplateDefaultAccess execute: user.role in ["manager", "admin"] "Email template management"
   command create(name: string, templateType: string, subject: string, body: string, mergeFields: string, isActive: boolean, isDefault: boolean) {
     guard name != null and name != "" "Template name is required"
     guard subject != null and subject != "" "Template subject is required"

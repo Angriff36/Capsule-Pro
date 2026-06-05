@@ -51,6 +51,7 @@ entity Client {
     }
   }
 
+  default policy ClientDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
   command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: decimal, taxExempt: boolean, taxId: string, notes: string, tags: array<string>, source: string, assignedTo: string) {
     guard clientType != null and clientType != "" "Client type is required"
 
@@ -172,6 +173,7 @@ entity ClientContact {
     }
   }
 
+  default policy ClientContactDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
   command create(clientId: string, firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isPrimary: boolean, isBillingContact: boolean, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard firstName != null and firstName != "" "First name is required"
@@ -252,6 +254,7 @@ entity ClientPreference {
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
+  default policy ClientPreferenceDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Client management"
   command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard preferenceType != null and preferenceType != "" "Preference type is required"

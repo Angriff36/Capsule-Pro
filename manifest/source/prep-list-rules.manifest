@@ -69,6 +69,7 @@ entity PrepList {
   transition status from "finalized" to ["completed", "cancelled", "draft"]
   transition status from "completed" to ["draft", "cancelled"]
 
+  default policy PrepListDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command update(newName: string, newDietaryRestrictions: string, newNotes: string) {
     guard self.status == "draft" "Can only update draft prep lists"
 
@@ -265,6 +266,7 @@ entity PrepListItem {
     }
   }
 
+  default policy PrepListItemDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command updateQuantity(newBaseQuantity: number, newScaledQuantity: number, newBaseUnit: string, newScaledUnit: string) {
     guard newBaseQuantity != null and newBaseQuantity >= 0 "Base quantity must be non-negative"
     guard newScaledQuantity != null and newScaledQuantity >= 0 "Scaled quantity must be non-negative"

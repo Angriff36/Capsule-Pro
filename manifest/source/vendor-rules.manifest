@@ -41,6 +41,7 @@ entity Vendor {
   transition status from "active" to ["inactive", "blacklisted"]
   transition status from "inactive" to ["active", "blacklisted"]
 
+  default policy VendorDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor management"
   command create(name: string, type: string, email: string, phone: string, website: string, address: string, city: string, state: string, zip: string, taxId: string, paymentTerms: string, notes: string) {
     guard name != null and name != "" "Vendor name is required"
 

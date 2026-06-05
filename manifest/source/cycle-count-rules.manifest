@@ -41,6 +41,7 @@ entity CycleCountSession {
   transition status from "completed" to ["finalized"]
   transition status from "cancelled" to ["draft"]
 
+  default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
@@ -155,6 +156,7 @@ entity CycleCountRecord {
   relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
+  default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -267,6 +269,7 @@ entity VarianceReport {
   transition status from "pending" to ["reviewed", "rejected"]
   transition status from "reviewed" to ["approved", "rejected"]
 
+  default policy VarianceReportDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"

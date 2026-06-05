@@ -63,6 +63,7 @@ entity PrepTaskPlanWorkflow {
   // Commands
 
   // Step 0: Initialize workflow with event and options
+  default policy PrepTaskPlanWorkflowDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep task management"
   command create(eventId: string, idempotencyKey: string, generationOptions: string) {
     guard self.status == "" or self.status == null "Workflow already initialized"
     guard eventId != "" "Event ID is required"

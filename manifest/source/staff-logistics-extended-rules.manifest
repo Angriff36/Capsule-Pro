@@ -26,6 +26,7 @@ entity TimecardApproval {
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid timecard approval status"
 
+  default policy TimecardApprovalDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, payrollPeriodId: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard payrollPeriodId != null and payrollPeriodId != "" "Payroll period ID is required"
@@ -102,6 +103,7 @@ entity PayrollLineItem {
   constraint netPayPositive: self.netPay >= 0 "Net pay cannot be negative"
   constraint hoursWorkedPositive: self.hoursWorked >= 0 "Hours worked cannot be negative"
 
+  default policy PayrollLineItemDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(payrollRunId: string, employeeId: string, grossPay: number, netPay: number, totalDeductions: number, hoursWorked: number, hoursRegular: number, hoursOvertime: number, rateRegular: number, rateOvertime: number) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -176,6 +178,7 @@ entity TipPool {
   constraint validStatus: self.status in ["open", "allocated", "distributed", "closed"] "Invalid tip pool status"
   constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
 
+  default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
     guard periodStart != null and periodStart > 0 "Period start is required"
     guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
@@ -270,6 +273,7 @@ entity DisciplinaryAction {
   constraint requireActionType: self.actionType != "" "Action type is required"
   constraint requireReason: self.reason != "" "Reason is required"
 
+  default policy DisciplinaryActionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard actionType != null and actionType != "" "Action type is required"
@@ -344,6 +348,7 @@ entity ActionMilestone {
 
   relationship belongsTo disciplinaryAction: DisciplinaryAction fields [tenantId, disciplinaryActionId] references [tenantId, id]
 
+  default policy ActionMilestoneDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
@@ -400,6 +405,7 @@ entity PerformanceReview {
   constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
   constraint validRating: self.overallRating >= 0 and self.overallRating <= 5 "Rating must be between 0 and 5"
 
+  default policy PerformanceReviewDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, reviewerId: string, reviewPeriod: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reviewerId != null and reviewerId != "" "Reviewer ID is required"
@@ -464,6 +470,7 @@ entity TrainingCompletion {
 
   constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
 
+  default policy TrainingCompletionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, trainingModuleId: string, completedAt: datetime, score: number, passed: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard trainingModuleId != null and trainingModuleId != "" "Training module ID is required"
@@ -496,6 +503,7 @@ entity OnboardingTask {
 
   constraint requireTitle: self.title != "" "Onboarding task title is required"
 
+  default policy OnboardingTaskDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(title: string, description: string, sortOrder: number, isRequired: boolean) {
     guard title != null and title != "" "Title is required"
 
@@ -547,6 +555,7 @@ entity OnboardingCompletion {
   // State transitions
   transition status from "pending" to ["completed"]
 
+  default policy OnboardingCompletionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, onboardingTaskId: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard onboardingTaskId != null and onboardingTaskId != "" "Onboarding task ID is required"
@@ -594,6 +603,7 @@ entity OpenShift {
 
   relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
 
+  default policy OpenShiftDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(scheduleId: string, role: string, shiftStart: number, shiftEnd: number) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard role != null and role != "" "Role is required"
@@ -657,6 +667,7 @@ entity DeliveryRoute {
   transition status from "planned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed"]
 
+  default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
     guard name != null and name != "" "Route name is required"
     guard routeDate != null and routeDate > 0 "Route date is required"
@@ -727,6 +738,7 @@ entity RouteStop {
 
   relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, deliveryRouteId] references [tenantId, id]
 
+  default policy RouteStopDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
     guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"
     guard address != null and address != "" "Address is required"
@@ -792,6 +804,7 @@ entity PaymentRefundAttempt {
   // State transitions
   transition status from "pending" to ["succeeded", "failed"]
 
+  default policy PaymentRefundAttemptDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(paymentId: string, amount: number, reason: string) {
     guard paymentId != null and paymentId != "" "Payment ID is required"
     guard amount > 0 "Refund amount must be positive"
@@ -842,6 +855,7 @@ entity PreventiveMaintenanceSchedule {
   constraint requireName: self.name != "" "Schedule name is required"
   constraint requireFrequency: self.frequency != "" "Frequency is required"
 
+  default policy PreventiveMaintenanceScheduleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(equipmentId: string, name: string, frequency: string, nextDueAt: datetime) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard name != null and name != "" "Schedule name is required"

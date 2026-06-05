@@ -27,6 +27,7 @@ entity OverrideAudit {
 
   constraint cannotAuthorizeTwice:warn self.authorizedBy != "" "Override already authorized"
 
+  default policy OverrideAuditDefaultAccess execute: user.role in ["manager", "admin"] "Override audit"
   command create(entityType: string, entityId: string, constraintId: string, guardExpression: string, overriddenBy: string, overrideReason: string) {
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"

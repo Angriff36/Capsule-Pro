@@ -35,6 +35,7 @@ entity Schedule {
 
   constraint validStatus: self.status in ["draft", "approved", "published", "closed"] "Invalid schedule status"
 
+  default policy ScheduleDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
   command create(locationId: string, scheduleDate: datetime, notes: string) {
     guard scheduleDate != null and scheduleDate > 0 "Schedule date is required"
 
@@ -148,6 +149,7 @@ entity ScheduleShift {
     }
   }
 
+  default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
   command create(scheduleId: string, employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"

@@ -45,6 +45,7 @@ entity KitchenTask {
     }
   }
 
+  default policy KitchenTaskDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen task management"
   command claim(userId: string) {
     guard userId != null and userId != ""
     guard self.status == "pending" or self.status == "in_progress"

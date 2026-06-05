@@ -58,6 +58,7 @@ entity EventBudget {
     }
   }
 
+  default policy EventBudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Budget management"
   command create(eventId: string, totalBudgetAmount: money, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard totalBudgetAmount >= 0 "Budget amount must be non-negative"
@@ -166,6 +167,7 @@ entity BudgetLineItem {
     }
   }
 
+  default policy BudgetLineItemDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Budget management"
   command create(budgetId: string, category: string, name: string, description: string, budgetedAmount: money, sortOrder: number, notes: string) {
     guard budgetId != null and budgetId != "" "Budget ID is required"
     guard category != null and category != "" "Category is required"

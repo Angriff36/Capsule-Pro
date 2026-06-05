@@ -25,6 +25,7 @@ entity StaffMember {
   transition status from "active" to ["inactive"]
   transition status from "inactive" to ["active"]
 
+  default policy StaffMemberDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff member management"
   command create(displayName: string, email: string, phone: string, role: string) {
     guard displayName != null and displayName != "" "Display name is required"
 

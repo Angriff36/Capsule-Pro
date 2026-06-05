@@ -45,6 +45,7 @@ entity InventoryTransfer {
   //     by the same store. The UI does not send either field.
   // Both decisions documented in scripts/manifest/schema-drift-allowlist.json
   // under adapterDerived.InventoryTransfer.* with reviewBy/owner.
+  default policy InventoryTransferDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(fromLocationId: string, toLocationId: string, notes: string, items: string) {
     guard fromLocationId != null and fromLocationId != "" "Source location is required"
     guard toLocationId != null and toLocationId != "" "Destination location is required"

@@ -61,6 +61,7 @@ entity PrepTask {
     }
   }
 
+  default policy PrepTaskDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep task management"
   command claim(userId: string, stationId: string) {
     guard userId != null and userId != "" "User ID is required"
     guard self.status == "open" or self.status == "pending" "Task is not claimable"

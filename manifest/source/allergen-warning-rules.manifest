@@ -44,6 +44,7 @@ entity AllergenWarning {
   constraint cannotAcknowledgeTwice:warn self.isAcknowledged == true "Warning already acknowledged"
   constraint cannotResolveTwice:warn self.resolved == true "Warning already resolved"
 
+  default policy AllergenWarningDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Allergen warning management"
   command create(eventId: string, dishId: string, warningType: string, allergens: string, affectedGuests: string, severity: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard warningType != null and warningType != "" "Warning type is required"

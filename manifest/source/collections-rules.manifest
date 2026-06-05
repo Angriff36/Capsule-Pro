@@ -70,6 +70,7 @@ entity CollectionCase {
   constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"
 
   // Commands
+  default policy CollectionCaseDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
   command assignTo(userId: string) {
     guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only assign active cases"
     mutate assignedTo = userId
@@ -262,6 +263,7 @@ entity CollectionAction {
   transition status from "PENDING" to ["COMPLETED", "FAILED", "SKIPPED"]
 
   // Commands
+  default policy CollectionActionDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
   command complete(outcome: string, promiseAmount: number, promiseDate: datetime, nextActionDate: datetime) {
     guard self.status == "PENDING" "Can only complete pending actions"
     mutate status = "COMPLETED"
@@ -346,6 +348,7 @@ entity CollectionPaymentPlan {
   transition status from "ACTIVE" to ["COMPLETED", "DEFAULTED", "CANCELLED"]
 
   // Commands
+  default policy CollectionPaymentPlanDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
   command recordInstallment(amount: number, paymentDate: datetime) {
     guard self.status == "ACTIVE" "Can only record payments for active plans"
     guard amount == self.installmentAmount "Payment must match installment amount"

@@ -51,6 +51,7 @@ entity InventoryItem {
     }
   }
 
+  default policy InventoryItemDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command reserve(quantity: number, eventId: string, userId: string) {
     guard quantity != null and quantity > 0
     guard eventId != null and eventId != ""

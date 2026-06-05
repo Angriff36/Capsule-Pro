@@ -23,6 +23,7 @@ entity Notification {
   constraint validRecipient: self.recipientEmployeeId != null and self.recipientEmployeeId != "" "Recipient employee ID is required"
   constraint validNotificationType: self.notificationType != null and self.notificationType != "" "Notification type is required"
 
+  default policy NotificationDefaultAccess execute: user.role in ["manager", "admin"] "Notification management"
   command create(recipientEmployeeId: string, notificationType: string, title: string, body: string, actionUrl: string, correlationId: string) {
     guard recipientEmployeeId != null and recipientEmployeeId != "" "Recipient employee ID is required"
     guard title != null and title != "" "Notification title is required"

@@ -31,6 +31,7 @@ entity VersionedEntity {
     }
   }
 
+  default policy VersionedEntityDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command register(entityType: string, entityId: string, entityName: string, initialSnapshot: string) {
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"
@@ -103,6 +104,7 @@ entity EntityVersion {
   constraint validChangeType: self.changeType in ["create", "update", "restore", "approve", "auto"] "Change type must be valid"
   constraint validSnapshot: self.snapshotData != null "Snapshot data is required"
 
+  default policy EntityVersionDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command create(versionedEntityId: string, versionNumber: number, changeType: string, snapshot: string, reason: string, summary: string, userId: string) {
     guard versionedEntityId != null and versionedEntityId != "" "Versioned entity ID is required"
     guard versionNumber != null and versionNumber > 0 "Version number must be positive"
@@ -184,6 +186,7 @@ entity VersionApproval {
     }
   }
 
+  default policy VersionApprovalDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command create(entityVersionId: string, approverId: string) {
     guard entityVersionId != null and entityVersionId != "" "Entity version ID is required"
     guard approverId != null and approverId != "" "Approver ID is required"

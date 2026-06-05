@@ -42,6 +42,7 @@ entity Shipment {
 
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
+  default policy ShipmentDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
   command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
     guard shipmentNumber != null and shipmentNumber != "" "Shipment number is required"
 
@@ -183,6 +184,7 @@ entity ShipmentItem {
 
   relationship belongsTo shipment: Shipment fields [tenantId, shipmentId] references [tenantId, id]
 
+  default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
   command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"

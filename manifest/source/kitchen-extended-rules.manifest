@@ -28,6 +28,7 @@ entity TemperatureProbe {
   constraint requireName: self.name != "" "Probe name is required"
   constraint requireLocation: self.location != "" "Probe location is required"
 
+  default policy TemperatureProbeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(name: string, equipmentId: string, location: string, minThreshold: number, maxThreshold: number) {
     guard name != null and name != "" "Probe name is required"
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
@@ -103,6 +104,7 @@ entity TemperatureLog {
     }
   }
 
+  default policy TemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(equipmentId: string, recordedBy: string, temperature: number, recordedAt: datetime, withinRange: boolean, notes: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard recordedBy != null and recordedBy != "" "Recorder employee ID is required"
@@ -145,6 +147,7 @@ entity TemperatureReading {
     }
   }
 
+  default policy TemperatureReadingDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(probeId: string, temperature: number, recordedAt: datetime, withinRange: boolean) {
     guard probeId != null and probeId != "" "Probe ID is required"
 
@@ -182,6 +185,7 @@ entity IotAlertRule {
   constraint requireComparison: self.comparison in ["gt", "lt", "gte", "lte", "eq"] "Invalid comparison operator"
   constraint requireSeverity: self.severity in ["info", "warning", "critical"] "Invalid severity level"
 
+  default policy IotAlertRuleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(equipmentId: string, metric: string, threshold: number, comparison: string, severity: string) {
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
     guard metric != null and metric != "" "Metric is required"
@@ -256,6 +260,7 @@ entity IoTAlert {
   relationship belongsTo probe: TemperatureProbe fields [tenantId, probeId] references [tenantId, id]
   relationship belongsTo rule: IotAlertRule fields [tenantId, ruleId] references [tenantId, id]
 
+  default policy IoTAlertDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(probeId: string, ruleId: string, severity: string, message: string, value: number, triggeredAt: datetime) {
     guard probeId != null and probeId != "" "Probe ID is required"
     guard ruleId != null and ruleId != "" "Rule ID is required"
@@ -324,6 +329,7 @@ entity CorrectiveAction {
   constraint requireSourceId: self.sourceId != "" "Source ID is required"
   constraint requireDescription: self.description != "" "Description is required"
 
+  default policy CorrectiveActionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(sourceType: string, sourceId: string, description: string, dueAt: datetime) {
     guard sourceType != null and sourceType != "" "Source type is required"
     guard sourceId != null and sourceId != "" "Source ID is required"
@@ -396,6 +402,7 @@ entity QualityCheck {
   constraint requireCheckType: self.checkType != "" "Check type is required"
   constraint requirePerformedBy: self.performedBy != "" "Performer employee ID is required"
 
+  default policy QualityCheckDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(checkType: string, performedBy: string, notes: string) {
     guard checkType != null and checkType != "" "Check type is required"
     guard performedBy != null and performedBy != "" "Performer employee ID is required"
@@ -463,6 +470,7 @@ entity QualityCheckItem {
   constraint requireCriterion: self.criterion != "" "Criterion description is required"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order cannot be negative"
 
+  default policy QualityCheckItemDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(qualityCheckId: string, criterion: string, sortOrder: number) {
     guard qualityCheckId != null and qualityCheckId != "" "Quality check ID is required"
     guard criterion != null and criterion != "" "Criterion description is required"
@@ -514,6 +522,7 @@ entity KitchenTaskClaim {
 
   relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
 
+  default policy KitchenTaskClaimDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command claim(kitchenTaskId: string, employeeId: string, claimedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -561,6 +570,7 @@ entity KitchenTaskProgress {
 
   relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
 
+  default policy KitchenTaskProgressDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: datetime) {
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -603,6 +613,7 @@ entity TaskBundle {
   constraint validStatus: self.status in ["active", "archived"] "Invalid bundle status"
   constraint requireName: self.name != "" "Task bundle name is required"
 
+  default policy TaskBundleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(name: string, eventId: string, description: string) {
     guard name != null and name != "" "Task bundle name is required"
 
@@ -654,6 +665,7 @@ entity TaskBundleItem {
   relationship belongsTo taskBundle: TaskBundle fields [tenantId, taskBundleId] references [tenantId, id]
   relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
 
+  default policy TaskBundleItemDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command addItem(taskBundleId: string, kitchenTaskId: string, sortOrder: number) {
     guard taskBundleId != null and taskBundleId != "" "Task bundle ID is required"
     guard kitchenTaskId != null and kitchenTaskId != "" "Kitchen task ID is required"
@@ -691,6 +703,7 @@ entity BulkCombineRule {
   constraint requireName: self.name != "" "Bulk combine rule name is required"
   constraint requireMatchCriteria: self.matchCriteria != "" "Match criteria is required"
 
+  default policy BulkCombineRuleDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(name: string, matchCriteria: string) {
     guard name != null and name != "" "Bulk combine rule name is required"
     guard matchCriteria != null and matchCriteria != "" "Match criteria is required"
@@ -745,6 +758,7 @@ entity MethodVideo {
   constraint requireUrl: self.url != "" "Video URL is required"
   constraint positiveDuration: self.durationSeconds >= 0 "Duration cannot be negative"
 
+  default policy MethodVideoDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(prepMethodId: string, title: string, url: string, durationSeconds: number) {
     guard prepMethodId != null and prepMethodId != "" "Prep method ID is required"
     guard title != null and title != "" "Video title is required"
@@ -805,6 +819,7 @@ entity PrepListImport {
   constraint requireSource: self.source != "" "Import source is required"
   constraint requireFileName: self.fileName != "" "File name is required"
 
+  default policy PrepListImportDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(source: string, fileName: string) {
     guard source != null and source != "" "Import source is required"
     guard fileName != null and fileName != "" "File name is required"

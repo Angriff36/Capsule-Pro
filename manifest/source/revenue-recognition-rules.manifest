@@ -61,6 +61,7 @@ entity RevenueRecognitionSchedule {
   constraint validMethod: self.method in ["IMMEDIATE", "PROPORTIONAL", "MILESTONE_BASED", "PERCENTAGE_COMPLETE", "STRAIGHT_LINE", "SERVICE_PERIOD"] "Method must be valid"
 
   // Commands
+  default policy RevenueRecognitionScheduleDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
   command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
     guard eventId != null and eventId != "" "Event ID is required"
@@ -230,6 +231,7 @@ entity RevenueRecognitionLine {
   constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "SKIPPED", "CANCELLED"] "Status must be valid"
 
   // Commands
+  default policy RevenueRecognitionLineDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
   command create(scheduleId: string, sequence: number, amount: number, dueDate: datetime, milestoneId: string, milestoneName: string, description: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard amount > 0 "Line amount must be positive"

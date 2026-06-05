@@ -86,6 +86,7 @@ entity Dish {
     }
   }
 
+  default policy DishDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen dish management"
   command create(recipeId: string, name: string, description: string, category: string, serviceStyle: string, defaultContainerId: string, presentationImageUrl: string, minPrepLeadDays: number, maxPrepLeadDays: number, portionSizeDescription: string, dietaryTags: string, allergens: string, pricePerPerson: money, costPerPerson: money) {
     guard name != null and name != "" "Dish name is required"
     guard recipeId != null and recipeId != "" "Recipe ID is required"

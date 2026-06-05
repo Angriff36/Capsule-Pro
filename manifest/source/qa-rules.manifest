@@ -28,6 +28,7 @@ entity QACheck {
   constraint validResult: self.result in ["pass", "fail", "na"] "Invalid check result"
   constraint validStatus: self.status in ["pending", "completed", "reinspection_required"] "Invalid check status"
 
+  default policy QACheckDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
   command create(location: string, checkType: string, inspector: string, notes: string) {
     guard checkType in ["temperature", "sanitation", "storage", "labeling", "equipment"] "Invalid check type"
 
@@ -129,6 +130,7 @@ entity QACorrectiveAction {
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "in_progress", "resolved", "escalated", "dismissed"] "Invalid action status"
 
+  default policy QACorrectiveActionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
   command create(checkId: string, description: string, assignedTo: string, priority: string, dueDate: datetime) {
     guard checkId != null and checkId != "" "Check ID is required"
     guard description != null and description != "" "Description is required"
@@ -219,6 +221,7 @@ entity QATemperatureLog {
     }
   }
 
+  default policy QATemperatureLogDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Quality assurance"
   command log(location: string, temperature: number, unit: string, equipment: string, recordedBy: string, notes: string) {
     guard location != null and location != "" "Location is required"
     guard temperature != null "Temperature is required"

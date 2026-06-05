@@ -42,6 +42,7 @@ entity Station {
     }
   }
 
+  default policy StationDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Station management"
   command create(locationId: string, name: string, stationType: string, capacitySimultaneousTasks: number, equipmentList: string, notes: string) {
     guard name != null and name != "" "Station name is required"
     guard locationId != null and locationId != "" "Location ID is required"

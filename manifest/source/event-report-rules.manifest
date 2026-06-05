@@ -69,6 +69,7 @@ entity EventReport {
     }
   }
 
+  default policy EventReportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, name: string, version: string, checklistData: string, reportConfig: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard name != null and name != "" "Report name is required"

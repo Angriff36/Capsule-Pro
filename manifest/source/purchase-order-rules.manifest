@@ -43,6 +43,7 @@ entity PurchaseOrder {
   // enforced per-edit-command, NOT as an entity-level block invariant — the latter would
   // (block-when-true semantics) reject every non-draft state and break submit/approve/receive.
 
+  default policy PurchaseOrderDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
   command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
     guard poNumber != null and poNumber != "" "PO number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
@@ -189,6 +190,7 @@ entity PurchaseOrderItem {
   constraint positiveQuantity: self.quantityOrdered > 0 "Quantity ordered must be positive"
   constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
 
+  default policy PurchaseOrderItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
   command create(purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
     guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
     guard itemId != null and itemId != "" "Item ID is required"

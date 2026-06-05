@@ -46,6 +46,7 @@ entity InventoryTransaction {
     }
   }
 
+  default policy InventoryTransactionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(itemId: string, transactionType: string, quantity: number, unitCost: number, referenceType: string, referenceId: string, reason: string, notes: string, employeeId: string, storageLocationId: string) {
     guard itemId != null and itemId != "" "Item ID is required"
     guard transactionType != null and transactionType != "" "Transaction type is required"

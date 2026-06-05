@@ -58,6 +58,7 @@ entity PaymentMethod {
   transition status from "EXPIRED" to ["ACTIVE"]
 
   // Commands
+  default policy PaymentMethodDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Payment method management"
   command create(clientId: string, type: string, externalMethodId: string, cardLastFour: string, cardNetwork: string, cardExpiryMonth: number, cardExpiryYear: number, cardHolderName: string, bankAccountLastFour: string, bankAccountType: string, bankRoutingNumber: string, walletProvider: string, walletEmail: string, nickname: string) {
     guard clientId != null and clientId != "" "Client ID is required"
     guard type in ["CREDIT_CARD", "DEBIT_CARD", "ACH", "WIRE", "DIGITAL_WALLET", "CHECK"] "Invalid payment method type"

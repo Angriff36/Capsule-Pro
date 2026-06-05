@@ -37,6 +37,7 @@ entity Container {
     }
   }
 
+  default policy ContainerDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Container management"
   command create(name: string, containerType: string, locationId: string, sizeDescription: string, capacityVolumeMl: number, capacityWeightG: number, capacityPortions: number, isReusable: boolean) {
     guard name != null and name != "" "Container name is required"
     guard containerType != null and containerType != "" "Container type is required"
