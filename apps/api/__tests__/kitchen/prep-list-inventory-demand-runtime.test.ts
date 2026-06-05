@@ -4,7 +4,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { createCustomBuiltins } from "@repo/manifest-runtime/runtime-engine";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
-import { createPrepInventoryDemandMiddleware } from "@repo/manifest-runtime/middleware/prep-inventory-demand-middleware";
+import { createPrepInventoryDemandMiddleware } from "@repo/manifest-runtime/middleware";
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
@@ -13,7 +13,13 @@ const OTHER_TENANT_ID = "tenant-other";
 
 async function buildRuntime() {
   const manifestRoot = join(process.cwd(), "../../manifest/source");
-  const manifestFiles = ["prep-list-rules.manifest", "inventory-rules.manifest"];
+  const manifestFiles = [
+    "prep-list-rules.manifest",
+    "inventory-rules.manifest",
+    "inventory-supplier-rules.manifest",
+    "vendor-catalog-rules.manifest",
+    "procurement-requisition-rules.manifest",
+  ];
   const compiled = [];
 
   for (const file of manifestFiles) {
@@ -101,6 +107,50 @@ describe("Prep list finalization derives inventory demand", () => {
       quantityReserved: 1,
       parLevel: 4,
       reorder_level: 2,
+    });
+
+    await runtime.createInstance("InventorySupplier", {
+      id: "supplier-us-foods",
+      tenantId: TEST_TENANT_ID,
+      name: "US Foods",
+      supplierNumber: "USF-ACCOUNT-001",
+      paymentTerms: "NET_30",
+      isActive: true,
+      qualificationStatus: "approved",
+    });
+
+    await runtime.createInstance("VendorCatalog", {
+      id: "us-foods-flour-catalog",
+      tenantId: TEST_TENANT_ID,
+      supplierId: "supplier-us-foods",
+      itemNumber: "FLOUR-001",
+      itemName: "AP Flour",
+      baseUnitCost: 2.5,
+      currency: "USD",
+      unitOfMeasure: "kg",
+      leadTimeDays: 2,
+      minimumOrderQuantity: 1,
+      orderMultiple: 1,
+      isActive: true,
+      supplierSku: "USF-FLOUR-001",
+      tags: ["us-foods"],
+    });
+
+    await runtime.createInstance("VendorCatalog", {
+      id: "us-foods-butter-catalog",
+      tenantId: TEST_TENANT_ID,
+      supplierId: "supplier-us-foods",
+      itemNumber: "BUTTER-001",
+      itemName: "Butter",
+      baseUnitCost: 5,
+      currency: "USD",
+      unitOfMeasure: "kg",
+      leadTimeDays: 2,
+      minimumOrderQuantity: 1,
+      orderMultiple: 1,
+      isActive: true,
+      supplierSku: "USF-BUTTER-001",
+      tags: ["us-foods"],
     });
 
     await runtime.createInstance("InventoryItem", {
@@ -214,6 +264,51 @@ describe("Prep list finalization derives inventory demand", () => {
       quantityReserved: 0,
     });
 
+    const requisitionStore = storeProvider("PurchaseRequisition");
+    const requisitionItemStore = storeProvider("PurchaseRequisitionItem");
+    const requisitions = await requisitionStore.getAll();
+    const requisitionItems = await requisitionItemStore.getAll();
+
+    expect(requisitions).toHaveLength(1);
+    expect(requisitions[0]).toMatchObject({
+      tenantId: TEST_TENANT_ID,
+      requestedBy: "system:prep-demand",
+      department: "kitchen",
+      itemCategory: "prep-list-demand",
+      status: "pending_manager",
+      itemCount: 2,
+      subtotal: 35,
+      estimatedTotal: 35,
+    });
+    expect(String(requisitions[0].justification)).toContain(prepListId);
+    expect(String(requisitions[0].justification)).toContain("US Foods");
+
+    expect(requisitionItems).toHaveLength(2);
+    expect(requisitionItems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          tenantId: TEST_TENANT_ID,
+          itemId: flourItemId,
+          itemName: "AP Flour",
+          quantityRequested: 8,
+          estimatedUnitCost: 2.5,
+          estimatedTotalCost: 20,
+          suggestedVendorId: "supplier-us-foods",
+          suggestedVendorName: "US Foods",
+        }),
+        expect.objectContaining({
+          tenantId: TEST_TENANT_ID,
+          itemId: butterItemId,
+          itemName: "Butter",
+          quantityRequested: 3,
+          estimatedUnitCost: 5,
+          estimatedTotalCost: 15,
+          suggestedVendorId: "supplier-us-foods",
+          suggestedVendorName: "US Foods",
+        }),
+      ])
+    );
+
     const repeatedFinalizeResult = await runtime.runCommand(
       "finalize",
       {},
@@ -227,5 +322,7 @@ describe("Prep list finalization derives inventory demand", () => {
     await expect(inventoryStore.getById(butterItemId)).resolves.toMatchObject({
       quantityReserved: 4,
     });
+    await expect(requisitionStore.getAll()).resolves.toHaveLength(1);
+    await expect(requisitionItemStore.getAll()).resolves.toHaveLength(2);
   });
 });

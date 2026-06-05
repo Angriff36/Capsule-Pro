@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   getBlockingConstraints,
@@ -31,12 +31,23 @@ export interface UnitConversion {
 export interface RecipeCostBreakdown {
   totalCost: number;
   costPerYield: number;
-  costPerPortion?: number;
+  costPerPortion: number | null;
+  lastCalculated: Date | null;
   ingredients: IngredientCostBreakdown[];
+  recipe: {
+    id: string;
+    name: string;
+    description: string | null;
+    yieldQuantity: number | null;
+    yieldUnit: string | null;
+    portionSize: number | null;
+    portionUnit: string | null;
+  };
 }
 
 export interface IngredientCostBreakdown {
   id: string;
+  recipeIngredientId: string;
   name: string;
   quantity: number;
   unit: string;
@@ -45,6 +56,26 @@ export interface IngredientCostBreakdown {
   unitCost: number;
   cost: number;
   hasInventoryItem: boolean;
+  inventoryItemId: string | null;
+}
+
+interface RecipeVersionCostRow {
+  id: string;
+  name: string;
+  description: string | null;
+  yieldQuantity: Prisma.Decimal | number | string | null;
+  yieldUnit: string | null;
+  lastCalculated: Date | null;
+}
+
+interface RecipeIngredientCostRow {
+  id: string;
+  name: string;
+  quantity: Prisma.Decimal | number | string;
+  unit: string | null;
+  wasteFactor: Prisma.Decimal | number | string;
+  ingredientCost: Prisma.Decimal | number | string | null;
+  inventoryItemId: string | null;
 }
 
 /**
@@ -59,39 +90,64 @@ const calculateRecipeCostData = async (
   totalCost: number;
   costPerYield: number;
 } | null> => {
-  const recipeVersion = await database.recipeVersion.findFirst({
-    where: { tenantId, id: recipeVersionId, deletedAt: null },
-    select: { id: true, yieldQuantity: true },
-  });
+  const recipeVersions = await database.$queryRaw<RecipeVersionCostRow[]>(
+    Prisma.sql`
+      SELECT
+        rv.id,
+        COALESCE(NULLIF(rv.name, ''), r.name) AS "name",
+        COALESCE(rv.description, r.description) AS "description",
+        rv.yield_quantity AS "yieldQuantity",
+        u.code AS "yieldUnit",
+        rv.cost_calculated_at AS "lastCalculated"
+      FROM tenant_kitchen.recipe_versions rv
+      LEFT JOIN tenant_kitchen.recipes r
+        ON r.tenant_id = rv.tenant_id
+        AND r.id = rv.recipe_id
+        AND r.deleted_at IS NULL
+      LEFT JOIN core.units u ON u.id = rv.yield_unit_id
+      WHERE rv.tenant_id = ${tenantId}
+        AND rv.id = ${recipeVersionId}
+        AND rv.deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+  const recipeVersion = recipeVersions[0];
 
   if (!recipeVersion) {
     return null;
   }
 
-  const recipeIngredients = await database.recipeIngredient.findMany({
-    where: {
-      tenantId,
-      recipeVersionId,
-      deletedAt: null,
-    },
-    orderBy: { sortOrder: "asc" },
-    select: {
-      id: true,
-      ingredientId: true,
-      quantity: true,
-      unitId: true,
-      wasteFactor: true,
-      ingredientCost: true,
-    },
-  });
-
-  // Fetch ingredient names in a single query to avoid N+1
-  const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
-  const ingredients = await database.ingredient.findMany({
-    where: { tenantId, id: { in: ingredientIds }, deletedAt: null },
-    select: { id: true, name: true },
-  });
-  const ingredientNameMap = new Map(ingredients.map((i) => [i.id, i.name]));
+  const recipeIngredients = await database.$queryRaw<RecipeIngredientCostRow[]>(
+    Prisma.sql`
+      SELECT
+        ri.id,
+        i.name,
+        ri.quantity,
+        COALESCE(u.code, ri.unit_id::text) AS "unit",
+        COALESCE(ri.waste_factor, 1.0) AS "wasteFactor",
+        ri.ingredient_cost AS "ingredientCost",
+        ii.id AS "inventoryItemId"
+      FROM tenant_kitchen.recipe_ingredients ri
+      JOIN tenant_kitchen.ingredients i
+        ON i.tenant_id = ri.tenant_id
+        AND i.id = ri.ingredient_id
+        AND i.deleted_at IS NULL
+      LEFT JOIN core.units u ON u.id = ri.unit_id
+      LEFT JOIN LATERAL (
+        SELECT id
+        FROM tenant_inventory.inventory_items ii
+        WHERE ii.tenant_id = ri.tenant_id
+          AND ii.name = i.name
+          AND ii.deleted_at IS NULL
+        ORDER BY ii.updated_at DESC
+        LIMIT 1
+      ) ii ON true
+      WHERE ri.tenant_id = ${tenantId}
+        AND ri.recipe_version_id = ${recipeVersionId}
+        AND ri.deleted_at IS NULL
+      ORDER BY ri.sort_order ASC
+    `
+  );
 
   let totalCost = 0;
   const costBreakdowns: IngredientCostBreakdown[] = [];
@@ -106,14 +162,16 @@ const calculateRecipeCostData = async (
 
     costBreakdowns.push({
       id: ri.id,
-      name: ingredientNameMap.get(ri.ingredientId) ?? "Unknown",
+      recipeIngredientId: ri.id,
+      name: ri.name,
       quantity,
-      unit: ri.unitId.toString(),
+      unit: ri.unit ?? "units",
       wasteFactor,
       adjustedQuantity,
       unitCost: adjustedQuantity > 0 ? cost / adjustedQuantity : 0,
       cost,
-      hasInventoryItem: ri.ingredientCost !== null,
+      hasInventoryItem: ri.inventoryItemId !== null,
+      inventoryItemId: ri.inventoryItemId,
     });
   }
 
@@ -124,7 +182,18 @@ const calculateRecipeCostData = async (
     breakdown: {
       totalCost,
       costPerYield,
+      costPerPortion: null,
+      lastCalculated: recipeVersion.lastCalculated,
       ingredients: costBreakdowns,
+      recipe: {
+        id: recipeVersion.id,
+        name: recipeVersion.name,
+        description: recipeVersion.description,
+        yieldQuantity,
+        yieldUnit: recipeVersion.yieldUnit,
+        portionSize: null,
+        portionUnit: null,
+      },
     },
     totalCost,
     costPerYield,

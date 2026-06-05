@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, prepList, name } = body;
+    const { eventId, prepList, name, finalize } = body;
 
     if (!(eventId && prepList)) {
       return manifestErrorResponse("eventId and prepList are required", 400);
@@ -66,6 +66,7 @@ export async function POST(request: NextRequest) {
           "create",
           {
             id: prepListId,
+            tenantId,
             eventId,
             name: name || `${prepList.eventTitle} - Prep List`,
             batchMultiplier: prepList.batchMultiplier ?? 1,
@@ -116,6 +117,7 @@ export async function POST(request: NextRequest) {
               "create",
               {
                 id: itemId,
+                tenantId,
                 prepListId,
                 stationId: station.stationId || "",
                 stationName: station.stationName || "",
@@ -173,9 +175,40 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        if (finalize === true) {
+          const finalizeResult = await runtime.runCommand(
+            "finalize",
+            {},
+            { entityName: "PrepList", instanceId: prepListId }
+          );
+
+          if (finalizeResult.constraintOutcomes) {
+            allConstraintOutcomes = [
+              ...allConstraintOutcomes,
+              ...finalizeResult.constraintOutcomes,
+            ];
+          }
+
+          const finalizeBlocking = getBlockingConstraints(finalizeResult);
+          if (finalizeBlocking) {
+            throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+              constraintOutcomes: allConstraintOutcomes,
+            });
+          }
+
+          if (!finalizeResult.success) {
+            const errorMsg =
+              finalizeResult.guardFailure?.formatted ||
+              finalizeResult.error ||
+              "Failed to finalize prep list";
+            throw new Error(errorMsg);
+          }
+        }
+
         return {
           prepListId,
           itemCount: createdItemIds.length,
+          finalized: finalize === true,
         };
       });
 
@@ -183,6 +216,7 @@ export async function POST(request: NextRequest) {
         message: "Prep list saved successfully",
         prepListId: result.prepListId,
         itemCount: result.itemCount,
+        finalized: result.finalized,
         constraintOutcomes: allConstraintOutcomes,
       });
     } catch (error) {

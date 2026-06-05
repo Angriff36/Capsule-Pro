@@ -3416,6 +3416,11 @@
   },
   {
     "entity": "PurchaseRequisition",
+    "command": "completeDraftFromPrepDemand",
+    "commandId": "PurchaseRequisition.completeDraftFromPrepDemand"
+  },
+  {
+    "entity": "PurchaseRequisition",
     "command": "convertToPo",
     "commandId": "PurchaseRequisition.convertToPo"
   },

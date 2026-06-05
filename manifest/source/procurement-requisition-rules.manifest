@@ -67,7 +67,7 @@ entity PurchaseRequisition {
     }
   }
 
-  default policy PurchaseRequisitionDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Procurement management"
+  default policy PurchaseRequisitionDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
     guard requestedBy != null and requestedBy != "" "Requester is required"
@@ -82,7 +82,6 @@ entity PurchaseRequisition {
     mutate justification = justification
     mutate priority = priority
     mutate itemCategory = itemCategory
-    mutate status = "draft"
     mutate subtotal = 0
     mutate estimatedTax = 0
     mutate estimatedShipping = 0
@@ -103,10 +102,26 @@ entity PurchaseRequisition {
     emit PurchaseRequisitionUpdated
   }
 
+  command completeDraftFromPrepDemand(itemCount: number, subtotal: number, estimatedTax: number, estimatedShipping: number, estimatedTotal: number, notes: string) {
+    guard self.status == "draft" "Can only complete draft requisitions"
+    guard itemCount != null and itemCount > 0 "At least one line item is required"
+    guard subtotal != null and subtotal >= 0 "Subtotal cannot be negative"
+    guard estimatedTotal != null and estimatedTotal >= 0 "Estimated total cannot be negative"
+
+    mutate itemCount = itemCount
+    mutate subtotal = subtotal
+    mutate estimatedTax = estimatedTax
+    mutate estimatedShipping = estimatedShipping
+    mutate estimatedTotal = estimatedTotal
+    mutate notes = notes
+
+    emit PurchaseRequisitionDraftCompleted
+  }
+
   command submit(userId: string) {
     guard self.status == "draft" "Can only submit draft requisitions"
 
-    constraint blockNoItems:block self.itemCount == 0 {
+    constraint blockNoItems:block self.itemCount > 0 {
       messageTemplate: "Cannot submit requisition '{requisitionNumber}' with no items"
       details: {
         requisitionNumber: self.requisitionNumber
@@ -206,7 +221,7 @@ entity PurchaseRequisitionItem {
   constraint positiveQuantity: self.quantityRequested > 0 "Quantity requested must be positive"
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
-  default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Procurement management"
+  default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: number, unitId: number, estimatedUnitCost: number, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
     guard requisitionId != null and requisitionId != "" "Requisition ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -286,6 +301,14 @@ event PurchaseRequisitionUpdated: "procurement.requisition.updated" {
   requisitionId: string
   requisitionNumber: string
   updatedAt: datetime
+}
+
+event PurchaseRequisitionDraftCompleted: "procurement.requisition.draft_completed" {
+  requisitionId: string
+  requisitionNumber: string
+  itemCount: number
+  estimatedTotal: number
+  completedAt: datetime
 }
 
 event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
