@@ -1,10 +1,10 @@
 "use server";
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 // Marketing spec FR-501: closed enum, immutable after creation.
 // `website` is reserved for the public infrastructure-allowlisted endpoint (FR-505).
@@ -65,10 +65,12 @@ async function detectEmailDuplicate(
 export async function createLead(
   input: CreateLeadInput
 ): Promise<CreateLeadResult> {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
+  // Resolve the actor + tenant. requireCurrentUser throws when unauthenticated
+  // and supplies the id/role the governed Lead.create command needs for
+  // permission + audit context (constitution §19 Clerk→Manifest context).
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
-  const tenantId = await getTenantId();
   invariant(input.contactName?.trim(), "Contact name is required");
 
   // Source: closed enum per FR-501. Operator surface defaults to "manual"
@@ -81,28 +83,50 @@ export async function createLead(
   }
   const source: LeadSource = (rawSource as LeadSource) || "manual";
 
+  // FR-129 pre-validation: duplicate annotation is advisory (we still create).
+  // This read precedes the governed write — reads may use Prisma (constitution §10).
   const contactEmail = input.contactEmail?.trim() || null;
   const duplicateReason = contactEmail
     ? await detectEmailDuplicate(tenantId, contactEmail)
     : undefined;
 
-  const lead = await database.lead.create({
-    data: {
-      tenantId,
-      contactName: input.contactName.trim(),
-      companyName: input.companyName?.trim() || null,
-      contactEmail,
-      contactPhone: input.contactPhone?.trim() || null,
+  // Governed write: Lead.create runs through the Manifest runtime — no direct
+  // prisma.lead.create (constitution §3/§9). The command auto-sets status="new"
+  // and stamps timestamps. eventDate is passed as epoch-ms (the store coerces
+  // number→Date and null→null via asNullableDate), matching the API lead route.
+  // Empty optional strings/numbers are sent as the Manifest entity defaults
+  // ("" / 0) so the canonical command shape is the single source of truth.
+  const result = await runManifestCommand({
+    entity: "Lead",
+    command: "create",
+    body: {
       source,
-      eventType: input.eventType?.trim() || null,
-      eventDate: input.eventDate ? new Date(input.eventDate) : null,
-      estimatedGuests: input.estimatedGuests || null,
-      estimatedValue: input.estimatedValue || null,
-      notes: input.notes?.trim() || null,
-      assignedTo: input.assignedTo || null,
-      status: "new",
+      companyName: input.companyName?.trim() || "",
+      contactName: input.contactName.trim(),
+      contactEmail: contactEmail ?? "",
+      contactPhone: input.contactPhone?.trim() || "",
+      eventType: input.eventType?.trim() || "",
+      eventDate: input.eventDate ? new Date(input.eventDate).getTime() : null,
+      estimatedGuests: input.estimatedGuests || 0,
+      estimatedValue: input.estimatedValue || 0,
+      assignedTo: input.assignedTo || "",
+      notes: input.notes?.trim() || "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create lead");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "Lead.create did not return an id");
+
+  // Read back the persisted row to preserve the CreateLeadResult.lead shape.
+  const lead = await database.lead.findFirst({
+    where: { tenantId, id: createdId },
+  });
+  invariant(lead, "Created lead could not be loaded");
 
   revalidatePath("/marketing/leads");
 

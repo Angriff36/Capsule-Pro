@@ -500,6 +500,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 8.4: Kitchen task claim routes migrated to Manifest-only** | `POST /api/kitchen/tasks/[id]/claim` and `POST /api/kitchen/tasks/[id]/unclaim` migrated from hybrid to Manifest-only. Redundant direct Prisma writes removed. Task assignment now flows through governed lifecycle (RBAC, audit, events). |
 | 2026-06-05 | **Task 8.2 batch 3: 5 accounting routes + 1 procurement route migrated to Manifest runtime** | CollectionCase create, Invoice create, PaymentMethod create/update/patch/delete, RevenueRecognitionSchedule create. PaymentMethod manifest source: added update/remove commands + events. Test suite updated for payment-method-patch-actions. Plus procurement approvals: PurchaseOrder approve/reject. 2582 tests pass, 0 typecheck errors. Total: 21 mutate handlers in 19 route files across all batches. |
 | 2026-06-05 | **Task 8.2 batch 5: Payment process/refund + revenue-recognition schedule actions migrated** | PUT/POST payments/[id] route: Payment process/refund through Manifest runtime, invoice updates via reactions. PATCH revenue-recognition schedules: start/recognize/cancel through Manifest runtime. 31 total mutate handlers in 24 route files. API typecheck 0, 2582 tests pass. |
+| 2026-06-05 | **Task 8.3 progress (batch 1 — Lead.create): first server-action migration** | `apps/app/app/(authenticated)/marketing/leads/actions.ts` `createLead` now routes its write through governed `Lead.create` via `runManifestCommand` (no direct `prisma.lead.create`). Pattern: resolve actor via `requireCurrentUser()`, pass `eventDate` as epoch-ms or null (GenericPrismaStore coerces via `asNullableDate`), send empty optionals as `""` and numbers as `0` (canonical command defaults), `status` is command-owned (NOT sent in body), read row back via Prisma for return shape (§10-compliant read). Test consolidated into `apps/app/__tests__/marketing/leads-create-action.test.ts` (12 tests) — preserves FR-501 source-enum + FR-129 duplicate-annotation assertions AND adds governance assertions (dispatch entity/command/user, eventDate encoding, status command-ownership, failed-command surfacing, pre-validation gates dispatch). `pnpm manifest:audit-direct-writes` governed-entity violations: 58→57. Full app suite green (36 files/285 tests), `pnpm --filter app typecheck` green. DRIFT BLOCKERS documented below — Driver/Vehicle/Facility/AdminTask cannot be migrated until IR↔schema reconciliation (Task 0.4). |
 
 ---
 
@@ -1235,6 +1236,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     Test expectations updated to match the (correct) current behavior.
   - **Verification:** `pnpm --filter app typecheck` exit 0; full `apps/app` vitest suite 280/280 pass
     (was 277/280 with 3 stale failures before this increment).
+  - **Progress 2026-06-05 (batch 2 — Lead.create):** `apps/app/app/(authenticated)/marketing/leads/actions.ts` `createLead` migrated to governed `Lead.create` Manifest command via `runManifestCommand` from `@/lib/manifest-command`. No direct `prisma.lead.create`. Constitution §9 compliant. Pattern for future migrations: resolve actor via `requireCurrentUser()` (id/tenantId/role); `eventDate` as epoch-ms or `null` (GenericPrismaStore `asNullableDate` coerces); empty optional strings as `""`, numbers as `0` (canonical command defaults); `status` is command-owned (NOT sent in body); read row back via Prisma for return shape (§10-compliant read). Test consolidated into `apps/app/__tests__/marketing/leads-create-action.test.ts` (12 tests) — preserves FR-501 source-enum + FR-129 duplicate-annotation spec assertions AND adds governance assertions. `pnpm manifest:audit-direct-writes` governed-entity violations: 58→57. Full app suite: 36 files/285 tests green. `pnpm --filter app typecheck` green.
+  - **Drift blockers (cross-reference Task 0.4) — cannot migrate until IR↔schema reconciled:**
+    - **Driver** (`logistics/actions.ts` `createDriver`): Manifest `Driver.create` takes `firstName`/`lastName`/`currentVehicleId`/`rating`; Prisma `drivers` table has single `name` column, `vehicleId` (not `currentVehicleId`), no `rating`. GenericPrismaStore would attempt nonexistent columns → write failure + data loss.
+    - **Vehicle** (`logistics/actions.ts` `createVehicle`): Manifest `Vehicle.create` requires `name` (not collected by form → guard fails) + single `capacity`/`type`; Prisma `vehicles` has `capacityWeight`/`capacityVolume`/`fuelType`/`mileage` (none in Manifest). Bidirectional drift → guard failure + data loss.
+    - **Facility** (`facilities/actions.ts` `createFacility`): Manifest `Facility.create` params `capacity`/`description` have no Prisma columns; Prisma `facilities` has `code`/`addressLine2`/`country` not in the command; address modeling differs. Data loss either direction.
+    - **AdminTask** (`administrative/kanban/actions.ts`): mostly field-aligned BUT `sourceType`/`sourceId` absent from command params (value lost on migration); no durable status-update command (only transitions `moveToTodo`/`startProgress`/`complete`) — needs status→transition mapping. Migratable only after those two gaps are closed.
+    - **Resolution path:** Task 0.4 IR/schema reconciliation + a dedicated schema-alignment pass per entity. Lead was the safe pick — full field alignment + working API-route precedent at `apps/api/app/api/lead/route.ts`.
 
 ### 8.4 Package-specific governance migration
 - **Done when:** `supplier-connectors` (5 direct writes on VendorCatalog -- governed entity), `sentry-integration` (2 writes on SentryFixJob -- infrastructure, NOT governed), `payroll-engine` (covered by 8.1), `notifications` (1 direct write on EmailWorkflow -- governed entity; emailLog/sms_logs/notification_preferences writes are infrastructure logs, not governed), `packages/database/src/vendor-cost-service.ts` (1 documented bypass on InventoryItem with explicit GOVERNANCE NOTE -- downstream mechanical effect of governed VendorCatalog commands) route writes through Manifest or are documented as intentionally ungoverned. `packages/realtime/` (outbox is infrastructure, not governed). `packages/services/` removed (confirmed truly empty -- no package.json, no source files).
@@ -1295,11 +1303,20 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Graph output for Event includes related entities (EventStaff, EventBudget, etc.).
 - **Source to change:** `manifest/runtime/src/entity-graph/graph-builder.ts`.
 
-### 9.2 Wire reactions (event-driven side effects) — ✅ STARTED 2026-06-05 (2 of 5+ implemented)
-- **✅ STARTED 2026-06-05.** First 2 reactions implemented in `manifest/source/reactions.manifest`:
-  1. `on PaymentProcessed run Invoice.applyPayment` — resolves `payload.invoiceId`, maps `paymentAmount` and `paymentId`. Replaces raw Prisma writes in Stripe webhook handler.
-  2. `on PaymentRefunded run Invoice.recordRefund` — resolves `payload.invoiceId`, maps `refundAmount` and `paymentId`. Ensures invoice consistency on refund.
-  IR compiled: 189 entities, 952 commands, 936 events, **2 reactions** (was 0). API typecheck 0, 2574 tests pass. Remaining high-value candidates: Shipment.delivered → InventoryTransaction, PurchaseOrder.received → InventoryTransaction, WasteEntry.approved → InventoryItem.adjust.
+### 9.2 Wire reactions (event-driven side effects) — ✅ COMPLETE 2026-06-05 (10 reactions, target 5+ exceeded)
+- **✅ COMPLETE 2026-06-05.** Reaction MECHANISM is done; target exceeded. All 10 reactions defined in `manifest/source/reactions.manifest`, compiled into IR `reactions[]` array, dispatched synchronously by the @angriff36/manifest RuntimeEngine:
+  1. `on PaymentProcessed run Invoice.applyPayment`
+  2. `on PaymentRefunded run Invoice.recordRefund`
+  3. `on WasteEntryCreated run InventoryItem.waste`
+  4. `on CollectionPaymentRecorded run Invoice.applyPayment`
+  5. `on ContractSigned run Event.confirm`
+  6. `on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance`
+  7. `on MaintenanceWorkOrderCompleted run Equipment.updateStatus`
+  8. `on ShipmentItemReceived run InventoryItem.restock`
+  9. `on LeadConvertedToClient run Deal.create`
+  10. `on ProposalAccepted run Event.create`
+  IR: 189 entities, 952 commands, 936 events, **10 reactions**. API typecheck 0, 2591 tests pass.
+- **Remaining gap (reclassified 2026-06-05):** The reaction MECHANISM is done. The open gap is the absence of an explicit **reaction conformance test** proving emit→reaction→downstream-command fires and mutates the target (constitution §13). No test currently asserts the full emit→reaction→command→store chain end-to-end.
 
 ### 9.3 Expand saga orchestration for multi-step workflows
 - **Done when:** At least 3 sagas beyond the existing ProcessInvoicePayment.
