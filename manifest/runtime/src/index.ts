@@ -3164,5 +3164,3 @@ export * from "./manifest-telemetry-collector";
 export * from "./permission-checker";
 export * from "./permission-guard";
 export * from "./prep-task-dependency-engine";
-export * from "./recipe-optimization-engine";
-export * from "./recipe-scaling-engine";
