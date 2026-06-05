@@ -8,7 +8,7 @@ entity VendorCatalog {
   property required tenantId: string
   property required supplierId: string
   property required itemNumber: string = ""
-  property required itemName: string = ""
+  searchable property required itemName: string = ""
   property description: string = ""
   property category: string = ""
   property required baseUnitCost: money = 0

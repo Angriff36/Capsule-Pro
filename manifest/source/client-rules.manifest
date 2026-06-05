@@ -6,7 +6,7 @@ entity Client {
   property required id: string
   property required tenantId: string
   property required clientType: string = "company"
-  property companyName: string = ""
+  searchable property companyName: string = ""
   property firstName: string = ""
   property lastName: string = ""
   property email: string = ""
@@ -21,7 +21,7 @@ entity Client {
   property defaultPaymentTerms: decimal = 30
   property required taxExempt: boolean = false
   property taxId: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property required tags: array<string>
   property source: string = ""
   property assignedTo: string = ""

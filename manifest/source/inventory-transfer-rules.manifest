@@ -33,6 +33,11 @@ entity InventoryTransfer {
 
   constraint validStatus: self.status in ["draft", "pending_approval", "approved", "in_transit", "received", "cancelled"] "Invalid transfer status"
 
+  transition status from "draft" to ["pending_approval", "cancelled"]
+  transition status from "pending_approval" to ["approved", "cancelled"]
+  transition status from "approved" to ["in_transit", "cancelled"]
+  transition status from "in_transit" to ["received"]
+
   // requestedBy + transferNumber are intentionally NOT command params here.
   //   - requestedBy is adapter-derived from RuntimeContext.user.id by
   //     InventoryTransferPrismaStore (see broken-read-batch16-inventory-transfer.ts).

@@ -6,8 +6,8 @@ entity Lead {
   property required id: string
   property required tenantId: string
   property source: string = ""
-  property companyName: string = ""
-  property contactName: string = ""
+  searchable property companyName: string = ""
+  searchable property contactName: string = ""
   property contactEmail: string = ""
   property contactPhone: string = ""
   property eventType: string = ""
@@ -16,7 +16,7 @@ entity Lead {
   property estimatedValue: decimal = 0
   property status: string = "new"
   property assignedTo: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property convertedToClientId: string = ""
   property convertedAt: datetime
   timestamps
@@ -31,6 +31,11 @@ entity Lead {
   constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
   constraint validContactName: self.contactName != null and self.contactName != "" "Contact name is required"
   constraint positiveEstimatedValue: self.estimatedValue >= 0 "Estimated value must be non-negative"
+
+  transition status from "new" to ["contacted", "disqualified"]
+  transition status from "contacted" to ["qualified", "disqualified", "lost"]
+  transition status from "qualified" to ["proposal", "disqualified", "lost"]
+  transition status from "proposal" to ["won", "lost", "disqualified"]
 
   constraint warnHighValueUnassigned:warn self.isHighValue and self.assignedTo == "" {
     messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"

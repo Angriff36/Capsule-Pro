@@ -7,7 +7,7 @@ entity Event {
   property required tenantId: string
   property clientId: string = ""
   property eventNumber: string = ""
-  property required title: string = "Untitled Event"
+  searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
   property required eventDate: datetime
   property required guestCount: int = 1

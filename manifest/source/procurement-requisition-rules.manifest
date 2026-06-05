@@ -53,6 +53,12 @@ entity PurchaseRequisition {
 
   constraint validStatus: self.status in ["draft", "pending_manager", "pending_finance", "approved", "rejected", "converted", "cancelled"] "Invalid requisition status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent", "critical"] "Invalid priority level"
+
+  transition status from "draft" to ["pending_manager", "cancelled"]
+  transition status from "pending_manager" to ["pending_finance", "approved", "rejected", "cancelled"]
+  transition status from "pending_finance" to ["approved", "rejected", "cancelled"]
+  transition status from "approved" to ["converted", "cancelled"]
+
   constraint warnNotDraft:warn self.status != "draft" {
     messageTemplate: "Requisition '{requisitionNumber}' is no longer in draft — most edits are blocked"
     details: {

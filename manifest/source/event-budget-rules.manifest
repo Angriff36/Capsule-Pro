@@ -28,6 +28,9 @@ entity EventBudget {
   constraint validStatus: self.status in ["draft", "approved", "finalized"] "Status must be valid"
   constraint positiveBudget: self.totalBudgetAmount >= 0 "Total budget amount must be non-negative"
 
+  transition status from "draft" to ["approved"]
+  transition status from "approved" to ["finalized"]
+
   constraint warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {
     messageTemplate: "Budget is over by {varianceAmount} ({variancePct}%)"
     details: {

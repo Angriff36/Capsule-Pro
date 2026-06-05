@@ -52,6 +52,10 @@ entity Proposal {
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
 
+  transition status from "draft" to ["sent", "withdrawn"]
+  transition status from "sent" to ["viewed", "accepted", "rejected", "withdrawn", "expired"]
+  transition status from "viewed" to ["accepted", "rejected", "withdrawn", "expired"]
+
   constraint warnExpiringSoon:warn self.validUntil != null and self.validUntil > now() and self.status == "sent" {
     messageTemplate: "Proposal '{proposalNumber}' is sent and approaching expiration"
     details: {
