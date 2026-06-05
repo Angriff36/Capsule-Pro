@@ -259,7 +259,14 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[proactive bridge @ 85% context — saved before compacting]
+Files (7):
+  C:/Users/Ryan/.claude/plans/vivid-wandering-flamingo.md (create)
+  C:/Users/Ryan/.claude/plans/vivid-wandering-flamingo.md (edit)
+  apps/api/app/api/payroll/approvals/[approvalId]/route.ts (edit)
+  apps/api/__tests__/payroll/approvals-role-guard.test.ts (create)
+  apps/api/__tests__/payroll/approvals-role-guard.test.ts (edit)
+  apps/api/lib/payroll/manifest-payroll-data-source.ts (create)
+  apps/api/lib/payroll/manifest-payroll-data-source.ts (edit)
 
 # === END COGNILAYER ===
