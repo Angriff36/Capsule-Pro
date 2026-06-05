@@ -2,8 +2,8 @@
  * API Key Detail Endpoint
  *
  * GET /api/settings/api-keys/:id - Get a single API key by ID
- * PUT /api/settings/api-keys/:id - Update an API key
- * DELETE /api/settings/api-keys/:id - Soft delete an API key
+ * PUT /api/settings/api-keys/:id - Update an API key (Manifest runtime)
+ * DELETE /api/settings/api-keys/:id - Soft delete an API key (Manifest runtime)
  */
 
 import { database } from "@repo/database";
@@ -11,6 +11,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
 export const runtime = "nodejs";
@@ -74,7 +75,7 @@ export const GET = withRateLimit(
 
 /**
  * PUT /api/settings/api-keys/:id
- * Update an API key (name, scopes, expiresAt)
+ * Update an API key (name, scopes, expiresAt) — delegated to Manifest runtime
  *
  * Body: { name?: string, scopes?: string[], expiresAt?: string | null }
  */
@@ -122,75 +123,57 @@ export const PUT = withRateLimit(
 
       const { name, scopes, expiresAt } = body;
 
-      // Build update data
-      const updateData: Record<string, unknown> = {};
+      // Build update data for duplicate-name check
+      if (name !== undefined && name !== existing.name) {
+        const duplicate = await database.apiKey.findFirst({
+          where: {
+            tenantId: currentUser.tenantId,
+            name: name as string,
+            deletedAt: null,
+            NOT: { id },
+          },
+        });
 
-      if (name !== undefined) {
-        // Check for duplicate name if name is being changed
-        if (name !== existing.name) {
-          const duplicate = await database.apiKey.findFirst({
-            where: {
-              tenantId: currentUser.tenantId,
-              name: name as string,
-              deletedAt: null,
-              NOT: { id },
-            },
-          });
-
-          if (duplicate) {
-            return NextResponse.json(
-              { message: "An API key with this name already exists" },
-              { status: 409 }
-            );
-          }
+        if (duplicate) {
+          return NextResponse.json(
+            { message: "An API key with this name already exists" },
+            { status: 409 }
+          );
         }
-        updateData.name = name;
       }
 
-      if (scopes !== undefined) {
-        updateData.scopes = Array.isArray(scopes) ? scopes : [];
-      }
-
-      if (expiresAt !== undefined) {
-        updateData.expiresAt = expiresAt ? new Date(expiresAt as string) : null;
-      }
-
-      if (Object.keys(updateData).length === 0) {
+      if (
+        name === undefined &&
+        scopes === undefined &&
+        expiresAt === undefined
+      ) {
         return NextResponse.json(
           { message: "No fields to update" },
           { status: 400 }
         );
       }
 
-      const updated = await database.apiKey.update({
-        where: {
-          tenantId_id: {
-            tenantId: currentUser.tenantId,
-            id,
-          },
+      // Delegate update to Manifest runtime
+      return runManifestCommand({
+        entity: "ApiKey",
+        command: "update",
+        body: {
+          id,
+          ...(name !== undefined ? { name } : {}),
+          ...(scopes !== undefined
+            ? { scopes: Array.isArray(scopes) ? scopes : [] }
+            : {}),
+          ...(expiresAt !== undefined
+            ? { expiresAt: expiresAt ? new Date(expiresAt as string) : null }
+            : {}),
+          tenantId: currentUser.tenantId,
         },
-        data: updateData,
-        select: {
-          id: true,
-          name: true,
-          keyPrefix: true,
-          scopes: true,
-          lastUsedAt: true,
-          expiresAt: true,
-          revokedAt: true,
-          createdByUserId: true,
-          createdAt: true,
-          updatedAt: true,
+        user: {
+          id: currentUser.id,
+          tenantId: currentUser.tenantId,
+          role: currentUser.role,
         },
       });
-
-      log.info("[ApiKeys/update] Updated API key", {
-        tenantId: currentUser.tenantId,
-        keyId: id,
-        userId: currentUser.id,
-      });
-
-      return NextResponse.json(updated);
     } catch (error) {
       captureException(error);
       log.error("[ApiKeys/update] Error", { error });
@@ -205,7 +188,7 @@ export const PUT = withRateLimit(
 
 /**
  * DELETE /api/settings/api-keys/:id
- * Soft delete an API key
+ * Soft delete an API key — delegated to Manifest runtime
  */
 export const DELETE = withRateLimit(
   async (_request, context) => {
@@ -235,26 +218,20 @@ export const DELETE = withRateLimit(
         );
       }
 
-      // Soft delete
-      await database.apiKey.update({
-        where: {
-          tenantId_id: {
-            tenantId: currentUser.tenantId,
-            id,
-          },
+      // Delegate soft-delete to Manifest runtime
+      return runManifestCommand({
+        entity: "ApiKey",
+        command: "softDelete",
+        body: {
+          id,
+          tenantId: currentUser.tenantId,
         },
-        data: {
-          deletedAt: new Date(),
+        user: {
+          id: currentUser.id,
+          tenantId: currentUser.tenantId,
+          role: currentUser.role,
         },
       });
-
-      log.info("[ApiKeys/delete] Soft deleted API key", {
-        tenantId: currentUser.tenantId,
-        keyId: id,
-        userId: currentUser.id,
-      });
-
-      return NextResponse.json({ success: true });
     } catch (error) {
       captureException(error);
       log.error("[ApiKeys/delete] Error", { error });

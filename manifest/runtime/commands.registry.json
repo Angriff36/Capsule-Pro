@@ -181,6 +181,11 @@
   },
   {
     "entity": "ApiKey",
+    "command": "rotate",
+    "commandId": "ApiKey.rotate"
+  },
+  {
+    "entity": "ApiKey",
     "command": "softDelete",
     "commandId": "ApiKey.softDelete"
   },

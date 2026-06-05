@@ -29,21 +29,13 @@ entity ApiKey {
   constraint requireCreatedBy: self.createdByUserId != null and self.createdByUserId != "" "Created by user ID is required"
 
   default policy ApiKeyDefaultAccess execute: user.role in ["manager", "admin"] "API key management"
-  command create(name: string, keyPrefix: string, hashedKey: string, scopes: string, expiresAt: datetime, createdByUserId: string) {
+  command create(name: string, keyPrefix: string, hashedKey: string, scopes: array<string>, expiresAt: datetime, createdByUserId: string) {
     guard name != null and name != "" "API key name is required"
     guard keyPrefix != null and keyPrefix != "" "Key prefix is required"
     guard hashedKey != null and hashedKey != "" "Hashed key is required"
     guard createdByUserId != null and createdByUserId != "" "Created by user ID is required"
 
-    constraint warnNoExpiration:warn expiresAt == 0 {
-      messageTemplate: "API key '{name}' has no expiration date set"
-      details: {
-        name: name
-        keyPrefix: keyPrefix
-      }
-    }
-
-    constraint warnNoScopes:warn scopes == "[]" or scopes == "" {
+    constraint warnNoScopes:warn length(scopes) == 0 {
       messageTemplate: "API key '{name}' has no scopes assigned"
       details: {
         name: name
@@ -63,19 +55,11 @@ entity ApiKey {
     emit ApiKeyCreated
   }
 
-  command update(name: string, scopes: string, expiresAt: datetime) {
+  command update(name: string, scopes: array<string>, expiresAt: datetime) {
     guard self.deletedAt == null "Cannot update a deleted API key"
     guard self.revokedAt == null "Cannot update a revoked API key"
 
-    constraint warnNoExpiration:warn expiresAt == 0 {
-      messageTemplate: "API key '{name}' has no expiration date set"
-      details: {
-        name: name
-        keyPrefix: self.keyPrefix
-      }
-    }
-
-    constraint warnNoScopes:warn scopes == "[]" or scopes == "" {
+    constraint warnNoScopes:warn length(scopes) == 0 {
       messageTemplate: "API key '{name}' has no scopes assigned"
       details: {
         name: name
@@ -88,6 +72,16 @@ entity ApiKey {
     mutate expiresAt = expiresAt
 
     emit ApiKeyUpdated
+  }
+
+  command rotate(keyPrefix: string, hashedKey: string) {
+    guard self.deletedAt == null "Cannot rotate a deleted API key"
+    guard self.revokedAt == null "Cannot rotate a revoked API key"
+
+    mutate keyPrefix = keyPrefix
+    mutate hashedKey = hashedKey
+
+    emit ApiKeyRotated
   }
 
   command revoke(reason: string, revokedBy: string) {
@@ -157,7 +151,7 @@ event ApiKeyCreated: "admin.api_key.created" {
   tenantId: string
   name: string
   keyPrefix: string
-  scopes: string
+  scopes: array<string>
   expiresAt: datetime
   createdByUserId: string
   createdAt: datetime
@@ -168,7 +162,7 @@ event ApiKeyUpdated: "admin.api_key.updated" {
   tenantId: string
   name: string
   keyPrefix: string
-  scopes: string
+  scopes: array<string>
   expiresAt: datetime
   updatedAt: datetime
 }
@@ -191,6 +185,14 @@ event ApiKeyDeleted: "admin.api_key.deleted" {
   reason: string
   deletedBy: string
   deletedAt: datetime
+}
+
+event ApiKeyRotated: "admin.api_key.rotated" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  rotatedAt: datetime
 }
 
 event ApiKeyUsed: "admin.api_key.used" {

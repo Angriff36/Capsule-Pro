@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-05, comprehensive audit -- 18th revision)
+## Validation Baseline (2026-06-05, comprehensive audit -- 20th revision)
 
 ### Claim Verification Matrix
 
@@ -306,6 +306,15 @@
 | **Route regen-diff harness exists** | `manifest/scripts/audit-route-drift.mjs` with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate). Task 0.5 DONE. Needs CI workflow wiring for exit criterion 3. | `manifest/scripts/audit-route-drift.mjs` |
 | **Bootstrap middleware removed in upstream 1.7.0** | Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. Task 7.4d DONE. | Upstream `@angriff36/manifest@2.2.0` |
 
+### NEW findings from this revision (20th, 2026-06-05)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **Mobile domain entities NOT in Manifest IR** | PushToken, NotificationPreference, AppSettings have no entity definitions in `manifest/source/`. Cannot be migrated to governed runtime until definitions are added. New task needed: add mobile entity manifest sources. | `apps/api/app/api/mobile/*/route.ts`, `manifest/source/` (absent) |
+| **Command Board simulation apply/merge routes are COMPLEX** | 517-604 lines each, multi-model transactions across CommandBoard + related entities. Deferred from Task 8.2 batch 2 — needs dedicated migration pass with careful transaction handling. | `apps/api/app/api/command-board/simulations/[id]/apply/route.ts`, `apps/api/app/api/command-board/simulations/[id]/merge/route.ts` |
+| **Governance migration pre-validation pattern established** | Routes with business rules requiring pre-command checks (active-events 409, self-revocation prevention, duplicate-name checks, scope validation) preserve pre-validation logic BEFORE calling `runManifestCommand`. Pattern is clean and compliant with constitution §4 (pre-validation is not a governed write). | `apps/api/app/api/settings/api-keys/*/route.ts`, `apps/api/app/api/crm/venues/[id]/route.ts` |
+| **Task 8.2 batch 2: 10 mutate handlers across 9 route files** | ApiKey (5), Venue (3), CommandBoard simulations (2). Total migrated across both batches: 15 handlers in 14 files. Remaining: ~176 violations across ~66 files. | This session |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
@@ -395,11 +404,11 @@
 
 ### Governance
 
-- **191 direct-write violations in API routes** + **110 in server actions** = **301 total** (191 API mutation calls across 80 files; 110 domain-entity server action writes across 28 files). **12 hybrid files** (both direct writes AND manifest calls) indicate partial migration started. notifications package adds 9+ direct DB writes across 4 files.
+- **~176 direct-write violations in API routes** + **110 in server actions** = **~286 total** (down from 301). 15 mutate handlers across 14 route files migrated to Manifest runtime (Task 8.2 batches 1-2 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
-- Invoice entity: **zero policies** -- any user can void/write-off
+- Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
 - `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
-- describe.skip: 1 entire test suite (sales-reporting) disabled
+- describe.skip: ~~1 entire test suite (sales-reporting) disabled~~ **RESOLVED 2026-06-05 (Task 10.10)** — empty stub deleted; feature fully tested at package level
 - 7 it.skipIf tests in sentry-integration (conditional on API keys -- valid pattern)
 
 ---
@@ -485,6 +494,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 10.10: Remove empty skipped test stub** | `apps/api/__tests__/sales-reporting/generate.test.ts` was an empty stub with 0 assertions. Feature fully tested at package level (42 tests). Stub deleted. |
 | 2026-06-05 | **Task 10.2: Delete dead recipe engine code (-1,488 LOC)** | recipe-optimization-engine.ts (837 lines) + recipe-scaling-engine.ts (651 lines) deleted. Zero consumers. manifest-runtime + API typecheck green. |
 | 2026-06-05 | **Task 8.2 progress: 5 hybrid files migrated to Manifest-only** | 4 SmsAutomationRule files (activate, deactivate, create, update/delete) + 1 EventContract send route. Redundant direct Prisma writes removed. Manifest commands already handle mutations. |
+| 2026-06-05 | **Task 8.2 progress (batch 2): 10 mutate handlers migrated across 9 route files** | ApiKey (5 routes: create/update/softDelete/revoke/rotate), Venue (3 routes: create/update/deactivate), CommandBoard simulations (2 routes: discard/delete). Pre-validation preserved where needed. Mobile domain entities NOT in IR — blocked. Command Board apply/merge deferred (complex multi-model transactions). 118 test files, 2583+ tests passing, 0 typecheck errors. |
+| 2026-06-05 | **Task 8.4: Kitchen task claim routes migrated to Manifest-only** | `POST /api/kitchen/tasks/[id]/claim` and `POST /api/kitchen/tasks/[id]/unclaim` migrated from hybrid to Manifest-only. Redundant direct Prisma writes removed. Task assignment now flows through governed lifecycle (RBAC, audit, events). |
 
 ---
 
@@ -1132,7 +1143,27 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** 47% of hand-written routes bypass the Manifest dispatcher. Breakdown by domain: kitchen (22 direct writes of 165 routes), events (6 of 76), CRM (varies), staff (varies), inventory (varies), administrative (13 of ~20), notifications (1 of 16, but 14 hand-written), command-board (4 of 26).
 - **Backpressure:** `pnpm manifest:audit-direct-writes` shows zero violations in `apps/api/` (excluding allowlisted paths).
 - **Source to change:** `apps/api/app/api/` hand-written route files.
-  - **Progress 2026-06-05:** 5 hybrid files migrated (4 SmsAutomationRule + 1 EventContract send). Direct redundant Prisma writes removed; Manifest commands already handled the mutations. Remaining: ~186 violations across ~75 files.
+  - **Progress 2026-06-05 (batch 1):** 5 hybrid files migrated (4 SmsAutomationRule + 1 EventContract send). Direct redundant Prisma writes removed; Manifest commands already handled the mutations.
+  - **Progress 2026-06-05 (batch 2):** 10 more mutate handlers across 9 route files migrated to Manifest runtime:
+    - **Settings / ApiKey domain (5 mutate routes across 4 route files):**
+      - `POST /api/settings/api-keys` — create → `runManifestCommand({entity:"ApiKey", command:"create"})`
+      - `PUT /api/settings/api-keys/[id]` — update → `runManifestCommand({entity:"ApiKey", command:"update"})`
+      - `DELETE /api/settings/api-keys/[id]` — softDelete → `runManifestCommand({entity:"ApiKey", command:"softDelete"})`
+      - `POST /api/settings/api-keys/[id]/revoke` — revoke → `runManifestCommand({entity:"ApiKey", command:"revoke"})`
+      - `POST /api/settings/api-keys/[id]/rotate` — rotate → `runManifestCommand({entity:"ApiKey", command:"rotate"})`
+      - Pre-validation preserved: `generateApiKey()` crypto, dual-auth, scope validation, duplicate-name checks, self-revocation prevention.
+    - **CRM / Venue domain (3 mutate routes across 3 route files):**
+      - `POST /api/crm/venues` — create → `runManifestCommand({entity:"Venue", command:"create"})`
+      - `PUT /api/crm/venues/[id]` — update → `runManifestCommand({entity:"Venue", command:"update"})`
+      - `DELETE /api/crm/venues/[id]` — deactivate → `runManifestCommand({entity:"Venue", command:"deactivate"})` (with active-events 409 pre-validation)
+    - **Command Board / Simulations domain (2 mutate routes across 2 route files):**
+      - `POST /api/command-board/simulations/[id]/discard` — deactivate → `runManifestCommand({entity:"CommandBoard", command:"deactivate"})`
+      - `DELETE /api/command-board/simulations/[id]` — deactivate → `runManifestCommand({entity:"CommandBoard", command:"deactivate"})` (with simulation-tag pre-validation)
+    - All GET handlers left as-is (reads bypass Manifest per constitution §10).
+    - Pre-validation patterns preserved where business rules require pre-command checks (active-events, self-revocation, duplicate names, scope validation).
+    - Test suite: 118 test files, 2583+ tests passing, 0 typecheck errors.
+    - **Key discovery:** Mobile domain entities (PushToken, NotificationPreference, AppSettings) are NOT in the Manifest IR — cannot be migrated until entity definitions are added to manifest/source/. Command Board simulation apply/merge routes are COMPLEX (517-604 lines each, multi-model transactions) — deferred to a later pass.
+  - **Total migrated across both batches:** 15 mutate handlers in 14 route files. Remaining: ~176 violations across ~66 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
@@ -1704,3 +1735,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 10.13 (23rd revision):** Legacy `manifest-command-handler.ts` removed (289 lines deleted). All 71 route files migrated from `executeManifestCommand` to `runManifestCommand`. All 11 test files migrated to mock the canonical handler. Webhook dispatch support added to canonical `execute-command.ts` (fire-and-forget). API typecheck 0, 2562 tests pass. Exit criteria 14 (dead code eliminated) and 15 (single command handler) now satisfied. Blocker #44 resolved. |
 | 2026-06-05 | **Eighteenth revision:** Task 8.6 completed — policy binding fix. ROOT CAUSE: top-level `policy` declarations are NOT bound by the compiler; only `default policy` inside entity blocks auto-expands. Fixed by adding entity-specific `default policy` to all 92 source files. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. Key discovery: `policy` vs `default policy` binding semantics. Task 8.8 (defaultPolicies) also completed as part of 8.6. Exit criteria 12 (permission guard coverage 100%) now has IR-level policy foundation. |
 | 2026-06-05 | **Nineteenth revision:** Task 0.5 (route regen-diff harness) marked DONE — `manifest/scripts/audit-route-drift.mjs` exists with report and CI gate modes. Task 7.4d (bootstrap middleware) marked DONE — upstream 1.7.0 removed the need; engine's `shouldAutoCreateInstance` handles create commands natively. Task 9.9 CORRECTION added — IR policies already provide deny-by-default for ALL 952 commands (23 unique roles); RBAC middleware is secondary, not the primary gate. Flipping middleware to deny-by-default would break 921/952 commands. Recommendation: expand middleware map or remove it. Exit criteria 3 and 12 updated with current state. New 19th-revision findings table added. |
+| 2026-06-05 | **Twentieth revision:** Task 8.2 batch 2 — 10 mutate handlers across 9 route files migrated to Manifest runtime. **Settings / ApiKey domain:** 5 routes (create/update/softDelete/revoke/rotate) with pre-validation preserved (crypto generation, dual-auth, scope validation, duplicate-name checks, self-revocation prevention). **CRM / Venue domain:** 3 routes (create/update/deactivate) with active-events 409 pre-validation. **Command Board / Simulations domain:** 2 routes (discard/delete) with simulation-tag pre-validation. All GET handlers left as-is per constitution §10. Test suite: 118 test files, 2583+ tests passing, 0 typecheck errors. **Key discoveries:** (1) Mobile domain entities (PushToken, NotificationPreference, AppSettings) are NOT in the Manifest IR — cannot be migrated until entity definitions are added to manifest/source/. (2) Command Board simulation apply/merge routes are COMPLEX (517-604 lines each, multi-model transactions) — deferred. Pre-validation governance pattern established and documented. Task 8.4 also completed: kitchen task claim routes migrated to Manifest-only. Total governance migration: 15 mutate handlers across 14 route files. Remaining: ~176 violations across ~66 files. |

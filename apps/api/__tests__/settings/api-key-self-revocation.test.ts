@@ -13,7 +13,6 @@
  * intact.
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,19 +28,33 @@ vi.mock("@repo/database", () => ({
     },
   },
 }));
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
 vi.mock("@/middleware/rate-limiter", () => ({
   withRateLimit: (handler: Function) => handler,
 }));
 vi.mock("@/middleware/dual-auth", () => ({
   requireDualAuth: vi.fn(),
 }));
+vi.mock("@/lib/api-scopes", () => ({
+  API_SCOPES: { ADMIN: "admin" },
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 const { auth } = await import("@repo/auth/server");
 const { requireDualAuth } = await import("@/middleware/dual-auth");
-const { POST: revokeApiKey } = await import(
+
+const _revokeRoute = await import(
   "@/app/api/settings/api-keys/[id]/revoke/route"
 );
+const revokeApiKey = _revokeRoute.POST;
+
+const { database } = await import("@repo/database");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 const TENANT = "tenant-001";
 const SELF_INTERNAL = "user-self-001";
@@ -104,7 +117,7 @@ describe("POST /api/settings/api-keys/[id]/revoke — self-revocation guards", (
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(String(body.message)).toMatch(/currently in use/i);
-    expect(database.apiKey.update).not.toHaveBeenCalled();
+    expect(runManifestCommand).not.toHaveBeenCalled();
   });
 
   it("blocks revoking a key the caller created (session auth path)", async () => {
@@ -127,7 +140,7 @@ describe("POST /api/settings/api-keys/[id]/revoke — self-revocation guards", (
     expect(res.status).toBe(403);
     const body = await res.json();
     expect(String(body.message)).toMatch(/you created/i);
-    expect(database.apiKey.update).not.toHaveBeenCalled();
+    expect(runManifestCommand).not.toHaveBeenCalled();
   });
 
   it("allows revoking another user's key (session auth)", async () => {
@@ -143,12 +156,18 @@ describe("POST /api/settings/api-keys/[id]/revoke — self-revocation guards", (
     vi.mocked(database.user.findFirst).mockResolvedValue({
       id: SELF_INTERNAL,
     } as never);
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
 
     const { request, context } = req("key-001");
     const res = await revokeApiKey(request, context);
 
     expect(res.status).toBe(200);
-    expect(database.apiKey.update).toHaveBeenCalled();
+    expect(runManifestCommand).toHaveBeenCalled();
   });
 
   it("allows revoking a different key under api_key auth when not the caller's key", async () => {
@@ -162,11 +181,17 @@ describe("POST /api/settings/api-keys/[id]/revoke — self-revocation guards", (
     vi.mocked(database.apiKey.findUnique).mockResolvedValue(
       baseKey({ id: "key-001", createdByUserId: OTHER_INTERNAL }) as never
     );
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      })
+    );
 
     const { request, context } = req("key-001");
     const res = await revokeApiKey(request, context);
 
     expect(res.status).toBe(200);
-    expect(database.apiKey.update).toHaveBeenCalled();
+    expect(runManifestCommand).toHaveBeenCalled();
   });
 });

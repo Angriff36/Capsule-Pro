@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
+[proactive bridge @ 95% context — saved before compacting]
 Files (1):
-  apps/api/app/api/events/budgets/route.ts (create)
+  manifest/source/api-key-rules.manifest (edit)
 
 # === END COGNILAYER ===
