@@ -23,11 +23,11 @@
 | 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
 | 5 | ~~371~~ **301** direct-write violations | **CONFIRMED** | 191 API mutation calls across 80 files + 110 server action writes across 28 files = 301 total. 12 hybrid files. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
-| 7 | ~~90~~ **70~~81** entities use GenericPrismaStore | **UPDATED** | 81 of 94 switch-case entities now route to GenericPrismaStore (was 70 boilerplate). Only **13 with custom logic** remain (was 23). |
+| 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
 | 9 | 1 saga (ProcessInvoicePayment) | **CONFIRMED** | `sagas: [{"name": "ProcessInvoicePayment", "steps": [...]}]` |
 | 10 | **1,330** generated client functions, **0** consumers | **CONFIRMED** | `manifest-client.generated.ts` has 1,330 exported async functions. Prior audit incorrectly reported 2-3 consumers. Codebase-wide grep confirms zero files import from it. |
-| 11 | prisma-store.ts: 3,061 lines, **94** switch cases | **CONFIRMED** (11th rev: was 93, re-counted as 94) | Verified line count and switch-case count |
+| 11 | prisma-store.ts: ~~3,061~~ ~1,085 lines, ~~94~~ **5** switch cases | **UPDATED** (Task 3.2/3.3) | GenericPrismaStore strategy: 89/94 entities use generic, 5 custom |
 | 12 | Custom outbox duplicates upstream | **CONFIRMED** | Factory has `createPrismaOutboxWriter` (~60 lines) in telemetry hooks; upstream ships `OutboxStore` contract with `outbox/postgres` adapter |
 
 ### NEW findings from this revision (5th)
@@ -382,9 +382,9 @@
 
 ### Store Layer
 
-- `prisma-store.ts`: 3,061 lines, **94** switch cases
-- `prisma-stores/` directory: 45 files, ~12,694 lines
-- **81 of 94 switch-case entities now route to GenericPrismaStore** -- **13 have custom logic** (was 23). GenericPrismaStore is now used at runtime for the majority of entities.
+- `prisma-store.ts`: ~1,085 lines, **5** switch cases (was 3,061/94 — Task 3.2/3.3)
+- `prisma-stores/` directory: 3 files (was 45 — Task 3.3)
+- **89 of 94 switch-case entities now route to GenericPrismaStore** -- **5 have custom logic** (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). GenericPrismaStore is the default strategy.
 - **VendorContract appears twice** in ENTITIES_WITH_SPECIFIC_STORES (lines 199 and 226 -- duplicate entry, benign)
 - GenericPrismaStore available as fallback for unmapped entities
 - `ShipmentPrismaStore` uses `as any` cast on status field
@@ -478,6 +478,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 7.3: requireTenantContext — confirmed already wired** | requireTenantContext: true at line 466 of manifest-runtime-factory.ts. Engine rejects commands without tenant via MISSING_TENANT_CONTEXT. IR-level tenant declarations (automatic tenant scoping) are a separate enhancement, not security-critical. |
 | 2026-06-05 | **Task 7.8: API shim audit — 276 lines of dead code removed** | 28 unused entity convenience helpers deleted (zero callers). Type re-exports reduced from 5 to 2 active. Shim shrinks 376→100 lines (73% reduction). No logic moved — factory was already correct. API typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 7.6: Wire 5 RuntimeOptions (approvalStore, deterministicMode, evaluationLimits, profiling, flagProvider)** | PostgresApprovalStore wired with schema bootstrap (manifest_approval_requests table). 4 passthrough options added to CreateManifestRuntimeDeps. RuntimeOptions wiring now 14/19 (was 9/19). Remaining 5 blocked or future: requireValidProvenance/expectedIRHash (irHash empty), jobQueue (no async commands), wasmEvaluator/encryptionProvider (future). API+runtime typecheck 0, 2591 tests pass. |
+| 2026-06-05 | **Task 3.2/3.3: Store strategy decision + migration phase 2 — ~1,800 LOC deleted** | Decision: GenericPrismaStore is the strategy. ENTITIES_WITH_SPECIFIC_STORES: 95→5 (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). prisma-store.ts: 2,764→~1,085 lines (61%). prisma-stores/: 6→3 files. 24 dead load/sync helpers deleted. API+runtime typecheck 0, 2591 tests pass. |
 
 ---
 
@@ -899,13 +900,15 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** New files at `apps/api/app/api/manifest/[entity]/route.ts` and `manifest/[entity]/[id]/route.ts`.
 - **Evidence:** List route at `[entity]/route.ts` and detail route at `[entity]/[id]/route.ts`. Entity resolution via `entity-accessor.ts` with accessor overrides, tenant isolation, soft-delete filtering, pagination. 17 tests pass.
 
-### 3.2 Store generation strategy decision
+### 3.2 Store generation strategy decision — ✅ DONE 2026-06-05
 - **Done when:** Decision documented: GenericPrismaStore (exists, metadata-driven) vs codegen step. Audit confirmed 71 of 94 switch-case stores are pure boilerplate CRUD. 23 have custom logic.
+- **Decision:** GenericPrismaStore for all entities except 5 with genuine custom logic. ENTITIES_WITH_SPECIFIC_STORES reduced from 95 to 5 (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer).
 - **Backpressure:** Decision document with trade-offs.
 - **Source to change:** Analysis of `manifest/runtime/src/prisma-stores/` vs `generic-prisma-store.ts`.
 
-### 3.3 GenericPrismaStore migration — ✅ PHASE 1 DONE 2026-06-05
+### 3.3 GenericPrismaStore migration — ✅ DONE 2026-06-05
 - **✅ Phase 1 DONE (2026-06-05):** Deleted 39 dead store files (~11,210 LOC). `prisma-stores/` reduced from 45→6 files, 12,694→1,484 LOC. 81/94 entities use GenericPrismaStore. Remaining: consider inline store consolidation in `prisma-store.ts`.
+- **✅ Phase 2 DONE (2026-06-05):** ENTITIES_WITH_SPECIFIC_STORES reduced from 95→5. prisma-store.ts: 2,764→~1,085 lines (61% reduction). prisma-stores/: 6→3 files. 24 dead load/sync helpers deleted. 89/94 entities now route to GenericPrismaStore. Only 5 retain custom logic (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer).
 - **Done when (full):** All 71 boilerplate switch-case entities use GenericPrismaStore. Only 23 stores with genuine custom logic retain specific implementations. `prisma-stores/broken-read-batch*.ts` files deleted.
 - **Backpressure:** `pnpm --filter manifest-runtime typecheck` green; command roundtrip tests pass.
 - **Source to change:** `manifest/runtime/src/prisma-store.ts` + `prisma-stores/` directory.
@@ -1508,9 +1511,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | IR property types | string(1584) datetime(741) int(158) money(109) decimal(102) boolean(94) array(7) float(1) | same | -- |
 | IR number-type props | 0 | 0 | -- |
 | Prisma models | 226 total, **188 match IR**, 67 Prisma-only, **1 IR without model** (QACheck), **15 wrong accessor** | 226/173/16 | UPDATED: 188/189 matched after Task 2.5 Phase 3 |
-| `prisma-store.ts` | 3,061 lines, **94** switch cases (**71 pure boilerplate, 23 custom**) | same | CORRECTED 11th rev: 94 not 93 |
-| `prisma-stores/` | 45 files, ~12,694 lines | same | -- |
-| Total hand-maintained store code | ~15,755 lines | same | -- |
+| `prisma-store.ts` | ~1,085 lines, **5** switch cases | was 3,061 lines, 94 cases | UPDATED: Task 3.2/3.3 — 61% reduction, GenericPrismaStore strategy |
+| `prisma-stores/` | 3 files | was 45 files, ~12,694 lines | UPDATED: Task 3.3 — phase 1+2 cleanup |
+| Total hand-maintained store code | ~1,085 lines (prisma-store.ts) + 3 files (prisma-stores/) | was ~15,755 lines | UPDATED: Task 3.3 — 93% reduction |
 | `manifest-runtime-factory.ts` | **520** lines | 521 | CORRECTED 11th rev |
 | `manifest-runtime.ts` (package re-export) | 66 lines | 66 | -- |
 | `manifest-runtime.ts` (legacy dead code) | 3,205 lines, 60+ `as any`, 50+ wrappers | same | -- |
