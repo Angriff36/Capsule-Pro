@@ -1,0 +1,25 @@
+// Cross-Entity Reactions
+// Declarative event-to-command bindings that replace manual cross-entity Prisma writes.
+// Reactions fire synchronously within the same Manifest runtime turn after event emission.
+// See: docs/manifest-official/spec/semantics.md "Reactions" section
+
+// ── Finance: Payment → Invoice ──────────────────────────────────────────────
+
+// When a payment is processed (e.g., Stripe webhook confirms charge), automatically
+// apply it to the linked invoice. Previously done as raw Prisma writes in the
+// webhook handler (apps/api/app/webhooks/payments/route.ts), bypassing governance.
+on PaymentProcessed run Invoice.applyPayment
+  resolve payload.invoiceId
+  params {
+    paymentAmount: payload.amount
+    paymentId: payload.paymentId
+  }
+
+// When a payment is refunded, automatically record the refund against the invoice.
+// Ensures amountPaid/amountDue stay consistent with payment state.
+on PaymentRefunded run Invoice.recordRefund
+  resolve payload.invoiceId
+  params {
+    refundAmount: payload.refundAmount
+    paymentId: payload.paymentId
+  }
