@@ -368,9 +368,9 @@
 
 ### Runtime Wiring
 
-- Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional) }` (5 of 19 directly wired)
-- **7 of 19 RuntimeOptions properties wired or passthrough** (5 wired + 2 passthrough: evaluationLimits, deterministicMode)
-- **12 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
+- Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
+- **9 of 19 RuntimeOptions properties wired or passthrough** (7 wired + 2 passthrough: evaluationLimits, deterministicMode)
+- **10 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
 - Custom outbox implementation duplicates upstream `OutboxStore` contract
@@ -473,6 +473,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 0.5: Route regen-diff harness** | `manifest/scripts/audit-route-drift.mjs` exists with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate, exit 1 on drift). Writes to `manifest/reports/route-drift/route-drift.json`. Snapshots git hashes, regenerates, compares. Needs CI workflow wiring. |
 | 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware. Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. |
 | 2026-06-05 | **Task 3.3 Phase 1: Delete dead prisma-stores (~11,210 LOC)** | 39 dead store files deleted. prisma-stores/ reduced from 45→6 files. 81/94 entities already route to GenericPrismaStore. Zero external imports of deleted files confirmed. API+runtime typecheck 0, 2591 tests pass. |
+| 2026-06-05 | **Task 7.6 partial: Wire generateId + now RuntimeOptions** | Two RuntimeOptions wired: generateId (randomUUID from node:crypto) and now (Date.now). Total wired: 9/19 (was 7). API+runtime typecheck 0, 2591 tests pass. |
+| 2026-06-05 | **Task 7.3: requireTenantContext — confirmed already wired** | requireTenantContext: true at line 466 of manifest-runtime-factory.ts. Engine rejects commands without tenant via MISSING_TENANT_CONTEXT. IR-level tenant declarations (automatic tenant scoping) are a separate enhancement, not security-critical. |
 
 ---
 
@@ -491,8 +493,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `flagProvider` | Feature flag resolver for `flag()` builtin | NOT WIRED | 7.6 |
 | `jobQueue` | Async command execution | NOT WIRED | 7.6 |
 | `profiling` | Per-phase command timing | NOT WIRED | 7.6 |
-| `generateId` | Custom ID generator | NOT WIRED | 7.6 |
-| `now` | Custom timestamp function | NOT WIRED | 7.6 |
+| `generateId` | Custom ID generator | **WIRED** — generateId: () => randomUUID() | -- |
+| `now` | Custom timestamp function | **WIRED** — now: () => Date.now() | -- |
 | `deterministicMode` | Throw on effect boundaries | DEFINED in context, NOT FORWARDED by factory | 7.6 |
 | `evaluationLimits` | Max expression depth/steps | DEFINED in context, NOT FORWARDED by factory | 7.6 |
 | `requireValidProvenance` | IR integrity hash verification | NOT WIRED | 7.6 |
