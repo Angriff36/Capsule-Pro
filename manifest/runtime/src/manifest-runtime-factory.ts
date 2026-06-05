@@ -21,6 +21,7 @@ import type {
   RuntimeEngine,
   RuntimeOptions,
 } from "@angriff36/manifest";
+import { randomUUID } from "node:crypto";
 import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
@@ -464,6 +465,8 @@ export async function createManifestRuntime(
       customBuiltins: createCustomBuiltins(),
       middleware,
       requireTenantContext: true,
+      generateId: () => randomUUID(),
+      now: () => Date.now(),
       ...(auditSink ? { auditSink } : {}),
       ...(outboxStore ? { outboxStore } : {}),
     }

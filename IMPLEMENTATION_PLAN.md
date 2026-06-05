@@ -472,6 +472,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 8.6 + Policy Binding Fix: `default policy` binds RBAC to ALL 952 commands** | ROOT CAUSE: 250 top-level policies were declared OUTSIDE entity blocks, so the compiler never bound them to IR commands (all 952 had `policies: []`). FIX: `default policy` syntax INSIDE entity blocks causes the compiler to auto-expand to every command. Added entity-specific `default policy <EntityName>DefaultAccess` to all 92 source files via `add-default-policies.mjs` script. Result: 952/952 commands have policies, 189/189 entities have `defaultPolicies`. 8 zero-policy files (invoice, payment, collections, etc.) now protected. API typecheck 0, 2574 tests pass. |
 | 2026-06-05 | **Task 0.5: Route regen-diff harness** | `manifest/scripts/audit-route-drift.mjs` exists with `manifest:audit-route-drift` (report) and `manifest:audit-route-drift:strict` (CI gate, exit 1 on drift). Writes to `manifest/reports/route-drift/route-drift.json`. Snapshots git hashes, regenerates, compares. Needs CI workflow wiring. |
 | 2026-06-05 | **Task 7.4d: Bootstrap middleware** | Upstream 1.7.0 removed the need for bootstrap middleware. Engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed. |
+| 2026-06-05 | **Task 3.3 Phase 1: Delete dead prisma-stores (~11,210 LOC)** | 39 dead store files deleted. prisma-stores/ reduced from 45→6 files. 81/94 entities already route to GenericPrismaStore. Zero external imports of deleted files confirmed. API+runtime typecheck 0, 2591 tests pass. |
 
 ---
 
@@ -486,7 +487,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `auditSink` | Durable audit record emission | **WIRED** (PostgresAuditSink, conditional on DATABASE_URL) | -- |
 | `outboxStore` | Transactional event persistence | **WIRED** (PostgresOutboxStore, conditional on DATABASE_URL) | -- |
 | `approvalStore` | Multi-stage approval persistence | NOT WIRED | 7.5 |
-| `requireTenantContext` | Fail if tenantId absent | **WIRED** (line 466, manifest-runtime-factory.ts) | 7.3 ✅ |
+| `requireTenantContext` | Fail if tenantId absent | **WIRED** (line 466, manifest-runtime-factory.ts) | -- |
 | `flagProvider` | Feature flag resolver for `flag()` builtin | NOT WIRED | 7.6 |
 | `jobQueue` | Async command execution | NOT WIRED | 7.6 |
 | `profiling` | Per-phase command timing | NOT WIRED | 7.6 |
@@ -898,8 +899,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Decision document with trade-offs.
 - **Source to change:** Analysis of `manifest/runtime/src/prisma-stores/` vs `generic-prisma-store.ts`.
 
-### 3.3 GenericPrismaStore migration
-- **Done when:** All 71 boilerplate switch-case entities use GenericPrismaStore. Only 23 stores with genuine custom logic retain specific implementations. `prisma-stores/broken-read-batch*.ts` files deleted.
+### 3.3 GenericPrismaStore migration — ✅ PHASE 1 DONE 2026-06-05
+- **✅ Phase 1 DONE (2026-06-05):** Deleted 39 dead store files (~11,210 LOC). `prisma-stores/` reduced from 45→6 files, 12,694→1,484 LOC. 81/94 entities use GenericPrismaStore. Remaining: consider inline store consolidation in `prisma-store.ts`.
+- **Done when (full):** All 71 boilerplate switch-case entities use GenericPrismaStore. Only 23 stores with genuine custom logic retain specific implementations. `prisma-stores/broken-read-batch*.ts` files deleted.
 - **Backpressure:** `pnpm --filter manifest-runtime typecheck` green; command roundtrip tests pass.
 - **Source to change:** `manifest/runtime/src/prisma-store.ts` + `prisma-stores/` directory.
 - **Note:** Retain `prisma-stores/shared.ts` coercion helpers until GenericPrismaStore has equivalent coercion.
@@ -1027,7 +1029,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Enqueue events, claim batch, mark delivered -- all succeed.
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`. Import from `@angriff36/manifest/outbox/postgres`.
 
-### 7.3 Wire requireTenantContext
+### 7.3 Wire requireTenantContext — **DONE**
 - **Done when:** Engine constructed with `requireTenantContext: true`. Commands without tenant context fail with `MISSING_TENANT_CONTEXT`.
 - **Why:** Multi-tenant app should enforce tenant scoping at the engine level. Currently defaults to false. Manifest docs confirm: single `tenant tenantId : string from context.tenantId` declaration auto-writes tenant and filters reads.
 - **Backpressure:** Test command without tenant; confirm diagnostic error.
