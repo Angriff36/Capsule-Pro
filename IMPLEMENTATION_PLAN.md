@@ -369,13 +369,13 @@
 ### Runtime Wiring
 
 - Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
-- **9 of 19 RuntimeOptions properties wired or passthrough** (7 wired + 2 passthrough: evaluationLimits, deterministicMode)
-- **10 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
+- **14 of 19 RuntimeOptions properties wired** (9 directly wired + 5 forwarded passthrough)
+- **5 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
 - Custom outbox implementation duplicates upstream `OutboxStore` contract
 - No audit trail (`auditSink` not wired despite upstream having full `emitAudit` infrastructure)
-- No durable approval state (`approvalStore` not wired)
+- ~~No durable approval state (`approvalStore` not wired)~~ **WIRED** (Task 7.6)
 - No middleware pipeline (all cross-cutting concerns handled by Proxy wrapper)
 - Permission guard: whitelist-based `COMMAND_PERMISSION_MAP` covering **31 entries** across 9 entity types
 - **Single command handler**: `execute-command.ts` (CANONICAL). Legacy `manifest-command-handler.ts` removed (Task 10.13, 2026-06-04). All routes use full middleware pipeline (identity, RBAC, audit, outbox).
@@ -476,10 +476,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Task 7.6 partial: Wire generateId + now RuntimeOptions** | Two RuntimeOptions wired: generateId (randomUUID from node:crypto) and now (Date.now). Total wired: 9/19 (was 7). API+runtime typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 9.2 COMPLETE: 3 new reactions (10 total, target 5+ exceeded)** | ShipmentItemReceived→InventoryItem.restock, LeadConvertedToClient→Deal.create, ProposalAccepted→Event.create. Cross-entity governed side effects replace manual orchestration. IR: 10 reactions. API typecheck 0, 2591 tests pass. |
 | 2026-06-05 | **Task 7.3: requireTenantContext — confirmed already wired** | requireTenantContext: true at line 466 of manifest-runtime-factory.ts. Engine rejects commands without tenant via MISSING_TENANT_CONTEXT. IR-level tenant declarations (automatic tenant scoping) are a separate enhancement, not security-critical. |
+| 2026-06-05 | **Task 7.8: API shim audit — 276 lines of dead code removed** | 28 unused entity convenience helpers deleted (zero callers). Type re-exports reduced from 5 to 2 active. Shim shrinks 376→100 lines (73% reduction). No logic moved — factory was already correct. API typecheck 0, 2591 tests pass. |
+| 2026-06-05 | **Task 7.6: Wire 5 RuntimeOptions (approvalStore, deterministicMode, evaluationLimits, profiling, flagProvider)** | PostgresApprovalStore wired with schema bootstrap (manifest_approval_requests table). 4 passthrough options added to CreateManifestRuntimeDeps. RuntimeOptions wiring now 14/19 (was 9/19). Remaining 5 blocked or future: requireValidProvenance/expectedIRHash (irHash empty), jobQueue (no async commands), wasmEvaluator/encryptionProvider (future). API+runtime typecheck 0, 2591 tests pass. |
 
 ---
 
-## Unwired RuntimeOptions (19 properties, 3 wired)
+## Unwired RuntimeOptions (19 properties, 14 wired)
 
 | Property | Purpose | Status | Tier |
 |---|---|---|---|
@@ -489,15 +491,15 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `middleware` | Lifecycle hooks (before-guard, before-policy, before-action, after-emit) | NOT WIRED | 7.4 |
 | `auditSink` | Durable audit record emission | **WIRED** (PostgresAuditSink, conditional on DATABASE_URL) | -- |
 | `outboxStore` | Transactional event persistence | **WIRED** (PostgresOutboxStore, conditional on DATABASE_URL) | -- |
-| `approvalStore` | Multi-stage approval persistence | NOT WIRED | 7.5 |
+| `approvalStore` | Multi-stage approval persistence | **WIRED** (PostgresApprovalStore, conditional on DATABASE_URL) | -- |
 | `requireTenantContext` | Fail if tenantId absent | **WIRED** (line 466, manifest-runtime-factory.ts) | -- |
-| `flagProvider` | Feature flag resolver for `flag()` builtin | NOT WIRED | 7.6 |
+| `flagProvider` | Feature flag resolver for `flag()` builtin | **WIRED** (passthrough from deps.flagProvider) | -- |
 | `jobQueue` | Async command execution | NOT WIRED | 7.6 |
-| `profiling` | Per-phase command timing | NOT WIRED | 7.6 |
+| `profiling` | Per-phase command timing | **WIRED** (passthrough from deps.profiling) | -- |
 | `generateId` | Custom ID generator | **WIRED** — generateId: () => randomUUID() | -- |
 | `now` | Custom timestamp function | **WIRED** — now: () => Date.now() | -- |
-| `deterministicMode` | Throw on effect boundaries | DEFINED in context, NOT FORWARDED by factory | 7.6 |
-| `evaluationLimits` | Max expression depth/steps | DEFINED in context, NOT FORWARDED by factory | 7.6 |
+| `deterministicMode` | Throw on effect boundaries | **WIRED** (passthrough from deps.deterministicMode) | -- |
+| `evaluationLimits` | Max expression depth/steps | **WIRED** (passthrough from deps.evaluationLimits) | -- |
 | `requireValidProvenance` | IR integrity hash verification | NOT WIRED | 7.6 |
 | `expectedIRHash` | Expected IR hash | NOT WIRED | 7.6 |
 | `wasmEvaluator` | WASM expression evaluation | NOT WIRED | Future |
