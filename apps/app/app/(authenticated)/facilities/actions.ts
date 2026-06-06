@@ -92,27 +92,36 @@ export interface CreateFacilityAreaInput {
 }
 
 export async function createFacilityArea(input: CreateFacilityAreaInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: FacilityArea.create runs through the Manifest runtime
+  // (constitution §9) — no direct database.facilityArea.create.
+  // requireCurrentUser supplies the actor + tenant for policy + audit (§19).
+  // `status` is command-owned (entity default "active"), NOT sent in body.
+  // squareFeet is a decimal in manifest; GenericPrismaStore coerces the
+  // string-param default "0" correctly for nullable Decimal columns.
+  const user = await requireCurrentUser();
 
-  const area = await database.facilityArea.create({
-    data: {
-      tenantId,
-      venueId: input.venueId || null,
+  const result = await runManifestCommand({
+    entity: "FacilityArea",
+    command: "create",
+    body: {
+      venueId: input.venueId || "",
       name: input.name.trim(),
-      code: input.code?.trim() || null,
+      code: input.code?.trim() || "",
       areaType: input.areaType || "other",
-      floor: input.floor?.trim() || null,
-      description: input.description?.trim() || null,
-      squareFeet: input.squareFeet ?? null,
-      status: input.status || "active",
+      floor: input.floor?.trim() || "",
+      description: input.description?.trim() || "",
+      squareFeet: input.squareFeet ?? 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create facility area");
+  }
 
   revalidatePath("/facilities");
   revalidatePath("/facilities/areas");
-  return area;
+  return (result.result as Record<string, unknown>) ?? {};
 }
 
 // ── FacilityAsset ───────────────────────────────────────────────────────────

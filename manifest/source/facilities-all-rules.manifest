@@ -204,6 +204,9 @@ entity FacilityAsset {
   property currentValue: decimal = 0
   property depreciationRate: decimal = 0
   property serialNumber: string = ""
+  property manufacturer: string = ""
+  property model: string = ""
+  property warrantyExpiry: datetime
   property lastMaintenanceAt: datetime
   property nextMaintenanceAt: datetime
   property notes: string = ""
@@ -232,7 +235,7 @@ entity FacilityAsset {
   }
 
   default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: number, serialNumber: string, notes: string) {
+  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: number, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -243,6 +246,9 @@ entity FacilityAsset {
     mutate purchasePrice = purchasePrice
     mutate currentValue = purchasePrice
     mutate serialNumber = serialNumber
+    mutate manufacturer = manufacturer
+    mutate model = model
+    mutate warrantyExpiry = warrantyExpiry
     mutate notes = notes
     mutate status = "operational"
 

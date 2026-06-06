@@ -259,8 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 93% context — saved before compacting]
-Files (1):
-  apps/api/__tests__/accounting/invoice-patch-actions.test.ts (create)
+[proactive bridge @ 98% context — saved before compacting]
+Files (2):
+  apps/app/app/(authenticated)/scheduling/availability/actions.ts (edit)
+  apps/app/app/(authenticated)/facilities/actions.ts (edit)
 
 # === END COGNILAYER ===
