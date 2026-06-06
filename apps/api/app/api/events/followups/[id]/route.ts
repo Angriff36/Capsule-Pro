@@ -30,7 +30,6 @@ export async function GET(
       where: {
         id,
         tenant_id: tenantId,
-        deletedAt: null
       },
     });
 

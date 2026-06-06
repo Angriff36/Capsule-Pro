@@ -314,29 +314,36 @@ export const ENTITY_ACCESSOR_OVERRIDES = {
 //   tenantId: "<col>"   → rewrite the `where` shorthand `tenantId` to `<col>: tenantId`.
 //   createdAt: "<col>"  → rewrite the `orderBy` field `createdAt` to `<col>`.
 //   createdAt: null     → the model has NO created-at column; remove the `orderBy` clause entirely.
+//   deletedAt: "<col>"  → rewrite the `where` soft-delete field `deletedAt` to `<col>`.
+//   deletedAt: null     → the model has NO soft-delete column; remove the `deletedAt: null` filter.
 //
 // Verified against packages/database/prisma/schema.prisma (2026-06-03):
 //   tenant_id raw + created_at raw: EventFollowup, ActionMilestone, DisciplinaryAction,
 //     OnboardingCompletion, OnboardingTask, PerformanceReview.
 //   tenantId @map + created_at raw: ReorderSuggestion (where ok, orderBy needs rewrite).
 //   no created-at column: ForecastInput (absent), InventoryForecast (uses last_updated).
+// Soft-delete drift verified 2026-06-06 (upstream emits `deletedAt: null`, but these models differ):
+//   raw `deleted_at` column: Document, SmsAutomationRule, StorageLocation, OnboardingTask.
+//   no soft-delete column at all: CrmScoringRule, EventFollowup (IR declares deletedAt but the
+//     Prisma table has no such column — read route must not filter on a phantom field).
 export const ENTITY_FIELD_OVERRIDES = {
-  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at" },
+  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: null },
   ActionMilestone: { tenantId: "tenant_id", createdAt: "created_at" },
   DisciplinaryAction: { tenantId: "tenant_id", createdAt: "created_at" },
   OnboardingCompletion: { tenantId: "tenant_id", createdAt: "created_at" },
-  OnboardingTask: { tenantId: "tenant_id", createdAt: "created_at" },
+  OnboardingTask: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
   PerformanceReview: { tenantId: "tenant_id", createdAt: "created_at" },
   ReorderSuggestion: { createdAt: "created_at" },
   ForecastInput: { createdAt: null },
   InventoryForecast: { createdAt: null },
+  CrmScoringRule: { deletedAt: null },
 
   // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
   // exposed that these models also use raw `tenant_id` + `created_at` (no @map). Verified
   // 2026-06-03 against schema.prisma (all 9 have raw tenant_id + created_at columns).
-  Document: { tenantId: "tenant_id", createdAt: "created_at" },
-  SmsAutomationRule: { tenantId: "tenant_id", createdAt: "created_at" },
-  StorageLocation: { tenantId: "tenant_id", createdAt: "created_at" },
+  Document: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  SmsAutomationRule: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  StorageLocation: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
   BulkCombineRule: { tenantId: "tenant_id", createdAt: "created_at" },
   MethodVideo: { tenantId: "tenant_id", createdAt: "created_at" },
   PrepListImport: { tenantId: "tenant_id", createdAt: "created_at" },
@@ -434,6 +441,25 @@ export function applyFieldOverrides(content, entityName) {
       `$1${overrides.createdAt}$2`
     );
     if (out !== before) rewrites.push(`orderBy.createdAt → ${overrides.createdAt}`);
+  }
+
+  if (overrides.deletedAt === null) {
+    // Model has NO soft-delete column → remove the `deletedAt: null` filter entirely.
+    // It is always the last `where` property (no trailing comma), so dropping the line
+    // leaves the preceding property's comma as a valid trailing comma before `}`.
+    const before = out;
+    out = out.replace(/\n[^\S\n]*deletedAt:\s*null,?/g, "");
+    if (out !== before) {
+      rewrites.push("where.deletedAt removed (no soft-delete column)");
+    }
+  } else if (overrides.deletedAt) {
+    // Legacy snake_case model: rewrite the `where` soft-delete field name.
+    const before = out;
+    out = out.replace(
+      /deletedAt(\s*:\s*null)/g,
+      `${overrides.deletedAt}$1`
+    );
+    if (out !== before) rewrites.push(`where.deletedAt → ${overrides.deletedAt}`);
   }
 
   return { content: out, rewrites };
