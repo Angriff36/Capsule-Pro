@@ -2,6 +2,18 @@
  * CRM Lead Score Calculation API
  *
  * POST /api/crm/scoring/calculate — Recalculate scores for all leads
+ *
+ * GOVERNANCE MIGRATION BLOCKED:
+ * This route writes to `score` and `score_breakdown` columns on `tenant_crm.leads`,
+ * but these columns are absent from the Prisma schema (model Lead) and the Lead
+ * manifest entity has no score-related properties or commands. Prerequisites:
+ *   1. Add `score` (Int) and `scoreBreakdown` (Json) columns to the Lead Prisma model
+ *   2. Add a `recalculateScore` command to the Lead manifest entity with
+ *      params (score, scoreBreakdown) that mutates those properties
+ *   3. Recompile manifest IR
+ * After those prerequisites, replace the $executeRaw writes below with
+ * runManifestCommand({ entity: "Lead", command: "recalculateScore", ... }).
+ * Reads (rule fetch, distribution query) bypass Manifest per constitution §10.
  */
 
 import { auth } from "@repo/auth/server";

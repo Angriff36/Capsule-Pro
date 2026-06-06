@@ -1,8 +1,8 @@
 /**
  * CRM Scoring Rule by ID API
  *
- * PUT    /api/crm/scoring/[id]  - Update a scoring rule
- * DELETE /api/crm/scoring/[id]  - Delete a scoring rule
+ * PUT    /api/crm/scoring/[id]  - Update a scoring rule (Manifest governed)
+ * DELETE /api/crm/scoring/[id]  - Soft-delete a scoring rule (Manifest governed)
  */
 
 import { auth } from "@repo/auth/server";
@@ -11,27 +11,20 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
-// PUT /api/crm/scoring/[id] — Update a scoring rule
+// PUT /api/crm/scoring/[id] — Update a scoring rule via Manifest runtime
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
+    const user = await resolveCurrentUser(request);
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 400 }
-      );
     }
 
     const { id } = await params;
@@ -39,11 +32,23 @@ export async function PUT(
     const { rule_name, field, condition, value, points, is_active, priority } =
       body;
 
-    // Verify rule exists and belongs to tenant
-    const existing = await database.$queryRaw<Array<{ id: string }>>(
+    // Verify rule exists and belongs to tenant (read per constitution §10)
+    const existing = await database.$queryRaw<
+      Array<{
+        id: string;
+        rule_name: string;
+        field: string;
+        condition: string;
+        value: string;
+        points: number;
+        is_active: boolean;
+        priority: number;
+      }>
+    >(
       Prisma.sql`
-        SELECT id FROM tenant_crm.crm_scoring_rules
-        WHERE id = ${id}::uuid AND tenant_id = ${tenantId}::uuid
+        SELECT id, rule_name, field, condition, value, points, is_active, priority
+        FROM tenant_crm.crm_scoring_rules
+        WHERE id = ${id}::uuid AND tenant_id = ${user.tenantId}::uuid
       `
     );
 
@@ -51,24 +56,40 @@ export async function PUT(
       return NextResponse.json({ message: "Rule not found" }, { status: 404 });
     }
 
-    const updateResult = await database.$executeRaw`
-      UPDATE tenant_crm.crm_scoring_rules
-      SET
-        rule_name = COALESCE(${rule_name ?? null}, rule_name),
-        field = COALESCE(${field ?? null}, field),
-        condition = COALESCE(${condition ?? null}, condition),
-        value = COALESCE(${value ?? null}, value)::varchar,
-        points = COALESCE(${points ?? null}, points),
-        is_active = COALESCE(${is_active ?? null}, is_active),
-        priority = COALESCE(${priority ?? null}, priority),
-        updated_at = NOW()
-      WHERE id = ${id}::uuid AND tenant_id = ${tenantId}::uuid
-    `;
+    const current = existing[0];
 
-    if (updateResult === 0) {
-      return NextResponse.json({ message: "Rule not found" }, { status: 404 });
+    // Merge incoming values with current values (COALESCE semantics from old route)
+    const mergedRuleName = rule_name ?? current.rule_name;
+    const mergedField = field ?? current.field;
+    const mergedCondition = condition ?? current.condition;
+    const mergedValue = value ?? current.value;
+    const mergedPoints = points ?? current.points;
+    const mergedIsActive = is_active ?? current.is_active;
+    const mergedPriority = priority ?? current.priority;
+
+    // Dispatch governed write through Manifest runtime
+    const result = await runManifestCommand({
+      entity: "CrmScoringRule",
+      command: "update",
+      body: {
+        id,
+        tenantId: user.tenantId,
+        ruleName: mergedRuleName,
+        field: mergedField,
+        condition: mergedCondition,
+        value: mergedValue,
+        points: mergedPoints,
+        isActive: mergedIsActive,
+        priority: mergedPriority,
+      },
+      user,
+    });
+
+    if (result.status >= 400) {
+      return result;
     }
 
+    // Fetch refreshed row for response (read per §10)
     const refreshed = await database.$queryRaw<
       Array<{
         id: string;
@@ -87,7 +108,7 @@ export async function PUT(
       Prisma.sql`
         SELECT id, tenant_id, rule_name, field, condition, value, points, is_active, priority, created_at, updated_at
         FROM tenant_crm.crm_scoring_rules
-        WHERE id = ${id}::uuid AND tenant_id = ${tenantId}::uuid
+        WHERE id = ${id}::uuid AND tenant_id = ${user.tenantId}::uuid
       `
     );
 
@@ -102,34 +123,44 @@ export async function PUT(
   }
 }
 
-// DELETE /api/crm/scoring/[id] — Delete a scoring rule
+// DELETE /api/crm/scoring/[id] — Soft-delete a scoring rule via Manifest runtime
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
+    const user = await resolveCurrentUser(request);
+    if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 400 }
-      );
     }
 
     const { id } = await params;
 
-    const deleted = await database.$executeRaw`
-      DELETE FROM tenant_crm.crm_scoring_rules
-      WHERE id = ${id}::uuid AND tenant_id = ${tenantId}::uuid
-    `;
+    // Verify rule exists (read per §10)
+    const existing = await database.$queryRaw<Array<{ id: string }>>(
+      Prisma.sql`
+        SELECT id FROM tenant_crm.crm_scoring_rules
+        WHERE id = ${id}::uuid AND tenant_id = ${user.tenantId}::uuid
+      `
+    );
 
-    if (deleted === 0) {
+    if (!existing || existing.length === 0) {
       return NextResponse.json({ message: "Rule not found" }, { status: 404 });
+    }
+
+    // Dispatch governed soft-delete through Manifest runtime
+    const result = await runManifestCommand({
+      entity: "CrmScoringRule",
+      command: "softDelete",
+      body: {
+        id,
+        tenantId: user.tenantId,
+      },
+      user,
+    });
+
+    if (result.status >= 400) {
+      return result;
     }
 
     return NextResponse.json({ success: true });

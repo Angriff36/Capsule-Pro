@@ -181,51 +181,61 @@ entity CrmScoringRule {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
-  property name: string = ""
-  property criterion: string = ""
+  property ruleName: string = ""
+  property field: string = ""
+  property condition: string = ""
+  property value: string = ""
   property points: int = 0
   property isActive: boolean = true
+  property priority: int = 0
   timestamps
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
 
-  constraint requireName: self.name != null and self.name != "" "Scoring rule name is required"
-  constraint requireCriterion: self.criterion != null and self.criterion != "" "Criterion is required"
-  constraint nonZeroPoints: self.points != 0 "Points value must be non-zero"
+  constraint requireRuleName: self.ruleName != null and self.ruleName != "" "Rule name is required"
+  constraint requireField: self.field != null and self.field != "" "Field is required"
+  constraint requireCondition: self.condition != null and self.condition != "" "Condition is required"
 
   constraint warnExtremePoints:warn self.points > 100 or self.points < -100 {
-    messageTemplate: "Scoring rule '{name}' has extreme point value ({points}); verify this is intentional"
+    messageTemplate: "Scoring rule '{ruleName}' has extreme point value ({points}); verify this is intentional"
     details: {
-      name: self.name
-      criterion: self.criterion
+      ruleName: self.ruleName
+      field: self.field
       points: self.points
     }
   }
 
   default policy CrmScoringRuleDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(name: string, criterion: string, points: int) {
-    guard name != null and name != "" "Scoring rule name is required"
-    guard criterion != null and criterion != "" "Criterion is required"
-    guard points != 0 "Points value must be non-zero"
+  command create(ruleName: string, field: string, condition: string, value: string, points: int, isActive: boolean, priority: int) {
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard field != null and field != "" "Field is required"
+    guard condition != null and condition != "" "Condition is required"
 
-    mutate name = name
-    mutate criterion = criterion
+    mutate ruleName = ruleName
+    mutate field = field
+    mutate condition = condition
+    mutate value = value
     mutate points = points
-    mutate isActive = true
+    mutate isActive = isActive
+    mutate priority = priority
 
     emit CrmScoringRuleCreated
   }
 
-  command update(name: string, criterion: string, points: int) {
+  command update(ruleName: string, field: string, condition: string, value: string, points: int, isActive: boolean, priority: int) {
     guard self.deletedAt == null "Cannot update a deleted scoring rule"
-    guard name != null and name != "" "Scoring rule name is required"
-    guard criterion != null and criterion != "" "Criterion is required"
-    guard points != 0 "Points value must be non-zero"
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard field != null and field != "" "Field is required"
+    guard condition != null and condition != "" "Condition is required"
 
-    mutate name = name
-    mutate criterion = criterion
+    mutate ruleName = ruleName
+    mutate field = field
+    mutate condition = condition
+    mutate value = value
     mutate points = points
+    mutate isActive = isActive
+    mutate priority = priority
 
     emit CrmScoringRuleUpdated
   }
@@ -246,6 +256,14 @@ entity CrmScoringRule {
     mutate isActive = false
 
     emit CrmScoringRuleDeactivated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Scoring rule is already deleted"
+
+    mutate deletedAt = now()
+
+    emit CrmScoringRuleSoftDeleted
   }
 
   store CrmScoringRule in durable
@@ -590,8 +608,9 @@ event InteractionAttachmentRemoved: "crm.interaction_attachment.removed" {
 event CrmScoringRuleCreated: "crm.scoring_rule.created" {
   ruleId: string
   tenantId: string
-  name: string
-  criterion: string
+  ruleName: string
+  field: string
+  condition: string
   points: number
   createdAt: datetime
 }
@@ -599,8 +618,9 @@ event CrmScoringRuleCreated: "crm.scoring_rule.created" {
 event CrmScoringRuleUpdated: "crm.scoring_rule.updated" {
   ruleId: string
   tenantId: string
-  name: string
-  criterion: string
+  ruleName: string
+  field: string
+  condition: string
   points: number
   updatedAt: datetime
 }
@@ -608,15 +628,22 @@ event CrmScoringRuleUpdated: "crm.scoring_rule.updated" {
 event CrmScoringRuleActivated: "crm.scoring_rule.activated" {
   ruleId: string
   tenantId: string
-  name: string
+  ruleName: string
   activatedAt: datetime
 }
 
 event CrmScoringRuleDeactivated: "crm.scoring_rule.deactivated" {
   ruleId: string
   tenantId: string
-  name: string
+  ruleName: string
   deactivatedAt: datetime
+}
+
+event CrmScoringRuleSoftDeleted: "crm.scoring_rule.soft_deleted" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  deletedAt: datetime
 }
 
 event ReportCreated: "admin.report.created" {

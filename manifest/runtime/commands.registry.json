@@ -916,6 +916,11 @@
   },
   {
     "entity": "CrmScoringRule",
+    "command": "softDelete",
+    "commandId": "CrmScoringRule.softDelete"
+  },
+  {
+    "entity": "CrmScoringRule",
     "command": "update",
     "commandId": "CrmScoringRule.update"
   },
