@@ -12,10 +12,19 @@ entity ProposalTemplate {
   property required tenantId: string
   property name: string = ""
   property description: string = ""
-  property headerHtml: string = ""
-  property footerHtml: string = ""
+  property eventType: string = ""
   property defaultTerms: string = ""
+  property defaultTaxRate: decimal = 0
+  property defaultNotes: string = ""
+  property defaultLineItems: string = "[]"
   property isActive: boolean = true
+  property isDefault: boolean = false
+  // Branding fields
+  property logoUrl: string = ""
+  property primaryColor: string = ""
+  property secondaryColor: string = ""
+  property accentColor: string = ""
+  property fontFamily: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -31,28 +40,45 @@ entity ProposalTemplate {
   }
 
   default policy ProposalTemplateDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(name: string, description: string, headerHtml: string, footerHtml: string, defaultTerms: string) {
+  command create(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
     guard name != null and name != "" "Template name is required"
 
     mutate name = name
     mutate description = description
-    mutate headerHtml = headerHtml
-    mutate footerHtml = footerHtml
+    mutate eventType = eventType
     mutate defaultTerms = defaultTerms
-    mutate isActive = true
+    mutate defaultTaxRate = defaultTaxRate
+    mutate defaultNotes = defaultNotes
+    mutate defaultLineItems = defaultLineItems
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate logoUrl = logoUrl
+    mutate primaryColor = primaryColor
+    mutate secondaryColor = secondaryColor
+    mutate accentColor = accentColor
+    mutate fontFamily = fontFamily
 
     emit ProposalTemplateCreated
   }
 
-  command update(name: string, description: string, headerHtml: string, footerHtml: string, defaultTerms: string) {
+  command update(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
     guard self.deletedAt == null "Cannot update a deleted template"
     guard name != null and name != "" "Template name is required"
 
     mutate name = name
     mutate description = description
-    mutate headerHtml = headerHtml
-    mutate footerHtml = footerHtml
+    mutate eventType = eventType
     mutate defaultTerms = defaultTerms
+    mutate defaultTaxRate = defaultTaxRate
+    mutate defaultNotes = defaultNotes
+    mutate defaultLineItems = defaultLineItems
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate logoUrl = logoUrl
+    mutate primaryColor = primaryColor
+    mutate secondaryColor = secondaryColor
+    mutate accentColor = accentColor
+    mutate fontFamily = fontFamily
 
     emit ProposalTemplateUpdated
   }
@@ -73,6 +99,14 @@ entity ProposalTemplate {
     mutate isActive = false
 
     emit ProposalTemplateDeactivated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Template is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ProposalTemplateSoftDeleted
   }
 
   store ProposalTemplate in durable
@@ -524,6 +558,13 @@ event ProposalTemplateDeactivated: "crm.proposal_template.deactivated" {
   tenantId: string
   name: string
   deactivatedAt: datetime
+}
+
+event ProposalTemplateSoftDeleted: "crm.proposal_template.soft_deleted" {
+  templateId: string
+  tenantId: string
+  name: string
+  deletedAt: datetime
 }
 
 event InteractionAttachmentCreated: "crm.interaction_attachment.created" {

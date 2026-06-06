@@ -3361,6 +3361,11 @@
   },
   {
     "entity": "ProposalTemplate",
+    "command": "softDelete",
+    "commandId": "ProposalTemplate.softDelete"
+  },
+  {
+    "entity": "ProposalTemplate",
     "command": "update",
     "commandId": "ProposalTemplate.update"
   },
