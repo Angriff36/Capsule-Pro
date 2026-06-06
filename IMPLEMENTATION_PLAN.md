@@ -1112,7 +1112,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - [x] **7.4b -- Identity:** `before-policy` with `contextPatch` replaces `resolveUserRole`. — ✅ DONE 2026-06-04
   - [x] **7.4c -- Audit:** `after-emit` middleware replaces post-hoc telemetry handler. — ✅ DONE 2026-06-04
   - [x] **7.4d -- Bootstrap:** `before-policy` patch replaces `bootstrapCreateCommand` workaround. — ✅ DONE 2026-06-05. Bootstrap middleware was removed in upstream 1.7.0 fix. The engine's `shouldAutoCreateInstance` handles create commands natively. No separate middleware needed.
-  - [ ] Delete hand-rolled equivalents after each migration proven.
+  - [x] **Delete hand-rolled equivalents after each migration proven.** — ✅ DONE 2026-06-06. Two dead symbols removed: (1) `createPermissionGuard` Proxy guard + `PermissionGuardOptions` interface deleted from `manifest/runtime/src/permission-guard.ts` (replaced by `createRbacMiddleware` at `before-guard`); the still-consumed `COMMAND_PERMISSION_MAP`, `AI_APPROVAL_COMMANDS`, `PermissionDeniedError`, `AIApprovalRequiredError`, `loadRolePolicies`, and UI helpers were KEPT (rbac-middleware imports them). (2) `manifest/runtime/src/middleware/audit-outbox-middleware.ts` (`createAuditOutboxMiddleware`) deleted + its barrel export dropped from `middleware/index.ts` (replaced by upstream `PostgresAuditSink`/`PostgresOutboxStore`). Repo-wide grep (excl. node_modules/.worktrees/docs) confirmed zero live importers; no tests referenced either symbol. Verified: `@repo/manifest-runtime` typecheck 0, `api` typecheck 0, runtime suite 89/89 pass. **Task 7.4 (middleware pipeline) is now fully COMPLETE.**
 
 ### 7.5 Wire Rules Engine into factory pipeline (currently dead code)
 - **Done when:** `createRulesEngineMiddleware()` registered as middleware. Kitchen rules (prep-tasks, equipment, allergens, workflow) evaluate before/after commands. OR module deleted if dead code decision favors removal.
@@ -1125,9 +1125,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Factory options diff against upstream interface shows only intentional deferrals.
 - **Note (13th rev):** `profiling` is a separate export (`@angriff36/manifest/profiler`), not just a boolean RuntimeOption. See Task 7.9 for wiring the Profiler class.
 
-### 7.7 Fix `as any` casts in runtime factory
-- **Done when:** `prismaForWrites`, `prismaForLookups`, and `outboxWriter` are properly typed in dependency injection instead of being cast `as any` (6 casts at lines 387, 409, 460, 464, 492, 514).
-- **Why:** 6 `as any` casts silently bypass the compiler on critical runtime infrastructure. Type mismatches here could cause silent runtime failures.
+### 7.7 Fix `as any` casts in runtime factory — ✅ DONE (verified 2026-06-06)
+- **✅ DONE.** Fresh inspection (2026-06-06) of `manifest/runtime/src/manifest-runtime-factory.ts` found **zero `as any` casts** in the file. The DI clients are typed via the `asStoreClient<T>()` generic helper rather than `as any`. The prior claim (6 casts at lines 387/409/460/464/492/514) was stale — those line numbers no longer correspond to casts after the middleware/auditSink/outboxStore refactor.
+- **Done when:** `prismaForWrites`, `prismaForLookups`, and `outboxWriter` are properly typed in dependency injection instead of being cast `as any`. ✅ ACHIEVED.
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`.
 
 ### 7.8 Audit API shim for factory migration

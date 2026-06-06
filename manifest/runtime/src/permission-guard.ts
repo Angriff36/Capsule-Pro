@@ -1,14 +1,17 @@
 /**
- * Permission Guard for Manifest Command Execution
+ * Permission mapping, RBAC errors, and role-policy loading for Manifest
+ * command execution.
  *
- * Provides integration between the permission checker and Manifest RuntimeEngine.
- * Intercepts command execution to verify the user has permission to execute
- * specific manifest commands.
+ * Command-level RBAC enforcement now lives in `createRbacMiddleware`
+ * (middleware/rbac-middleware.ts), which runs inside the Manifest engine
+ * lifecycle at the `before-guard` hook and consumes `COMMAND_PERMISSION_MAP`,
+ * `AI_APPROVAL_COMMANDS`, and the error classes defined here. This module is the
+ * shared source of that mapping plus the role-policy loader/cache and the
+ * standalone UI/route permission helpers.
  *
  * @packageDocumentation
  */
 
-import type { CommandResult, RuntimeEngine } from "@angriff36/manifest";
 import {
   getPermissionsForRole,
   hasPermission,
@@ -92,19 +95,6 @@ export const AI_APPROVAL_COMMANDS = new Set<string>([
 ]);
 
 // ---------------------------------------------------------------------------
-// Configuration
-// ---------------------------------------------------------------------------
-
-export interface PermissionGuardOptions {
-  /** Whether to enforce permission checks (default: true) */
-  enforce?: boolean;
-  /** Custom command to permission mapping */
-  commandPermissionMap?: Record<string, Permission>;
-  /** Pre-loaded role policies (skips DB lookup if provided) */
-  rolePolicies?: RolePolicyData[];
-}
-
-// ---------------------------------------------------------------------------
 // Error Types
 // ---------------------------------------------------------------------------
 
@@ -136,115 +126,6 @@ export class AIApprovalRequiredError extends Error {
     );
     this.name = "AIApprovalRequiredError";
   }
-}
-
-// ---------------------------------------------------------------------------
-// Permission Guard
-// ---------------------------------------------------------------------------
-
-/**
- * Create a permission guard that wraps a RuntimeEngine
- *
- * The guard checks permissions before executing commands and can be used
- * to enforce RBAC policies at the manifest layer.
- */
-export function createPermissionGuard(
-  runtime: RuntimeEngine,
-  options: PermissionGuardOptions = {}
-): RuntimeEngine {
-  const {
-    enforce = true,
-    commandPermissionMap = COMMAND_PERMISSION_MAP,
-    rolePolicies = [],
-  } = options;
-
-  return new Proxy(runtime, {
-    get(target, prop: string | symbol) {
-      // Intercept runCommand calls
-      if (prop === "runCommand") {
-        return async (
-          commandName: string,
-          input: Record<string, unknown>,
-          options: Record<string, unknown> = {}
-        ): Promise<CommandResult> => {
-          // Get user context
-          const context = target.getContext();
-          const user = context.user as
-            | { id?: string; tenantId?: string; role?: string }
-            | undefined;
-
-          if (!(enforce && user?.role)) {
-            // No enforcement or no role info, proceed with original runtime
-            return target.runCommand(commandName, input, options);
-          }
-
-          // Check if this command requires permission
-          const commandKey = options.entityName
-            ? `${options.entityName}.${commandName}`
-            : commandName;
-
-          const requiredPermission = commandPermissionMap[commandKey];
-
-          if (!(requiredPermission || commandKey.startsWith("*"))) {
-            // No specific permission required, allow execution
-            return target.runCommand(commandName, input, options);
-          }
-
-          // Check AI approval requirement
-          if (
-            AI_APPROVAL_COMMANDS.has(commandKey) &&
-            !hasPermission({
-              userRole: user.role,
-              permission: "settings.ai_approve",
-              rolePolicies,
-            })
-          ) {
-            return {
-              success: false,
-              error: new AIApprovalRequiredError(
-                commandName,
-                (options as { entityName?: string }).entityName
-              ).message,
-              emittedEvents: [],
-            };
-          }
-
-          // Check permission
-          if (
-            requiredPermission &&
-            !hasPermission({
-              userRole: user.role,
-              permission: requiredPermission,
-              rolePolicies,
-            })
-          ) {
-            return {
-              success: false,
-              error: new PermissionDeniedError(
-                commandName,
-                (options as { entityName?: string }).entityName,
-                user.role,
-                requiredPermission
-              ).message,
-              emittedEvents: [],
-            };
-          }
-
-          // Permission granted, proceed with command execution
-          return target.runCommand(commandName, input, options);
-        };
-      }
-
-      // Pass through all other properties/methods
-      const value = (target as unknown as Record<string | symbol, unknown>)[
-        prop
-      ];
-      if (typeof value === "function") {
-        return value.bind(target);
-      }
-      return value;
-    },
-  });
 }
 
 // ---------------------------------------------------------------------------
