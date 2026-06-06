@@ -306,6 +306,11 @@
   },
   {
     "entity": "BattleBoard",
+    "command": "recordImport",
+    "commandId": "BattleBoard.recordImport"
+  },
+  {
+    "entity": "BattleBoard",
     "command": "removeDish",
     "commandId": "BattleBoard.removeDish"
   },
@@ -313,6 +318,11 @@
     "entity": "BattleBoard",
     "command": "startVoting",
     "commandId": "BattleBoard.startVoting"
+  },
+  {
+    "entity": "BattleBoard",
+    "command": "update",
+    "commandId": "BattleBoard.update"
   },
   {
     "entity": "BattleBoard",
@@ -1373,6 +1383,11 @@
     "entity": "Event",
     "command": "update",
     "commandId": "Event.update"
+  },
+  {
+    "entity": "Event",
+    "command": "updateBudget",
+    "commandId": "Event.updateBudget"
   },
   {
     "entity": "Event",
@@ -4016,6 +4031,16 @@
   },
   {
     "entity": "ShipmentItem",
+    "command": "softDelete",
+    "commandId": "ShipmentItem.softDelete"
+  },
+  {
+    "entity": "ShipmentItem",
+    "command": "update",
+    "commandId": "ShipmentItem.update"
+  },
+  {
+    "entity": "ShipmentItem",
     "command": "updateReceived",
     "commandId": "ShipmentItem.updateReceived"
   },
@@ -4523,6 +4548,11 @@
     "entity": "VarianceReport",
     "command": "review",
     "commandId": "VarianceReport.review"
+  },
+  {
+    "entity": "VarianceReport",
+    "command": "updateDiscrepancy",
+    "commandId": "VarianceReport.updateDiscrepancy"
   },
   {
     "entity": "Vehicle",

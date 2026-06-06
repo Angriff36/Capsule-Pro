@@ -250,6 +250,10 @@ entity VarianceReport {
   property rejectedBy: string = ""
   property rejectionReason: string = ""
   property notes: string = ""
+  property rootCause: string = ""
+  property resolutionNotes: string = ""
+  property resolvedById: string = ""
+  property resolvedAt: datetime
   property generatedAt: datetime
   timestamps
   property deletedAt: datetime
@@ -332,6 +336,17 @@ entity VarianceReport {
     mutate adjustmentDate = now()
 
     emit VarianceReportApproved
+  }
+
+  // Partial update for discrepancy resolution — notes, rootCause, resolutionNotes
+  command updateDiscrepancy(notes: string, rootCause: string, resolutionNotes: string) {
+    guard self.status in ["pending", "reviewed"] "Cannot update discrepancy with status outside pending/reviewed"
+
+    mutate notes = notes
+    mutate rootCause = rootCause
+    mutate resolutionNotes = resolutionNotes
+
+    emit VarianceReportDiscrepancyUpdated
   }
 
   store VarianceReport in durable
@@ -464,4 +479,14 @@ event VarianceReportRejected: "inventory.variance.report.rejected" {
   rejectedBy: string
   reason: string
   rejectedAt: datetime
+}
+
+event VarianceReportDiscrepancyUpdated: "inventory.variance.report.discrepancy_updated" {
+  reportId: string
+  sessionId: string
+  itemId: string
+  notes: string
+  rootCause: string
+  resolutionNotes: string
+  updatedAt: datetime
 }

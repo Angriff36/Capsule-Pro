@@ -1,16 +1,16 @@
 /**
  * Inventory Audit Discrepancy Detail API
  *
- * GET - Get single discrepancy details
- * PATCH - Update discrepancy (add resolution notes, root cause, etc.)
+ * GET - Get single discrepancy details (read — bypasses Manifest per §10)
+ * PATCH - Update discrepancy (add resolution notes, root cause, etc.) via Manifest runtime
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -63,19 +63,11 @@ interface UpdateDiscrepancyBody {
 
 /**
  * GET /api/inventory/audit/discrepancies/[id]
- * Get single discrepancy details
+ * Get single discrepancy details (read — bypasses Manifest per §10)
  */
 export async function GET(_request: NextRequest, context: RouteContext) {
   try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+    const tenantId = await requireTenantId();
 
     const { id } = await context.params;
 
@@ -190,31 +182,13 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
 /**
  * PATCH /api/inventory/audit/discrepancies/[id]
- * Update discrepancy (add resolution notes, root cause, etc.)
+ * Update discrepancy (add resolution notes, root cause, etc.) via Manifest runtime.
+ * Pre-validation reads are §10-compliant.
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    // Resolve internal user from Clerk auth
-    const currentUser = await database.user.findFirst({
-      where: {
-        AND: [{ tenantId }, { authUserId: clerkId }],
-      },
-    });
-
-    if (!currentUser) {
-      return manifestErrorResponse("User not found in database", 400);
-    }
-
+    const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
     const { id } = await context.params;
     const body: UpdateDiscrepancyBody = await request.json();
 
@@ -226,7 +200,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Check if discrepancy exists and is in a valid state
+    // Pre-validation: check discrepancy exists and is in a valid state (read per §10)
     const existingReport = await database.varianceReport.findFirst({
       where: {
         tenantId,
@@ -247,74 +221,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Build update data
-    const updateData: Record<string, unknown> = {
-      updatedAt: new Date(),
-    };
-
-    if (body.notes !== undefined) {
-      updateData.notes = body.notes;
-    }
-
-    if (body.rootCause !== undefined) {
-      updateData.rootCause = body.rootCause;
-    }
-
-    if (body.resolutionNotes !== undefined) {
-      updateData.resolutionNotes = body.resolutionNotes;
-    }
-
-    // Update the report
-    const updatedReport = await database.varianceReport.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+    // Delegate update to Manifest runtime
+    return runManifestCommand({
+      entity: "VarianceReport",
+      command: "updateDiscrepancy",
+      body: {
+        notes: body.notes ?? existingReport.notes ?? "",
+        rootCause: body.rootCause ?? existingReport.rootCause ?? "",
+        resolutionNotes:
+          body.resolutionNotes ?? existingReport.resolutionNotes ?? "",
       },
-      data: updateData,
-    });
-
-    log.info("[discrepancies/update] Updated discrepancy:", {
-      id,
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
-      fieldsUpdated: Object.keys(updateData),
-    });
-
-    const variancePct = toNumber(updatedReport.variancePct);
-
-    return manifestSuccessResponse({
-      discrepancy: {
-        id: updatedReport.id,
-        tenantId: updatedReport.tenantId,
-        sessionId: updatedReport.sessionId,
-        reportType: updatedReport.reportType,
-        itemId: updatedReport.itemId,
-        itemNumber: updatedReport.itemNumber,
-        itemName: updatedReport.itemName,
-        expectedQuantity: toNumber(updatedReport.expectedQuantity),
-        countedQuantity: toNumber(updatedReport.countedQuantity),
-        variance: toNumber(updatedReport.variance),
-        variancePct,
-        accuracyScore: toNumber(updatedReport.accuracyScore),
-        status: updatedReport.status as DiscrepancyStatus,
-        severity: calculateSeverity(variancePct),
-        adjustmentType: updatedReport.adjustmentType,
-        adjustmentAmount: updatedReport.adjustmentAmount
-          ? toNumber(updatedReport.adjustmentAmount)
-          : null,
-        adjustmentDate: updatedReport.adjustmentDate?.toISOString() ?? null,
-        notes: updatedReport.notes,
-        rootCause: updatedReport.rootCause,
-        resolutionNotes: updatedReport.resolutionNotes,
-        resolvedById: updatedReport.resolvedById,
-        resolvedAt: updatedReport.resolvedAt?.toISOString() ?? null,
-        generatedAt: updatedReport.generatedAt.toISOString(),
-        createdAt: updatedReport.createdAt.toISOString(),
-        updatedAt: updatedReport.updatedAt.toISOString(),
-      },
+      user: { id: user.id, tenantId, role: user.role },
+      instanceId: id,
     });
   } catch (error) {
     log.error("[discrepancies/update] Error:", error);
