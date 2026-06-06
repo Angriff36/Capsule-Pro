@@ -1,9 +1,9 @@
-import type { OverrideRequest } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException, logger } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * Override authorization request body
@@ -25,7 +25,9 @@ interface OverrideAuthorizationRequest {
 
 /**
  * POST /api/kitchen/overrides
- * Authorize and record an override for a blocking constraint
+ * Authorize and record an override for a blocking constraint via Manifest runtime.
+ * The governed write (OverrideAudit.create) routes through Manifest;
+ * the outbox event is a fire-and-forget side-effect.
  */
 export async function POST(request: Request) {
   const { orgId, userId: clerkId } = await auth();
@@ -44,11 +46,11 @@ export async function POST(request: Request) {
   if (!(constraintCode && reason && command && entityType && entityId)) {
     return NextResponse.json(
       { message: "Missing required fields" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  // Get current user by Clerk ID
+  // Get current user by Clerk ID (read per §10)
   const currentUser = await database.user.findFirst({
     where: {
       AND: [{ tenantId }, { authUserId: clerkId }],
@@ -58,14 +60,11 @@ export async function POST(request: Request) {
   if (!currentUser) {
     return NextResponse.json(
       { message: "User not found in database" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  // Check if user has permission to override
-  // Users can override if they are:
-  // 1. Managers (role = "manager" or "admin")
-  // 2. Have explicit override permission
+  // Check if user has permission to override (read per §10)
   const userRole = currentUser.role || "kitchen_staff";
   const canOverride =
     userRole === "manager" ||
@@ -79,37 +78,44 @@ export async function POST(request: Request) {
           "You don't have permission to override constraints. Please contact a manager.",
         requiresManager: true,
       },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
-  // Create the override request
-  const overrideRequest: OverrideRequest = {
-    constraintCode,
-    reason: details ? `${reason}: ${details}` : reason,
-    authorizedBy: currentUser.id,
-    timestamp: Date.now(),
-  };
+  // Delegate governed write to Manifest runtime
+  const overrideReason = details ? `${reason}: ${details}` : reason;
+  const timestamp = Date.now();
 
-  // Record the override in the audit table + outbox event atomically
-  let auditLogged = true;
-  try {
-    await database.$transaction(async (tx) => {
-      await tx.overrideAudit.create({
-        data: {
-          tenantId,
-          entityType,
-          entityId,
-          constraintId: constraintCode,
-          guardExpression: "", // Would be populated from constraint outcome
-          overriddenBy: currentUser.id,
-          overrideReason: details ? `${reason}: ${details}` : reason,
-          authorizedBy: currentUser.id,
-          authorizedAt: new Date(),
-        },
-      });
+  const result = await runManifestCommand({
+    entity: "OverrideAudit",
+    command: "create",
+    body: {
+      entityType,
+      entityId,
+      constraintId: constraintCode,
+      guardExpression: "",
+      overriddenBy: currentUser.id,
+      overrideReason,
+      authorizedBy: currentUser.id,
+    },
+    user: { id: currentUser.id, tenantId, role: userRole },
+  });
 
-      await tx.outboxEvent.create({
+  // Determine if the governed write succeeded
+  const auditLogged = result.status >= 200 && result.status < 300;
+
+  if (!auditLogged) {
+    captureException(
+      new Error(
+        `Override audit Manifest command failed: ${result.status}`,
+      ),
+    );
+  }
+
+  // Fire-and-forget outbox event (infrastructure side-effect, not governed)
+  if (auditLogged) {
+    try {
+      await database.outboxEvent.create({
         data: {
           tenantId,
           aggregateType: entityType,
@@ -117,30 +123,26 @@ export async function POST(request: Request) {
           eventType: "kitchen.constraint.overridden",
           payload: {
             constraintCode,
-            reason: details ? `${reason}: ${details}` : reason,
+            reason: overrideReason,
             authorizedBy: currentUser.id,
             authorizedByName:
               `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
             command,
-            timestamp: overrideRequest.timestamp,
+            timestamp,
           },
           status: "pending" as const,
         },
       });
-    });
-  } catch (error) {
-    auditLogged = false;
-    captureException(error);
-    logger.error(
-      "Override audit + outbox transaction failed — audit trail lost",
-      {
+    } catch (error) {
+      captureException(error);
+      logger.error("Override outbox event failed", {
         error: String(error),
         constraintCode,
         entityType,
         entityId,
         overriddenBy: currentUser.id,
-      }
-    );
+      });
+    }
   }
 
   return NextResponse.json({
@@ -148,18 +150,18 @@ export async function POST(request: Request) {
     auditLogged,
     override: {
       constraintCode,
-      reason: details ? `${reason}: ${details}` : reason,
+      reason: overrideReason,
       authorizedBy: currentUser.id,
       authorizedByName:
         `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
-      timestamp: overrideRequest.timestamp,
+      timestamp,
     },
   });
 }
 
 /**
  * GET /api/kitchen/overrides
- * Get override audit history for an entity
+ * Get override audit history for an entity (read — bypasses Manifest per §10).
  */
 export async function GET(request: Request) {
   const { orgId, userId: clerkId } = await auth();
@@ -176,7 +178,7 @@ export async function GET(request: Request) {
   if (!(entityType && entityId)) {
     return NextResponse.json(
       { message: "entityType and entityId are required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
