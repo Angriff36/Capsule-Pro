@@ -421,7 +421,7 @@
 
 ### Governance
 
-- **~142 direct-write violations in API routes** + **~107 in server actions** = **~249 total**. 49 mutate handlers across 40 route files + battle-board server actions migrated to Manifest runtime (Task 8.2 batches 1-8 + Task 8.3 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~140 direct-write violations in API routes** + **~107 in server actions** = **~247 total**. 51 mutate handlers across 42 route files + battle-board server actions migrated to Manifest runtime (Task 8.2 batches 1-9 + Task 8.3 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
@@ -532,6 +532,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **Task 8.2 batch 7: 5 route files migrated to Manifest runtime (v0.12.132)** | EventContract document upload (update), Shipment status transitions ($executeRaw→STATUS_TO_COMMAND map), Proposal public respond (accept/reject with synthetic system-user context), Training complete (start/submitPassingAttempt), CrmScoringRule update/softDelete. CrmScoringRule manifest source reconciled with real Prisma columns. CRM scoring calculate blocked (Lead.score DB drift). API typecheck 0, 2690 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 7b: inventory audit discrepancy/reports migrated (v0.12.132)** | VarianceReport discrepancy update (new updateDiscrepancy command + event), audit report soft-delete (Report.remove). CycleCount manifest source: added rootCause/resolutionNotes/resolvedById/resolvedAt properties. IR recompiled: 980 commands, 961 events. API typecheck 0, 2690 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 8 + Task 8.3: recipe cost/budgets, shipment items, battle-board actions migrated (v0.12.133)** | Recipe cost route: inline Manifest→canonical runManifestCommand. Recipe update-budgets: new Event.updateBudget command, createManifestRuntime→runManifestCommand. ShipmentItem: new update/softDelete commands, $executeRaw→runManifestCommand, -197 lines dead helpers. BattleBoard server actions: new update/recordImport commands, database.updateMany→runManifestCommand. API+app typecheck 0, 2690 tests pass. |
+| 2026-06-06 | **Task 8.2 batch 9: Proposal markViewed + supplier-catalog webhook migrated (v0.12.134)** | `public/proposals/[token]` markViewed now dispatched via `runManifestCommand` with synthetic system-user context (non-fatal on failure). `webhooks/supplier-catalog` VendorCatalog upsert replaced with Manifest create/update commands (findUnique check + governed dispatch). PaymentMethod updateMany documented in `bypasses.json` (cross-entity batch clearOthers→markAsDefault pattern). Governed-entity violations: 45→43. API typecheck 0, 2690 tests pass. |
 
 ---
 
@@ -1252,7 +1253,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - CrmScoringRule manifest source reconciled: added missing properties matching real Prisma columns (`name`, `description`, `entityType`, `criteria`, `weight`, `isActive`, `priority`).
     - CRM scoring calculate route NOT migrated: `Lead.score` column drift (manifest declares `score` but Prisma model uses `leadScore`). Blocked until schema reconciled.
     - 2690 tests pass, 0 typecheck errors.
-  - **Total migrated across all batches:** 49 mutate handlers in 40 route files + prep→procurement middleware automation. Remaining: ~140 violations across ~42 files.
+  - **Progress 2026-06-06 (batch 9):** 2 more route files migrated to Manifest runtime:
+    - `GET /api/public/proposals/[token]` — markViewed via synthetic system-user context (public route, non-fatal). Proposal status transition from 'sent' to 'viewed' now governed.
+    - `POST /api/webhooks/supplier-catalog` — VendorCatalog create/update via Manifest commands. Replaces direct `database.vendorCatalog.upsert()` with findUnique (read per §10) + governed command dispatch. HMAC-SHA256 webhook auth preserved.
+    - PaymentMethod updateMany (3 hits across 2 files) documented in `manifest/governance/bypasses.json` — cross-entity batch pattern (clearOthers→markAsDefault) that can't be expressed as a single Manifest command.
+    - 2690 tests pass, 0 typecheck errors. Total: 51 mutate handlers in 42 route files.
+  - **Total migrated across all batches:** 51 mutate handlers in 42 route files + prep→procurement middleware automation. Remaining: ~140 violations across ~42 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
