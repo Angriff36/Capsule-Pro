@@ -77,11 +77,17 @@ entity Proposal {
   }
 
   default policy ProposalDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
-  command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
+  // clientId/eventDate/eventType/venueName/venueAddress are NOT create params:
+  // when a proposal is created from its linked Event (eventId), these are
+  // inherited server-side from the parent Event via parent-context propagation
+  // (manifest/runtime/src/parent-context-resolver.ts). The caller supplies only
+  // the eventId link + proposal-specific input, so the UI never re-asks for data
+  // the Event already owns. See specs/parent-context-propagation.md.
+  command create(proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
     guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
 
-    constraint warnNoClient:warn (clientId == null or clientId == "") and (leadId == null or leadId == "") {
+    constraint warnNoClient:warn (self.clientId == null or self.clientId == "") and (leadId == null or leadId == "") {
       messageTemplate: "Creating proposal '{proposalNumber}' with no client or lead attached"
       details: {
         proposalNumber: proposalNumber
@@ -90,15 +96,10 @@ entity Proposal {
     }
 
     mutate proposalNumber = proposalNumber
-    mutate clientId = clientId
     mutate leadId = leadId
     mutate eventId = eventId
     mutate title = title
-    mutate eventDate = eventDate
-    mutate eventType = eventType
     mutate guestCount = guestCount
-    mutate venueName = venueName
-    mutate venueAddress = venueAddress
     mutate taxRate = taxRate
     mutate validUntil = validUntil
     mutate notes = notes

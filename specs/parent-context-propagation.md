@@ -131,6 +131,18 @@ unallowlisted violation and is the CI backpressure for this invariant.
 eventId }` inherits the full Event snapshot server-side. The matching Prisma columns on
 `battle_boards` are plain text (no `@db.Uuid`) so denormalized values never fail uuid coercion.
 
+### 8a. Second adopter: Proposal
+
+`Proposal` (`manifest/source/proposal-rules.manifest`) inherits `clientId`, `eventDate`,
+`eventType`, `venueName`, `venueAddress` from its linked `Event` — `Proposal.create` accepts only
+proposal-specific input + the `eventId` link. It illustrates two patterns beyond the BattleBoard
+case: (1) a child with **two** `belongsTo` relationships (`client` via `clientId`, `event` via
+`eventId`) — because `fkSet` is built per-relationship, `clientId` is still inherited while
+iterating the `event` relationship, correctly linking the proposal to the event's client; and
+(2) a **DB-free migration** — the `proposals` snapshot columns already existed (nullable), so no
+schema change was needed. `guestCount` is deliberately kept as a create param (a quote may target
+a different headcount than the event estimate).
+
 ## 9. Why the tests matter
 
 The tests pin the **contract**, not the implementation, so a future change that quietly breaks

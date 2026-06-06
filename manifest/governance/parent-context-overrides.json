@@ -99,13 +99,6 @@
       "owner": "kitchen",
       "reviewed": "2026-06-05"
     },
-    "Proposal": {
-      "fields": ["clientId", "eventDate", "eventType", "venueName", "venueAddress"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): client/date/type/venue inferable from the linked Event. Strong candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "events",
-      "reviewed": "2026-06-05"
-    },
     "RevenueRecognitionSchedule": {
       "fields": ["eventId", "clientId"],
       "category": "BASELINE",
