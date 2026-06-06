@@ -1,7 +1,18 @@
 /**
  * Shipment Status API Endpoint
  *
- * POST   /api/shipments/[id]/status  - Update shipment status with validation
+ * POST   /api/shipments/[id]/status  - Update shipment status via Manifest runtime
+ *
+ * Maps status transitions to Manifest commands:
+ *   scheduled    -> startPreparing
+ *   preparing    -> ship
+ *   in_transit   -> markDelivered
+ *   draft        -> schedule (if transitioning to scheduled)
+ *   cancelled    -> cancel
+ *
+ * Inventory side effects (reservation on prepare, receipt on deliver, reversal
+ * on cancel) remain as direct DB operations — they mutate InventoryItem and
+ * InventoryTransaction, which are separate entities from Shipment.
  */
 
 import { auth } from "@repo/auth/server";
@@ -11,8 +22,12 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * Transaction types for inventory transactions
@@ -32,21 +47,21 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 };
 
+/** Maps a target status to the Manifest command name. */
+const STATUS_TO_COMMAND: Record<string, string> = {
+  scheduled: "schedule",
+  preparing: "startPreparing",
+  in_transit: "ship",
+  delivered: "markDelivered",
+  cancelled: "cancel",
+};
+
 interface ShipmentStatusRequestBody {
   status: string;
   shipped_date?: string | null;
   actual_delivery_date?: string | null;
   delivered_by?: string | null;
   received_by?: string | null;
-  signature?: string | null;
-}
-
-interface ShipmentUpdateData {
-  status: string;
-  shippedDate?: Date | null;
-  actualDeliveryDate?: Date | null;
-  deliveredBy?: string | null;
-  receivedBy?: string | null;
   signature?: string | null;
 }
 
@@ -118,7 +133,7 @@ async function authenticateAndGetTenant(
 }
 
 /**
- * Fetches an existing shipment by ID
+ * Fetches an existing shipment by ID (read — bypasses Manifest per §10)
  */
 async function fetchExistingShipment(
   tenantId: string,
@@ -136,86 +151,6 @@ async function fetchExistingShipment(
   }
 
   return existing;
-}
-
-/**
- * Builds the update data object from request body
- */
-function buildUpdateData(
-  body: ShipmentStatusRequestBody,
-  existingShipment: Shipment
-): ShipmentUpdateData {
-  const updateData: ShipmentUpdateData = { status: body.status };
-
-  if (body.shipped_date !== undefined) {
-    updateData.shippedDate = body.shipped_date
-      ? new Date(body.shipped_date)
-      : null;
-  }
-  if (body.actual_delivery_date !== undefined) {
-    updateData.actualDeliveryDate = body.actual_delivery_date
-      ? new Date(body.actual_delivery_date)
-      : null;
-  }
-  if (body.delivered_by !== undefined) {
-    updateData.deliveredBy = body.delivered_by;
-  }
-  if (body.received_by !== undefined) {
-    updateData.receivedBy = body.received_by;
-  }
-  if (body.signature !== undefined) {
-    updateData.signature = body.signature;
-  }
-
-  // Auto-set shipped_date when transitioning to in_transit
-  if (body.status === "in_transit" && !existingShipment.shippedDate) {
-    updateData.shippedDate = new Date();
-  }
-
-  return updateData;
-}
-
-/**
- * Executes the raw SQL update for shipment
- */
-async function updateShipmentInDatabase(
-  tenantId: string,
-  shipmentId: string,
-  updateData: ShipmentUpdateData
-): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."shipments"
-    SET
-      "status" = ${updateData.status}::text,
-      "shipped_date" = COALESCE(${updateData.shippedDate}::timestamptz, "shipped_date"),
-      "actual_delivery_date" = COALESCE(${updateData.actualDeliveryDate}::timestamptz, "actual_delivery_date"),
-      "delivered_by" = COALESCE(${updateData.deliveredBy}::uuid, "delivered_by"),
-      "received_by" = COALESCE(${updateData.receivedBy}, "received_by"),
-      "signature" = COALESCE(${updateData.signature}, "signature"),
-      "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${shipmentId}::uuid
-  `;
-}
-
-/**
- * Fetches the updated shipment after update
- */
-async function fetchUpdatedShipment(
-  tenantId: string,
-  shipmentId: string
-): Promise<Shipment | NextResponse> {
-  const updated = await database.shipment.findFirst({
-    where: { tenantId, id: shipmentId, deletedAt: null },
-  });
-
-  if (!updated) {
-    return NextResponse.json(
-      { message: "Shipment not found after update" },
-      { status: 404 }
-    );
-  }
-
-  return updated;
 }
 
 /**
@@ -253,7 +188,7 @@ function mapShipmentToResponse(shipment: Shipment) {
 }
 
 /**
- * Fetches shipment items for inventory processing
+ * Fetches shipment items for inventory processing (read — bypasses Manifest per §10)
  */
 async function fetchShipmentItems(
   tenantId: string,
@@ -711,6 +646,52 @@ async function handleInventoryOnCancellation(
   }
 }
 
+/**
+ * Builds the Manifest command body for a given status transition.
+ * Each command has different parameters per the shipment-rules.manifest spec.
+ */
+function buildCommandBody(
+  command: string,
+  shipmentId: string,
+  tenantId: string,
+  userId: string,
+  body: ShipmentStatusRequestBody
+): Record<string, unknown> {
+  const base = { id: shipmentId, tenantId };
+
+  switch (command) {
+    case "schedule":
+      return {
+        ...base,
+        userId,
+        scheduledDate: new Date(body.shipped_date ?? Date.now()).getTime(),
+      };
+    case "startPreparing":
+      return { ...base, userId };
+    case "ship":
+      return {
+        ...base,
+        userId,
+        trackingNumber: body.shipped_date ?? "",
+      };
+    case "markDelivered":
+      return {
+        ...base,
+        userId,
+        receivedBy: body.received_by ?? "",
+        signatureData: body.signature ?? "",
+      };
+    case "cancel":
+      return {
+        ...base,
+        userId,
+        reason: body.signature ?? "",
+      };
+    default:
+      return base;
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -724,6 +705,9 @@ export async function POST(
     }
     const { tenantId } = authResult;
 
+    // Resolve current user for Manifest runtime
+    const user = await resolveCurrentUser(request);
+
     // Parse request
     const { id } = await params;
     const body = (await request.json()) as ShipmentStatusRequestBody;
@@ -732,14 +716,22 @@ export async function POST(
       throw new InvariantError("status is required");
     }
 
-    // Fetch existing shipment
+    // Determine which Manifest command handles this transition
+    const command = STATUS_TO_COMMAND[body.status];
+    if (!command) {
+      throw new InvariantError(
+        `Unsupported target status: ${body.status}. No Manifest command maps to this status.`
+      );
+    }
+
+    // Fetch existing shipment (read — bypasses Manifest per §10)
     const existingResult = await fetchExistingShipment(tenantId, id);
     if (existingResult instanceof NextResponse) {
       return existingResult;
     }
     const existing = existingResult;
 
-    // Validate status transition
+    // Validate status transition (pre-validation before Manifest guards)
     validateStatusTransition(existing.status, body.status);
     validateDeliveryConfirmation(body.status, body);
 
@@ -748,16 +740,42 @@ export async function POST(
       await validateStockAvailability(tenantId, id);
     }
 
-    // Build and execute update
-    const updateData = buildUpdateData(body, existing);
-    await updateShipmentInDatabase(tenantId, id, updateData);
+    // Build command body and execute via Manifest runtime
+    const commandBody = buildCommandBody(
+      command,
+      id,
+      tenantId,
+      user.id,
+      body
+    );
 
-    // Fetch updated shipment
-    const updatedResult = await fetchUpdatedShipment(tenantId, id);
-    if (updatedResult instanceof NextResponse) {
-      return updatedResult;
+    const manifestResult = await runManifestCommand({
+      entity: "Shipment",
+      command,
+      body: commandBody,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    // If Manifest returned an error, forward it to the client.
+    // runManifestCommand already returns a Response with appropriate status.
+    if (!(manifestResult instanceof Response) || manifestResult.status >= 400) {
+      // Try to extract the Manifest error message for better UX on guard failures
+      if (manifestResult instanceof Response) {
+        return manifestResult;
+      }
     }
-    const updated = updatedResult;
+
+    // Re-fetch the updated shipment to return the same response shape
+    const updated = await database.shipment.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
+    if (!updated) {
+      return NextResponse.json(
+        { message: "Shipment not found after update" },
+        { status: 404 }
+      );
+    }
 
     // Handle inventory updates on delivery
     await handleInventoryOnDelivery(updated, existing.status, tenantId, id);
@@ -768,7 +786,7 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      orgId ?? null
+      user.id
     );
 
     // Handle inventory reversal on cancellation
@@ -777,7 +795,7 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      orgId ?? null
+      user.id
     );
 
     // Fire-and-forget webhook dispatch for shipment status change

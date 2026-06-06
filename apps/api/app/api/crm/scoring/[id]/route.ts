@@ -5,13 +5,12 @@
  * DELETE /api/crm/scoring/[id]  - Soft-delete a scoring rule (Manifest governed)
  */
 
-import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";

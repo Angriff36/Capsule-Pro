@@ -4,12 +4,16 @@
  * POST /api/public/proposals/[token]/respond - Accept or reject a proposal (no auth required)
  *
  * This endpoint allows clients to respond to proposals without authentication.
+ * Governed writes execute via Manifest runtime (accept/reject commands).
+ * Pre-validation (reads) bypass runtime per constitution §10.
  */
 
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 
 type Params = Promise<{ token: string }>;
 
@@ -18,6 +22,23 @@ interface RespondRequest {
   responderName: string;
   responderEmail: string;
   notes?: string;
+}
+
+/**
+ * Build a synthetic system-user context for public (unauthenticated) operations.
+ * Uses the tenant's admin user to satisfy Manifest's RBAC requirements.
+ */
+async function buildSystemUserContext(tenantId: string): Promise<ManifestUserContext> {
+  const adminUser = await database.user.findFirst({
+    where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    select: { id: true, role: true },
+  });
+
+  return {
+    id: adminUser?.id ?? "system",
+    tenantId,
+    role: adminUser?.role ?? "admin",
+  };
 }
 
 /**
@@ -52,7 +73,7 @@ export async function POST(request: Request, { params }: { params: Params }) {
       );
     }
 
-    // Find proposal by public token
+    // Find proposal by public token (read path, constitution §10)
     const proposal = await database.proposal.findFirst({
       where: {
         publicToken: token,
@@ -103,44 +124,44 @@ export async function POST(request: Request, { params }: { params: Params }) {
       );
     }
 
-    // Update proposal status
-    const now = new Date();
-    const updateData =
-      action === "accept"
-        ? { status: "accepted", acceptedAt: now }
-        : { status: "rejected", rejectedAt: now };
+    // Build synthetic user context for public response (system user from tenant)
+    const systemUser = await buildSystemUserContext(proposal.tenantId);
 
-    const updatedProposal = await database.proposal.update({
-      where: {
-        tenantId_id: {
-          tenantId: proposal.tenantId,
-          id: proposal.id,
-        },
-      },
-      data: updateData,
+    // Governed write: execute accept or reject via Manifest runtime
+    const commandBody =
+      action === "accept"
+        ? { id: proposal.id, tenantId: proposal.tenantId, userId: responderEmail }
+        : { id: proposal.id, tenantId: proposal.tenantId, reason: notes ?? "", userId: responderEmail };
+
+    const result = await runManifestCommand({
+      entity: "Proposal",
+      command: action,
+      body: commandBody,
+      user: systemUser,
     });
 
-    // Create audit log entry
-    await database.$executeRaw`
-      INSERT INTO platform.audit_log (
-        id, tenant_id, entity_type, entity_id, action, performed_by, old_values, new_values, created_at
-      ) VALUES (
-        gen_random_uuid(),
-        ${proposal.tenantId},
-        'proposal',
-        ${proposal.id},
-        ${action === "accept" ? "proposal_accepted" : "proposal_rejected"},
-        ${responderEmail},
-        ${JSON.stringify({ status: proposal.status })},
-        ${JSON.stringify({
-          status: action === "accept" ? "accepted" : "rejected",
-          responderName,
-          responderEmail,
-          notes: notes || null,
-        })},
-        NOW()
-      )
-    `;
+    if (!result.ok) {
+      log.error("Failed to respond to proposal via Manifest:", await result.text());
+      return NextResponse.json(
+        { message: "Failed to respond to proposal" },
+        { status: 500 }
+      );
+    }
+
+    // Read back updated proposal for response (read path, constitution §10)
+    const updatedProposal = await database.proposal.findFirst({
+      where: {
+        tenantId: proposal.tenantId,
+        id: proposal.id,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        status: true,
+        acceptedAt: true,
+        rejectedAt: true,
+      },
+    });
 
     return NextResponse.json({
       success: true,
@@ -149,10 +170,10 @@ export async function POST(request: Request, { params }: { params: Params }) {
           ? "Proposal accepted successfully"
           : "Proposal rejected successfully",
       proposal: {
-        id: updatedProposal.id,
-        status: updatedProposal.status,
-        acceptedAt: updatedProposal.acceptedAt,
-        rejectedAt: updatedProposal.rejectedAt,
+        id: updatedProposal?.id ?? proposal.id,
+        status: updatedProposal?.status ?? (action === "accept" ? "accepted" : "rejected"),
+        acceptedAt: updatedProposal?.acceptedAt ?? null,
+        rejectedAt: updatedProposal?.rejectedAt ?? null,
       },
     });
   } catch (error) {

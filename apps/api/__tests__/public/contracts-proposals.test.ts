@@ -847,21 +847,31 @@ describe("GET /api/public/proposals/[token]", () => {
 
 describe("POST /api/public/proposals/[token]/respond", () => {
   it("accepts a proposal successfully", async () => {
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      tenantId: TENANT_ID,
-      status: "viewed",
-      validUntil: FUTURE_DATE,
+    vi.mocked(database.proposal.findFirst)
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        tenantId: TENANT_ID,
+        status: "viewed",
+        validUntil: FUTURE_DATE,
+      } as never)
+      // Read-back of updated proposal after governed write
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        status: "accepted",
+        acceptedAt: new Date(),
+        rejectedAt: null,
+      } as never);
+
+    // Mock buildSystemUserContext's admin user lookup
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-user-id",
+      role: "admin",
     } as never);
 
-    vi.mocked(database.proposal.update).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      status: "accepted",
-      acceptedAt: new Date(),
-      rejectedAt: null,
-    } as never);
-
-    vi.mocked(database.$executeRaw).mockResolvedValueOnce(undefined as never);
+    // Mock runManifestCommand for Proposal.accept (governed write)
+    mockRunManifestCommand.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "accepted" }, events: [] }), { status: 200 })
+    );
 
     const res = await proposalRespond(
       mockRespondRequest(TOKEN, {
@@ -878,32 +888,45 @@ describe("POST /api/public/proposals/[token]/respond", () => {
     expect(json.message).toBe("Proposal accepted successfully");
     expect(json.proposal.status).toBe("accepted");
 
-    expect(vi.mocked(database.proposal.update)).toHaveBeenCalledWith(
+    // Verify the governed write was dispatched via Manifest runtime
+    expect(mockRunManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          status: "accepted",
-          acceptedAt: expect.any(Date),
+        entity: "Proposal",
+        command: "accept",
+        body: expect.objectContaining({
+          id: PROPOSAL_ID,
+          tenantId: TENANT_ID,
         }),
       })
     );
   });
 
   it("rejects a proposal successfully", async () => {
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      tenantId: TENANT_ID,
-      status: "viewed",
-      validUntil: FUTURE_DATE,
+    vi.mocked(database.proposal.findFirst)
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        tenantId: TENANT_ID,
+        status: "viewed",
+        validUntil: FUTURE_DATE,
+      } as never)
+      // Read-back of updated proposal after governed write
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        status: "rejected",
+        acceptedAt: null,
+        rejectedAt: new Date(),
+      } as never);
+
+    // Mock buildSystemUserContext's admin user lookup
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-user-id",
+      role: "admin",
     } as never);
 
-    vi.mocked(database.proposal.update).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      status: "rejected",
-      acceptedAt: null,
-      rejectedAt: new Date(),
-    } as never);
-
-    vi.mocked(database.$executeRaw).mockResolvedValueOnce(undefined as never);
+    // Mock runManifestCommand for Proposal.reject (governed write)
+    mockRunManifestCommand.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "rejected" }, events: [] }), { status: 200 })
+    );
 
     const res = await proposalRespond(
       mockRespondRequest(TOKEN, {
@@ -921,11 +944,15 @@ describe("POST /api/public/proposals/[token]/respond", () => {
     expect(json.message).toBe("Proposal rejected successfully");
     expect(json.proposal.status).toBe("rejected");
 
-    expect(vi.mocked(database.proposal.update)).toHaveBeenCalledWith(
+    // Verify the governed write was dispatched via Manifest runtime
+    expect(mockRunManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          status: "rejected",
-          rejectedAt: expect.any(Date),
+        entity: "Proposal",
+        command: "reject",
+        body: expect.objectContaining({
+          id: PROPOSAL_ID,
+          tenantId: TENANT_ID,
+          reason: "Budget too high",
         }),
       })
     );
@@ -1117,19 +1144,31 @@ describe("POST /api/public/proposals/[token]/respond", () => {
   });
 
   it("creates an audit log entry on accept", async () => {
-    vi.mocked(database.proposal.findFirst).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      tenantId: TENANT_ID,
-      status: "viewed",
-      validUntil: FUTURE_DATE,
+    vi.mocked(database.proposal.findFirst)
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        tenantId: TENANT_ID,
+        status: "viewed",
+        validUntil: FUTURE_DATE,
+      } as never)
+      // Read-back of updated proposal after governed write
+      .mockResolvedValueOnce({
+        id: PROPOSAL_ID,
+        status: "accepted",
+        acceptedAt: new Date(),
+        rejectedAt: null,
+      } as never);
+
+    // Mock buildSystemUserContext's admin user lookup
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-user-id",
+      role: "admin",
     } as never);
 
-    vi.mocked(database.proposal.update).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      status: "viewed",
-    } as never);
-
-    vi.mocked(database.$executeRaw).mockResolvedValueOnce(undefined as never);
+    // Mock runManifestCommand for Proposal.accept (governed write)
+    mockRunManifestCommand.mockResolvedValueOnce(
+      new Response(JSON.stringify({ success: true, result: { id: PROPOSAL_ID, status: "accepted" }, events: [] }), { status: 200 })
+    );
 
     await proposalRespond(
       mockRespondRequest(TOKEN, {
@@ -1141,7 +1180,13 @@ describe("POST /api/public/proposals/[token]/respond", () => {
       makeParams(TOKEN)
     );
 
-    expect(vi.mocked(database.$executeRaw)).toHaveBeenCalledTimes(1);
+    // Verify the governed write was dispatched via Manifest runtime
+    expect(mockRunManifestCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: "Proposal",
+        command: "accept",
+      })
+    );
   });
 
   it("returns 500 on database error", async () => {
