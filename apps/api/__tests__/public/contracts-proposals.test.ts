@@ -658,21 +658,35 @@ describe("GET /api/public/proposals/[token]", () => {
     vi.mocked(database.account.findFirst).mockResolvedValueOnce({
       name: "Test Org",
     } as never);
-    vi.mocked(database.proposal.update).mockResolvedValueOnce({
-      id: PROPOSAL_ID,
-      status: "viewed",
+    // Synthetic system-user lookup for public route
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-001",
+      role: "admin",
     } as never);
+    mockRunManifestCommand.mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
 
     await proposalGet(mockProposalGetRequest(TOKEN), makeParams(TOKEN));
 
-    expect(vi.mocked(database.proposal.update)).toHaveBeenCalledWith(
+    // Now dispatched through Manifest governance instead of direct Prisma write
+    expect(mockRunManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          viewedAt: expect.any(Date),
-          status: "viewed",
+        entity: "Proposal",
+        command: "markViewed",
+        body: expect.objectContaining({
+          id: PROPOSAL_ID,
+          tenantId: TENANT_ID,
+          viewedByInfo: "public-link",
+        }),
+        user: expect.objectContaining({
+          tenantId: TENANT_ID,
+          role: "admin",
         }),
       })
     );
+    // Direct Prisma write should NOT be called
+    expect(vi.mocked(database.proposal.update)).not.toHaveBeenCalled();
   });
 
   it("does NOT update viewedAt when already viewed", async () => {

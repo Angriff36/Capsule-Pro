@@ -10,6 +10,7 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type Params = Promise<{ token: string }>;
 
@@ -183,20 +184,33 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       },
     });
 
-    // Update viewedAt timestamp if this is the first view
+    // Update viewedAt timestamp if this is the first view (governed via Manifest)
     if (!proposal.viewedAt) {
-      await database.proposal.update({
-        where: {
-          tenantId_id: {
-            tenantId: proposal.tenantId,
+      try {
+        // Synthetic system-user context for public route (no Clerk auth)
+        const adminUser = await database.user.findFirst({
+          where: { tenantId: proposal.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+          select: { id: true, role: true },
+        });
+        const systemUser = {
+          id: adminUser?.id ?? "system",
+          tenantId: proposal.tenantId,
+          role: adminUser?.role ?? "admin",
+        };
+        await runManifestCommand({
+          entity: "Proposal",
+          command: "markViewed",
+          body: {
             id: proposal.id,
+            tenantId: proposal.tenantId,
+            viewedByInfo: "public-link",
           },
-        },
-        data: {
-          viewedAt: new Date(),
-          status: proposal.status === "sent" ? "viewed" : proposal.status,
-        },
-      });
+          user: systemUser,
+        });
+      } catch (err) {
+        // Non-fatal — markViewed failure must not block the GET response
+        log.error("Failed to mark proposal as viewed via Manifest:", err);
+      }
     }
 
     return NextResponse.json({

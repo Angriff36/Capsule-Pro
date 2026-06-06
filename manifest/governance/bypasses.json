@@ -1,4 +1,29 @@
 {
   "version": "1",
-  "bypasses": []
+  "bypasses": [
+    {
+      "entity": "PaymentMethod",
+      "file": "apps/api/app/api/accounting/payment-methods/route.ts",
+      "lines": "120",
+      "method": "database.paymentMethod.updateMany",
+      "reason": "Unsets isDefault on all other payment methods for the client when creating a new default. Cross-entity batch operation: markAsDefault/markNotDefault Manifest commands exist but operate on individual records. The updateMany clears multiple siblings in one query — performing N Manifest commands per request would be O(n) roundtrips vs O(1). Pattern: clearOthers → markAsDefault.",
+      "whyRuntimeNotRequired": "Batch updateMany is a cross-entity housekeeping operation with no domain semantics beyond 'ensure at most one default'. The individual record mutations (markAsDefault/markNotDefault) ARE governed; this is a companion bulk-clear.",
+      "tenantBoundary": "Filter scoped to tenantId + clientId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-06",
+      "reviewDate": "2026-09-06"
+    },
+    {
+      "entity": "PaymentMethod",
+      "file": "apps/api/app/api/accounting/payment-methods/[id]/route.ts",
+      "lines": "96,174",
+      "method": "database.paymentMethod.updateMany",
+      "reason": "Unsets isDefault on all other payment methods for the client before marking the target as default. Same cross-entity batch pattern as the POST route. ClearOthers → markAsDefault.",
+      "whyRuntimeNotRequired": "Batch updateMany is a cross-entity housekeeping operation with no domain semantics beyond 'ensure at most one default'. The individual record mutations (markAsDefault/markNotDefault) ARE governed.",
+      "tenantBoundary": "Filter scoped to tenantId + clientId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-06",
+      "reviewDate": "2026-09-06"
+    }
+  ]
 }
