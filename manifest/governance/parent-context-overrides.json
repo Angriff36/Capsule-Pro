@@ -93,9 +93,9 @@
       "reviewed": "2026-06-05"
     },
     "RevenueRecognitionSchedule": {
-      "fields": ["eventId", "clientId"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): eventId/clientId inferable from the linked Invoice/Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "fields": ["metadata"],
+      "category": "FALSE_POSITIVE",
+      "reason": "MIGRATED 2026-06-05 (6th parent-context adopter): eventId/clientId (formerly BASELINE) are now inherited server-side from the linked Invoice — dropped as create params. `metadata` remains an explicit create param ONLY to fence the generic resolver: Invoice also owns a `metadata` string, but the schedule's metadata is its own, authored for the schedule (not copied from the invoice). Listing it as a param excludes it from inheritance so Invoice.metadata never bleeds onto the schedule.",
       "owner": "accounting",
       "reviewed": "2026-06-05"
     },

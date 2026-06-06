@@ -62,18 +62,22 @@ entity RevenueRecognitionSchedule {
 
   // Commands
   default policy RevenueRecognitionScheduleDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
-  command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string) {
+  // eventId + clientId are NOT caller input: they are inherited server-side from
+  // the linked Invoice via parent-context propagation (Task 8.10,
+  // specs/parent-context-propagation.md). The Invoice always owns a real
+  // eventId/clientId (both required), so the schedule never has to re-ask for a
+  // fact the parent already holds. `metadata` is kept as an explicit create param
+  // ONLY to fence the generic resolver: Invoice also owns a `metadata` string, and
+  // the schedule's metadata is its own — listing it as a param excludes it from
+  // inheritance so the invoice's metadata never bleeds onto the schedule.
+  command create(invoiceId: string, contractId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: string) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
-    guard eventId != null and eventId != "" "Event ID is required"
     guard contractId != null and contractId != "" "Contract ID is required"
-    guard clientId != null and clientId != "" "Client ID is required"
     guard totalAmount > 0 "Total amount must be positive"
     guard endDate >= startDate "End date must be after start date"
 
     mutate invoiceId = invoiceId
-    mutate eventId = eventId
     mutate contractId = contractId
-    mutate clientId = clientId
     mutate totalAmount = totalAmount
     mutate recognizedAmount = 0
     mutate remainingAmount = totalAmount
@@ -84,6 +88,7 @@ entity RevenueRecognitionSchedule {
     mutate recognitionPeriod = recognitionPeriod
     mutate description = description
     mutate notes = notes
+    mutate metadata = metadata != null ? metadata : ""
 
     emit RecognitionStarted
   }
