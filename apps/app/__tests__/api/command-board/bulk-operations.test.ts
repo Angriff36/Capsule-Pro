@@ -19,31 +19,52 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock database
 const mockCardUpdate = vi.fn();
 const mockCardUpdateMany = vi.fn();
+const mockCardFindMany = vi.fn();
 const mockGroupCreate = vi.fn();
 const mockGroupUpdate = vi.fn();
+const mockGroupFindMany = vi.fn();
+const mockBoardCreate = vi.fn();
 
 vi.mock("@repo/database", () => ({
   database: {
     commandBoardCard: {
       update: (...args: unknown[]) => mockCardUpdate(...args),
       updateMany: (...args: unknown[]) => mockCardUpdateMany(...args),
+      findMany: (...args: unknown[]) => mockCardFindMany(...args),
     },
     commandBoardGroup: {
       create: (...args: unknown[]) => mockGroupCreate(...args),
       update: (...args: unknown[]) => mockGroupUpdate(...args),
+      findMany: (...args: unknown[]) => mockGroupFindMany(...args),
     },
+    commandBoard: {
+      create: (...args: unknown[]) => mockBoardCreate(...args),
+    },
+    $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({}),
   },
 }));
 
 // Mock tenant
 const mockTenantId = "tenant-001";
+const mockUser = { id: "user-001", tenantId: mockTenantId, role: "admin" };
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: () => Promise.resolve(mockTenantId),
+  requireCurrentUser: () => Promise.resolve(mockUser),
 }));
 
 // Mock Next.js server functions
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
+}));
+
+// Mock manifest command
+const mockRunManifestCommand = vi.fn().mockResolvedValue({
+  ok: true,
+  status: 200,
+  result: { id: "mock-id" },
+});
+vi.mock("@/lib/manifest-command", () => ({
+  runManifestCommand: (...args: unknown[]) => mockRunManifestCommand(...args),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -64,6 +85,14 @@ import {
 describe("Command Board Server Actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mock returns
+    mockCardFindMany.mockResolvedValue([]);
+    mockGroupFindMany.mockResolvedValue([]);
+    mockCardUpdate.mockResolvedValue({});
+    mockCardUpdateMany.mockResolvedValue({ count: 0 });
+    mockGroupCreate.mockResolvedValue({ id: "group-new" });
+    mockGroupUpdate.mockResolvedValue({});
+    mockBoardCreate.mockResolvedValue({ id: "board-new" });
   });
 
   // -----------------------------------------------------------------------
@@ -71,17 +100,27 @@ describe("Command Board Server Actions", () => {
   // -----------------------------------------------------------------------
 
   describe("moveCardAction", () => {
-    it("updates card position", async () => {
-      mockCardUpdate.mockResolvedValue({});
+    it("updates card position via Manifest command", async () => {
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "card-1" },
+      });
 
       await moveCardAction("card-1", 150, 250);
 
-      expect(mockCardUpdate).toHaveBeenCalledWith({
-        where: {
-          tenantId_id: { tenantId: mockTenantId, id: "card-1" },
-        },
-        data: { positionX: 150, positionY: 250 },
-      });
+      expect(mockRunManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "CommandBoardCard",
+          command: "move",
+          instanceId: "card-1",
+          body: expect.objectContaining({
+            newPositionX: 150,
+            newPositionY: 250,
+          }),
+          user: expect.objectContaining({ tenantId: mockTenantId }),
+        })
+      );
     });
   });
 
@@ -152,8 +191,12 @@ describe("Command Board Server Actions", () => {
   // -----------------------------------------------------------------------
 
   describe("createGroupAction", () => {
-    it("creates a group and assigns cards", async () => {
-      mockGroupCreate.mockResolvedValue({});
+    it("creates a group via Manifest command and assigns cards", async () => {
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "group-new" },
+      });
       mockCardUpdateMany.mockResolvedValue({ count: 3 });
 
       const result = await createGroupAction(
@@ -167,25 +210,25 @@ describe("Command Board Server Actions", () => {
         200
       );
 
-      // The action generates its own UUID
-      expect(result.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-      );
+      expect(result.id).toBe("group-new");
 
-      // Group was created with correct fields
-      expect(mockGroupCreate).toHaveBeenCalledWith({
-        data: expect.objectContaining({
-          tenantId: mockTenantId,
-          boardId: "board-1",
-          name: "Front of house",
-          color: "#3b82f6",
-          collapsed: false,
-          positionX: 10,
-          positionY: 20,
-          width: 300,
-          height: 200,
-        }),
-      });
+      // Group created via Manifest command
+      expect(mockRunManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "CommandBoardGroup",
+          command: "create",
+          body: expect.objectContaining({
+            boardId: "board-1",
+            name: "Front of house",
+            color: "#3b82f6",
+            positionX: 10,
+            positionY: 20,
+            width: 300,
+            height: 200,
+          }),
+          user: expect.objectContaining({ tenantId: mockTenantId }),
+        })
+      );
 
       // Cards were assigned to the new group
       expect(mockCardUpdateMany).toHaveBeenCalledWith({
@@ -199,7 +242,11 @@ describe("Command Board Server Actions", () => {
     });
 
     it("creates a group without cards", async () => {
-      mockGroupCreate.mockResolvedValue({});
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "group-empty" },
+      });
 
       const result = await createGroupAction(
         "board-1",
@@ -212,10 +259,7 @@ describe("Command Board Server Actions", () => {
         300
       );
 
-      // Action generates UUID
-      expect(result.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
-      );
+      expect(result.id).toBe("group-empty");
       expect(mockCardUpdateMany).not.toHaveBeenCalled();
     });
   });
@@ -279,30 +323,48 @@ describe("Command Board Server Actions", () => {
   // -----------------------------------------------------------------------
 
   describe("toggleGroupCollapseAction", () => {
-    it("collapses a group", async () => {
-      mockGroupUpdate.mockResolvedValue({});
+    it("collapses a group via Manifest command", async () => {
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "group-1" },
+      });
 
       await toggleGroupCollapseAction("group-1", true);
 
-      expect(mockGroupUpdate).toHaveBeenCalledWith({
-        where: {
-          tenantId_id: { tenantId: mockTenantId, id: "group-1" },
-        },
-        data: { collapsed: true },
-      });
+      expect(mockRunManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "CommandBoardGroup",
+          command: "update",
+          instanceId: "group-1",
+          body: expect.objectContaining({
+            newCollapsed: true,
+          }),
+          user: expect.objectContaining({ tenantId: mockTenantId }),
+        })
+      );
     });
 
-    it("expands a group", async () => {
-      mockGroupUpdate.mockResolvedValue({});
+    it("expands a group via Manifest command", async () => {
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "group-1" },
+      });
 
       await toggleGroupCollapseAction("group-1", false);
 
-      expect(mockGroupUpdate).toHaveBeenCalledWith({
-        where: {
-          tenantId_id: { tenantId: mockTenantId, id: "group-1" },
-        },
-        data: { collapsed: false },
-      });
+      expect(mockRunManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "CommandBoardGroup",
+          command: "update",
+          instanceId: "group-1",
+          body: expect.objectContaining({
+            newCollapsed: false,
+          }),
+          user: expect.objectContaining({ tenantId: mockTenantId }),
+        })
+      );
     });
   });
 
@@ -311,13 +373,17 @@ describe("Command Board Server Actions", () => {
   // -----------------------------------------------------------------------
 
   describe("deleteGroupAction", () => {
-    it("unassigns cards and soft-deletes the group", async () => {
+    it("unassigns cards and soft-deletes the group via Manifest", async () => {
       mockCardUpdateMany.mockResolvedValue({ count: 3 });
-      mockGroupUpdate.mockResolvedValue({});
+      mockRunManifestCommand.mockResolvedValue({
+        ok: true,
+        status: 200,
+        result: { id: "group-1" },
+      });
 
       await deleteGroupAction("group-1");
 
-      // Cards are unassigned first
+      // Cards are unassigned first via direct Prisma (no governed equivalent for batch)
       expect(mockCardUpdateMany).toHaveBeenCalledWith({
         where: {
           tenantId: mockTenantId,
@@ -327,13 +393,15 @@ describe("Command Board Server Actions", () => {
         data: { groupId: null },
       });
 
-      // Then group is soft-deleted
-      expect(mockGroupUpdate).toHaveBeenCalledWith({
-        where: {
-          tenantId_id: { tenantId: mockTenantId, id: "group-1" },
-        },
-        data: { deletedAt: expect.any(Date) },
-      });
+      // Then group is soft-deleted via Manifest command
+      expect(mockRunManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "CommandBoardGroup",
+          command: "remove",
+          instanceId: "group-1",
+          user: expect.objectContaining({ tenantId: mockTenantId }),
+        })
+      );
     });
   });
 });

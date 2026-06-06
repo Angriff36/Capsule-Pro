@@ -195,14 +195,9 @@ export async function createCycleCountSession(
 /**
  * Update a cycle count session.
  *
- * Status transitions are governed via Manifest commands:
- *   - "in_progress" -> CycleCountSession.start
- *   - "completed"   -> CycleCountSession.complete
- *   - "finalized"   -> CycleCountSession.finalize
- *   - "cancelled"   -> CycleCountSession.cancel
- *
- * Field-only edits (sessionName, notes) without a status change remain as
- * direct Prisma because no generic `update` command exists in the IR.
+ * All mutations go through Manifest runtime governance:
+ *   - Status transitions: CycleCountSession.start / complete / finalize / cancel
+ *   - Field edits (sessionName, notes): CycleCountSession.update
  */
 export async function updateCycleCountSession(
   input: UpdateSessionInput
@@ -247,17 +242,23 @@ export async function updateCycleCountSession(
       }
     }
 
-    // Field-only edits (sessionName, notes) without status change stay as direct Prisma
+    // Field-only edits (sessionName, notes) without status change — governed via update command
     if (input.status === undefined && (input.sessionName !== undefined || input.notes !== undefined)) {
-      await database.cycleCountSession.update({
-        where: {
-          tenantId_id: { tenantId, id: input.id },
+      const updateResult = await runManifestCommand({
+        entity: "CycleCountSession",
+        command: "update",
+        instanceId: input.id,
+        body: {
+          sessionName: input.sessionName ?? "",
+          notes: input.notes ?? "",
+          userId: user.id,
         },
-        data: {
-          ...(input.sessionName !== undefined && { sessionName: input.sessionName }),
-          ...(input.notes !== undefined && { notes: input.notes }),
-        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });
+
+      if (!updateResult.ok) {
+        return { success: false, error: updateResult.message || "Failed to update session" };
+      }
     }
 
     // Post-command read to materialize return shape

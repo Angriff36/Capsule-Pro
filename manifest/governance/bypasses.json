@@ -24,6 +24,18 @@
       "owner": "governance-migration",
       "approvedDate": "2026-06-06",
       "reviewDate": "2026-09-06"
+    },
+    {
+      "entity": "RecipeIngredient",
+      "file": "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts",
+      "lines": "268-275",
+      "method": "database.recipeIngredient.updateMany",
+      "reason": "Batch update of costCalculatedAt timestamp on all ingredients for a recipe version after cost recalculation. This is a metadata-tracking field recording when costs were last computed, not a governed domain property. The actual cost mutation (RecipeVersion.updateCosts) IS governed via Manifest runtime. Using N individual RecipeIngredient.update Manifest commands for a batch timestamp stamp would be O(n) roundtrips for a pure bookkeeping operation with no business rules to enforce.",
+      "whyRuntimeNotRequired": "costCalculatedAt is an infrastructure timestamp, not a domain property. No state transitions, business rules, or governance policies apply to it. The only governed mutation in this route is RecipeVersion.updateCosts which already goes through Manifest runtime.",
+      "tenantBoundary": "Filter scoped to tenantId + recipeVersionId + deletedAt: null",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-06",
+      "reviewDate": "2026-09-06"
     }
   ]
 }

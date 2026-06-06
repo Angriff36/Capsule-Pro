@@ -62,6 +62,15 @@ entity CycleCountSession {
     emit CycleCountSessionCreated
   }
 
+  command update(sessionName: string, notes: string, userId: string) {
+    guard self.status in ["draft", "in_progress"] "Can only edit draft or in-progress sessions"
+
+    mutate sessionName = sessionName
+    mutate notes = notes
+
+    emit CycleCountSessionUpdated
+  }
+
   command start(userId: string) {
     guard self.status == "draft" "Can only start draft sessions"
 
@@ -365,6 +374,14 @@ event CycleCountSessionCreated: "inventory.cyclecount.session.created" {
   countType: string
   createdById: string
   createdAt: datetime
+}
+
+event CycleCountSessionUpdated: "inventory.cyclecount.session.updated" {
+  sessionId: string
+  sessionName: string
+  notes: string
+  userId: string
+  updatedAt: datetime
 }
 
 event CycleCountSessionStarted: "inventory.cyclecount.session.started" {

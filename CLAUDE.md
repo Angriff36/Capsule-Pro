@@ -259,9 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 98% context — saved before compacting]
-Files (2):
-  apps/app/app/(authenticated)/scheduling/availability/actions.ts (edit)
-  apps/app/app/(authenticated)/facilities/actions.ts (edit)
+[proactive bridge @ 88% context — saved before compacting]
+Files (1):
+  manifest/governance/bypasses.json (edit)
 
 # === END COGNILAYER ===

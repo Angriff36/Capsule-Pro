@@ -264,7 +264,8 @@ export async function POST(
       return manifestErrorResponse("Recipe version not found", 404);
     }
 
-    // Update ingredient cost timestamps (ancillary batch update, not governed)
+    // GOVERNED BYPASS: RecipeIngredient.updateMany — documented in manifest/governance/bypasses.json
+    // Batch timestamps costCalculatedAt on all ingredients; not a domain mutation.
     await database.recipeIngredient.updateMany({
       where: {
         tenantId,

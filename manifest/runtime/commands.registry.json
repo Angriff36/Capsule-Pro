@@ -980,6 +980,11 @@
     "commandId": "CycleCountSession.start"
   },
   {
+    "entity": "CycleCountSession",
+    "command": "update",
+    "commandId": "CycleCountSession.update"
+  },
+  {
     "entity": "Deal",
     "command": "abandon",
     "commandId": "Deal.abandon"
