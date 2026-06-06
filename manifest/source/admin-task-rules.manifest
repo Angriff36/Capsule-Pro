@@ -55,27 +55,48 @@ entity AdminTask {
     emit AdminTaskUpdated
   }
 
-  command moveToTodo() {
-    guard self.deletedAt == null "Cannot transition a deleted task"
-    guard self.status == "backlog" or self.status == "in_progress" "Can only move to todo from backlog or in_progress"
+  // ── Status state machine ────────────────────────────────────────────────
+  // Authoritative model = the operational Kanban board's four columns
+  // (backlog → in_progress → review → done) plus a `cancelled` side-state.
+  // The board is a free-movement <select> (any column → any column), so the
+  // four active columns are mutually reachable; `cancelled` is reachable from
+  // any active column and reopens to `backlog`. One command per TARGET column
+  // (so the API status→command map is 1:1) with a guard listing the legal
+  // source states. (The legacy `todo` state was never surfaced by any product
+  // surface — UI type, validation, overview-boards query, and the create test
+  // all use the four columns — so it is removed; constitution §14: Manifest is
+  // brought into conformance with the shipped workflow.)
 
-    mutate status = "todo"
+  command moveToBacklog() {
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status != "backlog" "Task is already in backlog"
+
+    mutate status = "backlog"
 
     emit AdminTaskStatusChanged
   }
 
   command startProgress() {
     guard self.deletedAt == null "Cannot transition a deleted task"
-    guard self.status == "todo" "Can only start progress from todo"
+    guard self.status == "backlog" or self.status == "review" or self.status == "done" "Can only start progress from backlog, review, or done"
 
     mutate status = "in_progress"
 
     emit AdminTaskStatusChanged
   }
 
+  command submitForReview() {
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status == "backlog" or self.status == "in_progress" or self.status == "done" "Can only submit for review from backlog, in_progress, or done"
+
+    mutate status = "review"
+
+    emit AdminTaskStatusChanged
+  }
+
   command complete() {
     guard self.deletedAt == null "Cannot transition a deleted task"
-    guard self.status == "in_progress" "Can only complete from in_progress"
+    guard self.status == "backlog" or self.status == "in_progress" or self.status == "review" "Can only complete from backlog, in_progress, or review"
 
     mutate status = "done"
 
@@ -84,26 +105,20 @@ entity AdminTask {
 
   command cancel() {
     guard self.deletedAt == null "Cannot transition a deleted task"
-    guard self.status != "done" "Cannot cancel a completed task"
+    guard self.status != "done" and self.status != "cancelled" "Cannot cancel a completed or already-cancelled task"
 
     mutate status = "cancelled"
 
     emit AdminTaskStatusChanged
   }
 
-  command reopen() {
-    guard self.deletedAt == null "Cannot transition a deleted task"
-    guard self.status == "cancelled" "Can only reopen a cancelled task"
-
-    mutate status = "backlog"
-
-    emit AdminTaskStatusChanged
-  }
-
-  // State transitions
-  transition status from "backlog" to ["todo", "cancelled"]
-  transition status from "todo" to ["in_progress", "cancelled"]
-  transition status from "in_progress" to ["todo", "done", "cancelled"]
+  // State transitions — free movement among the four active columns, plus the
+  // cancel edges (active → cancelled) and the reopen edge (cancelled → backlog,
+  // via moveToBacklog).
+  transition status from "backlog" to ["in_progress", "review", "done", "cancelled"]
+  transition status from "in_progress" to ["backlog", "review", "done", "cancelled"]
+  transition status from "review" to ["backlog", "in_progress", "done", "cancelled"]
+  transition status from "done" to ["backlog", "in_progress", "review"]
   transition status from "cancelled" to ["backlog"]
 
   command softDelete() {

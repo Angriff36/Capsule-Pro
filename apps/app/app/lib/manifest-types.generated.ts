@@ -9,9 +9,9 @@ export interface AdminChatParticipant {
   userId?: string;
   archivedAt: string;
   clearedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface AdminTask {
@@ -23,11 +23,11 @@ export interface AdminTask {
   priority?: string;
   category?: string;
   assignedTo?: string;
-  dueDate?: string;
+  dueDate: string;
   createdBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface AiEventSetupSession {
@@ -48,9 +48,9 @@ export interface AiEventSetupSession {
   missingFields?: string;
   suggestions?: string;
   createdEventId?: string;
+  completedAt: string;
   createdAt: string;
   updatedAt: string;
-  completedAt: string;
 }
 
 export interface AlertsConfig {
@@ -58,6 +58,8 @@ export interface AlertsConfig {
   tenantId: string;
   channel?: string;
   destination?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface AllergenWarning {
@@ -78,9 +80,9 @@ export interface AllergenWarning {
   escalatedAt: string;
   escalatedTo?: string;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ApiKey {
@@ -94,9 +96,9 @@ export interface ApiKey {
   expiresAt: string;
   revokedAt: string;
   createdByUserId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface BankAccount {
@@ -133,10 +135,17 @@ export interface BattleBoard {
   description?: string;
   notes?: string;
   tags?: string;
-  createdAt: string;
   dishCount?: number;
-  updatedAt: string;
   deletedAt: string;
+  eventDate: string;
+  clientId?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  locationId?: string;
+  inheritedContext?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Budget {
@@ -174,9 +183,9 @@ export interface BulkOrderRule {
   effectiveFrom: string;
   effectiveTo: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CateringOrder {
@@ -212,9 +221,9 @@ export interface CateringOrder {
   dietaryRestrictions?: string;
   staffRequired?: number;
   staffAssigned?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ChartOfAccount {
@@ -247,9 +256,9 @@ export interface ClientInteraction {
   escalatedAt: string;
   escalatedTo?: string;
   correlationId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Client {
@@ -276,9 +285,9 @@ export interface Client {
   source?: string;
   assignedTo?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ClientContact {
@@ -294,9 +303,9 @@ export interface ClientContact {
   isPrimary?: boolean;
   isBillingContact?: boolean;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ClientPreference {
@@ -307,9 +316,9 @@ export interface ClientPreference {
   preferenceKey?: string;
   preferenceValue?: string;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CollectionCase {
@@ -325,7 +334,7 @@ export interface CollectionCase {
   collectedAmount?: number;
   status?: string;
   priority?: string;
-  dunningStage?: string;
+  dunningStage?: number;
   daysOverdue?: number;
   agingBucket?: string;
   assignedTo?: string;
@@ -343,10 +352,10 @@ export interface CollectionCase {
   internalNotes?: string;
   lastActivityAt: string;
   metadata?: string;
-  createdAt: string;
-  updatedAt: string;
   resolvedAt: string;
   closedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CollectionAction {
@@ -388,10 +397,10 @@ export interface CollectionPaymentPlan {
   nextPaymentDate: string;
   notes?: string;
   metadata?: string;
-  createdAt: string;
-  updatedAt: string;
   completedAt: string;
   defaultedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CommandBoard {
@@ -403,9 +412,9 @@ export interface CommandBoard {
   status?: string;
   isTemplate?: boolean;
   tags?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CommandBoardCard {
@@ -427,9 +436,9 @@ export interface CommandBoardCard {
   entityId?: string;
   entityType?: string;
   version?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CommandBoardGroup {
@@ -444,9 +453,9 @@ export interface CommandBoardGroup {
   width?: number;
   height?: number;
   zIndex?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CommandBoardConnection {
@@ -458,9 +467,9 @@ export interface CommandBoardConnection {
   relationshipType?: string;
   label?: string;
   visible?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CommandBoardLayout {
@@ -474,9 +483,9 @@ export interface CommandBoardLayout {
   gridSize?: number;
   showGrid?: boolean;
   snapToGrid?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Container {
@@ -491,9 +500,9 @@ export interface Container {
   capacityPortions?: number;
   isReusable?: boolean;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ProposalTemplate {
@@ -505,9 +514,9 @@ export interface ProposalTemplate {
   footerHtml?: string;
   defaultTerms?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface InteractionAttachment {
@@ -519,9 +528,9 @@ export interface InteractionAttachment {
   fileType?: string;
   fileSizeBytes?: number;
   uploadedBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CrmScoringRule {
@@ -531,9 +540,9 @@ export interface CrmScoringRule {
   criterion?: string;
   points?: number;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Report {
@@ -545,9 +554,9 @@ export interface Report {
   displayConfig?: string;
   isShared?: boolean;
   createdBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Document {
@@ -561,9 +570,9 @@ export interface Document {
   entityType?: string;
   entityId?: string;
   uploadedBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface AdminChatThread {
@@ -584,9 +593,9 @@ export interface AdminChatMessage {
   senderId?: string;
   body?: string;
   sentAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CycleCountSession {
@@ -608,9 +617,9 @@ export interface CycleCountSession {
   notes?: string;
   createdById?: string;
   approvedById?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface CycleCountRecord {
@@ -634,9 +643,9 @@ export interface CycleCountRecord {
   verifiedAt: string;
   syncStatus?: string;
   offlineId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface VarianceReport {
@@ -661,9 +670,9 @@ export interface VarianceReport {
   rejectionReason?: string;
   notes?: string;
   generatedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Deal {
@@ -709,9 +718,9 @@ export interface Dish {
   isEightySix?: boolean;
   eightySixReason?: string;
   eightySixAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface DocumentVersion {
@@ -726,11 +735,11 @@ export interface DocumentVersion {
   approvedBy?: string;
   publishedBy?: string;
   supersededBy?: string;
-  createdAt: string;
-  updatedAt: string;
   approvedAt: string;
   publishedAt: string;
   supersededAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface EmailTemplate {
@@ -743,9 +752,9 @@ export interface EmailTemplate {
   mergeFields?: string;
   isActive?: boolean;
   isDefault?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EmailWorkflow {
@@ -757,9 +766,9 @@ export interface EmailWorkflow {
   emailTemplateId?: string;
   recipientConfig?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EmployeeAvailability {
@@ -776,9 +785,9 @@ export interface EmployeeAvailability {
   suspendReason?: string;
   suspendedAt: string;
   reinstatedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EmployeeCertification {
@@ -791,9 +800,9 @@ export interface EmployeeCertification {
   expiryDate?: string;
   documentUrl?: string;
   status?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Equipment {
@@ -900,11 +909,10 @@ export interface EventBudget {
   totalBudgetAmount?: number;
   totalActualAmount?: number;
   varianceAmount?: number;
-  variancePercentage?: number;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface BudgetLineItem {
@@ -919,9 +927,9 @@ export interface BudgetLineItem {
   varianceAmount?: number;
   sortOrder?: number;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventContract {
@@ -939,9 +947,10 @@ export interface EventContract {
   sentAt: string;
   viewedAt: string;
   signedAt: string;
+  canceledBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ContractSignature {
@@ -958,9 +967,9 @@ export interface ContractSignature {
   invalidatedAt: string;
   invalidationReason?: string;
   isValid?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventDish {
@@ -972,9 +981,9 @@ export interface EventDish {
   notes?: string;
   courseLabel?: string;
   sortOrder?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventGuest {
@@ -988,6 +997,7 @@ export interface EventGuest {
   dietaryRestrictions?: string;
   allergenRestrictions?: string;
   notes?: string;
+  declineReason?: string;
   specialMealRequired?: boolean;
   specialMealNotes?: string;
   tableAssignment?: string;
@@ -995,9 +1005,9 @@ export interface EventGuest {
   rsvpStatus?: string;
   rsvpAt: string;
   checkedInAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventImportWorkflow {
@@ -1039,9 +1049,9 @@ export interface EventReport {
   rejectedAt: string;
   rejectedBy?: string;
   rejectionReason?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Event {
@@ -1068,9 +1078,9 @@ export interface Event {
   venueAddress?: string;
   notes?: string;
   tags: unknown[];
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventProfitability {
@@ -1083,14 +1093,12 @@ export interface EventProfitability {
   budgetedOverhead?: number;
   budgetedTotalCost?: number;
   budgetedGrossMargin?: number;
-  budgetedGrossMarginPct?: number;
   actualRevenue?: number;
   actualFoodCost?: number;
   actualLaborCost?: number;
   actualOverhead?: number;
   actualTotalCost?: number;
   actualGrossMargin?: number;
-  actualGrossMarginPct?: number;
   revenueVariance?: number;
   foodCostVariance?: number;
   laborCostVariance?: number;
@@ -1099,9 +1107,9 @@ export interface EventProfitability {
   calculatedAt: string;
   calculationMethod?: string;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventSummary {
@@ -1116,9 +1124,9 @@ export interface EventSummary {
   overallSummary?: string;
   generatedAt: string;
   generationDurationMs?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventStaff {
@@ -1135,39 +1143,34 @@ export interface EventStaff {
   checkedInAt: string;
   checkedOutAt: string;
   noShowReason?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Venue {
   id: string;
   tenantId: string;
   name?: string;
-  address?: string;
+  venueType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
   capacity?: number;
   contactName?: string;
   contactPhone?: string;
-  notes?: string;
+  contactEmail?: string;
+  accessNotes?: string;
+  cateringNotes?: string;
+  layoutImageUrl?: string;
+  tags: unknown[];
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
-}
-
-export interface EventStaffAssignment {
-  id: string;
-  tenantId: string;
-  eventId: string;
-  staffMemberId: string;
-  role?: string;
-  shiftStart: string;
-  shiftEnd: string;
-  status?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventTimeline {
@@ -1179,9 +1182,9 @@ export interface EventTimeline {
   durationMinutes?: number;
   notes?: string;
   sortOrder?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface TimelineTask {
@@ -1195,9 +1198,9 @@ export interface TimelineTask {
   notes?: string;
   sortOrder?: number;
   completedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EventImport {
@@ -1210,10 +1213,10 @@ export interface EventImport {
   importedRows?: number;
   skippedRows?: number;
   errorMessage?: string;
-  createdAt: string;
-  updatedAt: string;
   completedAt: string;
   deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface EventFollowup {
@@ -1226,9 +1229,9 @@ export interface EventFollowup {
   assignedTo?: string;
   notes?: string;
   completedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface BoardProjection {
@@ -1241,9 +1244,9 @@ export interface BoardProjection {
   positionY?: number;
   width?: number;
   height?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface BoardAnnotation {
@@ -1254,9 +1257,9 @@ export interface BoardAnnotation {
   positionX?: number;
   positionY?: number;
   color?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Note {
@@ -1268,9 +1271,9 @@ export interface Note {
   tags?: unknown[];
   entityType?: string;
   entityId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Facility {
@@ -1383,9 +1386,9 @@ export interface Ingredient {
   isRecalled?: boolean;
   recallReason?: string;
   recalledAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface StorageLocation {
@@ -1396,9 +1399,9 @@ export interface StorageLocation {
   storageType: string;
   temperatureZone?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface InventoryStock {
@@ -1476,9 +1479,9 @@ export interface VendorContact {
   phone?: string;
   role?: string;
   isPrimary?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface VendorRating {
@@ -1563,9 +1566,9 @@ export interface InventoryItem {
   fsa_temp_logged?: boolean;
   fsa_allergen_info?: boolean;
   fsa_traceable?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface InventorySupplier {
@@ -1588,9 +1591,9 @@ export interface InventorySupplier {
   blacklistedAt: string;
   blacklistedReason?: string;
   qualificationStatus?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface InventoryTransaction {
@@ -1614,6 +1617,7 @@ export interface InventoryTransaction {
   reverseOfTransactionId?: string;
   isReversed?: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface InventoryTransfer {
@@ -1631,9 +1635,9 @@ export interface InventoryTransfer {
   discrepancyNotes?: string;
   hasDiscrepancy?: boolean;
   notes?: string;
+  items?: string;
   createdAt: string;
   updatedAt: string;
-  items?: string;
 }
 
 export interface Invoice {
@@ -1669,6 +1673,8 @@ export interface Invoice {
   internalNotes?: string;
   lineItems?: string;
   metadata?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TemperatureProbe {
@@ -1712,12 +1718,22 @@ export interface TemperatureReading {
 export interface IotAlertRule {
   id: string;
   tenantId: string;
+  name: string;
   equipmentId: string;
   metric: string;
+  sensorType: string;
+  condition: string;
   threshold: number;
+  thresholdMin?: number;
+  thresholdMax?: number;
   comparison: string;
   severity: string;
+  durationMs?: number;
+  alertAction?: string;
   isActive?: boolean;
+  notifyRoles?: string;
+  notifyChannels?: string;
+  description?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1726,12 +1742,16 @@ export interface IoTAlert {
   id: string;
   tenantId: string;
   probeId: string;
-  ruleId: string;
+  ruleId?: string;
   severity: string;
   message: string;
   value: number;
   status?: string;
   triggeredAt: string;
+  alertNumber?: string;
+  alertType?: string;
+  title?: string;
+  temperature?: number;
   acknowledgedBy?: string;
   resolvedBy?: string;
   createdAt: string;
@@ -1901,9 +1921,9 @@ export interface LaborBudget {
   createdBy?: string;
   approvedBy?: string;
   approvedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface BudgetAlert {
@@ -1940,9 +1960,9 @@ export interface Lead {
   notes?: string;
   convertedToClientId?: string;
   convertedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Driver {
@@ -2053,6 +2073,8 @@ export interface MenuDish {
   isOptional?: boolean;
   priceOverride?: number;
   deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Notification {
@@ -2067,6 +2089,7 @@ export interface Notification {
   readAt: string;
   correlationId?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface OverrideAudit {
@@ -2081,6 +2104,7 @@ export interface OverrideAudit {
   authorizedBy?: string;
   authorizedAt: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface PaymentMethod {
@@ -2106,9 +2130,9 @@ export interface PaymentMethod {
   verificationMethod?: string;
   nickname?: string;
   metadata?: string;
+  expiresAt: string;
   createdAt: string;
   updatedAt: string;
-  expiresAt: string;
 }
 
 export interface Payment {
@@ -2137,6 +2161,8 @@ export interface Payment {
   description?: string;
   externalReference?: string;
   metadata?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PayrollPeriod {
@@ -2145,9 +2171,9 @@ export interface PayrollPeriod {
   periodStart?: string;
   periodEnd?: string;
   status?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface EmployeeDeduction {
@@ -2162,9 +2188,9 @@ export interface EmployeeDeduction {
   effectiveDate?: string;
   endDate?: string;
   maxAnnualAmount?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PayrollApprovalHistory {
@@ -2178,6 +2204,7 @@ export interface PayrollApprovalHistory {
   performedAt: string;
   reason?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface PayrollRun {
@@ -2191,30 +2218,12 @@ export interface PayrollRun {
   totalNet?: number;
   approvedBy?: string;
   approvedAt: string;
+  rejectedBy?: string;
   paidAt: string;
   rejectReason?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
-}
-
-export interface PayrollLineItem {
-  id: string;
-  tenantId: string;
-  payrollRunId: string;
-  employeeId: string;
-  grossPay?: number;
-  netPay?: number;
-  totalDeductions?: number;
-  hoursWorked?: number;
-  hoursRegular?: number;
-  hoursOvertime?: number;
-  rateRegular?: number;
-  rateOvertime?: number;
-  deductions?: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PrepComment {
@@ -2226,9 +2235,9 @@ export interface PrepComment {
   isResolved?: boolean;
   resolvedAt: string;
   resolvedBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PrepList {
@@ -2245,6 +2254,8 @@ export interface PrepList {
   generatedAt: string;
   finalizedAt: string;
   isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PrepListItem {
@@ -2271,6 +2282,8 @@ export interface PrepListItem {
   isCompleted?: boolean;
   completedAt: string;
   completedBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PrepMethod {
@@ -2282,9 +2295,9 @@ export interface PrepMethod {
   estimatedDurationMinutes?: number;
   requiresCertification?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PrepTaskPlanWorkflow {
@@ -2354,9 +2367,9 @@ export interface PricingTier {
   effectiveFrom: string;
   effectiveTo: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PurchaseRequisition {
@@ -2387,10 +2400,10 @@ export interface PurchaseRequisition {
   submittedAt: string;
   itemCategory?: string;
   priority?: string;
-  createdAt: string;
-  updatedAt: string;
   deletedAt: string;
   itemCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PurchaseRequisitionItem {
@@ -2407,9 +2420,9 @@ export interface PurchaseRequisitionItem {
   suggestedVendorName?: string;
   specifications?: string;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Proposal {
@@ -2439,9 +2452,9 @@ export interface Proposal {
   notes?: string;
   termsAndConditions?: string;
   lineItemCount?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ProposalLineItem {
@@ -2458,9 +2471,9 @@ export interface ProposalLineItem {
   totalPrice?: number;
   sortOrder?: number;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface PurchaseOrder {
@@ -2482,10 +2495,10 @@ export interface PurchaseOrder {
   submittedAt: string;
   receivedBy?: string;
   receivedAt: string;
-  createdAt: string;
-  updatedAt: string;
   deletedAt: string;
   itemCount?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface PurchaseOrderItem {
@@ -2502,9 +2515,9 @@ export interface PurchaseOrderItem {
   discrepancyType?: string;
   discrepancyAmount?: number;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface QACheck {
@@ -2564,9 +2577,9 @@ export interface RateLimitConfig {
   burstAllowance?: number;
   priority?: number;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Recipe {
@@ -2578,6 +2591,8 @@ export interface Recipe {
   description?: string;
   tags: unknown[];
   isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RecipeVersion {
@@ -2608,6 +2623,7 @@ export interface RecipeVersion {
   approvedAt: string;
   approvedBy?: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface RecipeIngredient {
@@ -2622,6 +2638,8 @@ export interface RecipeIngredient {
   isOptional?: boolean;
   wasteFactor?: number;
   deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RecipeStep {
@@ -2638,6 +2656,8 @@ export interface RecipeStep {
   videoUrl?: string;
   imageUrl?: string;
   deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface RevenueRecognitionSchedule {
@@ -2662,9 +2682,9 @@ export interface RevenueRecognitionSchedule {
   description?: string;
   notes?: string;
   metadata?: string;
+  completedAt: string;
   createdAt: string;
   updatedAt: string;
-  completedAt: string;
 }
 
 export interface RevenueRecognitionLine {
@@ -2692,12 +2712,12 @@ export interface RolePolicy {
   tenantId: string;
   roleId: string;
   roleName?: string;
-  permissions?: string;
+  permissions?: unknown[];
   description?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface SampleData {
@@ -2710,6 +2730,8 @@ export interface SampleData {
   clientsCreated?: number;
   usersCreated?: number;
   recipesCreated?: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Schedule {
@@ -2724,9 +2746,9 @@ export interface Schedule {
   approvedAt: string;
   notes?: string;
   shiftCount?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ScheduleShift {
@@ -2743,9 +2765,9 @@ export interface ScheduleShift {
   swapStatus?: string;
   swapOfferedAt: string;
   swapAcceptedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Shipment {
@@ -2773,9 +2795,9 @@ export interface Shipment {
   notes?: string;
   internalNotes?: string;
   reference?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface ShipmentItem {
@@ -2793,9 +2815,9 @@ export interface ShipmentItem {
   conditionNotes?: string;
   lotNumber?: string;
   expirationDate: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface SmsAutomationRule {
@@ -2811,9 +2833,9 @@ export interface SmsAutomationRule {
   recipientConfig?: string;
   isActive?: boolean;
   priority?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface TimecardApproval {
@@ -2825,6 +2847,24 @@ export interface TimecardApproval {
   approvedBy?: string;
   approvedAt: string;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollLineItem {
+  id: string;
+  tenantId: string;
+  payrollRunId: string;
+  employeeId: string;
+  grossPay?: number;
+  netPay?: number;
+  totalDeductions?: number;
+  hoursWorked?: number;
+  hoursRegular?: number;
+  hoursOvertime?: number;
+  rateRegular?: number;
+  rateOvertime?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -2909,9 +2949,9 @@ export interface OnboardingTask {
   description?: string;
   sortOrder?: number;
   isRequired?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface OnboardingCompletion {
@@ -2998,9 +3038,9 @@ export interface StaffMember {
   role?: string;
   status?: string;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface StaffPerformance {
@@ -3054,9 +3094,9 @@ export interface TimeEntry {
   notes?: string;
   approvedBy?: string;
   approvedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface TimecardEditRequest {
@@ -3087,9 +3127,9 @@ export interface TimeOffRequest {
   rejectionReason?: string;
   balanceSnapshot?: number;
   balanceUnit?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface TrainingAssignment {
@@ -3106,9 +3146,9 @@ export interface TrainingAssignment {
   assignedAt: string;
   startedAt: string;
   completedAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface TrainingModule {
@@ -3128,9 +3168,9 @@ export interface TrainingModule {
   archivedAt: string;
   notes?: string;
   createdBy?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface User {
@@ -3151,9 +3191,9 @@ export interface User {
   isActive?: boolean;
   avatarUrl?: string;
   roleId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface VendorCatalog {
@@ -3179,9 +3219,9 @@ export interface VendorCatalog {
   notes?: string;
   tags: unknown[];
   lastCostUpdate: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface VendorContract {
@@ -3211,13 +3251,13 @@ export interface VendorContract {
   contractUrl?: string;
   notes?: string;
   complianceScore?: number;
-  lastComplianceReview?: number;
+  lastComplianceReview: string;
   slaBreachCount?: number;
   onTimeDeliveryRate?: number;
   qualityRating?: number;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface Vendor {
@@ -3274,8 +3314,9 @@ export interface EntityVersion {
   isApproved?: boolean;
   approvedAt: string;
   approvedBy?: string;
-  createdAt: string;
   createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface VersionApproval {
@@ -3287,6 +3328,7 @@ export interface VersionApproval {
   comments?: string;
   reviewedAt: string;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface WasteEntry {
@@ -3306,9 +3348,9 @@ export interface WasteEntry {
   unitCost?: number;
   totalCost?: number;
   notes?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface WorkOrder {
@@ -3336,9 +3378,9 @@ export interface Workflow {
   triggerType?: string;
   triggerConfig?: string;
   isActive?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
-  deletedAt: string;
 }
 
 export interface WorkforceOptimization {
@@ -3347,9 +3389,9 @@ export interface WorkforceOptimization {
   locationId?: string;
   optimizationType?: string;
   status?: string;
+  completedAt: string;
   createdAt: string;
   updatedAt: string;
-  completedAt: string;
 }
 
 export interface PerformancePrediction {
@@ -3361,6 +3403,7 @@ export interface PerformancePrediction {
   predictionScore?: number;
   confidence?: string;
   factors?: string;
-  createdAt: string;
   expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
 }

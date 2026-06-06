@@ -1961,14 +1961,9 @@ export function adminTaskCreatePath(): string {
   return "/api/manifest/admintask/commands/create";
 }
 
-/** POST /api/manifest/admintask/commands/move-to-todo */
-export function adminTaskMoveToTodoPath(): string {
-  return "/api/manifest/admintask/commands/move-to-todo";
-}
-
-/** POST /api/manifest/admintask/commands/reopen */
-export function adminTaskReopenPath(): string {
-  return "/api/manifest/admintask/commands/reopen";
+/** POST /api/manifest/admintask/commands/move-to-backlog */
+export function adminTaskMoveToBacklogPath(): string {
+  return "/api/manifest/admintask/commands/move-to-backlog";
 }
 
 /** POST /api/manifest/admintask/commands/soft-delete */
@@ -1979,6 +1974,11 @@ export function adminTaskSoftDeletePath(): string {
 /** POST /api/manifest/admintask/commands/start-progress */
 export function adminTaskStartProgressPath(): string {
   return "/api/manifest/admintask/commands/start-progress";
+}
+
+/** POST /api/manifest/admintask/commands/submit-for-review */
+export function adminTaskSubmitForReviewPath(): string {
+  return "/api/manifest/admintask/commands/submit-for-review";
 }
 
 /** POST /api/manifest/admintask/commands/update */
@@ -2069,6 +2069,11 @@ export function apiKeyRecordUsagePath(): string {
 /** POST /api/manifest/apikey/commands/revoke */
 export function apiKeyRevokePath(): string {
   return "/api/manifest/apikey/commands/revoke";
+}
+
+/** POST /api/manifest/apikey/commands/rotate */
+export function apiKeyRotatePath(): string {
+  return "/api/manifest/apikey/commands/rotate";
 }
 
 /** POST /api/manifest/apikey/commands/soft-delete */
@@ -4686,6 +4691,16 @@ export function paymentMethodMarkVerificationFailedPath(): string {
   return "/api/manifest/paymentmethod/commands/mark-verification-failed";
 }
 
+/** POST /api/manifest/paymentmethod/commands/remove */
+export function paymentMethodRemovePath(): string {
+  return "/api/manifest/paymentmethod/commands/remove";
+}
+
+/** POST /api/manifest/paymentmethod/commands/update */
+export function paymentMethodUpdatePath(): string {
+  return "/api/manifest/paymentmethod/commands/update";
+}
+
 /** POST /api/manifest/paymentmethod/commands/update-token */
 export function paymentMethodUpdateTokenPath(): string {
   return "/api/manifest/paymentmethod/commands/update-token";
@@ -5289,6 +5304,11 @@ export function purchaseRequisitionApproveManagerPath(): string {
 /** POST /api/manifest/purchaserequisition/commands/cancel */
 export function purchaseRequisitionCancelPath(): string {
   return "/api/manifest/purchaserequisition/commands/cancel";
+}
+
+/** POST /api/manifest/purchaserequisition/commands/complete-draft-from-prep-demand */
+export function purchaseRequisitionCompleteDraftFromPrepDemandPath(): string {
+  return "/api/manifest/purchaserequisition/commands/complete-draft-from-prep-demand";
 }
 
 /** POST /api/manifest/purchaserequisition/commands/convert-to-po */
@@ -6476,6 +6496,11 @@ export function venueDeactivatePath(): string {
   return "/api/manifest/Venue/commands/deactivate";
 }
 
+/** POST /api/manifest/Venue/commands/soft-delete */
+export function venueSoftDeletePath(): string {
+  return "/api/manifest/Venue/commands/soft-delete";
+}
+
 /** POST /api/manifest/Venue/commands/update */
 export function venueUpdatePath(): string {
   return "/api/manifest/Venue/commands/update";
@@ -7030,10 +7055,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AdminTask.cancel", path: "/api/manifest/admintask/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.complete", path: "/api/manifest/admintask/commands/complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.create", path: "/api/manifest/admintask/commands/create", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "AdminTask.moveToTodo", path: "/api/manifest/admintask/commands/move-to-todo", method: "POST", source: "command", auth: true, tenant: true },
-  { id: "AdminTask.reopen", path: "/api/manifest/admintask/commands/reopen", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.moveToBacklog", path: "/api/manifest/admintask/commands/move-to-backlog", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.softDelete", path: "/api/manifest/admintask/commands/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.startProgress", path: "/api/manifest/admintask/commands/start-progress", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.submitForReview", path: "/api/manifest/admintask/commands/submit-for-review", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.update", path: "/api/manifest/admintask/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AiEventSetupSession.cancel", path: "/api/manifest/aieventsetupsession/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AiEventSetupSession.confirm", path: "/api/manifest/aieventsetupsession/commands/confirm", method: "POST", source: "command", auth: true, tenant: true },
@@ -7052,6 +7077,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ApiKey.create", path: "/api/manifest/apikey/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.recordUsage", path: "/api/manifest/apikey/commands/record-usage", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.revoke", path: "/api/manifest/apikey/commands/revoke", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.rotate", path: "/api/manifest/apikey/commands/rotate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.softDelete", path: "/api/manifest/apikey/commands/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ApiKey.update", path: "/api/manifest/apikey/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AuditSchedule.activate", path: "/api/manifest/auditschedule/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
@@ -7575,6 +7601,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PaymentMethod.markInvalid", path: "/api/manifest/paymentmethod/commands/mark-invalid", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.markNotDefault", path: "/api/manifest/paymentmethod/commands/mark-not-default", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.markVerificationFailed", path: "/api/manifest/paymentmethod/commands/mark-verification-failed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.remove", path: "/api/manifest/paymentmethod/commands/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.update", path: "/api/manifest/paymentmethod/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.updateToken", path: "/api/manifest/paymentmethod/commands/update-token", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentMethod.verify", path: "/api/manifest/paymentmethod/commands/verify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PaymentRefundAttempt.create", path: "/api/manifest/paymentrefundattempt/commands/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -7696,6 +7724,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisition.approveFinance", path: "/api/manifest/purchaserequisition/commands/approve-finance", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisition.approveManager", path: "/api/manifest/purchaserequisition/commands/approve-manager", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisition.cancel", path: "/api/manifest/purchaserequisition/commands/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.completeDraftFromPrepDemand", path: "/api/manifest/purchaserequisition/commands/complete-draft-from-prep-demand", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisition.convertToPo", path: "/api/manifest/purchaserequisition/commands/convert-to-po", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisition.create", path: "/api/manifest/purchaserequisition/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisition.reject", path: "/api/manifest/purchaserequisition/commands/reject", method: "POST", source: "command", auth: true, tenant: true },
@@ -7933,6 +7962,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Venue.activate", path: "/api/manifest/Venue/commands/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Venue.create", path: "/api/manifest/Venue/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Venue.deactivate", path: "/api/manifest/Venue/commands/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Venue.softDelete", path: "/api/manifest/Venue/commands/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Venue.update", path: "/api/manifest/Venue/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Venue.updateCapacity", path: "/api/manifest/Venue/commands/update-capacity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VersionApproval.approve", path: "/api/manifest/versionapproval/commands/approve", method: "POST", source: "command", auth: true, tenant: true },

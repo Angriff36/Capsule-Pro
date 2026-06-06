@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-05T10:51:56.064Z",
+  "generatedAt": "2026-06-06T02:26:23.140Z",
   "basePath": "/api",
   "routes": [
     {
@@ -5948,27 +5948,14 @@
       "tenant": true
     },
     {
-      "id": "AdminTask.moveToTodo",
-      "path": "/api/manifest/AdminTask/commands/move-to-todo",
+      "id": "AdminTask.moveToBacklog",
+      "path": "/api/manifest/AdminTask/commands/move-to-backlog",
       "method": "POST",
       "params": [],
       "source": {
         "kind": "command",
         "entity": "AdminTask",
-        "command": "moveToTodo"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "AdminTask.reopen",
-      "path": "/api/manifest/AdminTask/commands/reopen",
-      "method": "POST",
-      "params": [],
-      "source": {
-        "kind": "command",
-        "entity": "AdminTask",
-        "command": "reopen"
+        "command": "moveToBacklog"
       },
       "auth": true,
       "tenant": true
@@ -5995,6 +5982,19 @@
         "kind": "command",
         "entity": "AdminTask",
         "command": "startProgress"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.submitForReview",
+      "path": "/api/manifest/AdminTask/commands/submit-for-review",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "submitForReview"
       },
       "auth": true,
       "tenant": true
@@ -6546,6 +6546,32 @@
         "kind": "command",
         "entity": "ApiKey",
         "command": "revoke"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.rotate",
+      "path": "/api/manifest/ApiKey/commands/rotate",
+      "method": "POST",
+      "params": [
+        {
+          "name": "keyPrefix",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "hashedKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "rotate"
       },
       "auth": true,
       "tenant": true
@@ -19343,12 +19369,36 @@
         },
         {
           "name": "value",
-          "type": "number",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "triggeredAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "alertNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "alertType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "temperature",
           "type": "string",
           "location": "body",
           "required": true
@@ -19388,6 +19438,12 @@
       "method": "POST",
       "params": [
         {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "equipmentId",
           "type": "string",
           "location": "body",
@@ -19400,8 +19456,32 @@
           "required": true
         },
         {
+          "name": "sensorType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "threshold",
-          "type": "number",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "thresholdMin",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "thresholdMax",
+          "type": "string",
           "location": "body",
           "required": true
         },
@@ -19413,6 +19493,42 @@
         },
         {
           "name": "severity",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "durationMs",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "alertAction",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notifyRoles",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notifyChannels",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -22452,6 +22568,51 @@
       "tenant": true
     },
     {
+      "id": "PaymentMethod.remove",
+      "path": "/api/manifest/PaymentMethod/commands/remove",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "remove"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.update",
+      "path": "/api/manifest/PaymentMethod/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "cardLastFour",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "cardNetwork",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "PaymentMethod.updateToken",
       "path": "/api/manifest/PaymentMethod/commands/update-token",
       "method": "POST",
@@ -25082,12 +25243,6 @@
           "required": true
         },
         {
-          "name": "clientId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "leadId",
           "type": "string",
           "location": "body",
@@ -25106,32 +25261,8 @@
           "required": true
         },
         {
-          "name": "eventDate",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "eventType",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "guestCount",
           "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "venueName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "venueAddress",
-          "type": "string",
           "location": "body",
           "required": true
         },
@@ -25956,6 +26087,56 @@
         "kind": "command",
         "entity": "PurchaseRequisition",
         "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PurchaseRequisition.completeDraftFromPrepDemand",
+      "path": "/api/manifest/PurchaseRequisition/commands/complete-draft-from-prep-demand",
+      "method": "POST",
+      "params": [
+        {
+          "name": "itemCount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "subtotal",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedTax",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedShipping",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedTotal",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PurchaseRequisition",
+        "command": "completeDraftFromPrepDemand"
       },
       "auth": true,
       "tenant": true
@@ -28761,12 +28942,6 @@
         },
         {
           "name": "supplierId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "locationId",
           "type": "string",
           "location": "body",
           "required": true
@@ -33353,7 +33528,43 @@
           "required": true
         },
         {
-          "name": "address",
+          "name": "venueType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine1",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "stateProvince",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "countryCode",
           "type": "string",
           "location": "body",
           "required": true
@@ -33377,7 +33588,31 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "contactEmail",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accessNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "cateringNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "layoutImageUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
           "type": "string",
           "location": "body",
           "required": true
@@ -33412,6 +33647,19 @@
       "tenant": true
     },
     {
+      "id": "Venue.softDelete",
+      "path": "/api/manifest/Venue/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Venue",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Venue.update",
       "path": "/api/manifest/Venue/commands/update",
       "method": "POST",
@@ -33423,7 +33671,43 @@
           "required": true
         },
         {
-          "name": "address",
+          "name": "venueType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine1",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "city",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "stateProvince",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "countryCode",
           "type": "string",
           "location": "body",
           "required": true
@@ -33447,8 +33731,38 @@
           "required": true
         },
         {
-          "name": "notes",
+          "name": "contactEmail",
           "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accessNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "cateringNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "layoutImageUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
           "location": "body",
           "required": true
         }
@@ -33697,12 +34011,6 @@
         {
           "name": "unitId",
           "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "locationId",
-          "type": "string",
           "location": "body",
           "required": true
         },

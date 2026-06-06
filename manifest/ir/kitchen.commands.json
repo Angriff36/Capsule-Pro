@@ -71,13 +71,8 @@
   },
   {
     "entity": "AdminTask",
-    "command": "moveToTodo",
-    "commandId": "AdminTask.moveToTodo"
-  },
-  {
-    "entity": "AdminTask",
-    "command": "reopen",
-    "commandId": "AdminTask.reopen"
+    "command": "moveToBacklog",
+    "commandId": "AdminTask.moveToBacklog"
   },
   {
     "entity": "AdminTask",
@@ -88,6 +83,11 @@
     "entity": "AdminTask",
     "command": "startProgress",
     "commandId": "AdminTask.startProgress"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "submitForReview",
+    "commandId": "AdminTask.submitForReview"
   },
   {
     "entity": "AdminTask",

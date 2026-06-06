@@ -48,9 +48,10 @@ export async function GET(
  * PATCH /api/administrative/tasks/[id]
  * Update task fields or transition status via manifest commands.
  *
- * Status changes are mapped to specific manifest commands:
- *   todo → moveToTodo, in_progress → startProgress, done → complete,
- *   cancelled → cancel, backlog → reopen
+ * Status changes are mapped to specific manifest commands (one per target
+ * column, matching the AdminTask state machine):
+ *   backlog → moveToBacklog, in_progress → startProgress, review → submitForReview,
+ *   done → complete, cancelled → cancel
  */
 export async function PATCH(
   request: NextRequest,
@@ -63,11 +64,11 @@ export async function PATCH(
   // If status is being changed, use the specific status command
   if (rawBody.status) {
     const statusCommandMap: Record<string, string> = {
-      todo: "moveToTodo",
+      backlog: "moveToBacklog",
       in_progress: "startProgress",
+      review: "submitForReview",
       done: "complete",
       cancelled: "cancel",
-      backlog: "reopen",
     };
     const commandName = statusCommandMap[rawBody.status as string];
     if (!commandName) {

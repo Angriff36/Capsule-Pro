@@ -207,7 +207,7 @@ describe("Admin Task API", () => {
       vi.mocked(database.adminTask.count).mockResolvedValue(0);
       vi.mocked(database.adminTask.findMany).mockResolvedValue([]);
 
-      await getTasksList(makeRequest("/api/administrative/tasks?status=todo"));
+      await getTasksList(makeRequest("/api/administrative/tasks?status=review"));
 
       const findManyMock = vi.mocked(database.adminTask.findMany);
       const where = findManyMock.mock.calls[0][0] as Record<string, unknown>;
@@ -217,7 +217,9 @@ describe("Admin Task API", () => {
           : (where as { AND: unknown[] }).AND
       ) as unknown[];
       expect(
-        andClauses.some((c) => (c as Record<string, unknown>).status === "todo")
+        andClauses.some(
+          (c) => (c as Record<string, unknown>).status === "review"
+        )
       ).toBe(true);
     });
 
@@ -421,7 +423,7 @@ describe("Admin Task API", () => {
 
   // ================================================================== PATCH
   describe("PATCH /api/administrative/tasks/[id]", () => {
-    it("should map status 'todo' to moveToTodo command", async () => {
+    it("should map status 'backlog' to moveToBacklog command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
@@ -431,7 +433,7 @@ describe("Admin Task API", () => {
       await patchTask(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`, {
           method: "PATCH",
-          body: JSON.stringify({ status: "todo" }),
+          body: JSON.stringify({ status: "backlog" }),
         }),
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
@@ -439,7 +441,7 @@ describe("Admin Task API", () => {
       expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
           entity: "AdminTask",
-          command: "moveToTodo",
+          command: "moveToBacklog",
         })
       );
     });
@@ -513,7 +515,7 @@ describe("Admin Task API", () => {
       );
     });
 
-    it("should map status 'backlog' to reopen command", async () => {
+    it("should map status 'review' to submitForReview command", async () => {
       vi.mocked(runManifestCommand).mockResolvedValue(
         new Response(JSON.stringify({ success: true }), {
           headers: { "Content-Type": "application/json" },
@@ -523,7 +525,7 @@ describe("Admin Task API", () => {
       await patchTask(
         makeRequest(`/api/administrative/tasks/${TEST_TASK_ID}`, {
           method: "PATCH",
-          body: JSON.stringify({ status: "backlog" }),
+          body: JSON.stringify({ status: "review" }),
         }),
         { params: Promise.resolve({ id: TEST_TASK_ID }) }
       );
@@ -531,7 +533,7 @@ describe("Admin Task API", () => {
       expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
           entity: "AdminTask",
-          command: "reopen",
+          command: "submitForReview",
         })
       );
     });

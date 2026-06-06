@@ -3,7 +3,7 @@
 // dispatcher writes, apiFetch. Regenerate after IR/domain-map changes.
 import { apiFetch } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
-import type { ActionMilestone, AdminChatMessage, AdminChatParticipant, AdminChatThread, AdminTask, AiEventSetupSession, AlertsConfig, AllergenWarning, ApiKey, AuditSchedule, AutomatedFollowup, BankAccount, BattleBoard, BoardAnnotation, BoardProjection, Budget, BudgetAlert, BudgetLineItem, BulkCombineRule, BulkOrderRule, CateringOrder, ChartOfAccount, Client, ClientContact, ClientInteraction, ClientPreference, CollectionAction, CollectionCase, CollectionPaymentPlan, CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, Container, ContractSignature, CorrectiveAction, CrmScoringRule, CycleCountRecord, CycleCountSession, Deal, DeliveryRoute, DisciplinaryAction, Dish, Document, DocumentVersion, Driver, EmailTemplate, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EntityVersion, Equipment, Event, EventBudget, EventContract, EventDish, EventFollowup, EventGuest, EventImport, EventImportWorkflow, EventProfitability, EventReport, EventStaff, EventStaffAssignment, EventSummary, EventTimeline, EventTimelineItem, EventWaitlistEntry, Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder, ForecastInput, Ingredient, InteractionAttachment, InventoryAlert, InventoryForecast, InventoryItem, InventoryStock, InventorySupplier, InventoryTransaction, InventoryTransfer, InventoryTransferItem, Invoice, IoTAlert, IotAlertRule, KitchenTask, KitchenTaskClaim, KitchenTaskProgress, KnowledgeBaseEntry, LaborBudget, Lead, LogisticsDispatch, LogisticsRoute, MaintenanceWorkOrder, Menu, MenuDish, MethodVideo, Note, Notification, OnboardingCompletion, OnboardingTask, OpenShift, OverrideAudit, Payment, PaymentMethod, PaymentRefundAttempt, PayrollApprovalHistory, PayrollLineItem, PayrollPeriod, PayrollRun, PerformancePrediction, PerformanceReview, PrepComment, PrepList, PrepListImport, PrepListItem, PrepMethod, PrepTask, PrepTaskPlanWorkflow, PreventiveMaintenanceSchedule, PricingTier, ProcurementBudget, ProcurementBudgetAlert, Proposal, ProposalLineItem, ProposalTemplate, PurchaseOrder, PurchaseOrderItem, PurchaseRequisition, PurchaseRequisitionItem, QACheck, QACorrectiveAction, QATemperatureLog, QualityCheck, QualityCheckItem, RateLimitConfig, Recipe, RecipeIngredient, RecipeStep, RecipeVersion, ReorderSuggestion, Report, RevenueRecognitionLine, RevenueRecognitionSchedule, RolePolicy, RouteStop, SampleData, Schedule, ScheduleShift, Shipment, ShipmentItem, SmsAutomationRule, StaffMember, StaffPerformance, Station, StorageLocation, TaskBundle, TaskBundleItem, TemperatureLog, TemperatureProbe, TemperatureReading, TimeEntry, TimeOffRequest, TimecardApproval, TimecardEditRequest, TimelineTask, TipPool, TrainingAssignment, TrainingCompletion, TrainingModule, User, VarianceReport, Vehicle, Vendor, VendorCatalog, VendorContact, VendorContract, VendorRating, Venue, VersionApproval, VersionedEntity, WasteEntry, WorkOrder, Workflow, WorkforceOptimization } from "./manifest-types.generated";
+import type { ActionMilestone, AdminChatMessage, AdminChatParticipant, AdminChatThread, AdminTask, AiEventSetupSession, AlertsConfig, AllergenWarning, ApiKey, AuditSchedule, AutomatedFollowup, BankAccount, BattleBoard, BoardAnnotation, BoardProjection, Budget, BudgetAlert, BudgetLineItem, BulkCombineRule, BulkOrderRule, CateringOrder, ChartOfAccount, Client, ClientContact, ClientInteraction, ClientPreference, CollectionAction, CollectionCase, CollectionPaymentPlan, CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, Container, ContractSignature, CorrectiveAction, CrmScoringRule, CycleCountRecord, CycleCountSession, Deal, DeliveryRoute, DisciplinaryAction, Dish, Document, DocumentVersion, Driver, EmailTemplate, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EntityVersion, Equipment, Event, EventBudget, EventContract, EventDish, EventFollowup, EventGuest, EventImport, EventImportWorkflow, EventProfitability, EventReport, EventStaff, EventSummary, EventTimeline, EventTimelineItem, EventWaitlistEntry, Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder, ForecastInput, Ingredient, InteractionAttachment, InventoryAlert, InventoryForecast, InventoryItem, InventoryStock, InventorySupplier, InventoryTransaction, InventoryTransfer, InventoryTransferItem, Invoice, IoTAlert, IotAlertRule, KitchenTask, KitchenTaskClaim, KitchenTaskProgress, KnowledgeBaseEntry, LaborBudget, Lead, LogisticsDispatch, LogisticsRoute, MaintenanceWorkOrder, Menu, MenuDish, MethodVideo, Note, Notification, OnboardingCompletion, OnboardingTask, OpenShift, OverrideAudit, Payment, PaymentMethod, PaymentRefundAttempt, PayrollApprovalHistory, PayrollLineItem, PayrollPeriod, PayrollRun, PerformancePrediction, PerformanceReview, PrepComment, PrepList, PrepListImport, PrepListItem, PrepMethod, PrepTask, PrepTaskPlanWorkflow, PreventiveMaintenanceSchedule, PricingTier, ProcurementBudget, ProcurementBudgetAlert, Proposal, ProposalLineItem, ProposalTemplate, PurchaseOrder, PurchaseOrderItem, PurchaseRequisition, PurchaseRequisitionItem, QACheck, QACorrectiveAction, QATemperatureLog, QualityCheck, QualityCheckItem, RateLimitConfig, Recipe, RecipeIngredient, RecipeStep, RecipeVersion, ReorderSuggestion, Report, RevenueRecognitionLine, RevenueRecognitionSchedule, RolePolicy, RouteStop, SampleData, Schedule, ScheduleShift, Shipment, ShipmentItem, SmsAutomationRule, StaffMember, StaffPerformance, Station, StorageLocation, TaskBundle, TaskBundleItem, TemperatureLog, TemperatureProbe, TemperatureReading, TimeEntry, TimeOffRequest, TimecardApproval, TimecardEditRequest, TimelineTask, TipPool, TrainingAssignment, TrainingCompletion, TrainingModule, User, VarianceReport, Vehicle, Vendor, VendorCatalog, VendorContact, VendorContract, VendorRating, Venue, VersionApproval, VersionedEntity, WasteEntry, WorkOrder, Workflow, WorkforceOptimization } from "./manifest-types.generated";
 
 export async function listPrepTasks(query?: Record<string, string | number>): Promise<PrepTask[]> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
@@ -1383,19 +1383,6 @@ export async function getVenue(id: string): Promise<Venue | undefined> {
   const json = await res.json();
   return (json.venue ?? json.data) as Venue | undefined;
 }
-export async function listEventStaffAssignments(query?: Record<string, string | number>): Promise<EventStaffAssignment[]> {
-  const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
-  const res = await apiFetch(`/api/events/staff-assignments/list${qs}`);
-  if (!res.ok) throw new Error(`Failed to list EventStaffAssignment (${res.status})`);
-  const json = await res.json();
-  return (json.eventStaffAssignments ?? json.data ?? []) as EventStaffAssignment[];
-}
-export async function getEventStaffAssignment(id: string): Promise<EventStaffAssignment | undefined> {
-  const res = await apiFetch(`/api/events/staff-assignments/${encodeURIComponent(id)}`);
-  if (!res.ok) throw new Error(`Failed to get EventStaffAssignment (${res.status})`);
-  const json = await res.json();
-  return (json.eventStaffAssignment ?? json.data) as EventStaffAssignment | undefined;
-}
 export async function listEventTimelines(query?: Record<string, string | number>): Promise<EventTimeline[]> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/timelines/list${qs}`);
@@ -2482,12 +2469,16 @@ export async function adminTaskUpdate(input: Record<string, unknown> = {}): Prom
   const r = await executeCommand<AdminTask>("AdminTask", "update", input);
   return r.result;
 }
-export async function adminTaskMoveToTodo(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "moveToTodo", input);
+export async function adminTaskMoveToBacklog(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "moveToBacklog", input);
   return r.result;
 }
 export async function adminTaskStartProgress(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
   const r = await executeCommand<AdminTask>("AdminTask", "startProgress", input);
+  return r.result;
+}
+export async function adminTaskSubmitForReview(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "submitForReview", input);
   return r.result;
 }
 export async function adminTaskComplete(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
@@ -2496,10 +2487,6 @@ export async function adminTaskComplete(input: Record<string, unknown> = {}): Pr
 }
 export async function adminTaskCancel(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
   const r = await executeCommand<AdminTask>("AdminTask", "cancel", input);
-  return r.result;
-}
-export async function adminTaskReopen(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "reopen", input);
   return r.result;
 }
 export async function adminTaskSoftDelete(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
@@ -2568,6 +2555,10 @@ export async function apiKeyCreate(input: Record<string, unknown> = {}): Promise
 }
 export async function apiKeyUpdate(input: Record<string, unknown> = {}): Promise<ApiKey | undefined> {
   const r = await executeCommand<ApiKey>("ApiKey", "update", input);
+  return r.result;
+}
+export async function apiKeyRotate(input: Record<string, unknown> = {}): Promise<ApiKey | undefined> {
+  const r = await executeCommand<ApiKey>("ApiKey", "rotate", input);
   return r.result;
 }
 export async function apiKeyRevoke(input: Record<string, unknown> = {}): Promise<ApiKey | undefined> {
@@ -3778,24 +3769,8 @@ export async function venueUpdateCapacity(input: Record<string, unknown> = {}): 
   const r = await executeCommand<Venue>("Venue", "updateCapacity", input);
   return r.result;
 }
-export async function eventStaffAssignmentAssign(input: Record<string, unknown> = {}): Promise<EventStaffAssignment | undefined> {
-  const r = await executeCommand<EventStaffAssignment>("EventStaffAssignment", "assign", input);
-  return r.result;
-}
-export async function eventStaffAssignmentConfirm(input: Record<string, unknown> = {}): Promise<EventStaffAssignment | undefined> {
-  const r = await executeCommand<EventStaffAssignment>("EventStaffAssignment", "confirm", input);
-  return r.result;
-}
-export async function eventStaffAssignmentCancel(input: Record<string, unknown> = {}): Promise<EventStaffAssignment | undefined> {
-  const r = await executeCommand<EventStaffAssignment>("EventStaffAssignment", "cancel", input);
-  return r.result;
-}
-export async function eventStaffAssignmentUpdateShift(input: Record<string, unknown> = {}): Promise<EventStaffAssignment | undefined> {
-  const r = await executeCommand<EventStaffAssignment>("EventStaffAssignment", "updateShift", input);
-  return r.result;
-}
-export async function eventStaffAssignmentUpdateRole(input: Record<string, unknown> = {}): Promise<EventStaffAssignment | undefined> {
-  const r = await executeCommand<EventStaffAssignment>("EventStaffAssignment", "updateRole", input);
+export async function venueSoftDelete(input: Record<string, unknown> = {}): Promise<Venue | undefined> {
+  const r = await executeCommand<Venue>("Venue", "softDelete", input);
   return r.result;
 }
 export async function eventTimelineCreate(input: Record<string, unknown> = {}): Promise<EventTimeline | undefined> {
@@ -4862,6 +4837,14 @@ export async function paymentMethodUpdateToken(input: Record<string, unknown> = 
   const r = await executeCommand<PaymentMethod>("PaymentMethod", "updateToken", input);
   return r.result;
 }
+export async function paymentMethodUpdate(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "update", input);
+  return r.result;
+}
+export async function paymentMethodRemove(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "remove", input);
+  return r.result;
+}
 export async function paymentProcess(input: Record<string, unknown> = {}): Promise<Payment | undefined> {
   const r = await executeCommand<Payment>("Payment", "process", input);
   return r.result;
@@ -5192,6 +5175,10 @@ export async function purchaseRequisitionCreate(input: Record<string, unknown> =
 }
 export async function purchaseRequisitionUpdate(input: Record<string, unknown> = {}): Promise<PurchaseRequisition | undefined> {
   const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "update", input);
+  return r.result;
+}
+export async function purchaseRequisitionCompleteDraftFromPrepDemand(input: Record<string, unknown> = {}): Promise<PurchaseRequisition | undefined> {
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "completeDraftFromPrepDemand", input);
   return r.result;
 }
 export async function purchaseRequisitionSubmit(input: Record<string, unknown> = {}): Promise<PurchaseRequisition | undefined> {
