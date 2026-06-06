@@ -1,63 +1,48 @@
 # Current Task
 
-## Task 8.3 — AdminTask state-machine reconciliation + updateAdminTaskStatus governance migration — 2026-06-05
+## Task 8.3 increment — Govern EmployeeAvailability create + batch-create + soft-delete — 2026-06-05
 
-Continuation of the prior increment's documented "Out of scope" follow-up.
+### Context
+`apps/app/app/(authenticated)/scheduling/availability/actions.ts` has 4 direct
+`database.employeeAvailability.*` writes that bypass the Manifest runtime (constitution §9).
+Manifest entity `EmployeeAvailability` is durable with commands `create`, `update`, `suspend`,
+`reinstate`, `softDelete` and a default access policy (`hr_admin`/`payroll_admin`/`manager`/`admin`).
 
-### Problem (verified)
-- Kanban UI (`apps/app/.../administrative/kanban/page.tsx`) is a free-movement `<select>` over 4
-  columns `backlog, in_progress, review, done`. App type/validation, the passing app create test,
-  and overview-boards query ALL already use these 4 states.
-- Manifest (`manifest/source/admin-task-rules.manifest`) still uses OLD `backlog, todo, in_progress,
-  cancelled, done` (no `review`); `backlog→in_progress` is illegal (must pass `todo`) → kanban broken.
-- `updateAdminTaskStatus` does a DIRECT `database.adminTask.update` (constitution §3/§9; last open
-  governed direct-write in that file).
-- API `validation.ts` lists `todo`, lacks `review`. API route `[id]/route.ts` maps old commands.
+### Persistence-drift verification (done before coding)
+- `startTime`/`endTime` are `DateTime @db.Time(6)`; `effectiveFrom`/`effectiveUntil` are `@db.Date`.
+- `EmployeeAvailability` uses `GenericPrismaStore` → coerces string params via `new Date(value)`
+  (`asNullableDate`). A bare `"09:00"` → invalid Date → NULL → NOT-NULL violation.
+  **Fix:** pass ISO strings built from the already-validated Date objects.
+- `softDelete` only patches `deletedAt` (buildPatch skips untouched fields) → Time/Date columns safe.
+- `update` does unconditional full-field mutate + needs HH:MM→ISO on unchanged columns → **DEFERRED**
+  (larger/riskier; its own increment).
 
 ### Plan
-- [ ] 1. Rewrite AdminTask commands+transitions in `manifest/source/admin-task-rules.manifest`:
-      states `backlog/in_progress/review/done` + `cancelled`; remove `todo`. Commands one-per-target:
-      `moveToBacklog, startProgress, submitForReview, complete, cancel`; remove `moveToTodo, reopen`.
-      Transitions allow free movement among the 4 active columns + cancel/reopen edges. `create` unchanged.
-- [ ] 2. `pnpm manifest:compile` → regen kitchen.ir.json / kitchen.commands.json / commands.registry.json.
-- [ ] 3. `validation.ts`: ADMIN_TASK_STATUSES → `[backlog, in_progress, review, done, cancelled]`.
-- [ ] 4. `[id]/route.ts`: statusCommandMap → backlog:moveToBacklog, in_progress:startProgress,
-      review:submitForReview, done:complete, cancelled:cancel.
-- [ ] 5. `kanban/actions.ts`: migrate `updateAdminTaskStatus` to `runManifestCommand` (read current
-      status first to skip no-op self-selects). Remove direct write.
-- [ ] 6. Update `admin-tasks.quarantine.test.ts` PATCH mappings; run `pnpm test:quarantine`;
-      un-quarantine only if clean.
-- [ ] 7. New `apps/app/__tests__/administrative/admin-task-status-action.test.ts` (governance + no-op).
-- [ ] 8. `pnpm manifest:generate` if needed; route-drift:strict = 0.
-- [ ] 9. Verify: runtime/api/app typecheck 0; admin-task tests; audit-direct-writes (kanban off list
-      OR file-count drops); audit-parent-context:strict 0.
+- [ ] Migrate `createAvailability` → `EmployeeAvailability.create` (ISO time/date strings).
+- [ ] Migrate `createBatchAvailability` → loop of `EmployeeAvailability.create` (also fixes a latent
+      bug: it passed raw `"HH:MM"` straight to a DateTime column).
+- [ ] Migrate `deleteAvailability` → `EmployeeAvailability.softDelete` (body `{ id }`).
+- [ ] Leave `updateAvailability` direct write in place (documented deferral).
+- [ ] Add runtime conformance test (compile IR + inMemoryStoreProvider): create happy-path + event,
+      softDelete + guard, policy denies non-admin, + regression guard for the @db.Time ISO fix.
+- [ ] `pnpm --filter app typecheck` green; run the new test; `pnpm manifest:audit-direct-writes`
+      shows this file's create/batch/delete writes gone (update remains, documented).
+- [ ] Update IMPLEMENTATION_PLAN.md + phase-out-registry.md; commit; push; tag.
 
-### Review
-- **State machine reconciled** (`manifest/source/admin-task-rules.manifest`): AdminTask now models
-  the shipped Kanban — states `backlog/in_progress/review/done` + `cancelled` side-state; `todo`
-  removed (no product surface used it). Commands are one-per-target-column
-  (`moveToBacklog/startProgress/submitForReview/complete` + `cancel`), with transitions allowing
-  free movement among the four active columns + cancel/reopen edges. `create` unchanged.
-- **Governance migration** (`kanban/actions.ts`): `updateAdminTaskStatus` migrated off its direct
-  `database.adminTask.update` to `runManifestCommand` (constitution §3/§9). Reads current status
-  first (allowed read §10) to short-circuit no-op self-selects — the `<select>` defaults to the
-  current column, and the runtime rejects no-op self-transitions. `kanban/actions.ts` is now CLEAN
-  in `manifest:audit-direct-writes` (file count 112→111).
-- **API surfaces aligned**: `tasks/validation.ts` ADMIN_TASK_STATUSES (`todo`→`review`); `[id]/route.ts`
-  statusCommandMap → new commands.
-- **Derived surfaces regenerated** (deterministic from IR): `kitchen.ir.json`/`kitchen.commands.json`/
-  `commands.registry.json` (compile), `manifest-client.generated.ts`/`manifest-types.generated.ts`
-  (client), `routes.ts`/`routes.manifest.json` (routes:ir). The client/routes.ts diffs are
-  AdminTask-only; the types + routes.manifest diffs ALSO re-synced pre-existing drift from prior
-  commits (EventStaffAssignment/PayrollLineItem/ApiKey/PaymentMethod) that earlier loops left
-  un-regenerated — constitution §10/§16 requires generated == IR.
-- **Tests**: new `apps/app/__tests__/administrative/admin-task-status-action.test.ts` (7 tests) proves
-  the governed dispatch, 1:1 column→command map, no-op short-circuit, validation, not-found, and
-  failure surfacing. Existing create test still passes → app admin-task suite 16/16.
-- **Gates green**: runtime/api/app typecheck 0; route-drift:strict 0; parent-context:strict 0;
-  audit-direct-writes kanban CLEAN.
-- **Un-quarantine BLOCKED (documented, not done)**: `admin-tasks.quarantine.test.ts` PATCH mappings
-  were corrected, but the file has ~18 PRE-EXISTING failures unrelated to this work — the `[id]` route
-  uses `resolveCurrentUser` but the test only mocks `requireCurrentUser`/`getTenantIdForOrg`, and the
-  dispatcher `POST /commands/create` flow drifted (createManifestRuntime/runCommand mocks stale). A
-  separate increment must repair those mocks before the file can leave quarantine. Kept quarantined.
+### Behavior change to surface (not silent)
+Creation/deletion of availability is now gated by the Manifest policy
+(`hr_admin`/`payroll_admin`/`manager`/`admin`). The prior direct writes had NO role gate. This is
+governance-correct (the policy is the authority per constitution §16) and documented here + in commit.
+
+### Review (DONE 2026-06-05)
+- Migrated `createAvailability`, `createBatchAvailability`, `deleteAvailability` → Manifest runtime
+  (`EmployeeAvailability.create` / `softDelete`) in `scheduling/availability/actions.ts`. ISO-string
+  conversion for the `@db.Time(6)`/`@db.Date` columns; batch path's prior raw-`"HH:MM"`→DateTime
+  latent bug fixed in passing. `updateAvailability` left as a documented deferral (unconditional
+  full-field mutate + HH:MM→ISO on unchanged columns = its own increment).
+- New test `apps/api/__tests__/staff/employee-availability-lifecycle.test.ts` — **4/4 pass**:
+  create+event, softDelete+double-delete guard, staff-role policy denial, @db.Time ISO regression guard.
+- `pnpm --filter app typecheck` exit 0 (file clean). `pnpm manifest:audit-direct-writes`: the file's
+  governed write-hits 4 → 1 (only `updateAvailability` remains, as intended).
+- Behavior change (documented, not silent): create/delete now gated by the entity default policy
+  (hr_admin/payroll_admin/manager/admin); prior direct writes had no role gate.
