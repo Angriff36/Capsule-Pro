@@ -1196,6 +1196,11 @@
   },
   {
     "entity": "EmailWorkflow",
+    "command": "setActive",
+    "commandId": "EmailWorkflow.setActive"
+  },
+  {
+    "entity": "EmailWorkflow",
     "command": "softDelete",
     "commandId": "EmailWorkflow.softDelete"
   },

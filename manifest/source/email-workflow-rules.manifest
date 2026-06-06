@@ -9,6 +9,7 @@ entity EmailWorkflow {
   property triggerType: string = "custom"
   property triggerConfig: string = "{}"
   property emailTemplateId: string = ""
+  property emailTemplateTenantId: string = ""
   property recipientConfig: string = "{}"
   property isActive: boolean = true
   timestamps
@@ -19,26 +20,44 @@ entity EmailWorkflow {
   constraint requireName: self.name != "" "Workflow name is required"
 
   default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Email workflow management"
-  command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, recipientConfig: string, isActive: boolean) {
+  command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
     guard name != null and name != "" "Workflow name is required"
 
     mutate name = name
     mutate triggerType = triggerType
     mutate triggerConfig = triggerConfig
     mutate emailTemplateId = emailTemplateId
+    mutate emailTemplateTenantId = emailTemplateTenantId
     mutate recipientConfig = recipientConfig
     mutate isActive = isActive
 
     emit EmailWorkflowCreated
   }
 
-  command update(name: string, triggerConfig: string, emailTemplateId: string, recipientConfig: string, isActive: boolean) {
+  // update mutates triggerType (the legacy command omitted it — a silent bug
+  // where the settings UI could not change a workflow's trigger) and
+  // emailTemplateTenantId (the composite tenant key the template-name read join
+  // resolves against; dropping it would silently break the emailTemplate include).
+  command update(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted workflow"
 
     mutate name = name
+    mutate triggerType = triggerType
     mutate triggerConfig = triggerConfig
     mutate emailTemplateId = emailTemplateId
+    mutate emailTemplateTenantId = emailTemplateTenantId
     mutate recipientConfig = recipientConfig
+    mutate isActive = isActive
+
+    emit EmailWorkflowUpdated
+  }
+
+  // Partial activate/deactivate toggle. The settings list toggles isActive in
+  // isolation; routing that through `update` would clobber every other field with
+  // whatever the caller happened to pass, so the toggle gets its own command.
+  command setActive(isActive: boolean) {
+    guard self.deletedAt == null "Cannot toggle a deleted workflow"
+
     mutate isActive = isActive
 
     emit EmailWorkflowUpdated
