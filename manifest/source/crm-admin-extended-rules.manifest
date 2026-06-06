@@ -437,29 +437,32 @@ entity AdminChatThread {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
-  property subject: string = ""
+  property threadType: string = "direct"
+  property slug: string = ""
+  property directKey: string = ""
   property status: string = "open"
   property createdBy: string = ""
   property lastMessageAt: datetime
   timestamps
+  property deletedAt: datetime
 
   computed isOpen: boolean = self.status == "open"
   computed isArchived: boolean = self.status == "archived"
 
-  constraint requireSubject: self.subject != null and self.subject != "" "Thread subject is required"
   constraint validStatus: self.status in ["open", "archived"] "Thread status must be open or archived"
-  constraint requireCreatedBy: self.createdBy != null and self.createdBy != "" "Created by is required"
 
   // State transitions
   transition status from "open" to ["archived"]
   transition status from "archived" to ["open"]
 
-  default policy AdminChatThreadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(subject: string, createdBy: string) {
-    guard subject != null and subject != "" "Thread subject is required"
+  default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadType: string, slug: string, directKey: string, createdBy: string) {
+    guard threadType != null and threadType != "" "Thread type is required"
     guard createdBy != null and createdBy != "" "Created by is required"
 
-    mutate subject = subject
+    mutate threadType = threadType
+    mutate slug = slug
+    mutate directKey = directKey
     mutate status = "open"
     mutate createdBy = createdBy
 
@@ -493,29 +496,29 @@ entity AdminChatMessage {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
-  property adminChatThreadId: string = ""
-  property senderId: string = ""
-  property body: string = ""
-  property sentAt: datetime
+  property threadId: string = ""
+  property authorId: string = ""
+  property authorName: string = ""
+  property text: string = ""
   timestamps
   property deletedAt: datetime
 
   computed isRemoved: boolean = self.deletedAt != null
 
-  constraint requireThreadId: self.adminChatThreadId != null and self.adminChatThreadId != "" "Chat thread ID is required"
-  constraint requireSender: self.senderId != null and self.senderId != "" "Sender ID is required"
-  constraint requireBody: self.body != null and self.body != "" "Message body is required"
+  constraint requireThreadId: self.threadId != null and self.threadId != "" "Chat thread ID is required"
+  constraint requireAuthor: self.authorId != null and self.authorId != "" "Author ID is required"
+  constraint requireText: self.text != null and self.text != "" "Message text is required"
 
-  default policy AdminChatMessageDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
-  command create(adminChatThreadId: string, senderId: string, body: string) {
-    guard adminChatThreadId != null and adminChatThreadId != "" "Chat thread ID is required"
-    guard senderId != null and senderId != "" "Sender ID is required"
-    guard body != null and body != "" "Message body is required"
+  default policy AdminChatMessageDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadId: string, authorId: string, authorName: string, text: string) {
+    guard threadId != null and threadId != "" "Chat thread ID is required"
+    guard authorId != null and authorId != "" "Author ID is required"
+    guard text != null and text != "" "Message text is required"
 
-    mutate adminChatThreadId = adminChatThreadId
-    mutate senderId = senderId
-    mutate body = body
-    mutate sentAt = now()
+    mutate threadId = threadId
+    mutate authorId = authorId
+    mutate authorName = authorName
+    mutate text = text
 
     emit AdminChatMessageSent
   }

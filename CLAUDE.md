@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 99% context — saved before compacting]
+[proactive bridge @ 93% context — saved before compacting]
 Files (1):
-  manifest/source/invoice-rules.manifest (edit)
+  apps/api/__tests__/accounting/invoice-patch-actions.test.ts (create)
 
 # === END COGNILAYER ===

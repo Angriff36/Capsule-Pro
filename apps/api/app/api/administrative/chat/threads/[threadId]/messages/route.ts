@@ -5,7 +5,8 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { publish as publishToChannel } from "@/lib/realtime/pubsub";
 
 export const runtime = "nodejs";
@@ -297,14 +298,33 @@ export async function POST(request: Request, context: RouteContext) {
         .trim()
         .trim() || employee.email;
 
-    const message = await database.adminChatMessage.create({
-      data: {
-        tenantId,
+    const user = await resolveCurrentUser(request);
+    const result = await runManifestCommand({
+      entity: "AdminChatMessage",
+      command: "create",
+      body: {
         threadId,
         authorId: employee.id,
         authorName,
         text,
       },
+      user,
+    });
+
+    if (result.status !== 201 && result.status !== 200) {
+      return result;
+    }
+
+    // Re-read the created message to get the full shape with id/createdAt (read per constitution §10)
+    const recentMessages = await database.adminChatMessage.findMany({
+      where: {
+        tenantId,
+        threadId,
+        authorId: employee.id,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 1,
       select: {
         id: true,
         text: true,
@@ -314,17 +334,30 @@ export async function POST(request: Request, context: RouteContext) {
       },
     });
 
-    await database.adminChatThread.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: threadId,
+    const message = recentMessages[0];
+    if (!message) {
+      return NextResponse.json(
+        { message: "Failed to create message" },
+        { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }
+      );
+    }
+
+    // Update thread's lastMessageAt timestamp (infrastructure side-effect)
+    try {
+      await database.adminChatThread.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: threadId,
+          },
         },
-      },
-      data: {
-        lastMessageAt: message.createdAt,
-      },
-    });
+        data: {
+          lastMessageAt: message.createdAt,
+        },
+      });
+    } catch (threadUpdateError) {
+      log.error("Failed to update thread lastMessageAt:", threadUpdateError);
+    }
 
     const channelName = channelNameForThread(
       tenantId,

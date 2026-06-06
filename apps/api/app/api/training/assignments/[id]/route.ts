@@ -29,8 +29,7 @@ export async function GET(
     const trainingAssignment = await database.trainingAssignment.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

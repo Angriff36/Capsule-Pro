@@ -5,7 +5,8 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TEAM_THREAD_TYPE = "team";
 const UUID_REGEX =
@@ -146,24 +147,36 @@ export async function PATCH(request: Request, context: RouteContext) {
       "action must be archive, unarchive, or clear"
     );
 
-    const now = new Date();
-    let data: { archivedAt: Date } | { archivedAt: null } | { clearedAt: Date };
-    if (action === "archive") {
-      data = { archivedAt: now };
-    } else if (action === "unarchive") {
-      data = { archivedAt: null };
-    } else {
-      data = { clearedAt: now };
+    // Map action to Manifest command
+    const commandMap: Record<string, string> = {
+      archive: "archive",
+      unarchive: "unarchive",
+      clear: "clearHistory",
+    };
+    const command = commandMap[action];
+
+    const user = await resolveCurrentUser(request);
+    const result = await runManifestCommand({
+      entity: "AdminChatParticipant",
+      command,
+      body: {
+        id: participant.id,
+        threadId,
+      },
+      user,
+    });
+
+    if (result.status !== 200) {
+      return result;
     }
 
-    const updated = await database.adminChatParticipant.update({
+    // Re-read participant to return fresh state (read per constitution §10)
+    const updated = await database.adminChatParticipant.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: participant.id,
-        },
+        tenantId,
+        id: participant.id,
+        deletedAt: null,
       },
-      data,
       select: {
         id: true,
         archivedAt: true,

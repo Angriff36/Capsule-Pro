@@ -14,7 +14,7 @@ entity AdminChatParticipant {
 
   computed isArchived: boolean = self.archivedAt != null
 
-  default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin"] "Admin chat"
+  default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
   command archive() {
     mutate archivedAt = now()
 
