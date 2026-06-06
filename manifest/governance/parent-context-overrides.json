@@ -57,13 +57,6 @@
       "owner": "staff",
       "reviewed": "2026-06-05"
     },
-    "CateringOrder": {
-      "fields": ["venueName", "venueAddress"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): venue is inferable from the linked Event. Candidate for parent-context propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "events",
-      "reviewed": "2026-06-05"
-    },
     "EventContract": {
       "fields": ["clientId"],
       "category": "BASELINE",

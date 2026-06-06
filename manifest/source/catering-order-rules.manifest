@@ -65,6 +65,11 @@ entity CateringOrder {
   constraint positiveGuestCount: self.guestCount >= 0 "Guest count must be non-negative"
   constraint positiveTotalAmount: self.totalAmount >= 0 "Total amount must be non-negative"
 
+  // venueName/venueAddress are NOT create params — they are inherited server-side
+  // from the linked Event via parent-context propagation (specs/parent-context-propagation.md,
+  // manifest/runtime/src/parent-context-resolver.ts). A catering order created from an
+  // event must not re-ask for the venue the event already owns. The broken-out
+  // venueCity/State/Zip/Contact fields remain caller-supplied because Event does not own them.
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint warnUnstaffed:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired {
@@ -93,7 +98,7 @@ entity CateringOrder {
   // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
   default policy CateringOrderDefaultAccess execute: user.role in ["event_coordinator", "catering_manager", "manager", "admin"] "Catering order management"
-  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: number, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
     guard orderNumber != null and orderNumber != "" "Order number is required"
     guard customerId != null and customerId != "" "Customer ID is required"
 
@@ -103,8 +108,6 @@ entity CateringOrder {
     mutate deliveryDate = deliveryDate
     mutate deliveryTime = deliveryTime
     mutate guestCount = guestCount
-    mutate venueName = venueName
-    mutate venueAddress = venueAddress
     mutate venueCity = venueCity
     mutate venueState = venueState
     mutate venueZip = venueZip
