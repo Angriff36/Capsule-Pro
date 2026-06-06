@@ -21,12 +21,18 @@ entity AdminTask {
   constraint requireTitle: self.title != "" "Title is required"
 
   default policy AdminTaskDefaultAccess execute: user.role in ["manager", "admin"] "Admin task management"
+  // create() seeds `status` directly from the command body via createInstance
+  // (the bootstrap full-body seed pattern). `status` is intentionally NOT mutated
+  // below: the runtime evaluates state transitions on every status mutation and
+  // does NOT exempt no-op self-transitions, so `mutate status = status` makes
+  // create fail for any status that owns a transition rule (e.g. backlog->backlog
+  // is rejected because backlog's `to` list is [todo, cancelled]). The command
+  // body is authoritative for the initial state.
   command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, createdBy: string) {
     guard title != null and title != "" "Title is required"
 
     mutate title = title
     mutate description = description
-    mutate status = status
     mutate priority = priority
     mutate category = category
     mutate assignedTo = assignedTo
