@@ -325,10 +325,17 @@
 | **RESOLVED: AdminTask state-machine reconciled + `updateAdminTaskStatus` governed (Task 8.3 batch 4, v0.12.116)** | Old vocabulary (`backlog/todo/in_progress/done/cancelled`, commands `moveToTodo`/`reopen`) replaced with kanban-aligned vocabulary (`backlog/in_progress/review/done/cancelled`, one-per-column commands `moveToBacklog`/`startProgress`/`submitForReview`/`complete`/`cancel`). `updateAdminTaskStatus` in `apps/app/app/(authenticated)/administrative/kanban/actions.ts` migrated from direct `database.adminTask.update` to `runManifestCommand` with no-op short-circuit (reads current status first; skips command dispatch if already at target column — avoids runtime self-transition rejection). `ADMIN_TASK_STATUSES` validation array and `statusCommandMap` in `apps/api/app/api/administrative/tasks/[id]/route.ts` updated to match. `kanban/actions.ts` is now FULLY governed; direct-write file count 112→111. 7 new tests in `apps/app/__tests__/administrative/admin-task-status-action.test.ts`. App admin-task suite 16/16. api+app+runtime typecheck 0; route-drift:strict 0; parent-context:strict 0. | `manifest/source/admin-task-rules.manifest`, `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, `apps/api/app/api/administrative/tasks/[id]/route.ts`, `apps/api/app/api/administrative/tasks/validation.ts` |
 | **BLOCKER: `admin-tasks.quarantine.test.ts` un-quarantine blocked by ~18 pre-existing mock failures** | File has ~18 pre-existing failures unrelated to Task 8.3: (a) PATCH handler uses `resolveCurrentUser` but tests only mock `requireCurrentUser`/`getTenantIdForOrg` in `@/app/lib/tenant` → all PATCH tests throw; (b) dispatcher POST `create` flow drifted (`createManifestRuntime`/`mockRunCommand` never called → "Something went wrong" responses). Status-mapping assertions and `status=todo`→`status=review` GET-filter test were corrected in this increment but the file remains quarantined until mock infrastructure is repaired in a dedicated increment. | `apps/api/__tests__/administrative/admin-tasks.quarantine.test.ts` |
 
+### NEW findings from this revision (22nd, 2026-06-06)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **EventProfitability.recalculate command extended with budgeted/actual override params** | RESOLVED — command now accepts all 8 financial figures as params; route computes values from budget items and catering orders (reads) then dispatches governed write. | `manifest/source/event-rules.manifest` |
+| **CollectionCase.dunningStage reconciled: int→string matching Prisma DunningStage enum** | RESOLVED — was int (0-5), now string ("CURRENT"/"REMINDER_1"/etc); escalateDunning uses string-based progression; resetDunning validates against enum values. | `manifest/source/collections-rules.manifest` |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 973 commands, 936 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 973 commands, 954 events, 241 policies, 92 source files
 - **973/973 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -414,7 +421,7 @@
 
 ### Governance
 
-- **~155 direct-write violations in API routes** + **~109 in server actions** = **~264 total** (down from 301). 31 mutate handlers across 24 route files migrated to Manifest runtime (Task 8.2 batches 1-5 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~152 direct-write violations in API routes** + **~107 in server actions** = **~259 total** (down from 264). 34 mutate handlers across 27 route files migrated to Manifest runtime (Task 8.2 batches 1-5 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
@@ -520,6 +527,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **fix(tests): resolve 4 governance test failures + migration baseline collapse (v0.12.126)** | Fixed 3 `fileURLToPath` URL-scheme errors in governance tests (venue/facility/email-workflow) — replaced fragile `fileURLToPath(new URL(...))` with robust `dirname/join` path resolution. Added `Ingredient.category` FALSE_POSITIVE to parent-context-overrides.json. Collapsed 5 incremental migrations into single `0_init` baseline (archived prior 5). API typecheck 0, runtime typecheck 0, 2677/2677 tests pass. |
 | 2026-06-06 | **Task 8.3 server-action governance batch — 8 files migrated (v0.12.127)** | Governed writes for EmailTemplate (create/update/softDelete), PrepTask task-breakdown (create + priority bug fix: was 8→now 1), Event.update mutation (unblocked by adding accessibilityOptions/featuredMediaUrl params + relaxing guards), ProposalTemplate (entity expanded + create/update/softDelete/duplicate), generate-proposal (Proposal.create + line items), event-summary (EventSummary.create), command-board (card move + group create/update/remove), client CRM (Client archive, ClientContact CRUD, ClientInteraction create/update, ClientPreference CRUD). Event.update unblocked. Training-module source syntax fixed (15 optional keyword, 9 multi-line params, 3 unique declarations). ProposalTemplate entity expanded with 10 properties + softDelete command. Parent-context overrides for TrainingQuestion/TrainingAttempt. IR: 202 entities, 973 commands. Direct-write governed-entity violations: 53 (was ~58). |
 | 2026-06-06 | **Shipment test reconciliation verified (61→0 failures)** | Both shipment test files (shipment-commands.test.ts: 25 tests, shipment-end-to-end.test.ts: 12 tests) now pass fully. Tests reference canonical manifest dispatcher (`/api/manifest/[entity]/commands/[command]`), not deleted concrete routes. instanceId forwarding confirmed working via `deriveInstanceIdFromBody()` in run-manifest-command-core.ts. |
+| 2026-06-06 | **Task 8.2/8.4 batch: 4 route migrations to Manifest runtime (v0.12.130)** | EventProfitability.recalculate (extended command with budgeted/actual overrides), CollectionCase.escalateDunning (reconciled dunningStage int→string matching Prisma DunningStage enum), AllergenWarning deleteMany moved inside transaction for atomicity, ContractSignature.create + EventContract.sign via public signing route (synthetic system-user context). API typecheck 0, 2690 tests pass. |
 
 ---
 
@@ -605,7 +613,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
-10. **1 saga, 10 reactions defined (was 0):** 936 events available for reaction-driven side effects.
+10. **1 saga, 10 reactions defined (was 0):** 954 events available for reaction-driven side effects.
 
 11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
