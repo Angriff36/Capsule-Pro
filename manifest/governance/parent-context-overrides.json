@@ -112,20 +112,6 @@
       "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the parent Schedule. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "staff",
       "reviewed": "2026-06-05"
-    },
-    "Shipment": {
-      "fields": ["locationId"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "logistics",
-      "reviewed": "2026-06-05"
-    },
-    "WasteEntry": {
-      "fields": ["locationId"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "kitchen",
-      "reviewed": "2026-06-05"
     }
   }
 }

@@ -43,12 +43,18 @@ entity Shipment {
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
   default policy ShipmentDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
-  command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
+  // locationId is NOT a create param: when a shipment is created against an event
+  // (eventId), the delivery location is inherited server-side from the parent
+  // Event via parent-context propagation (manifest/runtime/src/parent-context-resolver.ts).
+  // The caller supplies only the eventId link + shipment-specific input, so the
+  // UI never re-asks for the location the Event already owns. A standalone
+  // shipment (no eventId) simply has no inherited location. See
+  // specs/parent-context-propagation.md.
+  command create(shipmentNumber: string, supplierId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
     guard shipmentNumber != null and shipmentNumber != "" "Shipment number is required"
 
     mutate shipmentNumber = shipmentNumber
     mutate supplierId = supplierId
-    mutate locationId = locationId
     mutate eventId = eventId
     mutate scheduledDate = scheduledDate
     mutate carrier = carrier
