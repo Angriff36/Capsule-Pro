@@ -1,7 +1,9 @@
 /**
  * Collection Case Detail API Routes
  *
- * Handles individual collection case operations
+ * Handles individual collection case operations.
+ * PATCH actions delegate to governed Manifest commands per constitution §10.
+ * GET reads bypass runtime.
  */
 
 import { database } from "@repo/database";
@@ -9,7 +11,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireTenantId } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // Validation schemas
 const recordPaymentSchema = z.object({
@@ -50,16 +53,16 @@ interface RouteContext {
 
 /**
  * GET /api/accounting/collections/cases/[id]
- * Get a single collection case
+ * Get a single collection case (read — bypasses Manifest per §10)
  */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    const user = await resolveCurrentUser(request);
     const { id } = await context.params;
 
     const collectionCase = await database.collectionCase.findFirst({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         id,
         deletedAt: null,
       },
@@ -105,18 +108,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 /**
  * PATCH /api/accounting/collections/cases/[id]
- * Update a collection case
+ * Update a collection case via governed Manifest commands.
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    const tenantId = await requireTenantId();
+    const user = await resolveCurrentUser(request);
     const { id } = await context.params;
     const body = await request.json();
 
-    // Verify case exists
+    const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+
+    // Verify case exists (read — bypasses Manifest per §10)
     const collectionCase = await database.collectionCase.findFirst({
       where: {
-        tenantId,
+        tenantId: user.tenantId,
         id,
         deletedAt: null,
       },
@@ -129,18 +134,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Handle different action types
+    // Handle different action types via governed Manifest commands
     const action = body.action;
 
     if (action === "assignTo") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          assignedTo: body.userId,
-          updatedAt: new Date(),
-        },
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "assignTo",
+        body: { id, tenantId: user.tenantId, userId: body.userId },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "recordPayment") {
@@ -152,47 +155,60 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
       const validated = parseResult.data;
-      const newCollected =
-        Number(collectionCase.collectedAmount) + validated.amount;
       const newOutstanding =
         Number(collectionCase.outstandingAmount) - validated.amount;
 
-      const isResolved = newOutstanding <= 0.01;
-
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          collectedAmount: newCollected,
-          outstandingAmount: Math.max(0, newOutstanding),
-          status: isResolved ? "PAID" : collectionCase.status,
-          updatedAt: new Date(),
+      const result = await runManifestCommand({
+        entity: "CollectionCase",
+        command: "recordPayment",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          amount: validated.amount,
+          paymentId: validated.paymentId ?? "",
+          paymentDate: validated.paymentDate ?? new Date().toISOString(),
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
+
+      // If outstanding is near zero, also mark resolved
+      if (newOutstanding <= 0.01 && result.status === 200) {
+        await runManifestCommand({
+          entity: "CollectionCase",
+          command: "markResolved",
+          body: { id, tenantId: user.tenantId },
+          user: manifestUser,
+        });
+      }
+
+      return result;
     }
 
     if (action === "escalateDunning") {
-      const newStage = body.stage || collectionCase.dunningStage;
-
-      const newStatus = collectionCase.status;
-      let newPriority = collectionCase.priority;
-
-      // COLLECTIONS stage indicates escalation to external collections
-      if (newStage === "COLLECTIONS") {
-        newPriority = "URGENT";
+      const parseResult = escalateDunningSchema.safeParse(body);
+      if (!parseResult.success) {
+        return NextResponse.json(
+          { error: "Validation failed", details: parseResult.error.issues },
+          { status: 400 }
+        );
       }
+      const newStage = parseResult.data.stage;
 
-      if (newStage === "FINAL_NOTICE" || newStage === "COLLECTIONS") {
-        newPriority = "URGENT";
-      } else if (newStage === "REMINDER_2" || newStage === "REMINDER_3") {
-        newPriority = "HIGH";
-      }
+      // TODO: migrate to Manifest resetDunning command once dunningStage
+      // manifest/Prisma type drift is resolved (manifest defines int, Prisma
+      // uses DunningStage enum). The escalateDunning/resetDunning commands
+      // produce integer values that Prisma rejects for the enum column.
+      const newPriority =
+        newStage === "COLLECTIONS" || newStage === "FINAL_NOTICE"
+          ? "URGENT"
+          : newStage === "REMINDER_2" || newStage === "REMINDER_3"
+            ? "HIGH"
+            : collectionCase.priority;
 
       const updated = await database.collectionCase.update({
         where: { id },
         data: {
           dunningStage: newStage,
-          status: newStatus,
           priority: newPriority,
           updatedAt: new Date(),
         },
@@ -209,76 +225,57 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
       const validated = parseResult.data;
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          priority: validated.priority,
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nPriority changed: " +
-              (validated.reason || "No reason provided")
-            : "Priority changed: " + (validated.reason || "No reason provided"),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "setPriority",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          newPriority: validated.priority,
+          reason: validated.reason ?? "",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "markDisputed") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          isDisputed: true,
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nDispute reason: " +
-              (body.reason || "No reason provided")
-            : "Dispute reason: " + (body.reason || "No reason provided"),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "markDisputed",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          reason: body.reason ?? "No reason provided",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "resolveDispute") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          isDisputed: false,
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nDispute resolved: " +
-              (body.resolutionNotes || "")
-            : "Dispute resolved: " + (body.resolutionNotes || ""),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "resolveDispute",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          resolutionNotes: body.resolutionNotes ?? "",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "escalateToLegal") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          isEscalatedToLegal: true,
-          status: "LEGAL",
-          priority: "URGENT",
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nEscalated to legal" +
-              (body.legalCaseNumber
-                ? ` (Case #: ${body.legalCaseNumber})`
-                : "") +
-              (body.legalFirm ? ` (Firm: ${body.legalFirm})` : "")
-            : "Escalated to legal" +
-              (body.legalCaseNumber
-                ? ` (Case #: ${body.legalCaseNumber})`
-                : "") +
-              (body.legalFirm ? ` (Firm: ${body.legalFirm})` : ""),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "escalateToLegalWithDetails",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          legalCaseNumber: body.legalCaseNumber ?? "",
+          legalFirm: body.legalFirm ?? "",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "writeOff") {
@@ -290,62 +287,45 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
       const validated = parseResult.data;
-      const amountToWriteOff = Math.min(
-        validated.amount,
-        Number(collectionCase.outstandingAmount)
-      );
-      const newCollected =
-        Number(collectionCase.collectedAmount) +
-        (Number(collectionCase.outstandingAmount) - amountToWriteOff);
-
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          collectedAmount: newCollected,
-          outstandingAmount: amountToWriteOff,
-          status: "WRITE_OFF",
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nWritten off: " +
-              validated.reason +
-              " (approved by: " +
-              validated.approvedBy +
-              ")"
-            : "Written off: " +
-              validated.reason +
-              " (approved by: " +
-              validated.approvedBy +
-              ")",
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "writeOff",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          amount: validated.amount,
+          reason: validated.reason,
+          approvedBy: validated.approvedBy,
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "updateAging") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "updateAging",
+        body: {
+          id,
+          tenantId: user.tenantId,
           daysOverdue: body.daysOverdue ?? 0,
-          agingBucket: body.agingBucket ?? null,
-          updatedAt: new Date(),
+          agingBucket: body.agingBucket ?? "",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "close") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          status: "CLOSED",
-          notes: collectionCase.notes
-            ? collectionCase.notes + "\nClosed: " + (body.resolution || "")
-            : "Closed: " + (body.resolution || ""),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "close",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          resolution: body.resolution ?? "",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "createPaymentPlan") {
@@ -357,38 +337,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
       const validated = parseResult.data;
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          hasPaymentPlan: true,
-          priority: "MEDIUM",
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nPayment plan created: " +
-              validated.planId
-            : "Payment plan created: " + validated.planId,
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "createPaymentPlan",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          planId: validated.planId,
+          nextPaymentDue: new Date(validated.nextPaymentDue).getTime(),
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "reopen") {
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          status: "ACTIVE",
-          dunningStage: "CURRENT",
-          isEscalatedToLegal: false,
-          notes: collectionCase.notes
-            ? collectionCase.notes +
-              "\nReopened: " +
-              (body.reason || "No reason provided")
-            : "Reopened: " + (body.reason || "No reason provided"),
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "updateStatus",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          newStatus: "ACTIVE",
+          newNotes: body.reason ?? "Case reopened",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });

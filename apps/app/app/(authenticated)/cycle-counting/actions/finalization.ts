@@ -1,7 +1,8 @@
 "use server";
 
 import { database } from "@repo/database";
-import { requireTenantId } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   FinalizeResult,
   VarianceReport,
@@ -16,6 +17,7 @@ export async function generateVarianceReports(
   sessionId: string
 ): Promise<VarianceReport[]> {
   const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   const records = await database.cycleCountRecord.findMany({
     where: {
@@ -25,7 +27,9 @@ export async function generateVarianceReports(
     },
   });
 
-  const reports = records.map((record) => {
+  const reports: VarianceReport[] = [];
+
+  for (const record of records) {
     const expectedQuantity = toNumber(record.expectedQuantity);
     const countedQuantity = toNumber(record.countedQuantity);
     const variance = countedQuantity - expectedQuantity;
@@ -34,8 +38,37 @@ export async function generateVarianceReports(
     const accuracyScore =
       expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
 
-    return {
-      id: crypto.randomUUID(),
+    // Governed write: VarianceReport.create (constitution §3/§9).
+    // The manifest command auto-generates id, sets generatedAt=now(), and
+    // status="pending". We read back the created record to return it.
+    const result = await runManifestCommand({
+      entity: "VarianceReport",
+      command: "create",
+      body: {
+        sessionId,
+        reportType: "item_variance",
+        itemId: record.itemId,
+        itemNumber: record.itemNumber,
+        itemName: record.itemName,
+        expectedQuantity,
+        countedQuantity,
+        variance,
+        variancePct,
+        accuracyScore,
+        notes: "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to create variance report");
+    }
+
+    // Build the report shape expected by the caller.
+    // result.result is the persisted entity (unknown-typed) from the runtime.
+    const created = result.result as Record<string, unknown> | undefined;
+    reports.push({
+      id: (created?.id as string) || "",
       tenantId: record.tenantId,
       sessionId: record.sessionId,
       reportType: "item_variance",
@@ -52,16 +85,12 @@ export async function generateVarianceReports(
       adjustmentAmount: null,
       adjustmentDate: null,
       notes: null,
-      generatedAt: new Date(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      generatedAt: (created?.generatedAt as Date) || new Date(),
+      createdAt: (created?.createdAt as Date) || new Date(),
+      updatedAt: (created?.updatedAt as Date) || new Date(),
       deletedAt: null,
-    };
-  });
-
-  await database.varianceReport.createMany({
-    data: reports,
-  });
+    });
+  }
 
   return reports;
 }
@@ -73,6 +102,7 @@ export async function finalizeCycleCountSession(input: {
 }): Promise<FinalizeResult> {
   try {
     const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
 
     const session = await database.cycleCountSession.findFirst({
       where: {
@@ -116,7 +146,31 @@ export async function finalizeCycleCountSession(input: {
     const variancePercentage =
       totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
 
-    const updatedSession = await database.cycleCountSession.update({
+    // Governed write: CycleCountSession.finalize (constitution §3/§9).
+    // The finalize command transitions status -> "finalized" and sets
+    // finalizedAt/approvedById. It does NOT mutate totalVariance,
+    // variancePercentage, countedItems, totalItems, or notes, so those
+    // fields are updated via a supplementary direct Prisma write below.
+    const finalizeResult = await runManifestCommand({
+      entity: "CycleCountSession",
+      command: "finalize",
+      body: {
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      instanceId: input.sessionId,
+    });
+
+    if (!finalizeResult.ok) {
+      return {
+        success: false,
+        error: finalizeResult.message || "Failed to finalize session",
+      };
+    }
+
+    // Supplementary write: fields the finalize command does not cover.
+    // The governed command already set status/finalizedAt/approvedById.
+    await database.cycleCountSession.update({
       where: {
         tenantId_id: {
           tenantId,
@@ -124,9 +178,6 @@ export async function finalizeCycleCountSession(input: {
         },
       },
       data: {
-        status: "finalized",
-        finalizedAt: new Date(),
-        approvedById: input.approvedById,
         notes: input.notes || session.notes,
         totalVariance,
         variancePercentage,
@@ -150,52 +201,126 @@ export async function finalizeCycleCountSession(input: {
         });
 
         if (inventoryItem) {
-          await database.inventoryTransaction.create({
-            data: {
-              tenantId,
+          // Governed write: InventoryTransaction.create (constitution §3/§9).
+          // TODO: The `reference` property (plain string) is NOT a param on the
+          // manifest create command — only referenceType/referenceId are. The
+          // session ID is included in `reason` as a fallback. If downstream
+          // consumers need the exact `reference` field, either add it to the
+          // command params or do a supplementary Prisma update.
+          const txResult = await runManifestCommand({
+            entity: "InventoryTransaction",
+            command: "create",
+            body: {
               itemId: record.itemId,
               transactionType: "adjustment",
               quantity: variance,
-              unit_cost: inventoryItem.unitCost,
-              reason: `Cycle count session ${session.sessionId}`,
-              reference: session.sessionId,
+              unitCost: toNumber(inventoryItem.unitCost),
               referenceType: "cycle_count",
               referenceId: session.id,
-              storage_location_id: undefined,
+              reason: `Cycle count session ${session.sessionId}`,
+              notes: "",
+              employeeId: "",
+              storageLocationId: "",
             },
+            user: { id: user.id, tenantId: user.tenantId, role: user.role },
           });
 
-          await database.inventoryItem.update({
-            where: {
-              tenantId_id: {
-                tenantId,
-                id: record.itemId,
-              },
+          if (!txResult.ok) {
+            throw new Error(txResult.message || "Failed to create inventory transaction");
+          }
+
+          // Governed write: InventoryItem.adjust (constitution §3/§9).
+          // The adjust command takes a delta (quantity = adjustment amount) and
+          // sets quantityOnHand = self.quantityOnHand + quantity. Since the
+          // countedQuantity is the target absolute value and the current
+          // quantityOnHand may have changed, we compute the delta as:
+          // countedQuantity - current quantityOnHand.
+          const currentOnHand = toNumber(inventoryItem.quantityOnHand);
+          const adjustmentDelta = countedQuantity - currentOnHand;
+
+          const adjustResult = await runManifestCommand({
+            entity: "InventoryItem",
+            command: "adjust",
+            body: {
+              quantity: adjustmentDelta,
+              reason: `Cycle count adjustment for session ${session.sessionId}`,
+              userId: user.id,
             },
-            data: {
-              quantityOnHand: countedQuantity,
-            },
+            user: { id: user.id, tenantId: user.tenantId, role: user.role },
+            instanceId: record.itemId,
           });
+
+          if (!adjustResult.ok) {
+            throw new Error(adjustResult.message || "Failed to adjust inventory item");
+          }
         }
 
-        await database.varianceReport.updateMany({
+        // Governed write: VarianceReport review + approve (constitution §3/§9).
+        // The manifest requires status transitions: pending -> reviewed -> approved.
+        // The current direct Prisma write skipped "reviewed" and went straight to
+        // "approved". We now follow the proper state machine.
+        const pendingReports = await database.varianceReport.findMany({
           where: {
             tenantId,
             sessionId: input.sessionId,
             itemId: record.itemId,
             deletedAt: null,
           },
-          data: {
-            status: "approved",
-            adjustmentType:
-              variance > 0 ? "increase" : variance < 0 ? "decrease" : "none",
-            adjustmentAmount: Math.abs(variance),
-            adjustmentDate: new Date(),
-          },
+          select: { id: true, status: true },
         });
+
+        const adjustmentType =
+          variance > 0 ? "increase" : variance < 0 ? "decrease" : "none";
+
+        for (const report of pendingReports) {
+          if (report.status === "pending") {
+            const reviewResult = await runManifestCommand({
+              entity: "VarianceReport",
+              command: "review",
+              body: {
+                userId: user.id,
+                notes: "",
+              },
+              user: { id: user.id, tenantId: user.tenantId, role: user.role },
+              instanceId: report.id,
+            });
+
+            if (!reviewResult.ok) {
+              // Non-fatal: log but continue approving other reports
+              console.warn(
+                `Failed to review variance report ${report.id}: ${reviewResult.message}`
+              );
+              continue;
+            }
+          }
+
+          if (report.status === "reviewed" || report.status === "pending") {
+            const approveResult = await runManifestCommand({
+              entity: "VarianceReport",
+              command: "approve",
+              body: {
+                userId: user.id,
+                adjustmentType,
+                adjustmentAmount: Math.abs(variance),
+              },
+              user: { id: user.id, tenantId: user.tenantId, role: user.role },
+              instanceId: report.id,
+            });
+
+            if (!approveResult.ok) {
+              console.warn(
+                `Failed to approve variance report ${report.id}: ${approveResult.message}`
+              );
+            }
+          }
+        }
       }
     }
 
+    // TODO: CycleCountAuditLog has no Manifest entity/commands. Keeping as
+    // direct Prisma write until a CycleCountAuditLog entity is added to the
+    // manifest DSL. This is an append-only audit log, so the governance gap
+    // is low-risk (no state transitions to enforce).
     await database.cycleCountAuditLog.create({
       data: {
         tenantId,
@@ -220,7 +345,7 @@ export async function finalizeCycleCountSession(input: {
 
     return {
       success: true,
-      sessionId: updatedSession.id,
+      sessionId: input.sessionId,
     };
   } catch (error) {
     return {
