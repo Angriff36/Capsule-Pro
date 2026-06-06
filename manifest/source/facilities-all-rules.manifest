@@ -458,11 +458,14 @@ entity FacilityWorkOrder {
   transition status from "in_progress" to ["completed", "cancelled"]
 
   default policy FacilityWorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: datetime, notes: string) {
+  // facilityId/areaId are NOT create params: they are parent-owned context inherited
+  // server-side from the linked FacilityAsset via parent-context propagation
+  // (specs/parent-context-propagation.md, Task 8.10). The caller supplies only the
+  // assetId link; the resolver loads the asset and copies its facilityId/areaId onto
+  // the work order, so the form never re-enters facility/area the asset already owns.
+  command create(assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
 
-    mutate facilityId = facilityId
-    mutate areaId = areaId
     mutate assetId = assetId
     mutate title = title
     mutate description = description

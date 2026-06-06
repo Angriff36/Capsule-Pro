@@ -85,13 +85,6 @@
       "owner": "events",
       "reviewed": "2026-06-05"
     },
-    "FacilityWorkOrder": {
-      "fields": ["facilityId", "areaId"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): facility/area inferable from the FacilityAsset. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "facilities",
-      "reviewed": "2026-06-05"
-    },
     "PrepTask": {
       "fields": ["eventId"],
       "category": "BASELINE",
