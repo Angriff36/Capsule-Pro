@@ -64,7 +64,12 @@ entity WasteEntry {
     mutate unitCost = unitCost
     mutate totalCost = quantity * unitCost
     mutate notes = notes
-    mutate status = "logged"
+    // NOTE: do NOT `mutate status = "logged"` here. `status` is transition-guarded
+    // (transition status from "logged" to [...]) and the runtime validates EVERY
+    // mutate against the transition rules WITHOUT exempting no-op self-transitions,
+    // so "logged" -> "logged" is rejected and the create fails. The property default
+    // (`status: string = "logged"`) seeds the initial state via createInstance.
+    // See create-command-transition-self-loop-bug + facility/admin-task creates.
     mutate loggedAt = now()
 
     emit WasteEntryCreated

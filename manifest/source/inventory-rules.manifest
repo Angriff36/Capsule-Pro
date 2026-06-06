@@ -85,7 +85,13 @@ entity InventoryItem {
   command consume(quantity: number, lotId: string, userId: string) {
     guard quantity != null and quantity > 0
 
-    constraint blockInsufficientStock:block self.quantityOnHand < quantity {
+    // A `block` constraint PASSES when its expression is TRUE and HALTS when FALSE
+    // (semantics.md §"Constraint Severity": block "halt[s] execution on failure",
+    // passed = expression result). So the expression must state the REQUIRED
+    // (sufficient-stock) condition, NOT the failure condition. `< quantity` was
+    // inverted: it blocked every consume that HAD enough stock and allowed
+    // over-consumption. The `:ok infoConsumed` twin below already uses `>= quantity`.
+    constraint blockInsufficientStock:block self.quantityOnHand >= quantity {
       messageTemplate: "Cannot consume {quantity} {unit} - only {onHand} on hand"
       details: {
         itemName: self.name
@@ -126,7 +132,11 @@ entity InventoryItem {
     guard quantity != null and quantity > 0
     guard reason != null and reason != ""
 
-    constraint blockInsufficientForWaste:block self.quantityOnHand < quantity {
+    // Inverted block (same bug as blockInsufficientStock above): a `block`
+    // constraint passes when its expression is TRUE, so it must state the
+    // required sufficient-stock condition (`>= quantity`), not the failure
+    // condition. `< quantity` blocked every waste entry that had enough stock.
+    constraint blockInsufficientForWaste:block self.quantityOnHand >= quantity {
       messageTemplate: "Cannot record waste of {quantity} {unit} - only {onHand} on hand"
       details: {
         itemName: self.name
