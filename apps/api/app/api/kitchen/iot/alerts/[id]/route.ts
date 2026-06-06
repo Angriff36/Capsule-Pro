@@ -4,6 +4,7 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -11,7 +12,8 @@ interface RouteContext {
 
 /**
  * PATCH /api/kitchen/iot/alerts/[id]
- * Acknowledge or resolve an IoT alert
+ * Acknowledge or resolve an IoT alert via Manifest runtime.
+ * Pre-validation (existing alert lookup, status check) is a read per constitution §10.
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
@@ -31,7 +33,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!currentUser) {
       return NextResponse.json(
         { error: "User not found in database" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -45,10 +47,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!(status && ["acknowledged", "resolved"].includes(status))) {
       return NextResponse.json(
         { error: "Status must be 'acknowledged' or 'resolved'" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
+    // Pre-validation: read existing alert (constitution §10 — reads bypass Manifest)
     const existing = await database.ioTAlert.findFirst({
       where: { tenantId, id },
     });
@@ -58,47 +61,48 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (existing.status === "resolved") {
       return NextResponse.json(
         { error: "Alert is already resolved" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const updateData: Record<string, unknown> = { status };
-    if (status === "acknowledged") {
-      updateData.acknowledgedAt = new Date();
-      updateData.acknowledgedBy = currentUser.id;
-    }
-    if (status === "resolved") {
-      updateData.resolvedAt = new Date();
-      updateData.resolvedBy = currentUser.id;
-      if (resolutionNotes) {
-        updateData.resolutionNotes = resolutionNotes;
-      }
-      // If acknowledging for the first time while resolving, set both
-      if (!existing.acknowledgedAt) {
-        updateData.acknowledgedAt = new Date();
-        updateData.acknowledgedBy = currentUser.id;
-      }
+    // If resolving an unacknowledged alert, acknowledge first (idempotent via Manifest)
+    if (status === "resolved" && !existing.acknowledgedAt) {
+      await runManifestCommand({
+        entity: "IoTAlert",
+        command: "acknowledge",
+        body: {},
+        user: { id: currentUser.id, tenantId, role: "" },
+        instanceId: id,
+      });
     }
 
-    const alert = await database.ioTAlert.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: updateData,
-    });
+    // Delegate status transition to Manifest runtime
+    const command = status === "acknowledged" ? "acknowledge" : "markResolved";
+    const commandBody: Record<string, unknown> = {};
+    if (status === "resolved" && resolutionNotes) {
+      commandBody.resolutionNotes = resolutionNotes;
+    }
 
-    log.info("[IoTAlert/PATCH] Alert updated", {
+    log.info("[IoTAlert/PATCH] Delegating to Manifest runtime", {
       id,
-      status,
+      command,
       userId: currentUser.id,
       tenantId,
     });
 
-    return NextResponse.json({ alert });
+    return runManifestCommand({
+      entity: "IoTAlert",
+      command,
+      body: commandBody,
+      user: { id: currentUser.id, tenantId, role: "" },
+      instanceId: id,
+    });
   } catch (error) {
     captureException(error);
     log.error("Update IoT alert error:", error);
     return NextResponse.json(
       { error: "Failed to update alert" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
