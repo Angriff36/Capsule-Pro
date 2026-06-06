@@ -1,21 +1,16 @@
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
-    }
+    const user = await resolveCurrentUser(request);
+    const tenantId = user.tenantId;
 
     const body = await request.json();
     const { eventId, eventType, newDate } = body;
@@ -56,7 +51,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (eventType === "event") {
-      // Check event exists and is not cancelled/completed
+      // Check event exists and is not cancelled/completed (pre-validation;
+      // Manifest guards also enforce this but we give clearer errors here)
       const existing = await database.event.findFirst({
         where: {
           tenantId,
@@ -84,19 +80,14 @@ export async function PATCH(request: NextRequest) {
         );
       }
 
-      const updated = await database.event.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: eventId,
-          },
-        },
-        data: {
-          eventDate: newDateTime,
-        },
+      // Governed write: Event.updateDate sets eventDate via Manifest runtime
+      return runManifestCommand({
+        entity: "Event",
+        command: "updateDate",
+        body: { newEventDate: newDateTime.toISOString() },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        instanceId: eventId,
       });
-
-      return NextResponse.json({ success: true, event: updated });
     }
     if (eventType === "shift") {
       // Check shift exists
@@ -124,20 +115,21 @@ export async function PATCH(request: NextRequest) {
 
       const newShiftEnd = new Date(newShiftStart.getTime() + originalDuration);
 
-      const updated = await database.scheduleShift.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: eventId,
-          },
+      // Governed write: ScheduleShift.update sets shiftStart/shiftEnd via Manifest runtime
+      return runManifestCommand({
+        entity: "ScheduleShift",
+        command: "update",
+        body: {
+          employeeId: existingShift.employeeId,
+          locationId: existingShift.locationId,
+          shiftStart: newShiftStart.getTime(),
+          shiftEnd: newShiftEnd.getTime(),
+          roleDuringShift: existingShift.role_during_shift ?? "",
+          notes: existingShift.notes ?? "",
         },
-        data: {
-          shift_start: newShiftStart,
-          shift_end: newShiftEnd,
-        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        instanceId: eventId,
       });
-
-      return NextResponse.json({ success: true, shift: updated });
     }
     return NextResponse.json(
       { error: "Invalid eventType. Must be 'event' or 'shift'" },
