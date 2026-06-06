@@ -259,17 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
-Files (10):
-  apps/api/app/api/events/contracts/[id]/document/route.ts (create)
-  apps/api/app/api/public/proposals/[token]/respond/route.ts (edit)
-  apps/api/app/api/training/complete/route.ts (create)
-  apps/api/app/api/training/complete/route.ts (edit)
-  apps/api/app/api/shipments/[id]/status/route.ts (create)
-  manifest/notes.md (edit)
-  manifest/source/crm-admin-extended-rules.manifest (edit)
-  apps/api/app/api/crm/scoring/[id]/route.ts (create)
-  apps/api/app/api/crm/scoring/calculate/route.ts (edit)
-  apps/api/app/api/crm/scoring/[id]/route.ts (edit)
+[proactive bridge @ 99% context — saved before compacting]
+Files (1):
+  manifest/source/invoice-rules.manifest (edit)
 
 # === END COGNILAYER ===

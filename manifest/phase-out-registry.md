@@ -76,6 +76,12 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 | `app/api/accounting/payment-methods/route.ts` | PaymentMethod | POST create → Manifest; GET unchanged (Prisma read) |
 | `app/api/accounting/payment-methods/[id]/route.ts` | PaymentMethod | PUT update, PATCH actions (markAsDefault/verify/flagForFraud/markExpired/remove), DELETE remove → Manifest; GET unchanged (Prisma read) |
 
+### Migrated (2 routes, 2026-06-06) — Task 8.2 batch 10
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/accounting/invoices/route.ts` | Invoice | POST create → Manifest (batch 9); GET unchanged (Prisma read) |
+| `app/api/accounting/invoices/[id]/route.ts` | Invoice | PUT update, PATCH actions (applyPayment/markAsPaid/markOverdue/sendReminder), POST send, DELETE voidInvoice → Manifest; GET unchanged (Prisma read). Manifest update command added. Transitions SENT→PARTIALLY_PAID/PAID, VIEWED→PARTIALLY_PAID/PAID added. |
+
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
 - All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`

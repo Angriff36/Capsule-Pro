@@ -2281,6 +2281,11 @@
   },
   {
     "entity": "Invoice",
+    "command": "update",
+    "commandId": "Invoice.update"
+  },
+  {
+    "entity": "Invoice",
     "command": "updateLineItems",
     "commandId": "Invoice.updateLineItems"
   },

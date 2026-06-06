@@ -64,6 +64,19 @@ entity Invoice {
 
   // Commands
   default policy InvoiceDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Invoice management"
+  command update(subtotal: money, taxAmount: money, total: money, amountDue: money, notes: string, internalNotes: string, dueDate: datetime, paymentTerms: int, lineItems: string) {
+    guard self.status == "DRAFT" "Can only update draft invoices"
+    mutate subtotal = subtotal
+    mutate taxAmount = taxAmount
+    mutate total = total
+    mutate amountDue = amountDue
+    mutate notes = notes
+    mutate internalNotes = internalNotes
+    mutate dueDate = dueDate
+    mutate paymentTerms = paymentTerms
+    mutate lineItems = lineItems
+  }
+
   command send(clientContactId: string) {
     guard self.status == "DRAFT" "Can only send draft invoices"
     guard self.amountDue > 0 "Cannot send invoices with zero balance"
@@ -145,7 +158,7 @@ entity Invoice {
 
   // State transitions
   transition status from "DRAFT" to ["SENT", "VOIDED"]
-  transition status from "SENT" to ["VIEWED", "OVERDUE", "VOIDED"]
+  transition status from "SENT" to ["VIEWED", "OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
   transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
   transition status from "OVERDUE" to ["PARTIALLY_PAID", "PAID", "WRITTEN_OFF", "VOIDED"]
   transition status from "PARTIALLY_PAID" to ["PAID", "WRITTEN_OFF"]

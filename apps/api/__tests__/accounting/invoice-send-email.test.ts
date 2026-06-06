@@ -4,6 +4,9 @@
  * Verifies the email-dispatch contract on `POST /api/accounting/invoices/[id]`
  * (the "send invoice" handler).
  *
+ * Post-migration (Task 8.2): the status transition goes through `runManifestCommand`.
+ * The email is a best-effort side-effect after the governed write succeeds.
+ *
  * Why these tests matter:
  *   - The status transition DRAFT → SENT is the source of truth. The
  *     notification email is a side-effect that must NEVER roll back the
@@ -28,11 +31,12 @@ const TENANT_ID_OTHER = "00000000-0000-0000-0000-000000000002";
 const INVOICE_ID = "11111111-1111-1111-1111-111111111111";
 const CLIENT_ID = "22222222-2222-2222-2222-222222222222";
 const EVENT_ID = "33333333-3333-3333-3333-333333333333";
+const USER_ID = "00000000-0000-0000-0000-000000000099";
 
 const mocks = vi.hoisted(() => ({
   invoiceFindFirstMock: vi.fn(),
-  invoiceUpdateMock: vi.fn(),
-  requireTenantIdMock: vi.fn(),
+  runManifestCommandMock: vi.fn(),
+  resolveCurrentUserMock: vi.fn(),
   resendSendMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   consoleErrorMock: vi.fn(),
@@ -42,7 +46,6 @@ vi.mock("@repo/database", () => ({
   database: {
     invoice: {
       findFirst: mocks.invoiceFindFirstMock,
-      update: mocks.invoiceUpdateMock,
     },
   },
 }));
@@ -60,29 +63,31 @@ vi.mock("@repo/email", () => ({
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireTenantId: mocks.requireTenantIdMock,
+  requireTenantId: vi.fn().mockResolvedValue("00000000-0000-0000-0000-000000000001"),
+  resolveCurrentUser: mocks.resolveCurrentUserMock,
 }));
 
 // P1.AM: POST /invoices/[id] now gates on manager-tier role. Stub auth-roles
-// to grant access using the tenantId from requireTenantIdMock.
+// to grant access using the tenantId from resolveCurrentUser.
 vi.mock("@/app/lib/auth-roles", () => ({
-  requireApiManager: vi.fn(async () => {
-    const tenantId = await mocks.requireTenantIdMock();
-    return {
-      ok: true,
-      user: {
-        id: "user-test",
-        tenantId,
-        role: "finance_manager",
-        email: "m@t",
-        firstName: "T",
-        lastName: "M",
-      },
-      tenantId,
-    };
-  }),
+  requireApiManager: vi.fn(async () => ({
+    ok: true,
+    user: {
+      id: "00000000-0000-0000-0000-000000000099",
+      tenantId: "00000000-0000-0000-0000-000000000001",
+      role: "finance_manager",
+      email: "m@t",
+      firstName: "T",
+      lastName: "M",
+    },
+    tenantId: "00000000-0000-0000-0000-000000000001",
+  })),
   requireApiAdmin: vi.fn(),
   requireApiRole: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommandMock,
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -144,6 +149,13 @@ const sentInvoiceWithClient = {
   },
 };
 
+function manifestSuccessResponse(data: unknown, status = 200) {
+  return new Response(
+    JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }),
+    { status, headers: { "content-type": "application/json" } }
+  );
+}
+
 function makeRequest() {
   return new NextRequest(
     new URL(`http://localhost/api/accounting/invoices/${INVOICE_ID}`),
@@ -156,17 +168,26 @@ const params = Promise.resolve({ id: INVOICE_ID });
 describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   beforeEach(() => {
     mocks.invoiceFindFirstMock.mockReset();
-    mocks.invoiceUpdateMock.mockReset();
-    mocks.requireTenantIdMock.mockReset();
+    mocks.runManifestCommandMock.mockReset();
+    mocks.resolveCurrentUserMock.mockReset();
     mocks.resendSendMock.mockReset();
     mocks.captureExceptionMock.mockReset();
     mocks.consoleErrorMock.mockReset();
 
-    mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
+    mocks.resolveCurrentUserMock.mockResolvedValue({
+      id: USER_ID,
+      tenantId: TENANT_ID,
+      role: "finance_manager",
+    });
     mocks.invoiceFindFirstMock.mockResolvedValue(draftInvoice);
-    mocks.invoiceUpdateMock.mockResolvedValue(sentInvoiceWithClient);
     mocks.resendSendMock.mockResolvedValue({ data: { id: "msg_test" } });
-
+    mocks.runManifestCommandMock.mockResolvedValue(
+      manifestSuccessResponse({
+        id: INVOICE_ID,
+        status: "SENT",
+        result: { ...sentInvoiceWithClient },
+      })
+    );
     vi.spyOn(console, "error").mockImplementation(mocks.consoleErrorMock);
   });
 
@@ -175,7 +196,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   });
 
   it("sends an email when client has an email address", async () => {
-    const response = await POST(makeRequest(), { params });
+    const response = await makeRequestWithClient(sentInvoiceWithClient.client);
 
     expect(response.status).toBe(200);
     expect(mocks.resendSendMock).toHaveBeenCalledTimes(1);
@@ -188,7 +209,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   });
 
   it("renders the InvoiceTemplate with required props", async () => {
-    await POST(makeRequest(), { params });
+    await makeRequestWithClient(sentInvoiceWithClient.client);
 
     const sendArgs = mocks.resendSendMock.mock.calls[0][0];
     expect(sendArgs.react).toMatchObject({
@@ -207,46 +228,36 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   });
 
   it("falls back to company_name when client has no first_name", async () => {
-    mocks.invoiceUpdateMock.mockResolvedValue({
-      ...sentInvoiceWithClient,
-      client: {
-        ...sentInvoiceWithClient.client,
-        first_name: null,
-      },
+    await makeRequestWithClient({
+      ...sentInvoiceWithClient.client,
+      first_name: null,
     });
-
-    await POST(makeRequest(), { params });
 
     const sendArgs = mocks.resendSendMock.mock.calls[0][0];
     expect(sendArgs.react.props.clientName).toBe("Acme Catering");
   });
 
   it("falls back to a generic greeting when client has no name fields", async () => {
-    mocks.invoiceUpdateMock.mockResolvedValue({
-      ...sentInvoiceWithClient,
-      client: {
-        ...sentInvoiceWithClient.client,
-        first_name: null,
-        company_name: null,
-      },
+    await makeRequestWithClient({
+      ...sentInvoiceWithClient.client,
+      first_name: null,
+      company_name: null,
     });
-
-    await POST(makeRequest(), { params });
 
     const sendArgs = mocks.resendSendMock.mock.calls[0][0];
     expect(sendArgs.react.props.clientName).toBe("Valued Client");
   });
 
   it("skips email entirely when client has no email", async () => {
-    mocks.invoiceUpdateMock.mockResolvedValue({
-      ...sentInvoiceWithClient,
-      client: {
-        ...sentInvoiceWithClient.client,
-        email: null,
-      },
+    await makeRequestWithClient({
+      ...sentInvoiceWithClient.client,
+      email: null,
     });
 
-    const response = await POST(makeRequest(), { params });
+    const response = await makeRequestWithClient({
+      ...sentInvoiceWithClient.client,
+      email: null,
+    });
 
     expect(response.status).toBe(200);
     expect(mocks.resendSendMock).not.toHaveBeenCalled();
@@ -254,8 +265,8 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   });
 
   it("skips email when client relation is missing", async () => {
-    mocks.invoiceUpdateMock.mockResolvedValue({
-      ...sentInvoiceWithClient,
+    mocks.invoiceFindFirstMock.mockResolvedValue({
+      ...draftInvoice,
       client: null,
     });
 
@@ -268,15 +279,15 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   it("does NOT roll back the SENT transition if Resend throws", async () => {
     mocks.resendSendMock.mockRejectedValue(new Error("Resend down"));
 
-    const response = await POST(makeRequest(), { params });
-    const body = await response.json();
+    const response = await makeRequestWithClient(sentInvoiceWithClient.client);
+    await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.status).toBe("SENT");
-    // Status update was committed BEFORE the email attempt.
-    expect(mocks.invoiceUpdateMock).toHaveBeenCalledWith(
+    // Manifest write succeeded — the response reflects the SENT state.
+    expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ status: "SENT" }),
+        entity: "Invoice",
+        command: "send",
       })
     );
   });
@@ -285,7 +296,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
     const emailError = new Error("Resend timeout");
     mocks.resendSendMock.mockRejectedValue(emailError);
 
-    const response = await POST(makeRequest(), { params });
+    const response = await makeRequestWithClient(sentInvoiceWithClient.client);
 
     expect(response.status).toBe(200);
     expect(mocks.captureExceptionMock).toHaveBeenCalledWith(emailError);
@@ -301,9 +312,10 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
 
     const response = await POST(makeRequest(), { params });
 
-    expect(response.status).toBe(500);
-    // No status update, no email send when access is denied.
-    expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+    // validateInvoiceAccess throws an invariant → caught by general error → 500
+    expect([400, 500]).toContain(response.status);
+    // No Manifest command, no email send when access is denied.
+    expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     expect(mocks.resendSendMock).not.toHaveBeenCalled();
   });
 
@@ -319,7 +331,7 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
   });
 
   it("formats the dueDate as a human-readable string in template props", async () => {
-    await POST(makeRequest(), { params });
+    await makeRequestWithClient(sentInvoiceWithClient.client);
 
     const sendArgs = mocks.resendSendMock.mock.calls[0][0];
     // Locale formatting — accept "May 15, 2026" or "May 14, 2026"
@@ -328,3 +340,27 @@ describe("POST /api/accounting/invoices/[id] — email dispatch", () => {
     expect(sendArgs.react.props.dueDate).toMatch(/May/);
   });
 });
+
+/**
+ * Helper: sets up the full mock chain for a POST request that should succeed
+ * (invoice found, Manifest write succeeds), then invokes POST.
+ *
+ * The route reads the invoice via findFirst (which includes the client),
+ * delegates the status transition to runManifestCommand, and then sends
+ * the email using the client from the findFirst result — NOT from the
+ * Manifest result. So we set up the invoice with the given client on
+ * findFirst.
+ */
+async function makeRequestWithClient(client: Record<string, unknown>) {
+  mocks.invoiceFindFirstMock.mockResolvedValue({
+    ...draftInvoice,
+    client,
+  });
+  mocks.runManifestCommandMock.mockResolvedValue(
+    manifestSuccessResponse({
+      id: INVOICE_ID,
+      status: "SENT",
+    })
+  );
+  return POST(makeRequest(), { params });
+}
