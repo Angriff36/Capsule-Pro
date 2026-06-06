@@ -319,7 +319,7 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
   // ------------------------------------------------------------- escalateDunning
 
   describe("action: escalateDunning", () => {
-    it("FINAL_NOTICE → priority=URGENT (still direct Prisma)", async () => {
+    it("FINAL_NOTICE → routes through Manifest resetDunning", async () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       await PATCH(
@@ -327,18 +327,22 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
         { params }
       );
 
-      // escalateDunning still uses direct Prisma update, not runManifestCommand
-      expect(mocks.caseUpdateMock).toHaveBeenCalledWith(
+      // escalateDunning now routes through governed Manifest resetDunning command
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            dunningStage: "FINAL_NOTICE",
-            priority: "URGENT",
+          entity: "CollectionCase",
+          command: "resetDunning",
+          body: expect.objectContaining({
+            id: CASE_ID,
+            tenantId: TENANT_ID,
+            stage: "FINAL_NOTICE",
+            reason: "Dunning escalation",
           }),
         })
       );
     });
 
-    it("COLLECTIONS → priority=URGENT (still direct Prisma)", async () => {
+    it("COLLECTIONS → routes through Manifest resetDunning", async () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       await PATCH(
@@ -346,17 +350,18 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
         { params }
       );
 
-      expect(mocks.caseUpdateMock).toHaveBeenCalledWith(
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            dunningStage: "COLLECTIONS",
-            priority: "URGENT",
+          entity: "CollectionCase",
+          command: "resetDunning",
+          body: expect.objectContaining({
+            stage: "COLLECTIONS",
           }),
         })
       );
     });
 
-    it("REMINDER_2 → priority=HIGH (still direct Prisma)", async () => {
+    it("REMINDER_2 → routes through Manifest resetDunning", async () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       await PATCH(
@@ -364,17 +369,18 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
         { params }
       );
 
-      expect(mocks.caseUpdateMock).toHaveBeenCalledWith(
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            dunningStage: "REMINDER_2",
-            priority: "HIGH",
+          entity: "CollectionCase",
+          command: "resetDunning",
+          body: expect.objectContaining({
+            stage: "REMINDER_2",
           }),
         })
       );
     });
 
-    it("REMINDER_3 → priority=HIGH (still direct Prisma)", async () => {
+    it("REMINDER_3 → routes through Manifest resetDunning", async () => {
       mocks.caseFindFirstMock.mockResolvedValue(baseCase);
 
       await PATCH(
@@ -382,11 +388,12 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
         { params }
       );
 
-      expect(mocks.caseUpdateMock).toHaveBeenCalledWith(
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            dunningStage: "REMINDER_3",
-            priority: "HIGH",
+          entity: "CollectionCase",
+          command: "resetDunning",
+          body: expect.objectContaining({
+            stage: "REMINDER_3",
           }),
         })
       );
@@ -712,12 +719,9 @@ describe("PATCH /api/accounting/collections/cases/[id]", () => {
   // ------------------------------------------------------------- error path
 
   it("returns 500 on unexpected DB error and reports it via Sentry", async () => {
-    mocks.caseFindFirstMock.mockResolvedValue(baseCase);
-    // Use escalateDunning which still uses direct Prisma update (not
-    // runManifestCommand). Actions that `return runManifestCommand(...)` without
-    // `await` bypass the outer try/catch, so we test the catch path with the
-    // direct-Prisma action instead.
-    mocks.caseUpdateMock.mockRejectedValue(new Error("connection lost"));
+    // Trigger the outer try/catch by having the initial case lookup reject.
+    // This exercises the route's catch handler which reports via Sentry.
+    mocks.caseFindFirstMock.mockRejectedValue(new Error("connection lost"));
 
     const response = await PATCH(
       makeRequest({ action: "escalateDunning", stage: "REMINDER_2" }),

@@ -21,7 +21,7 @@ entity CollectionCase {
   // Collection status
   property required status: string = "ACTIVE"
   property required priority: string = "MEDIUM"
-  property required dunningStage: int = 0
+  property required dunningStage: string = "CURRENT"
 
   // Aging
   property required daysOverdue: int = 0
@@ -110,8 +110,9 @@ entity CollectionCase {
 
   command escalateDunning() {
     guard self.status == "ACTIVE" "Can only escalate active cases"
-    guard self.dunningStage < 5 "Maximum dunning stage reached"
-    mutate dunningStage = self.dunningStage + 1
+    guard self.dunningStage != "COLLECTIONS" "Maximum dunning stage reached"
+    mutate dunningStage = self.dunningStage == "CURRENT" ? "REMINDER_1" : self.dunningStage == "REMINDER_1" ? "REMINDER_2" : self.dunningStage == "REMINDER_2" ? "REMINDER_3" : self.dunningStage == "REMINDER_3" ? "FINAL_NOTICE" : "COLLECTIONS"
+    mutate priority = self.dunningStage == "COLLECTIONS" || self.dunningStage == "FINAL_NOTICE" ? "URGENT" : self.dunningStage == "REMINDER_2" || self.dunningStage == "REMINDER_3" ? "HIGH" : self.priority
     emit DunningEscalated
   }
 
@@ -130,9 +131,9 @@ entity CollectionCase {
     mutate priority = "HIGH"
   }
 
-  command resetDunning(stage: int, reason: string) {
+  command resetDunning(stage: string, reason: string) {
     guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only reset active/in-progress cases"
-    guard stage >= 0 "Stage must be non-negative"
+    guard stage in ["CURRENT", "REMINDER_1", "REMINDER_2", "REMINDER_3", "FINAL_NOTICE", "COLLECTIONS"] "Invalid dunning stage"
     mutate dunningStage = stage
     emit DunningReset
   }
@@ -170,7 +171,7 @@ entity CollectionCase {
     mutate legalCaseNumber = legalCaseNumber
     mutate legalFirm = legalFirm
     mutate status = "LEGAL"
-    mutate dunningStage = 5
+    mutate dunningStage = "COLLECTIONS"
     mutate priority = "URGENT"
     emit EscalatedToLegal
   }

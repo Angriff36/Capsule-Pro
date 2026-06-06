@@ -29,6 +29,12 @@ vi.mock("@/lib/database", async () => {
   return mod;
 });
 
+// Mock runManifestCommand for governed write paths
+const mockRunManifestCommand = vi.fn();
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mockRunManifestCommand,
+}));
+
 // ---------------------------------------------------------------------------
 // Route handlers — imported after mocks are in place
 // ---------------------------------------------------------------------------
@@ -293,16 +299,26 @@ describe("POST /api/public/contracts/[token]/sign", () => {
 
     vi.mocked(database.eventContract.findFirst).mockResolvedValueOnce(contract);
 
-    vi.mocked(database.contractSignature.create).mockResolvedValueOnce({
-      id: SIGNATURE_ID,
-      signerName: "Jane Doe",
-      signerEmail: "jane@acme.com",
-      signedAt: new Date("2025-06-15"),
+    // Mock buildSystemUserContext's user lookup
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-user-id",
+      role: "admin",
     } as never);
 
-    vi.mocked(database.eventContract.update).mockResolvedValueOnce({
-      id: CONTRACT_ID,
-      status: "signed",
+    // Mock runManifestCommand for both governed writes (ContractSignature.create + EventContract.sign)
+    mockRunManifestCommand
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, result: { id: SIGNATURE_ID }, events: [] }), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, result: { id: CONTRACT_ID, status: "signed" }, events: [] }), { status: 200 })
+      );
+
+    // Mock the read-back of signature for response
+    vi.mocked(database.contractSignature.findFirst).mockResolvedValueOnce({
+      id: SIGNATURE_ID,
+      signerName: "Jane Doe",
+      signedAt: new Date("2025-06-15"),
     } as never);
 
     const res = await contractSign(
@@ -324,19 +340,26 @@ describe("POST /api/public/contracts/[token]/sign", () => {
     expect(json.message).toBe("Contract signed successfully");
     expect(json.signature.signerName).toBe("Jane Doe");
 
-    // Verify signature creation captured the IP
-    expect(vi.mocked(database.contractSignature.create)).toHaveBeenCalledWith(
+    // Verify ContractSignature.create was dispatched with IP address
+    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(1,
       expect.objectContaining({
-        data: expect.objectContaining({
+        entity: "ContractSignature",
+        command: "create",
+        body: expect.objectContaining({
           ipAddress: "203.0.113.50",
         }),
       })
     );
 
-    // Verify contract was updated to signed
-    expect(vi.mocked(database.eventContract.update)).toHaveBeenCalledWith(
+    // Verify EventContract.sign was dispatched
+    expect(mockRunManifestCommand).toHaveBeenNthCalledWith(2,
       expect.objectContaining({
-        data: expect.objectContaining({ status: "signed" }),
+        entity: "EventContract",
+        command: "sign",
+        body: expect.objectContaining({
+          id: CONTRACT_ID,
+          tenantId: TENANT_ID,
+        }),
       })
     );
   });
@@ -466,15 +489,24 @@ describe("POST /api/public/contracts/[token]/sign", () => {
       deletedAt: null,
     } as never);
 
-    vi.mocked(database.contractSignature.create).mockResolvedValueOnce({
+    // Mock buildSystemUserContext's user lookup
+    vi.mocked(database.user.findFirst).mockResolvedValueOnce({
+      id: "admin-user-id",
+      role: "admin",
+    } as never);
+
+    mockRunManifestCommand
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, result: { id: SIGNATURE_ID }, events: [] }), { status: 200 })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true, result: { id: CONTRACT_ID, status: "signed" }, events: [] }), { status: 200 })
+      );
+
+    vi.mocked(database.contractSignature.findFirst).mockResolvedValueOnce({
       id: SIGNATURE_ID,
       signerName: "Jane Doe",
       signedAt: new Date("2025-06-15"),
-    } as never);
-
-    vi.mocked(database.eventContract.update).mockResolvedValueOnce({
-      id: CONTRACT_ID,
-      status: "signed",
     } as never);
 
     await contractSign(
@@ -489,9 +521,12 @@ describe("POST /api/public/contracts/[token]/sign", () => {
       makeParams(TOKEN)
     );
 
-    expect(vi.mocked(database.contractSignature.create)).toHaveBeenCalledWith(
+    // Verify ContractSignature.create captured the fallback IP
+    expect(mockRunManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ ipAddress: "10.0.0.1" }),
+        entity: "ContractSignature",
+        command: "create",
+        body: expect.objectContaining({ ipAddress: "10.0.0.1" }),
       })
     );
   });

@@ -192,28 +192,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           { status: 400 }
         );
       }
-      const newStage = parseResult.data.stage;
+      const targetStage = parseResult.data.stage;
 
-      // TODO: migrate to Manifest resetDunning command once dunningStage
-      // manifest/Prisma type drift is resolved (manifest defines int, Prisma
-      // uses DunningStage enum). The escalateDunning/resetDunning commands
-      // produce integer values that Prisma rejects for the enum column.
-      const newPriority =
-        newStage === "COLLECTIONS" || newStage === "FINAL_NOTICE"
-          ? "URGENT"
-          : newStage === "REMINDER_2" || newStage === "REMINDER_3"
-            ? "HIGH"
-            : collectionCase.priority;
-
-      const updated = await database.collectionCase.update({
-        where: { id },
-        data: {
-          dunningStage: newStage,
-          priority: newPriority,
-          updatedAt: new Date(),
+      // Governed write: set explicit dunning stage via Manifest resetDunning command
+      return runManifestCommand({
+        entity: "CollectionCase",
+        command: "resetDunning",
+        body: {
+          id,
+          tenantId: user.tenantId,
+          stage: targetStage,
+          reason: "Dunning escalation",
         },
+        user: manifestUser,
       });
-      return NextResponse.json(updated);
     }
 
     if (action === "setPriority") {

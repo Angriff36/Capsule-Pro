@@ -1,17 +1,19 @@
 /**
  * POST /api/events/profitability/commands/recalculate
- * Recalculates an event profitability record based on current event data
+ * Recalculates an event profitability record based on current event data.
+ * Reads budget line items and catering orders (constitution §10 read path),
+ * then dispatches through governed Manifest `recalculate` command.
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
-  manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
 interface RecalculateRequestBody {
@@ -19,7 +21,7 @@ interface RecalculateRequestBody {
 }
 
 /**
- * Calculate totals from budget line items
+ * Calculate budgeted totals from event budget line items (read path).
  */
 async function calculateBudgetTotals(
   tenantId: string,
@@ -29,45 +31,21 @@ async function calculateBudgetTotals(
   budgetedFoodCost: number;
   budgetedLaborCost: number;
   budgetedOverhead: number;
-  budgetedTotalCost: number;
 }> {
-  // Get event budget with line items
   const eventBudget = await database.eventBudget.findFirst({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-      },
-    },
+    where: { tenantId, eventId, deletedAt: null },
+    include: { lineItems: { where: { deletedAt: null } } },
   });
 
-  // Get event to get budgeted revenue
   const event = await database.event.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
-    },
-    select: {
-      budget: true,
-    },
+    where: { tenantId_id: { tenantId, id: eventId } },
+    select: { budget: true },
   });
 
   const budgetedRevenue = event?.budget ? Number(event.budget) : 0;
 
   if (!(eventBudget && eventBudget.lineItems.length)) {
-    return {
-      budgetedRevenue,
-      budgetedFoodCost: 0,
-      budgetedLaborCost: 0,
-      budgetedOverhead: 0,
-      budgetedTotalCost: 0,
-    };
+    return { budgetedRevenue, budgetedFoodCost: 0, budgetedLaborCost: 0, budgetedOverhead: 0 };
   }
 
   let budgetedFoodCost = 0;
@@ -78,44 +56,22 @@ async function calculateBudgetTotals(
     const amount = Number(item.budgetedAmount);
     const category = item.category.toLowerCase();
 
-    if (
-      category.includes("food") ||
-      category.includes("catering") ||
-      category.includes("menu")
-    ) {
+    if (category.includes("food") || category.includes("catering") || category.includes("menu")) {
       budgetedFoodCost += amount;
-    } else if (
-      category.includes("labor") ||
-      category.includes("staff") ||
-      category.includes("service")
-    ) {
+    } else if (category.includes("labor") || category.includes("staff") || category.includes("service")) {
       budgetedLaborCost += amount;
-    } else if (
-      category.includes("overhead") ||
-      category.includes("facility") ||
-      category.includes("equipment")
-    ) {
+    } else if (category.includes("overhead") || category.includes("facility") || category.includes("equipment")) {
       budgetedOverhead += amount;
     } else {
-      // Default: food costs
       budgetedFoodCost += amount;
     }
   }
 
-  const budgetedTotalCost =
-    budgetedFoodCost + budgetedLaborCost + budgetedOverhead;
-
-  return {
-    budgetedRevenue,
-    budgetedFoodCost,
-    budgetedLaborCost,
-    budgetedOverhead,
-    budgetedTotalCost,
-  };
+  return { budgetedRevenue, budgetedFoodCost, budgetedLaborCost, budgetedOverhead };
 }
 
 /**
- * Calculate actual totals from catering orders
+ * Calculate actual totals from catering orders (read path).
  */
 async function calculateActualTotals(
   tenantId: string,
@@ -125,15 +81,9 @@ async function calculateActualTotals(
   actualFoodCost: number;
   actualLaborCost: number;
   actualOverhead: number;
-  actualTotalCost: number;
 }> {
-  // Get catering orders for this event (they represent actual revenue and costs)
   const cateringOrders = await database.cateringOrder.findMany({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
+    where: { tenantId, eventId, deletedAt: null },
   });
 
   let actualRevenue = 0;
@@ -142,209 +92,62 @@ async function calculateActualTotals(
   let actualOverhead = 0;
 
   for (const order of cateringOrders) {
-    // Order subtotal is the revenue
     actualRevenue += Number(order.subtotal_amount);
-
-    // Estimated costs from order items
-    if (
-      order.order_status === "confirmed" ||
-      order.order_status === "completed"
-    ) {
-      actualFoodCost += Number(order.subtotal_amount) * 0.35; // Estimate food cost at 35% of revenue
-      actualLaborCost += Number(order.subtotal_amount) * 0.15; // Estimate labor cost at 15% of revenue
-      actualOverhead += Number(order.subtotal_amount) * 0.05; // Estimate overhead at 5% of revenue
+    if (order.order_status === "confirmed" || order.order_status === "completed") {
+      actualFoodCost += Number(order.subtotal_amount) * 0.35;
+      actualLaborCost += Number(order.subtotal_amount) * 0.15;
+      actualOverhead += Number(order.subtotal_amount) * 0.05;
     }
   }
 
-  const actualTotalCost = actualFoodCost + actualLaborCost + actualOverhead;
-
-  return {
-    actualRevenue,
-    actualFoodCost,
-    actualLaborCost,
-    actualOverhead,
-    actualTotalCost,
-  };
-}
-
-/**
- * Calculate gross margin and percentages
- */
-function calculateMargins(
-  revenue: number,
-  totalCost: number
-): { grossMargin: number; grossMarginPct: number } {
-  const grossMargin = revenue - totalCost;
-  const grossMarginPct = revenue > 0 ? (grossMargin / revenue) * 100 : 0;
-  return { grossMargin, grossMarginPct };
-}
-
-/**
- * Calculate variance between budgeted and actual
- */
-function calculateVariances(
-  budgeted: {
-    revenue: number;
-    foodCost: number;
-    laborCost: number;
-    totalCost: number;
-  },
-  actual: {
-    revenue: number;
-    foodCost: number;
-    laborCost: number;
-    totalCost: number;
-  }
-): {
-  revenueVariance: number;
-  foodCostVariance: number;
-  laborCostVariance: number;
-  totalCostVariance: number;
-  marginVariancePct: number;
-} {
-  const revenueVariance = budgeted.revenue - actual.revenue;
-  const foodCostVariance = budgeted.foodCost - actual.foodCost;
-  const laborCostVariance = budgeted.laborCost - actual.laborCost;
-  const totalCostVariance = budgeted.totalCost - actual.totalCost;
-
-  // Calculate margin variance percentage
-  const budgetedMargin = budgeted.revenue - budgeted.totalCost;
-  const actualMargin = actual.revenue - actual.totalCost;
-  const marginVariancePct =
-    budgeted.revenue > 0
-      ? ((budgetedMargin - actualMargin) / budgeted.revenue) * 100
-      : 0;
-
-  return {
-    revenueVariance,
-    foodCostVariance,
-    laborCostVariance,
-    totalCostVariance,
-    marginVariancePct,
-  };
+  return { actualRevenue, actualFoodCost, actualLaborCost, actualOverhead };
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
+    const user = await resolveCurrentUser(request);
+    if (!user) {
       return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
     }
 
     const body: RecalculateRequestBody = await request.json();
     const { instanceId: profitabilityId } = body;
 
     if (!profitabilityId) {
-      return manifestErrorResponse(
-        "Profitability ID (instanceId) is required",
-        400
-      );
+      return manifestErrorResponse("Profitability ID (instanceId) is required", 400);
     }
 
-    // Get the existing profitability record
+    // Verify the profitability record exists (read path, constitution §10)
     const profitability = await database.eventProfitability.findFirst({
-      where: {
-        id: profitabilityId,
-        tenantId,
-        deletedAt: null,
-      },
+      where: { id: profitabilityId, tenantId: user.tenantId, deletedAt: null },
     });
 
     if (!profitability) {
       return manifestErrorResponse("EventProfitability not found", 404);
     }
 
-    // Calculate budgeted totals from event budget
-    const budgetTotals = await calculateBudgetTotals(
-      tenantId,
-      profitability.eventId
-    );
+    // Compute fresh budgeted and actual values (reads, not governed writes)
+    const budget = await calculateBudgetTotals(user.tenantId, profitability.eventId);
+    const actuals = await calculateActualTotals(user.tenantId, profitability.eventId);
 
-    // Calculate actual totals from catering orders
-    const actualTotals = await calculateActualTotals(
-      tenantId,
-      profitability.eventId
-    );
-
-    // Calculate budgeted gross margin
-    const budgetedMargins = calculateMargins(
-      budgetTotals.budgetedRevenue,
-      budgetTotals.budgetedTotalCost
-    );
-
-    // Calculate actual gross margin
-    const actualMargins = calculateMargins(
-      actualTotals.actualRevenue,
-      actualTotals.actualTotalCost
-    );
-
-    // Calculate variances
-    const variances = calculateVariances(
-      {
-        revenue: budgetTotals.budgetedRevenue,
-        foodCost: budgetTotals.budgetedFoodCost,
-        laborCost: budgetTotals.budgetedLaborCost,
-        totalCost: budgetTotals.budgetedTotalCost,
-      },
-      {
-        revenue: actualTotals.actualRevenue,
-        foodCost: actualTotals.actualFoodCost,
-        laborCost: actualTotals.actualLaborCost,
-        totalCost: actualTotals.actualTotalCost,
-      }
-    );
-
-    // Update the profitability record
-    const updatedProfitability = await database.eventProfitability.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: profitabilityId,
-        },
-      },
-      data: {
-        budgetedRevenue: new Prisma.Decimal(budgetTotals.budgetedRevenue),
-        budgetedFoodCost: new Prisma.Decimal(budgetTotals.budgetedFoodCost),
-        budgetedLaborCost: new Prisma.Decimal(budgetTotals.budgetedLaborCost),
-        budgetedOverhead: new Prisma.Decimal(budgetTotals.budgetedOverhead),
-        budgetedTotalCost: new Prisma.Decimal(budgetTotals.budgetedTotalCost),
-        budgetedGrossMargin: new Prisma.Decimal(budgetedMargins.grossMargin),
-        budgetedGrossMarginPct: new Prisma.Decimal(
-          budgetedMargins.grossMarginPct
-        ),
-        actualRevenue: new Prisma.Decimal(actualTotals.actualRevenue),
-        actualFoodCost: new Prisma.Decimal(actualTotals.actualFoodCost),
-        actualLaborCost: new Prisma.Decimal(actualTotals.actualLaborCost),
-        actualOverhead: new Prisma.Decimal(actualTotals.actualOverhead),
-        actualTotalCost: new Prisma.Decimal(actualTotals.actualTotalCost),
-        actualGrossMargin: new Prisma.Decimal(actualMargins.grossMargin),
-        actualGrossMarginPct: new Prisma.Decimal(actualMargins.grossMarginPct),
-        revenueVariance: new Prisma.Decimal(variances.revenueVariance),
-        foodCostVariance: new Prisma.Decimal(variances.foodCostVariance),
-        laborCostVariance: new Prisma.Decimal(variances.laborCostVariance),
-        totalCostVariance: new Prisma.Decimal(variances.totalCostVariance),
-        marginVariancePct: new Prisma.Decimal(variances.marginVariancePct),
-        calculatedAt: new Date(),
+    // Dispatch governed write through Manifest runtime
+    return runManifestCommand({
+      entity: "EventProfitability",
+      command: "recalculate",
+      body: {
+        id: profitabilityId,
+        tenantId: user.tenantId,
         calculationMethod: "manual",
-        updatedAt: new Date(),
+        budgetedRevenue: budget.budgetedRevenue,
+        budgetedFoodCost: budget.budgetedFoodCost,
+        budgetedLaborCost: budget.budgetedLaborCost,
+        budgetedOverhead: budget.budgetedOverhead,
+        actualRevenue: actuals.actualRevenue,
+        actualFoodCost: actuals.actualFoodCost,
+        actualLaborCost: actuals.actualLaborCost,
+        actualOverhead: actuals.actualOverhead,
       },
-    });
-
-    log.info("Event profitability recalculated", {
-      profitabilityId,
-      eventId: profitability.eventId,
-      tenantId,
-      userId,
-    });
-
-    return manifestSuccessResponse({
-      success: true,
-      eventProfitability: updatedProfitability,
+      user,
     });
   } catch (error) {
     captureException(error);

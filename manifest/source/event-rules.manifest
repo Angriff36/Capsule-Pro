@@ -332,7 +332,19 @@ entity EventProfitability {
     emit EventProfitabilityUpdated
   }
 
-  command recalculate(calculationMethod: string) {
+  command recalculate(calculationMethod: string, budgetedRevenue: money, budgetedFoodCost: money, budgetedLaborCost: money, budgetedOverhead: decimal, actualRevenue: money, actualFoodCost: money, actualLaborCost: money, actualOverhead: decimal) {
+    mutate budgetedRevenue = budgetedRevenue
+    mutate budgetedFoodCost = budgetedFoodCost
+    mutate budgetedLaborCost = budgetedLaborCost
+    mutate budgetedOverhead = budgetedOverhead
+    mutate budgetedTotalCost = budgetedFoodCost + budgetedLaborCost + budgetedOverhead
+    mutate budgetedGrossMargin = budgetedRevenue - (budgetedFoodCost + budgetedLaborCost + budgetedOverhead)
+    mutate actualRevenue = actualRevenue
+    mutate actualFoodCost = actualFoodCost
+    mutate actualLaborCost = actualLaborCost
+    mutate actualOverhead = actualOverhead
+    mutate actualTotalCost = actualFoodCost + actualLaborCost + actualOverhead
+    mutate actualGrossMargin = actualRevenue - (actualFoodCost + actualLaborCost + actualOverhead)
     mutate revenueVariance = self.actualRevenue - self.budgetedRevenue
     mutate foodCostVariance = self.actualFoodCost - self.budgetedFoodCost
     mutate laborCostVariance = self.actualLaborCost - self.budgetedLaborCost

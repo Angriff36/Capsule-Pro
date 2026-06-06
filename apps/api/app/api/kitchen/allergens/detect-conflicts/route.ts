@@ -10,7 +10,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -226,21 +225,20 @@ export async function POST(request: Request) {
       dietaryTags: d.dietary_tags || [],
     }));
 
-    // Delete existing unresolved warnings for this event
-    await database.allergenWarning.deleteMany({
-      where: {
-        tenantId,
-        eventId: body.eventId,
-        resolved: false,
-        isAcknowledged: false,
-      },
-    });
-
     let warningsCreated = 0;
     const creationErrors: string[] = [];
 
     // Create warnings via manifest runtime with transaction for constraint validation and event emission
     await database.$transaction(async (tx) => {
+      // Delete existing unresolved warnings for this event (inside tx for atomicity)
+      await tx.allergenWarning.deleteMany({
+        where: {
+          tenantId,
+          eventId: body.eventId,
+          resolved: false,
+          isAcknowledged: false,
+        },
+      });
       const runtime = await createManifestRuntime({
         user: { id: userId, tenantId },
         prismaOverride: tx,

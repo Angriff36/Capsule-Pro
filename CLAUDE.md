@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[proactive bridge @ 97% context — saved before compacting]
+Files (1):
+  manifest/source/reactions.manifest (edit)
 
 # === END COGNILAYER ===
