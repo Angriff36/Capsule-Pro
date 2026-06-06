@@ -15,6 +15,7 @@ entity Ingredient {
   property storageInstructions: string = ""
   property allergens: string = ""
   property isActive: boolean = true
+  property inventoryItemId: string = ""
   // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
   property currentLotNumber: string = ""
   property currentLotReceivedAt: datetime
@@ -30,9 +31,19 @@ entity Ingredient {
   computed isDeactivated: boolean = self.isActive == false
   computed hasLot: boolean = self.currentLotNumber != ""
   computed isLotExpired: boolean = self.currentLotExpiresAt != null
+  computed hasInventoryItem: boolean = self.inventoryItemId != ""
+
+  relationship belongsTo inventoryItem: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
   constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"
+  constraint warnNoInventoryItem:warn self.inventoryItemId == "" {
+    messageTemplate: "Ingredient '{ingredientName}' is not linked to an inventory item"
+    details: {
+      ingredientName: self.name
+      ingredientId: self.id
+    }
+  }
 
   constraint warnMajorAllergen:warn self.allergens != null and containsAny(self.allergens, ["nuts", "dairy", "gluten"]) {
     messageTemplate: "Ingredient contains major allergen: {allergens}"
@@ -122,6 +133,24 @@ entity Ingredient {
     mutate storageInstructions = storageInstructions
 
     emit IngredientShelfLifeUpdated
+  }
+
+  command linkInventoryItem(inventoryItemId: string, userId: string) {
+    guard self.isActive "Cannot link inventory item on a deactivated ingredient"
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+
+    mutate inventoryItemId = inventoryItemId
+
+    emit IngredientInventoryItemLinked
+  }
+
+  command unlinkInventoryItem(reason: string, userId: string) {
+    guard self.inventoryItemId != "" "Ingredient is not linked to an inventory item"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate inventoryItemId = ""
+
+    emit IngredientInventoryItemUnlinked
   }
 
   // Record a received lot number and expiry date for food-safety / FIFO tracking.
@@ -221,6 +250,25 @@ event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
   name: string
   shelfLifeDays: number
   storageInstructions: string
+  userId: string
+  updatedAt: datetime
+}
+
+event IngredientInventoryItemLinked: "kitchen.ingredient.inventory-item.linked" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  inventoryItemId: string
+  userId: string
+  updatedAt: datetime
+}
+
+event IngredientInventoryItemUnlinked: "kitchen.ingredient.inventory-item.unlinked" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  inventoryItemId: string
+  reason: string
   userId: string
   updatedAt: datetime
 }

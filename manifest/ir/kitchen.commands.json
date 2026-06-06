@@ -1991,6 +1991,11 @@
   },
   {
     "entity": "Ingredient",
+    "command": "linkInventoryItem",
+    "commandId": "Ingredient.linkInventoryItem"
+  },
+  {
+    "entity": "Ingredient",
     "command": "reactivate",
     "commandId": "Ingredient.reactivate"
   },
@@ -1998,6 +2003,11 @@
     "entity": "Ingredient",
     "command": "recordLot",
     "commandId": "Ingredient.recordLot"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "unlinkInventoryItem",
+    "commandId": "Ingredient.unlinkInventoryItem"
   },
   {
     "entity": "Ingredient",
