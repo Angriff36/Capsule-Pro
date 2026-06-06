@@ -9,6 +9,7 @@ import { useState, useTransition } from "react";
 import type {
   CreatePrepListInput,
   PrepListGenerationResult,
+  PrepListManifestActionResult,
 } from "../actions-manifest";
 import {
   createPrepListManifest,
@@ -16,8 +17,9 @@ import {
 } from "../actions-manifest";
 
 interface PrepListSaveButtonProps {
-  prepList: PrepListGenerationResult;
   disabled?: boolean;
+  onSaved?: (prepListId: string) => void;
+  prepList: PrepListGenerationResult;
 }
 
 /**
@@ -30,6 +32,7 @@ interface PrepListSaveButtonProps {
 export function PrepListSaveButton({
   prepList,
   disabled,
+  onSaved,
 }: PrepListSaveButtonProps) {
   const router = useRouter();
   const [isPending, startTransitionAction] = useTransition();
@@ -38,6 +41,20 @@ export function PrepListSaveButton({
   >([]);
   const [inputData, setInputData] = useState<CreatePrepListInput | null>(null);
   const [showOverrideDialog, setShowOverrideDialog] = useState(false);
+
+  const handleSuccessfulSave = (result: PrepListManifestActionResult) => {
+    if (result.prepListId) {
+      onSaved?.(result.prepListId);
+    }
+
+    const redirectTarget =
+      result.redirectUrl ??
+      (result.prepListId ? `/kitchen/prep-lists/${result.prepListId}` : null);
+
+    if (redirectTarget) {
+      router.push(redirectTarget);
+    }
+  };
 
   const handleSave = () => {
     // Build input data from prep list generation result
@@ -78,11 +95,7 @@ export function PrepListSaveButton({
         const result = await createPrepListManifest(input);
 
         if (result.success) {
-          if (result.redirectUrl) {
-            router.push(result.redirectUrl);
-          } else if (result.prepListId) {
-            router.push(`/kitchen/prep-lists/${result.prepListId}`);
-          }
+          handleSuccessfulSave(result);
         } else if (
           result.constraintOutcomes &&
           result.constraintOutcomes.length > 0
@@ -96,10 +109,7 @@ export function PrepListSaveButton({
     });
   };
 
-  const handleOverride = async (
-    reason: OverrideReasonCode,
-    details: string
-  ) => {
+  const handleOverride = (reason: OverrideReasonCode, details: string) => {
     if (!inputData) {
       return;
     }
@@ -114,11 +124,7 @@ export function PrepListSaveButton({
 
         if (result.success) {
           setShowOverrideDialog(false);
-          if (result.redirectUrl) {
-            router.push(result.redirectUrl);
-          } else if (result.prepListId) {
-            router.push(`/kitchen/prep-lists/${result.prepListId}`);
-          }
+          handleSuccessfulSave(result);
         }
       } catch {
         // Error handling

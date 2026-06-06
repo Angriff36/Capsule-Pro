@@ -68,6 +68,7 @@ import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { AllergenSection } from "./allergen-section";
 import { EventDetailTabs } from "./event-detail-tabs";
 import { EventOverviewCard } from "./event-overview-card";
+import { EventRecordCard } from "./event-record-card";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
 import { AIInsightsPanel } from "./lazy-ai-insights-panel";
@@ -1391,14 +1392,17 @@ export function EventDetailsClient({
 
   const editorEvent = {
     id: event.id,
+    eventNumber: event.eventNumber ?? undefined,
     title: event.title,
     description: event.notes ?? undefined,
     date: parseISODateToLocal(event.eventDate).toISOString().slice(0, 10),
+    clientId: event.clientId ?? undefined,
     venueName: event.venueName ?? undefined,
     venueAddress: event.venueAddress ?? undefined,
     guestCount: event.guestCount ?? undefined,
     eventType: event.eventType ?? undefined,
     status: event.status ?? undefined,
+    budget: event.budget ?? null,
     tags: event.tags ?? [],
     ticketTier: event.ticketTier ?? null,
     ticketPrice: event.ticketPrice ?? null,
@@ -1591,6 +1595,10 @@ export function EventDetailsClient({
           }
           overview={
             <div className="space-y-6">
+              <EventRecordCard
+                event={event}
+                onEditEvent={() => setShowEditEvent(true)}
+              />
               <EventSetupChecklist
                 eventDate={event.eventDate}
                 eventId={event.id}

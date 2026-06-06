@@ -23,26 +23,39 @@ import { MapPinIcon, UsersIcon } from "lucide-react";
 import { useTransition } from "react";
 
 interface EventEditorModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   event?: {
-    id?: string;
-    title?: string;
-    description?: string;
+    accessibilityOptions?: string[];
+    budget?: number | null;
+    clientId?: string;
     date?: string;
-    venueName?: string;
-    venueAddress?: string;
-    guestCount?: number;
+    description?: string;
+    eventFormat?: string | null;
+    eventNumber?: string;
     eventType?: string;
+    featuredMediaUrl?: string | null;
+    guestCount?: number;
+    id?: string;
     status?: string;
     tags?: string[];
-    ticketTier?: string | null;
     ticketPrice?: number | null;
-    eventFormat?: string | null;
-    accessibilityOptions?: string[];
-    featuredMediaUrl?: string | null;
+    ticketTier?: string | null;
+    title?: string;
+    venueAddress?: string;
+    venueName?: string;
   };
+  onOpenChange: (open: boolean) => void;
   onSave: (data: FormData) => Promise<void>;
+  open: boolean;
+}
+
+function getSaveButtonLabel(isPending: boolean, hasEventId: boolean): string {
+  if (isPending) {
+    return "Saving...";
+  }
+  if (hasEventId) {
+    return "Save changes";
+  }
+  return "Create Event";
 }
 
 export const EventEditorModal = ({
@@ -52,6 +65,7 @@ export const EventEditorModal = ({
   onSave,
 }: EventEditorModalProps) => {
   const [isPending, startTransition] = useTransition();
+  const saveButtonLabel = getSaveButtonLabel(isPending, !!event?.id);
 
   const handleSubmit = (formData: FormData) => {
     startTransition(async () => {
@@ -75,6 +89,33 @@ export const EventEditorModal = ({
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
 
           <div className="grid gap-4 md:grid-cols-2">
+            {event?.id && (
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="eventIdDisplay">Event ID</Label>
+                <Input id="eventIdDisplay" readOnly value={event.id} />
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="eventNumber">Event Number</Label>
+              <Input
+                defaultValue={event?.eventNumber ?? ""}
+                id="eventNumber"
+                name="eventNumber"
+                placeholder="e.g., EVT-2026-001"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="clientId">Client ID</Label>
+              <Input
+                defaultValue={event?.clientId ?? ""}
+                id="clientId"
+                name="clientId"
+                placeholder="Client UUID"
+              />
+            </div>
+
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="title">
                 Event Title <span className="text-destructive">*</span>
@@ -131,7 +172,7 @@ export const EventEditorModal = ({
                 Guest Count <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
-                <UsersIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <UsersIcon className="absolute top-3 left-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
                   defaultValue={event?.guestCount ?? ""}
@@ -191,6 +232,18 @@ export const EventEditorModal = ({
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="budget">Budget</Label>
+              <Input
+                defaultValue={event?.budget ?? ""}
+                id="budget"
+                min="0"
+                name="budget"
+                placeholder="0"
+                type="number"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="eventFormat">Format</Label>
               <Select
                 defaultValue={event?.eventFormat ?? "in_person"}
@@ -210,7 +263,7 @@ export const EventEditorModal = ({
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="venueName">Venue Name</Label>
               <div className="relative">
-                <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <MapPinIcon className="absolute top-3 left-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
                   defaultValue={event?.venueName ?? ""}
@@ -224,7 +277,7 @@ export const EventEditorModal = ({
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="venueAddress">Venue Address</Label>
               <div className="relative">
-                <MapPinIcon className="absolute left-3 top-3 size-4 text-muted-foreground" />
+                <MapPinIcon className="absolute top-3 left-3 size-4 text-muted-foreground" />
                 <Input
                   className="pl-10"
                   defaultValue={event?.venueAddress ?? ""}
@@ -295,11 +348,7 @@ export const EventEditorModal = ({
               Cancel
             </Button>
             <Button disabled={isPending} type="submit">
-              {isPending
-                ? "Saving..."
-                : event?.id
-                  ? "Save changes"
-                  : "Create Event"}
+              {saveButtonLabel}
             </Button>
           </div>
         </form>
