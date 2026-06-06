@@ -241,6 +241,29 @@ entity ShipmentItem {
     emit ShipmentItemReceived
   }
 
+  command update(quantityShipped: number, unitId: number, unitCost: number, condition: string, conditionNotes: string, lotNumber: string, expirationDate: datetime) {
+    guard quantityShipped == null or quantityShipped > 0 "Quantity shipped must be positive"
+
+    mutate quantityShipped = quantityShipped
+    mutate unitId = unitId
+    mutate unitCost = unitCost
+    mutate totalCost = quantityShipped * unitCost
+    mutate condition = condition
+    mutate conditionNotes = conditionNotes
+    mutate lotNumber = lotNumber
+    mutate expirationDate = expirationDate
+
+    emit ShipmentItemUpdated
+  }
+
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Item is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ShipmentItemDeleted
+  }
+
   store ShipmentItem in durable
 }
 
@@ -327,4 +350,22 @@ event ShipmentItemReceived: "purchasing.shipment.item.received" {
   condition: string
   userId: string
   receivedAt: datetime
+}
+
+event ShipmentItemUpdated: "purchasing.shipment.item.updated" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  quantityShipped: number
+  unitCost: number
+  totalCost: number
+  updatedAt: datetime
+}
+
+event ShipmentItemDeleted: "purchasing.shipment.item.deleted" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  userId: string
+  deletedAt: datetime
 }

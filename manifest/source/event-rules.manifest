@@ -165,6 +165,16 @@ entity Event {
     emit EventArchived
   }
 
+  command updateBudget(newBudget: money) {
+    guard self.status != "cancelled" "Cannot update cancelled event"
+    guard self.status != "archived" "Cannot update archived event"
+    guard newBudget != null "Budget value is required"
+
+    mutate budget = newBudget
+
+    emit EventBudgetUpdated
+  }
+
   command updateGuestCount(newGuestCount: number) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
@@ -496,6 +506,15 @@ event EventLocationUpdated: "events.event.location_updated" {
   title: string
   oldVenueName: string
   newVenueName: string
+  updatedAt: datetime
+}
+
+event EventBudgetUpdated: "events.event.budget_updated" {
+  eventId: string
+  tenantId: string
+  title: string
+  oldBudget: number
+  newBudget: number
   updatedAt: datetime
 }
 

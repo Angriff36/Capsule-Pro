@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 97% context — saved before compacting]
+[proactive bridge @ 85% context — saved before compacting]
 Files (1):
-  manifest/source/reactions.manifest (edit)
+  apps/api/app/api/kitchen/iot/alerts/[id]/route.ts (create)
 
 # === END COGNILAYER ===

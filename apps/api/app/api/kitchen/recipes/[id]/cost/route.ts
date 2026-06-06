@@ -9,16 +9,15 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
-  getBlockingConstraints,
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/manifest-runtime/route-helpers";
+} from "@/lib/manifest-response";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -238,33 +237,34 @@ export async function GET(
 }
 
 /**
- * POST - Recalculate and persist recipe costs via manifest runtime
+ * POST - Recalculate and persist recipe costs via manifest runtime.
+ *
+ * Reads (cost calculation from ingredients) bypass Manifest (constitution S10).
+ * Only the final RecipeVersion cost update goes through governed runtime.
+ * Ancillary ingredient timestamp update is not a governed domain mutation.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: recipeVersionId } = await params;
-    const { orgId, userId } = await auth();
+    const user = await resolveCurrentUser(request);
 
-    if (!(userId && orgId)) {
+    if (!user) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+    const { tenantId } = user;
 
-    // Calculate costs first
+    // Calculate costs first (read path, constitution S10)
     const costData = await calculateRecipeCostData(tenantId, recipeVersionId);
 
     if (!costData) {
       return manifestErrorResponse("Recipe version not found", 404);
     }
 
-    // Update ingredient cost timestamps (batch update, no manifest needed)
+    // Update ingredient cost timestamps (ancillary batch update, not governed)
     await database.recipeIngredient.updateMany({
       where: {
         tenantId,
@@ -274,61 +274,19 @@ export async function POST(
       data: { costCalculatedAt: new Date() },
     });
 
-    // Update RecipeVersion costs via manifest runtime
-    const result = await database.$transaction(async (tx) => {
-      const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
-        prismaOverride: tx,
-      });
-
-      const updateResult = await runtime.runCommand(
-        "updateCosts",
-        {
-          id: recipeVersionId,
-          newTotalCost: costData.totalCost,
-          newCostPerYield: costData.costPerYield,
-        },
-        { entityName: "RecipeVersion" }
-      );
-
-      // Check for blocking constraints
-      const blocking = getBlockingConstraints(updateResult);
-      if (blocking) {
-        throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
-          constraintOutcomes: updateResult.constraintOutcomes || [],
-        });
-      }
-
-      if (!updateResult.success) {
-        throw new Error(
-          updateResult.guardFailure?.formatted ||
-            updateResult.policyDenial?.policyName ||
-            updateResult.error ||
-            "Failed to update costs"
-        );
-      }
-
-      return updateResult;
-    });
-
-    return manifestSuccessResponse({
-      ...costData.breakdown,
-      events: result.emittedEvents || [],
-      constraintOutcomes: result.constraintOutcomes || [],
+    // Update RecipeVersion costs via governed Manifest command
+    return runManifestCommand({
+      entity: "RecipeVersion",
+      command: "updateCosts",
+      body: {
+        id: recipeVersionId,
+        tenantId,
+        newTotalCost: costData.totalCost,
+        newCostPerYield: costData.costPerYield,
+      },
+      user,
     });
   } catch (error) {
-    // Check if this is a constraint-blocked error
-    if (
-      error instanceof Error &&
-      error.message === "CONSTRAINT_BLOCKED" &&
-      "constraintOutcomes" in error
-    ) {
-      return manifestErrorResponse("Cost update blocked by constraints", 400, {
-        constraintOutcomes: (error as { constraintOutcomes: unknown[] })
-          .constraintOutcomes,
-      });
-    }
-
     log.error("[recipes/cost] Error:", error);
     captureException(error);
 

@@ -3,11 +3,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { resolveCurrentUser } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-import {
-  runManifestCommandCore,
-  type ManifestUserContext,
-} from "@repo/manifest-runtime/run-manifest-command-core";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -78,9 +74,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: recipeId } = await params;
-    const recipeVersionId = recipeId;
-    const _body = await request.json();
+    const { id: recipeVersionId } = await params;
 
     if (!recipeVersionId) {
       return NextResponse.json(
@@ -89,54 +83,36 @@ export async function POST(
       );
     }
 
-    const tenantId = user.tenantId;
+    const { tenantId } = user;
 
     // Read path: compute per-event recipe costs
     const eventCosts = await computeEventRecipeCosts(recipeVersionId, tenantId);
 
-    // Governed write: dispatch updateBudget for each affected event
+    // Governed write: dispatch updateBudget for each affected event via canonical handler
     let updated = 0;
     let failed = 0;
     const errors: string[] = [];
 
     for (const { eventId, totalRecipeCost } of eventCosts) {
-      const result = await runManifestCommandCore(
-        {
-          createRuntime: ({ user: u, entityName }) =>
-            createManifestRuntime({
-              user: {
-                id: u.id,
-                tenantId: u.tenantId,
-                role: u.role,
-              },
-              entityName,
-            }),
+      const result = await runManifestCommand({
+        entity: "Event",
+        command: "updateBudget",
+        body: {
+          id: eventId,
+          tenantId,
+          newBudget: totalRecipeCost,
         },
-        {
-          entity: "Event",
-          command: "updateBudget",
-          body: {
-            id: eventId,
-            tenantId,
-            newBudget: totalRecipeCost,
-          },
-          user: {
-            id: user.id,
-            tenantId,
-            role: user.role,
-          } as ManifestUserContext,
-        }
-      );
+        user,
+      });
 
-      if (result.ok) {
+      if (result.status >= 200 && result.status < 300) {
         updated++;
       } else {
         failed++;
-        errors.push(`Event ${eventId}: ${result.message}`);
-        log.error("updateBudget command failed", {
-          eventId,
-          error: result.message,
-        });
+        const body = await result.clone().json().catch(() => ({}));
+        const msg = body.message || body.error || `HTTP ${result.status}`;
+        errors.push(`Event ${eventId}: ${msg}`);
+        log.error("updateBudget command failed", { eventId, error: msg });
       }
     }
 

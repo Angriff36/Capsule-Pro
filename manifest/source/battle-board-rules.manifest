@@ -144,6 +144,21 @@ entity BattleBoard {
     emit BattleBoardFinalized
   }
 
+  command update(boardName: string, status: string, notes: string, boardData: string) {
+    mutate boardName = boardName
+    mutate status = status
+    mutate notes = notes
+    mutate boardData = boardData
+
+    emit BattleBoardUpdated
+  }
+
+  command recordImport(boardData: string) {
+    mutate boardData = boardData
+
+    emit BattleBoardImportRecorded
+  }
+
   store BattleBoard in durable
 }
 
@@ -213,4 +228,20 @@ event BattleBoardFinalized: "events.battle_board.finalized" {
   boardName: string
   userId: string
   finalizedAt: datetime
+}
+
+event BattleBoardUpdated: "events.battle_board.updated" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  updatedAt: datetime
+}
+
+event BattleBoardImportRecorded: "events.battle_board.import_recorded" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  recordedAt: datetime
 }
