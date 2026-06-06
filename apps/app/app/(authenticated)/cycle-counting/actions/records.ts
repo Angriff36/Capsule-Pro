@@ -1,6 +1,15 @@
 "use server";
 
+/**
+ * Cycle Count Record Server Actions
+ *
+ * Governed writes go through runManifestCommand (constitution §3/§9).
+ * Reads remain direct Prisma (constitution §10).
+ * Batch operations (sync) remain direct Prisma.
+ */
+
 import { database } from "@repo/database";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateRecordInput,
@@ -113,18 +122,12 @@ export async function createCycleCountRecord(
   input: CreateRecordInput
 ): Promise<RecordResult> {
   try {
-    const tenantId = await requireTenantId();
     const user = await requireCurrentUser();
 
-    const variance = input.countedQuantity - input.expectedQuantity;
-    const variancePct =
-      input.expectedQuantity > 0
-        ? (variance / input.expectedQuantity) * 100
-        : 0;
-
-    const record = await database.cycleCountRecord.create({
-      data: {
-        tenantId,
+    const result = await runManifestCommand({
+      entity: "CycleCountRecord",
+      command: "create",
+      body: {
         sessionId: input.sessionId,
         itemId: input.itemId,
         itemNumber: input.itemNumber,
@@ -132,15 +135,35 @@ export async function createCycleCountRecord(
         storageLocationId: input.storageLocationId,
         expectedQuantity: input.expectedQuantity,
         countedQuantity: input.countedQuantity,
-        variance,
-        variancePct,
-        countedById: user.id,
-        barcode: input.barcode || null,
-        notes: input.notes || null,
-        syncStatus: input.syncStatus || "synced",
-        offlineId: input.offlineId || null,
+        userId: user.id,
+        barcode: input.barcode || "",
+        notes: input.notes || "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to create record");
+    }
+
+    // Read back the created record to preserve return shape with Decimal coercion.
+    const createdId = (result.result as { id?: string } | null)?.id;
+    if (!createdId) {
+      return { success: false, error: "Create command did not return an id" };
+    }
+
+    const tenantId = await requireTenantId();
+    const record = await database.cycleCountRecord.findFirst({
+      where: {
+        tenantId,
+        id: createdId,
+        deletedAt: null,
       },
     });
+
+    if (!record) {
+      return { success: false, error: "Created record could not be loaded" };
+    }
 
     return {
       success: true,
@@ -187,6 +210,7 @@ export async function updateCycleCountRecord(
 ): Promise<RecordResult> {
   try {
     const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
 
     const existing = await database.cycleCountRecord.findFirst({
       where: {
@@ -203,42 +227,76 @@ export async function updateCycleCountRecord(
       };
     }
 
-    const updatedData: Record<string, unknown> = {};
+    // Route to appropriate Manifest command based on what is being changed.
+    // The manifest `update` command handles countedQuantity + notes (with variance recomputation).
+    // The manifest `verify` command handles isVerified flag.
+    // syncStatus is an offline-sync field not covered by any command.
 
-    if (input.countedQuantity !== undefined) {
-      const expectedQuantity = toNumber(existing.expectedQuantity);
-      const variance = input.countedQuantity - expectedQuantity;
-      const variancePct =
-        expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
-      updatedData.countedQuantity = input.countedQuantity;
-      updatedData.variance = variance;
-      updatedData.variancePct = variancePct;
-    }
+    if (input.isVerified === true && !existing.isVerified) {
+      const result = await runManifestCommand({
+        entity: "CycleCountRecord",
+        command: "verify",
+        instanceId: input.id,
+        body: {
+          userId: user.id,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
 
-    if (input.notes !== undefined) {
-      updatedData.notes = input.notes;
-    }
-
-    if (input.isVerified !== undefined) {
-      updatedData.isVerified = input.isVerified;
-      if (input.isVerified) {
-        updatedData.verifiedAt = new Date();
+      if (!result.ok) {
+        throw new Error(result.message || "Failed to verify record");
       }
     }
 
-    if (input.syncStatus !== undefined) {
-      updatedData.syncStatus = input.syncStatus;
+    if (
+      input.countedQuantity !== undefined ||
+      input.notes !== undefined
+    ) {
+      const result = await runManifestCommand({
+        entity: "CycleCountRecord",
+        command: "update",
+        instanceId: input.id,
+        body: {
+          countedQuantity:
+            input.countedQuantity ?? toNumber(existing.countedQuantity),
+          notes: input.notes ?? existing.notes ?? "",
+          userId: user.id,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+
+      if (!result.ok) {
+        throw new Error(result.message || "Failed to update record");
+      }
     }
 
-    const record = await database.cycleCountRecord.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: input.id,
+    // syncStatus is an offline-sync coordination field not governed by manifest commands.
+    if (input.syncStatus !== undefined) {
+      await database.cycleCountRecord.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: input.id,
+          },
         },
+        data: {
+          syncStatus: input.syncStatus,
+        },
+      });
+    }
+
+    // Read back the updated record to preserve return shape.
+    const record = await database.cycleCountRecord.findFirst({
+      where: {
+        tenantId,
+        id: input.id,
+        deletedAt: null,
       },
-      data: updatedData,
     });
+
+    if (!record) {
+      return { success: false, error: "Updated record could not be loaded" };
+    }
 
     return {
       success: true,

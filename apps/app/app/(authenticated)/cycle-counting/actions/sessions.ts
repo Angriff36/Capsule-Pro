@@ -1,6 +1,7 @@
 "use server";
 
 import { database } from "@repo/database";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateSessionInput,
@@ -115,59 +116,71 @@ export async function createCycleCountSession(
   input: CreateSessionInput
 ): Promise<SessionResult> {
   try {
-    const tenantId = await requireTenantId();
     const user = await requireCurrentUser();
 
-    const session = await database.cycleCountSession.create({
-      data: {
-        tenantId,
+    const result = await runManifestCommand({
+      entity: "CycleCountSession",
+      command: "create",
+      body: {
         locationId: input.locationId,
         sessionId: crypto.randomUUID(),
         sessionName: input.sessionName,
         countType: input.countType,
-        scheduledDate: input.scheduledDate || null,
-        notes: input.notes || null,
-        createdById: user.id,
-        totalItems: 0,
-        countedItems: 0,
-        totalVariance: 0,
-        variancePercentage: 0,
+        scheduledDate: input.scheduledDate || "",
+        notes: input.notes || "",
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      return { success: false, error: result.message || "Failed to create session" };
+    }
+
+    // Post-command read to materialize return shape (constitution §10)
+    const created = await database.cycleCountSession.findUnique({
+      where: {
+        tenantId_id: { tenantId: user.tenantId, id: (result.result as { id?: string })?.id ?? "" },
       },
     });
+
+    if (!created) {
+      return { success: false, error: "Created session not found" };
+    }
 
     return {
       success: true,
       session: {
-        id: session.id,
-        tenantId: session.tenantId,
-        locationId: session.locationId,
-        sessionId: session.sessionId,
-        sessionName: session.sessionName,
-        countType: session.countType as
+        id: created.id,
+        tenantId: created.tenantId,
+        locationId: created.locationId,
+        sessionId: created.sessionId,
+        sessionName: created.sessionName,
+        countType: created.countType as
           | "ad_hoc"
           | "scheduled_daily"
           | "scheduled_weekly"
           | "scheduled_monthly",
-        scheduledDate: session.scheduledDate,
-        startedAt: session.startedAt,
-        completedAt: session.completedAt,
-        finalizedAt: session.finalizedAt,
-        status: session.status as
+        scheduledDate: created.scheduledDate,
+        startedAt: created.startedAt,
+        completedAt: created.completedAt,
+        finalizedAt: created.finalizedAt,
+        status: created.status as
           | "draft"
           | "in_progress"
           | "completed"
           | "finalized"
           | "cancelled",
-        totalItems: session.totalItems,
-        countedItems: session.countedItems,
-        totalVariance: session.totalVariance.toNumber(),
-        variancePercentage: session.variancePercentage.toNumber(),
-        notes: session.notes,
-        createdById: session.createdById,
-        approvedById: session.approvedById,
-        createdAt: session.createdAt,
-        updatedAt: session.updatedAt,
-        deletedAt: session.deletedAt,
+        totalItems: created.totalItems,
+        countedItems: created.countedItems,
+        totalVariance: created.totalVariance.toNumber(),
+        variancePercentage: created.variancePercentage.toNumber(),
+        notes: created.notes,
+        createdById: created.createdById,
+        approvedById: created.approvedById,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
+        deletedAt: created.deletedAt,
       },
     };
   } catch (error) {
@@ -179,33 +192,84 @@ export async function createCycleCountSession(
   }
 }
 
+/**
+ * Update a cycle count session.
+ *
+ * Status transitions are governed via Manifest commands:
+ *   - "in_progress" -> CycleCountSession.start
+ *   - "completed"   -> CycleCountSession.complete
+ *   - "finalized"   -> CycleCountSession.finalize
+ *   - "cancelled"   -> CycleCountSession.cancel
+ *
+ * Field-only edits (sessionName, notes) without a status change remain as
+ * direct Prisma because no generic `update` command exists in the IR.
+ */
 export async function updateCycleCountSession(
   input: UpdateSessionInput
 ): Promise<SessionResult> {
   try {
-    const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
+    const tenantId = user.tenantId;
 
-    const session = await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: input.id,
+    // Status transitions go through governed commands
+    if (input.status !== undefined) {
+      const commandMap: Record<string, string> = {
+        in_progress: "start",
+        completed: "complete",
+        finalized: "finalize",
+        cancelled: "cancel",
+      };
+
+      const command = commandMap[input.status];
+      if (!command) {
+        return { success: false, error: `Unsupported status transition: ${input.status}` };
+      }
+
+      const body: Record<string, unknown> = {
+        userId: user.id,
+      };
+
+      // cancel command takes a reason param; use notes if provided
+      if (command === "cancel" && input.notes !== undefined) {
+        body.reason = input.notes;
+      }
+
+      const result = await runManifestCommand({
+        entity: "CycleCountSession",
+        command,
+        instanceId: input.id,
+        body,
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+
+      if (!result.ok) {
+        return { success: false, error: result.message || `Failed to ${command} session` };
+      }
+    }
+
+    // Field-only edits (sessionName, notes) without status change stay as direct Prisma
+    if (input.status === undefined && (input.sessionName !== undefined || input.notes !== undefined)) {
+      await database.cycleCountSession.update({
+        where: {
+          tenantId_id: { tenantId, id: input.id },
         },
-      },
-      data: {
-        ...(input.sessionName !== undefined && {
-          sessionName: input.sessionName,
-        }),
-        ...(input.status !== undefined && { status: input.status }),
-        ...(input.notes !== undefined && { notes: input.notes }),
-        ...(input.approvedById !== undefined && {
-          approvedById: input.approvedById,
-        }),
-        ...(input.status === "in_progress" && { startedAt: new Date() }),
-        ...(input.status === "completed" && { completedAt: new Date() }),
-        ...(input.status === "finalized" && { finalizedAt: new Date() }),
+        data: {
+          ...(input.sessionName !== undefined && { sessionName: input.sessionName }),
+          ...(input.notes !== undefined && { notes: input.notes }),
+        },
+      });
+    }
+
+    // Post-command read to materialize return shape
+    const session = await database.cycleCountSession.findUnique({
+      where: {
+        tenantId_id: { tenantId, id: input.id },
       },
     });
+
+    if (!session) {
+      return { success: false, error: "Session not found after update" };
+    }
 
     return {
       success: true,
@@ -251,6 +315,13 @@ export async function updateCycleCountSession(
   }
 }
 
+/**
+ * Soft-delete a cycle count session.
+ *
+ * No governed `remove`/`softDelete` command exists in the IR for
+ * CycleCountSession, so this remains a direct Prisma write. The business
+ * guard (no deleting finalized sessions) is enforced locally.
+ */
 export async function deleteCycleCountSession(
   sessionId: string
 ): Promise<SessionResult> {
