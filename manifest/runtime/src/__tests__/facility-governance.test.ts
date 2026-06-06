@@ -1,9 +1,12 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { RuntimeEngine } from "@angriff36/manifest";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { beforeEach, describe, expect, it } from "vitest";
 import { runManifestCommandCore } from "../run-manifest-command-core.js";
+
+const here = dirname(fileURLToPath(import.meta.url));
 
 // ---------------------------------------------------------------------------
 // Facility governance migration (Task 8.3) + Manifest↔Prisma drift reconciliation.
@@ -218,9 +221,7 @@ describe("Facility.create — governed write persists the reconciled column surf
 
 describe("compiled command registry carries the Facility governed-write surface", () => {
   it("includes Facility.create and Facility.edit", () => {
-    const registryPath = fileURLToPath(
-      new URL("../../commands.registry.json", import.meta.url)
-    );
+    const registryPath = join(here, "..", "..", "commands.registry.json");
     const registry = JSON.parse(readFileSync(registryPath, "utf8")) as {
       commandId: string;
     }[];

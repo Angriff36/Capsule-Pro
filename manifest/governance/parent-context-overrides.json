@@ -29,6 +29,13 @@
       "owner": "kitchen",
       "reviewed": "2026-06-05"
     },
+    "Ingredient": {
+      "fields": ["category"],
+      "category": "FALSE_POSITIVE",
+      "reason": "An ingredient's food category (e.g. 'Produce') is authored per ingredient and semantically independent of the linked InventoryItem's category. The name match is coincidental.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-06"
+    },
     "PrepListItem": {
       "fields": ["category", "allergens"],
       "category": "FALSE_POSITIVE",
