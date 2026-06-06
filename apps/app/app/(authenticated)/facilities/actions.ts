@@ -11,7 +11,8 @@ import { database } from "@repo/database";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // ── Facility ────────────────────────────────────────────────────────────────
 
@@ -27,35 +28,52 @@ export async function getFacilities() {
 }
 
 export async function createFacility(formData: FormData) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: Facility.create runs through the Manifest runtime (constitution
+  // §9) — no direct database.facility.create. requireCurrentUser supplies the actor +
+  // tenant the command needs for policy + audit context (§19). `status` is
+  // command-owned (entity default "active"), so it is NOT sent in the body. Empty
+  // optionals are sent as "" — GenericPrismaStore coerces "" → NULL for nullable
+  // columns, so a blank `code` stays NULL and never trips @@unique([tenantId, code]).
+  // addressLine2/country are not collected by the facilities form; sending "" keeps
+  // them NULL exactly as the prior direct write left them (lossless).
+  const user = await requireCurrentUser();
 
-  const name = formData.get("name") as string;
-  const code = formData.get("code") as string | null;
-  const facilityType = formData.get("facilityType") as string | null;
-  const addressLine1 = formData.get("addressLine1") as string | null;
-  const city = formData.get("city") as string | null;
-  const state = formData.get("state") as string | null;
-  const postalCode = formData.get("postalCode") as string | null;
-  const phone = formData.get("phone") as string | null;
-  const notes = formData.get("notes") as string | null;
+  const name =
+    (formData.get("name") as string | null)?.trim() || "Untitled Facility";
+  const code = (formData.get("code") as string | null)?.trim() || "";
+  const facilityType =
+    (formData.get("facilityType") as string | null) || "kitchen";
+  const addressLine1 =
+    (formData.get("addressLine1") as string | null)?.trim() || "";
+  const city = (formData.get("city") as string | null)?.trim() || "";
+  const state = (formData.get("state") as string | null)?.trim() || "";
+  const postalCode =
+    (formData.get("postalCode") as string | null)?.trim() || "";
+  const phone = (formData.get("phone") as string | null)?.trim() || "";
+  const notes = (formData.get("notes") as string | null)?.trim() || "";
 
-  await database.facility.create({
-    data: {
-      tenantId,
-      name: name?.trim() || "Untitled Facility",
-      code: code?.trim() || null,
-      facilityType: facilityType || "kitchen",
-      addressLine1: addressLine1?.trim() || null,
-      city: city?.trim() || null,
-      state: state?.trim() || null,
-      postalCode: postalCode?.trim() || null,
-      phone: phone?.trim() || null,
-      notes: notes?.trim() || null,
-      status: "active",
+  const result = await runManifestCommand({
+    entity: "Facility",
+    command: "create",
+    body: {
+      name,
+      code,
+      facilityType,
+      addressLine1,
+      addressLine2: "",
+      city,
+      state,
+      postalCode,
+      country: "",
+      phone,
+      notes,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create facility");
+  }
 
   revalidatePath("/facilities");
 }

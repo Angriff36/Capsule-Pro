@@ -50,6 +50,13 @@
       "owner": "facilities",
       "reviewed": "2026-06-05"
     },
+    "FacilityArea": {
+      "fields": ["code"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Surfaced 2026-06-06 when the Facility entity was reconciled to its real `facilities` columns (Task 8.3) and gained a `code` property. FacilityArea.code is the AREA's own short code (e.g. \"KITCHEN-1\"), authored per area; it is semantically independent of the parent Facility's `code` (e.g. \"MAIN-KIT\"). The name match is coincidental — the area code must NOT inherit the facility code.",
+      "owner": "facilities",
+      "reviewed": "2026-06-06"
+    },
     "TimecardEditRequest": {
       "fields": ["employeeId"],
       "category": "FALSE_POSITIVE",

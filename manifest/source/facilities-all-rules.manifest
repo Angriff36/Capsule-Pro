@@ -2,26 +2,34 @@
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 
 entity Facility {
+  // Reconciled 2026-06-06 (Task 8.3) to match the real `tenant_facilities.facilities`
+  // Prisma columns so the governed Facility.create persists the exact fields the
+  // facilities UI writes — no silent field drops. Prior model declared phantom
+  // props (type/address/zip/capacity/description) that map to NO Prisma column and
+  // was missing the real columns (code/facilityType/addressLine1/2/postalCode/
+  // country). GenericPrismaStore maps by camelCase irName → Prisma field, so the
+  // entity property names MUST equal the Prisma field names (facilityType, etc.).
   key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
-  property type: string = "venue"
-  property address: string = ""
+  property code: string = ""
+  property facilityType: string = "kitchen"
+  property addressLine1: string = ""
+  property addressLine2: string = ""
   property city: string = ""
   property state: string = ""
-  property zip: string = ""
+  property postalCode: string = ""
+  property country: string = ""
   property phone: string = ""
   property status: string = "active"
-  property capacity: int = 0
-  property description: string = ""
+  property notes: string = ""
   timestamps
 
   computed isActive: boolean = self.status == "active"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
-  computed hasCapacityInfo: boolean = self.capacity > 0
 
-  constraint validType: self.type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
+  constraint validFacilityType: self.facilityType in ["kitchen", "warehouse", "commissary", "office", "other"] "Invalid facility type"
   constraint validStatus: self.status in ["active", "inactive", "maintenance"] "Invalid facility status"
 
   // State transitions
@@ -29,20 +37,26 @@ entity Facility {
   transition status from "maintenance" to ["active"]
 
   default policy FacilityDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
+  // NOTE: create does NOT `mutate status` — the entity default ("active") is seeded
+  // by createInstance. Re-mutating a transition-guarded prop to its own value trips
+  // the runtime self-transition guard ("active"→"active" is not in active's `to`
+  // list), which silently failed governed creates for transition-owning statuses
+  // (same class as the AdminTask.create bug). The body seed sets status.
+  command create(name: string, code: string, facilityType: string, addressLine1: string, addressLine2: string, city: string, state: string, postalCode: string, country: string, phone: string, notes: string) {
     guard name != null and name != "" "Facility name is required"
-    guard type in ["venue", "warehouse", "office", "commissary", "other"] "Invalid facility type"
+    guard facilityType in ["kitchen", "warehouse", "commissary", "office", "other"] "Invalid facility type"
 
     mutate name = name
-    mutate type = type
-    mutate address = address
+    mutate code = code
+    mutate facilityType = facilityType
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
     mutate city = city
     mutate state = state
-    mutate zip = zip
+    mutate postalCode = postalCode
+    mutate country = country
     mutate phone = phone
-    mutate capacity = capacity
-    mutate description = description
-    mutate status = "active"
+    mutate notes = notes
 
     emit FacilityCreated
   }
@@ -55,18 +69,20 @@ entity Facility {
     emit FacilityDeleted
   }
 
-  command edit(name: string, type: string, address: string, city: string, state: string, zip: string, phone: string, capacity: number, description: string) {
+  command edit(name: string, code: string, facilityType: string, addressLine1: string, addressLine2: string, city: string, state: string, postalCode: string, country: string, phone: string, notes: string) {
     guard name != null and name != "" "Facility name is required"
 
     mutate name = name
-    mutate type = type
-    mutate address = address
+    mutate code = code
+    mutate facilityType = facilityType
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
     mutate city = city
     mutate state = state
-    mutate zip = zip
+    mutate postalCode = postalCode
+    mutate country = country
     mutate phone = phone
-    mutate capacity = capacity
-    mutate description = description
+    mutate notes = notes
 
     emit FacilityUpdated
   }
@@ -518,7 +534,7 @@ event FacilityCreated: "facility.created" {
   facilityId: string
   tenantId: string
   name: string
-  type: string
+  facilityType: string
   createdAt: datetime
 }
 
