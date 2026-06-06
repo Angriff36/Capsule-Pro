@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-05, comprehensive audit -- 20th revision)
+## Validation Baseline (2026-06-06, comprehensive audit -- 20th revision, updated batch 7)
 
 ### Claim Verification Matrix
 
@@ -421,7 +421,7 @@
 
 ### Governance
 
-- **~152 direct-write violations in API routes** + **~107 in server actions** = **~259 total** (down from 264). 39 mutate handlers across 32 route files migrated to Manifest runtime (Task 8.2 batches 1-6 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
+- **~147 direct-write violations in API routes** + **~107 in server actions** = **~254 total** (down from 259). 44 mutate handlers across 37 route files migrated to Manifest runtime (Task 8.2 batches 1-7 + Task 8.4). **7 hybrid files** remaining (down from 12). notifications package adds 9+ direct DB writes across 4 files.
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
@@ -529,6 +529,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **Shipment test reconciliation verified (61→0 failures)** | Both shipment test files (shipment-commands.test.ts: 25 tests, shipment-end-to-end.test.ts: 12 tests) now pass fully. Tests reference canonical manifest dispatcher (`/api/manifest/[entity]/commands/[command]`), not deleted concrete routes. instanceId forwarding confirmed working via `deriveInstanceIdFromBody()` in run-manifest-command-core.ts. |
 | 2026-06-06 | **Task 8.2/8.4 batch: 4 route migrations to Manifest runtime (v0.12.130)** | EventProfitability.recalculate (extended command with budgeted/actual overrides), CollectionCase.escalateDunning (reconciled dunningStage int→string matching Prisma DunningStage enum), AllergenWarning deleteMany moved inside transaction for atomicity, ContractSignature.create + EventContract.sign via public signing route (synthetic system-user context). API typecheck 0, 2690 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 6: 5 route files migrated — IoT + inventory audit + override audit (v0.12.131)** | IoTAlert PATCH (acknowledge/markResolved), TemperatureProbe POST (registration), TemperatureReading POST (reading + probe status update + conditional alert creation — all side-effects non-fatal), AuditSchedule CRUD (create/update/soft-delete), OverrideAudit POST (create with outbox event as fire-and-forget). 39 mutate handlers across 32 route files total. API typecheck 0, 2690 tests pass. |
+| 2026-06-06 | **Task 8.2 batch 7: 5 route files migrated to Manifest runtime (v0.12.132)** | EventContract document upload (update), Shipment status transitions ($executeRaw→STATUS_TO_COMMAND map), Proposal public respond (accept/reject with synthetic system-user context), Training complete (start/submitPassingAttempt), CrmScoringRule update/softDelete. CrmScoringRule manifest source reconciled with real Prisma columns. CRM scoring calculate blocked (Lead.score DB drift). API typecheck 0, 2690 tests pass. |
 
 ---
 
@@ -1239,7 +1240,17 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `POST /api/kitchen/overrides` — OverrideAudit.create → `runManifestCommand({entity:"OverrideAudit", command:"create"})`. Outbox event preserved as fire-and-forget infrastructure side-effect.
     - 2690 tests pass, 0 typecheck errors.
   - **Progress 2026-06-05 (prep→procurement automation, tag v0.12.107):** Finalizing a `PrepList` now auto-generates a **governed US Foods `PurchaseRequisition`** via the `prep-inventory-demand` middleware (on `PrepListFinalized`). The middleware resolves the tenant's US Foods `InventorySupplier`, maps `PrepListItem` ingredients to `VendorCatalog`/`InventoryItem` rows (SKU/name match), applies order minimums/multiples, and dispatches `PurchaseRequisition.create` → `PurchaseRequisitionItem.create` (per line) → `completeDraftFromPrepDemand` → `submit`, all through `RuntimeEngine.runCommand` (zero direct Prisma writes). New source: `completeDraftFromPrepDemand` command + `PurchaseRequisitionDraftCompleted` event in `procurement-requisition-rules.manifest`; `kitchen_lead` added to PurchaseRequisition(Item) default policy; **fixed inverted `blockNoItems` submit constraint** (`itemCount == 0` → `> 0`; block now fires when there are NO items, per semantics.md:141 "block passes when expression is true"). `kitchen/prep-lists/save-db` gained an optional `finalize` flag (routes through the governed `finalize` command); `kitchen/recipes/[id]/cost` enriched read (raw SQL ingredient→inventory mapping) to feed catalog matching. Runtime test pins reservation + cross-tenant isolation + single governed requisition (subtotal 35, computed line costs) + re-finalize idempotency. Verified: runtime/api/app typecheck 0; full api suite 2579 passed / 3 skipped; IR drift gate clean. NOTE: a concurrent loop was independently authoring a separate `parent-context-resolver` (Event→BattleBoard inheritance) increment in the same working tree — committed separately by that loop; only the 14 prep-demand files were committed here.
-  - **Total migrated across all batches:** 39 mutate handlers in 32 route files + prep→procurement middleware automation. Remaining: ~150 violations across ~51 files.
+  - **Progress 2026-06-06 (batch 7):** 5 more route files migrated to Manifest runtime:
+    - `PUT /api/events/contracts/[id]/document` — document upload → `runManifestCommand({entity:"EventContract", command:"update"})`. File upload to storage preserved as pre-processing.
+    - `PATCH /api/logistics/shipments/[id]/status` — status transitions via STATUS_TO_COMMAND map (replacing `$executeRaw` raw SQL). Map: `dispatched→dispatch`, `in_transit→ship`, `delivered→deliver`, `cancelled→cancel`.
+    - `POST /api/crm/proposals/public/[token]/respond` — public accept/reject → `runManifestCommand({entity:"Proposal", command:"accept"/"reject"})` with synthetic system-user context (no Clerk auth on public routes).
+    - `POST /api/hr/training/modules/[id]/complete` — training start → `Training.start`, passing attempt → `Training.submitPassingAttempt`. Pre-validation: enrollment check, score threshold.
+    - `PATCH /api/crm/scoring-rules/[id]` — update → `runManifestCommand({entity:"CrmScoringRule", command:"update"})`.
+    - `DELETE /api/crm/scoring-rules/[id]` — softDelete → `runManifestCommand({entity:"CrmScoringRule", command:"softDelete"})`.
+    - CrmScoringRule manifest source reconciled: added missing properties matching real Prisma columns (`name`, `description`, `entityType`, `criteria`, `weight`, `isActive`, `priority`).
+    - CRM scoring calculate route NOT migrated: `Lead.score` column drift (manifest declares `score` but Prisma model uses `leadScore`). Blocked until schema reconciled.
+    - 2690 tests pass, 0 typecheck errors.
+  - **Total migrated across all batches:** 44 mutate handlers in 37 route files + prep→procurement middleware automation. Remaining: ~145 violations across ~46 files.
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
