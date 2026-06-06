@@ -177,19 +177,17 @@ entity TrainingModule {
   property isActive: boolean = true
   property status: string = "draft"
   property version: int = 1
-  property publishedAt: datetime?
-  property archivedAt: datetime?
+  property publishedAt: datetime
+  property archivedAt: datetime
   property notes: string = ""
   property createdBy: string = ""
-  property deletedAt: datetime?
+  property deletedAt: datetime
 
   timestamps
 
-  unique [tenantId, code]
-
-  hasMany questions: TrainingQuestion
-  hasMany assignments: TrainingAssignment
-  hasMany attempts: TrainingAttempt
+  relationship hasMany questions: TrainingQuestion
+  relationship hasMany assignments: TrainingAssignment
+  relationship hasMany attempts: TrainingAttempt
 
   computed isDeleted: boolean = self.deletedAt != null
   computed isDraft: boolean = self.status == "draft"
@@ -210,22 +208,7 @@ entity TrainingModule {
 
   default policy TrainingModuleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(
-    optional id: string,
-    optional code: string,
-    title: string,
-    description: string,
-    contentUrl: string,
-    contentType: string,
-    durationMinutes: number,
-    category: string,
-    isRequired: boolean,
-    optional passThresholdPercent: number,
-    optional maxAttempts: number,
-    optional requiredRole: string,
-    optional createdBy: string,
-    optional publishImmediately: boolean
-  ) {
+  command create(id: string, code: string, title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, passThresholdPercent: number, maxAttempts: number, requiredRole: string, createdBy: string, publishImmediately: boolean) {
     guard title != ""
     guard contentType in ["document", "video", "quiz", "interactive", "checklist", "mixed"]
 
@@ -249,18 +232,7 @@ entity TrainingModule {
     emit TrainingModuleCreated
   }
 
-  command update(
-    title: string,
-    description: string,
-    contentUrl: string,
-    contentType: string,
-    durationMinutes: number,
-    category: string,
-    isRequired: boolean,
-    passThresholdPercent: number,
-    maxAttempts: number,
-    requiredRole: string
-  ) {
+  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, passThresholdPercent: number, maxAttempts: number, requiredRole: string) {
     guard self.deletedAt == null
     guard self.status == "draft"
     guard title != ""
@@ -337,7 +309,7 @@ entity TrainingModule {
     emit TrainingModuleDeleted
   }
 
-  store in durable
+  store TrainingModule in durable
 }
 
 entity TrainingQuestion {
@@ -359,9 +331,7 @@ entity TrainingQuestion {
   property whyItMatters: string = ""
   property isActive: boolean = true
 
-  unique [tenantId, moduleId, code]
-
-  belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
 
   timestamps
 
@@ -371,21 +341,7 @@ entity TrainingQuestion {
 
   default policy TrainingQuestionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(
-    optional id: string,
-    moduleId: string,
-    code: string,
-    sectionTitle: string,
-    displayOrder: number,
-    prompt: string,
-    optionA: string,
-    optionB: string,
-    optionC: string,
-    optionD: string,
-    correctOptionKey: string,
-    explanation: string,
-    whyItMatters: string
-  ) {
+  command create(id: string, moduleId: string, code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
     guard moduleId != ""
     guard code != ""
     guard prompt != ""
@@ -414,7 +370,7 @@ entity TrainingQuestion {
     mutate isActive = false
   }
 
-  store in durable
+  store TrainingQuestion in durable
 }
 
 entity TrainingAssignment {
@@ -428,12 +384,12 @@ entity TrainingAssignment {
   property required staffMemberId: string
   property staffRole: string = "staff"
   property status: string = "assigned"
-  property dueAt: datetime?
+  property dueAt: datetime
   property dueDateReviewNeeded: boolean = false
-  property firstShiftAt: datetime?
-  property startedAt: datetime?
-  property completedAt: datetime?
-  property waivedAt: datetime?
+  property firstShiftAt: datetime
+  property startedAt: datetime
+  property completedAt: datetime
+  property waivedAt: datetime
   property waiverReason: string = ""
   property waiverApprovedBy: string = ""
   property attemptCount: int = 0
@@ -442,12 +398,10 @@ entity TrainingAssignment {
   property passThresholdPercent: int = 80
   property maxAttempts: int = 3
   property managerReviewRequired: boolean = false
-  property reminderSentAt: datetime?
+  property reminderSentAt: datetime
 
-  unique [tenantId, moduleId, staffMemberId]
-
-  belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
-  hasMany attempts: TrainingAttempt
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship hasMany attempts: TrainingAttempt
 
   timestamps
 
@@ -469,19 +423,7 @@ entity TrainingAssignment {
 
   default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(
-    optional id: string,
-    moduleId: string,
-    moduleCode: string,
-    moduleTitle: string,
-    staffMemberId: string,
-    staffRole: string,
-    passThresholdPercent: number,
-    maxAttempts: number,
-    optional firstShiftAt: datetime?,
-    optional dueAt: datetime?,
-    optional dueDateReviewNeeded: boolean
-  ) {
+  command create(id: string, moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
     guard moduleId != ""
     guard staffMemberId != ""
     guard staffRole == "staff"
@@ -517,14 +459,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentStarted
   }
 
-  command submitPassingAttempt(
-    assignmentId: string,
-    attemptId: string,
-    moduleId: string,
-    staffMemberId: string,
-    scorePercent: number,
-    answersJson: string
-  ) {
+  command submitPassingAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -545,14 +480,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentCompleted
   }
 
-  command submitFailedAttempt(
-    assignmentId: string,
-    attemptId: string,
-    moduleId: string,
-    staffMemberId: string,
-    scorePercent: number,
-    answersJson: string
-  ) {
+  command submitFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -571,14 +499,7 @@ entity TrainingAssignment {
     emit TrainingAttemptFailed
   }
 
-  command submitFinalFailedAttempt(
-    assignmentId: string,
-    attemptId: string,
-    moduleId: string,
-    staffMemberId: string,
-    scorePercent: number,
-    answersJson: string
-  ) {
+  command submitFinalFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -598,13 +519,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentManagerReviewRequested
   }
 
-  command applyFirstShiftDueDate(
-    assignmentId: string,
-    moduleId: string,
-    staffMemberId: string,
-    firstShiftAt: datetime,
-    dueAt: datetime
-  ) {
+  command applyFirstShiftDueDate(assignmentId: string, moduleId: string, staffMemberId: string, firstShiftAt: datetime, dueAt: datetime) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -618,12 +533,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentDueDateSet
   }
 
-  command markOverdue(
-    assignmentId: string,
-    moduleId: string,
-    staffMemberId: string,
-    referenceTime: datetime
-  ) {
+  command markOverdue(assignmentId: string, moduleId: string, staffMemberId: string, referenceTime: datetime) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -638,13 +548,7 @@ entity TrainingAssignment {
     emit TrainingReminderRequested
   }
 
-  command waive(
-    assignmentId: string,
-    moduleId: string,
-    staffMemberId: string,
-    reason: string,
-    approvedBy: string
-  ) {
+  command waive(assignmentId: string, moduleId: string, staffMemberId: string, reason: string, approvedBy: string) {
     guard assignmentId == self.id
     guard moduleId == self.moduleId
     guard staffMemberId == self.staffMemberId
@@ -661,7 +565,7 @@ entity TrainingAssignment {
     emit TrainingAssignmentWaived
   }
 
-  store in durable
+  store TrainingAssignment in durable
 }
 
 entity TrainingAttempt {
@@ -679,8 +583,8 @@ entity TrainingAttempt {
   property managerReviewRequired: boolean = false
   property answersJson: string = ""
 
-  belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
-  belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
 
   timestamps
 
@@ -689,18 +593,7 @@ entity TrainingAttempt {
 
   default policy TrainingAttemptDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command create(
-    optional id: string,
-    assignmentId: string,
-    moduleId: string,
-    staffMemberId: string,
-    attemptNumber: number,
-    scorePercent: number,
-    passThresholdPercent: number,
-    passed: boolean,
-    managerReviewRequired: boolean,
-    answersJson: string
-  ) {
+  command create(id: string, assignmentId: string, moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, managerReviewRequired: boolean, answersJson: string) {
     guard assignmentId != ""
     guard moduleId != ""
     guard staffMemberId != ""
@@ -720,7 +613,7 @@ entity TrainingAttempt {
     emit TrainingAttemptRecorded
   }
 
-  store in durable
+  store TrainingAttempt in durable
 }
 
 entity StaffTrainingSignal {
@@ -740,13 +633,7 @@ entity StaffTrainingSignal {
 
   default policy StaffTrainingSignalDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
-  command recordSchedulabilityGranted(
-    optional id: string,
-    staffMemberId: string,
-    moduleId: string,
-    assignmentId: string,
-    reason: string
-  ) {
+  command recordSchedulabilityGranted(id: string, staffMemberId: string, moduleId: string, assignmentId: string, reason: string) {
     guard staffMemberId != ""
     guard moduleId != ""
     guard assignmentId != ""
@@ -760,13 +647,7 @@ entity StaffTrainingSignal {
     emit StaffTrainingSchedulingEligibilityGranted
   }
 
-  command recordWaiverLogged(
-    optional id: string,
-    staffMemberId: string,
-    moduleId: string,
-    assignmentId: string,
-    reason: string
-  ) {
+  command recordWaiverLogged(id: string, staffMemberId: string, moduleId: string, assignmentId: string, reason: string) {
     guard staffMemberId != ""
     guard moduleId != ""
     guard assignmentId != ""
@@ -781,7 +662,7 @@ entity StaffTrainingSignal {
     emit StaffTrainingWaiverLogged
   }
 
-  store in durable
+  store StaffTrainingSignal in durable
 }
 
 on TrainingAttemptSubmitted run TrainingAttempt.create

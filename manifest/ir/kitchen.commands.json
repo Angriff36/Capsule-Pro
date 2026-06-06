@@ -3910,6 +3910,61 @@
     "commandId": "ScheduleShift.update"
   },
   {
+    "entity": "SelOnboardingTrainingModuleDefinition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingModuleDefinition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion01Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion01Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion02Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion02Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion03Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion03Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion04Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion04Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion05Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion05Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion06Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion06Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion07Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion07Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion08Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion08Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion09Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion09Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion10Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion10Definition.create"
+  },
+  {
     "entity": "Shipment",
     "command": "cancel",
     "commandId": "Shipment.cancel"
@@ -4038,6 +4093,16 @@
     "entity": "StaffPerformance",
     "command": "update",
     "commandId": "StaffPerformance.update"
+  },
+  {
+    "entity": "StaffTrainingSignal",
+    "command": "recordSchedulabilityGranted",
+    "commandId": "StaffTrainingSignal.recordSchedulabilityGranted"
+  },
+  {
+    "entity": "StaffTrainingSignal",
+    "command": "recordWaiverLogged",
+    "commandId": "StaffTrainingSignal.recordWaiverLogged"
   },
   {
     "entity": "Station",
@@ -4311,8 +4376,8 @@
   },
   {
     "entity": "TrainingAssignment",
-    "command": "complete",
-    "commandId": "TrainingAssignment.complete"
+    "command": "applyFirstShiftDueDate",
+    "commandId": "TrainingAssignment.applyFirstShiftDueDate"
   },
   {
     "entity": "TrainingAssignment",
@@ -4321,18 +4386,8 @@
   },
   {
     "entity": "TrainingAssignment",
-    "command": "extendDueDate",
-    "commandId": "TrainingAssignment.extendDueDate"
-  },
-  {
-    "entity": "TrainingAssignment",
     "command": "markOverdue",
     "commandId": "TrainingAssignment.markOverdue"
-  },
-  {
-    "entity": "TrainingAssignment",
-    "command": "softDelete",
-    "commandId": "TrainingAssignment.softDelete"
   },
   {
     "entity": "TrainingAssignment",
@@ -4341,8 +4396,28 @@
   },
   {
     "entity": "TrainingAssignment",
+    "command": "submitFailedAttempt",
+    "commandId": "TrainingAssignment.submitFailedAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "submitFinalFailedAttempt",
+    "commandId": "TrainingAssignment.submitFinalFailedAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "submitPassingAttempt",
+    "commandId": "TrainingAssignment.submitPassingAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
     "command": "waive",
     "commandId": "TrainingAssignment.waive"
+  },
+  {
+    "entity": "TrainingAttempt",
+    "command": "create",
+    "commandId": "TrainingAttempt.create"
   },
   {
     "entity": "TrainingCompletion",
@@ -4383,6 +4458,16 @@
     "entity": "TrainingModule",
     "command": "update",
     "commandId": "TrainingModule.update"
+  },
+  {
+    "entity": "TrainingQuestion",
+    "command": "create",
+    "commandId": "TrainingQuestion.create"
+  },
+  {
+    "entity": "TrainingQuestion",
+    "command": "deactivate",
+    "commandId": "TrainingQuestion.deactivate"
   },
   {
     "entity": "User",

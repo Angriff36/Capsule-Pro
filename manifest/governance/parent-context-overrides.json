@@ -112,6 +112,20 @@
       "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the parent Schedule. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "staff",
       "reviewed": "2026-06-05"
+    },
+    "TrainingQuestion": {
+      "fields": ["code"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A question's code (e.g. 'FS-Q1') is its own unique identifier within the module, not inherited from the parent TrainingModule's code (e.g. 'FOOD-SAFETY-101'). The name match is coincidental — each question authors its own code.",
+      "owner": "training",
+      "reviewed": "2026-06-06"
+    },
+    "TrainingAttempt": {
+      "fields": ["moduleId", "staffMemberId", "managerReviewRequired"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-06): moduleId, staffMemberId, and managerReviewRequired are all inferable from the parent TrainingAssignment, which already holds these values. Candidates for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "training",
+      "reviewed": "2026-06-06"
     }
   }
 }

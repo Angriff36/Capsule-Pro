@@ -74,7 +74,7 @@ entity Event {
   // status != completed/archived/cancelled; `archive` guards status == completed.
 
   default policy EventDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: number, ticketPrice: number, ticketTier: string, eventFormat: string) {
+  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: number, ticketPrice: number, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
     // All params are optional — AI and forms can provide any subset
     // Defaults are applied at the store layer (EventPrismaStore.create)
     mutate clientId = clientId
@@ -91,17 +91,19 @@ entity Event {
     mutate ticketPrice = ticketPrice
     mutate ticketTier = ticketTier
     mutate eventFormat = eventFormat
+    mutate accessibilityOptions = accessibilityOptions
+    mutate featuredMediaUrl = featuredMediaUrl
     mutate status = status != null and status != "" ? status : "draft"
 
     emit EventCreated
   }
 
-  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: number, ticketPrice: number, ticketTier: string, eventFormat: string) {
+  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: number, ticketPrice: number, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
-    guard clientId != null and clientId != "" "Client ID is required"
-    guard eventNumber != null and eventNumber != "" "Event number is required"
+    guard clientId != null "Client ID must be provided"
+    guard eventNumber != null "Event number must be provided"
     guard title != null and title != "" "Event title is required"
     guard eventType != null and eventType != "" "Event type is required"
     guard eventDate != null "Event date is required"
@@ -122,6 +124,8 @@ entity Event {
     mutate ticketPrice = ticketPrice
     mutate ticketTier = ticketTier
     mutate eventFormat = eventFormat
+    mutate accessibilityOptions = accessibilityOptions
+    mutate featuredMediaUrl = featuredMediaUrl
     mutate status = status != null and status != "" ? status : self.status
 
     emit EventUpdated

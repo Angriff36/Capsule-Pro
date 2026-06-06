@@ -3,7 +3,8 @@
 import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 const AI_MODEL = "gpt-4o-mini";
 
@@ -548,7 +549,8 @@ export async function saveTaskBreakdown(
   eventId: string,
   breakdown: TaskBreakdown
 ): Promise<void> {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const allTasks = [
     ...breakdown.prep.map((t) => ({ ...t, taskType: "prep" as const })),
@@ -556,6 +558,7 @@ export async function saveTaskBreakdown(
     ...breakdown.cleanup.map((t) => ({ ...t, taskType: "cleanup" as const })),
   ];
 
+  // Read: location lookup stays as direct Prisma (constitution §10)
   const locationResult = await database.$queryRaw<{ id: string }[]>(
     Prisma.sql`
       SELECT id FROM tenant.locations
@@ -595,27 +598,57 @@ export async function saveTaskBreakdown(
       }
     }
 
-    await database.prepTask.create({
-      data: {
-        tenantId,
-        eventId,
-        locationId,
-        taskType:
-          task.section === "prep"
-            ? "prep"
-            : task.section === "setup"
-              ? "setup"
-              : "cleanup",
+    const taskType =
+      task.section === "prep"
+        ? "prep"
+        : task.section === "setup"
+          ? "setup"
+          : "cleanup";
+
+    // Governed write: PrepTask.create via Manifest runtime
+    const result = await runManifestCommand({
+      entity: "PrepTask",
+      command: "create",
+      body: {
         name: task.name,
+        eventId,
+        prepListId: "",
+        taskType,
+        // Manifest priority range is 1-5 (1=critical, 5=low).
+        // Previous direct-write used 8 for critical — outside valid range.
+        priority: task.isCritical ? 1 : 5,
         quantityTotal: breakdown.guestCount,
+        quantityUnitId: "",
         servingsTotal: breakdown.guestCount,
-        startByDate,
-        dueByDate,
-        estimatedMinutes: task.durationMinutes,
-        status: "pending",
-        priority: task.isCritical ? 8 : 5,
-        notes: task.description,
+        startByDate: startByDate.getTime(),
+        dueByDate: dueByDate.getTime(),
+        notes: task.description ?? "",
+        ingredients: "",
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      throw new Error(
+        `Failed to create prep task "${task.name}": ${result.message}`
+      );
+    }
+
+    // Supplementary update for fields outside the manifest create command:
+    // locationId and estimatedMinutes are Prisma-level but not governed params.
+    const createdId =
+      typeof result.result === "object" && result.result !== null
+        ? (result.result as { id?: string }).id
+        : undefined;
+
+    if (createdId) {
+      await database.prepTask.update({
+        where: { tenantId_id: { tenantId, id: createdId } },
+        data: {
+          locationId,
+          estimatedMinutes: task.durationMinutes,
+        },
+      });
+    }
   }
 }
