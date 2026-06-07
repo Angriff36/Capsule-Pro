@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       endDate?: string;
     };
 
-    if (!(provider && SUPPORTED_PROVIDERS.includes(provider as any))) {
+    if (!(provider && (SUPPORTED_PROVIDERS as readonly string[]).includes(provider))) {
       return NextResponse.json(
         {
           error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,

@@ -227,7 +227,7 @@ export async function getActivities(
   tenantId: string,
   options: ActivityFilterOptions = {}
 ): Promise<{ activities: unknown[]; hasMore: boolean; totalCount: number }> {
-  const where: Record<string, unknown> = { tenantId };
+  const where: Prisma.ActivityFeedWhereInput = { tenantId };
 
   if (options.activityType) {
     where.activityType = options.activityType;
@@ -253,7 +253,7 @@ export async function getActivities(
 
   // Add date range filters if provided
   if (options.startDate || options.endDate) {
-    where.createdAt = { gte: options.startDate, lte: options.endDate } as any;
+    where.createdAt = { gte: options.startDate, lte: options.endDate };
   }
 
   const limit = Math.min(options.limit ?? 50, 200);

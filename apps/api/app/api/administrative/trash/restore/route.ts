@@ -4,6 +4,12 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireApiAdmin } from "@/app/lib/auth-roles";
+import {
+  getPrismaDelegate,
+  getTenantField,
+  getDeletedAtField,
+  type PrismaDelegate,
+} from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
 
@@ -22,106 +28,7 @@ interface RestoreResult {
   skipped: Array<{ id: string; type: string; reason: string }>;
 }
 
-// Entity type to Prisma model mapping
-function getPrismaModelForEntity(entityType: string, db: typeof database): any {
-  const modelMap: Record<string, string> = {
-    Event: "event",
-    Client: "client",
-    Recipe: "recipe",
-    Ingredient: "ingredient",
-    Menu: "menu",
-    Dish: "dish",
-    Location: "location",
-    Venue: "venue",
-    User: "user",
-    InventorySupplier: "inventorySupplier",
-    PrepList: "prepList",
-    Station: "station",
-    Equipment: "equipment",
-    WorkOrder: "workOrder",
-    Proposal: "proposal",
-    AdminTask: "adminTask",
-    KitchenTask: "kitchenTask",
-    PrepTask: "prepTask",
-    Container: "container",
-    PrepMethod: "prepMethod",
-    Note: "note",
-    BattleBoard: "battleBoard",
-    CommandBoard: "commandBoard",
-    CommandBoardCard: "commandBoardCard",
-    CommandBoardLayout: "commandBoardLayout",
-    CommandBoardGroup: "commandBoardGroup",
-    CommandBoardConnection: "commandBoardConnection",
-    EventProfitability: "eventProfitability",
-    EventSummary: "eventSummary",
-    EventReport: "eventReport",
-    EventBudget: "eventBudget",
-    BudgetLineItem: "budgetLineItem",
-    ClientContact: "clientContact",
-    ClientPreference: "clientPreference",
-    UserPreference: "userPreference",
-    Lead: "lead",
-    ClientInteraction: "clientInteraction",
-    ProposalLineItem: "proposalLineItem",
-    ProposalTemplate: "proposalTemplate",
-    RecipeVersion: "recipeVersion",
-    RecipeIngredient: "recipeIngredient",
-    MenuDish: "menuDish",
-    PrepComment: "prepComment",
-    EventStaff: "eventStaff",
-    EventTimeline: "eventTimeline",
-    EventImport: "eventImport",
-    BoardProjection: "boardProjection",
-    BoardAnnotation: "boardAnnotation",
-    TimelineTask: "timelineTask",
-    CateringOrder: "cateringOrder",
-    InventoryItem: "inventoryItem",
-    InventoryTransaction: "inventoryTransaction",
-    InventoryAlert: "inventoryAlert",
-    InventoryStock: "inventoryStock",
-    InventoryForecast: "inventoryForecast",
-    ForecastInput: "forecastInput",
-    ReorderSuggestion: "reorderSuggestion",
-    AlertsConfig: "alertsConfig",
-    CycleCountSession: "cycleCountSession",
-    CycleCountRecord: "cycleCountRecord",
-    VarianceReport: "varianceReport",
-    CycleCountAuditLog: "cycleCountAuditLog",
-    PurchaseOrder: "purchaseOrder",
-    PurchaseOrderItem: "purchaseOrderItem",
-    Shipment: "shipment",
-    ShipmentItem: "shipmentItem",
-    InterLocationTransfer: "interLocationTransfer",
-    InterLocationTransferItem: "interLocationTransferItem",
-    LocationResourceShare: "locationResourceShare",
-    Report: "report",
-    AdminChatThread: "adminChatThread",
-    AdminChatParticipant: "adminChatParticipant",
-    AdminChatMessage: "adminChatMessage",
-    RolePolicy: "rolePolicy",
-    Workflow: "workflow",
-    Notification: "notification",
-    ActivityFeed: "activityFeed",
-    Schedule: "schedule",
-    ScheduleShift: "scheduleShift",
-    TimeEntry: "timeEntry",
-    TimecardEditRequest: "timecardEditRequest",
-    EmployeeLocation: "employeeLocation",
-    LaborBudget: "laborBudget",
-    BudgetAlert: "budgetAlert",
-    AllergenWarning: "allergenWarning",
-    SensorReading: "sensorReading",
-    IotAlertRule: "iotAlertRule",
-    IotAlert: "iotAlert",
-    FoodSafetyLog: "foodSafetyLog",
-    Account: "account",
-  };
-
-  const modelName = modelMap[entityType];
-  return (db as any)[modelName];
-}
-
-function generateDisplayName(entityType: string, record: any): string {
+function generateDisplayName(entityType: string, record: Record<string, unknown>): string {
   const fieldMap: Partial<Record<string, string[]>> = {
     Event: ["title"],
     Client: ["name"],
@@ -148,7 +55,7 @@ function generateDisplayName(entityType: string, record: any): string {
 
   const fields = fieldMap[entityType];
   if (!(fields && record)) {
-    return `${entityType} (${record?.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entityType} (${(record?.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   const parts = fields
@@ -156,7 +63,7 @@ function generateDisplayName(entityType: string, record: any): string {
     .filter((v) => v != null && v !== "");
 
   if (parts.length === 0) {
-    return `${entityType} (${record.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entityType} (${(record.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   return parts.join(" ");
@@ -211,8 +118,8 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        const PrismaModel = getPrismaModelForEntity(entity.type, database);
-        if (!PrismaModel) {
+        const delegate = getPrismaDelegate(entity.type, database);
+        if (!delegate) {
           result.failed.push({
             id: entity.id,
             type: entity.type,
@@ -221,24 +128,27 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        const tenantField = getTenantField(entity.type);
+        const deletedAtField = getDeletedAtField(entity.type);
+
         // Check if entity exists and is soft-deleted
-        const existing = await (PrismaModel as any).findFirst({
+        const existing = (await delegate.findFirst({
           where: {
             id: entity.id,
-            tenantId,
-            deletedAt: { not: null },
+            [tenantField]: tenantId,
+            [deletedAtField]: { not: null },
           },
-        });
+        })) as Record<string, unknown> | null;
 
         if (!existing) {
           // Check if it's already active (not deleted)
-          const active = await (PrismaModel as any).findFirst({
+          const active = (await delegate.findFirst({
             where: {
               id: entity.id,
-              tenantId,
-              deletedAt: null,
+              [tenantField]: tenantId,
+              [deletedAtField]: null,
             },
-          });
+          })) as Record<string, unknown> | null;
 
           if (active) {
             result.skipped.push({
@@ -257,17 +167,17 @@ export async function POST(request: NextRequest) {
         }
 
         // Restore the entity by setting deletedAt to null
-        const restored = await (PrismaModel as any).update({
+        await delegate.update({
           where: {
             id: entity.id,
-            tenantId,
+            [tenantField]: tenantId,
           },
           data: {
-            deletedAt: null,
+            [deletedAtField]: null,
           },
           select: {
             id: true,
-            deletedAt: true,
+            [deletedAtField]: true,
           },
         });
 
@@ -348,29 +258,29 @@ async function restoreDependentEntities(
 
   for (const dep of dependents) {
     try {
-      const PrismaModel = getPrismaModelForEntity(
-        dep.dependentEntity,
-        database
-      );
-      if (!PrismaModel) continue;
+      const delegate = getPrismaDelegate(dep.dependentEntity, database);
+      if (!delegate) continue;
+
+      const tenantField = getTenantField(dep.dependentEntity);
+      const deletedAtField = getDeletedAtField(dep.dependentEntity);
 
       // Find soft-deleted dependents
-      const records = await (PrismaModel as any).findMany({
+      const records = (await delegate.findMany({
         where: {
-          tenantId,
+          [tenantField]: tenantId,
           [dep.field]: entityId,
-          deletedAt: { not: null },
+          [deletedAtField]: { not: null },
         },
         select: {
           id: true,
         },
         take: 50, // Limit cascade restore
-      });
+      })) as Array<{ id: string }>;
 
       for (const record of records) {
-        await (PrismaModel as any).update({
+        await delegate.update({
           where: { id: record.id },
-          data: { deletedAt: null },
+          data: { [deletedAtField]: null },
         });
 
         result.restored.push({
@@ -409,20 +319,23 @@ export async function DELETE(request: NextRequest) {
   }
 
   try {
-    const PrismaModel = getPrismaModelForEntity(entityType, database);
-    if (!PrismaModel) {
+    const delegate = getPrismaDelegate(entityType, database);
+    if (!delegate) {
       return NextResponse.json(
         { message: "Unknown entity type" },
         { status: 400 }
       );
     }
 
+    const tenantField = getTenantField(entityType);
+    const deletedAtField = getDeletedAtField(entityType);
+
     // Verify the entity is soft-deleted before permanent delete
-    const existing = await (PrismaModel as any).findFirst({
+    const existing = await delegate.findFirst({
       where: {
         id: entityId,
-        tenantId,
-        deletedAt: { not: null },
+        [tenantField]: tenantId,
+        [deletedAtField]: { not: null },
       },
     });
 
@@ -434,10 +347,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Permanently delete the record
-    await (PrismaModel as any).delete({
+    await delegate.delete({
       where: {
         id: entityId,
-        tenantId,
+        [tenantField]: tenantId,
       },
     });
 

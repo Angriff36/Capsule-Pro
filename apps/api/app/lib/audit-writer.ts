@@ -5,7 +5,7 @@
  * Audit failures are silently caught so they never crash business logic.
  */
 
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 
 export interface AuditEntryInput {
   tenantId: string;
@@ -33,10 +33,8 @@ export async function writeAuditEntry(input: AuditEntryInput): Promise<void> {
         table_name: input.tableName,
         record_id: input.recordId,
         action: input.action,
-        // biome-ignore lint/suspicious/noExplicitAny: Prisma InputJsonValue requires any-compatible cast
-        old_values: (input.oldValues ?? undefined) as any,
-        // biome-ignore lint/suspicious/noExplicitAny: Prisma InputJsonValue requires any-compatible cast
-        new_values: (input.newValues ?? undefined) as any,
+        old_values: (input.oldValues ?? undefined) as Prisma.InputJsonValue,
+        new_values: (input.newValues ?? undefined) as Prisma.InputJsonValue,
         performed_by: input.performedBy ?? undefined,
         ip_address: input.ipAddress ?? undefined,
         user_agent: input.userAgent ?? undefined,

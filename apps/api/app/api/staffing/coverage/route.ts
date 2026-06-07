@@ -6,6 +6,40 @@ import { log } from "@repo/observability/log";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { captureException } from "@sentry/nextjs";
 
+interface DailyRow {
+  date: Date;
+  total_shifts: bigint;
+  filled_shifts: bigint;
+  unfilled_shifts: bigint;
+  unique_employees: bigint;
+  total_hours: number;
+}
+
+interface LocationRow {
+  location_id: string;
+  location_name: string;
+  total_shifts: bigint;
+  filled_shifts: bigint;
+  unfilled_shifts: bigint;
+}
+
+interface TodayRow {
+  total_shifts: bigint;
+  filled_shifts: bigint;
+  unfilled_shifts: bigint;
+  active_employees: bigint;
+  total_hours: number;
+}
+
+interface WeeklyRow {
+  week_start: Date;
+  week_end: Date;
+  total_shifts: bigint;
+  total_hours: number;
+  unique_employees: bigint;
+  unfilled_shifts: bigint;
+}
+
 function getPeriodRange(period: string) {
   const now = new Date();
   const start = new Date();
@@ -67,7 +101,7 @@ export async function GET(request: NextRequest) {
     const locIdx = locationId ? 4 : 0;
     const locParam = locationId ? `AND ss.location_id = $${locIdx}::uuid` : "";
 
-    const dailyRows = await database.$queryRawUnsafe(`
+    const dailyRows = await database.$queryRawUnsafe<DailyRow[]>(`
       SELECT
         DATE(ss.shift_start) AS date,
         COUNT(*) AS total_shifts,
@@ -85,7 +119,7 @@ export async function GET(request: NextRequest) {
       ORDER BY date ASC
     `, tenantId, start, end, ...(locationId ? [locationId] : []));
 
-    const locationRows = await database.$queryRawUnsafe(`
+    const locationRows = await database.$queryRawUnsafe<LocationRow[]>(`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -109,7 +143,7 @@ export async function GET(request: NextRequest) {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const todayRows = await database.$queryRawUnsafe(`
+    const todayRows = await database.$queryRawUnsafe<TodayRow[]>(`
       SELECT
         COUNT(*) AS total_shifts,
         COUNT(CASE WHEN ss.employee_id IS NOT NULL THEN 1 END) AS filled_shifts,
@@ -125,7 +159,7 @@ export async function GET(request: NextRequest) {
     `, tenantId, todayStart, todayEnd, ...(locationId ? [locationId] : []));
 
     // Today by location
-    const todayLocations = await database.$queryRawUnsafe(`
+    const todayLocations = await database.$queryRawUnsafe<LocationRow[]>(`
       SELECT
         l.id AS location_id,
         l.name AS location_name,
@@ -144,7 +178,7 @@ export async function GET(request: NextRequest) {
     `, tenantId, todayStart, todayEnd, ...(locationId ? [locationId] : []));
 
     // Get weekly summaries for overview trend
-    const weeklyRows = await database.$queryRawUnsafe(`
+    const weeklyRows = await database.$queryRawUnsafe<WeeklyRow[]>(`
       SELECT
         DATE_TRUNC('week', ss.shift_start)::date AS week_start,
         (DATE_TRUNC('week', ss.shift_start)::date + 6)::date AS week_end,
@@ -164,7 +198,7 @@ export async function GET(request: NextRequest) {
     `, tenantId, new Date(Date.now() - 56 * 24 * 60 * 60 * 1000), ...(locationId ? [locationId] : []));
 
     // Build daily array
-    const daily = (dailyRows as any[]).map((row: any) => ({
+    const daily = dailyRows.map((row) => ({
       date: row.date,
       day_name: DAY_NAMES[new Date(row.date).getDay()],
       total_shifts: Number(row.total_shifts),
@@ -176,7 +210,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Build location totals
-    const location_totals = (locationRows as any[]).map((row: any) => ({
+    const location_totals = locationRows.map((row) => ({
       location_id: row.location_id,
       location_name: row.location_name,
       total_shifts: Number(row.total_shifts),
@@ -194,7 +228,7 @@ export async function GET(request: NextRequest) {
     const totalUnfilled = location_totals.reduce((s, l) => s + l.unfilled_shifts, 0);
     const totalHours = daily.reduce((s, d) => s + d.total_hours, 0);
     const totalEmployees = new Set(
-      (dailyRows as any[]).flatMap((r: any) => r.unique_employees || [])
+      dailyRows.flatMap((r) => r.unique_employees || [])
     ).size || Math.max(...daily.map((d) => d.unique_employees), 0);
 
     const summary = {
@@ -209,7 +243,7 @@ export async function GET(request: NextRequest) {
     };
 
     // Today stats
-    const todayData = (todayRows as any[])[0];
+    const todayData = todayRows[0];
     const today = todayData
       ? {
           total_shifts: Number(todayData.total_shifts),
@@ -217,7 +251,7 @@ export async function GET(request: NextRequest) {
           unfilled_shifts: Number(todayData.unfilled_shifts),
           active_employees: Number(todayData.active_employees),
           total_hours: Number(todayData.total_hours),
-          locations: (todayLocations as any[]).map((loc: any) => ({
+          locations: todayLocations.map((loc) => ({
             location_id: loc.location_id,
             location_name: loc.location_name,
             total_shifts: Number(loc.total_shifts),
@@ -234,9 +268,9 @@ export async function GET(request: NextRequest) {
       : null;
 
     // Weekly summaries
-    const weekly = (weeklyRows as any[])
+    const weekly = weeklyRows
       .reverse()
-      .map((row: any) => ({
+      .map((row) => ({
         week_start: row.week_start,
         week_end: row.week_end,
         total_shifts: Number(row.total_shifts),

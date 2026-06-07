@@ -92,14 +92,17 @@ export async function PUT(request: NextRequest) {
 
     // Use the tax engine to calculate
     const mockEmployee = {
-      id: "preview",
-      firstName: "Preview",
-      lastName: "Employee",
-      email: "preview@example.com",
+      id: "00000000-0000-0000-0000-000000000000",
+      tenantId: "00000000-0000-0000-0000-000000000000",
+      name: "Preview Employee",
       hourlyRate: grossAnnualIncome / 2080,
+      roleId: "00000000-0000-0000-0000-000000000000",
+      currency: "USD",
       taxInfo: {
         status: (filingStatus as "single" | "married") || "single",
         jurisdiction: (state as string) || "FL",
+        federalWithholdingAllowances: 0,
+        stateWithholdingAllowances: 0,
         additionalWithholding: 0,
       },
     };
@@ -108,7 +111,7 @@ export async function PUT(request: NextRequest) {
     const result = calculateTaxes({
       grossPay: biweeklyPay,
       preTaxDeductions: Currency.zero(),
-      employee: mockEmployee as any,
+      employee: mockEmployee,
       payPeriodFrequency: "biweekly",
     });
 
@@ -118,7 +121,7 @@ export async function PUT(request: NextRequest) {
       state: state || null,
       biweeklyWithholding: result.withholdings.map((w) => ({
         type: w.type,
-        jurisdiction: (w as any).jurisdiction || null,
+        jurisdiction: w.jurisdiction ?? null,
         amount: w.amount,
         annualized: w.amount * 26,
       })),

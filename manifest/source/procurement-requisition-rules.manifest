@@ -385,3 +385,32 @@ event PurchaseRequisitionItemRemoved: "procurement.requisition.item.removed" {
   requisitionId: string
   removedAt: datetime
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SAGA: Requisition-to-Purchase-Order conversion
+// ─────────────────────────────────────────────────────────────────────────────
+// Orchestrates the multi-step workflow of approving a requisition, creating
+// the purchase order, and marking the requisition as converted. If any step
+// fails, the compensation chain rolls back in reverse order.
+//
+// COMPENSATE GOTCHA: the runtime passes empty input for compensate commands,
+// so compensates use commands that only need the instanceId tracked by the
+// saga — status reverts that operate on the saga-managed entity instances.
+
+saga RequisitionToPurchaseOrder {
+  step approve {
+    command: PurchaseRequisition.approveManager
+    compensate: PurchaseRequisition.cancel
+  }
+
+  step createPurchaseOrder {
+    command: PurchaseOrder.create
+    compensate: PurchaseOrder.cancel
+  }
+
+  step convertRequisition {
+    command: PurchaseRequisition.convertToPo
+  }
+
+  on_failure: compensate
+}

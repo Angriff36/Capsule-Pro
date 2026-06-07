@@ -39,6 +39,7 @@ entity CycleCountSession {
   transition status from "draft" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
   transition status from "completed" to ["finalized"]
+  transition status from "finalized" to ["completed"]
   transition status from "cancelled" to ["draft"]
 
   default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
@@ -112,6 +113,15 @@ entity CycleCountSession {
     mutate totalItems = totalItems
 
     emit CycleCountSessionFinalized
+  }
+
+  command reopen() {
+    guard self.status == "finalized" "Can only reopen finalized sessions"
+
+    mutate status = "completed"
+    mutate finalizedAt = null
+
+    emit CycleCountSessionReopened
   }
 
   command cancel(userId: string, reason: string) {
@@ -433,6 +443,13 @@ event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
   finalizedAt: datetime
 }
 
+event CycleCountSessionReopened: "inventory.cyclecount.session.reopened" {
+  sessionId: string
+  sessionName: string
+  tenantId: string
+  reopenedAt: datetime
+}
+
 event CycleCountSessionDeleted: "inventory.cyclecount.session.deleted" {
   sessionId: string
   sessionName: string
@@ -529,4 +546,17 @@ event VarianceReportDiscrepancyUpdated: "inventory.variance.report.discrepancy_u
   rootCause: string
   resolutionNotes: string
   updatedAt: datetime
+}
+
+saga FinalizeCycleCountSession {
+  step finalizeSession {
+    command: CycleCountSession.finalize
+  }
+
+  step approveVarianceReports {
+    command: VarianceReport.approve
+    compensate: CycleCountSession.reopen
+  }
+
+  on_failure: compensate
 }

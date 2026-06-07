@@ -26,6 +26,13 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/** Minimal shape of a Prisma model delegate used by the generic detail route. */
+interface PrismaDetailDelegate {
+  findFirst: (args: {
+    where: Record<string, unknown>;
+  }) => Promise<unknown | null>;
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ entity: string; id: string }> },
@@ -58,8 +65,7 @@ export async function GET(
   }
 
   // ── Query ────────────────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const model = (await import("@repo/database")).database as any;
+  const model = (await import("@repo/database")).database as unknown as Record<string, PrismaDetailDelegate>;
   const delegate = model[resolution.accessor];
   if (!delegate) {
     return manifestErrorResponse(

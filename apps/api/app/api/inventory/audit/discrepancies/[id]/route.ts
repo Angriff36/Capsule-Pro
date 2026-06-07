@@ -102,8 +102,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     });
 
     // Fetch related item info
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const item = (await database.inventoryItem.findFirst({
+    const item = await database.inventoryItem.findFirst({
       where: {
         tenantId,
         id: report.itemId,
@@ -117,7 +116,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         unitOfMeasure: true,
         quantityOnHand: true,
       },
-    })) as any;
+    });
 
     // Fetch resolver info if resolved
     const resolver = report.resolvedById

@@ -7,6 +7,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { type Prisma } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get("endDate");
 
     // Build where clause
-    const where: Record<string, unknown> = {
+    const where: Prisma.ActivityFeedWhereInput = {
       tenantId,
     };
 
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest) {
       where.createdAt = {
         gte: startDate ? new Date(startDate) : undefined,
         lte: endDate ? new Date(endDate) : undefined,
-      } as any;
+      };
     }
 
     // Get total count for pagination

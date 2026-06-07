@@ -5,6 +5,11 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  getPrismaDelegate,
+  getTenantField,
+  getDeletedAtField,
+} from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
 
@@ -445,18 +450,21 @@ async function findSoftDeletedEntity(
   tenantId: string,
   entityId: string,
   entityType: string
-): Promise<Record<string, any> | null> {
+): Promise<Record<string, unknown> | null> {
   try {
-    const PrismaModel = getPrismaModelForEntity(entityType, database);
-    if (!PrismaModel) return null;
+    const delegate = getPrismaDelegate(entityType, database);
+    if (!delegate) return null;
 
-    const result = await (PrismaModel as any).findFirst({
+    const tenantField = getTenantField(entityType);
+    const deletedAtField = getDeletedAtField(entityType);
+
+    const result = (await delegate.findFirst({
       where: {
         id: entityId,
-        tenantId,
-        deletedAt: { not: null },
+        [tenantField]: tenantId,
+        [deletedAtField]: { not: null },
       },
-    });
+    })) as Record<string, unknown> | null;
 
     return result;
   } catch {
@@ -464,45 +472,11 @@ async function findSoftDeletedEntity(
   }
 }
 
-function getPrismaModelForEntity(entityType: string, db: typeof database): any {
-  const modelMap: Record<string, string> = {
-    Event: "event",
-    Client: "client",
-    Recipe: "recipe",
-    Ingredient: "ingredient",
-    Menu: "menu",
-    Dish: "dish",
-    Location: "location",
-    Venue: "venue",
-    User: "user",
-    InventorySupplier: "inventorySupplier",
-    PrepList: "prepList",
-    Station: "station",
-    Equipment: "equipment",
-    WorkOrder: "workOrder",
-    Proposal: "proposal",
-    AdminTask: "adminTask",
-    KitchenTask: "kitchenTask",
-    PrepTask: "prepTask",
-    Container: "container",
-    PrepMethod: "prepMethod",
-    Note: "note",
-    BattleBoard: "battleBoard",
-    CommandBoard: "commandBoard",
-    CommandBoardCard: "commandBoardCard",
-    CommandBoardLayout: "commandBoardLayout",
-    CommandBoardGroup: "commandBoardGroup",
-  };
-
-  const modelName = modelMap[entityType];
-  return (db as any)[modelName];
-}
-
 async function analyzeEntityDependencies(
   tenantId: string,
   entityId: string,
   entityType: string,
-  entity: Record<string, any>
+  entity: Record<string, unknown>
 ): Promise<DependencyAnalysisResult> {
   const dependents: Array<{ node: DependencyNode; edge: DependencyEdge }> = [];
   const potentialDependentTypes = getPotentialDependents(entityType);
@@ -520,24 +494,27 @@ async function analyzeEntityDependencies(
     if (!relevantDependency) continue;
 
     try {
-      const PrismaModel = getPrismaModelForEntity(dependentType, database);
-      if (!PrismaModel) continue;
+      const delegate = getPrismaDelegate(dependentType, database);
+      if (!delegate) continue;
+
+      const tenantField = getTenantField(dependentType);
+      const deletedAtField = getDeletedAtField(dependentType);
 
       // Find both active and soft-deleted dependents
-      const records = await (PrismaModel as any).findMany({
+      const records = (await delegate.findMany({
         where: {
-          tenantId,
+          [tenantField]: tenantId,
           [relevantDependency.field]: entityId,
         },
         select: {
           id: true,
-          deletedAt: true,
+          [deletedAtField]: true,
         },
         take: 50, // Limit results
-      });
+      })) as Array<Record<string, unknown>>;
 
       for (const record of records) {
-        const isDeleted = record.deletedAt !== null;
+        const isDeleted = record[deletedAtField] !== null;
         if (isDeleted) {
           deletedDependents++;
         } else {
@@ -546,7 +523,7 @@ async function analyzeEntityDependencies(
 
         dependents.push({
           node: {
-            id: record.id,
+            id: record.id as string,
             entity: dependentType,
             displayName: generateDisplayName(dependentType, record),
             isDeleted,
@@ -554,7 +531,7 @@ async function analyzeEntityDependencies(
           },
           edge: {
             from: entityId,
-            to: record.id,
+            to: record.id as string,
             type: relevantDependency.type,
             description: relevantDependency.description,
           },
@@ -655,7 +632,7 @@ async function analyzeEntityDependencies(
   };
 }
 
-function generateDisplayName(entityType: string, record: any): string {
+function generateDisplayName(entityType: string, record: Record<string, unknown>): string {
   const fieldMap: Partial<Record<string, string[]>> = {
     Event: ["title"],
     Client: ["name"],
@@ -682,7 +659,7 @@ function generateDisplayName(entityType: string, record: any): string {
 
   const fields = fieldMap[entityType];
   if (!(fields && record)) {
-    return `${entityType} (${record?.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entityType} (${(record?.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   const parts = fields
@@ -690,7 +667,7 @@ function generateDisplayName(entityType: string, record: any): string {
     .filter((v) => v != null && v !== "");
 
   if (parts.length === 0) {
-    return `${entityType} (${record.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entityType} (${(record.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   return parts.join(" ");

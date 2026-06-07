@@ -13,6 +13,18 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+interface TaxConfigRow {
+  id: string;
+  tenant_id: string;
+  tax_type: string;
+  jurisdiction: string;
+  state_code: string | null;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date | null;
+  deleted_at: Date | null;
+}
+
 // Tax brackets for 2026 federal single filers (simplified)
 const DEFAULT_FEDERAL_BRACKETS = [
   { min: 0, max: 11_600, rate: 0.1 },
@@ -33,15 +45,13 @@ export async function GET(request: NextRequest) {
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
     // Get or create tenant tax config
-    let configs = await database.$queryRaw`
+    let configs = await database.$queryRaw<TaxConfigRow[]>`
       SELECT * FROM tenant_payroll.tax_configurations
       WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
     `;
 
-    const configList = configs as any[];
-
     // If no configs exist, create default federal + user's state
-    if (!configList?.length) {
+    if (!configs?.length) {
       await database.$executeRaw`
         INSERT INTO tenant_payroll.tax_configurations (
           tenant_id, tax_type, jurisdiction, state_code, is_active, created_at
@@ -50,7 +60,7 @@ export async function GET(request: NextRequest) {
         )
       `;
 
-      configs = await database.$queryRaw`
+      configs = await database.$queryRaw<TaxConfigRow[]>`
         SELECT * FROM tenant_payroll.tax_configurations
         WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
       `;
@@ -79,7 +89,7 @@ export async function PUT(request: NextRequest) {
     const { configId, isActive, stateCode } = await request.json();
     if (!configId) return manifestErrorResponse("configId required", 400);
 
-    const result = await database.$queryRaw`
+    const result = await database.$queryRaw<TaxConfigRow[]>`
       UPDATE tenant_payroll.tax_configurations
       SET is_active = ${isActive ?? true},
           state_code = ${stateCode || null},
@@ -88,7 +98,7 @@ export async function PUT(request: NextRequest) {
       RETURNING id, tax_type, jurisdiction, state_code, is_active
     `;
 
-    return manifestSuccessResponse({ config: (result as any[])[0] });
+    return manifestSuccessResponse({ config: result[0] });
   } catch (error) {
     captureException(error);
     log.error("Error updating tax config:", error);

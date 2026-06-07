@@ -27,6 +27,17 @@ import {
 
 export const dynamic = "force-dynamic";
 
+/** Minimal shape of a Prisma model delegate used by the generic list route. */
+interface PrismaListDelegate {
+  findMany: (args: {
+    where: Record<string, unknown>;
+    skip: number;
+    take: number;
+    orderBy?: Record<string, unknown>;
+  }) => Promise<unknown[]>;
+  count: (args: { where: Record<string, unknown> }) => Promise<number>;
+}
+
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ entity: string }> },
@@ -61,8 +72,7 @@ export async function GET(
   const skip = (page - 1) * limit;
 
   // ── Build query ──────────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const model = (await import("@repo/database")).database as any;
+  const model = (await import("@repo/database")).database as unknown as Record<string, PrismaListDelegate>;
   const delegate = model[resolution.accessor];
   if (!delegate) {
     return manifestErrorResponse(

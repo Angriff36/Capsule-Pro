@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("orderId and status required", 400);
 
     // Verify current status allows transition (read bypasses Manifest runtime per constitution §10)
-    const current = await database.$queryRaw`
+    const current = await database.$queryRaw<Array<{ status: string }>>`
       SELECT status FROM tenant_inventory.purchase_orders
       WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid AND deleted_at IS NULL
     `;
-    if (!(current as any[]).length)
+    if (!current.length)
       return manifestErrorResponse("PO not found", 404);
 
-    const currentStatus = (current as any[])[0].status;
+    const currentStatus = current[0].status;
     const allowed = VALID_TRANSITIONS[currentStatus] || [];
     if (!allowed.includes(status)) {
       return manifestErrorResponse(

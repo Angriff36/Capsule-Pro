@@ -5,6 +5,11 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  getPrismaDelegate,
+  getTenantField,
+  getDeletedAtField,
+} from "@/lib/trash/entity-helpers";
 
 export const runtime = "nodejs";
 
@@ -658,12 +663,15 @@ export async function GET(request: NextRequest) {
     for (const ent of entityTypesToQuery.slice(0, 10)) {
       // Limit to 10 entity types for performance
       try {
-        const PrismaModel = getPrismaModelForEntity(ent, database);
-        if (!PrismaModel) continue;
+        const delegate = getPrismaDelegate(ent, database);
+        if (!delegate) continue;
 
-        const whereClause: any = {
-          tenantId,
-          deletedAt: { not: null },
+        const tenantField = getTenantField(ent);
+        const deletedAtField = getDeletedAtField(ent);
+
+        const whereClause: Record<string, unknown> = {
+          [tenantField]: tenantId,
+          [deletedAtField]: { not: null },
         };
 
         // Add search filter based on entity's display field
@@ -672,23 +680,23 @@ export async function GET(request: NextRequest) {
           whereClause[displayField] = { contains: search, mode: "insensitive" };
         }
 
-        const results = await (PrismaModel as any).findMany({
+        const results = (await delegate.findMany({
           where: whereClause,
-          orderBy: { deletedAt: "desc" },
+          orderBy: { [deletedAtField]: "desc" },
           take: entityType ? limit : 10, // Limit per entity type when not filtering
           select: {
             id: true,
-            tenantId: true,
-            deletedAt: true,
+            [tenantField]: true,
+            [deletedAtField]: true,
           },
-        });
+        })) as Array<Record<string, unknown>>;
 
         for (const result of results) {
           items.push({
-            id: result.id,
+            id: result.id as string,
             entity: ent,
-            tenantId: result.tenantId,
-            deletedAt: result.deletedAt!,
+            tenantId: result[tenantField] as string,
+            deletedAt: result[deletedAtField] as Date,
             displayName: generateDisplayName(ent, result),
             hasDependents: false, // Will be computed on-demand
           });
@@ -736,111 +744,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function getPrismaModelForEntity(
-  entity: RestorableEntity,
-  db: typeof database
-): any {
-  const modelMap: Record<RestorableEntity, string> = {
-    Account: "account",
-    Location: "location",
-    Venue: "venue",
-    User: "user",
-    KitchenTask: "kitchenTask",
-    PrepTask: "prepTask",
-    PrepTaskDependency: "preptaskDependency",
-    KitchenTaskClaim: "kitchenTaskClaim",
-    KitchenTaskProgress: "kitchenTaskProgress",
-    PrepList: "prepList",
-    PrepListItem: "prepListItem",
-    Station: "station",
-    Equipment: "equipment",
-    WorkOrder: "workOrder",
-    Event: "event",
-    EventProfitability: "eventProfitability",
-    EventSummary: "eventSummary",
-    EventReport: "eventReport",
-    EventBudget: "eventBudget",
-    BudgetLineItem: "budgetLineItem",
-    Client: "client",
-    ClientContact: "clientContact",
-    ClientPreference: "clientPreference",
-    UserPreference: "userPreference",
-    Lead: "lead",
-    ClientInteraction: "clientInteraction",
-    Proposal: "proposal",
-    ProposalLineItem: "proposalLineItem",
-    ProposalTemplate: "proposalTemplate",
-    Recipe: "recipe",
-    RecipeVersion: "recipeVersion",
-    RecipeIngredient: "recipeIngredient",
-    Ingredient: "ingredient",
-    PrepMethod: "prepMethod",
-    Container: "container",
-    Dish: "dish",
-    Menu: "menu",
-    MenuDish: "menuDish",
-    PrepComment: "prepComment",
-    EventStaff: "eventStaff",
-    EventTimeline: "eventTimeline",
-    EventImport: "eventImport",
-    BattleBoard: "battleBoard",
-    CommandBoard: "commandBoard",
-    CommandBoardCard: "commandBoardCard",
-    CommandBoardLayout: "commandBoardLayout",
-    CommandBoardGroup: "commandBoardGroup",
-    CommandBoardConnection: "commandBoardConnection",
-    BoardProjection: "boardProjection",
-    Note: "note",
-    BoardAnnotation: "boardAnnotation",
-    TimelineTask: "timelineTask",
-    CateringOrder: "cateringOrder",
-    InventoryItem: "inventoryItem",
-    InventoryTransaction: "inventoryTransaction",
-    InventorySupplier: "inventorySupplier",
-    InventoryAlert: "inventoryAlert",
-    InventoryStock: "inventoryStock",
-    InventoryForecast: "inventoryForecast",
-    ForecastInput: "forecastInput",
-    ReorderSuggestion: "reorderSuggestion",
-    AlertsConfig: "alertsConfig",
-    CycleCountSession: "cycleCountSession",
-    CycleCountRecord: "cycleCountRecord",
-    VarianceReport: "varianceReport",
-    CycleCountAuditLog: "cycleCountAuditLog",
-    PurchaseOrder: "purchaseOrder",
-    PurchaseOrderItem: "purchaseOrderItem",
-    Shipment: "shipment",
-    ShipmentItem: "shipmentItem",
-    InterLocationTransfer: "interLocationTransfer",
-    InterLocationTransferItem: "interLocationTransferItem",
-    LocationResourceShare: "locationResourceShare",
-    Report: "report",
-    AdminTask: "adminTask",
-    AdminChatThread: "adminChatThread",
-    AdminChatParticipant: "adminChatParticipant",
-    AdminChatMessage: "adminChatMessage",
-    RolePolicy: "rolePolicy",
-    Workflow: "workflow",
-    Notification: "notification",
-    ActivityFeed: "activityFeed",
-    Schedule: "schedule",
-    ScheduleShift: "scheduleShift",
-    TimeEntry: "timeEntry",
-    TimecardEditRequest: "timecardEditRequest",
-    EmployeeLocation: "employeeLocation",
-    LaborBudget: "laborBudget",
-    BudgetAlert: "budgetAlert",
-    AllergenWarning: "allergenWarning",
-    SensorReading: "sensorReading",
-    IotAlertRule: "iotAlertRule",
-    IotAlert: "iotAlert",
-    FoodSafetyLog: "foodSafetyLog",
-  };
-
-  const modelName = modelMap[entity];
-  return (db as any)[modelName];
-}
-
 function getDisplayFieldForEntity(entity: RestorableEntity): string | null {
   const fieldMap: Partial<Record<RestorableEntity, string>> = {
     Event: "title",
@@ -870,7 +773,7 @@ function getDisplayFieldForEntity(entity: RestorableEntity): string | null {
   return fieldMap[entity] ?? null;
 }
 
-function generateDisplayName(entity: RestorableEntity, record: any): string {
+function generateDisplayName(entity: RestorableEntity, record: Record<string, unknown>): string {
   const fieldMap: Partial<Record<RestorableEntity, string[]>> = {
     Event: ["title"],
     Client: ["name"],
@@ -895,7 +798,7 @@ function generateDisplayName(entity: RestorableEntity, record: any): string {
 
   const fields = fieldMap[entity];
   if (!fields) {
-    return `${entity} (${record.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entity} (${(record.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   const parts = fields
@@ -903,7 +806,7 @@ function generateDisplayName(entity: RestorableEntity, record: any): string {
     .filter((v) => v != null && v !== "");
 
   if (parts.length === 0) {
-    return `${entity} (${record.id?.slice(0, 8) ?? "unknown"})`;
+    return `${entity} (${(record.id as string | undefined)?.slice(0, 8) ?? "unknown"})`;
   }
 
   return parts.join(" ");
