@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 
 export interface UnitConversion {
   fromUnitId: number;
@@ -244,13 +245,23 @@ const calculateRecipeCost = async (
   const yieldQuantity = Number(recipeVersion[0].yield_quantity);
   const costPerYield = yieldQuantity > 0 ? totalCost / yieldQuantity : 0;
 
+  // Governed write: RecipeVersion.updateCosts via Manifest runtime (constitution §9)
+  const user = await requireCurrentUser();
+  await runManifestCommand({
+    entity: "RecipeVersion",
+    command: "updateCosts",
+    body: {
+      id: recipeVersionId,
+      newTotalCost: totalCost,
+      newCostPerYield: costPerYield,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  // Bypass: costCalculatedAt is not an IR field — direct write for audit timestamp
   await database.recipeVersion.updateMany({
     where: { tenantId, id: recipeVersionId },
-    data: {
-      totalCost,
-      costPerYield,
-      costCalculatedAt: new Date(),
-    },
+    data: { costCalculatedAt: new Date() },
   });
 
   return {
@@ -354,16 +365,26 @@ export const updateRecipeIngredientWasteFactor = async (
   if (!orgId) {
     throw new Error("Unauthorized");
   }
-  const tenantId = await getTenantIdForOrg(orgId);
 
   if (wasteFactor <= 0) {
     throw new Error("Waste factor must be greater than 0");
   }
 
-  await database.recipeIngredient.updateMany({
-    where: { tenantId, id: recipeIngredientId },
-    data: { wasteFactor },
+  // Governed write: RecipeIngredient.updateWasteFactor via Manifest runtime (constitution §9)
+  const user = await requireCurrentUser();
+  const result = await runManifestCommand({
+    entity: "RecipeIngredient",
+    command: "updateWasteFactor",
+    body: {
+      id: recipeIngredientId,
+      newWasteFactor: wasteFactor,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update waste factor");
+  }
 };
 
 export const updateEventBudgetsForRecipe = async (
@@ -411,14 +432,20 @@ export const updateEventBudgetsForRecipe = async (
     `
   );
 
+  // Governed write: Event.updateBudget via Manifest runtime (constitution §9)
+  const user = await requireCurrentUser();
   for (const row of eventRecipeCosts) {
-    await database.event.updateMany({
-      where: { tenantId, id: row.event_id },
-      data: {
-        budget: new Prisma.Decimal(row.current_budget ?? 0).plus(
-          row.total_recipe_cost
-        ),
+    const newBudget = new Prisma.Decimal(row.current_budget ?? 0).plus(
+      row.total_recipe_cost
+    );
+    await runManifestCommand({
+      entity: "Event",
+      command: "updateBudget",
+      body: {
+        id: row.event_id,
+        newBudget: newBudget.toNumber(),
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 };
