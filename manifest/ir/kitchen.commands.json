@@ -2801,6 +2801,11 @@
   },
   {
     "entity": "Payment",
+    "command": "markAcceptedNotApplied",
+    "commandId": "Payment.markAcceptedNotApplied"
+  },
+  {
+    "entity": "Payment",
     "command": "markChargeback",
     "commandId": "Payment.markChargeback"
   },

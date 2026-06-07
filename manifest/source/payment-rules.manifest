@@ -44,7 +44,7 @@ entity Payment {
   // Computed properties
   timestamps
   computed isRefundable: boolean = self.status == "COMPLETED" and self.refundedAt == null
-  computed isFinal: boolean = self.status in ["COMPLETED", "FAILED", "REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK", "VOID"]
+  computed isFinal: boolean = self.status in ["COMPLETED", "FAILED", "REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK", "ACCEPTED_NOT_APPLIED", "VOID"]
 
   relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
@@ -54,8 +54,9 @@ entity Payment {
 
   // State transitions
   transition status from "PENDING" to ["PROCESSING", "COMPLETED", "FAILED"]
-  transition status from "PROCESSING" to ["COMPLETED", "FAILED"]
-  transition status from "COMPLETED" to ["REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK"]
+  transition status from "PROCESSING" to ["COMPLETED", "FAILED", "ACCEPTED_NOT_APPLIED"]
+  transition status from "COMPLETED" to ["REFUNDED", "PARTIALLY_REFUNDED", "CHARGEBACK", "ACCEPTED_NOT_APPLIED"]
+  transition status from "ACCEPTED_NOT_APPLIED" to ["COMPLETED", "REFUNDED"]
   transition status from "PARTIALLY_REFUNDED" to ["REFUNDED", "CHARGEBACK"]
 
   // Commands
@@ -134,6 +135,15 @@ entity Payment {
     mutate reviewedBy = reviewer
     emit FraudReviewCompleted
   }
+
+  // Payment completed but invoice reaction could not apply it (e.g. invoice still DRAFT).
+  // Marks payment as accepted for later manual reconciliation.
+  command markAcceptedNotApplied() {
+    guard self.status == "PROCESSING" or self.status == "COMPLETED" "Can only mark processing or completed payments"
+    mutate status = "ACCEPTED_NOT_APPLIED"
+    mutate processedAt = now()
+    emit PaymentAcceptedNotApplied
+  }
 }
 
 store Payment in durable
@@ -169,6 +179,13 @@ event FraudReviewCompleted: "payment.fraud-review-completed" {
   paymentId: string
   approved: boolean
   reviewer: string
+}
+
+event PaymentAcceptedNotApplied: "payment.accepted-not-applied" {
+  paymentId: string
+  invoiceId: string
+  amount: number
+  status: string
 }
 
 // --- 2.0 Saga: atomic payment settlement across Payment + Invoice ---

@@ -312,12 +312,12 @@ export async function POST(request: NextRequest) {
     );
 
     if (!processResult.success) {
-      // Payment created but could not be processed — mark as FAILED.
-      // Minimal Prisma bypass: status fallback pending IR expansion.
-      await database.payment.update({
-        where: { id: paymentId },
-        data: { status: "FAILED" },
-      });
+      // Payment created but could not be processed — mark as FAILED via governed command.
+      await manifestRuntime.runCommand(
+        "processFailed",
+        {},
+        { entityName: "Payment", instanceId: paymentId }
+      );
       log.error("Payment.process via Manifest failed", {
         paymentId,
         invoiceId: body.invoiceId,
@@ -354,12 +354,12 @@ export async function POST(request: NextRequest) {
     if (!invoiceWasUpdated) {
       // Payment is COMPLETED but the reaction likely couldn't apply it to
       // the invoice (e.g. invoice is DRAFT). Mark as accepted-but-not-applied
-      // so this state is visible and recoverable.
-      // Minimal Prisma bypass: status fallback pending IR expansion.
-      await database.payment.update({
-        where: { id: paymentId },
-        data: { status: "ACCEPTED_NOT_APPLIED" },
-      });
+      // via governed command so this state is visible and recoverable.
+      await manifestRuntime.runCommand(
+        "markAcceptedNotApplied",
+        {},
+        { entityName: "Payment", instanceId: paymentId }
+      );
       log.warn("Payment processed but invoice not updated (reaction may have failed)", {
         invoiceId: body.invoiceId,
         paymentId,
