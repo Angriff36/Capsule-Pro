@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-06, comprehensive audit -- 20th revision, updated batch 17)
+## Validation Baseline (2026-06-07, comprehensive audit -- 21st revision, updated batch 18)
 
 ### Claim Verification Matrix
 
@@ -21,7 +21,7 @@
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
 | 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). Additionally **15 entities have models but wrong accessor names** (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1). |
 | 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
-| 5 | ~~371~~ ~~301~~ **298** direct-write violations | **UPDATED** | 189 API mutation calls across ~78 files + 109 server action writes across ~27 files = 298 total. Session eliminated 3 violations (1 server action: ClientInteraction.softDelete; 2 API routes: RevenueRecognitionSchedule adjust+default). |
+| 5 | ~~371~~ ~~301~~ **~295** direct-write violations | **UPDATED** | 189 API mutation calls across ~78 files + 109 server action writes across ~27 files = ~295 total. Session eliminated ~4 violations (1 server action: CycleCountSession.softDelete; 2 API routes: RevenueRecognitionSchedule reverse + EmailWorkflow.recordTriggered; 1 server action: Event.softDelete + Event.update). |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
@@ -335,7 +335,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 991 commands, 971 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 996 commands, 975 events, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -549,6 +549,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.2 batch 16: RevenueRecognitionSchedule adjust+default fallback governance migration** | Expanded `adjustSchedule` command with description/notes/recognitionPeriod params. Replaced 2 direct `database.revenueRecognitionSchedule.update()` calls with governed `runManifestCommand`. Default schedule creation falls back to adjust (command-expanded). IR: 991 commands (+2), 971 events. API+App typecheck 0, 2689 tests pass. |
 | 2026-06-07 | **Infrastructure classification confirmed (no migration needed)** | Calendar sync routes (ProviderSync — OAuth credential management), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook — operational infrastructure). Already in `manifest/governance/write-route-infra-allowlist.json`. Not governed entities. |
 | 2026-06-07 | **Deferred items documented** | events/actions.ts EventImport raw SQL — IR lacks content/mimeType/fileSize properties. staff/team/actions.ts syncCurrentUser — bootstrap function, architecturally necessary direct writes. command-board/actions.ts — bulk updateMany, no bulk Manifest commands. bulk-tasks/confirm PrepTask supplementary update — IR lacks dishId/locationId/estimatedMinutes/dueByTime. |
+| 2026-06-07 | **Task 8.2 batch 18: RevenueRecognition reverse + EmailWorkflow recordTriggered + Events soft-delete/assign** | RevenueRecognition reverse: `$transaction` → 2 governed `runManifestCommand` calls (`RevenueRecognitionLine.reverse` + `RevenueRecognitionSchedule.reverseRecognition`). EmailWorkflow: `database.emailWorkflow.update(lastTriggeredAt)` → governed `EmailWorkflow.recordTriggered` via callback pattern in cron routes. Events: `database.event.updateMany(soft-delete)` → `Event.softDelete`; `database.event.updateMany(assign clientId)` → `Event.update`. Fixed 2 pre-existing test failures (revenue-recognition-patch-actions mock drift). IR: 996 commands (+5), 975 events (+4). API typecheck 0, 2749 tests pass. Governed-entity violations: ~25 remaining. |
+| 2026-06-07 | **Task 8.3 batch 18: CycleCountSession.softDelete governance migration** | `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts` — `database.cycleCountSession.update(deletedAt)` → `CycleCountSession.softDelete`. New command added to manifest source. IR: 996 commands, 975 events. API typecheck 0, 2749 tests pass. |
 
 ---
 
@@ -1296,6 +1298,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - IR: 990 commands (+1), 970 events (+1). 2689 tests pass, 0 typecheck errors.
     - Total: 64 mutate handlers in 48 route files migrated.
   - **Progress 2026-06-07 (batch 16 — RevenueRecognitionSchedule adjust+default):** 2 direct `database.revenueRecognitionSchedule.update()` calls replaced with governed `runManifestCommand`. Expanded `adjustSchedule` command with description/notes/recognitionPeriod params. Default schedule creation falls back to adjust. IR: 991 commands (+2), 971 events.
+  - **Progress 2026-06-07 (batch 18 — RevenueRecognition reverse + EmailWorkflow recordTriggered):**
+    - `PATCH /api/accounting/revenue-recognition/schedules/[id]` (reverse action) — replaced `$transaction` with two governed `runManifestCommand` calls: `RevenueRecognitionLine.reverse` + `RevenueRecognitionSchedule.reverseRecognition`. New commands added to manifest source.
+    - `packages/notifications/email-workflow-triggers.ts` + `apps/api/app/api/cron/email-reminders/route.ts` + `apps/api/app/api/cron/contract-expiration-alerts/route.ts` — `database.emailWorkflow.update(lastTriggeredAt)` replaced with governed `EmailWorkflow.recordTriggered` via callback pattern. New `recordTriggered` command added to manifest source. Runtime tests pass (91/91).
+    - `apps/app/app/(authenticated)/events/actions.ts` — `database.event.updateMany(soft-delete)` → `Event.softDelete`; `database.event.updateMany(assign clientId)` → `Event.update`. New `Event.softDelete` command added to manifest source.
+    - Fixed 2 pre-existing failing tests in `revenue-recognition-patch-actions.test.ts` (mock drift from prior migration).
+    - IR: 996 commands (+5), 975 events (+4). API test suite: 148 files, 2749 tests pass. API typecheck 0. App typecheck: 3 pre-existing errors (facilities/work-orders, not from this session). Governed-entity violations: ~25 remaining.
   - **Infrastructure classification confirmed:** Calendar sync routes (ProviderSync), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook) — already in infra allowlist, no migration needed.
   - **Total migrated across all batches:** 66 mutate handlers in 49 route files. Remaining: ~126 violations across ~33 files (most remaining are complex multi-entity transactions, infrastructure entities, or IR gaps).
 
@@ -1379,6 +1387,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - **Prisma/IR naming mismatch:** Prisma enum `KitchenTaskStatus` uses "open"/"canceled" but IR defines "pending"/"cancelled". Switch uses Prisma values.
     - **⚠ `@db.Time` / `@db.Date` column coercion gotcha (reusable for any entity with time/date-only columns):** `GenericPrismaStore.buildPatch()` coerces string command params via `asNullableDate(v)` → `new Date(value)`. A bare `"HH:MM"` string produces an invalid Date → NULL → NOT-NULL constraint violation at write time. **Fix:** pass ISO strings built from `Date` objects: `new Date(1970,0,1,h,m).toISOString()` for time-only columns. `softDelete` is safe because `buildPatch` only writes the mutated `deletedAt` field, leaving existing Time/Date columns untouched. This applies to any entity whose Prisma model has `@db.Time(n)`, `@db.Date`, or `@db.Timetz` columns.
     - **Resolution path:** Task 0.4 IR/schema reconciliation + a dedicated schema-alignment pass per entity. Lead was the safe pick — full field alignment + working API-route precedent at `apps/api/app/api/lead/route.ts`. Venue is the proven template for CRM entities with full address fields + array tags.
+  - **Progress 2026-06-07 (batch 18 — CycleCountSession.softDelete + Events soft-delete/assign):**
+    - `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts` — `database.cycleCountSession.update(deletedAt)` → `CycleCountSession.softDelete`. New command added to manifest source.
+    - `apps/app/app/(authenticated)/events/actions.ts` — `database.event.updateMany(soft-delete)` → `Event.softDelete`; `database.event.updateMany(assign clientId)` → `Event.update`. New `Event.softDelete` command added to manifest source.
+    - IR: 996 commands, 975 events. API typecheck 0, App typecheck 3 pre-existing errors. 2749 tests pass.
 
 ### 8.4 Package-specific governance migration
 - **Done when:** `supplier-connectors` (5 direct writes on VendorCatalog -- governed entity), `sentry-integration` (2 writes on SentryFixJob -- infrastructure, NOT governed), `payroll-engine` (covered by 8.1), `notifications` (1 direct write on EmailWorkflow -- governed entity; emailLog/sms_logs/notification_preferences writes are infrastructure logs, not governed), `packages/database/src/vendor-cost-service.ts` (1 documented bypass on InventoryItem with explicit GOVERNANCE NOTE -- downstream mechanical effect of governed VendorCatalog commands) route writes through Manifest or are documented as intentionally ungoverned. `packages/realtime/` (outbox is infrastructure, not governed). `packages/services/` removed (confirmed truly empty -- no package.json, no source files).
