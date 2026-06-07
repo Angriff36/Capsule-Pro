@@ -2131,6 +2131,16 @@
   },
   {
     "entity": "InventoryItem",
+    "command": "softDelete",
+    "commandId": "InventoryItem.softDelete"
+  },
+  {
+    "entity": "InventoryItem",
+    "command": "update",
+    "commandId": "InventoryItem.update"
+  },
+  {
+    "entity": "InventoryItem",
     "command": "waste",
     "commandId": "InventoryItem.waste"
   },

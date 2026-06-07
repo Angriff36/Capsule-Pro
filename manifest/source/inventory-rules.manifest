@@ -251,6 +251,35 @@ entity InventoryItem {
     emit InventoryItemCreated
   }
 
+  command update(name: string, description: string, category: string, unitOfMeasure: string, unitCost: money, quantityOnHand: decimal, parLevel: decimal, reorder_level: decimal, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: string, fsa_allergen_info: string, fsa_traceable: string) {
+    guard self.deletedAt == null "Cannot update a deleted inventory item"
+
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate unitOfMeasure = unitOfMeasure
+    mutate unitCost = unitCost
+    mutate quantityOnHand = quantityOnHand
+    mutate parLevel = parLevel
+    mutate reorder_level = reorder_level
+    mutate supplierId = supplierId
+    mutate tags = tags
+    mutate fsa_status = fsa_status
+    mutate fsa_temp_logged = fsa_temp_logged
+    mutate fsa_allergen_info = fsa_allergen_info
+    mutate fsa_traceable = fsa_traceable
+
+    emit InventoryItemUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Inventory item is already deleted"
+
+    mutate deletedAt = now()
+
+    emit InventoryItemDeleted
+  }
+
   store InventoryItem in durable
 }
 
@@ -259,6 +288,8 @@ policy InventoryStaffCanConsume execute: user.role in ["kitchen_staff", "kitchen
 policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
 policy ManagersCanRestock execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can restock inventory"
 policy ManagersCanCreate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can create inventory items"
+policy ManagersCanUpdate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can update inventory items"
+policy ManagersCanSoftDelete execute: user.role in ["manager", "admin"] "Only managers/admins can delete inventory items"
 
 event InventoryReserved: "kitchen.inventory.reserved" {
   itemId: string
@@ -323,4 +354,19 @@ event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
   eventId: string
   userId: string
   releasedAt: datetime
+}
+
+event InventoryItemUpdated: "kitchen.inventory.updated" {
+  itemId: string
+  tenantId: string
+  itemName: string
+  category: string
+  updatedAt: datetime
+}
+
+event InventoryItemDeleted: "kitchen.inventory.deleted" {
+  itemId: string
+  tenantId: string
+  itemName: string
+  deletedAt: datetime
 }

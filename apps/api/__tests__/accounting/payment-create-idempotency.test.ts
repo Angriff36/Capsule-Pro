@@ -32,18 +32,20 @@ const PAYMENT_ID = "33333333-3333-3333-3333-333333333333";
 
 const mocks = vi.hoisted(() => ({
   paymentCreateMock: vi.fn(),
+  paymentUpdateMock: vi.fn().mockResolvedValue({}),
   invoiceFindFirstMock: vi.fn(),
   eventFindFirstMock: vi.fn(),
   manifestIdempotencyFindUniqueMock: vi.fn(),
   manifestIdempotencyUpsertMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
+  runCommandMock: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
   database: {
     payment: {
       create: mocks.paymentCreateMock,
-      update: vi.fn().mockResolvedValue({}),
+      update: mocks.paymentUpdateMock,
       findMany: vi.fn(),
       count: vi.fn(),
     },
@@ -75,7 +77,7 @@ vi.mock("@sentry/nextjs", () => ({
 // from running at import time. keys() calls createEnv() which validates DATABASE_URL.
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn().mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({ success: true }),
+    runCommand: mocks.runCommandMock,
   }),
 }));
 
@@ -143,12 +145,16 @@ beforeEach(() => {
     ...createdPayment,
     amount: { toString: () => "100" },
   });
+  mocks.paymentUpdateMock.mockReset();
+  mocks.paymentUpdateMock.mockResolvedValue({});
   mocks.invoiceFindFirstMock.mockReset();
   mocks.invoiceFindFirstMock.mockResolvedValue({
     tenantId: TENANT_ID,
     id: INVOICE_ID,
     clientId: CLIENT_ID,
     deletedAt: null,
+    status: "SENT",
+    amountDue: 0,
   });
   mocks.eventFindFirstMock.mockReset();
   mocks.eventFindFirstMock.mockResolvedValue({
@@ -160,6 +166,22 @@ beforeEach(() => {
   mocks.manifestIdempotencyFindUniqueMock.mockResolvedValue(null);
   mocks.manifestIdempotencyUpsertMock.mockReset();
   mocks.manifestIdempotencyUpsertMock.mockResolvedValue(undefined);
+
+  // Manifest runCommand mock: handles both "create" and "process" calls
+  mocks.runCommandMock.mockReset();
+  mocks.runCommandMock.mockImplementation((commandName: string) => {
+    if (commandName === "create") {
+      return Promise.resolve({
+        success: true,
+        instance: { id: PAYMENT_ID },
+        result: { ...createdPayment, id: PAYMENT_ID },
+      });
+    }
+    if (commandName === "process") {
+      return Promise.resolve({ success: true });
+    }
+    return Promise.resolve({ success: true });
+  });
 });
 
 afterEach(() => {
@@ -167,21 +189,24 @@ afterEach(() => {
 });
 
 describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
-  it("without Idempotency-Key header: creates payment, never touches cache", async () => {
+  it("without Idempotency-Key header: creates payment via Manifest, never touches cache", async () => {
     const res = await POST(makeRequest());
 
     expect(res.status).toBe(201);
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    // Payment is now created through Manifest runtime, not direct Prisma
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("process", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
     // No header → no cache lookup, no cache store. Backwards compatible.
     expect(mocks.manifestIdempotencyFindUniqueMock).not.toHaveBeenCalled();
     expect(mocks.manifestIdempotencyUpsertMock).not.toHaveBeenCalled();
   });
 
-  it("with new Idempotency-Key: creates payment AND stores response in cache", async () => {
+  it("with new Idempotency-Key: creates payment via Manifest AND stores response in cache", async () => {
     const res = await POST(makeRequest({ idempotencyKey: "idemp_abc123" }));
 
     expect(res.status).toBe(201);
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    // Payment now goes through Manifest runtime
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
 
     // Cache lookup must happen — short-circuit prerequisite.
     expect(mocks.manifestIdempotencyFindUniqueMock).toHaveBeenCalledTimes(1);
@@ -256,7 +281,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.headers.get("X-Idempotent-Replay")).toBe("true");
 
     // Critical: a duplicate Payment row MUST NOT be created on retry.
-    expect(mocks.paymentCreateMock).not.toHaveBeenCalled();
+    expect(mocks.runCommandMock).not.toHaveBeenCalled();
     // Cache must not be re-written either (not strictly required but a good
     // signal that we short-circuited cleanly).
     expect(mocks.manifestIdempotencyUpsertMock).not.toHaveBeenCalled();
@@ -275,7 +300,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.status).toBe(201);
     // Expired entry must NOT be replayed. New payment is created and the
     // cache row is overwritten via upsert.
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
     expect(mocks.manifestIdempotencyUpsertMock).toHaveBeenCalledTimes(1);
   });
 
@@ -305,7 +330,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     // Tenant B must NOT see tenant A's cached body. A new payment is created.
     expect(res.status).toBe(201);
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
     expect(res.headers.get("X-Idempotent-Replay")).toBeNull();
 
     // Lookup was scoped to tenant B's tenantId — verifies the (tenantId, key)
@@ -326,8 +351,8 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toMatch(/empty/i);
-    // Validation rejection short-circuits BEFORE any DB write.
-    expect(mocks.paymentCreateMock).not.toHaveBeenCalled();
+    // Validation rejection short-circuits BEFORE any Manifest write.
+    expect(mocks.runCommandMock).not.toHaveBeenCalled();
     expect(mocks.manifestIdempotencyFindUniqueMock).not.toHaveBeenCalled();
   });
 
@@ -338,7 +363,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toMatch(/exceeds/i);
-    expect(mocks.paymentCreateMock).not.toHaveBeenCalled();
+    expect(mocks.runCommandMock).not.toHaveBeenCalled();
   });
 
   it("rejects Idempotency-Key with disallowed characters with 400", async () => {
@@ -350,7 +375,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toMatch(/invalid characters/i);
-    expect(mocks.paymentCreateMock).not.toHaveBeenCalled();
+    expect(mocks.runCommandMock).not.toHaveBeenCalled();
   });
 
   it("validation error (404 invoice) under a key is NOT cached — client may retry under same key", async () => {
@@ -376,7 +401,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
     // Worst-case degradation = duplicate-on-retry, same as no idempotency
     // at all. We never make availability worse by adding it.
     expect(res.status).toBe(201);
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
   });
 
   it("fails OPEN: cache store throwing does not corrupt the response", async () => {
@@ -388,7 +413,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
 
     // Payment was created; cache write failure is swallowed and logged.
     expect(res.status).toBe(201);
-    expect(mocks.paymentCreateMock).toHaveBeenCalledTimes(1);
+    expect(mocks.runCommandMock).toHaveBeenCalledWith("create", expect.any(Object), expect.objectContaining({ entityName: "Payment" }));
     const body = await res.json();
     expect(body.id).toBe(PAYMENT_ID);
   });

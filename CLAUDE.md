@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 99% context — saved before compacting]
+[proactive bridge @ 96% context — saved before compacting]
 Files (1):
-  apps/api/app/api/cron/inventory-audit/route.ts (edit)
+  manifest/source/reactions.manifest (edit)
 
 # === END COGNILAYER ===
