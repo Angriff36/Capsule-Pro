@@ -15,7 +15,8 @@
  */
 
 import type { CommandResult, IdempotencyStore } from "@angriff36/manifest";
-import type { Prisma, PrismaClient } from "@repo/database/standalone";
+import type { PrismaClient } from "@repo/database/standalone";
+import { toJson } from "./utils/to-json";
 
 /**
  * Configuration for PrismaIdempotencyStore.
@@ -132,11 +133,11 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
         create: {
           tenantId: this.tenantId,
           key,
-          result: result as unknown as Prisma.InputJsonValue,
+          result: toJson(result),
           expiresAt,
         },
         update: {
-          result: result as unknown as Prisma.InputJsonValue,
+          result: toJson(result),
           expiresAt,
         },
       });
@@ -188,6 +189,9 @@ export class PrismaIdempotencyStore implements IdempotencyStore {
         return undefined;
       }
 
+      // entry.result is a Prisma Json value (JsonValue) that was originally
+      // serialized from a CommandResult. The double-cast is necessary because
+      // Prisma's Json type is a generic scalar, not typed as CommandResult.
       return entry.result as unknown as CommandResult;
     } catch (error) {
       console.error(

@@ -74,6 +74,10 @@ export class GenericPrismaStore implements Store<EntityInstance> {
           `Run \`pnpm manifest:gen-prisma-meta\` after confirming the model exists in schema.prisma.`,
       );
     }
+    // Dynamic delegate lookup: PrismaClient models are accessed by name
+    // (e.g. prisma.user, prisma.wasteEntry). Since the entity name is a runtime
+    // string from metadata, we index dynamically — this requires escaping the
+    // typed PrismaClient to a generic record via `as unknown as Record`.
     const delegate = (prisma as unknown as Record<string, unknown>)[
       meta.accessor
     ] as PrismaDelegate | undefined;

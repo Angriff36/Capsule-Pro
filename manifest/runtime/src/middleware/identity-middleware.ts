@@ -162,9 +162,10 @@ async function resolveRole(
   }
 
   // Lookup by authUserId for Clerk-style IDs (or as fallback for UUID lookup).
-  // Cast findFirst to accept unknown args because authUserId may not be in
-  // the Prisma-generated where input type (it exists as a column but the
-  // generated types may not include it as a filterable field).
+  // The double-cast is necessary because `authUserId` exists as a database column
+  // but may not be exposed as a filterable field in the Prisma-generated where
+  // input type. Widening to `(args: unknown) => ...` bypasses the generated type
+  // narrowing while preserving the return shape.
   const byAuthUser = await (
     prisma.user.findFirst as unknown as (
       args: unknown

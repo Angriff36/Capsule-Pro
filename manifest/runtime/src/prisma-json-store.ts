@@ -13,7 +13,8 @@
  */
 
 import type { Store } from "@angriff36/manifest";
-import type { Prisma, PrismaClient } from "@repo/database/standalone";
+import type { PrismaClient } from "@repo/database/standalone";
+import { toJson } from "./utils/to-json";
 import type { EntityInstance } from "./prisma-store";
 
 /**
@@ -134,7 +135,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
           tenantId: this.tenantId,
           entityType: this.entityType,
           id,
-          data: jsonData as unknown as Prisma.InputJsonValue,
+          data: toJson(jsonData),
           version: 1,
         },
       });
@@ -196,7 +197,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
           version: existing.version,
         },
         data: {
-          data: mergedData as unknown as Prisma.InputJsonValue,
+          data: toJson(mergedData),
           version: existing.version + 1,
           updatedAt: new Date(),
         },

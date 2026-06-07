@@ -13,7 +13,8 @@
  * Response: { processed: number, success: number, failed: number, timestamp: string }
  */
 
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import {
   determineNextStatus,
   sendWebhook,
@@ -188,7 +189,7 @@ export async function GET(request: Request): Promise<NextResponse> {
               eventType: delivery.eventType,
               entityType: delivery.entityType,
               entityId: delivery.entityId,
-              payload: delivery.payload as unknown as Prisma.InputJsonValue,
+              payload: toJson(delivery.payload),
               finalErrorMessage: result.errorMessage,
               totalAttempts: newAttemptNumber,
               originalUrl: webhook.url,

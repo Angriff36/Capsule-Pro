@@ -117,8 +117,8 @@ async function createWarningViaManifest(
       dishId: dish.id,
       warningType,
       // Pass arrays directly - AllergenWarningPrismaStore.stringToArray() handles both strings and arrays
-      allergens: conflictingItems as unknown as string,
-      affectedGuests: [guest.id] as unknown as string,
+      allergens: conflictingItems,
+      affectedGuests: [guest.id],
       severity,
       notes,
     },

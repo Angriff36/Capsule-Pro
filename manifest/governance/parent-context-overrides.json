@@ -182,6 +182,13 @@
       "reason": "SmsAutomationRule.isActive is the rule's own enabled/disabled state, semantically independent of EmailTemplate.isActive (whether the referenced template is available). A rule can be inactive even when its template is active — the name match is coincidental.",
       "owner": "notifications",
       "reviewed": "2026-06-07"
+    },
+    "PurchaseRequisition": {
+      "fields": ["locationId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "PurchaseRequisition.locationId is the location where items are needed (origin), semantically independent of PurchaseOrder.locationId (where the order is fulfilled). A requisition may originate at a different location than where its converted purchase order is processed — structural name match but not semantic inheritance.",
+      "owner": "procurement",
+      "reviewed": "2026-06-07"
     }
   }
 }

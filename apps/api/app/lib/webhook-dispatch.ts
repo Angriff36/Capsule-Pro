@@ -9,6 +9,7 @@
  */
 
 import { database, type Prisma, type webhook_event_type } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -77,7 +78,7 @@ export async function dispatchWebhooks({
               eventType: action,
               entityType,
               entityId,
-              payload: payload as unknown as Prisma.InputJsonValue,
+              payload: toJson(payload),
               status,
               attemptNumber: 1,
               httpResponseStatus: result.httpStatus ?? null,

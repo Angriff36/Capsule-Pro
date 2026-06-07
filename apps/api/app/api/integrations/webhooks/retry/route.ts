@@ -8,7 +8,8 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import {
   determineNextStatus,
   sendWebhook,
@@ -206,7 +207,7 @@ export async function POST(request: NextRequest) {
             eventType: delivery.eventType,
             entityType: delivery.entityType,
             entityId: delivery.entityId,
-            payload: delivery.payload as unknown as Prisma.InputJsonValue,
+            payload: toJson(delivery.payload),
             finalErrorMessage: result.errorMessage,
             totalAttempts: newAttemptNumber,
             originalUrl: webhook.url,

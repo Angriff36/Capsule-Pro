@@ -40,6 +40,7 @@ vi.mock("@repo/database", () => {
   const mockDb = new Proxy(
     {},
     {
+      has: () => true, // `in` operator: all accessors resolve as existing
       get: (_target, prop) => {
         if (prop === "$queryRaw") {
           return queryRawSpy;

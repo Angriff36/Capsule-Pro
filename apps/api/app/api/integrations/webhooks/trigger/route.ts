@@ -5,7 +5,8 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
           eventType: body.eventType as "created" | "updated" | "deleted",
           entityType: body.entityType,
           entityId: body.entityId,
-          payload: payload as unknown as Prisma.InputJsonValue,
+          payload: toJson(payload),
           status: "pending",
           attemptNumber: 1,
         },

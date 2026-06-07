@@ -13,6 +13,18 @@ import {
 } from "./helpers";
 
 /**
+ * Shape of a waste entry row as returned by `fetchWasteEntries`
+ * (Prisma Decimal fields expose `.toNumber()`; `inventoryItem` is included).
+ */
+type WasteEntryRow = {
+  loggedAt: Date;
+  reasonId: number;
+  totalCost: { toNumber: () => number } | null;
+  quantity: { toNumber: () => number };
+  inventoryItem: { name: string };
+};
+
+/**
  * GET /api/kitchen/waste/trends
  * View waste trends over time with analytics
  */
@@ -43,12 +55,7 @@ export async function GET(request: NextRequest) {
 
   // Group data by time period
   const trends = groupWasteEntriesByPeriod(
-    entries as unknown as Array<{
-      loggedAt: Date;
-      totalCost: { toNumber: () => number } | null;
-      quantity: { toNumber: () => number };
-      inventoryItem: { name: string };
-    }>,
+    entries as Array<WasteEntryRow>,
     groupBy
   );
 
@@ -57,18 +64,12 @@ export async function GET(request: NextRequest) {
 
   // Analyze waste reasons
   const { topReasons, reasonCounts } = await analyzeWasteReasons(
-    entries as unknown as Array<{
-      reasonId: number;
-      totalCost: { toNumber: () => number } | null;
-    }>
+    entries as Array<WasteEntryRow>
   );
 
   // Analyze wasted items
   const topItems = analyzeWastedItems(
-    entries as unknown as Array<{
-      totalCost: { toNumber: () => number } | null;
-      inventoryItem: { name: string };
-    }>
+    entries as Array<WasteEntryRow>
   );
 
   // Calculate reduction opportunities

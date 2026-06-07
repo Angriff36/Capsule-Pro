@@ -8,6 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
@@ -211,7 +212,7 @@ export async function PUT(
     }
     if (body.customHeaders !== undefined) {
       updateData.customHeaders =
-        body.customHeaders as unknown as Prisma.InputJsonValue;
+        toJson(body.customHeaders);
     }
 
     const webhook = await database.outboundWebhook.update({

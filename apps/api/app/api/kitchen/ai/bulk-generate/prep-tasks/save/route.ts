@@ -61,12 +61,12 @@ export const POST = withRateLimit(
         );
         invariant(
           task.startByDate instanceof Date ||
-            !Number.isNaN(Date.parse(task.startByDate as unknown as string)),
+            !Number.isNaN(Date.parse(String(task.startByDate))),
           "Task startByDate must be a valid date"
         );
         invariant(
           task.dueByDate instanceof Date ||
-            !Number.isNaN(Date.parse(task.dueByDate as unknown as string)),
+            !Number.isNaN(Date.parse(String(task.dueByDate))),
           "Task dueByDate must be a valid date"
         );
         invariant(
@@ -81,11 +81,11 @@ export const POST = withRateLimit(
         startByDate:
           task.startByDate instanceof Date
             ? task.startByDate
-            : new Date(task.startByDate as unknown as string),
+            : new Date(String(task.startByDate)),
         dueByDate:
           task.dueByDate instanceof Date
             ? task.dueByDate
-            : new Date(task.dueByDate as unknown as string),
+            : new Date(String(task.dueByDate)),
       }));
 
       // Save tasks to database via manifest runtime

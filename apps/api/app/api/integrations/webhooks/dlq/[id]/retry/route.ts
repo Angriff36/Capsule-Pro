@@ -7,7 +7,8 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { toJson } from "@/lib/prisma-utils";
 import { sendWebhook, type WebhookPayload } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           eventType: dlqEntry.eventType,
           entityType: dlqEntry.entityType,
           entityId: dlqEntry.entityId,
-          payload: dlqEntry.payload as unknown as Prisma.InputJsonValue,
+          payload: toJson(dlqEntry.payload),
           status: "pending",
           attemptNumber: dlqEntry.totalAttempts + 1,
         },

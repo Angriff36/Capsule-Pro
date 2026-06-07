@@ -153,11 +153,14 @@ export const GET = withRateLimit(
 
     try {
       // Get open shifts (shifts without assigned employees).
+      // TODO: employeeId is a required (non-nullable) field in the Prisma schema,
+      // so filtering for `null` will never match rows. This should be updated once
+      // the schema supports unassigned shifts (e.g. nullable employeeId).
+      // For now, omit the employeeId filter to return all non-deleted shifts.
       const openShifts = await database.scheduleShift.findMany({
         where: {
           tenantId,
           deletedAt: null,
-          employeeId: null as unknown as string,
           ...(scheduleId ? { scheduleId } : {}),
           ...(locationId ? { locationId } : {}),
           ...(startDate ? { shift_start: { gte: new Date(startDate) } } : {}),

@@ -259,7 +259,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/staffing/coverage/route.ts (edit), apps/api/lib/trash/entity-helpers.ts (edit), apps/api/app/api/administrative/trash/list/route.ts (create), apps/api/app/api/administrative/trash/analyze/route.ts (create), apps/api/app/api/administrative/trash/restore/route.ts (create), apps/api/lib/trash/entity-helpers.ts (create)
+[proactive bridge @ 87% context — saved before compacting]
+Files (4):
+  packages/mcp-server/src/test-sdk-import.ts (create)
+  packages/mcp-server/src/plugins/ir-introspection.ts (edit)
+  packages/mcp-server/src/lib/agent-sdk.ts (create)
+  packages/mcp-server/src/lib/agent-sdk.ts (edit)
 
 # === END COGNILAYER ===
