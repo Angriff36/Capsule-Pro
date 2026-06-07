@@ -939,10 +939,7 @@ export async function updateClientInteraction(
 }
 
 /**
- * Delete a client interaction (soft delete).
- *
- * TODO: ClientInteraction has no `remove` or `archive` command in the IR.
- * Keeping as direct Prisma until a governed soft-delete command is added.
+ * Delete a client interaction (soft delete via Manifest runtime).
  */
 export async function deleteClientInteraction(
   clientId: string,
@@ -951,11 +948,12 @@ export async function deleteClientInteraction(
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(interactionId, "Interaction ID is required");
 
-  // Verify client exists
+  // Verify client exists (read path — constitution §10)
   const client = await database.client.findFirst({
     where: {
       AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
@@ -964,7 +962,7 @@ export async function deleteClientInteraction(
 
   invariant(client, "Client not found");
 
-  // Verify interaction exists and belongs to this client
+  // Verify interaction exists and belongs to this client (read path — constitution §10)
   const existingInteraction = await database.clientInteraction.findFirst({
     where: {
       AND: [
@@ -978,11 +976,12 @@ export async function deleteClientInteraction(
 
   invariant(existingInteraction, "Interaction not found");
 
-  await database.clientInteraction.update({
-    where: {
-      tenantId_id: { tenantId, id: interactionId },
-    },
-    data: { deletedAt: new Date() },
+  await runManifestCommand({
+    entity: "ClientInteraction",
+    command: "softDelete",
+    instanceId: interactionId,
+    body: { userId: user.id },
+    user: { id: user.id, tenantId, role: user.role },
   });
 
   revalidatePath(`/crm/clients/${clientId}`);
