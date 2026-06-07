@@ -2,6 +2,7 @@
 // Manifest spec for recording and authorizing constraint overrides
 
 entity OverrideAudit {
+  // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
   property required id: string
   property required tenantId: string

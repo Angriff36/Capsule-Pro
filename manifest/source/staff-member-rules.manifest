@@ -4,6 +4,7 @@
 // that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
 
 entity StaffMember {
+  // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
   property required id: string
   property required tenantId: string

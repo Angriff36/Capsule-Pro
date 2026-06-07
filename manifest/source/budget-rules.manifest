@@ -2,6 +2,7 @@
 // Manifest spec for departmental and project budgets
 
 entity Budget {
+  // No relationships: departmentId/approvedBy are loose identifier strings, no matching entity FKs
   key [tenantId, id]
   property required id: string
   property required tenantId: string

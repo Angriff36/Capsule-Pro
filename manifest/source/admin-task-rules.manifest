@@ -2,6 +2,7 @@
 // Manifest spec for managing administrative tasks with status state machine
 
 entity AdminTask {
+  // No relationships: assignedTo/createdBy are user identifier strings, not entity FKs
   key [tenantId, id]
   property required id: string
   property required tenantId: string

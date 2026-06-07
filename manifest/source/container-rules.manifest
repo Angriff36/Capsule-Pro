@@ -3,6 +3,7 @@
 // Enriched with: reactivate + relocate commands for real kitchen ops needs.
 
 entity Container {
+  // No relationships: locationId is a loose storage location reference, not a direct FK to StorageLocation
   key [tenantId, id]
   property required id: string
   property required tenantId: string

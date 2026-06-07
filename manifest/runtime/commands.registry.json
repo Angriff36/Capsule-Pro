@@ -986,6 +986,11 @@
   },
   {
     "entity": "CycleCountSession",
+    "command": "reopen",
+    "commandId": "CycleCountSession.reopen"
+  },
+  {
+    "entity": "CycleCountSession",
     "command": "softDelete",
     "commandId": "CycleCountSession.softDelete"
   },

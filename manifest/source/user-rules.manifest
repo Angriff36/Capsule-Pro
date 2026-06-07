@@ -23,6 +23,8 @@ entity User {
   timestamps
   property deletedAt: datetime
 
+  belongsTo rolePolicy: RolePolicy with roleId
+
   computed fullName: string = self.firstName + " " + self.lastName
   computed isTerminated: boolean = self.terminationDate != null
   computed isHourly: boolean = self.employmentType == "full_time" or self.employmentType == "part_time"

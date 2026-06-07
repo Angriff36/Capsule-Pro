@@ -27,6 +27,7 @@ entity PurchaseOrder {
   key [tenantId, id]
 
   hasMany items: PurchaseOrderItem
+  belongsTo vendor: Vendor with vendorId
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"

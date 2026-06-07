@@ -5,6 +5,7 @@
 //   they would block ALL commands including removeTask/deactivate. Kept as command-level only.
 
 entity Station {
+  // No relationships: locationId is a loose location reference, not a direct FK to a Manifest entity
   key [tenantId, id]
   property required id: string
   property required tenantId: string

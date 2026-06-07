@@ -2,6 +2,7 @@
 // Manifest spec for rate limit configuration management
 
 entity RateLimitConfig {
+  // No relationships: endpointPattern is a URL pattern, no entity FKs
   key [tenantId, id]
   property required id: string
   property required tenantId: string

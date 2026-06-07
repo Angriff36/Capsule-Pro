@@ -5,6 +5,7 @@
 // NOTE: TrainingAssignment entity + commands moved to training-module-rules.manifest
 // (comprehensive definition with attempt tracking, manager review, and shift-based due dates).
 // This file retains the simpler event definitions used by legacy code paths.
+// No relationships: no entity definitions in this file — only events and policies
 
 policy TrainingAssignmentManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training assignments"
 

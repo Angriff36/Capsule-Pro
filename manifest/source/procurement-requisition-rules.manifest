@@ -41,6 +41,7 @@ entity PurchaseRequisition {
   key [tenantId, id]
 
   hasMany items: PurchaseRequisitionItem
+  belongsTo convertedToPo: PurchaseOrder with convertedToPoId
 
   computed isDraft: boolean = self.status == "draft"
   computed isPending: boolean = self.status == "pending_manager"

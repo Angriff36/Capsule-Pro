@@ -3,6 +3,7 @@
 // SECURITY: All commands require admin/owner role (adminOnly policy)
 
 entity RolePolicy {
+  // No relationships: roleId is a role identifier string, not a FK to a separate Role entity
   key [tenantId, id]
   property required id: string
   property required tenantId: string

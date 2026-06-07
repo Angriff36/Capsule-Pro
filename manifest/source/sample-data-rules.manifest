@@ -13,6 +13,7 @@
 // - Policies ensure only authorized users can manage sample data
 
 entity SampleData {
+  // No relationships: purely operational entity for seed/clear, no entity FKs
   key [tenantId, id]
   property required id: string
   // The tenant this sample data belongs to

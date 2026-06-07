@@ -2,6 +2,7 @@
 // Manifest spec for workflow automation with triggers, steps, and lifecycle management
 
 entity Workflow {
+  // No relationships: triggerType/triggerConfig are configuration values, no entity FKs
   key [tenantId, id]
   property required id: string
   property required tenantId: string
