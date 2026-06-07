@@ -559,6 +559,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.3 batch 21: Driver/Vehicle logistics server actions governed** | Driver entity reconciled (firstName/lastName→name, new state machine with available/on_route/off_duty/inactive). Vehicle entity reconciled (retired→decommissioned, new maintenance/decommission commands). Both added to ENTITIES_WITH_SPECIFIC_STORES for GenericPrismaStore routing. logistics/actions.ts: createDriver/createVehicle migrated from direct Prisma to runManifestCommand. Governed-entity violations: 15→14. IR: 997 commands, 977 events. API+app+runtime typecheck 0, 2750 tests pass. |
 | 2026-06-07 | **Task 8.2 batch 22: Dead code cleanup + CommandBoard.create migration** | Deleted recipe-version-helpers.ts (815 LOC dead code, 0 consumers). Fixed CommandBoard manifest source (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. 14 bypass entries documented. Governed-entity violations: 14→13. IR: 998 commands, 978 events. API+app typecheck 0. |
 | 2026-06-07 | **Task 8.2/8.3 batches 23–29: Governance migration milestone — 0 governed-entity violations (v0.12.149)** | Governed-entity direct-write violations reduced from 33 to 0. Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services (event/inventory/invoice), Nowsta sync, event document parser all migrated to Manifest runtime. 15 documented bypasses in bypasses.json. 47 ungoverned writes (infrastructure entities with no Manifest IR definition). IR: 1000+ commands, 980+ events. API+app typecheck 0. |
+| 2026-06-07 | **Task baseline repair: menus.is_template drift + runtime declaration fixes + simulation test mock drift (v0.12.151)** | Repair migration `20260607155307_repair_drift` adds `is_template` to `tenant_kitchen.menus`. 5 route files fixed missing `export const runtime = "nodejs"` (calendar sync trigger, command-board simulations, events documents parse, inventory batch, kitchen import). Command-board simulations test mock updated from dead `database.commandBoard.create` to `runManifestCommandCore`. db:check zero drift, migrate:status "up to date", typecheck 0, 2734/2734 tests pass. |
 
 ---
 
@@ -626,7 +627,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## Known Blockers & Gotchas
 
-1. **Bootstrap constraint gotcha (MOSTLY RESOLVED):** Upstream 1.7.0 fixed the core issue. Edge cases may remain for entities with unusually complex constraint blocks. **Note (v0.12.126):** The `0_init` migration baseline has been repaired — stripped dotenvx `◇` banner corruption from lines 1–2 and patched the generated-column SQL. Baseline now matches `schema.prisma` exactly.
+1. **Bootstrap constraint gotcha (MOSTLY RESOLVED):** Upstream 1.7.0 fixed the core issue. Edge cases may remain for entities with unusually complex constraint blocks. **Note (v0.12.126):** The `0_init` migration baseline has been repaired — stripped dotenvx `◇` banner corruption from lines 1–2 and patched the generated-column SQL. Baseline now matches `schema.prisma` exactly. **Note (v0.12.151):** Baseline checksum mismatch still blocks `db:dev` — use `db:repair` + `db:deploy` for additive schema changes. The generated-column `account_number_last4 DEFAULT` expression also triggers P3006 on shadow replay.
 
 2. **~~16 IR entities have no Prisma model~~ RESOLVED 2026-06-04:** All 16 entities now have Prisma model declarations matching their SQL tables from the baseline migration. Additionally ~14 entities have models but wrong accessor names needing overrides (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1).
 
@@ -755,6 +756,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 64. **Profiling is a SEPARATE EXPORT, not just RuntimeOption:** `@angriff36/manifest/profiler` is standalone, not a boolean flag. Task 7.6 `profiling` entry is incomplete without wiring the export (Task 7.9 added).
 
 65. **Tenant isolation is TWO layers, plan only covers one:** IR-level declaration (`tenant tenantId: string from context.tenantId`) + RuntimeOption (`requireTenantContext: true`). Task 7.3 only addresses RuntimeOption. IR declaration needed in source files.
+
+66. **5 route files were missing `export const runtime = "nodejs"` despite importing `createManifestRuntime`:** Fixed in v0.12.151 (calendar sync trigger, command-board simulations, events documents parse, inventory batch, kitchen import). The `manifest-runtime-node.invariant.test.ts` catches this class of bug. Any new route using `createManifestRuntime` must include the declaration.
 
 59. **Rate Limiting and Command Retry Policy are Manifest DSL features with zero adoption:** `rateLimit { window, maxRequests, scope, strategy }` and `retry { maxAttempts, backoff, initialDelay, maxDelay, jitter }` are available in the DSL but no `.manifest` source uses them. Task 11.5, 11.6.
 
