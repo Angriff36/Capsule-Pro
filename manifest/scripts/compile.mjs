@@ -17,18 +17,19 @@ import {
   validateCommandIntentRegistry,
 } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
+import { getConfigPaths } from "./read-config.mjs";
 
-const MANIFESTS_DIR = join(
-  process.cwd(),
-  "manifest/source"
-);
-const OUTPUT_DIR = join(process.cwd(), "manifest/ir");
+const {
+  srcDir: MANIFESTS_DIR,
+  outputDir: OUTPUT_DIR,
+  registryDir: REGISTRY_DIR,
+  registryPath: REGISTRY_FILE,
+} = getConfigPaths();
+
+// IR file names are project-specific (kitchen.* convention) — not configurable
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
-// Canonical merged registry — single source of truth for dispatcher + audit.
-const REGISTRY_DIR = join(process.cwd(), "manifest/runtime");
-const REGISTRY_FILE = join(REGISTRY_DIR, "commands.registry.json");
 
 function enforceNoDuplicateCommandIntent(compiledEntries) {
   const diagnostics = validateCommandIntentRegistry(

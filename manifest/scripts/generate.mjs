@@ -18,14 +18,9 @@ import {
   applyFieldOverrides,
   ENTITY_DETAIL_DROP,
 } from "./entity-domain-map.mjs";
+import { getConfigPaths } from "./read-config.mjs";
 
-const repoRoot = resolve(process.cwd());
-const defaultIr = resolve(
-  repoRoot,
-  "manifest/ir/kitchen.ir.json"
-);
-// Output root: apps/api/app/api — routes are placed into domain subdirs via ENTITY_DOMAIN_MAP
-const defaultOutput = resolve(repoRoot, "apps/api/app/api");
+const { repoRoot, irPath: defaultIr, nextjsOutput: defaultOutput } = getConfigPaths();
 
 const userArgs = process.argv.slice(2);
 
@@ -183,10 +178,7 @@ const setOutputDirInArgs = (cliArgs, newOutputDir) => {
  * "kitchen/prep-tasks/commands/create/route.ts".
  */
 const loadExpectedCommandPaths = () => {
-  const commandsManifestPath = resolve(
-    repoRoot,
-    "manifest/ir/kitchen.commands.json"
-  );
+  const commandsManifestPath = getConfigPaths().commandsPath;
   if (!existsSync(commandsManifestPath)) {
     throw new Error(
       `[manifest/generate] kitchen.commands.json not found at ${commandsManifestPath}. Run manifest:compile first.`
@@ -503,10 +495,7 @@ const detailResult = spawnSync("node", [detailScriptPath], {
 console.log("[manifest/generate] Generating singular command dispatcher...");
 
 {
-  const dispatcherDirInfo = resolve(
-    repoRoot,
-    "apps/api/app/api/manifest/[entity]/commands/[command]"
-  );
+  const { dispatcherDir: dispatcherDirInfo } = getConfigPaths();
   mkdirSync(dispatcherDirInfo, { recursive: true });
   const dispatcherPathInfo = resolve(dispatcherDirInfo, "route.ts");
 

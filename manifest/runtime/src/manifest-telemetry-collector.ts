@@ -92,6 +92,10 @@ export interface TelemetryPrismaClient {
       data: unknown[];
       skipDuplicates?: boolean;
     }) => Promise<{ count: number }>;
+    findMany?: (args: {
+      where?: unknown;
+      select?: unknown;
+    }) => Promise<unknown[]>;
   };
   $transaction?: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
 }
@@ -454,7 +458,8 @@ export class ManifestTelemetryCollector {
   }
 
   /**
-   * Get aggregate metrics for a tenant.
+   * Get aggregate metrics for a tenant from persisted telemetry data.
+   * Queries the manifestCommandTelemetry table and computes real aggregates.
    */
   async getAggregateMetrics(params: {
     tenantId: string;
@@ -473,20 +478,156 @@ export class ManifestTelemetryCollector {
     idempotencyHitRate: number;
     commandsByStatus: Record<string, number>;
   }> {
-    // This would be implemented in a separate query module
-    // For now, return placeholder
-    return {
-      totalExecutions: 0,
-      successCount: 0,
-      failureCount: 0,
-      guardDeniedCount: 0,
-      avgDurationMs: 0,
-      p95DurationMs: 0,
-      p99DurationMs: 0,
-      idempotencyHitRate: 0,
-      commandsByStatus: {},
-    };
+    try {
+      // Build the where clause from params
+      const where: Record<string, unknown> = {
+        tenant_id: params.tenantId,
+      };
+      if (params.commandName) {
+        (where as Record<string, unknown>).command_name = params.commandName;
+      }
+      if (params.entityName) {
+        (where as Record<string, unknown>).entity_name = params.entityName;
+      }
+      if (params.startDate || params.endDate) {
+        const executedAt: Record<string, unknown> = {};
+        if (params.startDate) executedAt.gte = params.startDate;
+        if (params.endDate) executedAt.lte = params.endDate;
+        where.executed_at = executedAt;
+      }
+
+      // Aggregate metrics from persisted telemetry
+      const findMany = this.prisma.manifestCommandTelemetry.findMany;
+      if (!findMany) {
+        // findMany not available — return zeros gracefully
+        return {
+          totalExecutions: 0,
+          successCount: 0,
+          failureCount: 0,
+          guardDeniedCount: 0,
+          avgDurationMs: 0,
+          p95DurationMs: 0,
+          p99DurationMs: 0,
+          idempotencyHitRate: 0,
+          commandsByStatus: {},
+        };
+      }
+      const records = await findMany({
+        where,
+        select: {
+          status: true,
+          duration_ms: true,
+          was_idempotent_hit: true,
+        },
+      });
+
+      const rows = records as Array<{
+        status: string;
+        duration_ms: number | null;
+        was_idempotent_hit: boolean;
+      }>;
+
+      const totalExecutions = rows.length;
+      const commandsByStatus: Record<string, number> = {};
+      let successCount = 0;
+      let failureCount = 0;
+      let guardDeniedCount = 0;
+      const durations: number[] = [];
+      let idempotentHits = 0;
+      let idempotentTotal = 0;
+
+      for (const row of rows) {
+        // Count by status
+        commandsByStatus[row.status] = (commandsByStatus[row.status] || 0) + 1;
+
+        // Classify status
+        if (row.status === "success") {
+          successCount++;
+        } else if (
+          row.status === "guard_denied" ||
+          row.status === "policy_denied"
+        ) {
+          guardDeniedCount++;
+        } else {
+          failureCount++;
+        }
+
+        // Collect durations for percentile calculation
+        if (row.duration_ms != null && row.duration_ms > 0) {
+          durations.push(row.duration_ms);
+        }
+
+        // Idempotency tracking
+        idempotentTotal++;
+        if (row.was_idempotent_hit) {
+          idempotentHits++;
+        }
+      }
+
+      // Sort durations for percentile calculation
+      durations.sort((a, b) => a - b);
+
+      const avgDurationMs =
+        durations.length > 0
+          ? Math.round(
+              durations.reduce((sum, d) => sum + d, 0) / durations.length
+            )
+          : 0;
+
+      const p95DurationMs = percentile(durations, 95);
+      const p99DurationMs = percentile(durations, 99);
+
+      const idempotencyHitRate =
+        idempotentTotal > 0 ? idempotentHits / idempotentTotal : 0;
+
+      return {
+        totalExecutions,
+        successCount,
+        failureCount,
+        guardDeniedCount,
+        avgDurationMs,
+        p95DurationMs,
+        p99DurationMs,
+        idempotencyHitRate,
+        commandsByStatus,
+      };
+    } catch {
+      // Graceful fallback — if the query fails (e.g. table doesn't exist yet),
+      // return zeros rather than crashing the caller.
+      return {
+        totalExecutions: 0,
+        successCount: 0,
+        failureCount: 0,
+        guardDeniedCount: 0,
+        avgDurationMs: 0,
+        p95DurationMs: 0,
+        p99DurationMs: 0,
+        idempotencyHitRate: 0,
+        commandsByStatus: {},
+      };
+    }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate the Nth percentile from a sorted array of numbers.
+ * Returns 0 for empty arrays.
+ */
+function percentile(sorted: number[], p: number): number {
+  if (sorted.length === 0) return 0;
+  if (sorted.length === 1) return sorted[0];
+  const index = (p / 100) * (sorted.length - 1);
+  const lower = Math.floor(index);
+  const upper = Math.ceil(index);
+  if (lower === upper) return sorted[lower];
+  // Linear interpolation between adjacent values
+  return Math.round(
+    sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower)
+  );
 }
 
 // ---------------------------------------------------------------------------
