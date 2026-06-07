@@ -270,7 +270,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
     }
 
-    // Action: Adjust schedule amounts
+    // Action: Adjust schedule amounts (Manifest runtime — adjustSchedule command)
     if (action === "adjust") {
       const newTotal =
         body.totalAmount !== undefined ? Number(body.totalAmount) : null;
@@ -282,32 +282,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
 
-      const updates: Record<string, unknown> = { updatedAt: new Date() };
+      const user = await resolveCurrentUser(request);
+      await runManifestCommand({
+        entity: "RevenueRecognitionSchedule",
+        command: "adjustSchedule",
+        instanceId: id,
+        body: {
+          newEndDate: body.endDate ? new Date(body.endDate).getTime() : existing.endDate?.getTime() ?? Date.now(),
+          newTotalAmount: newTotal ?? Number(existing.totalAmount),
+          description: body.description ?? existing.description ?? "",
+          notes: body.notes ?? existing.notes ?? "",
+          recognitionPeriod: body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
 
-      if (newTotal !== null) {
-        updates.totalAmount = newTotal;
-        updates.remainingAmount = newTotal - Number(existing.recognizedAmount);
-      }
-
-      if (body.description !== undefined) {
-        updates.description = body.description;
-      }
-
-      if (body.notes !== undefined) {
-        updates.notes = body.notes;
-      }
-
-      if (body.endDate !== undefined) {
-        updates.endDate = new Date(body.endDate);
-      }
-
-      if (body.recognitionPeriod !== undefined) {
-        updates.recognitionPeriod = body.recognitionPeriod;
-      }
-
-      const updated = await database.revenueRecognitionSchedule.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: updates,
+      // Re-fetch with lines for response format compatibility (read path — constitution §10)
+      const updated = await database.revenueRecognitionSchedule.findFirst({
+        where: { tenantId, id, deletedAt: null },
         include: {
           lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
         },
@@ -316,30 +308,33 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ data: updated });
     }
 
-    // Default: simple field updates (backward compatible)
-    const updates: Record<string, unknown> = {};
+    // Default: simple field updates via governed adjustSchedule command
+    {
+      const user = await resolveCurrentUser(request);
+      await runManifestCommand({
+        entity: "RevenueRecognitionSchedule",
+        command: "adjustSchedule",
+        instanceId: id,
+        body: {
+          newEndDate: existing.endDate?.getTime() ?? Date.now(),
+          newTotalAmount: Number(existing.totalAmount),
+          description: body.description ?? existing.description ?? "",
+          notes: body.notes ?? existing.notes ?? "",
+          recognitionPeriod: body.recognitionPeriod ?? existing.recognitionPeriod ?? 0,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
 
-    if (body.description !== undefined) {
-      updates.description = body.description;
+      // Re-fetch with lines for response format compatibility (read path — constitution §10)
+      const updated = await database.revenueRecognitionSchedule.findFirst({
+        where: { tenantId, id, deletedAt: null },
+        include: {
+          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        },
+      });
+
+      return NextResponse.json({ data: updated });
     }
-
-    if (body.notes !== undefined) {
-      updates.notes = body.notes;
-    }
-
-    if (body.status !== undefined) {
-      updates.status = body.status;
-    }
-
-    const updated = await database.revenueRecognitionSchedule.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: { ...updates, updatedAt: new Date() },
-      include: {
-        lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
-      },
-    });
-
-    return NextResponse.json({ data: updated });
   } catch (error) {
     captureException(error);
     log.error("Error updating revenue recognition schedule:", error);

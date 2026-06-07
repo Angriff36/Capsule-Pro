@@ -174,12 +174,15 @@ entity RevenueRecognitionSchedule {
     emit RecognitionCancelled
   }
 
-  command adjustSchedule(newEndDate: timestamp, newTotalAmount: decimal) {
+  command adjustSchedule(newEndDate: timestamp, newTotalAmount: decimal, description: string, notes: string, recognitionPeriod: decimal) {
     guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot adjust completed recognition"
     guard newEndDate > now() "New end date must be in the future"
     mutate endDate = newEndDate
     mutate remainingAmount = self.remainingAmount + (newTotalAmount - self.totalAmount)
     mutate totalAmount = newTotalAmount
+    mutate description = description
+    mutate notes = notes
+    mutate recognitionPeriod = recognitionPeriod
     emit ScheduleAdjusted
   }
 
