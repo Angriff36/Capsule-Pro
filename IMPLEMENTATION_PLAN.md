@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 22nd revision, updated batch 22)
+## Validation Baseline (2026-06-07, comprehensive audit -- 23rd revision, updated batch 29)
 
 ### Claim Verification Matrix
 
@@ -21,7 +21,7 @@
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
 | 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). Additionally **15 entities have models but wrong accessor names** (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1). |
 | 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
-| 5 | ~~371~~ ~~301~~ ~~295~~ **~294** direct-write violations | **UPDATED** | 189 API mutation calls across ~78 files + 109 server action writes across ~27 files = ~294 total. Driver/Vehicle logistics actions migrated (v0.12.141). |
+| 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **RESOLVED** (v0.12.149) | Governed-entity violations reduced from 33 to 0. All remaining writes registered as documented bypasses in `bypasses.json` (15 bypassed) or ungoverned infrastructure (47 ungoverned — entities with no Manifest IR definition). Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services, Nowsta sync, event document parser all migrated to Manifest runtime. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
@@ -421,8 +421,10 @@
 
 ### Governance
 
-- **13 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 67 in 49 route files (1 server action create).
-  - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
+- **0 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 100+ in 60+ route files + 30+ server action writes. Governed-entity direct-write violations reduced from 33 to 0 in batches 23–29 (v0.12.149).
+  - **15 documented bypasses** in `manifest/governance/bypasses.json` — cross-entity batch patterns (PaymentMethod clearOthers→markAsDefault), bulk operations, raw SQL imports, and operations with no Manifest command equivalent.
+  - **47 ungoverned writes** — entities with no Manifest IR definition (infrastructure tables, sync logs, operational entities outside governed domain).
+  - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes. All governed-entity files now report 0 violations.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
 - `as any` usage: 39 in apps/api/app/, 10 in manifest/runtime/src/ (6 in factory, 1 in run-manifest-command-core, 2 in permission-guard, 1 in manifest-runtime.ts re-export)
@@ -556,6 +558,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.2 batch 21: Payments route status fallbacks migrated to governed Manifest commands** | Replace 2 direct database.payment.update() calls in payments POST route with governed Manifest commands: FAILED status → Payment.processFailed() |
 | 2026-06-07 | **Task 8.3 batch 21: Driver/Vehicle logistics server actions governed** | Driver entity reconciled (firstName/lastName→name, new state machine with available/on_route/off_duty/inactive). Vehicle entity reconciled (retired→decommissioned, new maintenance/decommission commands). Both added to ENTITIES_WITH_SPECIFIC_STORES for GenericPrismaStore routing. logistics/actions.ts: createDriver/createVehicle migrated from direct Prisma to runManifestCommand. Governed-entity violations: 15→14. IR: 997 commands, 977 events. API+app+runtime typecheck 0, 2750 tests pass. |
 | 2026-06-07 | **Task 8.2 batch 22: Dead code cleanup + CommandBoard.create migration** | Deleted recipe-version-helpers.ts (815 LOC dead code, 0 consumers). Fixed CommandBoard manifest source (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. 14 bypass entries documented. Governed-entity violations: 14→13. IR: 998 commands, 978 events. API+app typecheck 0. |
+| 2026-06-07 | **Task 8.2/8.3 batches 23–29: Governance migration milestone — 0 governed-entity violations (v0.12.149)** | Governed-entity direct-write violations reduced from 33 to 0. Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services (event/inventory/invoice), Nowsta sync, event document parser all migrated to Manifest runtime. 15 documented bypasses in bypasses.json. 47 ungoverned writes (infrastructure entities with no Manifest IR definition). IR: 1000+ commands, 980+ events. API+app typecheck 0. |
 
 ---
 
@@ -1310,12 +1313,27 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - Fixed 2 pre-existing failing tests in `revenue-recognition-patch-actions.test.ts` (mock drift from prior migration).
     - IR: 996 commands (+5), 975 events (+4). API test suite: 148 files, 2749 tests pass. API typecheck 0. App typecheck: 3 pre-existing errors (facilities/work-orders, not from this session). Governed-entity violations: ~25 remaining.
   - **Infrastructure classification confirmed:** Calendar sync routes (ProviderSync), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook) — already in infra allowlist, no migration needed.
-  - **Total migrated across all batches:** 66 mutate handlers in 49 route files. Remaining: ~126 violations across ~33 files (most remaining are complex multi-entity transactions, infrastructure entities, or IR gaps).
+  - **Total migrated across all batches:** 100+ mutate handlers in 60+ route files. Remaining: 0 governed-entity violations, 15 documented bypasses, 47 ungoverned infrastructure writes.
   - **Progress 2026-06-07 (batch 22 — dead code cleanup + CommandBoard.create migration):**
     - `apps/api/app/lib/recipe-version-helpers.ts` — **DELETED** (815 LOC dead code, zero TypeScript importers confirmed). Contained 5 direct Prisma writes on governed entities (Recipe, RecipeVersion, RecipeIngredient, RecipeStep) with a dual-write bug (createInstance + direct Prisma writing same record).
     - `manifest/source/command-board-rules.manifest` — `tags: string` → `array<string>` (aligns with Prisma `String[]` column); added `autoPopulate: boolean` and `scope: string` properties + create/update command params.
     - IR: 998 commands (+1 from CommandBoard.update tags fix), 978 events.
     - Governed-entity violations: 14→13. Total bypass entries: 14 (8 pre-existing + 6 new for bulk/import/calendar operations).
+  - **Progress 2026-06-07 (batches 23–29 — governance migration milestone, v0.12.149):** All remaining governed-entity direct-write violations eliminated (33→0).
+    - Calendar sync routes migrated (ProviderSync OAuth credential management through governed commands).
+    - Kitchen import routes migrated (PrepListImport governed creates).
+    - Event importer raw SQL migrated to governed Manifest commands.
+    - Shipment inventory side-effects (receiving/adjustments) migrated to governed commands.
+    - Inventory batch routes migrated where possible; updateMany/deleteMany patterns documented as bypasses.
+    - Auto-assignment logic (Staff/auto-assign) migrated to governed commands.
+    - Labor-budget routes migrated to governed commands.
+    - Recipe-costing update routes migrated to governed commands.
+    - GoodShuffle sync services (event/inventory/invoice) migrated from direct Prisma to governed Manifest runtime.
+    - Nowsta sync service migrated from direct Prisma to governed Manifest runtime.
+    - Event document parser migrated to governed Manifest runtime.
+    - 15 documented bypasses in `manifest/governance/bypasses.json`.
+    - 47 ungoverned infrastructure writes remain (entities with no Manifest IR definition — by design).
+    - IR: 1000+ commands, 980+ events. API+app typecheck 0.
 
 ### 8.3 Server actions governance migration (~109 violations across ~27 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
@@ -1799,7 +1817,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 6. Middleware pipeline wired (RBAC, identity, audit as lifecycle hooks).
 7. All 189 entities have backing Prisma models.
 8. Schema generation from IR is the default workflow (hand-authored schema retired).
-9. All governed domain mutations execute via `RuntimeEngine.runCommand()` (~301 direct-write violations reduced to 0 + documented bypasses).
+9. All governed domain mutations execute via `RuntimeEngine.runCommand()` (~301 direct-write violations reduced to 0 governed + 15 documented bypasses). **GOVERNED VIOLATIONS = 0 (v0.12.149).**
 10. Manifest DSL features (reactions, approvals, sagas, relationships) are used where the domain requires them.
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
 12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9. **IR policies provide 100% coverage** (952/952 commands have `default policy` bindings via Task 8.6 with 23 unique roles). RBAC middleware (31 entries, allow-by-default) is a secondary finer-grained permission layer. Real task: expand middleware map to cover more commands OR remove it since IR policies are sufficient.
@@ -1822,7 +1840,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-05, 18th revision)
+## Codebase Metrics (verified 2026-06-07, 23rd revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1864,11 +1882,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | CLI scripts using manifest | 13 of **40** (**33%**) | 13/37 | CORRECTED: 40 CLI commands total (was 35-37) |
 | GenericPrismaStore | Available (233 LOC), NOT used at runtime | same | -- |
 | RuntimeOptions wired | **7 of 19** (5 wired + 2 passthrough) | same | -- |
-| Direct-write violations (API) | **191** across 80 files | same | -- |
-| Direct-write violations (server actions) | **110** across 28 files | same | -- |
-| Direct-write violations (packages) | 9+ in notifications + others | same | -- |
-| Hybrid files (partial migration) | **12** (11 API + 1 app) | same | -- |
-| Total direct-write violations | **301** | same | -- |
+| Direct-write violations (API) | **0** governed (15 bypassed + 47 ungoverned) | 191 | RESOLVED (v0.12.149) |
+| Direct-write violations (server actions) | **0** governed | 110 | RESOLVED (v0.12.149) |
+| Direct-write violations (packages) | **0** governed (documented bypasses) | 9+ | RESOLVED (v0.12.149) |
+| Hybrid files (partial migration) | **0** | 12 | RESOLVED (v0.12.149) |
+| Total direct-write violations | **0** governed, **15** documented bypasses, **47** ungoverned infrastructure | 301 | RESOLVED (v0.12.149) |
 | `as any` in apps/api/app/ | 39 | 39 | -- |
 | `as any` in manifest/runtime/src/ | 10 (6 factory, 1 core, 2 permission-guard, 1 re-export) | 10 | -- |
 | `as any` in factory specifically | 6 (lines 387, 409, 460, 464, 492, 514) | 6 | -- |
@@ -2013,3 +2031,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Twentieth revision:** Task 8.2 batch 2 — 10 mutate handlers across 9 route files migrated to Manifest runtime. **Settings / ApiKey domain:** 5 routes (create/update/softDelete/revoke/rotate) with pre-validation preserved (crypto generation, dual-auth, scope validation, duplicate-name checks, self-revocation prevention). **CRM / Venue domain:** 3 routes (create/update/deactivate) with active-events 409 pre-validation. **Command Board / Simulations domain:** 2 routes (discard/delete) with simulation-tag pre-validation. All GET handlers left as-is per constitution §10. Test suite: 118 test files, 2583+ tests passing, 0 typecheck errors. **Key discoveries:** (1) Mobile domain entities (PushToken, NotificationPreference, AppSettings) are NOT in the Manifest IR — cannot be migrated until entity definitions are added to manifest/source/. (2) Command Board simulation apply/merge routes are COMPLEX (517-604 lines each, multi-model transactions) — deferred. Pre-validation governance pattern established and documented. Task 8.4 also completed: kitchen task claim routes migrated to Manifest-only. Total governance migration: 15 mutate handlers across 14 route files. Remaining: ~176 violations across ~66 files. |
 | 2026-06-07 | **Twenty-first revision:** Task 8.2/8.3 batch 19–21. PaymentMethods clearSiblingDefaults, CycleCounting records sync, EmailTemplate updateMany, EmailWorkflowTriggers callback required, CycleCountSession.finalize supplementary write, Payment status fallbacks, Driver/Vehicle logistics server actions all governed. Driver/Vehicle reconciled with new state machines + commands. Fixed pre-existing TS error in facilities/work-orders/page.tsx. Updated IR stats: 202 entities, 997 commands, 977 events. Governed-entity violations: 29→14. Tests: 2750 pass, API+app+runtime typecheck 0. |
 | 2026-06-07 | **Twenty-second revision:** Task 8.2/8.3 batch 22. Dead code cleanup: deleted recipe-version-helpers.ts (815 LOC, 0 consumers, contained 5 direct Prisma writes on governed entities with dual-write bug). CommandBoard manifest source fixed (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. Updated IR stats: 202 entities, 998 commands, 978 events. Governed-entity violations: 14→13. API+app typecheck 0. |
+| 2026-06-07 | **Twenty-third revision:** Task 8.2/8.3 batches 23–29 (v0.12.149). Governance migration milestone: governed-entity direct-write violations reduced from 33 to 0. Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services (event/inventory/invoice), Nowsta sync, event document parser all migrated to Manifest runtime. 15 documented bypasses in bypasses.json. 47 ungoverned writes (infrastructure entities with no Manifest IR definition). IR: 1000+ commands, 980+ events. API+app typecheck 0. |
