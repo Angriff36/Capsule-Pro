@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 100% context — saved before compacting]
+[proactive bridge @ 97% context — saved before compacting]
 Files (1):
-  manifest/source/logistics-all-rules.manifest (edit)
+  apps/api/__tests__/facilities/facilities-list.test.ts (edit)
 
 # === END COGNILAYER ===

@@ -155,34 +155,38 @@ export async function POST(request: Request) {
         return manifestResult;
       }
 
-      // Create legacy completion record for backward compat (governed side-effect)
-      const result = await database.$queryRaw<
-        Array<{ id: string; started_at: Date }>
-      >(
-        Prisma.sql`
-          INSERT INTO tenant_staff.training_completions (
-            tenant_id,
-            assignment_id,
-            employee_id,
-            module_id,
-            started_at,
-            passed
-          )
-          VALUES (
-            ${tenantId},
-            ${body.assignmentId},
-            ${employeeId},
-            ${assignment.module_id},
-            NOW(),
-            false
-          )
-          ON CONFLICT (tenant_id, employee_id, module_id)
-          DO UPDATE SET started_at = NOW()
-          RETURNING id, started_at
-        `
-      );
+      const startedAt = new Date();
+      const result = await database.trainingCompletion.upsert({
+        where: {
+          tenantId_employeeId_moduleId: {
+            tenantId,
+            employeeId,
+            moduleId: assignment.module_id,
+          },
+        },
+        create: {
+          tenantId,
+          assignmentId: body.assignmentId,
+          employeeId,
+          moduleId: assignment.module_id,
+          startedAt,
+          passed: false,
+        },
+        update: {
+          startedAt,
+        },
+        select: {
+          id: true,
+          startedAt: true,
+        },
+      });
 
-      return NextResponse.json({ completion: result[0] });
+      return NextResponse.json({
+        completion: {
+          id: result.id,
+          started_at: result.startedAt,
+        },
+      });
     }
     if (body.action === "complete") {
       // Get employee ID for current user — read per §10
@@ -232,54 +236,57 @@ export async function POST(request: Request) {
         return manifestResult;
       }
 
-      // Create/update legacy completion record for backward compat (governed side-effect)
-      const result = await database.$queryRaw<
-        Array<{
-          id: string;
-          completed_at: Date;
-          score: number | null;
-          passed: boolean;
-        }>
-      >(
-        Prisma.sql`
-          INSERT INTO tenant_staff.training_completions (
-            tenant_id,
-            assignment_id,
-            employee_id,
-            module_id,
-            started_at,
-            completed_at,
-            score,
-            passed,
-            notes
-          )
-          VALUES (
-            ${tenantId},
-            ${body.assignmentId},
-            ${employeeId},
-            ${assignment.module_id},
-            COALESCE(
-              (SELECT started_at FROM tenant_staff.training_completions
-               WHERE tenant_id = ${tenantId} AND assignment_id = ${body.assignmentId}),
-              NOW()
-            ),
-            NOW(),
-            ${score},
-            ${passed},
-            ${body.notes || null}
-          )
-          ON CONFLICT (tenant_id, employee_id, module_id)
-          DO UPDATE SET
-            completed_at = NOW(),
-            score = ${score},
-            passed = ${passed},
-            notes = ${body.notes || null},
-            updated_at = NOW()
-          RETURNING id, completed_at, score, passed
-        `
-      );
+      const existingCompletion = await database.trainingCompletion.findFirst({
+        where: {
+          tenantId,
+          assignmentId: body.assignmentId,
+        },
+        select: {
+          startedAt: true,
+        },
+      });
+      const completedAt = new Date();
+      const result = await database.trainingCompletion.upsert({
+        where: {
+          tenantId_employeeId_moduleId: {
+            tenantId,
+            employeeId,
+            moduleId: assignment.module_id,
+          },
+        },
+        create: {
+          tenantId,
+          assignmentId: body.assignmentId,
+          employeeId,
+          moduleId: assignment.module_id,
+          startedAt: existingCompletion?.startedAt ?? completedAt,
+          completedAt,
+          score: new Prisma.Decimal(score),
+          passed,
+          notes: body.notes || null,
+        },
+        update: {
+          completedAt,
+          score: new Prisma.Decimal(score),
+          passed,
+          notes: body.notes || null,
+        },
+        select: {
+          id: true,
+          completedAt: true,
+          score: true,
+          passed: true,
+        },
+      });
 
-      return NextResponse.json({ completion: result[0] });
+      return NextResponse.json({
+        completion: {
+          id: result.id,
+          completed_at: result.completedAt,
+          score: result.score,
+          passed: result.passed,
+        },
+      });
     }
     return NextResponse.json(
       { message: "Invalid action. Use 'start' or 'complete'" },

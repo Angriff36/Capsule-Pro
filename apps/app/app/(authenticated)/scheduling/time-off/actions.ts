@@ -1,6 +1,6 @@
 "use server";
 
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
@@ -21,6 +21,96 @@ import {
 /**
  * Get time-off requests with optional filters
  */
+function buildTimeOffWhere(
+  tenantId: string,
+  params: {
+    employeeId?: string;
+    status?: TimeOffStatus;
+    startDate?: string;
+    endDate?: string;
+    requestType?: TimeOffType;
+  }
+): Prisma.TimeOffRequestWhereInput {
+  return {
+    tenantId,
+    deletedAt: null,
+    ...(params.employeeId ? { employeeId: params.employeeId } : {}),
+    ...(params.status ? { status: params.status } : {}),
+    ...(params.startDate ? { endDate: { gte: new Date(params.startDate) } } : {}),
+    ...(params.endDate ? { startDate: { lte: new Date(params.endDate) } } : {}),
+    ...(params.requestType ? { requestType: params.requestType } : {}),
+  };
+}
+
+async function mapTimeOffRequests(
+  tenantId: string,
+  records: Array<{
+    id: string;
+    tenantId: string;
+    employeeId: string;
+    startDate: Date;
+    endDate: Date;
+    reason: string | null;
+    status: string;
+    requestType: string;
+    createdAt: Date;
+    updatedAt: Date;
+    reviewedAt: Date | null;
+    reviewedBy: string | null;
+    rejectionReason: string | null;
+  }>
+): Promise<TimeOffRequest[]> {
+  const userIds = Array.from(
+    new Set(
+      records.flatMap((record) =>
+        record.reviewedBy ? [record.employeeId, record.reviewedBy] : [record.employeeId]
+      )
+    )
+  );
+  const users =
+    userIds.length > 0
+      ? await database.user.findMany({
+          where: { tenantId, id: { in: userIds }, deletedAt: null },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        })
+      : [];
+  const usersById = new Map(users.map((user) => [user.id, user]));
+
+  return records.map((record) => {
+    const employee = usersById.get(record.employeeId);
+    const processor = record.reviewedBy
+      ? usersById.get(record.reviewedBy)
+      : undefined;
+    return {
+      id: record.id,
+      tenant_id: record.tenantId,
+      employeeId: record.employeeId,
+      employeeFirstName: employee?.firstName ?? null,
+      employeeLastName: employee?.lastName ?? null,
+      employeeEmail: employee?.email ?? "",
+      employeeRole: employee?.role ?? "staff",
+      start_date: record.startDate,
+      end_date: record.endDate,
+      reason: record.reason,
+      status: record.status as TimeOffStatus,
+      request_type: record.requestType as TimeOffType,
+      created_at: record.createdAt,
+      updated_at: record.updatedAt,
+      processed_at: record.reviewedAt,
+      processed_by: record.reviewedBy,
+      processed_by_first_name: processor?.firstName ?? null,
+      processed_by_last_name: processor?.lastName ?? null,
+      rejection_reason: record.rejectionReason,
+    };
+  });
+}
+
 export async function getTimeOffRequests(params: {
   employeeId?: string;
   status?: TimeOffStatus;
@@ -36,78 +126,27 @@ export async function getTimeOffRequests(params: {
   const page = params.page ?? 1;
   const offset = (page - 1) * limit;
 
-  // Build filters
-  const hasEmployeeId = Boolean(params.employeeId);
-  const hasStatus = Boolean(params.status);
-  const hasStartDate = Boolean(params.startDate);
-  const hasEndDate = Boolean(params.endDate);
-  const hasRequestType = Boolean(params.requestType);
+  const where = buildTimeOffWhere(tenantId, params);
 
   // Fetch requests and count
-  const [requests, totalCount] = await Promise.all([
-    database.$queryRaw<TimeOffRequest[]>(
-      Prisma.sql`
-        SELECT
-          tor.id,
-          tor.tenant_id,
-          tor.employeeId,
-          e.first_name AS employee_first_name,
-          e.last_name AS employee_last_name,
-          e.email AS employee_email,
-          e.role AS employee_role,
-          tor.start_date,
-          tor.end_date,
-          tor.reason,
-          tor.status,
-          tor.request_type,
-          tor.created_at,
-          tor.updated_at,
-          tor.reviewed_at AS processed_at,
-          tor.reviewed_by AS processed_by,
-          processor.first_name AS processed_by_first_name,
-          processor.last_name AS processed_by_last_name,
-          tor.rejection_reason
-        FROM tenant_staff.employee_time_off_requests tor
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = tor.tenant_id
-         AND e.id = tor.employeeId
-        LEFT JOIN tenant_staff.employees processor
-          ON processor.tenant_id = tor.tenant_id
-         AND processor.id = tor.reviewed_by
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
-          ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasRequestType ? Prisma.sql`AND tor.request_type = ${params.requestType!}` : Prisma.empty}
-        ORDER BY tor.created_at DESC
-        LIMIT ${limit}
-        OFFSET ${offset}
-      `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.employee_time_off_requests tor
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
-          ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasRequestType ? Prisma.sql`AND tor.request_type = ${params.requestType!}` : Prisma.empty}
-      `
-    ),
+  const [records, totalCount] = await Promise.all([
+    database.timeOffRequest.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    database.timeOffRequest.count({ where }),
   ]);
+  const requests = await mapTimeOffRequests(tenantId, records);
 
   return {
     requests,
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   };
 }
@@ -120,45 +159,15 @@ export async function getTimeOffRequestById(
 ): Promise<{ request: TimeOffRequest }> {
   const tenantId = await requireTenantId();
 
-  const [request] = await database.$queryRaw<TimeOffRequest[]>(
-    Prisma.sql`
-      SELECT
-        tor.id,
-        tor.tenant_id,
-        tor.employeeId,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        tor.start_date,
-        tor.end_date,
-        tor.reason,
-        tor.status,
-        tor.request_type,
-        tor.created_at,
-        tor.updated_at,
-        tor.reviewed_at AS processed_at,
-        tor.reviewed_by AS processed_by,
-        processor.first_name AS processed_by_first_name,
-        processor.last_name AS processed_by_last_name,
-        tor.rejection_reason
-      FROM tenant_staff.employee_time_off_requests tor
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = tor.tenant_id
-       AND e.id = tor.employeeId
-      LEFT JOIN tenant_staff.employees processor
-        ON processor.tenant_id = tor.tenant_id
-       AND processor.id = tor.reviewed_by
-      WHERE tor.tenant_id = ${tenantId}
-        AND tor.id = ${requestId}
-        AND tor.deleted_at IS NULL
-    `
-  );
+  const record = await database.timeOffRequest.findFirst({
+    where: { tenantId, id: requestId, deletedAt: null },
+  });
 
-  if (!request) {
+  if (!record) {
     throw new Error("Time-off request not found");
   }
 
+  const [request] = await mapTimeOffRequests(tenantId, [record]);
   return { request };
 }
 
@@ -238,29 +247,20 @@ export async function updateTimeOffStatus(
   const user = await requireCurrentUser();
 
   // Get current request to validate transition
-  const timeOffRequests = await database.$queryRaw<
-    Array<{
-      id: string;
-      status: string;
-      employeeId: string;
-      start_date: Date;
-      end_date: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, status, employee_id, start_date, end_date
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${user.tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-    `
-  );
+  const timeOffRequest = await database.timeOffRequest.findFirst({
+    where: { tenantId: user.tenantId, id: requestId, deletedAt: null },
+    select: {
+      id: true,
+      status: true,
+      employeeId: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
 
-  if (!timeOffRequests || timeOffRequests.length === 0) {
+  if (!timeOffRequest) {
     throw new Error("Time-off request not found");
   }
-
-  const timeOffRequest = timeOffRequests[0];
 
   // Validate status transition
   const statusTransitionError = await validateStatusTransition(
@@ -322,23 +322,14 @@ export async function deleteTimeOffRequest(
   const user = await requireCurrentUser();
 
   // Get current request to verify it exists
-  const timeOffRequests = await database.$queryRaw<
-    Array<{ id: string; status: string }>
-  >(
-    Prisma.sql`
-      SELECT id, status
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${user.tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-    `
-  );
+  const currentRequest = await database.timeOffRequest.findFirst({
+    where: { tenantId: user.tenantId, id: requestId, deletedAt: null },
+    select: { id: true, status: true },
+  });
 
-  if (!timeOffRequests || timeOffRequests.length === 0) {
+  if (!currentRequest) {
     throw new Error("Time-off request not found");
   }
-
-  const currentRequest = timeOffRequests[0];
 
   // Only allow deletion of PENDING or CANCELLED requests
   if (
@@ -373,31 +364,30 @@ export async function deleteTimeOffRequest(
 export async function getEmployees() {
   const tenantId = await requireTenantId();
 
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      email: string;
-      first_name: string | null;
-      last_name: string | null;
-      role: string;
-      is_active: boolean;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        email,
-        first_name,
-        last_name,
-        role,
-        is_active
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY last_name ASC, first_name ASC
-    `
-  );
+  const employeeRecords = await database.user.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      isActive: true,
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+  const employees = employeeRecords.map((employee) => ({
+    id: employee.id,
+    email: employee.email,
+    first_name: employee.firstName,
+    last_name: employee.lastName,
+    role: employee.role,
+    is_active: employee.isActive,
+  }));
 
   return { employees };
 }

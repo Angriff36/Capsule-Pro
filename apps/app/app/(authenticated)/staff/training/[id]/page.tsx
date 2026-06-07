@@ -94,57 +94,87 @@ const TrainingModulePage = async ({ params }: TrainingModulePageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  // Get module details
-  const modules = await database.$queryRaw<ModuleDetail[]>`
-    SELECT
+  const moduleRecord = await database.trainingModule.findFirst({
+    where: {
+      tenantId,
       id,
-      title,
-      description,
-      content_url,
-      content_type,
-      duration_minutes,
-      category,
-      is_required,
-      is_active,
-      created_at
-    FROM tenant_staff.training_modules
-    WHERE tenant_id = ${tenantId}
-      AND id = ${id}
-      AND deleted_at IS NULL
-  `;
+      deletedAt: null,
+    },
+  });
 
-  if (modules.length === 0) {
+  if (!moduleRecord) {
     notFound();
   }
 
-  const module = modules[0];
+  const module: ModuleDetail = {
+    id: moduleRecord.id,
+    title: moduleRecord.title,
+    description: moduleRecord.description,
+    content_url: moduleRecord.contentUrl,
+    content_type: moduleRecord.contentType,
+    duration_minutes: moduleRecord.durationMinutes,
+    category: moduleRecord.category,
+    is_required: moduleRecord.isRequired,
+    is_active: moduleRecord.isActive,
+    created_at: moduleRecord.createdAt,
+  };
 
-  // Get assignments
-  const assignments = await database.$queryRaw<AssignmentRow[]>`
-    SELECT
-      ta.id,
-      ta.employeeId,
-      e.first_name AS employee_first_name,
-      e.last_name AS employee_last_name,
-      e.email AS employee_email,
-      ta.status,
-      ta.due_date,
-      ta.assigned_at,
-      tc.id AS completion_id,
-      tc.completed_at AS completion_completed_at,
-      tc.passed AS completion_passed
-    FROM tenant_staff.training_assignments ta
-    LEFT JOIN tenant_staff.employees e
-      ON e.tenant_id = ta.tenant_id
-      AND e.id = ta.employeeId
-    LEFT JOIN tenant_staff.training_completions tc
-      ON tc.tenant_id = ta.tenant_id
-      AND tc.assignment_id = ta.id
-    WHERE ta.tenant_id = ${tenantId}
-      AND ta.module_id = ${id}
-      AND ta.deleted_at IS NULL
-    ORDER BY ta.assigned_at DESC
-  `;
+  const assignmentRecords = await database.trainingAssignment.findMany({
+    where: {
+      tenantId,
+      moduleId: id,
+      deletedAt: null,
+    },
+    include: {
+      completions: {
+        where: { tenantId },
+        take: 1,
+      },
+    },
+    orderBy: { assignedAt: "desc" },
+  });
+
+  const employeeIds = assignmentRecords
+    .map((assignment) => assignment.employeeId)
+    .filter((employeeId): employeeId is string => Boolean(employeeId));
+
+  const employees =
+    employeeIds.length > 0
+      ? await database.user.findMany({
+          where: {
+            tenantId,
+            id: { in: employeeIds },
+            deletedAt: null,
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        })
+      : [];
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+
+  const assignments: AssignmentRow[] = assignmentRecords.map((assignment) => {
+    const completion = assignment.completions[0];
+    const employee = assignment.employeeId
+      ? employeesById.get(assignment.employeeId)
+      : undefined;
+    return {
+      id: assignment.id,
+      employeeId: assignment.employeeId,
+      employeeFirstName: employee?.firstName ?? null,
+      employeeLastName: employee?.lastName ?? null,
+      employeeEmail: employee?.email ?? null,
+      status: assignment.status,
+      due_date: assignment.dueDate,
+      assigned_at: assignment.assignedAt,
+      completion_id: completion?.id ?? null,
+      completion_completed_at: completion?.completedAt ?? null,
+      completion_passed: completion?.passed ?? false,
+    };
+  });
 
   const completedCount = assignments.filter(
     (a) => a.status === "completed"

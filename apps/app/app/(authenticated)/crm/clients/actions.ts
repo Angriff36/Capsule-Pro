@@ -206,10 +206,6 @@ export async function getAvailableTags(): Promise<
 /**
  * Delete a tag from all clients globally.
  *
- * TODO: Batch tag removal across all matching rows is not a single-command
- * Manifest operation. Migrating to governed writes would require per-row
- * Client.update calls, which is impractical for bulk updates. Keeping as
- * direct Prisma $executeRaw until a bulk command pattern is available.
  */
 export async function deleteTagGlobally(tag: string) {
   const { orgId } = await auth();
@@ -220,14 +216,35 @@ export async function deleteTagGlobally(tag: string) {
 
   const trimmedTag = tag.trim();
 
-  await database.$executeRaw`
-    UPDATE tenant_crm.clients
-    SET tags = array_remove(tags, ${trimmedTag}),
-        updated_at = now()
-    WHERE tenant_id = ${tenantId}
-      AND deleted_at IS NULL
-      AND ${trimmedTag} = ANY(tags)
-  `;
+  const clients = await database.client.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      tags: {
+        has: trimmedTag,
+      },
+    },
+    select: {
+      id: true,
+      tags: true,
+    },
+  });
+
+  await database.$transaction(
+    clients.map((client) =>
+      database.client.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: client.id,
+          },
+        },
+        data: {
+          tags: client.tags.filter((value) => value !== trimmedTag),
+        },
+      })
+    )
+  );
 
   revalidatePath("/crm/clients");
   revalidatePath("/crm/segmentation");

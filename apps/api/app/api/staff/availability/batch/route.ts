@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -138,44 +138,37 @@ export const POST = withRateLimit(
           const endTime = new Date();
           endTime.setHours(endHour, endMinute, 0, 0);
 
-          return database.$queryRaw<
-            Array<{
-              id: string;
-              employee_id: string;
-              day_of_week: number;
-              start_time: Date;
-              end_time: Date;
-              effective_from: Date;
-            }>
-          >(
-            Prisma.sql`
-              INSERT INTO tenant_staff.employee_availability (
-                tenant_id,
-                employee_id,
-                day_of_week,
-                start_time,
-                end_time,
-                is_available,
-                effective_from,
-                effective_until
-              )
-              VALUES (
-                ${tenantId},
-                ${body.employeeId},
-                ${pattern.dayOfWeek},
-                ${startTime}::time,
-                ${endTime}::time,
-                ${pattern.isAvailable ?? true},
-                ${effectiveFrom}::date,
-                ${effectiveUntil}::date
-              )
-              RETURNING id, employee_id, day_of_week, start_time, end_time, effective_from
-            `
-          );
+          return database.employeeAvailability.create({
+            data: {
+              tenantId,
+              employeeId: body.employeeId,
+              dayOfWeek: pattern.dayOfWeek,
+              startTime,
+              endTime,
+              isAvailable: pattern.isAvailable ?? true,
+              effectiveFrom,
+              effectiveUntil,
+            },
+            select: {
+              id: true,
+              employeeId: true,
+              dayOfWeek: true,
+              startTime: true,
+              endTime: true,
+              effectiveFrom: true,
+            },
+          });
         })
       );
 
-      const createdRecords = results.flat();
+      const createdRecords = results.map((record) => ({
+        id: record.id,
+        employee_id: record.employeeId,
+        day_of_week: record.dayOfWeek,
+        start_time: record.startTime,
+        end_time: record.endTime,
+        effective_from: record.effectiveFrom,
+      }));
 
       return NextResponse.json(
         {

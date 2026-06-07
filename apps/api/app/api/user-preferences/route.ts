@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
@@ -24,35 +24,24 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
 
-    // Fetch user preferences using SQL query with optional category filter
-    const preferencesList = await database.$queryRaw<
-      Array<{
-        id: string;
-        preference_key: string;
-        preference_value: unknown;
-        category: string | null;
-        notes: string | null;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-      SELECT
-        id,
-        preference_key,
-        preference_value,
-        category,
-        notes,
-        created_at,
-        updated_at
-      FROM tenant_staff.user_preferences
-      WHERE tenant_id = ${tenantId}
-        AND user_id = ${userId}
-        AND deleted_at IS NULL
-        ${category ? Prisma.sql`AND category = ${category}` : Prisma.empty}
-      ORDER BY category, preference_key ASC
-      `
-    );
+    const preferences = await database.userPreference.findMany({
+      where: {
+        tenantId,
+        userId,
+        deletedAt: null,
+        ...(category ? { category } : {}),
+      },
+      orderBy: [{ category: "asc" }, { preferenceKey: "asc" }],
+    });
+    const preferencesList = preferences.map((preference) => ({
+      id: preference.id,
+      preference_key: preference.preferenceKey,
+      preference_value: preference.preferenceValue,
+      category: preference.category,
+      notes: preference.notes,
+      created_at: preference.createdAt,
+      updated_at: preference.updatedAt,
+    }));
 
     return NextResponse.json({ preferences: preferencesList });
   } catch (error) {
@@ -91,39 +80,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Upsert preference using INSERT ... ON CONFLICT
-    await database.$executeRaw<
-      Array<{
-        id: string;
-        preference_key: string;
-        preference_value: unknown;
-      }>
-    >(
-      Prisma.sql`
-      INSERT INTO tenant_staff.user_preferences (tenant_id, id, user_id, preference_key, preference_value, category, notes, created_at, updated_at)
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${userId},
-        ${preferenceKey},
-        ${preferenceValue}::jsonb,
-        ${category || null},
-        ${notes || null},
-        CURRENT_TIMESTAMP,
-        CURRENT_TIMESTAMP
-      )
-      ON CONFLICT (tenant_id, user_id, preference_key, category)
-      DO UPDATE SET
-        preference_value = EXCLUDED.preference_value,
-        notes = EXCLUDED.notes,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_staff.user_preferences.tenant_id = EXCLUDED.tenant_id
-        AND tenant_staff.user_preferences.user_id = EXCLUDED.user_id
-        AND tenant_staff.user_preferences.preference_key = EXCLUDED.preference_key
-        AND tenant_staff.user_preferences.category = EXCLUDED.category
-      RETURNING id, preference_key, preference_value
-      `
-    );
+    await database.userPreference.upsert({
+      where: {
+        tenantId_userId_preferenceKey_category: {
+          tenantId,
+          userId,
+          preferenceKey,
+          category: category || null,
+        },
+      },
+      create: {
+        tenantId,
+        userId,
+        preferenceKey,
+        preferenceValue,
+        category: category || null,
+        notes: notes || null,
+      },
+      update: {
+        preferenceValue,
+        notes: notes || null,
+      },
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

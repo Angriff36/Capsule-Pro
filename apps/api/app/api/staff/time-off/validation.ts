@@ -1,4 +1,4 @@
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import type { TimeOffStatus } from "./types";
 
@@ -89,22 +89,24 @@ export async function checkOverlappingTimeOffRequests(
     status: string;
   }>;
 }> {
-  const overlappingRequests = await database.$queryRaw<
-    Array<{ id: string; start_date: Date; end_date: Date; status: string }>
-  >(
-    Prisma.sql`
-      SELECT id, start_date, end_date, status
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        ${excludeRequestId ? Prisma.sql`AND id != ${excludeRequestId}` : Prisma.empty}
-        AND deleted_at IS NULL
-        AND status IN ('PENDING', 'APPROVED')
-        AND (
-          (start_date <= ${endDate}) AND (end_date >= ${startDate})
-        )
-    `
-  );
+  const requests = await database.timeOffRequest.findMany({
+    where: {
+      tenantId,
+      employeeId,
+      ...(excludeRequestId ? { id: { not: excludeRequestId } } : {}),
+      deletedAt: null,
+      status: { in: ["PENDING", "APPROVED"] },
+      startDate: { lte: endDate },
+      endDate: { gte: startDate },
+    },
+    select: { id: true, startDate: true, endDate: true, status: true },
+  });
+  const overlappingRequests = requests.map((request) => ({
+    id: request.id,
+    start_date: request.startDate,
+    end_date: request.endDate,
+    status: request.status,
+  }));
 
   return {
     hasOverlap: overlappingRequests.length > 0,
@@ -122,19 +124,12 @@ export async function verifyEmployee(
   employee: { id: string; role: string; is_active: boolean } | null;
   error: NextResponse | null;
 }> {
-  const employee = await database.$queryRaw<
-    Array<{ id: string; role: string; is_active: boolean }>
-  >(
-    Prisma.sql`
-      SELECT id, role, is_active
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${employeeId}
-        AND deleted_at IS NULL
-    `
-  );
+  const employee = await database.user.findFirst({
+    where: { tenantId, id: employeeId, deletedAt: null },
+    select: { id: true, role: true, isActive: true },
+  });
 
-  if (!employee[0]) {
+  if (!employee) {
     return {
       employee: null,
       error: NextResponse.json(
@@ -144,7 +139,7 @@ export async function verifyEmployee(
     };
   }
 
-  if (!employee[0].is_active) {
+  if (!employee.isActive) {
     return {
       employee: null,
       error: NextResponse.json(
@@ -154,7 +149,10 @@ export async function verifyEmployee(
     };
   }
 
-  return { employee: employee[0], error: null };
+  return {
+    employee: { id: employee.id, role: employee.role, is_active: employee.isActive },
+    error: null,
+  };
 }
 
 /**
@@ -173,25 +171,18 @@ export async function verifyTimeOffRequest(
   } | null;
   error: NextResponse | null;
 }> {
-  const request = await database.$queryRaw<
-    Array<{
-      id: string;
-      employee_id: string;
-      status: string;
-      start_date: Date;
-      end_date: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, employee_id, status, start_date, end_date
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-    `
-  );
+  const request = await database.timeOffRequest.findFirst({
+    where: { tenantId, id: requestId, deletedAt: null },
+    select: {
+      id: true,
+      employeeId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
 
-  if (!request[0]) {
+  if (!request) {
     return {
       request: null,
       error: NextResponse.json(
@@ -201,5 +192,14 @@ export async function verifyTimeOffRequest(
     };
   }
 
-  return { request: request[0], error: null };
+  return {
+    request: {
+      id: request.id,
+      employee_id: request.employeeId,
+      status: request.status,
+      start_date: request.startDate,
+      end_date: request.endDate,
+    },
+    error: null,
+  };
 }

@@ -637,13 +637,16 @@ export async function autoAssignShift(
       };
     }
 
-    await database.$queryRaw(Prisma.sql`
-      UPDATE tenant_staff.schedule_shifts
-      SET employee_id = ${employeeId}, updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `);
+    await database.scheduleShift.updateMany({
+      where: {
+        tenantId,
+        id: shiftId,
+        deletedAt: null,
+      },
+      data: {
+        employeeId,
+      },
+    });
 
     return {
       success: true,

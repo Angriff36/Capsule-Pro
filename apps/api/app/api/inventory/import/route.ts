@@ -13,7 +13,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -289,27 +289,25 @@ export async function POST(request: NextRequest) {
     let inserted = 0;
     for (const row of validRows) {
       try {
-        await database.$executeRaw`
-          INSERT INTO "tenant_inventory".inventory_items (
-            id, tenant_id, item_number, name, category,
-            unit_cost, quantity_on_hand, reorder_level,
-            tags, fsa_status, fsa_temp_logged, fsa_allergen_info, fsa_traceable,
-            created_at, updated_at
-          ) VALUES (
-            gen_random_uuid(),
-            ${tenantId},
-            ${row.item_number},
-            ${row.name},
-            ${row.category ?? "other"}::text,
-            ${row.unit_cost ?? null}::decimal(10,2),
-            ${row.quantity_on_hand ?? 0}::decimal(12,3),
-            ${row.reorder_level ?? 0}::decimal(12,3),
-            ${row.tags ? JSON.stringify(row.tags) : null}::jsonb,
-            ${row.fsa_status ?? null}::text,
-            false, false, false,
-            NOW(), NOW()
-          )
-        `;
+        await database.inventoryItem.create({
+          data: {
+            tenantId,
+            item_number: row.item_number,
+            name: row.name,
+            category: row.category ?? "other",
+            unitCost:
+              row.unit_cost == null
+                ? new Prisma.Decimal(0)
+                : new Prisma.Decimal(row.unit_cost),
+            quantityOnHand: new Prisma.Decimal(row.quantity_on_hand ?? 0),
+            reorder_level: new Prisma.Decimal(row.reorder_level ?? 0),
+            tags: row.tags ?? [],
+            fsa_status: row.fsa_status ?? null,
+            fsa_temp_logged: false,
+            fsa_allergen_info: false,
+            fsa_traceable: false,
+          },
+        });
         inserted++;
       } catch (err) {
         log.error(`[InventoryImport] Failed to insert row ${row.row}:`, err);

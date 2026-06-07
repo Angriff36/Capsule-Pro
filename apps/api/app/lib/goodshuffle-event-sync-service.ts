@@ -5,7 +5,7 @@
  * Implements conflict detection and resolution with configurable strategies.
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
@@ -246,44 +246,34 @@ async function createConvoyEventFromGoodshuffle(
     return "dry-run-id";
   }
 
-  // Get default location
-  const defaultLocation = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY is_primary DESC
-      LIMIT 1
-    `
-  );
+  const defaultLocation = await database.location.findFirst({
+    where: { tenantId, deletedAt: null, isActive: true },
+    orderBy: { isPrimary: "desc" },
+    select: { id: true },
+  });
 
-  const locationId = defaultLocation.length > 0 ? defaultLocation[0].id : null;
+  const locationId = defaultLocation?.id ?? null;
 
-  // Create event
-  const newEvent = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant.events (
-        tenant_id, id, title, event_date, guest_count,
-        location_id, status, created_at, updated_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${gsEvent.name},
-        ${gsEvent.event_date ? new Date(gsEvent.event_date) : null},
-        ${gsEvent.guest_count ?? null},
-        ${locationId},
-        'draft',
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `
-  );
+  const newEvent = await database.event.create({
+    data: {
+      tenantId,
+      title: gsEvent.name,
+      eventDate: gsEvent.event_date
+        ? new Date(gsEvent.event_date)
+        : new Date(),
+      guestCount: gsEvent.guest_count ?? 1,
+      locationId,
+      status: "draft",
+      eventType: "catering",
+      accessibilityOptions: [],
+      tags: [],
+    },
+    select: {
+      id: true,
+    },
+  });
 
-  return newEvent[0].id;
+  return newEvent.id;
 }
 
 /**
@@ -299,16 +289,17 @@ async function updateConvoyEventFromGoodshuffle(
     return;
   }
 
-  await database.$executeRaw`
-    UPDATE tenant.events
-    SET
-      title = ${gsEvent.name},
-      event_date = ${gsEvent.event_date ? new Date(gsEvent.event_date) : null},
-      guest_count = ${gsEvent.guest_count ?? null},
-      updated_at = NOW()
-    WHERE tenant_id = ${tenantId}
-      AND id = ${convoyEventId}
-  `;
+  await database.event.updateMany({
+    where: {
+      tenantId,
+      id: convoyEventId,
+    },
+    data: {
+      title: gsEvent.name,
+      ...(gsEvent.event_date && { eventDate: new Date(gsEvent.event_date) }),
+      ...(gsEvent.guest_count != null && { guestCount: gsEvent.guest_count }),
+    },
+  });
 }
 
 /**

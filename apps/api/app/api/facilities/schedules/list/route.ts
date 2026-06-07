@@ -1,7 +1,6 @@
 // API route for listing preventive maintenance schedules
 
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -28,18 +27,32 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "active";
     const overdue = searchParams.get("overdue") === "true";
 
-    const schedules = await database.$queryRaw`
-      SELECT 
-        id, schedule_number, area_id, equipment_id, title, description,
-        frequency, interval_days, last_completed_at, next_due_at,
-        assigned_to, estimated_hours, estimated_cost, status, created_at
-      FROM tenant_facilities.preventive_maintenance_schedules
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-        ${overdue ? Prisma.sql`AND next_due_at < NOW()` : Prisma.empty}
-      ORDER BY next_due_at ASC
-    `;
+    const scheduleRecords = await database.preventiveMaintenanceSchedule.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(status !== "all" ? { status } : {}),
+        ...(overdue ? { nextDueAt: { lt: new Date() } } : {}),
+      },
+      orderBy: { nextDueAt: "asc" },
+    });
+    const schedules = scheduleRecords.map((schedule) => ({
+      id: schedule.id,
+      schedule_number: schedule.scheduleNumber,
+      area_id: schedule.areaId,
+      equipment_id: schedule.equipmentId,
+      title: schedule.title,
+      description: schedule.description,
+      frequency: schedule.frequency,
+      interval_days: schedule.intervalDays,
+      last_completed_at: schedule.lastCompletedAt,
+      next_due_at: schedule.nextDueAt,
+      assigned_to: schedule.assignedTo,
+      estimated_hours: schedule.estimatedHours,
+      estimated_cost: schedule.estimatedCost,
+      status: schedule.status,
+      created_at: schedule.createdAt,
+    }));
 
     return manifestSuccessResponse({ schedules });
   } catch (error) {

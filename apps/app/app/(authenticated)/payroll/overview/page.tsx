@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandBody,
@@ -74,64 +74,74 @@ interface MissingRateRow {
 }
 
 const fetchPayrollData = async (tenantId: string) => {
-  const [periodRows, runRows, headcountRows, approvalRows, missingRateRows] =
+  const [periodRecords, runRecords, activeHeadcount, approvalRecords, missingRateCount] =
     await Promise.all([
-      database.$queryRaw<PayrollPeriodRow[]>(
-        Prisma.sql`
-          SELECT id, period_start, period_end, status
-          FROM tenant_staff.payroll_periods
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND status = 'open'
-          ORDER BY period_end ASC
-          LIMIT 1
-        `
-      ),
-      database.$queryRaw<PayrollRunRow[]>(
-        Prisma.sql`
-          SELECT total_gross, total_deductions, total_net, status, run_date
-          FROM tenant_staff.payroll_runs
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-          ORDER BY run_date DESC
-          LIMIT 1
-        `
-      ),
-      database.$queryRaw<HeadcountRow[]>(
-        Prisma.sql`
-          SELECT COUNT(*) as count
-          FROM tenant_staff.employees
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND is_active = true
-        `
-      ),
-      database.$queryRaw<PendingApprovalRow[]>(
-        Prisma.sql`
-          SELECT ta.id, ta.employeeId, ta.status, ta.created_at,
-                 e.first_name, e.last_name
-          FROM tenant_staff.timecard_approvals ta
-          JOIN tenant_staff.employees e
-            ON ta.employeeId = e.id AND ta.tenant_id = e.tenant_id
-          WHERE ta.tenant_id = ${tenantId}::uuid
-            AND ta.deleted_at IS NULL
-            AND ta.status = 'pending'
-          ORDER BY ta.created_at DESC
-          LIMIT 10
-        `
-      ),
-      database.$queryRaw<MissingRateRow[]>(
-        Prisma.sql`
-          SELECT COUNT(*) as count
-          FROM tenant_staff.employees
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND is_active = true
-            AND hourly_rate IS NULL
-            AND employment_type != 'salaried'
-        `
-      ),
+      database.payrollPeriod.findMany({
+        where: { tenantId, deletedAt: null, status: "open" },
+        orderBy: { periodEnd: "asc" },
+        take: 1,
+      }),
+      database.payrollRun.findMany({
+        where: { tenantId, deletedAt: null },
+        orderBy: { runDate: "desc" },
+        take: 1,
+      }),
+      database.user.count({
+        where: { tenantId, deletedAt: null, isActive: true },
+      }),
+      database.timecardApproval.findMany({
+        where: { tenantId, deletedAt: null, status: "pending" },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      database.user.count({
+        where: {
+          tenantId,
+          deletedAt: null,
+          isActive: true,
+          hourlyRate: null,
+        },
+      }),
     ]);
+
+  const approvalEmployees = await database.user.findMany({
+    where: {
+      tenantId,
+      id: { in: approvalRecords.map((approval) => approval.employeeId) },
+      deletedAt: null,
+    },
+    select: { id: true, firstName: true, lastName: true },
+  });
+  const employeesById = new Map(
+    approvalEmployees.map((employee) => [employee.id, employee])
+  );
+
+  const periodRows: PayrollPeriodRow[] = periodRecords.map((period) => ({
+    id: period.id,
+    period_start: period.periodStart,
+    period_end: period.periodEnd,
+    status: period.status,
+  }));
+  const runRows: PayrollRunRow[] = runRecords.map((run) => ({
+    total_gross: run.totalGross.toString(),
+    total_deductions: run.totalDeductions.toString(),
+    total_net: run.totalNet.toString(),
+    status: run.status,
+    run_date: run.runDate,
+  }));
+  const headcountRows: HeadcountRow[] = [{ count: BigInt(activeHeadcount) }];
+  const approvalRows: PendingApprovalRow[] = approvalRecords.map((approval) => {
+    const employee = employeesById.get(approval.employeeId);
+    return {
+      id: approval.id,
+      employeeId: approval.employeeId,
+      status: approval.status,
+      created_at: approval.createdAt,
+      first_name: employee?.firstName ?? "",
+      last_name: employee?.lastName ?? "",
+    };
+  });
+  const missingRateRows: MissingRateRow[] = [{ count: BigInt(missingRateCount) }];
 
   return { periodRows, runRows, headcountRows, approvalRows, missingRateRows };
 };

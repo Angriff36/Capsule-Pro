@@ -126,28 +126,15 @@ export async function createDishAndAddToEvent(
       return { success: false, error: "Dish.create did not return an id" };
     }
 
-    // Add to event (event_dishes is a separate entity — not governed yet)
-    await database.$executeRaw(Prisma.sql`
-      INSERT INTO tenant_events.event_dishes (
-        tenant_id,
-        id,
-        event_id,
-        dish_id,
-        course,
-        quantity_servings,
-        created_at,
-        updated_at
-      ) VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${eventId},
-        ${createdId},
-        ${course ?? null},
-        1,
-        NOW(),
-        NOW()
-      )
-    `);
+    await database.eventDish.create({
+      data: {
+        tenantId,
+        eventId,
+        dishId: createdId,
+        course: course ?? null,
+        quantityServings: 1,
+      },
+    });
 
     revalidatePath(`/events/${eventId}`);
     revalidatePath("/kitchen/recipes");
@@ -319,27 +306,15 @@ export async function addDishToEvent(
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
-    await database.$executeRaw`
-      INSERT INTO tenant_events.event_dishes (
-        tenant_id,
-        id,
-        event_id,
-        dish_id,
-        course,
-        quantity_servings,
-        created_at,
-        updated_at
-      ) VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${eventId},
-        ${dishId},
-        ${course ?? null},
-        ${quantityServings ?? 1},
-        ${new Date()},
-        ${new Date()}
-      )
-    `;
+    await database.eventDish.create({
+      data: {
+        tenantId,
+        eventId,
+        dishId,
+        course: course ?? null,
+        quantityServings: quantityServings ?? 1,
+      },
+    });
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };
@@ -358,14 +333,16 @@ export async function removeDishFromEvent(eventId: string, linkId: string) {
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
-    await database.$executeRaw`
-      UPDATE tenant_events.event_dishes
-      SET deleted_at = ${new Date()},
-          updated_at = ${new Date()}
-      WHERE tenant_id = ${tenantId}
-        AND id = ${linkId}
-        AND event_id = ${eventId}
-    `;
+    await database.eventDish.updateMany({
+      where: {
+        tenantId,
+        id: linkId,
+        eventId,
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };
@@ -478,16 +455,16 @@ export async function createDishVariantForEvent(
     return { success: false, error: "Dish.create did not return an id" };
   }
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_events.event_dishes
-      SET dish_id = ${createdDishId},
-          updated_at = ${new Date()}
-      WHERE tenant_id = ${tenantId}
-        AND id = ${linkId}
-        AND event_id = ${eventId}
-    `
-  );
+  await database.eventDish.updateMany({
+    where: {
+      tenantId,
+      id: linkId,
+      eventId,
+    },
+    data: {
+      dishId: createdDishId,
+    },
+  });
 
   revalidatePath(`/events/${eventId}`);
   return { success: true, dishId: createdDishId };

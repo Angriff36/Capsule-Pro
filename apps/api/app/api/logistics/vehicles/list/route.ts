@@ -25,18 +25,40 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    const vehicles = await database.$queryRaw`
-      SELECT
-        v.id, v.make, v.model, v.year, v.plate_number, v.vin,
-        v.capacity_weight, v.capacity_volume, v.fuel_type, v.mileage,
-        v.status, v.notes, v.created_at,
-        (SELECT COUNT(*)::int FROM tenant_logistics.drivers d
-         WHERE d.vehicle_id = v.id AND d.deleted_at IS NULL AND d.status != 'inactive') as assigned_drivers
-      FROM tenant_logistics.vehicles v
-      WHERE v.tenant_id = ${tenantId}::uuid AND v.deleted_at IS NULL
-      ORDER BY v.make, v.model
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    const vehicleRecords = await database.vehicle.findMany({
+      where: { tenantId, deletedAt: null },
+      orderBy: [{ make: "asc" }, { model: "asc" }],
+      take: limit,
+      skip: offset,
+    });
+    const assignedDriverCounts = await Promise.all(
+      vehicleRecords.map((vehicle) =>
+        database.driver.count({
+          where: {
+            tenantId,
+            vehicleId: vehicle.id,
+            deletedAt: null,
+            status: { not: "inactive" },
+          },
+        })
+      )
+    );
+    const vehicles = vehicleRecords.map((vehicle, index) => ({
+      id: vehicle.id,
+      make: vehicle.make,
+      model: vehicle.model,
+      year: vehicle.year,
+      plate_number: vehicle.plateNumber,
+      vin: vehicle.vin,
+      capacity_weight: vehicle.capacityWeight,
+      capacity_volume: vehicle.capacityVolume,
+      fuel_type: vehicle.fuelType,
+      mileage: vehicle.mileage,
+      status: vehicle.status,
+      notes: vehicle.notes,
+      created_at: vehicle.createdAt,
+      assigned_drivers: assignedDriverCounts[index] ?? 0,
+    }));
 
     return manifestSuccessResponse({ vehicles, limit, offset });
   } catch (error) {

@@ -56,32 +56,31 @@ const StaffTrainingPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const modules = await database.$queryRaw<TrainingModuleRow[]>`
-    SELECT
-      tm.id,
-      tm.title,
-      tm.description,
-      tm.content_type,
-      tm.duration_minutes,
-      tm.category,
-      tm.is_required,
-      tm.is_active,
-      tm.created_at,
-      COUNT(DISTINCT ta.id) AS assignment_count,
-      COUNT(DISTINCT tc.id) AS completion_count
-    FROM tenant_staff.training_modules tm
-    LEFT JOIN tenant_staff.training_assignments ta
-      ON ta.tenant_id = tm.tenant_id
-      AND ta.module_id = tm.id
-      AND ta.deleted_at IS NULL
-    LEFT JOIN tenant_staff.training_completions tc
-      ON tc.tenant_id = tm.tenant_id
-      AND tc.module_id = tm.id
-    WHERE tm.tenant_id = ${tenantId}
-      AND tm.deleted_at IS NULL
-    GROUP BY tm.id, tm.title, tm.description, tm.content_type, tm.duration_minutes, tm.category, tm.is_required, tm.is_active, tm.created_at
-    ORDER BY tm.created_at DESC
-  `;
+  const moduleRecords = await database.trainingModule.findMany({
+    where: { tenantId, deletedAt: null },
+    include: {
+      _count: {
+        select: {
+          assignments: { where: { deletedAt: null } },
+          completions: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  const modules: TrainingModuleRow[] = moduleRecords.map((module) => ({
+    id: module.id,
+    title: module.title,
+    description: module.description,
+    content_type: module.contentType,
+    duration_minutes: module.durationMinutes,
+    category: module.category,
+    is_required: module.isRequired,
+    is_active: module.isActive,
+    assignment_count: BigInt(module._count.assignments),
+    completion_count: BigInt(module._count.completions),
+    created_at: module.createdAt,
+  }));
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">

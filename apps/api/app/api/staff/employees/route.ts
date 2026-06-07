@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
@@ -20,47 +20,30 @@ export async function GET(req: NextRequest) {
     const isActive = searchParams.get("isActive");
     const role = searchParams.get("role");
 
-    // Fetch employees (User model mapped to tenant_staff.employees table)
-    const employees = await database.$queryRaw<
-      Array<{
-        id: string;
-        email: string;
-        first_name: string | null;
-        last_name: string | null;
-        role: string;
-        is_active: boolean;
-        phone: string | null;
-        avatar_url: string | null;
-        employment_type: string;
-        hourly_rate: number | null;
-        hire_date: Date;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          id,
-          email,
-          first_name,
-          last_name,
-          role,
-          is_active,
-          phone,
-          avatar_url,
-          employment_type,
-          hourly_rate,
-          hire_date,
-          created_at,
-          updated_at
-        FROM tenant_staff.employees
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          ${isActive === "true" ? Prisma.sql`AND is_active = true` : Prisma.empty}
-          ${role ? Prisma.sql`AND role = ${role}` : Prisma.empty}
-        ORDER BY created_at DESC
-      `
-    );
+    const employeeRecords = await database.user.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(isActive === "true" ? { isActive: true } : {}),
+        ...(role ? { role } : {}),
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    const employees = employeeRecords.map((employee) => ({
+      id: employee.id,
+      email: employee.email,
+      first_name: employee.firstName,
+      last_name: employee.lastName,
+      role: employee.role,
+      is_active: employee.isActive,
+      phone: employee.phone,
+      avatar_url: employee.avatarUrl,
+      employment_type: employee.employmentType,
+      hourly_rate: employee.hourlyRate,
+      hire_date: employee.hireDate,
+      created_at: employee.createdAt,
+      updated_at: employee.updatedAt,
+    }));
 
     return NextResponse.json({ employees });
   } catch (error) {

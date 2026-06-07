@@ -5,7 +5,7 @@
 // /facilities hub UI to render the post-create list and is the canonical
 // read path verified by the New Facility E2E test.
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
+import type { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -35,19 +35,35 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    const facilities = await database.$queryRaw`
-      SELECT
-        id, name, code, facility_type, address_line1, address_line2,
-        city, state, postal_code, country, phone, status, notes,
-        created_at, updated_at
-      FROM tenant_facilities.facilities
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-        ${facilityType ? Prisma.sql`AND facility_type = ${facilityType}` : Prisma.empty}
-      ORDER BY name
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    const facilityWhere: Prisma.FacilityWhereInput = {
+      tenantId,
+      deletedAt: null,
+      ...(status !== "all" ? { status } : {}),
+      ...(facilityType ? { facilityType } : {}),
+    };
+    const facilityRecords = await database.facility.findMany({
+      where: facilityWhere,
+      orderBy: { name: "asc" },
+      take: limit,
+      skip: offset,
+    });
+    const facilities = facilityRecords.map((facility) => ({
+      id: facility.id,
+      name: facility.name,
+      code: facility.code,
+      facility_type: facility.facilityType,
+      address_line1: facility.addressLine1,
+      address_line2: facility.addressLine2,
+      city: facility.city,
+      state: facility.state,
+      postal_code: facility.postalCode,
+      country: facility.country,
+      phone: facility.phone,
+      status: facility.status,
+      notes: facility.notes,
+      created_at: facility.createdAt,
+      updated_at: facility.updatedAt,
+    }));
 
     return manifestSuccessResponse({ facilities, limit, offset });
   } catch (error) {

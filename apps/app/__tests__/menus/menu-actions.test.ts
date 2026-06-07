@@ -37,12 +37,116 @@ const mockQueryRaw = vi.hoisted(() => vi.fn().mockResolvedValue([]));
 const mockOutboxCreate = vi.hoisted(() =>
   vi.fn().mockResolvedValue({ id: "test-outbox-id" })
 );
+const createRawLikeCall = vi.hoisted(
+  () => (sql: string, values: unknown[]) => ({
+    strings: [sql],
+    values,
+  })
+);
+const mockMenuDelegate = vi.hoisted(() => ({
+  create: vi.fn(({ data }) =>
+    mockExecuteRaw(createRawLikeCall("INSERT INTO tenant_kitchen.menus", [
+      data.tenantId,
+      data.id,
+      data.name,
+      data.description,
+      data.category,
+      data.basePrice,
+      data.pricePerPerson,
+      data.minGuests,
+      data.maxGuests,
+      data.isActive,
+    ]))
+  ),
+  updateMany: vi.fn(({ where, data }) => {
+    const sql = data.deletedAt
+      ? "UPDATE tenant_kitchen.menus SET deleted_at = NOW()"
+      : "UPDATE tenant_kitchen.menus SET name";
+
+    return mockExecuteRaw(
+      createRawLikeCall(sql, [
+        where.id,
+        where.tenantId,
+        data.name,
+        data.description,
+        data.category,
+        data.basePrice,
+        data.pricePerPerson,
+        data.minGuests,
+        data.maxGuests,
+        data.isActive,
+        data.deletedAt,
+      ])
+    );
+  }),
+}));
+const mockMenuDishDelegate = vi.hoisted(() => ({
+  create: vi.fn(({ data }) =>
+    mockExecuteRaw(createRawLikeCall("INSERT INTO tenant_kitchen.menu_dishes", [
+      data.tenantId,
+      data.id,
+      data.menuId,
+      data.dishId,
+      data.course,
+      data.sortOrder,
+      data.isOptional,
+    ]))
+  ),
+  createMany: vi.fn(({ data }) => {
+    for (const item of data) {
+      mockExecuteRaw(createRawLikeCall("INSERT INTO tenant_kitchen.menu_dishes", [
+        item.tenantId,
+        item.id,
+        item.menuId,
+        item.dishId,
+        item.course,
+        item.sortOrder,
+        item.isOptional,
+      ]));
+    }
+    return Promise.resolve({ count: data.length });
+  }),
+  updateMany: vi.fn(({ where, data }) => {
+    const sql = data.deletedAt
+      ? "UPDATE tenant_kitchen.menu_dishes SET deleted_at = NOW()"
+      : data.sortOrder !== undefined
+        ? "UPDATE tenant_kitchen.menu_dishes SET sort_order"
+        : "UPDATE tenant_kitchen.menu_dishes SET course";
+
+    return mockExecuteRaw(
+      createRawLikeCall(sql, [
+        where.menuId,
+        where.dishId,
+        where.tenantId,
+        data.course,
+        data.sortOrder,
+        data.deletedAt,
+      ])
+    );
+  }),
+}));
+const mockDishDelegate = vi.hoisted(() => ({
+  create: vi.fn(({ data }) =>
+    mockExecuteRaw(createRawLikeCall("INSERT INTO tenant_kitchen.dishes", [
+      data.tenantId,
+      data.id,
+      data.recipeId,
+      data.name,
+      data.description,
+      data.category,
+      data.isActive,
+    ]))
+  ),
+}));
 const mockTransaction = vi.hoisted(() =>
   vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => {
     // Pass a mock tx that delegates to the same mock functions
     const mockTx = {
       $executeRaw: mockExecuteRaw,
       $queryRaw: mockQueryRaw,
+      menu: mockMenuDelegate,
+      menuDish: mockMenuDishDelegate,
+      dish: mockDishDelegate,
       outboxEvent: {
         create: mockOutboxCreate,
       },
@@ -56,6 +160,9 @@ vi.mock("@repo/database", () => ({
     $executeRaw: mockExecuteRaw,
     $queryRaw: mockQueryRaw,
     $transaction: mockTransaction,
+    menu: mockMenuDelegate,
+    menuDish: mockMenuDishDelegate,
+    dish: mockDishDelegate,
     outboxEvent: {
       create: mockOutboxCreate,
     },

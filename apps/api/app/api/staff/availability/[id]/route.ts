@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
@@ -23,60 +23,41 @@ export async function GET(_request: Request, context: RouteContext) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await context.params;
 
-  const availability = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
-      day_of_week: number;
-      start_time: string;
-      end_time: string;
-      is_available: boolean;
-      effective_from: Date;
-      effective_until: Date | null;
-      created_at: Date;
-      updated_at: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ea.id,
-        ea.tenant_id,
-        ea.employee_id,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        ea.day_of_week,
-        ea.start_time::text as start_time,
-        ea.end_time::text as end_time,
-        ea.is_available,
-        ea.effective_from,
-        ea.effective_until,
-        ea.created_at,
-        ea.updated_at
-      FROM tenant_staff.employee_availability ea
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ea.tenant_id
-       AND e.id = ea.employee_id
-      WHERE ea.tenant_id = ${tenantId}
-        AND ea.id = ${id}
-        AND ea.deleted_at IS NULL
-    `
-  );
+  const record = await database.employeeAvailability.findFirst({
+    where: { tenantId, id, deletedAt: null },
+  });
 
-  if (!availability[0]) {
+  if (!record) {
     return NextResponse.json(
       { message: "Availability record not found" },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ availability: availability[0] });
+  const employee = await database.user.findFirst({
+    where: { tenantId, id: record.employeeId, deletedAt: null },
+    select: { firstName: true, lastName: true, email: true, role: true },
+  });
+
+  return NextResponse.json({
+    availability: {
+      id: record.id,
+      tenant_id: record.tenantId,
+      employee_id: record.employeeId,
+      employee_first_name: employee?.firstName ?? null,
+      employee_last_name: employee?.lastName ?? null,
+      employee_email: employee?.email ?? "",
+      employee_role: employee?.role ?? "staff",
+      day_of_week: record.dayOfWeek,
+      start_time: record.startTime,
+      end_time: record.endTime,
+      is_available: record.isAvailable,
+      effective_from: record.effectiveFrom,
+      effective_until: record.effectiveUntil,
+      created_at: record.createdAt,
+      updated_at: record.updatedAt,
+    },
+  });
 }
 
 /**

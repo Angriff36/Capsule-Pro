@@ -4,7 +4,7 @@
 // path verified by the New Asset E2E backpressure test.
 
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
+import type { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -35,23 +35,53 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    const assets = await database.$queryRaw`
-      SELECT
-        a.id, a.name, a.asset_type, a.serial_number, a.manufacturer,
-        a.model, a.purchase_date, a.purchase_cost, a.warranty_expiry,
-        a.status, a.area_id, a.notes, a.created_at, a.updated_at,
-        fa.name AS area_name, fa.code AS area_code
-      FROM tenant_facilities.facility_assets a
-      LEFT JOIN tenant_facilities.facility_areas fa
-        ON fa.id = a.area_id AND fa.tenant_id = a.tenant_id AND fa.deleted_at IS NULL
-      WHERE a.tenant_id = ${tenantId}::uuid
-        AND a.deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND a.status = ${status}` : Prisma.empty}
-        ${assetType ? Prisma.sql`AND a.asset_type = ${assetType}` : Prisma.empty}
-        ${areaId ? Prisma.sql`AND a.area_id = ${areaId}::uuid` : Prisma.empty}
-      ORDER BY a.name
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    const assetWhere: Prisma.FacilityAssetWhereInput = {
+      tenantId,
+      deletedAt: null,
+      ...(status !== "all" ? { status } : {}),
+      ...(assetType ? { assetType } : {}),
+      ...(areaId ? { areaId } : {}),
+    };
+    const assetRecords = await database.facilityAsset.findMany({
+      where: assetWhere,
+      orderBy: { name: "asc" },
+      take: limit,
+      skip: offset,
+    });
+    const areas = await database.facilityArea.findMany({
+      where: {
+        tenantId,
+        id: {
+          in: assetRecords
+            .map((asset) => asset.areaId)
+            .filter((id): id is string => Boolean(id)),
+        },
+        deletedAt: null,
+      },
+      select: { id: true, name: true, code: true },
+    });
+    const areasById = new Map(areas.map((area) => [area.id, area]));
+    const assets = assetRecords.map((asset) => {
+      const area = asset.areaId ? areasById.get(asset.areaId) : undefined;
+      return {
+        id: asset.id,
+        name: asset.name,
+        asset_type: asset.assetType,
+        serial_number: asset.serialNumber,
+        manufacturer: asset.manufacturer,
+        model: asset.model,
+        purchase_date: asset.purchaseDate,
+        purchase_cost: asset.purchaseCost,
+        warranty_expiry: asset.warrantyExpiry,
+        status: asset.status,
+        area_id: asset.areaId,
+        notes: asset.notes,
+        created_at: asset.createdAt,
+        updated_at: asset.updatedAt,
+        area_name: area?.name ?? null,
+        area_code: area?.code ?? null,
+      };
+    });
 
     return manifestSuccessResponse({ assets, limit, offset });
   } catch (error) {

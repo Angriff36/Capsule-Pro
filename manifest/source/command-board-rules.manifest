@@ -10,7 +10,9 @@ entity CommandBoard {
   property description: string = ""
   property status: string = "draft"
   property isTemplate: boolean = false
-  property tags: string = ""
+  property tags: array<string> = []
+  property autoPopulate: boolean = false
+  property scope: string = "{}"
   timestamps
   property deletedAt: datetime
 
@@ -26,7 +28,7 @@ entity CommandBoard {
   transition status from "active" to ["archived"]
 
   default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
-  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: string) {
+  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
     guard name != null and name != "" "Board name is required"
 
     mutate name = name
@@ -34,12 +36,14 @@ entity CommandBoard {
     mutate eventId = eventId
     mutate isTemplate = isTemplate
     mutate tags = tags
+    mutate autoPopulate = autoPopulate
+    mutate scope = scope
     mutate status = "draft"
 
     emit CommandBoardCreated
   }
 
-  command update(newName: string, newDescription: string, newTags: string) {
+  command update(newName: string, newDescription: string, newTags: array<string>) {
     guard self.status == "draft" "Can only update draft boards"
     guard newName != null and newName != "" "Board name is required"
 

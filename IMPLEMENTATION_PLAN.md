@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 21st revision, updated batch 21)
+## Validation Baseline (2026-06-07, comprehensive audit -- 22nd revision, updated batch 22)
 
 ### Claim Verification Matrix
 
@@ -335,7 +335,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 997 commands, 977 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 998 commands, 978 events, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -421,7 +421,7 @@
 
 ### Governance
 
-- **14 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 65 in 49 route files + server actions.
+- **13 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 67 in 49 route files (1 server action create).
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
@@ -555,6 +555,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.3 batch 20: CycleCountSession.finalize supplementary write + fix pre-existing TS error** | CycleCountSession.finalize command expanded with notes/totalVariance/variancePercentage/countedItems/totalItems params. Single governed mutation replaces supplementary direct Prisma update. Fixed pre-existing TS error in facilities/work-orders/page.tsx (Manifest result typed as Record<string, unknown>). IR: 202 entities, 997 commands, 977 events. Tests: 2750 pass, API+app typecheck 0. |
 | 2026-06-07 | **Task 8.2 batch 21: Payments route status fallbacks migrated to governed Manifest commands** | Replace 2 direct database.payment.update() calls in payments POST route with governed Manifest commands: FAILED status → Payment.processFailed() |
 | 2026-06-07 | **Task 8.3 batch 21: Driver/Vehicle logistics server actions governed** | Driver entity reconciled (firstName/lastName→name, new state machine with available/on_route/off_duty/inactive). Vehicle entity reconciled (retired→decommissioned, new maintenance/decommission commands). Both added to ENTITIES_WITH_SPECIFIC_STORES for GenericPrismaStore routing. logistics/actions.ts: createDriver/createVehicle migrated from direct Prisma to runManifestCommand. Governed-entity violations: 15→14. IR: 997 commands, 977 events. API+app+runtime typecheck 0, 2750 tests pass. |
+| 2026-06-07 | **Task 8.2 batch 22: Dead code cleanup + CommandBoard.create migration** | Deleted recipe-version-helpers.ts (815 LOC dead code, 0 consumers). Fixed CommandBoard manifest source (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. 14 bypass entries documented. Governed-entity violations: 14→13. IR: 998 commands, 978 events. API+app typecheck 0. |
 
 ---
 
@@ -1310,6 +1311,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - IR: 996 commands (+5), 975 events (+4). API test suite: 148 files, 2749 tests pass. API typecheck 0. App typecheck: 3 pre-existing errors (facilities/work-orders, not from this session). Governed-entity violations: ~25 remaining.
   - **Infrastructure classification confirmed:** Calendar sync routes (ProviderSync), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook) — already in infra allowlist, no migration needed.
   - **Total migrated across all batches:** 66 mutate handlers in 49 route files. Remaining: ~126 violations across ~33 files (most remaining are complex multi-entity transactions, infrastructure entities, or IR gaps).
+  - **Progress 2026-06-07 (batch 22 — dead code cleanup + CommandBoard.create migration):**
+    - `apps/api/app/lib/recipe-version-helpers.ts` — **DELETED** (815 LOC dead code, zero TypeScript importers confirmed). Contained 5 direct Prisma writes on governed entities (Recipe, RecipeVersion, RecipeIngredient, RecipeStep) with a dual-write bug (createInstance + direct Prisma writing same record).
+    - `manifest/source/command-board-rules.manifest` — `tags: string` → `array<string>` (aligns with Prisma `String[]` column); added `autoPopulate: boolean` and `scope: string` properties + create/update command params.
+    - IR: 998 commands (+1 from CommandBoard.update tags fix), 978 events.
+    - Governed-entity violations: 14→13. Total bypass entries: 14 (8 pre-existing + 6 new for bulk/import/calendar operations).
 
 ### 8.3 Server actions governance migration (~109 violations across ~27 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
@@ -1395,6 +1401,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `apps/app/app/(authenticated)/cycle-counting/actions/sessions.ts` — `database.cycleCountSession.update(deletedAt)` → `CycleCountSession.softDelete`. New command added to manifest source.
     - `apps/app/app/(authenticated)/events/actions.ts` — `database.event.updateMany(soft-delete)` → `Event.softDelete`; `database.event.updateMany(assign clientId)` → `Event.update`. New `Event.softDelete` command added to manifest source.
     - IR: 996 commands, 975 events. API typecheck 0, App typecheck 3 pre-existing errors. 2749 tests pass.
+  - **Progress 2026-06-07 (batch 22 — CommandBoard.create migration + dead code cleanup):**
+    - `apps/app/app/(authenticated)/command-board/actions.ts` — `createCommandBoard` migrated from direct Prisma to governed `runManifestCommand(CommandBoard.create)`. CommandBoard manifest source fixed (`tags: string` → `array<string>`, added `autoPopulate`/`scope` properties + create/update params).
+    - `apps/api/app/lib/recipe-version-helpers.ts` — **DELETED** (815 LOC dead code, zero TypeScript importers confirmed). Contained 5 direct Prisma writes on governed entities (Recipe, RecipeVersion, RecipeIngredient, RecipeStep) with a dual-write bug.
+    - Governed-entity violations: 14→13. IR: 998 commands, 978 events. API+app typecheck 0.
 
 ### 8.4 Package-specific governance migration
 - **Done when:** `supplier-connectors` (5 direct writes on VendorCatalog -- governed entity), `sentry-integration` (2 writes on SentryFixJob -- infrastructure, NOT governed), `payroll-engine` (covered by 8.1), `notifications` (1 direct write on EmailWorkflow -- governed entity; emailLog/sms_logs/notification_preferences writes are infrastructure logs, not governed), `packages/database/src/vendor-cost-service.ts` (1 documented bypass on InventoryItem with explicit GOVERNANCE NOTE -- downstream mechanical effect of governed VendorCatalog commands) route writes through Manifest or are documented as intentionally ungoverned. `packages/realtime/` (outbox is infrastructure, not governed). `packages/services/` removed (confirmed truly empty -- no package.json, no source files).
@@ -2002,3 +2012,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-05 | **Nineteenth revision:** Task 0.5 (route regen-diff harness) marked DONE — `manifest/scripts/audit-route-drift.mjs` exists with report and CI gate modes. Task 7.4d (bootstrap middleware) marked DONE — upstream 1.7.0 removed the need; engine's `shouldAutoCreateInstance` handles create commands natively. Task 9.9 CORRECTION added — IR policies already provide deny-by-default for ALL 952 commands (23 unique roles); RBAC middleware is secondary, not the primary gate. Flipping middleware to deny-by-default would break 921/952 commands. Recommendation: expand middleware map or remove it. Exit criteria 3 and 12 updated with current state. New 19th-revision findings table added. |
 | 2026-06-05 | **Twentieth revision:** Task 8.2 batch 2 — 10 mutate handlers across 9 route files migrated to Manifest runtime. **Settings / ApiKey domain:** 5 routes (create/update/softDelete/revoke/rotate) with pre-validation preserved (crypto generation, dual-auth, scope validation, duplicate-name checks, self-revocation prevention). **CRM / Venue domain:** 3 routes (create/update/deactivate) with active-events 409 pre-validation. **Command Board / Simulations domain:** 2 routes (discard/delete) with simulation-tag pre-validation. All GET handlers left as-is per constitution §10. Test suite: 118 test files, 2583+ tests passing, 0 typecheck errors. **Key discoveries:** (1) Mobile domain entities (PushToken, NotificationPreference, AppSettings) are NOT in the Manifest IR — cannot be migrated until entity definitions are added to manifest/source/. (2) Command Board simulation apply/merge routes are COMPLEX (517-604 lines each, multi-model transactions) — deferred. Pre-validation governance pattern established and documented. Task 8.4 also completed: kitchen task claim routes migrated to Manifest-only. Total governance migration: 15 mutate handlers across 14 route files. Remaining: ~176 violations across ~66 files. |
 | 2026-06-07 | **Twenty-first revision:** Task 8.2/8.3 batch 19–21. PaymentMethods clearSiblingDefaults, CycleCounting records sync, EmailTemplate updateMany, EmailWorkflowTriggers callback required, CycleCountSession.finalize supplementary write, Payment status fallbacks, Driver/Vehicle logistics server actions all governed. Driver/Vehicle reconciled with new state machines + commands. Fixed pre-existing TS error in facilities/work-orders/page.tsx. Updated IR stats: 202 entities, 997 commands, 977 events. Governed-entity violations: 29→14. Tests: 2750 pass, API+app+runtime typecheck 0. |
+| 2026-06-07 | **Twenty-second revision:** Task 8.2/8.3 batch 22. Dead code cleanup: deleted recipe-version-helpers.ts (815 LOC, 0 consumers, contained 5 direct Prisma writes on governed entities with dual-write bug). CommandBoard manifest source fixed (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. Updated IR stats: 202 entities, 998 commands, 978 events. Governed-entity violations: 14→13. API+app typecheck 0. |

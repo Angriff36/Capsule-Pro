@@ -49,14 +49,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.purchase_orders
-      SET status = ${status}, updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid
-      RETURNING id, po_number, status
-    `;
+    const order = await database.purchaseOrder.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: orderId,
+        },
+      },
+      data: {
+        status,
+      },
+      select: {
+        id: true,
+        poNumber: true,
+        status: true,
+      },
+    });
 
-    return manifestSuccessResponse({ order: (result as any[])[0] });
+    return manifestSuccessResponse({
+      order: {
+        id: order.id,
+        po_number: order.poNumber,
+        status: order.status,
+      },
+    });
   } catch (error) {
     captureException(error);
     log.error("Error updating PO status:", error);

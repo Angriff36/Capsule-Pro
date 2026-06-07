@@ -43,45 +43,59 @@ export default async function MyTrainingPage() {
 
   const { id: employeeId, tenantId } = currentUser;
 
-  const rows = await database.$queryRaw<TrainingRow[]>`
-    SELECT
-      ta.id,
-      tm.id AS module_id,
-      tm.title AS module_title,
-      tm.description AS module_description,
-      tm.content_type,
-      tm.duration_minutes,
-      tm.category,
-      tm.is_required,
-      ta.status,
-      ta.due_date,
-      ta.assigned_at,
-      tm.content_url,
-      tc.started_at,
-      tc.completed_at,
-      tc.score,
-      tc.passed
-    FROM tenant_staff.training_assignments ta
-    JOIN tenant_staff.training_modules tm
-      ON tm.tenant_id = ta.tenant_id
-      AND tm.id = ta.module_id
-      AND tm.deleted_at IS NULL
-    LEFT JOIN tenant_staff.training_completions tc
-      ON tc.tenant_id = ta.tenant_id
-      AND tc.assignment_id = ta.id
-      AND tc.employeeId = ${employeeId}
-    WHERE ta.tenant_id = ${tenantId}
-      AND (ta.employeeId = ${employeeId} OR ta.assigned_to_all = true)
-      AND ta.deleted_at IS NULL
-    ORDER BY
-      CASE ta.status
-        WHEN 'overdue' THEN 1
-        WHEN 'assigned' THEN 2
-        WHEN 'in_progress' THEN 3
-        WHEN 'completed' THEN 4
-      END,
-      ta.due_date ASC NULLS LAST
-  `;
+  const assignments = await database.trainingAssignment.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      OR: [{ employeeId }, { assignedToAll: true }],
+      module: { deletedAt: null },
+    },
+    include: {
+      module: true,
+      completions: {
+        where: { tenantId, employeeId },
+        take: 1,
+      },
+    },
+  });
+
+  const rows: TrainingRow[] = assignments
+    .map((assignment) => {
+      const completion = assignment.completions[0];
+      return {
+        id: assignment.id,
+        module_id: assignment.module.id,
+        module_title: assignment.module.title,
+        module_description: assignment.module.description,
+        content_type: assignment.module.contentType,
+        duration_minutes: assignment.module.durationMinutes,
+        category: assignment.module.category,
+        is_required: assignment.module.isRequired,
+        status: assignment.status,
+        due_date: assignment.dueDate,
+        assigned_at: assignment.assignedAt,
+        content_url: assignment.module.contentUrl,
+        started_at: completion?.startedAt ?? null,
+        completed_at: completion?.completedAt ?? null,
+        score: completion?.score ? Number(completion.score) : null,
+        passed: completion?.passed ?? false,
+      };
+    })
+    .sort((a, b) => {
+      const statusOrder: Record<string, number> = {
+        overdue: 1,
+        assigned: 2,
+        in_progress: 3,
+        completed: 4,
+      };
+      const statusDiff =
+        (statusOrder[a.status] ?? 5) - (statusOrder[b.status] ?? 5);
+      if (statusDiff !== 0) return statusDiff;
+      if (!(a.due_date || b.due_date)) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.getTime() - b.due_date.getTime();
+    });
 
   const now = new Date();
 

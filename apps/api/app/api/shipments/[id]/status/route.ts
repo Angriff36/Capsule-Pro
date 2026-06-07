@@ -17,7 +17,7 @@
 
 import { auth } from "@repo/auth/server";
 import type { Shipment } from "@repo/database";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -222,34 +222,29 @@ async function createInventoryTransaction(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_PURCHASE}::text,
-      ${goodQuantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${goodQuantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${
+  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
+  await database.inventoryTransaction.create({
+    data: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_PURCHASE,
+      quantity: new Prisma.Decimal(goodQuantity),
+      unit_cost: unitCost,
+      total_cost: unitCost.mul(goodQuantity),
+      reference: shipmentNumber,
+      notes:
         `Received from shipment ${shipmentNumber}` +
         (item.lot_number ? ` (Lot: ${item.lot_number})` : "") +
         (item.expiration_date
           ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})`
-          : "")
-      }::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_receipt"}::text
-    )
-  `;
+          : ""),
+      employee_id: userId,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      storage_location_id: locationId,
+      reason: "shipment_receipt",
+    },
+  });
 }
 
 /**
@@ -260,14 +255,18 @@ async function updateInventoryQuantity(
   itemId: string,
   goodQuantity: number
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."inventory_items"
-    SET "quantity_on_hand" = "quantity_on_hand" + ${goodQuantity}::numeric,
-        "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid
-      AND "id" = ${itemId}::uuid
-      AND "deleted_at" IS NULL
-  `;
+  await database.inventoryItem.updateMany({
+    where: {
+      tenantId,
+      id: itemId,
+      deletedAt: null,
+    },
+    data: {
+      quantityOnHand: {
+        increment: new Prisma.Decimal(goodQuantity),
+      },
+    },
+  });
 }
 
 /**
@@ -282,31 +281,26 @@ async function createReservationTransaction(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_TRANSFER}::text,
-      ${-quantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${-quantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${
+  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
+  await database.inventoryTransaction.create({
+    data: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_TRANSFER,
+      quantity: new Prisma.Decimal(-quantity),
+      unit_cost: unitCost,
+      total_cost: unitCost.mul(-quantity),
+      reference: shipmentNumber,
+      notes:
         `Reserved for outgoing shipment ${shipmentNumber}` +
-        (item.lot_number ? ` (Lot: ${item.lot_number})` : "")
-      }::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_preparation"}::text
-    )
-  `;
+        (item.lot_number ? ` (Lot: ${item.lot_number})` : ""),
+      employee_id: userId,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      storage_location_id: locationId,
+      reason: "shipment_preparation",
+    },
+  });
 }
 
 /**
@@ -317,14 +311,18 @@ async function reduceInventoryQuantity(
   itemId: string,
   quantity: number
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."inventory_items"
-    SET "quantity_on_hand" = "quantity_on_hand" - ${quantity}::numeric,
-        "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid
-      AND "id" = ${itemId}::uuid
-      AND "deleted_at" IS NULL
-  `;
+  await database.inventoryItem.updateMany({
+    where: {
+      tenantId,
+      id: itemId,
+      deletedAt: null,
+    },
+    data: {
+      quantityOnHand: {
+        decrement: new Prisma.Decimal(quantity),
+      },
+    },
+  });
 }
 
 /**
@@ -441,28 +439,24 @@ async function createReversalTransaction(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_TRANSFER}::text,
-      ${quantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${quantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${`Reversal: Cancelled shipment ${shipmentNumber}`}::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_cancellation"}::text
-    )
-  `;
+  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
+  await database.inventoryTransaction.create({
+    data: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_TRANSFER,
+      quantity: new Prisma.Decimal(quantity),
+      unit_cost: unitCost,
+      total_cost: unitCost.mul(quantity),
+      reference: shipmentNumber,
+      notes: `Reversal: Cancelled shipment ${shipmentNumber}`,
+      employee_id: userId,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      storage_location_id: locationId,
+      reason: "shipment_cancellation",
+    },
+  });
 }
 
 /**

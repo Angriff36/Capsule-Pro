@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import {
@@ -41,6 +41,89 @@ function formatManifestFailure(
 // Read / get helpers (unchanged — these are query-only)
 // ---------------------------------------------------------------------------
 
+type ShiftDisplayRow = {
+  id: string;
+  schedule_id: string;
+  employeeId: string;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  employeeEmail: string;
+  employeeRole: string;
+  location_id: string;
+  location_name: string;
+  shift_start: Date;
+  shift_end: Date;
+  role_during_shift: string | null;
+  notes: string | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
+async function mapShiftRows(
+  tenantId: string,
+  shifts: Array<{
+    id: string;
+    scheduleId: string;
+    employeeId: string;
+    locationId: string;
+    shift_start: Date;
+    shift_end: Date;
+    role_during_shift: string | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }>
+): Promise<ShiftDisplayRow[]> {
+  const [employees, locations] = await Promise.all([
+    database.user.findMany({
+      where: {
+        tenantId,
+        id: { in: shifts.map((shift) => shift.employeeId) },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+    }),
+    database.location.findMany({
+      where: {
+        tenantId,
+        id: { in: shifts.map((shift) => shift.locationId) },
+        deletedAt: null,
+      },
+      select: { id: true, name: true },
+    }),
+  ]);
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const locationsById = new Map(locations.map((location) => [location.id, location]));
+
+  return shifts.map((shift) => {
+    const employee = employeesById.get(shift.employeeId);
+    const location = locationsById.get(shift.locationId);
+    return {
+      id: shift.id,
+      schedule_id: shift.scheduleId,
+      employeeId: shift.employeeId,
+      employeeFirstName: employee?.firstName ?? null,
+      employeeLastName: employee?.lastName ?? null,
+      employeeEmail: employee?.email ?? "",
+      employeeRole: employee?.role ?? "staff",
+      location_id: shift.locationId,
+      location_name: location?.name ?? "",
+      shift_start: shift.shift_start,
+      shift_end: shift.shift_end,
+      role_during_shift: shift.role_during_shift,
+      notes: shift.notes,
+      created_at: shift.createdAt,
+      updated_at: shift.updatedAt,
+    };
+  });
+}
+
 /**
  * Get all shifts with optional filters
  */
@@ -66,92 +149,37 @@ export async function getShifts(params: {
   const page = params.page ?? 1;
   const offset = (page - 1) * limit;
 
-  // Build filters
-  const hasStartDate = Boolean(params.startDate);
-  const hasEndDate = Boolean(params.endDate);
-  const hasEmployeeId = Boolean(params.employeeId);
-  const hasLocationId = Boolean(params.locationId);
-  const hasRole = Boolean(params.role);
+  const where: Prisma.ScheduleShiftWhereInput = {
+    tenantId,
+    deletedAt: null,
+    ...(params.startDate
+      ? { shift_start: { gte: new Date(params.startDate) } }
+      : {}),
+    ...(params.endDate ? { shift_end: { lte: new Date(params.endDate) } } : {}),
+    ...(params.employeeId ? { employeeId: params.employeeId } : {}),
+    ...(params.locationId ? { locationId: params.locationId } : {}),
+    ...(params.role ? { role_during_shift: params.role } : {}),
+  };
 
   // Fetch shifts and count
-  const [shifts, totalCount] = await Promise.all([
-    database.$queryRaw<
-      Array<{
-        id: string;
-        schedule_id: string;
-        employeeId: string;
-        employeeFirstName: string | null;
-        employeeLastName: string | null;
-        employeeEmail: string;
-        employeeRole: string;
-        location_id: string;
-        location_name: string;
-        shift_start: Date;
-        shift_end: Date;
-        role_during_shift: string | null;
-        notes: string | null;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          ss.id,
-          ss.schedule_id,
-          ss.employeeId,
-          e.first_name AS employee_first_name,
-          e.last_name AS employee_last_name,
-          e.email AS employee_email,
-          e.role AS employee_role,
-          ss.location_id,
-          l.name AS location_name,
-          ss.shift_start,
-          ss.shift_end,
-          ss.role_during_shift,
-          ss.notes,
-          ss.created_at,
-          ss.updated_at
-        FROM tenant_staff.schedule_shifts ss
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = ss.tenant_id
-         AND e.id = ss.employeeId
-        JOIN tenant.locations l
-          ON l.tenant_id = ss.tenant_id
-         AND l.id = ss.location_id
-        WHERE ss.tenant_id = ${tenantId}
-          AND ss.deleted_at IS NULL
-          ${hasStartDate ? Prisma.sql`AND ss.shift_start >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND ss.shift_end <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasEmployeeId ? Prisma.sql`AND ss.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasLocationId ? Prisma.sql`AND ss.location_id = ${params.locationId!}` : Prisma.empty}
-          ${hasRole ? Prisma.sql`AND ss.role_during_shift = ${params.role!}` : Prisma.empty}
-        ORDER BY ss.shift_start ASC
-        LIMIT ${limit}
-        OFFSET ${offset}
-      `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.schedule_shifts ss
-        WHERE ss.tenant_id = ${tenantId}
-          AND ss.deleted_at IS NULL
-          ${hasStartDate ? Prisma.sql`AND ss.shift_start >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND ss.shift_end <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasEmployeeId ? Prisma.sql`AND ss.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasLocationId ? Prisma.sql`AND ss.location_id = ${params.locationId!}` : Prisma.empty}
-          ${hasRole ? Prisma.sql`AND ss.role_during_shift = ${params.role!}` : Prisma.empty}
-      `
-    ),
+  const [shiftRecords, totalCount] = await Promise.all([
+    database.scheduleShift.findMany({
+      where,
+      orderBy: { shift_start: "asc" },
+      take: limit,
+      skip: offset,
+    }),
+    database.scheduleShift.count({ where }),
   ]);
+  const shifts = await mapShiftRows(tenantId, shiftRecords);
 
   return {
     shifts,
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   };
 }
@@ -169,59 +197,15 @@ export async function getShift(shiftId: string) {
     throw new Error("No tenant found");
   }
 
-  const [shift] = await database.$queryRaw<
-    Array<{
-      id: string;
-      schedule_id: string;
-      employeeId: string;
-      employeeFirstName: string | null;
-      employeeLastName: string | null;
-      employeeEmail: string;
-      employeeRole: string;
-      location_id: string;
-      location_name: string;
-      shift_start: Date;
-      shift_end: Date;
-      role_during_shift: string | null;
-      notes: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ss.id,
-        ss.schedule_id,
-        ss.employeeId,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        ss.location_id,
-        l.name AS location_name,
-        ss.shift_start,
-        ss.shift_end,
-        ss.role_during_shift,
-        ss.notes,
-        ss.created_at,
-        ss.updated_at
-      FROM tenant_staff.schedule_shifts ss
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ss.tenant_id
-       AND e.id = ss.employeeId
-      JOIN tenant.locations l
-        ON l.tenant_id = ss.tenant_id
-       AND l.id = ss.location_id
-      WHERE ss.tenant_id = ${tenantId}
-        AND ss.id = ${shiftId}
-        AND ss.deleted_at IS NULL
-    `
-  );
+  const shiftRecord = await database.scheduleShift.findFirst({
+    where: { tenantId, id: shiftId, deletedAt: null },
+  });
 
-  if (!shift) {
+  if (!shiftRecord) {
     throw new Error("Shift not found");
   }
 
+  const [shift] = await mapShiftRows(tenantId, [shiftRecord]);
   return { shift };
 }
 
@@ -247,99 +231,61 @@ export async function getAvailableEmployees(params: {
   const startDate = new Date(params.shiftStart);
   const endDate = new Date(params.shiftEnd);
 
-  // Get all active employees
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      first_name: string | null;
-      last_name: string | null;
-      email: string;
-      role: string;
-      is_active: boolean;
-      has_conflicting_shift: boolean;
-      conflicting_shifts: Array<{
-        id: string;
-        shift_start: Date;
-        shift_end: Date;
-        location_name: string;
-      }>;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        e.id,
-        e.first_name,
-        e.last_name,
-        e.email,
-        e.role,
-        e.is_active,
-        COALESCE(
-          EXISTS(
-            SELECT 1
-            FROM tenant_staff.schedule_shifts ss
-            WHERE ss.tenant_id = e.tenant_id
-              AND ss.employeeId = e.id
-              AND ss.deleted_at IS NULL
-              AND ss.shift_start < ${endDate}
-              AND ss.shift_end > ${startDate}
-              ${params.excludeShiftId ? Prisma.sql`AND ss.id != ${params.excludeShiftId}` : Prisma.empty}
-          ),
-          false
-        ) AS has_conflicting_shift
-      FROM tenant_staff.employees e
-      WHERE e.tenant_id = ${tenantId}
-        AND e.deleted_at IS NULL
-        AND e.is_active = true
-        ${params.requiredRole ? Prisma.sql`AND e.role = ${params.requiredRole}` : Prisma.empty}
-      ORDER BY e.last_name ASC, e.first_name ASC
-    `
-  );
+  const employees = await database.user.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      isActive: true,
+      ...(params.requiredRole ? { role: params.requiredRole } : {}),
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      isActive: true,
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
 
   // For employees with conflicts, get their conflicting shifts
   const employeesWithConflicts = await Promise.all(
     employees.map(async (emp) => {
-      if (!emp.has_conflicting_shift) {
-        return {
-          ...emp,
-          hasConflictingShift: false,
-          conflictingShifts: [],
-        };
-      }
-
-      const conflictingShifts = await database.$queryRaw<
-        Array<{
-          id: string;
-          shift_start: Date;
-          shift_end: Date;
-          location_name: string;
-        }>
-      >(
-        Prisma.sql`
-          SELECT
-            ss.id,
-            ss.shift_start,
-            ss.shift_end,
-            l.name AS location_name
-          FROM tenant_staff.schedule_shifts ss
-          JOIN tenant.locations l ON l.id = ss.location_id
-          WHERE ss.tenant_id = ${tenantId}
-            AND ss.employeeId = ${emp.id}
-            AND ss.deleted_at IS NULL
-            AND ss.shift_start < ${endDate}
-            AND ss.shift_end > ${startDate}
-            ${params.excludeShiftId ? Prisma.sql`AND ss.id != ${params.excludeShiftId}` : Prisma.empty}
-          ORDER BY ss.shift_start ASC
-        `
-      );
+      const conflictingShiftRecords = await database.scheduleShift.findMany({
+        where: {
+          tenantId,
+          employeeId: emp.id,
+          deletedAt: null,
+          shift_start: { lt: endDate },
+          shift_end: { gt: startDate },
+          ...(params.excludeShiftId ? { id: { not: params.excludeShiftId } } : {}),
+        },
+        orderBy: { shift_start: "asc" },
+      });
+      const locations = await database.location.findMany({
+        where: {
+          tenantId,
+          id: { in: conflictingShiftRecords.map((shift) => shift.locationId) },
+          deletedAt: null,
+        },
+        select: { id: true, name: true },
+      });
+      const locationsById = new Map(locations.map((location) => [location.id, location]));
 
       return {
-        ...emp,
-        hasConflictingShift: true,
-        conflictingShifts: conflictingShifts.map((cs) => ({
-          id: cs.id,
-          shiftStart: cs.shift_start,
-          shiftEnd: cs.shift_end,
-          locationName: cs.location_name,
+        id: emp.id,
+        first_name: emp.firstName,
+        last_name: emp.lastName,
+        email: emp.email,
+        role: emp.role,
+        is_active: emp.isActive,
+        hasConflictingShift: conflictingShiftRecords.length > 0,
+        conflictingShifts: conflictingShiftRecords.map((shift) => ({
+          id: shift.id,
+          shiftStart: shift.shift_start,
+          shiftEnd: shift.shift_end,
+          locationName: locationsById.get(shift.locationId)?.name ?? "",
         })),
       };
     })
@@ -393,19 +339,17 @@ export async function createShift(formData: FormData) {
   // Overlap detection (business policy — keep as pre-check until manifest
   // gets an overlap constraint)
   if (!allowOverlap) {
-    const [overlap] = await database.$queryRaw<Array<{ count: bigint }>>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND employee_id = ${employeeId}
-          AND deleted_at IS NULL
-          AND shift_start < ${endDate}
-          AND shift_end > ${startDate}
-      `
-    );
+    const overlapCount = await database.scheduleShift.count({
+      where: {
+        tenantId,
+        employeeId,
+        deletedAt: null,
+        shift_start: { lt: endDate },
+        shift_end: { gt: startDate },
+      },
+    });
 
-    if (Number(overlap.count) > 0) {
+    if (overlapCount > 0) {
       throw new Error("Employee has overlapping shifts");
     }
   }
@@ -465,20 +409,18 @@ export async function updateShift(shiftId: string, formData: FormData) {
 
   // Overlap detection (excluding current shift)
   if (!allowOverlap) {
-    const [overlap] = await database.$queryRaw<Array<{ count: bigint }>>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND employee_id = ${employeeId}
-          AND id != ${shiftId}
-          AND deleted_at IS NULL
-          AND shift_start < ${endDate}
-          AND shift_end > ${startDate}
-      `
-    );
+    const overlapCount = await database.scheduleShift.count({
+      where: {
+        tenantId,
+        employeeId,
+        id: { not: shiftId },
+        deletedAt: null,
+        shift_start: { lt: endDate },
+        shift_end: { gt: startDate },
+      },
+    });
 
-    if (Number(overlap.count) > 0) {
+    if (overlapCount > 0) {
       throw new Error("Employee has overlapping shifts");
     }
   }
@@ -553,42 +495,44 @@ export async function getEmployees(params?: {
     throw new Error("No tenant found");
   }
 
-  const hasSearch = Boolean(params?.search);
-  const hasLocationId = Boolean(params?.locationId);
-  const hasRole = Boolean(params?.role);
-
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      first_name: string | null;
-      last_name: string | null;
-      email: string;
-      role: string;
-      is_active: boolean;
-      phone: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id, first_name, last_name, email, role, is_active, phone
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        ${params?.activeOnly !== false ? Prisma.sql`AND is_active = true` : Prisma.empty}
-        ${
-          hasSearch
-            ? Prisma.sql`AND (
-          first_name ILIKE ${"%" + params!.search! + "%"}
-          OR last_name ILIKE ${"%" + params!.search! + "%"}
-          OR email ILIKE ${"%" + params!.search! + "%"}
-        )`
-            : Prisma.empty
+  const employeeWhere: Prisma.UserWhereInput = {
+    tenantId,
+    deletedAt: null,
+    ...(params?.activeOnly !== false ? { isActive: true } : {}),
+    ...(params?.role ? { role: params.role } : {}),
+    ...(params?.search
+      ? {
+          OR: [
+            { firstName: { contains: params.search, mode: "insensitive" } },
+            { lastName: { contains: params.search, mode: "insensitive" } },
+            { email: { contains: params.search, mode: "insensitive" } },
+          ],
         }
-        ${hasRole ? Prisma.sql`AND role = ${params!.role!}` : Prisma.empty}
-      ORDER BY last_name ASC, first_name ASC
-      LIMIT 50
-    `
-  );
+      : {}),
+  };
+  const employeeRecords = await database.user.findMany({
+    where: employeeWhere,
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      isActive: true,
+      phone: true,
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    take: 50,
+  });
+  const employees = employeeRecords.map((employee) => ({
+    id: employee.id,
+    first_name: employee.firstName,
+    last_name: employee.lastName,
+    email: employee.email,
+    role: employee.role,
+    is_active: employee.isActive,
+    phone: employee.phone,
+  }));
 
   return { employees };
 }
@@ -609,27 +553,30 @@ export async function getLocations(params?: {
     throw new Error("No tenant found");
   }
 
-  const hasSearch = Boolean(params?.search);
-
-  const locations = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      address: string | null;
-      is_active: boolean;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, name, address, is_active
-      FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        ${params?.activeOnly !== false ? Prisma.sql`AND is_active = true` : Prisma.empty}
-        ${hasSearch ? Prisma.sql`AND name ILIKE ${"%" + params!.search! + "%"}` : Prisma.empty}
-      ORDER BY name ASC
-      LIMIT 50
-    `
-  );
+  const locationRecords = await database.location.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      ...(params?.activeOnly !== false ? { isActive: true } : {}),
+      ...(params?.search
+        ? { name: { contains: params.search, mode: "insensitive" } }
+        : {}),
+    },
+    select: {
+      id: true,
+      name: true,
+      addressLine1: true,
+      isActive: true,
+    },
+    orderBy: { name: "asc" },
+    take: 50,
+  });
+  const locations = locationRecords.map((location) => ({
+    id: location.id,
+    name: location.name,
+    address: location.addressLine1,
+    is_active: location.isActive,
+  }));
 
   return { locations };
 }
@@ -651,51 +598,67 @@ export async function getSchedules(params?: {
     throw new Error("No tenant found");
   }
 
-  const hasSearch = Boolean(params?.search);
-  const hasStatus = Boolean(params?.status);
-  const hasLocationId = Boolean(params?.locationId);
-
-  const schedules = await database.$queryRaw<
-    Array<{
-      id: string;
-      schedule_date: Date;
-      status: string;
-      location_id: string;
-      location_name: string;
-      shift_count: bigint;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        s.id,
-        s.schedule_date,
-        s.status,
-        s.location_id,
-        l.name AS location_name,
-        COUNT(ss.id)::bigint AS shift_count
-      FROM tenant_staff.schedules s
-      JOIN tenant.locations l
-        ON l.tenant_id = s.tenant_id
-       AND l.id = s.location_id
-      LEFT JOIN tenant_staff.schedule_shifts ss
-        ON ss.schedule_id = s.id
-       AND ss.deleted_at IS NULL
-      WHERE s.tenant_id = ${tenantId}
-        AND s.deleted_at IS NULL
-        ${
-          hasSearch
-            ? Prisma.sql`AND (
-          l.name ILIKE ${"%" + params!.search! + "%"}
-        )`
-            : Prisma.empty
-        }
-        ${hasStatus ? Prisma.sql`AND s.status = ${params!.status!}` : Prisma.empty}
-        ${hasLocationId ? Prisma.sql`AND s.location_id = ${params!.locationId!}` : Prisma.empty}
-      GROUP BY s.id, s.schedule_date, s.status, s.location_id, l.name
-      ORDER BY s.schedule_date DESC
-      LIMIT 50
-    `
+  const matchingLocations = params?.search
+    ? await database.location.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          name: { contains: params.search, mode: "insensitive" },
+        },
+        select: { id: true, name: true },
+      })
+    : [];
+  const locationIds = params?.locationId
+    ? [params.locationId]
+    : params?.search
+      ? matchingLocations.map((location) => location.id)
+      : undefined;
+  const scheduleRecords =
+    params?.search && locationIds?.length === 0
+      ? []
+      : await database.schedule.findMany({
+          where: {
+            tenantId,
+            deletedAt: null,
+            ...(params?.status ? { status: params.status } : {}),
+            ...(locationIds ? { locationId: { in: locationIds } } : {}),
+          },
+          orderBy: { schedule_date: "desc" },
+          take: 50,
+        });
+  const [scheduleLocations, shiftCounts] = await Promise.all([
+    database.location.findMany({
+      where: {
+        tenantId,
+        id: {
+          in: scheduleRecords
+            .map((schedule) => schedule.locationId)
+            .filter((id): id is string => Boolean(id)),
+        },
+      },
+      select: { id: true, name: true },
+    }),
+    Promise.all(
+      scheduleRecords.map((schedule) =>
+        database.scheduleShift.count({
+          where: { tenantId, scheduleId: schedule.id, deletedAt: null },
+        })
+      )
+    ),
+  ]);
+  const scheduleLocationsById = new Map(
+    scheduleLocations.map((location) => [location.id, location])
   );
+  const schedules = scheduleRecords.map((schedule, index) => ({
+    id: schedule.id,
+    schedule_date: schedule.schedule_date,
+    status: schedule.status,
+    location_id: schedule.locationId ?? "",
+    location_name: schedule.locationId
+      ? (scheduleLocationsById.get(schedule.locationId)?.name ?? "")
+      : "",
+    shift_count: BigInt(shiftCounts[index] ?? 0),
+  }));
 
   return { schedules };
 }
@@ -717,55 +680,71 @@ export async function getEvents(params?: {
     throw new Error("No tenant found");
   }
 
-  const hasSearch = Boolean(params?.search);
-  const hasDateFrom = Boolean(params?.dateFrom);
-  const hasDateTo = Boolean(params?.dateTo);
-
-  const events = await database.$queryRaw<
-    Array<{
-      id: string;
-      name: string;
-      event_date: Date;
-      status: string;
-      client_id: string;
-      client_name: string;
-      location_id: string;
-      location_name: string;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        e.id,
-        e.name,
-        e.event_date,
-        e.status,
-        e.client_id,
-        c.name AS client_name,
-        e.location_id,
-        l.name AS location_name
-      FROM tenant.events e
-      JOIN tenant.clients c
-        ON c.tenant_id = e.tenant_id
-       AND c.id = e.client_id
-      JOIN tenant.locations l
-        ON l.tenant_id = e.tenant_id
-       AND l.id = e.location_id
-      WHERE e.tenant_id = ${tenantId}
-        AND e.deleted_at IS NULL
-        ${
-          hasSearch
-            ? Prisma.sql`AND (
-          e.name ILIKE ${"%" + params!.search! + "%"}
-          OR c.name ILIKE ${"%" + params!.search! + "%"}
-        )`
-            : Prisma.empty
-        }
-        ${hasDateFrom ? Prisma.sql`AND e.event_date >= ${new Date(params!.dateFrom!)}` : Prisma.empty}
-        ${hasDateTo ? Prisma.sql`AND e.event_date <= ${new Date(params!.dateTo!)}` : Prisma.empty}
-      ORDER BY e.event_date DESC
-      LIMIT 50
-    `
+  const eventRecords = await database.event.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      ...(params?.dateFrom
+        ? { eventDate: { gte: new Date(params.dateFrom) } }
+        : {}),
+      ...(params?.dateTo
+        ? { eventDate: { lte: new Date(params.dateTo) } }
+        : {}),
+      ...(params?.search
+        ? { title: { contains: params.search, mode: "insensitive" } }
+        : {}),
+    },
+    orderBy: { eventDate: "desc" },
+    take: 50,
+  });
+  const [clients, eventLocations] = await Promise.all([
+    database.client.findMany({
+      where: {
+        tenantId,
+        id: {
+          in: eventRecords
+            .map((event) => event.clientId)
+            .filter((id): id is string => Boolean(id)),
+        },
+        deletedAt: null,
+      },
+      select: { id: true, company_name: true, first_name: true, last_name: true },
+    }),
+    database.location.findMany({
+      where: {
+        tenantId,
+        id: {
+          in: eventRecords
+            .map((event) => event.locationId)
+            .filter((id): id is string => Boolean(id)),
+        },
+        deletedAt: null,
+      },
+      select: { id: true, name: true },
+    }),
+  ]);
+  const clientsById = new Map(clients.map((client) => [client.id, client]));
+  const eventLocationsById = new Map(
+    eventLocations.map((location) => [location.id, location])
   );
+  const events = eventRecords.map((event) => {
+    const client = event.clientId ? clientsById.get(event.clientId) : undefined;
+    const clientName =
+      client?.company_name ||
+      [client?.first_name, client?.last_name].filter(Boolean).join(" ");
+    return {
+      id: event.id,
+      name: event.title,
+      event_date: event.eventDate,
+      status: event.status,
+      client_id: event.clientId ?? "",
+      client_name: clientName,
+      location_id: event.locationId ?? "",
+      location_name: event.locationId
+        ? (eventLocationsById.get(event.locationId)?.name ?? "")
+        : "",
+    };
+  });
 
   return {
     events: events.map((e) => ({

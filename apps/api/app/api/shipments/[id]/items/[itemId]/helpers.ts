@@ -2,7 +2,7 @@
  * Helper functions for shipment item route handlers
  */
 
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 
 /**
  * Updates shipment totals after item modification
@@ -21,11 +21,14 @@ export async function updateShipmentTotals(
   );
   const totalValue = allItems.reduce((sum, i) => sum + Number(i.totalCost), 0);
 
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."shipments"
-    SET "total_items" = ${totalItems}::integer,
-        "total_value" = ${totalValue}::numeric,
-        "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${shipmentId}::uuid
-  `;
+  await database.shipment.updateMany({
+    where: {
+      tenantId,
+      id: shipmentId,
+    },
+    data: {
+      totalItems,
+      totalValue: new Prisma.Decimal(totalValue),
+    },
+  });
 }

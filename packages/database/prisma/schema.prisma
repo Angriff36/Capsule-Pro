@@ -959,6 +959,8 @@ model Lead {
   notes               String?
   convertedToClientId String?    @map("converted_to_client_id") @db.Uuid
   convertedAt         DateTime?  @map("converted_at") @db.Timestamptz(6)
+  score               Int        @default(0)
+  scoreBreakdown      Json       @default("{}") @map("score_breakdown") @db.JsonB
   createdAt           DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt           DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime?  @map("deleted_at") @db.Timestamptz(6)
@@ -1332,6 +1334,7 @@ model Menu {
   description    String?
   category       String?
   isActive       Boolean    @default(true) @map("is_active")
+  isTemplate     Boolean    @default(false) @map("is_template")
   basePrice      Decimal?   @map("base_price") @db.Decimal(10, 2)
   pricePerPerson Decimal?   @map("price_per_person") @db.Decimal(10, 2)
   minGuests      Int?       @map("min_guests") @db.SmallInt

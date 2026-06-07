@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
@@ -22,69 +22,61 @@ export async function GET(
   const tenantId = await getTenantIdForOrg(orgId);
   const { id: requestId } = await params;
 
-  const [timeOffRequest] = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employee_id: string;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      employee_role: string;
-      start_date: Date;
-      end_date: Date;
-      reason: string | null;
-      status: string;
-      request_type: string;
-      created_at: Date;
-      updated_at: Date;
-      processed_at: Date | null;
-      processed_by: string | null;
-      processed_by_first_name: string | null;
-      processed_by_last_name: string | null;
-      rejection_reason: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        tor.id,
-        tor.tenant_id,
-        tor.employee_id,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        tor.start_date,
-        tor.end_date,
-        tor.reason,
-        tor.status,
-        tor.request_type,
-        tor.created_at,
-        tor.updated_at,
-        tor.processed_at,
-        tor.processed_by,
-        processor.first_name AS processed_by_first_name,
-        processor.last_name AS processed_by_last_name,
-        tor.rejection_reason
-      FROM tenant_staff.employee_time_off_requests tor
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = tor.tenant_id
-       AND e.id = tor.employee_id
-      LEFT JOIN tenant_staff.employees processor
-        ON processor.tenant_id = tor.tenant_id
-       AND processor.id = tor.processed_by
-      WHERE tor.tenant_id = ${tenantId}
-        AND tor.id = ${requestId}
-        AND tor.deleted_at IS NULL
-    `
-  );
+  const record = await database.timeOffRequest.findFirst({
+    where: { tenantId, id: requestId, deletedAt: null },
+  });
 
-  if (!timeOffRequest) {
+  if (!record) {
     return NextResponse.json(
       { message: "Time-off request not found" },
       { status: 404 }
     );
   }
+
+  const users = await database.user.findMany({
+    where: {
+      tenantId,
+      id: {
+        in: [record.employeeId, record.reviewedBy].filter(
+          (id): id is string => Boolean(id)
+        ),
+      },
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+    },
+  });
+  const usersById = new Map(users.map((user) => [user.id, user]));
+  const employee = usersById.get(record.employeeId);
+  const processor = record.reviewedBy
+    ? usersById.get(record.reviewedBy)
+    : undefined;
+  const timeOffRequest = {
+    id: record.id,
+    tenant_id: record.tenantId,
+    employee_id: record.employeeId,
+    employee_first_name: employee?.firstName ?? null,
+    employee_last_name: employee?.lastName ?? null,
+    employee_email: employee?.email ?? "",
+    employee_role: employee?.role ?? "staff",
+    start_date: record.startDate,
+    end_date: record.endDate,
+    reason: record.reason,
+    status: record.status,
+    request_type: record.requestType,
+    created_at: record.createdAt,
+    updated_at: record.updatedAt,
+    processed_at: record.reviewedAt,
+    processed_by: record.reviewedBy,
+    processed_by_first_name: processor?.firstName ?? null,
+    processed_by_last_name: processor?.lastName ?? null,
+    rejection_reason: record.rejectionReason,
+  };
 
   return NextResponse.json({ request: timeOffRequest });
 }

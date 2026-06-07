@@ -150,41 +150,38 @@ export async function POST(request: NextRequest) {
         `;
 
         if (existing.length > 0) {
-          // Update
-          await database.$executeRaw`
-            UPDATE tenant_inventory.inventory_items
-            SET name = ${item.name},
-                category = ${item.category},
-                unit_of_measure = ${item.unitOfMeasure},
-                unit_cost = ${item.unitCost},
-                quantity_on_hand = ${item.quantityOnHand},
-                tags = ${Prisma.join(item.tags)},
-                updated_at = ${item.updatedAt}
-            WHERE tenant_id = ${item.tenantId}
-              AND item_number = ${item.item_number}
-              AND deleted_at IS NULL
-          `;
+          await database.inventoryItem.updateMany({
+            where: {
+              tenantId: item.tenantId,
+              item_number: item.item_number,
+              deletedAt: null,
+            },
+            data: {
+              name: item.name,
+              category: item.category,
+              unitOfMeasure: item.unitOfMeasure,
+              unitCost: item.unitCost,
+              quantityOnHand: item.quantityOnHand,
+              tags: item.tags,
+              updatedAt: item.updatedAt,
+            },
+          });
           updated++;
         } else {
-          // Create
-          await database.$executeRaw`
-            INSERT INTO tenant_inventory.inventory_items
-              (tenant_id, id, item_number, name, category, unit_of_measure,
-               unit_cost, quantity_on_hand, tags, created_at, updated_at)
-            VALUES (
-              ${item.tenantId},
-              gen_random_uuid(),
-              ${item.item_number},
-              ${item.name},
-              ${item.category},
-              ${item.unitOfMeasure},
-              ${item.unitCost},
-              ${item.quantityOnHand},
-              ${Prisma.join(item.tags)},
-              ${item.createdAt},
-              ${item.updatedAt}
-            )
-          `;
+          await database.inventoryItem.create({
+            data: {
+              tenantId: item.tenantId,
+              item_number: item.item_number,
+              name: item.name,
+              category: item.category,
+              unitOfMeasure: item.unitOfMeasure,
+              unitCost: item.unitCost,
+              quantityOnHand: item.quantityOnHand,
+              tags: item.tags,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+            },
+          });
           created++;
         }
       } catch {

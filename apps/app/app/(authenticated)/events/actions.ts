@@ -457,28 +457,17 @@ export const attachEventImport = async (formData: FormData): Promise<void> => {
   const fileName = file.name || IMPORT_FALLBACK_NAME;
   const content = Buffer.from(await file.arrayBuffer());
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_imports (
-        tenant_id,
-        id,
-        event_id,
-        file_name,
-        mime_type,
-        file_size,
-        content
-      )
-      VALUES (
-        ${tenantId},
-        ${randomUUID()},
-        ${eventId},
-        ${fileName},
-        ${file.type || "application/octet-stream"},
-        ${content.byteLength},
-        ${content}
-      )
-    `
-  );
+  await database.eventImport.create({
+    data: {
+      tenantId,
+      id: randomUUID(),
+      eventId,
+      fileName,
+      mimeType: file.type || "application/octet-stream",
+      fileSize: content.byteLength,
+      content,
+    },
+  });
 
   revalidateEvent(eventId);
   redirect(`/events/${eventId}`);

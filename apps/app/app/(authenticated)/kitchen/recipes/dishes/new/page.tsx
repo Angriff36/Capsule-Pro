@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -20,15 +20,11 @@ const NewDishPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const recipes = await database.$queryRaw<RecipeOption[]>(
-    Prisma.sql`
-      SELECT id, name
-      FROM tenant_kitchen.recipes
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY name ASC
-    `
-  );
+  const recipes: RecipeOption[] = await database.recipe.findMany({
+    where: { tenantId, deletedAt: null },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import type { Metadata } from "next";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { RequestsClient } from "./requests-client";
@@ -63,56 +63,69 @@ export default async function SchedulingRequestsPage() {
   let loadError: string | null = null;
 
   try {
-    timeOffRequests = await database.$queryRaw<TimeOffRequestRow[]>(
-      Prisma.sql`
-      SELECT
-        tor.id,
-        tor.employeeId,
-        u.first_name AS employee_first_name,
-        u.last_name AS employee_last_name,
-        u.role AS employee_role,
-        tor.request_type,
-        tor.start_date,
-        tor.end_date,
-        tor.reason,
-        tor.status,
-        tor.submitted_at
-      FROM tenant_staff.employee_time_off_requests tor
-      LEFT JOIN public.users u
-        ON u.id = tor.employeeId::uuid
-       AND u.tenant_id = tor.tenant_id
-      WHERE tor.tenant_id = ${tenantId}
-        AND tor.deleted_at IS NULL
-      ORDER BY tor.submitted_at DESC
-      LIMIT 50
-    `
-    );
+    const rows = await database.timeOffRequest.findMany({
+      where: { tenantId, deletedAt: null },
+      orderBy: { submittedAt: "desc" },
+      take: 50,
+    });
+    const employees = await database.user.findMany({
+      where: {
+        tenantId,
+        id: { in: rows.map((row) => row.employeeId) },
+        deletedAt: null,
+      },
+      select: { id: true, firstName: true, lastName: true, role: true },
+    });
+    const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+    timeOffRequests = rows.map((row) => {
+      const employee = employeesById.get(row.employeeId);
+      return {
+        id: row.id,
+        employeeId: row.employeeId,
+        employeeFirstName: employee?.firstName ?? null,
+        employeeLastName: employee?.lastName ?? null,
+        employeeRole: employee?.role ?? "Staff",
+        request_type: row.requestType,
+        start_date: row.startDate,
+        end_date: row.endDate,
+        reason: row.reason,
+        status: row.status,
+        submitted_at: row.submittedAt,
+      };
+    });
   } catch (err) {
     console.error("Failed to load time-off requests:", err);
     loadError = "Failed to load time-off requests";
   }
 
   try {
-    timecardEdits = await database.$queryRaw<TimecardEditRow[]>(
-      Prisma.sql`
-      SELECT
-        ter.id,
-        ter.employeeId,
-        u.first_name AS employee_first_name,
-        u.last_name AS employee_last_name,
-        u.role AS employee_role,
-        ter.reason,
-        ter.status,
-        ter.created_at
-      FROM tenant_staff.timecard_edit_requests ter
-      LEFT JOIN public.users u
-        ON u.id = ter.employeeId::uuid
-       AND u.tenant_id = ter.tenant_id
-      WHERE ter.tenant_id = ${tenantId}
-      ORDER BY ter.created_at DESC
-      LIMIT 50
-    `
-    );
+    const rows = await database.timecardEditRequest.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+    const employees = await database.user.findMany({
+      where: {
+        tenantId,
+        id: { in: rows.map((row) => row.employeeId) },
+        deletedAt: null,
+      },
+      select: { id: true, firstName: true, lastName: true, role: true },
+    });
+    const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+    timecardEdits = rows.map((row) => {
+      const employee = employeesById.get(row.employeeId);
+      return {
+        id: row.id,
+        employeeId: row.employeeId,
+        employeeFirstName: employee?.firstName ?? null,
+        employeeLastName: employee?.lastName ?? null,
+        employeeRole: employee?.role ?? "Staff",
+        reason: row.reason,
+        status: row.status,
+        created_at: row.createdAt,
+      };
+    });
   } catch (err) {
     console.error("Failed to load timecard edits:", err);
     loadError = loadError

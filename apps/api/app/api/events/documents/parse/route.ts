@@ -360,21 +360,20 @@ async function updateEventDishLink(
 ): Promise<void> {
   const specialInstructions = Array.from(entry.instructions).join("; ");
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_events.event_dishes
-      SET quantity_servings = ${Math.max(1, Math.round(entry.quantity))},
-          service_style = ${entry.serviceLocation ?? serviceStyle ?? null},
-          course = ${entry.category ?? null},
-          special_instructions = ${
-            specialInstructions.length > 0 ? specialInstructions : null
-          },
-          updated_at = ${new Date()}
-      WHERE tenant_id = ${tenantId}
-        AND id = ${linkId}
-        AND event_id = ${eventId}
-    `
-  );
+  await database.eventDish.updateMany({
+    where: {
+      tenantId,
+      id: linkId,
+      eventId,
+    },
+    data: {
+      quantityServings: Math.max(1, Math.round(entry.quantity)),
+      serviceStyle: entry.serviceLocation ?? serviceStyle ?? null,
+      course: entry.category ?? null,
+      specialInstructions:
+        specialInstructions.length > 0 ? specialInstructions : null,
+    },
+  });
 }
 
 /**
@@ -389,34 +388,18 @@ async function createEventDishLink(
 ): Promise<void> {
   const specialInstructions = Array.from(entry.instructions).join("; ");
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_dishes (
-        tenant_id,
-        id,
-        event_id,
-        dish_id,
-        course,
-        quantity_servings,
-        service_style,
-        special_instructions,
-        created_at,
-        updated_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${eventId},
-        ${dishId},
-        ${entry.category ?? null},
-        ${Math.max(1, Math.round(entry.quantity))},
-        ${entry.serviceLocation ?? serviceStyle ?? null},
-        ${specialInstructions.length > 0 ? specialInstructions : null},
-        ${new Date()},
-        ${new Date()}
-      )
-    `
-  );
+  await database.eventDish.create({
+    data: {
+      tenantId,
+      eventId,
+      dishId,
+      course: entry.category ?? null,
+      quantityServings: Math.max(1, Math.round(entry.quantity)),
+      serviceStyle: entry.serviceLocation ?? serviceStyle ?? null,
+      specialInstructions:
+        specialInstructions.length > 0 ? specialInstructions : null,
+    },
+  });
 }
 
 /**

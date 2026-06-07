@@ -3,7 +3,7 @@
 // facility-areas table for a tenant in one round trip.
 
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
+import type { Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -34,19 +34,32 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    const areas = await database.$queryRaw`
-      SELECT
-        id, venue_id, name, code, "areaType" AS area_type, floor, description,
-        square_feet, status, created_at, updated_at
-      FROM tenant_facilities.facility_areas
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${venueId ? Prisma.sql`AND venue_id = ${venueId}::uuid` : Prisma.empty}
-        ${areaType ? Prisma.sql`AND "areaType" = ${areaType}` : Prisma.empty}
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-      ORDER BY name
-      LIMIT ${limit} OFFSET ${offset}
-    `;
+    const areaWhere: Prisma.FacilityAreaWhereInput = {
+      tenantId,
+      deletedAt: null,
+      ...(venueId ? { venueId } : {}),
+      ...(areaType ? { areaType } : {}),
+      ...(status !== "all" ? { status } : {}),
+    };
+    const areaRecords = await database.facilityArea.findMany({
+      where: areaWhere,
+      orderBy: { name: "asc" },
+      take: limit,
+      skip: offset,
+    });
+    const areas = areaRecords.map((area) => ({
+      id: area.id,
+      venue_id: area.venueId,
+      name: area.name,
+      code: area.code,
+      area_type: area.areaType,
+      floor: area.floor,
+      description: area.description,
+      square_feet: area.squareFeet,
+      status: area.status,
+      created_at: area.createdAt,
+      updated_at: area.updatedAt,
+    }));
 
     return manifestSuccessResponse({ areas, limit, offset });
   } catch (error) {

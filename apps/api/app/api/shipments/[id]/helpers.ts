@@ -2,7 +2,7 @@
  * Helper functions for shipment route handlers
  */
 
-import { database } from "@repo/database";
+import { database, Prisma, type ShipmentStatus } from "@repo/database";
 
 export interface ShipmentUpdateInput {
   shipment_number?: string;
@@ -194,40 +194,79 @@ export function buildShipmentUpdateData(
   return updateData;
 }
 
-/**
- * Executes raw SQL update for shipment
- */
 export async function updateShipmentRaw(
   tenantId: string,
   shipmentId: string,
   updateData: ShipmentUpdateData
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."shipments"
-    SET
-      "shipment_number" = COALESCE(${updateData.shipmentNumber}, "shipment_number"),
-      "status" = COALESCE(${updateData.status}, "status"),
-      "event_id" = COALESCE(${updateData.eventId}::uuid, "event_id"),
-      "supplier_id" = COALESCE(${updateData.supplierId}::uuid, "supplier_id"),
-      "location_id" = COALESCE(${updateData.locationId}::uuid, "location_id"),
-      "scheduled_date" = COALESCE(${updateData.scheduledDate}::timestamptz, "scheduled_date"),
-      "shipped_date" = COALESCE(${updateData.shippedDate}::timestamptz, "shipped_date"),
-      "estimated_delivery_date" = COALESCE(${updateData.estimatedDeliveryDate}::timestamptz, "estimated_delivery_date"),
-      "actual_delivery_date" = COALESCE(${updateData.actualDeliveryDate}::timestamptz, "actual_delivery_date"),
-      "shipping_cost" = COALESCE(${updateData.shippingCost}::numeric, "shipping_cost"),
-      "total_value" = COALESCE(${updateData.totalValue}::numeric, "total_value"),
-      "tracking_number" = COALESCE(${updateData.trackingNumber}, "tracking_number"),
-      "carrier" = COALESCE(${updateData.carrier}, "carrier"),
-      "shipping_method" = COALESCE(${updateData.shippingMethod}, "shipping_method"),
-      "delivered_by" = COALESCE(${updateData.deliveredBy}::uuid, "delivered_by"),
-      "received_by" = COALESCE(${updateData.receivedBy}, "received_by"),
-      "signature" = COALESCE(${updateData.signature}, "signature"),
-      "notes" = COALESCE(${updateData.notes}, "notes"),
-      "internal_notes" = COALESCE(${updateData.internalNotes}, "internal_notes"),
-      "reference" = COALESCE(${updateData.reference}, "reference"),
-      "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${shipmentId}::uuid
-  `;
+  await database.shipment.updateMany({
+    where: {
+      tenantId,
+      id: shipmentId,
+    },
+    data: {
+      ...(updateData.shipmentNumber !== undefined && {
+        shipmentNumber: updateData.shipmentNumber,
+      }),
+      ...(updateData.status !== undefined && {
+        status: updateData.status as ShipmentStatus,
+      }),
+      ...(updateData.eventId !== undefined && { eventId: updateData.eventId }),
+      ...(updateData.supplierId !== undefined && {
+        supplierId: updateData.supplierId,
+      }),
+      ...(updateData.locationId !== undefined && {
+        locationId: updateData.locationId,
+      }),
+      ...(updateData.scheduledDate !== undefined && {
+        scheduledDate: updateData.scheduledDate,
+      }),
+      ...(updateData.shippedDate !== undefined && {
+        shippedDate: updateData.shippedDate,
+      }),
+      ...(updateData.estimatedDeliveryDate !== undefined && {
+        estimatedDeliveryDate: updateData.estimatedDeliveryDate,
+      }),
+      ...(updateData.actualDeliveryDate !== undefined && {
+        actualDeliveryDate: updateData.actualDeliveryDate,
+      }),
+      ...(updateData.shippingCost !== undefined && {
+        shippingCost:
+          updateData.shippingCost === null
+            ? null
+            : new Prisma.Decimal(updateData.shippingCost),
+      }),
+      ...(updateData.totalValue !== undefined && {
+        totalValue:
+          updateData.totalValue === null
+            ? null
+            : new Prisma.Decimal(updateData.totalValue),
+      }),
+      ...(updateData.trackingNumber !== undefined && {
+        trackingNumber: updateData.trackingNumber,
+      }),
+      ...(updateData.carrier !== undefined && { carrier: updateData.carrier }),
+      ...(updateData.shippingMethod !== undefined && {
+        shippingMethod: updateData.shippingMethod,
+      }),
+      ...(updateData.deliveredBy !== undefined && {
+        deliveredBy: updateData.deliveredBy,
+      }),
+      ...(updateData.receivedBy !== undefined && {
+        receivedBy: updateData.receivedBy,
+      }),
+      ...(updateData.signature !== undefined && {
+        signature: updateData.signature,
+      }),
+      ...(updateData.notes !== undefined && { notes: updateData.notes }),
+      ...(updateData.internalNotes !== undefined && {
+        internalNotes: updateData.internalNotes,
+      }),
+      ...(updateData.reference !== undefined && {
+        reference: updateData.reference,
+      }),
+    },
+  });
 }
 
 /**

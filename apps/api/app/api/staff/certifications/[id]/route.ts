@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
@@ -23,56 +23,39 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  const certifications = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employee_id: string;
-      certification_type: string;
-      certification_name: string;
-      issued_date: Date;
-      expiry_date: Date | null;
-      document_url: string | null;
-      created_at: Date;
-      updated_at: Date;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ec.id,
-        ec.tenant_id,
-        ec.employee_id,
-        ec.certification_type,
-        ec.certification_name,
-        ec.issued_date,
-        ec.expiry_date,
-        ec.document_url,
-        ec.created_at,
-        ec.updated_at,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email
-      FROM tenant_staff.employee_certifications ec
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ec.tenant_id
-        AND e.id = ec.employee_id
-      WHERE ec.tenant_id = ${tenantId}
-        AND ec.id = ${id}
-        AND ec.deleted_at IS NULL
-    `
-  );
+  const cert = await database.employeeCertification.findFirst({
+    where: { tenantId, id, deletedAt: null },
+  });
 
-  if (certifications.length === 0) {
+  if (!cert) {
     return NextResponse.json(
       { message: "Certification not found" },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ certification: certifications[0] });
+  const employee = await database.user.findFirst({
+    where: { tenantId, id: cert.employeeId, deletedAt: null },
+    select: { firstName: true, lastName: true, email: true },
+  });
+
+  return NextResponse.json({
+    certification: {
+      id: cert.id,
+      tenant_id: cert.tenantId,
+      employee_id: cert.employeeId,
+      certification_type: cert.certificationType,
+      certification_name: cert.certificationName,
+      issued_date: cert.issuedDate,
+      expiry_date: cert.expiryDate,
+      document_url: cert.documentUrl,
+      created_at: cert.createdAt,
+      updated_at: cert.updatedAt,
+      employee_first_name: employee?.firstName ?? null,
+      employee_last_name: employee?.lastName ?? null,
+      employee_email: employee?.email ?? "",
+    },
+  });
 }
 
 /**

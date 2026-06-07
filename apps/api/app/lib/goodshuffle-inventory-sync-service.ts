@@ -236,49 +236,35 @@ async function createConvoyInventoryFromGoodshuffle(
     return "dry-run-id";
   }
 
-  // Get default supplier
-  const defaultSupplier = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-      ORDER BY created_at ASC
-      LIMIT 1
-    `
-  );
+  const defaultSupplier = await database.inventorySupplier.findFirst({
+    where: { tenantId, deletedAt: null },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
 
-  const supplierId = defaultSupplier.length > 0 ? defaultSupplier[0].id : null;
+  const supplierId = defaultSupplier?.id ?? null;
 
-  // Create inventory item
-  const newItem = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant_inventory.inventory_items (
-        tenant_id, id, item_number, name, description, category,
-        unit_of_measure, unit_cost, quantity_on_hand, par_level,
-        reorder_level, supplier_id, created_at, updated_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${gsItem.sku ?? `GS-${gsItem.id.slice(0, 8)}`},
-        ${gsItem.name},
-        ${gsItem.description ?? null},
-        ${gsItem.category ?? "general"},
-        ${gsItem.unit_of_measure ?? "each"},
-        ${gsItem.unit_cost ?? 0},
-        ${gsItem.quantity_available ?? 0},
-        0,
-        0,
-        ${supplierId},
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `
-  );
+  const newItem = await database.inventoryItem.create({
+    data: {
+      tenantId,
+      item_number: gsItem.sku ?? `GS-${gsItem.id.slice(0, 8)}`,
+      name: gsItem.name,
+      description: gsItem.description ?? null,
+      category: gsItem.category ?? "general",
+      unitOfMeasure: gsItem.unit_of_measure ?? "each",
+      unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0),
+      quantityOnHand: new Prisma.Decimal(gsItem.quantity_available ?? 0),
+      parLevel: new Prisma.Decimal(0),
+      reorder_level: new Prisma.Decimal(0),
+      supplierId,
+      tags: [],
+    },
+    select: {
+      id: true,
+    },
+  });
 
-  return newItem[0].id;
+  return newItem.id;
 }
 
 /**
@@ -294,18 +280,19 @@ async function updateConvoyInventoryFromGoodshuffle(
     return;
   }
 
-  await database.$executeRaw`
-    UPDATE tenant_inventory.inventory_items
-    SET
-      name = ${gsItem.name},
-      description = ${gsItem.description ?? null},
-      category = ${gsItem.category ?? "general"},
-      unit_cost = ${gsItem.unit_cost ?? 0},
-      quantity_on_hand = ${gsItem.quantity_available ?? 0},
-      updated_at = NOW()
-    WHERE tenant_id = ${tenantId}
-      AND id = ${convoyInventoryItemId}
-  `;
+  await database.inventoryItem.updateMany({
+    where: {
+      tenantId,
+      id: convoyInventoryItemId,
+    },
+    data: {
+      name: gsItem.name,
+      description: gsItem.description ?? null,
+      category: gsItem.category ?? "general",
+      unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0),
+      quantityOnHand: new Prisma.Decimal(gsItem.quantity_available ?? 0),
+    },
+  });
 }
 
 /**

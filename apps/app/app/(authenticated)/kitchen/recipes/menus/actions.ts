@@ -32,34 +32,20 @@ export const createMenu = async (formData: FormData) => {
   const menuId = randomUUID();
 
   await database.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.menus (
-          tenant_id,
-          id,
-          name,
-          description,
-          category,
-          base_price,
-          price_per_person,
-          min_guests,
-          max_guests,
-          is_active
-        )
-        VALUES (
-          ${tenantId},
-          ${menuId},
-          ${name},
-          ${description},
-          ${category},
-          ${basePrice},
-          ${pricePerPerson},
-          ${minGuests},
-          ${maxGuests},
-          true
-        )
-      `
-    );
+    await tx.menu.create({
+      data: {
+        tenantId,
+        id: menuId,
+        name,
+        description,
+        category,
+        basePrice,
+        pricePerPerson,
+        minGuests,
+        maxGuests,
+        isActive: true,
+      },
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -116,23 +102,19 @@ export const updateMenu = async (menuId: string, formData: FormData) => {
   const isActive = formData.get("isActive") === "on";
 
   await database.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.menus
-        SET
-          name = ${name},
-          description = ${description},
-          category = ${category},
-          base_price = ${basePrice},
-          price_per_person = ${pricePerPerson},
-          min_guests = ${minGuests},
-          max_guests = ${maxGuests},
-          is_active = ${isActive},
-          updated_at = NOW()
-        WHERE id = ${menuId}
-          AND tenant_id = ${tenantId}
-      `
-    );
+    await tx.menu.updateMany({
+      where: { tenantId, id: menuId },
+      data: {
+        name,
+        description,
+        category,
+        basePrice,
+        pricePerPerson,
+        minGuests,
+        maxGuests,
+        isActive,
+      },
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -177,14 +159,10 @@ export const deleteMenu = async (menuId: string) => {
 
   // Soft delete the menu + emit outbox event atomically
   await database.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.menus
-        SET deleted_at = NOW()
-        WHERE id = ${menuId}
-          AND tenant_id = ${tenantId}
-      `
-    );
+    await tx.menu.updateMany({
+      where: { tenantId, id: menuId },
+      data: { deletedAt: new Date() },
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -523,28 +501,17 @@ export const addDishToMenu = async (
   const menuDishId = randomUUID();
 
   await database.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.menu_dishes (
-          tenant_id,
-          id,
-          menu_id,
-          dish_id,
-          course,
-          sort_order,
-          is_optional
-        )
-        VALUES (
-          ${tenantId},
-          ${menuDishId},
-          ${menuId},
-          ${dishId},
-          ${course || null},
-          ${nextSortOrder},
-          false
-        )
-      `
-    );
+    await tx.menuDish.create({
+      data: {
+        tenantId,
+        id: menuDishId,
+        menuId,
+        dishId,
+        course: course || null,
+        sortOrder: nextSortOrder,
+        isOptional: false,
+      },
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -594,15 +561,10 @@ export const removeDishFromMenu = async (menuId: string, dishId: string) => {
 
   // Soft delete the menu-dish relationship + emit outbox event atomically
   await database.$transaction(async (tx) => {
-    await tx.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.menu_dishes
-        SET deleted_at = NOW()
-        WHERE menu_id = ${menuId}
-          AND dish_id = ${dishId}
-          AND tenant_id = ${tenantId}
-      `
-    );
+    await tx.menuDish.updateMany({
+      where: { tenantId, menuId, dishId },
+      data: { deletedAt: new Date() },
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -666,16 +628,10 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
   // Update sort order for all dishes + emit outbox event atomically
   await database.$transaction(async (tx) => {
     for (let i = 0; i < dishIds.length; i++) {
-      await tx.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_kitchen.menu_dishes
-          SET sort_order = ${i + 1},
-              updated_at = NOW()
-          WHERE menu_id = ${menuId}
-            AND dish_id = ${dishIds[i]}
-            AND tenant_id = ${tenantId}
-        `
-      );
+      await tx.menuDish.updateMany({
+        where: { tenantId, menuId, dishId: dishIds[i] },
+        data: { sortOrder: i + 1 },
+      });
     }
 
     await tx.outboxEvent.create({
@@ -851,28 +807,19 @@ export const createDishInline = async (
 
   const dishId = randomUUID();
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (
-        tenant_id,
-        id,
-        recipe_id,
-        name,
-        description,
-        category,
-        is_active
-      )
-      VALUES (
-        ${tenantId},
-        ${dishId},
-        ${recipeId},
-        ${name.trim()},
-        ${description?.trim() || null},
-        ${category?.trim() || null},
-        true
-      )
-    `
-  );
+  await database.dish.create({
+    data: {
+      tenantId,
+      id: dishId,
+      recipeId,
+      name: name.trim(),
+      description: description?.trim() || null,
+      category: category?.trim() || null,
+      dietaryTags: [],
+      allergens: [],
+      isActive: true,
+    },
+  });
 
   revalidatePath("/kitchen/recipes");
   revalidatePath("/kitchen/recipes/menus");
@@ -994,55 +941,30 @@ export const saveAsTemplate = async (menuId: string): Promise<string> => {
 
   await database.$transaction(async (tx) => {
     // Create template menu
-    await tx.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.menus (
-          tenant_id,
-          id,
-          name,
-          description,
-          category,
-          is_active,
-          is_template
-        )
-        VALUES (
-          ${tenantId},
-          ${templateId},
-          ${`${originalMenu.name} (Template)`},
-          ${originalMenu.description},
-          ${originalMenu.category},
-          true,
-          true
-        )
-      `
-    );
+    await tx.menu.create({
+      data: {
+        tenantId,
+        id: templateId,
+        name: `${originalMenu.name} (Template)`,
+        description: originalMenu.description,
+        category: originalMenu.category,
+        isActive: true,
+        isTemplate: true,
+      },
+    });
 
     // Copy dishes to template
-    for (const md of menuDishes) {
-      const menuDishId = randomUUID();
-      await tx.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_kitchen.menu_dishes (
-            tenant_id,
-            id,
-            menu_id,
-            dish_id,
-            course,
-            sort_order,
-            is_optional
-          )
-          VALUES (
-            ${tenantId},
-            ${menuDishId},
-            ${templateId},
-            ${md.dish_id},
-            ${md.course},
-            ${md.sort_order},
-            ${md.is_optional}
-          )
-        `
-      );
-    }
+    await tx.menuDish.createMany({
+      data: menuDishes.map((md) => ({
+        tenantId,
+        id: randomUUID(),
+        menuId: templateId,
+        dishId: md.dish_id,
+        course: md.course,
+        sortOrder: md.sort_order,
+        isOptional: md.is_optional,
+      })),
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -1114,55 +1036,30 @@ export const createFromTemplate = async (
 
   await database.$transaction(async (tx) => {
     // Create new menu from template
-    await tx.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.menus (
-          tenant_id,
-          id,
-          name,
-          description,
-          category,
-          is_active,
-          is_template
-        )
-        VALUES (
-          ${tenantId},
-          ${menuId},
-          ${name.trim()},
-          ${template.description},
-          ${template.category},
-          true,
-          false
-        )
-      `
-    );
+    await tx.menu.create({
+      data: {
+        tenantId,
+        id: menuId,
+        name: name.trim(),
+        description: template.description,
+        category: template.category,
+        isActive: true,
+        isTemplate: false,
+      },
+    });
 
     // Copy dishes to new menu
-    for (const td of templateDishes) {
-      const menuDishId = randomUUID();
-      await tx.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_kitchen.menu_dishes (
-            tenant_id,
-            id,
-            menu_id,
-            dish_id,
-            course,
-            sort_order,
-            is_optional
-          )
-          VALUES (
-            ${tenantId},
-            ${menuDishId},
-            ${menuId},
-            ${td.dish_id},
-            ${td.course},
-            ${td.sort_order},
-            ${td.is_optional}
-          )
-        `
-      );
-    }
+    await tx.menuDish.createMany({
+      data: templateDishes.map((td) => ({
+        tenantId,
+        id: randomUUID(),
+        menuId,
+        dishId: td.dish_id,
+        course: td.course,
+        sortOrder: td.sort_order,
+        isOptional: td.is_optional,
+      })),
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -1214,42 +1111,23 @@ export const updateMenuDishes = async (
 
   await database.$transaction(async (tx) => {
     // Remove existing dishes (soft delete)
-    await tx.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.menu_dishes
-        SET deleted_at = NOW()
-        WHERE menu_id = ${menuId}
-          AND tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-      `
-    );
+    await tx.menuDish.updateMany({
+      where: { tenantId, menuId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
 
     // Insert new dishes
-    for (const dish of dishes) {
-      const menuDishId = randomUUID();
-      await tx.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_kitchen.menu_dishes (
-            tenant_id,
-            id,
-            menu_id,
-            dish_id,
-            course,
-            sort_order,
-            is_optional
-          )
-          VALUES (
-            ${tenantId},
-            ${menuDishId},
-            ${menuId},
-            ${dish.dishId},
-            ${dish.course},
-            ${dish.sortOrder},
-            ${dish.isOptional}
-          )
-        `
-      );
-    }
+    await tx.menuDish.createMany({
+      data: dishes.map((dish) => ({
+        tenantId,
+        id: randomUUID(),
+        menuId,
+        dishId: dish.dishId,
+        course: dish.course,
+        sortOrder: dish.sortOrder,
+        isOptional: dish.isOptional,
+      })),
+    });
 
     await tx.outboxEvent.create({
       data: {
@@ -1274,16 +1152,10 @@ export const updateDishCourse = async (
 ): Promise<void> => {
   const tenantId = await requireTenantId();
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.menu_dishes
-      SET course = ${course}, updated_at = NOW()
-      WHERE menu_id = ${menuId}
-        AND dish_id = ${dishId}
-        AND tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-    `
-  );
+  await database.menuDish.updateMany({
+    where: { tenantId, menuId, dishId, deletedAt: null },
+    data: { course },
+  });
 
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };

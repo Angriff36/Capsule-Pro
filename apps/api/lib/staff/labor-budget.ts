@@ -240,44 +240,28 @@ export async function createLaborBudget(input: LaborBudgetInput) {
     );
   }
 
-  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant_staff.labor_budgets (
-        tenant_id,
-        location_id,
-        event_id,
-        name,
-        description,
-        budget_type,
-        period_start,
-        period_end,
-        budget_target,
-        budget_unit,
-        threshold_80_pct,
-        threshold_90_pct,
-        threshold_100_pct,
-        status
-      ) VALUES (
-        ${tenantId},
-        ${locationId || null},
-        ${eventId || null},
-        ${name},
-        ${description || null},
-        ${budgetType},
-        ${periodStart || null},
-        ${periodEnd || null},
-        ${budgetTarget},
-        ${budgetUnit},
-        ${threshold80Pct},
-        ${threshold90Pct},
-        ${threshold100Pct},
-        'active'
-      )
-      RETURNING id, name
-    `
-  );
-
-  return result[0];
+  return database.laborBudget.create({
+    data: {
+      tenantId,
+      locationId: locationId || null,
+      eventId: eventId || null,
+      name,
+      description: description || null,
+      budgetType,
+      periodStart: periodStart || null,
+      periodEnd: periodEnd || null,
+      budgetTarget: new Prisma.Decimal(budgetTarget),
+      budgetUnit,
+      threshold80Pct,
+      threshold90Pct,
+      threshold100Pct,
+      status: "active",
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
 }
 
 /**
@@ -288,49 +272,45 @@ export async function updateLaborBudget(
   budgetId: string,
   updates: Partial<Omit<LaborBudgetInput, "tenantId">>
 ) {
-  const setClauses: Prisma.Sql[] = [];
+  const data = {
+    ...(updates.name !== undefined && { name: updates.name }),
+    ...(updates.description !== undefined && {
+      description: updates.description,
+    }),
+    ...(updates.budgetTarget !== undefined && {
+      budgetTarget: new Prisma.Decimal(updates.budgetTarget),
+    }),
+    ...(updates.status !== undefined && { status: updates.status }),
+    ...(updates.overrideReason !== undefined && {
+      overrideReason: updates.overrideReason,
+    }),
+    ...(updates.threshold80Pct !== undefined && {
+      threshold80Pct: updates.threshold80Pct,
+    }),
+    ...(updates.threshold90Pct !== undefined && {
+      threshold90Pct: updates.threshold90Pct,
+    }),
+    ...(updates.threshold100Pct !== undefined && {
+      threshold100Pct: updates.threshold100Pct,
+    }),
+  };
 
-  if (updates.name !== undefined) {
-    setClauses.push(Prisma.sql`name = ${updates.name}`);
-  }
-  if (updates.description !== undefined) {
-    setClauses.push(Prisma.sql`description = ${updates.description}`);
-  }
-  if (updates.budgetTarget !== undefined) {
-    setClauses.push(Prisma.sql`budget_target = ${updates.budgetTarget}`);
-  }
-  if (updates.status !== undefined) {
-    setClauses.push(Prisma.sql`status = ${updates.status}`);
-  }
-  if (updates.overrideReason !== undefined) {
-    setClauses.push(Prisma.sql`override_reason = ${updates.overrideReason}`);
-  }
-  if (updates.threshold80Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_80_pct = ${updates.threshold80Pct}`);
-  }
-  if (updates.threshold90Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_90_pct = ${updates.threshold90Pct}`);
-  }
-  if (updates.threshold100Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_100_pct = ${updates.threshold100Pct}`);
-  }
-
-  if (setClauses.length === 0) {
+  if (Object.keys(data).length === 0) {
     return null;
   }
 
-  setClauses.push(Prisma.sql`updated_at = CURRENT_TIMESTAMP`);
-
-  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
-    Prisma.sql`
-      UPDATE tenant_staff.labor_budgets
-      SET ${Prisma.join(setClauses, ", ")}
-      WHERE tenant_id = ${tenantId}
-        AND id = ${budgetId}
-        AND deleted_at IS NULL
-      RETURNING id, name
-    `
-  );
+  const result = await database.laborBudget.updateManyAndReturn({
+    where: {
+      tenantId,
+      id: budgetId,
+      deletedAt: null,
+    },
+    data,
+    select: {
+      id: true,
+      name: true,
+    },
+  });
 
   return result[0] || null;
 }
@@ -339,15 +319,16 @@ export async function updateLaborBudget(
  * Delete (soft delete) a labor budget
  */
 export async function deleteLaborBudget(tenantId: string, budgetId: string) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.labor_budgets
-      SET deleted_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${budgetId}
-        AND deleted_at IS NULL
-    `
-  );
+  await database.laborBudget.updateMany({
+    where: {
+      tenantId,
+      id: budgetId,
+      deletedAt: null,
+    },
+    data: {
+      deletedAt: new Date(),
+    },
+  });
 
   return { success: true };
 }
@@ -670,23 +651,15 @@ async function getApplicableBudgets(
  * Create a budget alert
  */
 export async function createBudgetAlert(input: BudgetAlertInput) {
-  await database.$queryRaw(
-    Prisma.sql`
-      INSERT INTO tenant_staff.budget_alerts (
-        tenant_id,
-        budget_id,
-        alert_type,
-        utilization,
-        message
-      ) VALUES (
-        ${input.tenantId},
-        ${input.budgetId},
-        ${input.alertType},
-        ${input.utilization},
-        ${input.message}
-      )
-    `
-  );
+  await database.budgetAlert.create({
+    data: {
+      tenantId: input.tenantId,
+      budgetId: input.budgetId,
+      alertType: input.alertType,
+      utilization: new Prisma.Decimal(input.utilization),
+      message: input.message,
+    },
+  });
 
   return { success: true };
 }
@@ -762,19 +735,18 @@ export async function acknowledgeBudgetAlert(
   alertId: string,
   acknowledgedBy: string
 ) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.budget_alerts
-      SET
-        is_acknowledged = true,
-        acknowledged_by = ${acknowledgedBy},
-        acknowledged_at = CURRENT_TIMESTAMP,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${alertId}
-        AND deleted_at IS NULL
-    `
-  );
+  await database.budgetAlert.updateMany({
+    where: {
+      tenantId,
+      id: alertId,
+      deletedAt: null,
+    },
+    data: {
+      isAcknowledged: true,
+      acknowledgedBy,
+      acknowledgedAt: new Date(),
+    },
+  });
 
   return { success: true };
 }
@@ -783,18 +755,17 @@ export async function acknowledgeBudgetAlert(
  * Resolve a budget alert
  */
 export async function resolveBudgetAlert(tenantId: string, alertId: string) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.budget_alerts
-      SET
-        resolved = true,
-        resolved_at = CURRENT_TIMESTAMP,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${alertId}
-        AND deleted_at IS NULL
-    `
-  );
+  await database.budgetAlert.updateMany({
+    where: {
+      tenantId,
+      id: alertId,
+      deletedAt: null,
+    },
+    data: {
+      resolved: true,
+      resolvedAt: new Date(),
+    },
+  });
 
   return { success: true };
 }

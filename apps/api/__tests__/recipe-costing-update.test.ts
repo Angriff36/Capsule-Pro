@@ -7,13 +7,18 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { recalculateRecipeCostsForInventoryItem } from "../app/lib/recipe-costing";
 
-// Mock the database module
+// Mock the database module with both raw SQL and Prisma ORM methods
 vi.mock("@repo/database", () => ({
   database: {
     $queryRaw: vi.fn(),
     $executeRaw: vi.fn(),
+    recipeIngredient: {
+      updateMany: vi.fn(),
+    },
+    recipeVersion: {
+      updateMany: vi.fn(),
+    },
   },
   Prisma: {
     sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
@@ -22,6 +27,15 @@ vi.mock("@repo/database", () => ({
     })),
   },
 }));
+
+// Mock server-only and auth to prevent crash on import
+vi.mock("server-only", () => ({}));
+vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+}));
+
+import { recalculateRecipeCostsForInventoryItem } from "../app/lib/recipe-costing";
 
 describe("recipe-costing: automatic cost updates on inventory price change", () => {
   beforeEach(() => {
@@ -84,8 +98,9 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
         },
       ] as never);
 
-    // Mock executeRaw for updates
-    vi.mocked(database.$executeRaw).mockResolvedValue(1);
+    // Mock Prisma ORM writes (the route now uses these instead of $executeRaw)
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",
@@ -96,8 +111,8 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
     expect(result.updatedRecipes).toBe(1);
     expect(result.updatedIngredients).toBe(1);
 
-    // Verify ingredient cost update was called
-    expect(database.$executeRaw).toHaveBeenCalled();
+    // Verify ingredient cost update was called (via Prisma ORM, not $executeRaw)
+    expect(database.recipeIngredient.updateMany).toHaveBeenCalled();
   });
 
   it("recalculates costs for multiple recipes using the same inventory item", async () => {
@@ -125,8 +140,9 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
         },
       ] as never);
 
-    // Mock executeRaw for updates
-    vi.mocked(database.$executeRaw).mockResolvedValue(1);
+    // Mock Prisma ORM writes
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",
@@ -177,7 +193,8 @@ describe("recipe-costing: automatic cost updates on inventory price change", () 
         },
       ] as never);
 
-    vi.mocked(database.$executeRaw).mockResolvedValue(1);
+    vi.mocked(database.recipeIngredient.updateMany).mockResolvedValue({ count: 1 } as never);
+    vi.mocked(database.recipeVersion.updateMany).mockResolvedValue({ count: 1 } as never);
 
     const result = await recalculateRecipeCostsForInventoryItem(
       "tenant-1",

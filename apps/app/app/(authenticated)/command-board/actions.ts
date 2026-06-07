@@ -1,6 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -11,16 +10,9 @@ export type CreateBoardResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-/**
- * Create a Command Board and redirect to its detail page.
- *
- * Why direct Prisma write: CommandBoard.create in the IR requires `eventId`
- * as a mandatory parameter, but this action creates boards without an event
- * context (standalone boards). Until the IR is updated to make eventId
- * optional, this must remain a direct Prisma write.
- */
+/** Create a Command Board and redirect to its detail page. Governed via CommandBoard.create. */
 export const createCommandBoard = async (formData: FormData) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   const name = (formData.get("name") ?? "").toString().trim();
   const description = (formData.get("description") ?? "").toString().trim();
@@ -29,20 +21,29 @@ export const createCommandBoard = async (formData: FormData) => {
     throw new Error("Board name is required");
   }
 
-  const id = randomUUID();
-
-  await database.commandBoard.create({
-    data: {
-      tenantId,
-      id,
+  const result = await runManifestCommand({
+    entity: "CommandBoard",
+    command: "create",
+    body: {
       name,
-      description: description || null,
-      status: "draft",
+      description: description || "",
+      eventId: "",
       isTemplate: false,
       tags: [],
       autoPopulate: false,
+      scope: "{}",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create board");
+  }
+
+  const id = (result.result as { id?: string } | null)?.id;
+  if (!id) {
+    throw new Error("CommandBoard.create did not return an id");
+  }
 
   revalidatePath("/command-board");
   redirect(`/command-board/${id}`);

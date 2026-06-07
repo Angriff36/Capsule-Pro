@@ -235,19 +235,14 @@ async function createConvoyBudgetFromGoodshuffle(
     );
   }
 
-  // Check if event already has a budget
-  const existingBudget = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_events.event_budgets
-      WHERE tenant_id = ${tenantId}
-        AND event_id = ${eventId}
-    `
-  );
+  const existingBudget = await database.eventBudget.findFirst({
+    where: { tenantId, eventId },
+    select: { id: true },
+  });
 
-  if (existingBudget.length > 0) {
+  if (existingBudget) {
     // Update existing budget
-    const budgetId = existingBudget[0].id;
+    const budgetId = existingBudget.id;
     await updateConvoyBudgetFromGoodshuffle(
       tenantId,
       budgetId,
@@ -257,52 +252,36 @@ async function createConvoyBudgetFromGoodshuffle(
     return budgetId;
   }
 
-  // Create new budget
-  const newBudget = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_budgets (
-        tenant_id, id, event_id, total_budget_amount, total_actual_amount,
-        created_at, updated_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${eventId},
-        ${gsInvoice.total_amount},
-        ${gsInvoice.total_amount},
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `
-  );
+  const newBudget = await database.eventBudget.create({
+    data: {
+      tenantId,
+      eventId,
+      totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount),
+      totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount),
+    },
+    select: {
+      id: true,
+    },
+  });
 
-  const budgetId = newBudget[0].id;
+  const budgetId = newBudget.id;
 
   // Create budget line items from invoice line items
   if (gsInvoice.line_items && gsInvoice.line_items.length > 0) {
     for (const lineItem of gsInvoice.line_items) {
-      await database.$executeRaw`
-        INSERT INTO tenant_events.budget_line_items (
-          tenant_id, id, budget_id, category, name, description,
-          budgeted_amount, actual_amount, variance_amount,
-          sort_order, created_at, updated_at
-        )
-        VALUES (
-          ${tenantId},
-          gen_random_uuid(),
-          ${budgetId},
-          'invoice',
-          ${lineItem.description},
-          NULL,
-          ${lineItem.total_price},
-          ${lineItem.total_price},
-          0,
-          0,
-          NOW(),
-          NOW()
-        )
-      `;
+      await database.budgetLineItem.create({
+        data: {
+          tenantId,
+          budgetId,
+          category: "invoice",
+          name: lineItem.description,
+          description: null,
+          budgetedAmount: new Prisma.Decimal(lineItem.total_price),
+          actualAmount: new Prisma.Decimal(lineItem.total_price),
+          varianceAmount: new Prisma.Decimal(0),
+          sortOrder: 0,
+        },
+      });
     }
   }
 
@@ -322,50 +301,42 @@ async function updateConvoyBudgetFromGoodshuffle(
     return;
   }
 
-  // Update budget totals
-  await database.$executeRaw`
-    UPDATE tenant_events.event_budgets
-    SET
-      total_budget_amount = ${gsInvoice.total_amount},
-      total_actual_amount = ${gsInvoice.total_amount},
-      updated_at = NOW()
-    WHERE tenant_id = ${tenantId}
-      AND id = ${convoyBudgetId}
-  `;
+  await database.eventBudget.updateMany({
+    where: {
+      tenantId,
+      id: convoyBudgetId,
+    },
+    data: {
+      totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount),
+      totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount),
+    },
+  });
 
   // Update or create line items
   if (gsInvoice.line_items && gsInvoice.line_items.length > 0) {
-    // Delete existing invoice-sourced line items
-    await database.$executeRaw`
-      DELETE FROM tenant_events.budget_line_items
-      WHERE tenant_id = ${tenantId}
-        AND budget_id = ${convoyBudgetId}
-        AND category = 'invoice'
-    `;
+    await database.budgetLineItem.deleteMany({
+      where: {
+        tenantId,
+        budgetId: convoyBudgetId,
+        category: "invoice",
+      },
+    });
 
     // Create new line items
     for (const lineItem of gsInvoice.line_items) {
-      await database.$executeRaw`
-        INSERT INTO tenant_events.budget_line_items (
-          tenant_id, id, budget_id, category, name, description,
-          budgeted_amount, actual_amount, variance_amount,
-          sort_order, created_at, updated_at
-        )
-        VALUES (
-          ${tenantId},
-          gen_random_uuid(),
-          ${convoyBudgetId},
-          'invoice',
-          ${lineItem.description},
-          NULL,
-          ${lineItem.total_price},
-          ${lineItem.total_price},
-          0,
-          0,
-          NOW(),
-          NOW()
-        )
-      `;
+      await database.budgetLineItem.create({
+        data: {
+          tenantId,
+          budgetId: convoyBudgetId,
+          category: "invoice",
+          name: lineItem.description,
+          description: null,
+          budgetedAmount: new Prisma.Decimal(lineItem.total_price),
+          actualAmount: new Prisma.Decimal(lineItem.total_price),
+          varianceAmount: new Prisma.Decimal(0),
+          sortOrder: 0,
+        },
+      });
     }
   }
 }
