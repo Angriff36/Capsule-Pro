@@ -9,19 +9,19 @@
 // apply it to the linked invoice. Previously done as raw Prisma writes in the
 // webhook handler (apps/api/app/webhooks/payments/route.ts), bypassing governance.
 on PaymentProcessed run Invoice.applyPayment
-  resolve payload.invoiceId
+  resolve payload.result.invoiceId
   params {
-    paymentAmount: payload.amount
-    paymentId: payload.id
+    paymentAmount: payload.result.amount
+    paymentId: payload.result.id
   }
 
 // When a payment is refunded, automatically record the refund against the invoice.
 // Ensures amountPaid/amountDue stay consistent with payment state.
 on PaymentRefunded run Invoice.recordRefund
-  resolve payload.invoiceId
+  resolve payload.result.invoiceId
   params {
     refundAmount: payload.refundAmount
-    paymentId: payload.id
+    paymentId: payload.result.id
   }
 
 // ── Inventory: WasteEntry → InventoryItem ────────────────────────────────────
@@ -46,10 +46,10 @@ on WasteEntryCreated run InventoryItem.waste
 // invoice amountPaid/amountDue stay consistent with collection activity.
 // Uses caseId as the payment reference for traceability.
 on CollectionPaymentRecorded run Invoice.applyPayment
-  resolve payload.invoiceId
+  resolve payload.result.invoiceId
   params {
     paymentAmount: payload.amount
-    paymentId: payload.id
+    paymentId: payload.paymentId
   }
 
 // ── Events: Contract → Event confirmation ────────────────────────────────────
@@ -58,7 +58,7 @@ on CollectionPaymentRecorded run Invoice.applyPayment
 // Replaces manual event confirmation that was disconnected from contract signing.
 // Uses a system-level userId since this is an automatic cascade from contract signing.
 on ContractSigned run Event.confirm
-  resolve payload.eventId
+  resolve payload.result.eventId
   params {
     userId: "system"
   }
@@ -69,9 +69,9 @@ on ContractSigned run Event.confirm
 // event on the parent equipment. This updates lastMaintenanceDate, calculates
 // nextMaintenanceDate, and keeps the equipment maintenance history current.
 on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
-  resolve payload.equipmentId
+  resolve payload.result.equipmentId
   params {
-    maintenanceDate: payload.completedDate
+    maintenanceDate: payload.result.completedDate
     maintenanceType: "corrective"
     performedBy: payload.userId
     cost: payload.actualCost
@@ -82,7 +82,7 @@ on MaintenanceWorkOrderCompleted run Equipment.recordMaintenance
 // back to active status. Ensures equipment availability tracking stays current
 // without requiring a separate manual status update.
 on MaintenanceWorkOrderCompleted run Equipment.updateStatus
-  resolve payload.equipmentId
+  resolve payload.result.equipmentId
   params {
     newStatus: "active"
     reason: "Maintenance work order completed"
@@ -95,7 +95,7 @@ on MaintenanceWorkOrderCompleted run Equipment.updateStatus
 // inventory item. Replaces manual stock updates in receiving workflows.
 // Per-item granularity (not per-shipment) ensures accurate quantity tracking.
 on ShipmentItemReceived run InventoryItem.restock
-  resolve payload.itemId
+  resolve payload.result.itemId
   params {
     quantity: payload.quantityReceived
     costPerUnit: 0
@@ -108,11 +108,11 @@ on ShipmentItemReceived run InventoryItem.restock
 // sales pipeline. Ensures no converted lead falls through the cracks.
 // The deal starts in "new" stage with the lead's estimated value.
 on LeadConvertedToClient run Deal.create
-  resolve payload.id
+  resolve payload.result.id
   params {
-    leadId: payload.id
-    title: payload.companyName
-    value: payload.estimatedValue
+    leadId: payload.result.id
+    title: payload.result.companyName
+    value: payload.result.estimatedValue
     currency: "USD"
     stage: "new"
     probability: 25
@@ -127,11 +127,11 @@ on LeadConvertedToClient run Deal.create
 // record. Eliminates manual proposal-to-event handoff and ensures accepted
 // proposals immediately enter the event planning workflow.
 on ProposalAccepted run Event.create
-  resolve payload.id
+  resolve payload.result.id
   params {
-    clientId: payload.clientId
-    eventNumber: payload.proposalNumber
-    title: payload.title
+    clientId: payload.result.clientId
+    eventNumber: payload.result.proposalNumber
+    title: payload.result.title
     eventType: ""
     eventDate: now()
     guestCount: 1
@@ -140,7 +140,7 @@ on ProposalAccepted run Event.create
     notes: "Auto-created from accepted proposal"
     tags: []
     status: "draft"
-    budget: payload.total
+    budget: payload.result.total
     ticketPrice: 0
     ticketTier: ""
     eventFormat: ""
