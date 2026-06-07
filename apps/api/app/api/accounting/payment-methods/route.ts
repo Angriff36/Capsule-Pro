@@ -12,6 +12,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
+  clearSiblingDefaults,
   getDisplayInfo,
   type PaymentMethodListResponse,
   type PaymentMethodResponse,
@@ -115,21 +116,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });
     }
 
-    // If setting as default, unset other defaults for this client (pre-validation)
+    const user = await resolveCurrentUser(request);
+
+    // Governed: if setting as default, clear sibling defaults via Manifest runtime
     if (body.isDefault) {
-      await database.paymentMethod.updateMany({
-        where: {
-          tenantId,
-          clientId: body.clientId as string,
-          isDefault: true,
-        },
-        data: {
-          isDefault: false,
-        },
+      await clearSiblingDefaults(tenantId, body.clientId as string, "", {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
       });
     }
 
-    const user = await resolveCurrentUser(request);
     return runManifestCommand({
       entity: "PaymentMethod",
       command: "create",

@@ -179,9 +179,8 @@ export async function getDefaultTemplate(templateType: EmailTemplateType) {
  * requireCurrentUser supplies the actor + tenant the command needs for
  * policy + audit context (§19 Clerk→Manifest context).
  *
- * The updateMany to unset other defaults of the same type is a batch
- * side-effect on OTHER records — it stays as direct Prisma (no single-record
- * Manifest command for batch updates). The primary write is governed.
+ * The updateMany to unset other defaults of the same type is now governed
+ * via individual Manifest update commands per affected record (constitution §9).
  */
 export async function createEmailTemplate(input: CreateEmailTemplateInput) {
   const user = await requireCurrentUser();
@@ -190,18 +189,46 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
   invariant(input.subject, "Template subject is required");
   invariant(input.body, "Template body is required");
 
-  // If setting as default, unset other defaults of the same type (batch
-  // side-effect on other records — no Manifest command for updateMany).
+  // If setting as default, unset other defaults of the same type.
+  // Governed via Manifest update commands — one per affected record
+  // (constitution §9). The update command mutates ALL fields, so existing
+  // values must be carried forward.
   if (input.isDefault) {
-    await database.emailTemplate.updateMany({
+    const otherDefaults = await database.emailTemplate.findMany({
       where: {
         tenantId,
         templateType: input.templateType,
         isDefault: true,
         deletedAt: null,
       },
-      data: { isDefault: false },
+      select: {
+        id: true,
+        name: true,
+        templateType: true,
+        subject: true,
+        body: true,
+        mergeFields: true,
+        isActive: true,
+      },
     });
+
+    for (const tpl of otherDefaults) {
+      await runManifestCommand({
+        entity: "EmailTemplate",
+        command: "update",
+        body: {
+          id: tpl.id,
+          name: tpl.name,
+          templateType: tpl.templateType,
+          subject: tpl.subject,
+          body: tpl.body,
+          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          isActive: tpl.isActive,
+          isDefault: false,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+    }
   }
 
   const result = await runManifestCommand({
@@ -247,7 +274,8 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
  * Governed write: EmailTemplate.update runs through the Manifest runtime
  * (constitution §9). The update command mutates ALL fields, so partial input
  * is merged with existing values to preserve partial-update semantics.
- * The updateMany to unset other defaults is a batch side-effect (stays direct).
+ * The updateMany to unset other defaults is governed via individual Manifest
+ * update commands per affected record (constitution §9).
  */
 export async function updateEmailTemplate(
   id: string,
@@ -266,10 +294,12 @@ export async function updateEmailTemplate(
 
   invariant(existing, "Template not found");
 
-  // If setting as default, unset other defaults of the same type (batch
-  // side-effect on other records — no Manifest command for updateMany).
+  // If setting as default, unset other defaults of the same type.
+  // Governed via Manifest update commands — one per affected record
+  // (constitution §9). The update command mutates ALL fields, so existing
+  // values must be carried forward.
   if (input.isDefault) {
-    await database.emailTemplate.updateMany({
+    const otherDefaults = await database.emailTemplate.findMany({
       where: {
         tenantId,
         templateType: input.templateType ?? existing.templateType,
@@ -277,8 +307,34 @@ export async function updateEmailTemplate(
         id: { not: id },
         deletedAt: null,
       },
-      data: { isDefault: false },
+      select: {
+        id: true,
+        name: true,
+        templateType: true,
+        subject: true,
+        body: true,
+        mergeFields: true,
+        isActive: true,
+      },
     });
+
+    for (const tpl of otherDefaults) {
+      await runManifestCommand({
+        entity: "EmailTemplate",
+        command: "update",
+        body: {
+          id: tpl.id,
+          name: tpl.name,
+          templateType: tpl.templateType,
+          subject: tpl.subject,
+          body: tpl.body,
+          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          isActive: tpl.isActive,
+          isDefault: false,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+    }
   }
 
   // Merge partial input over current values: the governed EmailTemplate.update

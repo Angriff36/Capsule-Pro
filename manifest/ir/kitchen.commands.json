@@ -3186,6 +3186,11 @@
   },
   {
     "entity": "PrepTask",
+    "command": "updateDetails",
+    "commandId": "PrepTask.updateDetails"
+  },
+  {
+    "entity": "PrepTask",
     "command": "updateDueDate",
     "commandId": "PrepTask.updateDueDate"
   },

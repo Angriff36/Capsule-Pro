@@ -14,6 +14,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
+  clearSiblingDefaults,
   getDisplayInfo,
   type PaymentMethodResponse,
   validatePaymentMethodAccess,
@@ -91,22 +92,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     validatePaymentMethodAccess(paymentMethod, tenantId);
 
-    // Pre-validation: if setting as default, unset other defaults for this client
+    const user = await resolveCurrentUser(request);
+
+    // Governed: if setting as default, clear sibling defaults via Manifest runtime
     if (body.isDefault === true) {
-      await database.paymentMethod.updateMany({
-        where: {
-          tenantId,
-          clientId: paymentMethod.clientId,
-          id: { not: id },
-          isDefault: true,
-        },
-        data: {
-          isDefault: false,
-        },
+      await clearSiblingDefaults(tenantId, paymentMethod.clientId, id, {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
       });
     }
-
-    const user = await resolveCurrentUser(request);
     return runManifestCommand({
       entity: "PaymentMethod",
       command: "update",
@@ -169,16 +164,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    // Pre-validation for mark-as-default: unset other defaults for this client
+    // Governed: clear sibling defaults before markAsDefault
     if (action === "mark-as-default") {
-      await database.paymentMethod.updateMany({
-        where: {
-          tenantId,
-          clientId: paymentMethod.clientId,
-          id: { not: id },
-          isDefault: true,
-        },
-        data: { isDefault: false },
+      await clearSiblingDefaults(tenantId, paymentMethod.clientId, id, {
+        id: user.id,
+        tenantId: user.tenantId,
+        role: user.role,
       });
     }
 

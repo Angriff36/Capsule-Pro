@@ -5,7 +5,8 @@
  *
  * Governed writes go through runManifestCommand (constitution §3/§9).
  * Reads remain direct Prisma (constitution §10).
- * Batch operations (sync) remain direct Prisma.
+ * syncStatus/offlineId patches remain direct Prisma (offline-sync infrastructure,
+ * not domain logic — no manifest command covers them).
  */
 
 import { database } from "@repo/database";
@@ -342,36 +343,63 @@ export async function syncCycleCountRecords(
   input: SyncRecordsInput
 ): Promise<RecordResult> {
   try {
-    const tenantId = await requireTenantId();
     const user = await requireCurrentUser();
 
     const results = await Promise.all(
       input.records.map(async (recordData) => {
-        const expectedQuantity = recordData.expectedQuantity;
-        const countedQuantity = recordData.countedQuantity;
-        const variance = countedQuantity - expectedQuantity;
-        const variancePct =
-          expectedQuantity > 0 ? (variance / expectedQuantity) * 100 : 0;
-
-        const record = await database.cycleCountRecord.create({
-          data: {
-            tenantId,
+        // Governed create via Manifest runtime (variance/variancePct computed by command)
+        const result = await runManifestCommand({
+          entity: "CycleCountRecord",
+          command: "create",
+          body: {
             sessionId: recordData.sessionId,
             itemId: recordData.itemId,
             itemNumber: recordData.itemNumber,
             itemName: recordData.itemName,
             storageLocationId: recordData.storageLocationId,
-            expectedQuantity,
-            countedQuantity,
-            variance,
-            variancePct,
-            countedById: user.id,
-            barcode: recordData.barcode || null,
-            notes: recordData.notes || null,
-            syncStatus: "synced",
-            offlineId: recordData.offlineId || null,
+            expectedQuantity: recordData.expectedQuantity,
+            countedQuantity: recordData.countedQuantity,
+            userId: user.id,
+            barcode: recordData.barcode || "",
+            notes: recordData.notes || "",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+
+        if (!result.ok) {
+          throw new Error(result.message || "Failed to sync record");
+        }
+
+        const createdId = (result.result as { id?: string } | null)?.id;
+        if (!createdId) {
+          throw new Error("Sync create command did not return an id");
+        }
+
+        // offlineId is an offline-sync infrastructure field not covered by
+        // manifest commands. Patch directly (same pattern as syncStatus in update).
+        if (recordData.offlineId) {
+          await database.cycleCountRecord.update({
+            where: {
+              tenantId_id: { tenantId: user.tenantId, id: createdId },
+            },
+            data: {
+              offlineId: recordData.offlineId,
+            },
+          });
+        }
+
+        // Post-command read to materialize return shape with Decimal coercion.
+        const record = await database.cycleCountRecord.findFirst({
+          where: {
+            tenantId: user.tenantId,
+            id: createdId,
+            deletedAt: null,
           },
         });
+
+        if (!record) {
+          throw new Error("Synced record could not be loaded");
+        }
 
         return {
           id: record.id,

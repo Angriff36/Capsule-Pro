@@ -34,11 +34,9 @@ export interface WorkflowTriggerContext {
 }
 
 /**
- * Optional governed update callback. When provided, `triggerEmailWorkflows`
- * calls it instead of the direct Prisma write to set `lastTriggeredAt`.
- * This lets cron routes (which have Manifest runtime access) route the
- * timestamp update through the governed command without coupling the
- * notifications package to the Manifest runtime.
+ * Governed update callback for setting `lastTriggeredAt`.
+ * Callers MUST provide a wrapper around `runManifestCommandCore` to route
+ * the timestamp update through the Manifest runtime (constitution §9).
  */
 export type UpdateLastTriggeredFn = (params: {
   tenantId: string;
@@ -50,15 +48,14 @@ export type UpdateLastTriggeredFn = (params: {
  *
  * @param database - Prisma client for reads (finding active workflows).
  * @param context - Trigger context (tenant, type, entity, recipients).
- * @param updateLastTriggered - Optional governed write callback. When provided,
- *   replaces the direct `database.emailWorkflow.update` for `lastTriggeredAt`.
- *   Callers in API routes should pass a wrapper around `runManifestCommandCore`
- *   to route the write through the Manifest runtime (constitution §9).
+ * @param updateLastTriggered - Governed write callback. Routes the
+ *   `lastTriggeredAt` update through the Manifest runtime (constitution §9).
+ *   Callers MUST pass a wrapper around `runManifestCommandCore`.
  */
 export async function triggerEmailWorkflows(
   database: PrismaClient,
   context: WorkflowTriggerContext,
-  updateLastTriggered?: UpdateLastTriggeredFn
+  updateLastTriggered: UpdateLastTriggeredFn
 ): Promise<{
   triggered: number;
   results: Array<{ workflowId: string; success: boolean; error?: string }>;
@@ -124,26 +121,12 @@ export async function triggerEmailWorkflows(
         continue;
       }
 
-      // Update last triggered timestamp — governed when caller provides
-      // the callback, direct Prisma write as fallback for unmanaged callers.
-      if (updateLastTriggered) {
-        await updateLastTriggered({
-          tenantId,
-          workflowId: workflow.id,
-        });
-      } else {
-        await database.emailWorkflow.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: workflow.id,
-            },
-          },
-          data: {
-            lastTriggeredAt: new Date(),
-          },
-        });
-      }
+      // Update last triggered timestamp via governed Manifest command
+      // (constitution §9 — all domain mutations go through runtime).
+      await updateLastTriggered({
+        tenantId,
+        workflowId: workflow.id,
+      });
 
       results.push({
         workflowId: workflow.id,

@@ -121,11 +121,6 @@ export async function generateTaskBreakdown({
     allergens: d.allergens,
   }));
 
-  const _historicalContext =
-    similarEvents.length > 0
-      ? `Based on ${similarEvents.length} similar events`
-      : undefined;
-
   const tasks = await generateTasksFromAI(
     event,
     customInstructions,
@@ -392,7 +387,7 @@ Please generate a complete task breakdown following the system prompt guidelines
 /**
  * Fallback rule-based task generation when AI is unavailable
  */
-function getFallbackTasks(
+function _getFallbackTasks(
   event: {
     title: string;
     eventType: string;

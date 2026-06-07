@@ -259,9 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 97% context — saved before compacting]
-Files (2):
-  manifest/source/equipment-rules.manifest (edit)
-  manifest/source/staff-logistics-extended-rules.manifest (edit)
+[proactive bridge @ 94% context — saved before compacting]
+Files (1):
+  packages/notifications/email-workflow-triggers.ts (edit)
 
 # === END COGNILAYER ===
