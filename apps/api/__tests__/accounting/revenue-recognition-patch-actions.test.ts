@@ -9,9 +9,10 @@
  *   - start: delegates to runManifestCommand (Manifest runtime)
  *   - recognize: uses createManifestRuntime.runCommand directly for line
  *     creation and schedule update, then re-fetches from DB for response
- *   - reverse: direct DB operations ($transaction)
+ *   - reverse: delegates to runManifestCommand for line reverse + schedule
+ *     reverseRecognition, then re-fetches from DB for response
  *   - cancel: delegates to runManifestCommand (Manifest runtime)
- *   - adjust: direct DB operations
+ *   - adjust: delegates to runManifestCommand (adjustSchedule command)
  *
  * Why these tests matter:
  *   - Revenue recognition is the financial source-of-truth for ASC 606 / IFRS
@@ -21,9 +22,10 @@
  *     validates inputs and computes remaining amounts before delegating.
  *   - The terminal-status guards on `start` (PENDING-only) and `cancel` (NOT
  *     COMPLETED) prevent reopening of closed schedules.
- *   - `reverse` still runs in a `$transaction` to atomically soft-delete the
- *     line and update aggregates. If the atomicity is broken, a crash between
- *     the two writes leaves the schedule accumulating phantom revenue.
+ *   - `reverse` delegates to Manifest runtime: the line status transitions
+ *     RECOGNIZED→REVERSED via governed command, and the schedule aggregates
+ *     are recalculated via `reverseRecognition`. If the Manifest guard or
+ *     constraint blocks a stale-state reversal, the line is not corrupted.
  *   - `adjust` recomputes remainingAmount = totalAmount - recognizedAmount.
  *
  * @vitest-environment node
@@ -328,7 +330,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     });
   });
 
-  // ---------------------------------------------------------------- reverse (direct DB)
+  // ---------------------------------------------------------------- reverse (Manifest runtime)
 
   describe("action: reverse", () => {
     it("requires a lineId", async () => {
@@ -341,7 +343,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.error).toMatch(/lineId/);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
 
     it("returns 404 when the line does not exist or belongs to another schedule", async () => {
@@ -357,32 +359,30 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(404);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
 
-    it("soft-deletes the line and restores the aggregate amounts", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
-        ...baseSchedule,
-        status: "COMPLETED",
-        recognizedAmount: 10_000,
-        remainingAmount: 0,
-      });
+    it("reverses the line and restores the aggregate amounts via Manifest runtime", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          status: "COMPLETED",
+          recognizedAmount: 10_000,
+          remainingAmount: 0,
+        })
+        .mockResolvedValueOnce({ // re-fetch after manifest ops
+          ...baseSchedule,
+          status: "IN_PROGRESS",
+          recognizedAmount: 7500,
+          remainingAmount: 2500,
+          completedAt: null,
+        });
       mocks.lineFindFirstMock.mockResolvedValue({
         id: LINE_ID,
         scheduleId: SCHEDULE_ID,
         amount: 2500,
         status: "RECOGNIZED",
       });
-      mocks.transactionMock.mockResolvedValue([
-        null, // line update result
-        {
-          ...baseSchedule,
-          status: "IN_PROGRESS",
-          recognizedAmount: 7500,
-          remainingAmount: 2500,
-          completedAt: null,
-        },
-      ]);
 
       const response = await PATCH(
         makeRequest({ action: "reverse", lineId: LINE_ID }),
@@ -390,7 +390,24 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mocks.transactionMock).toHaveBeenCalledTimes(1);
+      // Two manifest calls: reverse the line, then update schedule
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(2);
+
+      // First call: reverse the line
+      const lineCall = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(lineCall.entity).toBe("RevenueRecognitionLine");
+      expect(lineCall.command).toBe("reverse");
+      expect(lineCall.instanceId).toBe(LINE_ID);
+
+      // Second call: update schedule totals
+      const scheduleCall = mocks.runManifestCommandMock.mock.calls[1][0];
+      expect(scheduleCall.entity).toBe("RevenueRecognitionSchedule");
+      expect(scheduleCall.command).toBe("reverseRecognition");
+      expect(scheduleCall.body.recognizedAmount).toBe("7500.00");
+      expect(scheduleCall.body.remainingAmount).toBe("2500.00");
+
+      // Route re-fetches after manifest commands for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
       const body = await response.json();
       // Reverse must transition out of COMPLETED back into IN_PROGRESS.
       expect(body.data.status).toBe("IN_PROGRESS");
@@ -448,17 +465,18 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(mocks.scheduleUpdateMock).not.toHaveBeenCalled();
     });
 
-    it("recomputes remainingAmount when totalAmount changes", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
-        ...baseSchedule,
-        recognizedAmount: 3000,
-      });
-      mocks.scheduleUpdateMock.mockResolvedValue({
-        ...baseSchedule,
-        totalAmount: 12_000,
-        recognizedAmount: 3000,
-        remainingAmount: 9000,
-      });
+    it("delegates adjust to runManifestCommand with adjustSchedule command", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          recognizedAmount: 3000,
+        })
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          totalAmount: 12_000,
+          recognizedAmount: 3000,
+          remainingAmount: 9000,
+        });
 
       const response = await PATCH(
         makeRequest({ action: "adjust", totalAmount: 12_000 }),
@@ -466,14 +484,19 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.totalAmount).toBe(12_000);
-      expect(dataArg.remainingAmount).toBe(9000); // 12000 - 3000 already recognized
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("adjustSchedule");
+      expect(callArgs.body.newTotalAmount).toBe(12_000);
+      // Route re-fetches after manifest command for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
     });
 
-    it("updates description, notes, endDate, and recognitionPeriod when provided", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue(baseSchedule);
-      mocks.scheduleUpdateMock.mockResolvedValue(baseSchedule);
+    it("passes description, notes, endDate, and recognitionPeriod to runManifestCommand", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce(baseSchedule)
+        .mockResolvedValueOnce(baseSchedule);
 
       const response = await PATCH(
         makeRequest({
@@ -487,11 +510,15 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.description).toBe("Updated subscription");
-      expect(dataArg.notes).toBe("Customer requested change");
-      expect(dataArg.endDate).toBeInstanceOf(Date);
-      expect(dataArg.recognitionPeriod).toBe("QUARTERLY");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("adjustSchedule");
+      expect(callArgs.body.description).toBe("Updated subscription");
+      expect(callArgs.body.notes).toBe("Customer requested change");
+      expect(callArgs.body.recognitionPeriod).toBe("QUARTERLY");
+      // Route re-fetches after manifest command for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -186,10 +186,22 @@ entity RevenueRecognitionSchedule {
     emit ScheduleAdjusted
   }
 
+  command reverseRecognition(recognizedAmount: decimal, remainingAmount: decimal) {
+    guard self.status in ["IN_PROGRESS", "COMPLETED"] "Can only reverse active or completed recognition"
+    guard recognizedAmount >= 0 "Recognized amount must be non-negative"
+    guard remainingAmount >= 0 "Remaining amount must be non-negative"
+    mutate recognizedAmount = recognizedAmount
+    mutate remainingAmount = remainingAmount
+    mutate status = "IN_PROGRESS"
+    mutate completedAt = null
+    emit RecognitionReversed
+  }
+
   // State transitions
   transition status from "PENDING" to ["IN_PROGRESS", "CANCELLED", "SKIPPED"]
   transition status from "IN_PROGRESS" to ["PAUSED", "COMPLETED", "CANCELLED"]
   transition status from "PAUSED" to ["IN_PROGRESS", "CANCELLED"]
+  transition status from "COMPLETED" to ["IN_PROGRESS"]
   // "COMPLETED", "CANCELLED", "SKIPPED" are terminal states
 
   store RevenueRecognitionSchedule in durable
@@ -236,7 +248,7 @@ entity RevenueRecognitionLine {
   constraint amount_positive: self.amount > 0 "Line amount must be positive"
   constraint recognized_not_exceed: self.recognizedAmount <= self.amount "Recognized amount cannot exceed line amount"
   constraint sequence_positive: self.sequence >= 0 "Sequence must be non-negative"
-  constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "SKIPPED", "CANCELLED"] "Status must be valid"
+  constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "REVERSED", "SKIPPED", "CANCELLED"] "Status must be valid"
 
   // Commands
   default policy RevenueRecognitionLineDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
@@ -280,6 +292,12 @@ entity RevenueRecognitionLine {
     guard self.status == "PENDING" "Can only cancel pending lines"
     mutate status = "CANCELLED"
     emit LineCancelled
+  }
+
+  command reverse() {
+    guard self.status == "RECOGNIZED" "Can only reverse recognized lines"
+    mutate status = "REVERSED"
+    emit LineReversed
   }
 
   store RevenueRecognitionLine in durable
@@ -402,5 +420,22 @@ event LineCancelled: "finance.revenue-recognition.line_cancelled" {
   lineId: string
   tenantId: string
   scheduleId: string
+  updatedAt: datetime
+}
+
+event LineReversed: "finance.revenue-recognition.line_reversed" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  amount: number
+  updatedAt: datetime
+}
+
+event RecognitionReversed: "finance.revenue-recognition.recognition_reversed" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  recognizedAmount: number
+  remainingAmount: number
   updatedAt: datetime
 }

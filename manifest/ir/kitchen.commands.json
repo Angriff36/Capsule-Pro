@@ -3796,6 +3796,11 @@
   },
   {
     "entity": "RevenueRecognitionLine",
+    "command": "reverse",
+    "commandId": "RevenueRecognitionLine.reverse"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
     "command": "skip",
     "commandId": "RevenueRecognitionLine.skip"
   },
@@ -3853,6 +3858,11 @@
     "entity": "RevenueRecognitionSchedule",
     "command": "resume",
     "commandId": "RevenueRecognitionSchedule.resume"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "reverseRecognition",
+    "commandId": "RevenueRecognitionSchedule.reverseRecognition"
   },
   {
     "entity": "RevenueRecognitionSchedule",

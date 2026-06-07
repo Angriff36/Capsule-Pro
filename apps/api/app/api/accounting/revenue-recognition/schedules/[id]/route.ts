@@ -197,8 +197,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ data: { ...updated, newLine: lineResult.result } });
     }
 
-    // TODO: migrate to Manifest runtime when commands are available
-    // Action: Reverse a recognition
+    // Action: Reverse a recognition (Manifest runtime — governed via reverse + reverseRecognition)
     if (action === "reverse") {
       const { lineId } = body;
       if (!lineId) {
@@ -223,26 +222,41 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const newRecognized = Number(existing.recognizedAmount) - reverseAmount;
       const newRemaining = Number(existing.remainingAmount) + reverseAmount;
 
-      // Soft-delete the line and update schedule
-      const [, updated] = await database.$transaction([
-        database.revenueRecognitionLine.update({
-          where: { tenantId_id: { tenantId, id: lineId } },
-          data: { status: "REVERSED", deletedAt: new Date() },
-        }),
-        database.revenueRecognitionSchedule.update({
-          where: { tenantId_id: { tenantId, id } },
-          data: {
-            recognizedAmount: Math.max(0, newRecognized),
-            remainingAmount: newRemaining,
-            status: "IN_PROGRESS",
-            completedAt: null,
-            updatedAt: new Date(),
-          },
-          include: {
-            lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
-          },
-        }),
-      ]);
+      const user = await resolveCurrentUser(request);
+      const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
+
+      // Step 1: Reverse the recognition line
+      const lineResult = await runManifestCommand({
+        entity: "RevenueRecognitionLine",
+        command: "reverse",
+        instanceId: lineId,
+        body: { id: lineId, tenantId },
+        user: manifestUser,
+      });
+
+      if (!lineResult.ok) {
+        return lineResult;
+      }
+
+      // Step 2: Update schedule totals back to IN_PROGRESS
+      await runManifestCommand({
+        entity: "RevenueRecognitionSchedule",
+        command: "reverseRecognition",
+        instanceId: id,
+        body: {
+          recognizedAmount: Math.max(0, newRecognized).toFixed(2),
+          remainingAmount: newRemaining.toFixed(2),
+        },
+        user: manifestUser,
+      });
+
+      // Re-fetch the schedule with lines for response format compatibility (read path — constitution §10)
+      const updated = await database.revenueRecognitionSchedule.findFirst({
+        where: { tenantId, id, deletedAt: null },
+        include: {
+          lines: { where: { deletedAt: null }, orderBy: { sequence: "asc" } },
+        },
+      });
 
       return NextResponse.json({ data: updated });
     }
