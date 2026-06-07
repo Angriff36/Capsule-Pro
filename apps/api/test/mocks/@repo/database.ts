@@ -204,6 +204,14 @@ export const database: Record<string, unknown> = {
   employeeCertification: createMockModel(),
   // Role policy model
   rolePolicy: createMockModel(),
+  // Staff auto-assignment models
+  employee_seniority: createMockModel(),
+  employee_skills: createMockModel(),
+  skills: createMockModel(),
+  location: createMockModel(),
+  // Budget models for auto-assignment budget checks
+  budget: createMockModel(),
+  eventBudget: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));
