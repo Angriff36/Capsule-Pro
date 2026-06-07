@@ -11,7 +11,8 @@
       "tenantBoundary": "Filter scoped to tenantId + recipeVersionId + deletedAt: null",
       "owner": "governance-migration",
       "approvedDate": "2026-06-06",
-      "reviewDate": "2026-09-06"
+      "reviewDate": "2026-09-06",
+      "path": "apps/api/app/api/kitchen/recipes/[id]/cost/route.ts"
     },
     {
       "entity": "Account",
@@ -23,7 +24,8 @@
       "tenantBoundary": "Single-row create scoped to orgId slug; no cross-tenant access possible",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/lib/tenant.ts"
     },
     {
       "entity": "User",
@@ -35,7 +37,8 @@
       "tenantBoundary": "All queries scoped by (tenantId, authUserId) composite unique index",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/lib/tenant.ts"
     },
     {
       "entity": "Account",
@@ -47,7 +50,8 @@
       "tenantBoundary": "Single-row create scoped to orgId slug",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/lib/tenant.ts"
     },
     {
       "entity": "User",
@@ -59,7 +63,8 @@
       "tenantBoundary": "All queries scoped by (tenantId, authUserId) composite unique index",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/lib/tenant.ts"
     },
     {
       "entity": "User",
@@ -71,19 +76,21 @@
       "tenantBoundary": "All queries scoped by (tenantId, authUserId) or (tenantId, email) unique lookups",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/(authenticated)/staff/team/actions.ts"
     },
     {
       "entity": "VendorCatalog",
       "file": "packages/supplier-connectors/src/sync-service.ts",
-      "lines": "75-80+",
-      "method": "prisma.vendorCatalog.create / update / updateMany",
-      "reason": "External supplier sync service that runs outside the Next.js request lifecycle. The SupplierSyncService is a standalone class that receives a Prisma-like interface via constructor injection — it has no access to the Manifest runtime factory, no Clerk auth context, no tenant resolution middleware, and no Next.js server action environment. It runs in background sync jobs or CLI scripts that pull catalog data from external supplier APIs.",
-      "whyBypassSafe": "No Manifest runtime is available in this execution context. The service operates through a injected SupplierSyncDb interface, not the app's database client. Catalog sync is a data ingestion pipeline, not a user-initiated domain mutation. Business rules (pricing, availability) are enforced by downstream governed commands when the catalog data is consumed by purchase orders.",
+      "lines": "101-105,110-118,140-143,214-217,220-227",
+      "method": "prisma.vendorCatalog.update (L101,L214) / prisma.vendorCatalog.create (L110,L220) / prisma.vendorCatalog.updateMany (L140)",
+      "reason": "External supplier sync service that runs outside the Next.js request lifecycle. The SupplierSyncService is a standalone class that receives a Prisma-like interface via constructor injection — it has no access to the Manifest runtime factory, no Clerk auth context, no tenant resolution middleware, and no Next.js server action environment. It runs in background sync jobs or CLI scripts that pull catalog data from external supplier APIs. Five governed writes: 2x create (syncCatalog batch + syncChanges incremental), 2x update (syncCatalog batch + syncChanges incremental), 1x updateMany for deactivation of products no longer in supplier catalog.",
+      "whyBypassSafe": "No Manifest runtime is available in this execution context. The service operates through an injected SupplierSyncDb interface, not the app's database client. Catalog sync is a data ingestion pipeline, not a user-initiated domain mutation. The updateMany (deactivate) maps to VendorCatalog.deactivate per-item but requires auth context (reason param) and would be O(N) individual commands. Business rules (pricing, availability) are enforced by downstream governed commands when the catalog data is consumed by purchase orders.",
       "tenantBoundary": "All queries scoped by tenantId + supplierId from the SupplierConnectorConfig parameter",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "packages/supplier-connectors/src/sync-service.ts"
     },
     {
       "entity": "CycleCountRecord",
@@ -95,7 +102,8 @@
       "tenantBoundary": "All updates scoped by tenantId from requireCurrentUser() context",
       "owner": "system",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts"
     },
     {
       "entity": "CommandBoard",
@@ -107,7 +115,8 @@
       "tenantBoundary": "All queries scoped by tenantId; source board ownership verified via requireCurrentUser",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/command-board/simulations/route.ts"
     },
     {
       "entity": "InventoryItem",
@@ -119,7 +128,8 @@
       "tenantBoundary": "All updates scoped by tenantId from requireTenantId() context",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/inventory/batch/route.ts"
     },
     {
       "entity": "Recipe, Dish, Event, EventImport",
@@ -131,7 +141,8 @@
       "tenantBoundary": "All creates scoped by tenantId from requireCurrentUser() context",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/(authenticated)/events/importer.ts"
     },
     {
       "entity": "Recipe, Dish, BattleBoard, Event, EventReport, EventImport",
@@ -143,7 +154,8 @@
       "tenantBoundary": "All creates scoped by tenantId from auth context",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/events/documents/parse/route.ts"
     },
     {
       "entity": "Recipe, RecipeVersion, Dish, PrepList, PrepListItem",
@@ -155,7 +167,8 @@
       "tenantBoundary": "All creates scoped by tenantId from auth context",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/kitchen/import/route.ts"
     },
     {
       "entity": "Event, ProviderSync",
@@ -167,7 +180,86 @@
       "tenantBoundary": "All operations scoped by tenantId from auth context",
       "owner": "governance-migration",
       "approvedDate": "2026-06-07",
-      "reviewDate": "2026-09-07"
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/calendar/sync/trigger/route.ts"
+    },
+    {
+      "entity": "Lead",
+      "file": "apps/api/app/api/crm/scoring/calculate/route.ts",
+      "lines": "142,196",
+      "method": "database.lead.updateMany (score, scoreBreakdown fields)",
+      "reason": "Dual-write pattern: the route first resets all lead scores to 0 (line 142), then recalculates and persists per-lead scores (line 196). The governed Manifest command handles entity-level mutations, but score and scoreBreakdown are computed fields not present in the Lead IR entity definition. The scoring engine produces these derived values and persists them alongside governed state. Using individual governed Lead.update commands would require adding score/scoreBreakdown to the IR entity and issuing N sequential commands for what is a batch computation with no per-item business rules.",
+      "whyBypassSafe": "score and scoreBreakdown are derived/computed fields from the scoring engine, not domain properties with business rules or state transitions. The governed Lead entity mutations (status changes, assignment, etc.) still go through Manifest runtime. The batch score update is O(N) leads in a single updateMany — migrating to per-lead governed commands would be N roundtrips for pure computed values.",
+      "tenantBoundary": "All updates scoped by tenantId from requireTenantId() context",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/crm/scoring/calculate/route.ts"
+    },
+    {
+      "entity": "RecipeIngredient",
+      "file": "apps/api/app/lib/recipe-costing.ts",
+      "lines": "157",
+      "method": "database.recipeIngredient.updateMany (adjustedQuantity, ingredientCost, costCalculatedAt)",
+      "reason": "RecipeIngredient IR entity does not cover cost computation fields (adjustedQuantity, ingredientCost, costCalculatedAt). No Manifest command exists for updating these computed cost values. The updateMany at line 157 persists the calculated cost for a single ingredient after unit conversion and waste factor application. RecipeVersion and Event writes in the same module already go through governed commands.",
+      "whyBypassSafe": "adjustedQuantity, ingredientCost, and costCalculatedAt are computed/derived fields from the cost calculation engine — not domain properties with business rules or state transitions. The governed RecipeIngredient mutations (if any) would be for domain changes like quantity or ingredient swaps, not for cost computation results.",
+      "tenantBoundary": "All updates scoped by tenantId + id",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/lib/recipe-costing.ts"
+    },
+    {
+      "entity": "RecipeIngredient",
+      "file": "apps/app/app/lib/recipe-costing.ts",
+      "lines": "153",
+      "method": "database.recipeIngredient.updateMany (adjustedQuantity, ingredientCost, costCalculatedAt)",
+      "reason": "App-side mirror of apps/api/app/lib/recipe-costing.ts. Same RecipeIngredient cost computation bypass — adjustedQuantity, ingredientCost, costCalculatedAt are not in the RecipeIngredient IR entity. The app-side recipe-costing module performs the same unit conversion and cost calculation, persisting results via direct Prisma.",
+      "whyBypassSafe": "Identical rationale to apps/api/app/lib/recipe-costing.ts bypass. Computed cost fields, not governed domain properties.",
+      "tenantBoundary": "All updates scoped by tenantId + id",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/lib/recipe-costing.ts"
+    },
+    {
+      "entity": "EventDish",
+      "file": "apps/api/app/api/events/documents/parse/route.ts",
+      "lines": "430",
+      "method": "database.eventDish.updateMany (serviceStyle, quantityServings, course, specialInstructions)",
+      "reason": "EventDish serviceStyle field has no dedicated IR command. Available commands are create, remove, updateQuantity, updateCourse, updateNotes — none can set serviceStyle. The updateEventDishLink function (line 421) patches serviceStyle alongside quantity/course/instructions during document parsing. Migrating to governed commands would silently drop the serviceStyle field. The EventDish.create path (line 460) already goes through Manifest runtime but passes serviceStyle as an extra field to the store.",
+      "whyBypassSafe": "serviceStyle is not covered by any EventDish IR command — there is no governed pathway for this field. The other fields (quantityServings, course, specialInstructions) are co-patched for atomicity in the document parse pipeline. When EventDish gains an update or updateServiceStyle command, this bypass should be revisited.",
+      "tenantBoundary": "All updates scoped by tenantId + id + eventId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/api/app/api/events/documents/parse/route.ts"
+    },
+    {
+      "entity": "EventDish",
+      "file": "apps/app/app/(authenticated)/events/actions/event-dishes.ts",
+      "lines": "483-492",
+      "method": "database.eventDish.updateMany (dishId swap)",
+      "reason": "createDishVariantForEvent creates a new Dish variant via governed Dish.create command, then swaps the EventDish link's dishId to point to the new variant. No EventDish.updateDishId command exists — the available commands (create, remove, updateQuantity, updateCourse, updateNotes) cannot change dishId. The Dish.create itself IS governed; only the subsequent dishId reassignment is direct Prisma.",
+      "whyBypassSafe": "No governed command can update dishId on an existing EventDish link. The alternative (remove + create) would lose the link's other properties (quantity, course, notes, sortOrder). The swap is a structural reassignment with no business rules to enforce — the new dishId is the freshly governed-created variant.",
+      "tenantBoundary": "All updates scoped by tenantId + id + eventId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/(authenticated)/events/actions/event-dishes.ts"
+    },
+    {
+      "entity": "CommandBoardCard",
+      "file": "apps/app/app/(authenticated)/command-board/actions.ts",
+      "lines": "94,119-129,174,194,213,251",
+      "method": "database.commandBoardCard.updateMany (x5) / database.commandBoardCard.update inside $transaction (x1)",
+      "reason": "Six direct Prisma writes for CommandBoardCard bulk operations: (1) bulkUpdateCardsAction updateMany for status/color/cardType changes across N cards, (2) bulkRestoreCardsAction $transaction with N individual update calls for undo/restore, (3) createGroupAction updateMany to assign groupId to cards after governed group creation, (4) ungroupCardsAction updateMany to null groupId, (5) assignToGroupAction updateMany to set groupId on existing cards, (6) deleteGroupAction updateMany to unassign cards before governed group removal. No bulk Manifest command exists for CommandBoardCard — CommandBoardCard.update operates on a single instance. Migrating would require N sequential governed commands, losing atomicity guarantees and changing O(1) batch operations to O(N) roundtrips. The bulkRestoreCardsAction uses $transaction for multi-card atomicity which has no Manifest equivalent. Explicitly deferred per IMPLEMENTATION_PLAN.md (lines 314, 517-604 — complex multi-model transactions with optimistic concurrency). The single-card governed writes (createCommandBoard, moveCardAction, group CRUD) all correctly use runManifestCommand and are NOT bypassed.",
+      "whyBypassSafe": "All six writes are bulk operations with no per-item business rule evaluation. No bulk governed command exists for CommandBoardCard. The simulation apply/merge operations involve optimistic concurrency patterns that require direct Prisma transaction control. Single-card mutations (move, create) already go through Manifest runtime. The bypassed writes only touch structural/presentation fields (status, color, cardType, groupId) — no financial, regulatory, or irreversible domain state.",
+      "tenantBoundary": "All queries scoped by tenantId from requireCurrentUser()/requireTenantId() context; updateMany further scoped by deletedAt: null",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07",
+      "path": "apps/app/app/(authenticated)/command-board/actions.ts"
     }
   ]
 }
