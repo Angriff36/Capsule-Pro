@@ -165,7 +165,7 @@ export async function PATCH(request: Request, context: RouteContext) {
             { status: 500, headers: corsHeaders(request, "PATCH, OPTIONS") }
           );
         }
-        participant = ensured;
+        participant = ensured!;
       } else {
         return NextResponse.json(
           { message: "Thread not found" },
@@ -173,6 +173,10 @@ export async function PATCH(request: Request, context: RouteContext) {
         );
       }
     }
+
+    // At this point participant is guaranteed non-null — either it existed
+    // or we ensured it (returning early on failure above).
+    const activeParticipant = participant!;
 
     const body = (await request.json().catch(() => null)) as {
       action?: string;
@@ -197,7 +201,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       entity: "AdminChatParticipant",
       command,
       body: {
-        id: participant.id,
+        id: activeParticipant.id,
         threadId,
       },
       user,
@@ -211,7 +215,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updated = await database.adminChatParticipant.findFirst({
       where: {
         tenantId,
-        id: participant.id,
+        id: activeParticipant.id,
         deletedAt: null,
       },
       select: {

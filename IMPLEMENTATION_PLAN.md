@@ -335,7 +335,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 987 commands, 967 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 989 commands, 969 events, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -537,6 +537,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **Task 8.2 batch 12: inventory audit reports, supplier-sync bypass, discrepancy resolution, calendar reschedule (v0.12.135)** | `POST /api/inventory/audit/reports` → Report.create via `runManifestCommandCore` (best-effort save). `POST /api/inventory/supplier-sync` documented as infrastructure bypass (SupplierSyncLog has no Manifest entity). `PATCH /api/inventory/audit/discrepancies/[id]/resolve` → VarianceReport resolution metadata via `runtime.runCommand("updateDiscrepancy")`. `PATCH /api/calendar/reschedule` → Event.updateDate + ScheduleShift.update via `runManifestCommand`. Auth migrated to `resolveCurrentUser`. Scanning result: all remaining unmigrated write routes are infrastructure entities, complex multi-entity transactions/raw SQL, or cron/system-user routes. Total: 64 mutate handlers in 49 route files. API typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 13: AI bulk-tasks confirm + cron inventory-audit governance migration (v0.12.138)** | bulk-tasks/confirm: PrepTask.create via runManifestCommandCore (was direct database.prepTask.create). Supplementary update for dishId/locationId/estimatedMinutes/dueByTime outside governed surface. Cron inventory-audit: CycleCountSession.create via runManifestCommandCore + createManifestRuntime (system-user context). Uses structured result instead of HTTP Response wrapper. Total: 64 mutate handlers in 49 route files. API typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.3 batch 9: proposals, staff team, procurement actions governance migration + 6 new manifest commands (v0.12.139)** | Proposals: 6 writes migrated (create/update/delete/send/public-link/line-items). Staff team: 3 remaining writes migrated (reactivate/email/soft-delete). Procurement: 1 write migrated (updateTotals). New manifest commands: User.reactivate, User.softDelete, User.update(email), Proposal.remove, Proposal.generatePublicLink, PurchaseOrder.updateTotals. IR: 202 entities, 987 commands. API+App typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Task 8.2 batch 14: Payments POST + InventoryItem update/softDelete governance migration (v0.12.140)** | Payments POST: `database.payment.create` → `manifestRuntime.runCommand("create")` + `runCommand("process")`. Invoice.applyPayment removed (PaymentProcessed reaction handles). ACCEPTED_NOT_APPLIED fallback preserved. InventoryItem: `update` command (13 mutable fields) + `softDelete` command + events added to manifest source. IR: 989 commands (+2), 969 events (+2). API+App typecheck 0, 2689 tests pass. |
 
 ---
 
@@ -1270,6 +1271,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `PATCH /api/calendar/reschedule` — Event.updateDate + ScheduleShift.update via `runManifestCommand`. Auth migrated to `resolveCurrentUser`. Reads preserved as direct Prisma (§10).
     - **Scanning result:** All remaining unmigrated write routes across all domains are either (a) infrastructure entities with no Manifest IR definition, (b) complex multi-entity transactions/raw SQL requiring dedicated migration passes, or (c) cron/system-user routes. The simple single-entity migration class is nearly exhausted.
     - Total: 64 mutate handlers in 49 route files. 2689 tests pass, 0 typecheck errors.
+  - **Progress 2026-06-07 (batch 14):** Payments POST migrated to Manifest governance + InventoryItem update/softDelete commands added:
+    - `POST /api/accounting/payments` — `database.payment.create` → `manifestRuntime.runCommand("create", ...)` + `manifestRuntime.runCommand("process", ...)`. Explicit `Invoice.applyPayment` removed (PaymentProcessed reaction handles it). ACCEPTED_NOT_APPLIED fallback preserved as documented minimal bypass. Activity feed writes kept as audit entries.
+    - `manifest/source/inventory-rules.manifest` — added `update` command (13 mutable field params) + `softDelete` command + `InventoryItemUpdated`/`InventoryItemDeleted` events. Enables future migration of inventory items [id] route.
+    - Payment-create-idempotency test updated: mock `runCommand` instead of `paymentCreateMock`. 7/7 idempotency tests pass.
+    - IR: 989 commands (+2), 969 events (+2). 2689 tests pass, 0 typecheck errors.
+    - Total: 60 mutate handlers in 45 route files migrated.
   - **Total migrated across all batches:** 64 mutate handlers in 49 route files. Remaining: ~129 violations across ~35 files (most remaining are complex multi-entity transactions or infrastructure entities without Manifest IR definitions).
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)

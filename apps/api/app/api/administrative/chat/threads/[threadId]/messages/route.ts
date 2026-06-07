@@ -228,7 +228,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     const whereCreatedAt = {
       ...(before ? { lt: before } : {}),
-      ...(access.participant.clearedAt
+      ...(access.participant?.clearedAt
         ? { gt: access.participant.clearedAt }
         : {}),
     };
