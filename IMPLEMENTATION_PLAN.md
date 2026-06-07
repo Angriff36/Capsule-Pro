@@ -335,8 +335,8 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 973 commands, 954 events, 241 policies, 92 source files
-- **973/973 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
+- IR: **202 entities (ALL durable)**, 987 commands, 967 events, 241 policies, 92 source files
+- **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
@@ -536,6 +536,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **Task 8.2 batch 10: Invoice [id] route governance migration** | PUT/PATCH/POST/DELETE migrated from 7 direct Prisma writes to runManifestCommand. Invoice.update command added. SENT→PARTIALLY_PAID/PAID transitions added. Tests updated. API typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 12: inventory audit reports, supplier-sync bypass, discrepancy resolution, calendar reschedule (v0.12.135)** | `POST /api/inventory/audit/reports` → Report.create via `runManifestCommandCore` (best-effort save). `POST /api/inventory/supplier-sync` documented as infrastructure bypass (SupplierSyncLog has no Manifest entity). `PATCH /api/inventory/audit/discrepancies/[id]/resolve` → VarianceReport resolution metadata via `runtime.runCommand("updateDiscrepancy")`. `PATCH /api/calendar/reschedule` → Event.updateDate + ScheduleShift.update via `runManifestCommand`. Auth migrated to `resolveCurrentUser`. Scanning result: all remaining unmigrated write routes are infrastructure entities, complex multi-entity transactions/raw SQL, or cron/system-user routes. Total: 64 mutate handlers in 49 route files. API typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.2 batch 13: AI bulk-tasks confirm + cron inventory-audit governance migration (v0.12.138)** | bulk-tasks/confirm: PrepTask.create via runManifestCommandCore (was direct database.prepTask.create). Supplementary update for dishId/locationId/estimatedMinutes/dueByTime outside governed surface. Cron inventory-audit: CycleCountSession.create via runManifestCommandCore + createManifestRuntime (system-user context). Uses structured result instead of HTTP Response wrapper. Total: 64 mutate handlers in 49 route files. API typecheck 0, 2689 tests pass. |
+| 2026-06-06 | **Task 8.3 batch 9: proposals, staff team, procurement actions governance migration + 6 new manifest commands (v0.12.139)** | Proposals: 6 writes migrated (create/update/delete/send/public-link/line-items). Staff team: 3 remaining writes migrated (reactivate/email/soft-delete). Procurement: 1 write migrated (updateTotals). New manifest commands: User.reactivate, User.softDelete, User.update(email), Proposal.remove, Proposal.generatePublicLink, PurchaseOrder.updateTotals. IR: 202 entities, 987 commands. API+App typecheck 0, 2689 tests pass. |
 
 ---
 
@@ -621,7 +622,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
-10. **1 saga, 10 reactions defined (was 0):** 954 events available for reaction-driven side effects.
+10. **1 saga, 10 reactions defined (was 0):** 967 events available for reaction-driven side effects.
 
 11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
