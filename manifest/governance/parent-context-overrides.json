@@ -1,6 +1,20 @@
 {
   "$comment": "Documented override reasons for the parent-context propagation audit (manifest/scripts/audit-parent-context.mjs). A child `create` command should INHERIT parent-owned context via parent-context propagation (specs/parent-context-propagation.md), not require it as user input. Each entry below records WHY a required create parameter that name+type-matches a belongsTo-parent property is acceptable. Two categories: (1) FALSE_POSITIVE — coincidental name match; the child value is semantically independent of the parent's. (2) BASELINE — a genuine propagation candidate that predates the propagation mechanism (2026-06-05); tracked in IMPLEMENTATION_PLAN.md for follow-up migration. New, undocumented cases must be fixed (inherit server-side) or added here with a reason. BattleBoard is intentionally ABSENT: its create inherits event context and requires no parent-owned input.",
   "overrides": {
+    "ChartOfAccount": {
+      "fields": ["accountNumber", "accountName", "accountType"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Self-referencing parent (parentId → ChartOfAccount). Each account has its own unique accountNumber, accountName, and accountType — a child account is a distinct ledger node, not a copy of its parent. The name match is structural (same entity), not semantic inheritance.",
+      "owner": "accounting",
+      "reviewed": "2026-06-07"
+    },
+    "Deal": {
+      "fields": ["assignedTo"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Deal.assignedTo is the deal's own sales rep, semantically independent of Lead.assignedTo (the lead qualifier). The name match is coincidental — a deal may be reassigned to a different rep than the originating lead.",
+      "owner": "crm",
+      "reviewed": "2026-06-07"
+    },
     "AllergenWarning": {
       "fields": ["allergens"],
       "category": "FALSE_POSITIVE",
@@ -70,6 +84,34 @@
       "reason": "The requesting employee is supplied by the caller; coincidental name match with TimeEntry.employeeId.",
       "owner": "staff",
       "reviewed": "2026-06-05"
+    },
+    "Lead": {
+      "fields": ["assignedTo", "source", "companyName"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Lead.assignedTo is the lead's own sales assignee, Lead.source is the lead's origin (e.g. 'website', 'referral'), and Lead.companyName is the lead's company at time of capture. All three are semantically independent of the Client's same-named fields — a lead must NOT inherit the converted-to client's assignee, source, or company name.",
+      "owner": "crm",
+      "reviewed": "2026-06-07"
+    },
+    "LogisticsRoute": {
+      "fields": ["vehicleId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "LogisticsRoute.vehicleId is the route's assigned vehicle, semantically independent of Driver.vehicleId (the driver's default vehicle). The name match is coincidental — the route vehicle is authored per route, not inherited from the linked driver.",
+      "owner": "logistics",
+      "reviewed": "2026-06-07"
+    },
+    "TimecardApproval": {
+      "fields": ["payrollPeriodId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "TimecardApproval.payrollPeriodId is the approval's target pay period, semantically independent of PayrollRun.payrollPeriodId (the run's period). The name match is coincidental — an approval may reference a different period than the run it belongs to.",
+      "owner": "payroll",
+      "reviewed": "2026-06-07"
+    },
+    "VendorContract": {
+      "fields": ["paymentTerms"],
+      "category": "FALSE_POSITIVE",
+      "reason": "VendorContract.paymentTerms is the contract-specific payment terms, semantically independent of Vendor.paymentTerms (the vendor's default terms). The name match is coincidental — a contract may negotiate different terms than the vendor's default.",
+      "owner": "procurement",
+      "reviewed": "2026-06-07"
     },
     "EventContract": {
       "fields": ["clientId"],
