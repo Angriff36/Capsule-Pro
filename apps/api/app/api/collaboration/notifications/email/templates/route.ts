@@ -9,8 +9,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/collaboration/notifications/email/templates
@@ -89,17 +89,21 @@ export async function GET(request: NextRequest) {
  * Create a new email template
  */
 export async function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EmailTemplate",
-    commandName: "create",
-    transformBody: (body) => ({
-      name: body.name || "",
-      templateType: body.templateType || "custom",
-      subject: body.subject || "",
-      body: body.body || "",
-      mergeFields: JSON.stringify(body.mergeFields || []),
-      isActive: body.isActive ?? true,
-      isDefault: body.isDefault ?? false,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "EmailTemplate",
+    command: "create",
+    body: {
+      name: rawBody.name || "",
+      templateType: rawBody.templateType || "custom",
+      subject: rawBody.subject || "",
+      body: rawBody.body || "",
+      mergeFields: JSON.stringify(rawBody.mergeFields || []),
+      isActive: rawBody.isActive ?? true,
+      isDefault: rawBody.isDefault ?? false,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

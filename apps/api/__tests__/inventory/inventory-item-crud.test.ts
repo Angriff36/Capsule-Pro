@@ -30,18 +30,19 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { executeManifestCommand } = await import(
-  "@/lib/manifest-command-handler"
+const { getTenantIdForOrg, resolveCurrentUser } = await import("@/app/lib/tenant");
+const { runManifestCommand } = await import(
+  "@/lib/manifest/execute-command"
 );
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
@@ -86,6 +87,14 @@ describe("Inventory Items CRUD API", () => {
       orgId: TEST_ORG_ID,
     } as never);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+    vi.mocked(resolveCurrentUser).mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@test.com",
+      firstName: "Test",
+      lastName: "User",
+    });
   });
 
   afterEach(() => {
@@ -499,7 +508,7 @@ describe("Inventory Items CRUD API", () => {
       const mockResponse = new Response(JSON.stringify({ id: "item-123" }), {
         status: 201,
       });
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new Request("http://localhost/api/inventory/items", {
         method: "POST",
@@ -512,11 +521,16 @@ describe("Inventory Items CRUD API", () => {
 
       const response = await POST(request as never);
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        request,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "InventoryItem",
-          commandName: "create",
+          entity: "InventoryItem",
+          command: "create",
+          body: expect.any(Object),
+          user: expect.objectContaining({
+            id: expect.any(String),
+            tenantId: expect.any(String),
+            role: expect.any(String),
+          }),
         })
       );
       expect(response.status).toBe(201);
@@ -532,7 +546,7 @@ describe("Inventory Items CRUD API", () => {
         JSON.stringify({ message: "Unauthorized" }),
         { status: 401 }
       );
-      vi.mocked(executeManifestCommand).mockResolvedValue(mockResponse);
+      vi.mocked(runManifestCommand).mockResolvedValue(mockResponse);
 
       const request = new Request("http://localhost/api/inventory/items", {
         method: "POST",

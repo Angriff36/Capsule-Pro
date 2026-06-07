@@ -5,6 +5,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -20,6 +21,16 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   rejected: [],
 };
 
+/** Map a target status to the Manifest command name. */
+const STATUS_TO_COMMAND: Record<string, string> = {
+  submitted: "submit",
+  approved: "approve",
+  rejected: "reject",
+  cancelled: "cancel",
+  ordered: "markOrdered",
+  received: "markReceived",
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -32,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (!(orderId && status))
       return manifestErrorResponse("orderId and status required", 400);
 
-    // Verify current status allows transition
+    // Verify current status allows transition (read bypasses Manifest runtime per constitution §10)
     const current = await database.$queryRaw`
       SELECT status FROM tenant_inventory.purchase_orders
       WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid AND deleted_at IS NULL
@@ -49,14 +60,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.purchase_orders
-      SET status = ${status}, updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid
-      RETURNING id, po_number, status
-    `;
+    // Delegate governed status mutation to Manifest runtime
+    const command = STATUS_TO_COMMAND[status];
+    const result = await runManifestCommand({
+      entity: "PurchaseOrder",
+      command,
+      body: { id: orderId, userId },
+      user: { id: userId, tenantId, role: "user" },
+    });
 
-    return manifestSuccessResponse({ order: (result as any[])[0] });
+    if (result.status >= 400) return result;
+
+    // Read updated PO for response (reads bypass runtime)
+    const order = await database.purchaseOrder.findFirst({
+      where: { id: orderId, tenantId, deletedAt: null },
+      select: { id: true, poNumber: true, status: true },
+    });
+
+    return manifestSuccessResponse({
+      order: order
+        ? {
+            id: order.id,
+            po_number: order.poNumber,
+            status: order.status,
+          }
+        : null,
+    });
   } catch (error) {
     captureException(error);
     log.error("Error updating PO status:", error);

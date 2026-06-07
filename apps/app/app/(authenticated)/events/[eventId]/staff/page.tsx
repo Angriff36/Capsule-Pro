@@ -74,34 +74,34 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
   }
 
   // Fetch staff assignments with employee names via raw SQL since there's
-  // no Prisma relation between EventStaffAssignment and User.
+  // no Prisma relation between EventStaff and User.
   const assignments = await database.$queryRawUnsafe<
     Array<{
       id: string;
-      employeeId: string;
+      staffMemberId: string;
       first_name: string;
       last_name: string;
       role: string;
-      startTime: Date | null;
-      endTime: Date | null;
+      shiftStart: Date | null;
+      shiftEnd: Date | null;
       notes: string | null;
     }>
   >(
     `SELECT
         esa.id,
-        esa.employeeId,
+        esa.staffMemberId,
         e.first_name,
         e.last_name,
         esa.role,
-        esa.startTime,
-        esa.endTime,
+        esa.shiftStart,
+        esa.shiftEnd,
         esa.notes
-      FROM tenant_events.event_staff_assignments esa
+      FROM tenant_events.event_staff esa
       LEFT JOIN tenant_staff.employees e
-        ON e.tenant_id = esa.tenant_id AND e.id = esa.employeeId
-      WHERE esa.tenant_id = $1
-        AND esa.event_id = $2
-        AND esa.deleted_at IS NULL
+        ON e.tenant_id = esa.tenantId AND e.id = esa.staffMemberId
+      WHERE esa.tenantId = $1
+        AND esa.eventId = $2
+        AND esa.deletedAt IS NULL
       ORDER BY esa.role ASC, e.first_name ASC`,
     tenantId,
     eventId
@@ -126,11 +126,11 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
         AND e.deleted_at IS NULL
         AND e.is_active = true
         AND NOT EXISTS (
-          SELECT 1 FROM tenant_events.event_staff_assignments esa
-          WHERE esa.tenant_id = e.tenant_id
-            AND esa.employeeId = e.id
-            AND esa.event_id = $2
-            AND esa.deleted_at IS NULL
+          SELECT 1 FROM tenant_events.event_staff esa
+          WHERE esa.tenantId = e.tenant_id
+            AND esa.staffMemberId = e.id
+            AND esa.eventId = $2
+            AND esa.deletedAt IS NULL
         )
       ORDER BY e.first_name, e.last_name`,
     tenantId,
@@ -152,11 +152,11 @@ const EventStaffPage = async ({ params }: EventStaffPageProps) => {
 
   const serializedAssignments: StaffAssignment[] = assignments.map((a) => ({
     id: a.id,
-    employeeId: a.employeeId,
+    employeeId: a.staffMemberId,
     employeeName: `${a.first_name} ${a.last_name}`,
     role: a.role,
-    startTime: a.startTime ? a.startTime.toISOString() : null,
-    endTime: a.endTime ? a.endTime.toISOString() : null,
+    startTime: a.shiftStart ? a.shiftStart.toISOString() : null,
+    endTime: a.shiftEnd ? a.shiftEnd.toISOString() : null,
     notes: a.notes,
   }));
 

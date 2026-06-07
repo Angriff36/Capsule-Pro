@@ -103,16 +103,6 @@ export async function POST(
     // --- 2. Generate signing token (side-effect, will move to event handler) ---
     const signingToken = randomUUID();
 
-    await database.eventContract.update({
-      where: {
-        tenantId_id: {
-          tenantId: currentUser.tenantId,
-          id: contractId,
-        },
-      },
-      data: { signingToken },
-    });
-
     // --- 3. Send email notification (best-effort) ---
     const contract = await database.eventContract.findUnique({
       where: {

@@ -14,8 +14,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ---------------------------------------------------------------------------
 
 // Mock the IR loader so we don't need the actual IR file on disk.
-vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => ({
-  loadPrecompiledIR: vi.fn(() => ({
+// The factory calls loadMergedPrecompiledIR() when no explicit irPath is supplied
+// (manifest-runtime-factory.ts:251) and loadPrecompiledIR(irPath) otherwise (L249).
+// Both must be present on the mock or the factory throws at IR-load time.
+vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => {
+  const bundle = () => ({
     ir: {
       version: "1.0",
       provenance: { source: "test" },
@@ -28,8 +31,12 @@ vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => ({
     },
     hash: "test-hash",
     files: [],
-  })),
-}));
+  });
+  return {
+    loadPrecompiledIR: vi.fn(bundle),
+    loadMergedPrecompiledIR: vi.fn(bundle),
+  };
+});
 
 // Capture PrismaStore constructor calls.
 const prismaStoreConstructorSpy = vi.fn();
@@ -208,26 +215,23 @@ describe("createManifestRuntime (shared factory)", () => {
   });
 
   // -----------------------------------------------------------------------
-  // 1. User role resolution
+  // 1. User role resolution (deferred to identity middleware)
   // -----------------------------------------------------------------------
   describe("user role resolution", () => {
-    it("resolves role from DB when role is missing", async () => {
+    it("does NOT pre-resolve role at factory time (deferred to middleware)", async () => {
       const deps = makeDeps({ userFindFirst: { role: "chef" } });
 
       const runtime = await createManifestRuntime(deps, {
         user: { id: "user-1", tenantId: "tenant-1" },
       });
 
-      // The factory should have called prisma.user.findFirst to resolve the role.
-      // "user-1" is not a UUID, so the UUID-based lookup is skipped and the
-      // factory falls back to looking up by authUserId (Clerk-style ID).
+      // Role resolution is now deferred to the identity middleware which runs
+      // inside the Manifest engine lifecycle (before-policy hook), not at factory
+      // construction time. The factory should NOT call prisma.user.findFirst.
       const prisma = deps.prisma as unknown as {
         user: { findFirst: ReturnType<typeof vi.fn> };
       };
-      expect(prisma.user.findFirst).toHaveBeenCalledWith({
-        where: { authUserId: "user-1", tenantId: "tenant-1", deletedAt: null },
-        select: { role: true },
-      });
+      expect(prisma.user.findFirst).not.toHaveBeenCalled();
 
       // The runtime engine should have been created (non-null return)
       expect(runtime).toBeDefined();
@@ -317,22 +321,16 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
-    it("routes all 14 dedicated entities to PrismaStore", async () => {
+    it("routes all 5 dedicated entities to PrismaStore", async () => {
+      // Only entities with genuine custom logic (cross-table queries,
+      // non-standard delete semantics, transactional multi-table writes)
+      // remain in ENTITIES_WITH_SPECIFIC_STORES. All others use GenericPrismaStore.
       const dedicatedEntities = [
         "PrepTask",
-        "Recipe",
-        "RecipeVersion",
-        "Ingredient",
-        "RecipeIngredient",
-        "Dish",
-        "Menu",
-        "MenuDish",
-        "PrepList",
-        "PrepListItem",
-        "Station",
-        "InventoryItem",
         "KitchenTask",
-        "Event",
+        "PrepTaskPlanWorkflow",
+        "Station",
+        "InventoryTransfer",
       ];
 
       const deps = makeDeps();

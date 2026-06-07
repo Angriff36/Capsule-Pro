@@ -8,169 +8,21 @@
 
 import type { Store } from "@angriff36/manifest";
 import type {
-  AllergenWarning,
   KitchenTask,
   KitchenTaskClaim,
-  Menu,
-  MenuDish,
-  PrepList,
-  PrepListItem,
   PrepTask,
   PrepTaskPlanWorkflow,
   PrismaClient,
-  Recipe,
-  RecipeIngredient,
-  RecipeStep,
-  RecipeVersion,
   Station,
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
 import { GenericPrismaStore } from "./prisma-stores/generic-prisma-store";
-import {
-  ContainerPrismaStore,
-  PrepMethodPrismaStore,
-} from "./prisma-stores/broken-read-batch01-prep-container";
-import {
-  WasteEntryPrismaStore,
-  WorkflowPrismaStore,
-} from "./prisma-stores/broken-read-batch01-waste-workflow";
-import {
-  ApiKeyPrismaStore,
-  BattleBoardPrismaStore,
-  BudgetAlertPrismaStore,
-} from "./prisma-stores/broken-read-batch02-api-battle-budget";
-import {
-  AdminChatParticipantPrismaStore,
-  AdminTaskPrismaStore,
-} from "./prisma-stores/broken-read-batch02-participant-task";
-import {
-  BudgetLineItemPrismaStore,
-  BulkOrderRulePrismaStore,
-  CateringOrderPrismaStore,
-} from "./prisma-stores/broken-read-batch03-budget-bulk-catering";
-import {
-  ChartOfAccountPrismaStore,
-  ClientPrismaStore,
-} from "./prisma-stores/broken-read-batch03-chart-client";
-import {
-  ClientContactPrismaStore,
-  ClientInteractionPrismaStore,
-  ClientPreferencePrismaStore,
-} from "./prisma-stores/broken-read-batch04-client-trio";
-import {
-  CommandBoardCardPrismaStore,
-  CommandBoardPrismaStore,
-} from "./prisma-stores/broken-read-batch04-command-board";
-import {
-  CommandBoardConnectionPrismaStore,
-  CommandBoardGroupPrismaStore,
-  CommandBoardLayoutPrismaStore,
-} from "./prisma-stores/broken-read-batch05-command-board";
-import {
-  ContractSignaturePrismaStore,
-  CycleCountRecordPrismaStore,
-} from "./prisma-stores/broken-read-batch05-contract-cycle";
-import {
-  CycleCountSessionPrismaStore,
-  DishPrismaStore,
-} from "./prisma-stores/broken-read-batch06-cycle-dish";
-export { DishPrismaStore };
-
-import {
-  EmailTemplatePrismaStore,
-  EmailWorkflowPrismaStore,
-} from "./prisma-stores/broken-read-batch06-email";
-export { EmailTemplatePrismaStore };
-
-import { EmployeeAvailabilityPrismaStore } from "./prisma-stores/broken-read-batch06-employee-availability";
-import {
-  EmployeeCertificationPrismaStore,
-  EmployeeDeductionPrismaStore,
-} from "./prisma-stores/broken-read-batch07-employee";
-import {
-  EventBudgetPrismaStore,
-  EventContractPrismaStore,
-  EventPrismaStore,
-} from "./prisma-stores/broken-read-batch07-event";
-export { EventPrismaStore };
-
-import { EventDishPrismaStore } from "./prisma-stores/broken-read-batch08-event-dish";
-import {
-  EventGuestPrismaStore,
-  EventImportPrismaStore,
-} from "./prisma-stores/broken-read-batch08-event-guest-import";
-import {
-  EventProfitabilityPrismaStore,
-  EventReportPrismaStore,
-} from "./prisma-stores/broken-read-batch08-event-profit-report";
-import { EventSummaryPrismaStore } from "./prisma-stores/broken-read-batch09-event-staff-summary";
-import {
-  EventStaffPrismaStore,
-  StaffMemberPrismaStore,
-} from "./prisma-stores/staff-slice";
-import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient";
-export { IngredientPrismaStore };
-
-import {
-  InventoryItemPrismaStore,
-  InventorySupplierPrismaStore,
-} from "./prisma-stores/broken-read-batch09-inventory";
-export { InventoryItemPrismaStore };
-
-import { InventoryTransactionPrismaStore } from "./prisma-stores/broken-read-batch10-inventory-transaction";
-import {
-  LaborBudgetPrismaStore,
-  LeadPrismaStore,
-} from "./prisma-stores/broken-read-batch10-labor-budget-lead";
-import { OverrideAuditPrismaStore } from "./prisma-stores/broken-read-batch11-override-audit";
-import {
-  PayrollApprovalHistoryPrismaStore,
-  PayrollPeriodPrismaStore,
-  PayrollRunPrismaStore,
-} from "./prisma-stores/broken-read-batch11-payroll";
-import {
-  PrepCommentPrismaStore,
-  PricingTierPrismaStore,
-} from "./prisma-stores/broken-read-batch12-prep-pricing";
-import {
-  TimecardEditRequestPrismaStore,
-  TimeEntryPrismaStore,
-  TrainingAssignmentPrismaStore,
-} from "./prisma-stores/broken-read-batch12-staff-time";
-import {
-  ProposalLineItemPrismaStore,
-  PurchaseOrderItemPrismaStore,
-} from "./prisma-stores/broken-read-batch13-order-proposal";
-import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-schedule-shipment";
-import {
-  TrainingModulePrismaStore,
-  VarianceReportPrismaStore,
-} from "./prisma-stores/broken-read-batch13-training-variance";
-import {
-  VendorCatalogPrismaStore,
-  VendorContractPrismaStore,
-} from "./prisma-stores/broken-read-batch13-vendor";
-import {
-  CollectionActionPrismaStore,
-  CollectionCasePrismaStore,
-  CollectionPaymentPlanPrismaStore,
-} from "./prisma-stores/broken-read-batch14-collections";
-import {
-  InvoicePrismaStore,
-  PaymentMethodPrismaStore,
-  PaymentPrismaStore,
-} from "./prisma-stores/broken-read-batch14-invoice-payment";
-import {
-  RolePolicyPrismaStore,
-  TimeOffRequestPrismaStore,
-} from "./prisma-stores/broken-read-batch15-rolepolicy-timeoff";
+// Boilerplate store imports removed — 81 entities now use GenericPrismaStore.
+// Only custom stores with genuine business logic retain specific imports.
 import { InventoryTransferPrismaStore } from "./prisma-stores/broken-read-batch16-inventory-transfer";
-import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent";
-import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent";
-import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent";
-import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent";
-import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent";
-import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent";
+
+// Re-export stores that are used internally AND re-exported from index.ts
+
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -254,12 +106,13 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         tenantId: this.tenantId,
         id: data.id as string,
         eventId: data.eventId as string,
+        locationId: (data.locationId as string) || "",
         name: data.name as string,
         taskType: (data.taskType as string) || "prep",
         status: (data.status as string) || "pending",
         priority: (data.priority as number) || 5,
         quantityTotal: data.quantityTotal as number,
-        quantityUnitId: data.quantityUnitId as number | null,
+        quantityUnitId: (data.quantityUnitId as number) ?? null,
         quantityCompleted: (data.quantityCompleted as number) || 0,
         servingsTotal: data.servingsTotal as number | null,
         startByDate: data.startByDate
@@ -268,12 +121,6 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         dueByDate: data.dueByDate
           ? new Date(data.dueByDate as number)
           : new Date(),
-        locationId: data.locationId as string,
-        dishId: data.dishId as string | null,
-        recipeVersionId: data.recipeVersionId as string | null,
-        methodId: data.methodId as string | null,
-        containerId: data.containerId as string | null,
-        estimatedMinutes: data.estimatedMinutes as number | null,
         notes: data.notes as string | null,
       },
     });
@@ -282,6 +129,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     if (data.claimedBy && data.claimedAt) {
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: task.id,
           employeeId: data.claimedBy as string,
@@ -331,6 +179,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       // Create new claim
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: id,
           employeeId: newClaimedBy,
@@ -361,6 +210,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
 
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: id,
           employeeId: newClaimedBy,
@@ -417,19 +267,14 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
       servingsTotal: task.servingsTotal ?? 0,
       startByDate: task.startByDate ? task.startByDate.getTime() : 0,
       dueByDate: task.dueByDate ? task.dueByDate.getTime() : 0,
-      locationId: task.locationId,
-      dishId: task.dishId ?? "",
-      recipeVersionId: task.recipeVersionId ?? "",
-      methodId: task.methodId ?? "",
-      containerId: task.containerId ?? "",
-      estimatedMinutes: task.estimatedMinutes ?? 0,
-      actualMinutes: task.actualMinutes ?? 0,
       notes: task.notes ?? "",
-      stationId: "", // Not tracked in Prisma schema
+      stationId: "",
       claimedBy: activeClaim?.employeeId ?? "",
-      claimedAt: activeClaim?.claimedAt.getTime() ?? 0,
-      createdAt: task.createdAt.getTime(),
-      updatedAt: task.updatedAt.getTime(),
+      claimedAt: activeClaim?.claimedAt
+        ? activeClaim.claimedAt.getTime()
+        : 0,
+      createdAt: task.createdAt?.getTime() ?? 0,
+      updatedAt: task.updatedAt?.getTime() ?? 0,
     };
   }
 
@@ -449,488 +294,6 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
 }
 
 /**
- * Prisma-backed store for Recipe entities
- *
- * Maps Manifest Recipe entities to the Prisma Recipe table.
- */
-export class RecipePrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const recipes = await this.prisma.recipe.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return recipes.map((recipe) => this.mapToManifestEntity(recipe));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const recipe = await this.prisma.recipe.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return recipe ? this.mapToManifestEntity(recipe) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const recipe = await this.prisma.recipe.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        name: data.name as string,
-        category: (data.category as string) || null,
-        cuisineType: (data.cuisineType as string) || null,
-        description: (data.description as string) || null,
-        tags: (data.tags as string[]) || [],
-        isActive: (data.isActive as boolean) ?? true,
-      },
-    });
-    return this.mapToManifestEntity(recipe);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.recipe.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          name: data.name as string | undefined,
-          category: data.category as string | null | undefined,
-          cuisineType: data.cuisineType as string | null | undefined,
-          description: data.description as string | null | undefined,
-          tags: data.tags as string[] | undefined,
-          isActive: data.isActive as boolean | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.recipe.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.recipe.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(recipe: Recipe): EntityInstance {
-    return {
-      id: recipe.id,
-      tenantId: recipe.tenantId,
-      name: recipe.name,
-      category: recipe.category ?? "",
-      cuisineType: recipe.cuisineType ?? "",
-      description: recipe.description ?? "",
-      tags: Array.isArray(recipe.tags) ? recipe.tags.join(",") : "",
-      isActive: recipe.isActive,
-      hasVersion: true,
-      tagCount: Array.isArray(recipe.tags) ? recipe.tags.length : 0,
-      createdAt: recipe.createdAt.getTime(),
-      updatedAt: recipe.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for RecipeVersion entities
- *
- * Maps Manifest RecipeVersion entities to the Prisma RecipeVersion table.
- */
-export class RecipeVersionPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const versions = await this.prisma.recipeVersion.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return versions.map((version) => this.mapToManifestEntity(version));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const version = await this.prisma.recipeVersion.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return version ? this.mapToManifestEntity(version) : undefined;
-  }
-
-  /**
-   * Get the latest RecipeVersion for a specific recipe (by versionNumber DESC).
-   * This replaces the need for raw SQL queries like MAX(version_number).
-   */
-  async getLatestByRecipeId(
-    recipeId: string
-  ): Promise<EntityInstance | undefined> {
-    const version = await this.prisma.recipeVersion.findFirst({
-      where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-      orderBy: { versionNumber: "desc" },
-    });
-    return version ? this.mapToManifestEntity(version) : undefined;
-  }
-
-  /**
-   * Get all versions for a specific recipe, ordered by version number descending.
-   */
-  async getByRecipeId(recipeId: string): Promise<EntityInstance[]> {
-    const versions = await this.prisma.recipeVersion.findMany({
-      where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-      orderBy: { versionNumber: "desc" },
-    });
-    return versions.map((version) => this.mapToManifestEntity(version));
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const version = await this.prisma.recipeVersion.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        recipeId: data.recipeId as string,
-        name: data.name as string,
-        category: (data.category as string) || null,
-        cuisineType: (data.cuisineType as string) || null,
-        description: (data.description as string) || null,
-        tags: (data.tags as string[]) || [],
-        versionNumber: (data.versionNumber as number) || 1,
-        yieldQuantity: data.yieldQuantity as number,
-        yieldUnitId: data.yieldUnitId as number,
-        yieldDescription: (data.yieldDescription as string) || null,
-        prepTimeMinutes: (data.prepTimeMinutes as number) || null,
-        cookTimeMinutes: (data.cookTimeMinutes as number) || null,
-        restTimeMinutes: (data.restTimeMinutes as number) || null,
-        difficultyLevel: (data.difficultyLevel as number) || null,
-        instructions: (data.instructions as string) || null,
-        notes: (data.notes as string) || null,
-      },
-    });
-    return this.mapToManifestEntity(version);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.recipeVersion.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          yieldQuantity: data.yieldQuantity as number | undefined,
-          yieldUnitId: data.yieldUnitId as number | undefined,
-          prepTimeMinutes: data.prepTimeMinutes as number | null | undefined,
-          cookTimeMinutes: data.cookTimeMinutes as number | null | undefined,
-          restTimeMinutes: data.restTimeMinutes as number | null | undefined,
-          difficultyLevel: data.difficultyLevel as number | null | undefined,
-          instructions: data.instructions as string | null | undefined,
-          notes: data.notes as string | null | undefined,
-          totalCost: data.totalCost as number | undefined,
-          costPerYield: data.costPerYield as number | undefined,
-          costCalculatedAt:
-            data.totalCost !== undefined ? new Date() : undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.recipeVersion.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.recipeVersion.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(version: RecipeVersion): EntityInstance {
-    const prepTime = version.prepTimeMinutes ?? 0;
-    const cookTime = version.cookTimeMinutes ?? 0;
-    const restTime = version.restTimeMinutes ?? 0;
-
-    return {
-      id: version.id,
-      tenantId: version.tenantId,
-      recipeId: version.recipeId,
-      name: version.name,
-      category: version.category ?? "",
-      cuisineType: version.cuisineType ?? "",
-      description: version.description ?? "",
-      tags: Array.isArray(version.tags) ? version.tags.join(",") : "",
-      versionNumber: version.versionNumber,
-      yieldQuantity: Number(version.yieldQuantity),
-      yieldUnitId: version.yieldUnitId,
-      yieldDescription: version.yieldDescription ?? "",
-      prepTimeMinutes: prepTime,
-      cookTimeMinutes: cookTime,
-      restTimeMinutes: restTime,
-      difficultyLevel: version.difficultyLevel ?? 1,
-      instructions: version.instructions ?? "",
-      notes: version.notes ?? "",
-      ingredientCount: 0, // Would need to query recipe_ingredients table
-      stepCount: 0, // Would need to query RecipeStep table
-      totalCost: Number(version.totalCost) || 0,
-      costPerYield: Number(version.costPerYield) || 0,
-      createdAt: version.createdAt.getTime(),
-      totalTimeMinutes: prepTime + cookTime + restTime,
-      isVersion1: version.versionNumber === 1,
-      isHighDifficulty: (version.difficultyLevel ?? 1) >= 4,
-    };
-  }
-}
-
-/**
- * Prisma-backed store for RecipeIngredient entities
- *
- * Maps Manifest RecipeIngredient entities to the Prisma RecipeIngredient table.
- */
-export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const ingredients = await this.prisma.recipeIngredient.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return ingredients.map((ingredient) =>
-      this.mapToManifestEntity(ingredient)
-    );
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const ingredient = await this.prisma.recipeIngredient.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return ingredient ? this.mapToManifestEntity(ingredient) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const ingredient = await this.prisma.recipeIngredient.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        recipeVersionId: data.recipeVersionId as string,
-        ingredientId: data.ingredientId as string,
-        quantity: data.quantity as number,
-        unitId: data.unitId as number,
-        preparationNotes: (data.preparationNotes as string) || null,
-        isOptional: data.isOptional as boolean,
-        sortOrder: (data.sortOrder as number) || 0,
-        wasteFactor: (data.wasteFactor as number) ?? 1.0,
-      },
-    });
-    return this.mapToManifestEntity(ingredient);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.recipeIngredient.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          quantity: data.quantity as number | undefined,
-          unitId: data.unitId as number | undefined,
-          wasteFactor: data.wasteFactor as number | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.recipeIngredient.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.recipeIngredient.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(ingredient: RecipeIngredient): EntityInstance {
-    return {
-      id: ingredient.id,
-      tenantId: ingredient.tenantId,
-      recipeVersionId: ingredient.recipeVersionId,
-      ingredientId: ingredient.ingredientId,
-      quantity: Number(ingredient.quantity),
-      unitId: ingredient.unitId,
-      preparationNotes: ingredient.preparationNotes ?? "",
-      isOptional: ingredient.isOptional,
-      wasteFactor: Number(ingredient.wasteFactor),
-      sortOrder: ingredient.sortOrder,
-      createdAt: ingredient.createdAt.getTime(),
-      updatedAt: ingredient.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for RecipeStep entities
- *
- * Maps Manifest RecipeStep entities to the Prisma RecipeStep table.
- * Note: Prisma model uses snake_case (RecipeStep).
- */
-export class RecipeStepPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const steps = await this.prisma.recipeStep.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return steps.map((step) => this.mapToManifestEntity(step));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const step = await this.prisma.recipeStep.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return step ? this.mapToManifestEntity(step) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const step = await this.prisma.recipeStep.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        recipeVersionId: data.recipeVersionId as string,
-        stepNumber: data.stepNumber as number,
-        instruction: data.instruction as string,
-        durationMinutes: (data.durationMinutes as number) || null,
-        temperatureValue: (data.temperatureValue as number) || null,
-        temperatureUnit: (data.temperatureUnit as string) || null,
-        equipmentNeeded: (data.equipmentNeeded as string[])
-          ? ((data.equipmentNeeded as string)
-              .split(",")
-              .filter(Boolean) as string[])
-          : [],
-        tips: (data.tips as string) || null,
-        videoUrl: (data.videoUrl as string) || null,
-        imageUrl: (data.imageUrl as string) || null,
-      },
-    });
-    return this.mapToManifestEntity(step);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.recipeStep.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          instruction: data.instruction as string | undefined,
-          durationMinutes: data.durationMinutes as number | null | undefined,
-          tips: data.tips as string | null | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.recipeStep.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.recipeStep.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(step: RecipeStep): EntityInstance {
-    return {
-      id: step.id,
-      tenantId: step.tenantId,
-      recipeVersionId: step.recipeVersionId,
-      stepNumber: step.stepNumber,
-      instruction: step.instruction,
-      durationMinutes: step.durationMinutes ?? 0,
-      temperatureValue: step.temperatureValue
-        ? Number(step.temperatureValue)
-        : 0,
-      temperatureUnit: step.temperatureUnit ?? "",
-      equipmentNeeded: step.equipmentNeeded?.join(",") ?? "",
-      tips: step.tips ?? "",
-      videoUrl: step.videoUrl ?? "",
-      imageUrl: step.imageUrl ?? "",
-      createdAt: step.createdAt.getTime(),
-      updatedAt: step.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
  * Prisma-backed store for KitchenTask entities
  *
  * Maps Manifest KitchenTask entities to the Prisma KitchenTask table.
@@ -946,7 +309,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const tasks = (await this.prisma.kitchenTask.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
+      where: { tenantId: this.tenantId },
     })) as KitchenTask[];
 
     // Fetch claims in batch (not N+1 - uses single IN query)
@@ -977,7 +340,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const task = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!task) {
@@ -1006,7 +369,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         status: (data.status as string) || "pending",
         priority: (data.priority as number) || 5,
         complexity: (data.complexity as number) || 5,
-        tags: Array.isArray(data.tags) ? (data.tags as string[]) : [],
+        tags: toStringArray(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -1017,6 +380,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     if (data.claimedBy && data.claimedAt) {
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: task.id,
           employeeId: data.claimedBy as string,
@@ -1033,7 +397,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     const existing = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!existing) {
@@ -1051,7 +415,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
         complexity: data.complexity as number | undefined,
         title: data.title as string | undefined,
         summary: data.summary as string | undefined,
-        tags: Array.isArray(data.tags) ? (data.tags as string[]) : undefined,
+        tags: toStringArrayOrUndefined(data.tags),
         dueDate: data.dueDate ? new Date(data.dueDate as number) : undefined,
         completedAt: data.completedAt
           ? new Date(data.completedAt as number)
@@ -1069,6 +433,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     if (newClaimedBy && !activeClaim) {
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: id,
           employeeId: newClaimedBy,
@@ -1097,6 +462,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
       await this.prisma.kitchenTaskClaim.create({
         data: {
+          id: crypto.randomUUID(),
           tenantId: this.tenantId,
           taskId: id,
           employeeId: newClaimedBy,
@@ -1118,16 +484,15 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     const existing = await this.prisma.kitchenTask.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
 
     if (!existing) {
       return false;
     }
 
-    await this.prisma.kitchenTask.update({
+    await this.prisma.kitchenTask.delete({
       where: { tenantId_id: { tenantId: this.tenantId, id } },
-      data: { deletedAt: new Date() },
     });
 
     return true;
@@ -1151,267 +516,13 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       status: task.status, // No remapping — manifest uses same values as DB
       priority: task.priority,
       complexity: task.complexity,
-      tags: Array.isArray(task.tags) ? task.tags.join(",") : "",
+      tags: typeof task.tags === "string" ? task.tags : "",
       dueDate: task.dueDate ? task.dueDate.getTime() : 0,
       completedAt: task.completedAt ? task.completedAt.getTime() : 0,
       claimedBy: activeClaim?.employeeId ?? "",
       claimedAt: activeClaim?.claimedAt.getTime() ?? 0,
-      createdAt: task.createdAt.getTime(),
-      updatedAt: task.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for AllergenWarning entities
- *
- * Maps Manifest AllergenWarning entities to the Prisma AllergenWarning table.
- * Handles the conversion between Manifest string properties (allergens, affectedGuests)
- * and Prisma array types.
- */
-export class AllergenWarningPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const warnings = await this.prisma.allergenWarning.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return warnings.map((warning) => this.mapToManifestEntity(warning));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const warning = await this.prisma.allergenWarning.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return warning ? this.mapToManifestEntity(warning) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const warning = await this.prisma.allergenWarning.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        eventId: data.eventId as string,
-        dishId: (data.dishId as string) || null,
-        warningType: data.warningType as string,
-        allergens: this.stringToArray(data.allergens),
-        affectedGuests: this.stringToArray(data.affectedGuests),
-        severity: (data.severity as string) || "warning",
-        isAcknowledged: (data.isAcknowledged as boolean) ?? false,
-        acknowledgedBy: (data.acknowledgedBy as string) || null,
-        acknowledgedAt: data.acknowledgedAt
-          ? new Date(data.acknowledgedAt as number)
-          : null,
-        overrideReason: (data.overrideReason as string) || null,
-        resolved: (data.resolved as boolean) ?? false,
-        resolvedAt: data.resolvedAt
-          ? new Date(data.resolvedAt as number)
-          : null,
-        notes: (data.notes as string) || null,
-      },
-    });
-    return this.mapToManifestEntity(warning);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.allergenWarning.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          isAcknowledged: data.isAcknowledged as boolean | undefined,
-          acknowledgedBy: data.acknowledgedBy as string | null | undefined,
-          acknowledgedAt: data.acknowledgedAt
-            ? new Date(data.acknowledgedAt as number)
-            : undefined,
-          overrideReason: data.overrideReason as string | null | undefined,
-          resolved: data.resolved as boolean | undefined,
-          resolvedAt: data.resolvedAt
-            ? new Date(data.resolvedAt as number)
-            : undefined,
-          notes: data.notes as string | null | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.allergenWarning.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.allergenWarning.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  /**
-   * Convert Manifest string property to Prisma array
-   * Manifest stores arrays as comma-separated strings
-   */
-  private stringToArray(value: unknown): string[] {
-    if (Array.isArray(value)) {
-      return value as string[];
-    }
-    if (typeof value === "string" && value.length > 0) {
-      return value.split(",").filter(Boolean);
-    }
-    return [];
-  }
-
-  /**
-   * Convert Prisma array to Manifest string property
-   */
-  private arrayToString(arr: string[] | null | undefined): string {
-    if (!(arr && Array.isArray(arr)) || arr.length === 0) {
-      return "";
-    }
-    return arr.join(",");
-  }
-
-  private mapToManifestEntity(warning: AllergenWarning): EntityInstance {
-    return {
-      id: warning.id,
-      tenantId: warning.tenantId,
-      eventId: warning.eventId,
-      dishId: warning.dishId ?? "",
-      warningType: warning.warningType,
-      allergens: this.arrayToString(warning.allergens),
-      affectedGuests: this.arrayToString(warning.affectedGuests),
-      severity: warning.severity,
-      isAcknowledged: warning.isAcknowledged,
-      acknowledgedBy: warning.acknowledgedBy ?? "",
-      acknowledgedAt: warning.acknowledgedAt
-        ? warning.acknowledgedAt.getTime()
-        : 0,
-      overrideReason: warning.overrideReason ?? "",
-      resolved: warning.resolved,
-      resolvedAt: warning.resolvedAt ? warning.resolvedAt.getTime() : 0,
-      notes: warning.notes ?? "",
-      createdAt: warning.createdAt.getTime(),
-      updatedAt: warning.updatedAt.getTime(),
-      deletedAt: warning.deletedAt ? warning.deletedAt.getTime() : 0,
-      isHighSeverity: warning.severity === "critical",
-      isPending: !(warning.isAcknowledged || warning.resolved),
-      isOverridden: !!warning.overrideReason,
-      isDeleted: !!warning.deletedAt,
-    };
-  }
-}
-
-/**
- * Prisma-backed store for AlertsConfig (`tenant_inventory.alerts_config`).
- *
- * Manifest commands for this entity previously used `PrismaJsonStore` while
- * list/detail routes under `/api/kitchen/alerts-config/*` read
- * `database.alertsConfig` — writes never appeared in the UI.
- */
-export class AlertsConfigPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const rows = await this.prisma.alertsConfig.findMany({
-      where: { tenantId: this.tenantId },
-      orderBy: { id: "desc" },
-    });
-    return rows.map((r) => this.mapToManifestEntity(r));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const row = await this.prisma.alertsConfig.findFirst({
-      where: { tenantId: this.tenantId, id },
-    });
-    return row ? this.mapToManifestEntity(row) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const id = (data.id as string | undefined) ?? crypto.randomUUID();
-    const row = await this.prisma.alertsConfig.create({
-      data: {
-        tenantId: this.tenantId,
-        id,
-        channel: (data.channel as string) ?? "",
-        destination: (data.destination as string) ?? "",
-      },
-    });
-    return this.mapToManifestEntity(row);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const patch: { channel?: string; destination?: string } = {};
-      if (data.channel !== undefined) {
-        patch.channel = data.channel as string;
-      }
-      if (data.destination !== undefined) {
-        patch.destination = data.destination as string;
-      }
-      const row = await this.prisma.alertsConfig.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: patch,
-      });
-      return this.mapToManifestEntity(row);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.alertsConfig.delete({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.alertsConfig.deleteMany({
-      where: { tenantId: this.tenantId },
-    });
-  }
-
-  private mapToManifestEntity(r: {
-    tenantId: string;
-    id: string;
-    channel: string;
-    destination: string;
-  }): EntityInstance {
-    return {
-      id: r.id,
-      tenantId: r.tenantId,
-      channel: r.channel ?? "",
-      destination: r.destination ?? "",
+      createdAt: task.createdAt?.getTime() ?? 0,
+      updatedAt: task.updatedAt?.getTime() ?? 0,
     };
   }
 }
@@ -1442,14 +553,14 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const rows = await this.prisma.prepTaskPlanWorkflow.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
+      where: { tenantId: this.tenantId },
     });
     return rows.map((r) => this.mapToManifestEntity(r));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const row = await this.prisma.prepTaskPlanWorkflow.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
     return row ? this.mapToManifestEntity(row) : undefined;
   }
@@ -1566,9 +677,10 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // PrepTaskPlanWorkflow has no deletedAt — mark status as "deleted"
       await this.prisma.prepTaskPlanWorkflow.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
+        data: { status: "deleted" },
       });
       return true;
     } catch (error) {
@@ -1579,8 +691,8 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
 
   async clear(): Promise<void> {
     await this.prisma.prepTaskPlanWorkflow.updateMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-      data: { deletedAt: new Date() },
+      where: { tenantId: this.tenantId },
+      data: { status: "deleted" },
     });
   }
 
@@ -1620,8 +732,7 @@ export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
       completedAt: w.completedAt ? w.completedAt.getTime() : 0,
       createdAt: w.createdAt ? w.createdAt.getTime() : 0,
       updatedAt: w.updatedAt ? w.updatedAt.getTime() : 0,
-      deletedAt: w.deletedAt ? w.deletedAt.getTime() : 0,
-      isDeleted: w.deletedAt !== null,
+      isDeleted: w.status === "deleted",
     };
   }
 }
@@ -1677,971 +788,28 @@ export function createPrismaStoreProvider(
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
-      case "AlertsConfig":
-        return new AlertsConfigPrismaStore(prisma, tenantId);
-      case "AllergenWarning":
-        return new AllergenWarningPrismaStore(prisma, tenantId);
+      // ── Custom stores with genuine business logic ──────────────────────────
+      // These stores have cross-table queries, custom computed fields, special
+      // delete semantics, or other logic that GenericPrismaStore cannot express.
+      // All other entities fall through to GenericPrismaStore (line ~2942).
       case "PrepTask":
         return new PrepTaskPrismaStore(prisma, tenantId);
-      case "Recipe":
-        return new RecipePrismaStore(prisma, tenantId);
-      case "RecipeVersion":
-        return new RecipeVersionPrismaStore(prisma, tenantId);
-      case "Ingredient":
-        return new IngredientPrismaStore(prisma, tenantId);
-      case "RecipeIngredient":
-        return new RecipeIngredientPrismaStore(prisma, tenantId);
-      case "RecipeStep":
-        return new RecipeStepPrismaStore(prisma, tenantId);
-      case "Menu":
-        return new MenuPrismaStore(prisma, tenantId);
-      case "MenuDish":
-        return new MenuDishPrismaStore(prisma, tenantId);
-      case "PrepList":
-        return new PrepListPrismaStore(prisma, tenantId);
-      case "PrepListItem":
-        return new PrepListItemPrismaStore(prisma, tenantId);
-      case "Station":
-        return new StationPrismaStore(prisma, tenantId);
-      case "InventoryItem":
-        return new InventoryItemPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
       case "PrepTaskPlanWorkflow":
         return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
-      case "PrepMethod":
-        return new PrepMethodPrismaStore(prisma, tenantId);
-      case "Container":
-        return new ContainerPrismaStore(prisma, tenantId);
-      case "WasteEntry":
-        return new WasteEntryPrismaStore(prisma, tenantId);
-      case "Workflow":
-        return new WorkflowPrismaStore(prisma, tenantId);
-      case "AdminChatParticipant":
-        return new AdminChatParticipantPrismaStore(prisma, tenantId);
-      case "AdminTask":
-        return new AdminTaskPrismaStore(prisma, tenantId);
-      case "ApiKey":
-        return new ApiKeyPrismaStore(prisma, tenantId);
-      case "BattleBoard":
-        return new BattleBoardPrismaStore(prisma, tenantId);
-      case "BudgetAlert":
-        return new BudgetAlertPrismaStore(prisma, tenantId);
-      case "BudgetLineItem":
-        return new BudgetLineItemPrismaStore(prisma, tenantId);
-      case "BulkOrderRule":
-        return new BulkOrderRulePrismaStore(prisma, tenantId);
-      case "CateringOrder":
-        return new CateringOrderPrismaStore(prisma, tenantId);
-      case "ChartOfAccount":
-        return new ChartOfAccountPrismaStore(prisma, tenantId);
-      case "Client":
-        return new ClientPrismaStore(prisma, tenantId);
-      case "ClientContact":
-        return new ClientContactPrismaStore(prisma, tenantId);
-      case "ClientInteraction":
-        return new ClientInteractionPrismaStore(prisma, tenantId);
-      case "ClientPreference":
-        return new ClientPreferencePrismaStore(prisma, tenantId);
-      case "CommandBoard":
-        return new CommandBoardPrismaStore(prisma, tenantId);
-      case "CommandBoardCard":
-        return new CommandBoardCardPrismaStore(prisma, tenantId);
-      case "CommandBoardConnection":
-        return new CommandBoardConnectionPrismaStore(prisma, tenantId);
-      case "CommandBoardGroup":
-        return new CommandBoardGroupPrismaStore(prisma, tenantId);
-      case "CommandBoardLayout":
-        return new CommandBoardLayoutPrismaStore(prisma, tenantId);
-      case "ContractSignature":
-        return new ContractSignaturePrismaStore(prisma, tenantId);
-      case "CycleCountRecord":
-        return new CycleCountRecordPrismaStore(prisma, tenantId);
-      case "CycleCountSession":
-        return new CycleCountSessionPrismaStore(prisma, tenantId);
-      case "Dish":
-        return new DishPrismaStore(prisma, tenantId);
-      case "EmailTemplate":
-        return new EmailTemplatePrismaStore(prisma, tenantId);
-      case "EmailWorkflow":
-        return new EmailWorkflowPrismaStore(prisma, tenantId);
-      case "EmployeeAvailability":
-        return new EmployeeAvailabilityPrismaStore(prisma, tenantId);
-      case "EmployeeCertification":
-        return new EmployeeCertificationPrismaStore(prisma, tenantId);
-      case "EmployeeDeduction":
-        return new EmployeeDeductionPrismaStore(prisma, tenantId);
-      case "Event":
-        return new EventPrismaStore(prisma, tenantId);
-      case "EventBudget":
-        return new EventBudgetPrismaStore(prisma, tenantId);
-      case "EventContract":
-        return new EventContractPrismaStore(prisma, tenantId);
-      case "EventDish":
-        return new EventDishPrismaStore(prisma, tenantId);
-      case "EventGuest":
-        return new EventGuestPrismaStore(prisma, tenantId);
-      case "EventImportWorkflow":
-        return new EventImportPrismaStore(prisma, tenantId);
-      case "EventProfitability":
-        return new EventProfitabilityPrismaStore(prisma, tenantId);
-      case "EventReport":
-        return new EventReportPrismaStore(prisma, tenantId);
-      case "EventStaff":
-        return new EventStaffPrismaStore(prisma, tenantId);
-      case "StaffMember":
-        return new StaffMemberPrismaStore(prisma, tenantId);
-      case "EventSummary":
-        return new EventSummaryPrismaStore(prisma, tenantId);
-      case "InventorySupplier":
-        return new InventorySupplierPrismaStore(prisma, tenantId);
-      case "InventoryTransaction":
-        return new InventoryTransactionPrismaStore(prisma, tenantId);
-      case "LaborBudget":
-        return new LaborBudgetPrismaStore(prisma, tenantId);
-      case "Lead":
-        return new LeadPrismaStore(prisma, tenantId);
-      case "OverrideAudit":
-        return new OverrideAuditPrismaStore(prisma, tenantId);
-      case "PayrollApprovalHistory":
-        return new PayrollApprovalHistoryPrismaStore(prisma, tenantId);
-      case "PayrollPeriod":
-        return new PayrollPeriodPrismaStore(prisma, tenantId);
-      case "PayrollRun":
-        return new PayrollRunPrismaStore(prisma, tenantId);
-      case "PrepComment":
-        return new PrepCommentPrismaStore(prisma, tenantId);
-      case "PricingTier":
-        return new PricingTierPrismaStore(prisma, tenantId);
-      case "TimeEntry":
-        return new TimeEntryPrismaStore(prisma, tenantId);
-      case "TimecardEditRequest":
-        return new TimecardEditRequestPrismaStore(prisma, tenantId);
-      case "TrainingAssignment":
-        return new TrainingAssignmentPrismaStore(prisma, tenantId);
-      case "Proposal":
-        return new ProposalPrismaStore(prisma, tenantId);
-      case "ProposalLineItem":
-        return new ProposalLineItemPrismaStore(prisma, tenantId);
-      case "PurchaseOrder":
-        return new PurchaseOrderPrismaStore(prisma, tenantId);
-      case "PurchaseOrderItem":
-        return new PurchaseOrderItemPrismaStore(prisma, tenantId);
-      case "Notification":
-        return new NotificationPrismaStore(prisma, tenantId);
-      case "Schedule":
-        return new SchedulePrismaStore(prisma, tenantId);
-      case "ScheduleShift":
-        return new ScheduleShiftPrismaStore(prisma, tenantId);
-      case "Shipment":
-        return new ShipmentPrismaStore(prisma, tenantId);
-      case "VendorContract":
-        return new VendorContractPrismaStore(prisma, tenantId);
-      case "PurchaseRequisition":
-        return new PurchaseRequisitionPrismaStore(prisma, tenantId);
-      case "Invoice":
-        return new InvoicePrismaStore(prisma, tenantId);
-      case "PaymentMethod":
-        return new PaymentMethodPrismaStore(prisma, tenantId);
-      case "Payment":
-        return new PaymentPrismaStore(prisma, tenantId);
-      case "CollectionCase":
-        return new CollectionCasePrismaStore(prisma, tenantId);
-      case "CollectionAction":
-        return new CollectionActionPrismaStore(prisma, tenantId);
-      case "CollectionPaymentPlan":
-        return new CollectionPaymentPlanPrismaStore(prisma, tenantId);
-      case "VendorCatalog":
-        return new VendorCatalogPrismaStore(prisma, tenantId);
-      case "VarianceReport":
-        return new VarianceReportPrismaStore(prisma, tenantId);
-      case "TrainingModule":
-        return new TrainingModulePrismaStore(prisma, tenantId);
-      case "RolePolicy":
-        return new RolePolicyPrismaStore(prisma, tenantId);
-      case "TimeOffRequest":
-        return new TimeOffRequestPrismaStore(prisma, tenantId);
+      case "Station":
+        return new StationPrismaStore(prisma, tenantId);
       case "InventoryTransfer":
         return new InventoryTransferPrismaStore(prisma, tenantId, userId);
       default: {
-        if (!loggedMissingStoreEntities.has(entityName)) {
-          loggedMissingStoreEntities.add(entityName);
-          console.error(
-            `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
-          );
-          manifestStoreIssueReporter?.(entityName, "missing");
-        }
+        // 81 boilerplate entities now handled by GenericPrismaStore.
+        // The PrismaStore constructor (line ~2942) instantiates GenericPrismaStore
+        // when createPrismaStoreProvider returns undefined.
         return undefined;
       }
     }
   };
-}
-
-/**
- * Load a PrepTask from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadPrepTaskFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  taskId: string
-): Promise<EntityInstance | undefined> {
-  const store = new PrepTaskPrismaStore(prisma, tenantId);
-  return store.getById(taskId);
-}
-
-/**
- * Sync a PrepTask from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncPrepTaskToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new PrepTaskPrismaStore(prisma, tenantId);
-
-  // Check if task exists
-  const existing = await prisma.prepTask.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a Recipe from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadRecipeFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  recipeId: string
-): Promise<EntityInstance | undefined> {
-  const store = new RecipePrismaStore(prisma, tenantId);
-  return store.getById(recipeId);
-}
-
-/**
- * Sync a Recipe from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncRecipeToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new RecipePrismaStore(prisma, tenantId);
-
-  // Check if recipe exists
-  const existing = await prisma.recipe.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a Dish from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadDishFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  dishId: string
-): Promise<EntityInstance | undefined> {
-  const store = new DishPrismaStore(prisma, tenantId);
-  return store.getById(dishId);
-}
-
-/**
- * Sync a Dish from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncDishToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new DishPrismaStore(prisma, tenantId);
-
-  // Check if dish exists
-  const existing = await prisma.dish.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Prisma-backed store for Menu entities
- *
- * Maps Manifest Menu entities to the Prisma Menu table.
- */
-export class MenuPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const menus = await this.prisma.menu.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return menus.map((menu) => this.mapToManifestEntity(menu));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const menu = await this.prisma.menu.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return menu ? this.mapToManifestEntity(menu) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const menu = await this.prisma.menu.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        name: data.name as string,
-        description: (data.description as string) || null,
-        category: (data.category as string) || null,
-        isActive: (data.isActive as boolean) ?? true,
-        basePrice: data.basePrice
-          ? new Prisma.Decimal(data.basePrice as number)
-          : null,
-        pricePerPerson: data.pricePerPerson
-          ? new Prisma.Decimal(data.pricePerPerson as number)
-          : null,
-        minGuests: (data.minGuests as number) || null,
-        maxGuests: (data.maxGuests as number) || null,
-      },
-    });
-    return this.mapToManifestEntity(menu);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.menu.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          name: data.name as string | undefined,
-          description: data.description as string | null | undefined,
-          category: data.category as string | null | undefined,
-          isActive: data.isActive as boolean | undefined,
-          basePrice: data.basePrice
-            ? new Prisma.Decimal(data.basePrice as number)
-            : undefined,
-          pricePerPerson: data.pricePerPerson
-            ? new Prisma.Decimal(data.pricePerPerson as number)
-            : undefined,
-          minGuests: data.minGuests as number | null | undefined,
-          maxGuests: data.maxGuests as number | null | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.menu.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.menu.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(menu: Menu): EntityInstance {
-    return {
-      id: menu.id,
-      tenantId: menu.tenantId,
-      name: menu.name,
-      description: menu.description ?? "",
-      category: menu.category ?? "",
-      isActive: menu.isActive,
-      basePrice: Number(menu.basePrice ?? 0),
-      pricePerPerson: Number(menu.pricePerPerson ?? 0),
-      minGuests: menu.minGuests ?? 0,
-      maxGuests: menu.maxGuests ?? 0,
-      hasPricePerPerson:
-        menu.pricePerPerson !== null && Number(menu.pricePerPerson) > 0,
-      hasGuestConstraints:
-        menu.minGuests !== null ||
-        (menu.maxGuests !== null && Number(menu.maxGuests) > 0),
-      guestRangeValid:
-        (menu.minGuests ?? 0) <=
-        (menu.maxGuests ? Number(menu.maxGuests) : Number.MAX_SAFE_INTEGER),
-      createdAt: menu.createdAt.getTime(),
-      updatedAt: menu.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for MenuDish entities
- *
- * Maps Manifest MenuDish entities to the Prisma MenuDish table.
- */
-export class MenuDishPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const menuDishes = await this.prisma.menuDish.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return menuDishes.map((md) => this.mapToManifestEntity(md));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const menuDish = await this.prisma.menuDish.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return menuDish ? this.mapToManifestEntity(menuDish) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const menuDish = await this.prisma.menuDish.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        menuId: data.menuId as string,
-        dishId: data.dishId as string,
-        course: (data.course as string) || null,
-        sortOrder: (data.sortOrder as number) ?? 0,
-        isOptional: (data.isOptional as boolean) ?? false,
-      },
-    });
-    return this.mapToManifestEntity(menuDish);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.menuDish.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          course: data.course as string | null | undefined,
-          sortOrder: data.sortOrder as number | undefined,
-          isOptional: data.isOptional as boolean | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.menuDish.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.menuDish.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(menuDish: MenuDish): EntityInstance {
-    return {
-      id: menuDish.id,
-      tenantId: menuDish.tenantId,
-      menuId: menuDish.menuId,
-      dishId: menuDish.dishId,
-      course: menuDish.course ?? "",
-      sortOrder: menuDish.sortOrder,
-      isOptional: menuDish.isOptional,
-      createdAt: menuDish.createdAt.getTime(),
-      updatedAt: menuDish.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Load a Menu from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadMenuFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  menuId: string
-): Promise<EntityInstance | undefined> {
-  const store = new MenuPrismaStore(prisma, tenantId);
-  return store.getById(menuId);
-}
-
-/**
- * Sync a Menu from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncMenuToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new MenuPrismaStore(prisma, tenantId);
-
-  // Check if menu exists
-  const existing = await prisma.menu.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a MenuDish from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadMenuDishFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  menuDishId: string
-): Promise<EntityInstance | undefined> {
-  const store = new MenuDishPrismaStore(prisma, tenantId);
-  return store.getById(menuDishId);
-}
-
-/**
- * Sync a MenuDish from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncMenuDishToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new MenuDishPrismaStore(prisma, tenantId);
-
-  // Check if menu dish exists
-  const existing = await prisma.menuDish.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Prisma-backed store for PrepList entities
- *
- * Maps Manifest PrepList entities to the Prisma PrepList table.
- */
-export class PrepListPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const prepLists = await this.prisma.prepList.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return prepLists.map((prepList) => this.mapToManifestEntity(prepList));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const prepList = await this.prisma.prepList.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return prepList ? this.mapToManifestEntity(prepList) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const prepList = await this.prisma.prepList.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        eventId: data.eventId as string,
-        name: data.name as string,
-        batchMultiplier: (data.batchMultiplier as number) ?? 1,
-        dietaryRestrictions: (data.dietaryRestrictions as string[]) || [],
-        status: (data.status as string) || "draft",
-        totalItems: (data.totalItems as number) || 0,
-        totalEstimatedTime: (data.totalEstimatedTime as number) || 0,
-        notes: (data.notes as string) || null,
-        generatedAt: data.generatedAt
-          ? new Date(data.generatedAt as number)
-          : new Date(),
-        finalizedAt: data.finalizedAt
-          ? new Date(data.finalizedAt as number)
-          : null,
-      },
-    });
-    return this.mapToManifestEntity(prepList);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.prepList.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          name: data.name as string | undefined,
-          batchMultiplier: data.batchMultiplier as number | undefined,
-          dietaryRestrictions: data.dietaryRestrictions as string[] | undefined,
-          status: data.status as string | undefined,
-          totalItems: data.totalItems as number | undefined,
-          totalEstimatedTime: data.totalEstimatedTime as number | undefined,
-          notes: data.notes as string | null | undefined,
-          finalizedAt: data.finalizedAt
-            ? new Date(data.finalizedAt as number)
-            : undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.prepList.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.prepList.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(prepList: PrepList): EntityInstance {
-    const batchMultiplier = Number(prepList.batchMultiplier ?? 1);
-    return {
-      id: prepList.id,
-      tenantId: prepList.tenantId,
-      eventId: prepList.eventId,
-      name: prepList.name,
-      batchMultiplier,
-      dietaryRestrictions: Array.isArray(prepList.dietaryRestrictions)
-        ? prepList.dietaryRestrictions.join(",")
-        : "",
-      status: prepList.status ?? "draft",
-      totalItems: prepList.totalItems ?? 0,
-      totalEstimatedTime: prepList.totalEstimatedTime ?? 0,
-      notes: prepList.notes ?? "",
-      generatedAt: prepList.generatedAt
-        ? prepList.generatedAt.getTime()
-        : Date.now(),
-      finalizedAt: prepList.finalizedAt ? prepList.finalizedAt.getTime() : 0,
-      isActive: prepList.deletedAt === null,
-      isDraft: prepList.status === "draft",
-      isFinalized: prepList.status === "finalized",
-      isCompleted: prepList.status === "completed",
-      hasItems: (prepList.totalItems ?? 0) > 0,
-      avgTimePerItem:
-        (prepList.totalItems ?? 0) > 0
-          ? (prepList.totalEstimatedTime ?? 0) / (prepList.totalItems ?? 1)
-          : 0,
-      createdAt: prepList.createdAt.getTime(),
-      updatedAt: prepList.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for PrepListItem entities
- *
- * Maps Manifest PrepListItem entities to the Prisma PrepListItem table.
- */
-export class PrepListItemPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const items = await this.prisma.prepListItem.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return items.map((item) => this.mapToManifestEntity(item));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const item = await this.prisma.prepListItem.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return item ? this.mapToManifestEntity(item) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const item = await this.prisma.prepListItem.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        prepListId: data.prepListId as string,
-        stationId: (data.stationId as string) || null,
-        stationName: data.stationName as string,
-        ingredientId: data.ingredientId as string,
-        ingredientName: data.ingredientName as string,
-        category: (data.category as string) || null,
-        baseQuantity: (data.baseQuantity as number) ?? 0,
-        baseUnit: (data.baseUnit as string) || "",
-        scaledQuantity: (data.scaledQuantity as number) ?? 0,
-        scaledUnit: (data.scaledUnit as string) || "",
-        isOptional: (data.isOptional as boolean) ?? false,
-        preparationNotes: (data.preparationNotes as string) || null,
-        allergens: (data.allergens as string[]) || [],
-        dietarySubstitutions: (data.dietarySubstitutions as string[]) || [],
-        dishId: (data.dishId as string) || null,
-        dishName: (data.dishName as string) || null,
-        recipeVersionId: (data.recipeVersionId as string) || null,
-        sortOrder: (data.sortOrder as number) ?? 0,
-        isCompleted: (data.isCompleted as boolean) ?? false,
-        completedAt: data.completedAt
-          ? new Date(data.completedAt as number)
-          : null,
-        completedBy: (data.completedBy as string) || null,
-      },
-    });
-    return this.mapToManifestEntity(item);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.prepListItem.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          stationId: data.stationId as string | null | undefined,
-          stationName: data.stationName as string | undefined,
-          baseQuantity: data.baseQuantity as number | undefined,
-          scaledQuantity: data.scaledQuantity as number | undefined,
-          baseUnit: data.baseUnit as string | undefined,
-          scaledUnit: data.scaledUnit as string | undefined,
-          preparationNotes: data.preparationNotes as string | null | undefined,
-          allergens: data.allergens as string[] | undefined,
-          dietarySubstitutions: data.dietarySubstitutions as
-            | string[]
-            | undefined,
-          sortOrder: data.sortOrder as number | undefined,
-          isCompleted: data.isCompleted as boolean | undefined,
-          completedAt: data.completedAt
-            ? new Date(data.completedAt as number)
-            : undefined,
-          completedBy: data.completedBy as string | null | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.prepListItem.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.prepListItem.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(item: PrepListItem): EntityInstance {
-    return {
-      id: item.id,
-      tenantId: item.tenantId,
-      prepListId: item.prepListId,
-      stationId: item.stationId ?? "",
-      stationName: item.stationName ?? "",
-      ingredientId: item.ingredientId,
-      ingredientName: item.ingredientName ?? "",
-      category: item.category ?? "",
-      baseQuantity: Number(item.baseQuantity ?? 0),
-      baseUnit: item.baseUnit ?? "",
-      scaledQuantity: Number(item.scaledQuantity ?? 0),
-      scaledUnit: item.scaledUnit ?? "",
-      isOptional: item.isOptional ?? false,
-      preparationNotes: item.preparationNotes ?? "",
-      allergens: Array.isArray(item.allergens) ? item.allergens.join(",") : "",
-      dietarySubstitutions: Array.isArray(item.dietarySubstitutions)
-        ? item.dietarySubstitutions.join(",")
-        : "",
-      dishId: item.dishId ?? "",
-      dishName: item.dishName ?? "",
-      recipeVersionId: item.recipeVersionId ?? "",
-      sortOrder: item.sortOrder ?? 0,
-      isCompleted: item.isCompleted ?? false,
-      completedAt: item.completedAt ? item.completedAt.getTime() : 0,
-      completedBy: item.completedBy ?? "",
-      hasAllergens: Array.isArray(item.allergens) && item.allergens.length > 0,
-      hasDietarySubstitutions:
-        Array.isArray(item.dietarySubstitutions) &&
-        item.dietarySubstitutions.length > 0,
-      isRequired: !(item.isOptional ?? false),
-      createdAt: item.createdAt.getTime(),
-      updatedAt: item.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Load a PrepList from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadPrepListFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  prepListId: string
-): Promise<EntityInstance | undefined> {
-  const store = new PrepListPrismaStore(prisma, tenantId);
-  return store.getById(prepListId);
-}
-
-/**
- * Sync a PrepList from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncPrepListToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new PrepListPrismaStore(prisma, tenantId);
-
-  // Check if prep list exists
-  const existing = await prisma.prepList.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a PrepListItem from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadPrepListItemFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  itemId: string
-): Promise<EntityInstance | undefined> {
-  const store = new PrepListItemPrismaStore(prisma, tenantId);
-  return store.getById(itemId);
-}
-
-/**
- * Sync a PrepListItem from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncPrepListItemToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new PrepListItemPrismaStore(prisma, tenantId);
-
-  // Check if prep list item exists
-  const existing = await prisma.prepListItem.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
 }
 
 /**
@@ -2657,14 +825,14 @@ export class StationPrismaStore implements Store<EntityInstance> {
 
   async getAll(): Promise<EntityInstance[]> {
     const stations = await this.prisma.station.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
+      where: { tenantId: this.tenantId, isActive: true },
     });
     return stations.map((station) => this.mapToManifestEntity(station));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
     const station = await this.prisma.station.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
+      where: { tenantId: this.tenantId, id },
     });
     return station ? this.mapToManifestEntity(station) : undefined;
   }
@@ -2679,10 +847,8 @@ export class StationPrismaStore implements Store<EntityInstance> {
         stationType: (data.stationType as string) || "prep-station",
         capacitySimultaneousTasks:
           (data.capacitySimultaneousTasks as number) || 1,
-        equipmentList:
-          typeof data.equipmentList === "string"
-            ? data.equipmentList.split(",").filter(Boolean)
-            : [],
+        // equipmentList is a Postgres String[] column.
+        equipmentList: toStringArray(data.equipmentList),
         isActive: (data.isActive as boolean) ?? true,
         notes: (data.notes as string) || null,
       },
@@ -2703,12 +869,7 @@ export class StationPrismaStore implements Store<EntityInstance> {
           capacitySimultaneousTasks: data.capacitySimultaneousTasks as
             | number
             | undefined,
-          equipmentList:
-            data.equipmentList !== undefined
-              ? typeof data.equipmentList === "string"
-                ? data.equipmentList.split(",").filter(Boolean)
-                : []
-              : undefined,
+          equipmentList: toStringArrayOrUndefined(data.equipmentList),
           isActive: data.isActive as boolean | undefined,
           notes: data.notes as string | null | undefined,
           updatedAt: new Date(),
@@ -2723,9 +884,10 @@ export class StationPrismaStore implements Store<EntityInstance> {
 
   async delete(id: string): Promise<boolean> {
     try {
+      // Station has no deletedAt — deactivate instead
       await this.prisma.station.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
+        data: { isActive: false },
       });
       return true;
     } catch (error) {
@@ -2737,7 +899,7 @@ export class StationPrismaStore implements Store<EntityInstance> {
   async clear(): Promise<void> {
     await this.prisma.station.updateMany({
       where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
+      data: { isActive: false },
     });
   }
 
@@ -2749,205 +911,14 @@ export class StationPrismaStore implements Store<EntityInstance> {
       name: station.name,
       stationType: station.stationType ?? "prep-station",
       capacitySimultaneousTasks: station.capacitySimultaneousTasks ?? 1,
-      equipmentList: Array.isArray(station.equipmentList)
-        ? station.equipmentList.join(",")
-        : "",
+      // equipmentList is String? scalar — pass through as-is
+      equipmentList: station.equipmentList ?? "",
       isActive: station.isActive ?? true,
       currentTaskCount: 0, // Not persisted in Prisma - computed at runtime
       notes: station.notes ?? "",
-      createdAt: station.createdAt.getTime(),
-      updatedAt: station.updatedAt.getTime(),
+      createdAt: station.createdAt?.getTime() ?? 0,
+      updatedAt: station.updatedAt?.getTime() ?? 0,
     };
-  }
-}
-
-/**
- * Load a Station from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadStationFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  stationId: string
-): Promise<EntityInstance | undefined> {
-  const store = new StationPrismaStore(prisma, tenantId);
-  return store.getById(stationId);
-}
-
-/**
- * Sync a Station from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncStationToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new StationPrismaStore(prisma, tenantId);
-
-  // Check if station exists
-  const existing = await prisma.station.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load an InventoryItem from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadInventoryItemFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  itemId: string
-): Promise<EntityInstance | undefined> {
-  const store = new InventoryItemPrismaStore(prisma, tenantId);
-  return store.getById(itemId);
-}
-
-/**
- * Sync an InventoryItem from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncInventoryItemToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new InventoryItemPrismaStore(prisma, tenantId);
-
-  // Check if inventory item exists
-  const existing = await prisma.inventoryItem.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a RecipeVersion from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadRecipeVersionFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  versionId: string
-): Promise<EntityInstance | undefined> {
-  const store = new RecipeVersionPrismaStore(prisma, tenantId);
-  return store.getById(versionId);
-}
-
-/**
- * Sync a RecipeVersion from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncRecipeVersionToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new RecipeVersionPrismaStore(prisma, tenantId);
-
-  // Check if recipe version exists
-  const existing = await prisma.recipeVersion.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load an Ingredient from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadIngredientFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  ingredientId: string
-): Promise<EntityInstance | undefined> {
-  const store = new IngredientPrismaStore(prisma, tenantId);
-  return store.getById(ingredientId);
-}
-
-/**
- * Sync an Ingredient from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncIngredientToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new IngredientPrismaStore(prisma, tenantId);
-
-  // Check if ingredient exists
-  const existing = await prisma.ingredient.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
-  }
-}
-
-/**
- * Load a RecipeIngredient from Prisma into the Manifest runtime
- *
- * This ensures the Manifest runtime has the current state before executing commands.
- */
-export async function loadRecipeIngredientFromPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  recipeIngredientId: string
-): Promise<EntityInstance | undefined> {
-  const store = new RecipeIngredientPrismaStore(prisma, tenantId);
-  return store.getById(recipeIngredientId);
-}
-
-/**
- * Sync a RecipeIngredient from Manifest state to Prisma
- *
- * Called after Manifest commands execute to persist the updated state.
- */
-export async function syncRecipeIngredientToPrisma(
-  prisma: PrismaClient,
-  tenantId: string,
-  entity: EntityInstance
-): Promise<void> {
-  const store = new RecipeIngredientPrismaStore(prisma, tenantId);
-
-  // Check if recipe ingredient exists
-  const existing = await prisma.recipeIngredient.findFirst({
-    where: { tenantId, id: entity.id, deletedAt: null },
-  });
-
-  if (existing) {
-    await store.update(entity.id, entity);
-  } else {
-    await store.create(entity);
   }
 }
 
@@ -3088,4 +1059,27 @@ export function createPrismaOutboxWriter(
       });
     }
   };
+}
+
+// ---------------------------------------------------------------------------
+// Shared array coercion (module-level so every *PrismaStore class can use it).
+// Schema array columns are Postgres String[]; manifest values may arrive as an
+// array OR a legacy comma-string. These normalize to a real string[].
+// ---------------------------------------------------------------------------
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v));
+  }
+  if (typeof value === "string" && value.length > 0) {
+    return value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+// For updates: leave the column untouched when the field wasn't provided.
+function toStringArrayOrUndefined(value: unknown): string[] | undefined {
+  return value === undefined ? undefined : toStringArray(value);
 }

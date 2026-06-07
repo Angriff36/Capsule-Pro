@@ -2,6 +2,7 @@
 // Manifest spec for command board operations with cards, groups, layouts, and connections
 
 entity CommandBoard {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""
@@ -9,10 +10,11 @@ entity CommandBoard {
   property description: string = ""
   property status: string = "draft"
   property isTemplate: boolean = false
-  property tags: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property tags: array<string> = []
+  property autoPopulate: boolean = false
+  property scope: string = "{}"
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isActive: boolean = self.status == "active"
@@ -21,7 +23,12 @@ entity CommandBoard {
   constraint validName: self.name != null and self.name != "" "Board name is required"
   constraint validStatus: self.status in ["draft", "active", "archived"] "Status must be valid"
 
-  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: string) {
+  // State transitions
+  transition status from "draft" to ["active"]
+  transition status from "active" to ["archived"]
+
+  default policy CommandBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
+  command create(name: string, description: string, eventId: string, isTemplate: boolean, tags: array<string>, autoPopulate: boolean, scope: string) {
     guard name != null and name != "" "Board name is required"
 
     mutate name = name
@@ -29,14 +36,14 @@ entity CommandBoard {
     mutate eventId = eventId
     mutate isTemplate = isTemplate
     mutate tags = tags
+    mutate autoPopulate = autoPopulate
+    mutate scope = scope
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCreated
   }
 
-  command update(newName: string, newDescription: string, newTags: string) {
+  command update(newName: string, newDescription: string, newTags: array<string>) {
     guard self.status == "draft" "Can only update draft boards"
     guard newName != null and newName != "" "Board name is required"
 
@@ -51,7 +58,6 @@ entity CommandBoard {
     mutate name = newName
     mutate description = newDescription
     mutate tags = newTags
-    mutate updatedAt = now()
 
     emit CommandBoardUpdated
   }
@@ -60,7 +66,6 @@ entity CommandBoard {
     guard self.status == "draft" "Can only activate draft boards"
 
     mutate status = "active"
-    mutate updatedAt = now()
 
     emit CommandBoardActivated
   }
@@ -78,15 +83,15 @@ entity CommandBoard {
 
     mutate status = "archived"
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardDeactivated
   }
 
-  store CommandBoard in memory
+  store CommandBoard in durable
 }
 
 entity CommandBoardCard {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -94,10 +99,10 @@ entity CommandBoardCard {
   property content: string = ""
   property cardType: string = "task"
   property status: string = "pending"
-  property positionX: number = 0
-  property positionY: number = 0
-  property width: number = 200
-  property height: number = 150
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property width: decimal = 200
+  property height: decimal = 150
   property zIndex: int = 0
   property color: string = ""
   property metadata: string = "{}"
@@ -105,14 +110,13 @@ entity CommandBoardCard {
   property entityId: string = ""
   property entityType: string = ""
   property version: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isDone: boolean = self.status == "done"
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validTitle: self.title != null and self.title != "" "Card title is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
@@ -121,6 +125,9 @@ entity CommandBoardCard {
   constraint positiveWidth: self.width > 0 "Card width must be positive"
   constraint positiveHeight: self.height > 0 "Card height must be positive"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
+  default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard title != null and title != "" "Card title is required"
@@ -141,8 +148,6 @@ entity CommandBoardCard {
     mutate entityType = entityType
     mutate version = 0
     mutate zIndex = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCardCreated
   }
@@ -167,7 +172,6 @@ entity CommandBoardCard {
     mutate metadata = newMetadata
     mutate groupId = newGroupId
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardUpdated
   }
@@ -180,7 +184,6 @@ entity CommandBoardCard {
     mutate positionY = newPositionY
     mutate zIndex = newZIndex
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardMoved
   }
@@ -192,46 +195,47 @@ entity CommandBoardCard {
     mutate width = newWidth
     mutate height = newHeight
     mutate version = self.version + 1
-    mutate updatedAt = now()
 
     emit CommandBoardCardResized
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Card is already deleted"
+    guard self.deletedAt == null "Card is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardCardDeleted
   }
 
-  store CommandBoardCard in memory
+  store CommandBoardCard in durable
 }
 
 entity CommandBoardGroup {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
   property name: string = ""
   property color: string = ""
   property collapsed: boolean = false
-  property positionX: number = 0
-  property positionY: number = 0
-  property width: number = 300
-  property height: number = 200
+  property positionX: decimal = 0
+  property positionY: decimal = 0
+  property width: decimal = 300
+  property height: decimal = 200
   property zIndex: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validName: self.name != null and self.name != "" "Group name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
   constraint positiveWidth: self.width > 0 "Group width must be positive"
   constraint positiveHeight: self.height > 0 "Group height must be positive"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
+  default policy CommandBoardGroupDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, name: string, color: string, positionX: number, positionY: number, width: number, height: number) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard name != null and name != "" "Group name is required"
@@ -245,8 +249,6 @@ entity CommandBoardGroup {
     mutate height = height
     mutate collapsed = false
     mutate zIndex = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardGroupCreated
   }
@@ -261,24 +263,23 @@ entity CommandBoardGroup {
     mutate positionY = newPositionY
     mutate width = newWidth
     mutate height = newHeight
-    mutate updatedAt = now()
 
     emit CommandBoardGroupUpdated
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Group is already deleted"
+    guard self.deletedAt == null "Group is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardGroupDeleted
   }
 
-  store CommandBoardGroup in memory
+  store CommandBoardGroup in durable
 }
 
 entity CommandBoardConnection {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -287,11 +288,10 @@ entity CommandBoardConnection {
   property relationshipType: string = "generic"
   property label: string = ""
   property visible: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
   constraint validFromCardId: self.fromCardId != null and self.fromCardId != "" "Source card ID is required"
@@ -299,6 +299,9 @@ entity CommandBoardConnection {
   constraint noSelfConnection: self.fromCardId != self.toCardId "Cannot connect a card to itself"
   constraint validRelationshipType: self.relationshipType in ["generic", "dependency", "blocks", "related", "sequence"] "Invalid connection type"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
+  default policy CommandBoardConnectionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard fromCardId != null and fromCardId != "" "Source card ID is required"
@@ -311,25 +314,23 @@ entity CommandBoardConnection {
     mutate relationshipType = relationshipType
     mutate label = label
     mutate visible = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardConnectionCreated
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Connection is already deleted"
+    guard self.deletedAt == null "Connection is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardConnectionDeleted
   }
 
-  store CommandBoardConnection in memory
+  store CommandBoardConnection in durable
 }
 
 entity CommandBoardLayout {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required boardId: string
@@ -340,15 +341,17 @@ entity CommandBoardLayout {
   property gridSize: int = 40
   property showGrid: boolean = true
   property snapToGrid: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   constraint validName: self.name != null and self.name != "" "Layout name is required"
   constraint validBoardId: self.boardId != null and self.boardId != "" "Board ID is required"
   constraint validUserId: self.userId != null and self.userId != "" "User ID is required"
   constraint positiveGridSize: self.gridSize > 0 "Grid size must be positive"
 
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
+  default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {
     guard boardId != null and boardId != "" "Board ID is required"
     guard userId != null and userId != "" "User ID is required"
@@ -362,8 +365,6 @@ entity CommandBoardLayout {
     mutate gridSize = gridSize
     mutate showGrid = showGrid
     mutate snapToGrid = snapToGrid
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutCreated
   }
@@ -377,21 +378,19 @@ entity CommandBoardLayout {
     mutate gridSize = newGridSize
     mutate showGrid = newShowGrid
     mutate snapToGrid = newSnapToGrid
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutUpdated
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Layout is already deleted"
+    guard self.deletedAt == null "Layout is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CommandBoardLayoutDeleted
   }
 
-  store CommandBoardLayout in memory
+  store CommandBoardLayout in durable
 }
 
 // Policy definitions
@@ -406,7 +405,7 @@ event CommandBoardCreated: "board.command_board.created" {
   name: string
   status: string
   isTemplate: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardUpdated: "board.command_board.updated" {
@@ -414,7 +413,7 @@ event CommandBoardUpdated: "board.command_board.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardActivated: "board.command_board.activated" {
@@ -422,7 +421,7 @@ event CommandBoardActivated: "board.command_board.activated" {
   tenantId: string
   name: string
   userId: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event CommandBoardDeactivated: "board.command_board.deactivated" {
@@ -431,7 +430,7 @@ event CommandBoardDeactivated: "board.command_board.deactivated" {
   boardName: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 // CommandBoardCard events
@@ -444,7 +443,7 @@ event CommandBoardCardCreated: "board.card.created" {
   status: string
   positionX: number
   positionY: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardCardUpdated: "board.card.updated" {
@@ -455,7 +454,7 @@ event CommandBoardCardUpdated: "board.card.updated" {
   oldStatus: string
   newStatus: string
   version: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardCardMoved: "board.card.moved" {
@@ -466,7 +465,7 @@ event CommandBoardCardMoved: "board.card.moved" {
   oldPositionY: number
   newPositionX: number
   newPositionY: number
-  movedAt: number
+  movedAt: datetime
 }
 
 event CommandBoardCardResized: "board.card.resized" {
@@ -477,7 +476,7 @@ event CommandBoardCardResized: "board.card.resized" {
   oldHeight: number
   newWidth: number
   newHeight: number
-  resizedAt: number
+  resizedAt: datetime
 }
 
 event CommandBoardCardDeleted: "board.card.deleted" {
@@ -486,7 +485,7 @@ event CommandBoardCardDeleted: "board.card.deleted" {
   tenantId: string
   title: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardGroup events
@@ -496,7 +495,7 @@ event CommandBoardGroupCreated: "board.group.created" {
   tenantId: string
   name: string
   color: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardGroupUpdated: "board.group.updated" {
@@ -504,7 +503,7 @@ event CommandBoardGroupUpdated: "board.group.updated" {
   boardId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardGroupDeleted: "board.group.deleted" {
@@ -513,7 +512,7 @@ event CommandBoardGroupDeleted: "board.group.deleted" {
   tenantId: string
   name: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardConnection events
@@ -524,7 +523,7 @@ event CommandBoardConnectionCreated: "board.connection.created" {
   fromCardId: string
   toCardId: string
   relationshipType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardConnectionDeleted: "board.connection.deleted" {
@@ -534,7 +533,7 @@ event CommandBoardConnectionDeleted: "board.connection.deleted" {
   fromCardId: string
   toCardId: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // CommandBoardLayout events
@@ -544,7 +543,7 @@ event CommandBoardLayoutCreated: "board.layout.created" {
   tenantId: string
   userId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CommandBoardLayoutUpdated: "board.layout.updated" {
@@ -552,7 +551,7 @@ event CommandBoardLayoutUpdated: "board.layout.updated" {
   boardId: string
   tenantId: string
   name: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CommandBoardLayoutDeleted: "board.layout.deleted" {
@@ -561,5 +560,5 @@ event CommandBoardLayoutDeleted: "board.layout.deleted" {
   tenantId: string
   name: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

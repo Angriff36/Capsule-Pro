@@ -8,10 +8,11 @@
 
 import { auth } from "@repo/auth/server";
 import type { Event, Venue } from "@repo/database";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // Types
 export type VenueType =
@@ -218,36 +219,52 @@ export async function getVenueEvents(
  * Create a new venue
  */
 export async function createVenue(input: CreateVenueInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  // Governed write: Venue.create runs through the Manifest runtime (constitution
+  // §9) — no direct database.venue.create. requireCurrentUser supplies the actor +
+  // tenant the command needs for policy + audit context (§19). The full venue-form
+  // field surface is forwarded. equipmentList/preferredVendors are intentionally
+  // NOT sent: the venue UI never sets them, so they default to NULL exactly as the
+  // prior `Prisma.JsonNull` path did (lossless, no JSON double-encoding).
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(input.name, "Venue name is required");
 
-  const venue = await database.venue.create({
-    data: {
-      tenantId,
-      name: input.name,
+  const result = await runManifestCommand({
+    entity: "Venue",
+    command: "create",
+    body: {
+      name: input.name.trim(),
       venueType: input.venueType ?? "other",
-      addressLine1: input.addressLine1,
-      addressLine2: input.addressLine2,
-      city: input.city,
-      stateProvince: input.stateProvince,
-      postalCode: input.postalCode,
-      countryCode: input.countryCode,
+      addressLine1: input.addressLine1?.trim() || "",
+      addressLine2: input.addressLine2?.trim() || "",
+      city: input.city?.trim() || "",
+      stateProvince: input.stateProvince?.trim() || "",
+      postalCode: input.postalCode?.trim() || "",
+      countryCode: input.countryCode?.trim() || "",
       capacity: input.capacity ?? 0,
-      contactName: input.contactName,
-      contactPhone: input.contactPhone,
-      contactEmail: input.contactEmail,
-      equipmentList: input.equipmentList ?? Prisma.JsonNull,
-      preferredVendors: input.preferredVendors ?? Prisma.JsonNull,
-      accessNotes: input.accessNotes,
-      cateringNotes: input.cateringNotes,
-      layoutImageUrl: input.layoutImageUrl,
-      isActive: input.isActive ?? true,
+      contactName: input.contactName?.trim() || "",
+      contactPhone: input.contactPhone?.trim() || "",
+      contactEmail: input.contactEmail?.trim() || "",
+      accessNotes: input.accessNotes?.trim() || "",
+      cateringNotes: input.cateringNotes?.trim() || "",
+      layoutImageUrl: input.layoutImageUrl?.trim() || "",
       tags: input.tags ?? [],
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create venue");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "Venue.create did not return an id");
+
+  // Read back the persisted row to preserve the Venue return shape.
+  const venue = await database.venue.findFirst({
+    where: { tenantId, id: createdId },
+  });
+  invariant(venue, "Created venue could not be loaded");
 
   revalidatePath("/crm/venues");
 
@@ -261,13 +278,14 @@ export async function updateVenue(
   id: string,
   input: Partial<CreateVenueInput>
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Venue ID is required");
 
-  // Verify venue exists and belongs to tenant
+  // Read existing (constitution §10) to verify tenant ownership AND merge partial
+  // input over current values: the governed Venue.update mutates the FULL field
+  // set, so any field the caller omits must carry its existing value to preserve
+  // the prior partial-update semantics (undefined → keep current).
   const existing = await database.venue.findFirst({
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
@@ -276,56 +294,38 @@ export async function updateVenue(
 
   invariant(existing, "Venue not found");
 
-  const venue = await database.venue.update({
-    where: {
-      tenantId_id: { tenantId, id },
+  const result = await runManifestCommand({
+    entity: "Venue",
+    command: "update",
+    body: {
+      id,
+      name: input.name ?? existing.name,
+      venueType: input.venueType ?? existing.venueType,
+      addressLine1: input.addressLine1 ?? existing.addressLine1 ?? "",
+      addressLine2: input.addressLine2 ?? existing.addressLine2 ?? "",
+      city: input.city ?? existing.city ?? "",
+      stateProvince: input.stateProvince ?? existing.stateProvince ?? "",
+      postalCode: input.postalCode ?? existing.postalCode ?? "",
+      countryCode: input.countryCode ?? existing.countryCode ?? "",
+      capacity: input.capacity ?? existing.capacity ?? 0,
+      contactName: input.contactName ?? existing.contactName ?? "",
+      contactPhone: input.contactPhone ?? existing.contactPhone ?? "",
+      contactEmail: input.contactEmail ?? existing.contactEmail ?? "",
+      accessNotes: input.accessNotes ?? existing.accessNotes ?? "",
+      cateringNotes: input.cateringNotes ?? existing.cateringNotes ?? "",
+      layoutImageUrl: input.layoutImageUrl ?? existing.layoutImageUrl ?? "",
+      tags: input.tags ?? existing.tags ?? [],
+      isActive: input.isActive ?? existing.isActive,
     },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.venueType !== undefined && { venueType: input.venueType }),
-      ...(input.addressLine1 !== undefined && {
-        addressLine1: input.addressLine1,
-      }),
-      ...(input.addressLine2 !== undefined && {
-        addressLine2: input.addressLine2,
-      }),
-      ...(input.city !== undefined && { city: input.city }),
-      ...(input.stateProvince !== undefined && {
-        stateProvince: input.stateProvince,
-      }),
-      ...(input.postalCode !== undefined && { postalCode: input.postalCode }),
-      ...(input.countryCode !== undefined && {
-        countryCode: input.countryCode,
-      }),
-      ...(input.capacity !== undefined && { capacity: input.capacity }),
-      ...(input.contactName !== undefined && {
-        contactName: input.contactName,
-      }),
-      ...(input.contactPhone !== undefined && {
-        contactPhone: input.contactPhone,
-      }),
-      ...(input.contactEmail !== undefined && {
-        contactEmail: input.contactEmail,
-      }),
-      ...(input.equipmentList !== undefined && {
-        equipmentList: input.equipmentList ?? Prisma.JsonNull,
-      }),
-      ...(input.preferredVendors !== undefined && {
-        preferredVendors: input.preferredVendors ?? Prisma.JsonNull,
-      }),
-      ...(input.accessNotes !== undefined && {
-        accessNotes: input.accessNotes,
-      }),
-      ...(input.cateringNotes !== undefined && {
-        cateringNotes: input.cateringNotes,
-      }),
-      ...(input.layoutImageUrl !== undefined && {
-        layoutImageUrl: input.layoutImageUrl,
-      }),
-      ...(input.isActive !== undefined && { isActive: input.isActive }),
-      ...(input.tags !== undefined && { tags: input.tags }),
-    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update venue");
+  }
+
+  const venue = await database.venue.findFirst({ where: { tenantId, id } });
+  invariant(venue, "Updated venue could not be loaded");
 
   revalidatePath("/crm/venues");
   revalidatePath(`/crm/venues/${id}`);
@@ -338,13 +338,11 @@ export async function updateVenue(
  * Per invariants: venues must never be deleted if linked to active events
  */
 export async function deleteVenue(id: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Venue ID is required");
 
-  // Verify venue exists and belongs to tenant
+  // Verify venue exists and belongs to tenant (read — constitution §10)
   const existing = await database.venue.findFirst({
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
@@ -353,7 +351,9 @@ export async function deleteVenue(id: string) {
 
   invariant(existing, "Venue not found");
 
-  // Check for linked active events
+  // Domain read-guard: block soft-delete when the venue still has linked active
+  // events. This is a cross-entity READ kept in the action (a Manifest guard can't
+  // query another table); the governed write itself is Venue.softDelete.
   const activeEvents = await database.event.count({
     where: {
       AND: [
@@ -371,15 +371,18 @@ export async function deleteVenue(id: string) {
     );
   }
 
-  // Soft delete
-  await database.venue.update({
-    where: {
-      tenantId_id: { tenantId, id },
-    },
-    data: {
-      deletedAt: new Date(),
-    },
+  // Governed soft delete via the Manifest runtime (constitution §9) — sets
+  // deletedAt + emits VenueDeleted, no direct database.venue.update.
+  const result = await runManifestCommand({
+    entity: "Venue",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete venue");
+  }
 
   revalidatePath("/crm/venues");
 

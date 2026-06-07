@@ -14,21 +14,17 @@ export async function GET() {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Get all units for waste tracking dropdown
-    const units = await database.$queryRaw<
-      Array<{
-        id: number;
-        code: string;
-        name: string;
-        name_plural: string;
-        unit_system: string;
-        unit_type: string;
-      }>
-    >`
-      SELECT id, code, name, name_plural, unit_system, unit_type
-      FROM core.units
-      ORDER BY unit_type, code
-    `;
+    const units = await database.units.findMany({
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        name_plural: true,
+        unit_system: true,
+        unit_type: true,
+      },
+      orderBy: [{ unit_type: "asc" }, { code: "asc" }],
+    });
 
     return NextResponse.json({ data: units });
   } catch (error) {

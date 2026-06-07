@@ -2,24 +2,21 @@
  * Venues API Endpoints
  *
  * GET  /api/crm/venues  - List venues with filters and pagination
- * POST /api/crm/venues  - Create a new venue
- *
- * Mirrors apps/app/app/(authenticated)/crm/venues/actions.ts. Uses direct
- * Prisma writes because Venue does not yet have a manifest command surface.
+ * POST /api/crm/venues  - Create a new venue (via Manifest runtime)
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { translatePrismaError } from "@/lib/prisma-error";
 import {
   parsePaginationParams,
   parseVenueListFilters,
-  validateCreateVenueRequest,
 } from "./validation";
 
 /**
@@ -117,71 +114,15 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/crm/venues
+ * Create a new venue via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-    validateCreateVenueRequest(body);
-
-    const venue = await database.venue.create({
-      data: {
-        tenantId,
-        name: body.name,
-        venueType: body.venueType ?? "other",
-        addressLine1: body.addressLine1,
-        addressLine2: body.addressLine2,
-        city: body.city,
-        stateProvince: body.stateProvince,
-        postalCode: body.postalCode,
-        countryCode: body.countryCode,
-        capacity: body.capacity ?? 0,
-        contactName: body.contactName,
-        contactPhone: body.contactPhone,
-        contactEmail: body.contactEmail,
-        equipmentList:
-          body.equipmentList === undefined
-            ? Prisma.JsonNull
-            : (body.equipmentList as Prisma.InputJsonValue),
-        preferredVendors:
-          body.preferredVendors === undefined
-            ? Prisma.JsonNull
-            : (body.preferredVendors as Prisma.InputJsonValue),
-        accessNotes: body.accessNotes,
-        cateringNotes: body.cateringNotes,
-        layoutImageUrl: body.layoutImageUrl,
-        isActive: body.isActive ?? true,
-        tags: body.tags ?? [],
-      },
-    });
-
-    return NextResponse.json({ data: venue }, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    if (error instanceof SyntaxError) {
-      return NextResponse.json(
-        { message: "Invalid JSON body" },
-        { status: 400 }
-      );
-    }
-    const prismaResult = translatePrismaError(error);
-    if (prismaResult.mapped) {
-      return NextResponse.json(
-        { message: prismaResult.message },
-        { status: prismaResult.status }
-      );
-    }
-    log.error("Error creating venue:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "Venue",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

@@ -32,13 +32,13 @@ vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TEST_TENANT_ID = "00000000-0000-0000-000000000001";
 const TEST_ORG_ID = "org-123";
@@ -368,14 +368,14 @@ describe("Email Templates API", () => {
 
   describe("POST /api/collaboration/notifications/email/templates", () => {
     describe("create successfully", () => {
-      it("should create a new template with executeManifestCommand", async () => {
+      it("should create a new template with runManifestCommand", async () => {
         const mockCreatedTemplate = createMockTemplate({
           id: "new-template-id",
           name: "New Template",
           subject: "New Subject",
         });
 
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ data: mockCreatedTemplate }), {
             status: 201,
           })
@@ -399,45 +399,16 @@ describe("Email Templates API", () => {
 
         const response = await listPOST(request);
 
-        expect(executeManifestCommand).toHaveBeenCalledWith(
-          request,
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "EmailTemplate",
-            commandName: "create",
-            transformBody: expect.any(Function),
+            entity: "EmailTemplate",
+            command: "create",
           })
         );
-
-        // Verify the transformBody function produces correct output
-        const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-        if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody(
-            {
-              name: "Test",
-              templateType: "custom",
-              subject: "Test Subject",
-              body: "Body",
-              mergeFields: ["field1"],
-              isActive: true,
-              isDefault: false,
-            },
-            { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" }
-          );
-
-          expect(transformed).toEqual({
-            name: "Test",
-            templateType: "custom",
-            subject: "Test Subject",
-            body: "Body",
-            mergeFields: JSON.stringify(["field1"]),
-            isActive: true,
-            isDefault: false,
-          });
-        }
       });
 
       it("should use default values for optional fields", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ data: {} }), { status: 201 })
         );
 
@@ -454,29 +425,18 @@ describe("Email Templates API", () => {
 
         await listPOST(request);
 
-        const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-        if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody(
-            {},
-            { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" }
-          );
-
-          expect(transformed).toEqual({
-            name: "",
-            templateType: "custom",
-            subject: "",
-            body: "",
-            mergeFields: JSON.stringify([]),
-            isActive: true,
-            isDefault: false,
-          });
-        }
+        expect(runManifestCommand).toHaveBeenCalledWith(
+          expect.objectContaining({
+            entity: "EmailTemplate",
+            command: "create",
+          })
+        );
       });
     });
 
     describe("validation errors", () => {
       it("should return 400 when name is missing", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ error: "Template name is required" }), {
             status: 400,
           })
@@ -502,7 +462,7 @@ describe("Email Templates API", () => {
       });
 
       it("should return 400 when subject is missing", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
             JSON.stringify({ error: "Template subject is required" }),
             { status: 400 }
@@ -531,7 +491,7 @@ describe("Email Templates API", () => {
 
     describe("authentication", () => {
       it("should return 401 when unauthorized", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ error: "Unauthorized" }), {
             status: 401,
           })
@@ -671,13 +631,13 @@ describe("Email Templates API", () => {
 
   describe("PUT /api/collaboration/notifications/email/templates/[id]", () => {
     describe("update successfully", () => {
-      it("should update template with executeManifestCommand", async () => {
+      it("should update template with runManifestCommand", async () => {
         const updatedTemplate = createMockTemplate({
           name: "Updated Name",
           subject: "Updated Subject",
         });
 
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ data: updatedTemplate }), {
             status: 200,
           })
@@ -702,42 +662,18 @@ describe("Email Templates API", () => {
 
         const response = await detailPUT(request, context);
 
-        expect(executeManifestCommand).toHaveBeenCalledWith(
-          request,
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "EmailTemplate",
-            commandName: "update",
-            params: { id: TEST_TEMPLATE_ID },
-            transformBody: expect.any(Function),
+            entity: "EmailTemplate",
+            command: "update",
           })
         );
-
-        // Verify the transformBody function includes the id
-        const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-        if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody(
-            {
-              name: "Test",
-              subject: "Test Subject",
-            },
-            {
-              userId: "test-user",
-              tenantId: TEST_TENANT_ID,
-              role: "admin",
-              params: { id: TEST_TEMPLATE_ID },
-            }
-          );
-
-          expect(transformed.id).toBe(TEST_TEMPLATE_ID);
-          expect(transformed.name).toBe("Test");
-          expect(transformed.subject).toBe("Test Subject");
-        }
       });
     });
 
     describe("validation errors", () => {
       it("should return 400 when updating deleted template", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
             JSON.stringify({ error: "Cannot update a deleted template" }),
             { status: 400 }
@@ -764,7 +700,7 @@ describe("Email Templates API", () => {
       });
 
       it("should return 400 when name is missing on update", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ error: "Template name is required" }), {
             status: 400,
           })
@@ -789,7 +725,7 @@ describe("Email Templates API", () => {
       });
 
       it("should return 400 when subject is missing on update", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
             JSON.stringify({ error: "Template subject is required" }),
             { status: 400 }
@@ -818,8 +754,8 @@ describe("Email Templates API", () => {
 
   describe("DELETE /api/collaboration/notifications/email/templates/[id]", () => {
     describe("soft delete successfully", () => {
-      it("should soft delete template with executeManifestCommand", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+      it("should soft delete template with runManifestCommand", async () => {
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(JSON.stringify({ success: true }), { status: 200 })
         );
 
@@ -831,36 +767,18 @@ describe("Email Templates API", () => {
 
         const response = await detailDELETE(request, context);
 
-        expect(executeManifestCommand).toHaveBeenCalledWith(
-          request,
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "EmailTemplate",
-            commandName: "softDelete",
-            params: { id: TEST_TEMPLATE_ID },
-            transformBody: expect.any(Function),
+            entity: "EmailTemplate",
+            command: "softDelete",
           })
         );
-
-        // Verify transformBody passes the id
-        const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
-        if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody(
-            {},
-            {
-              userId: "test-user",
-              tenantId: TEST_TENANT_ID,
-              role: "admin",
-              params: { id: TEST_TEMPLATE_ID },
-            }
-          );
-          expect(transformed.id).toBe(TEST_TEMPLATE_ID);
-        }
       });
     });
 
     describe("validation errors", () => {
       it("should return 400 when template is already deleted", async () => {
-        vi.mocked(executeManifestCommand).mockResolvedValue(
+        vi.mocked(runManifestCommand).mockResolvedValue(
           new Response(
             JSON.stringify({ error: "Template is already deleted" }),
             { status: 400 }
@@ -904,7 +822,7 @@ describe("Email Templates Manifest Guards", () => {
   });
 
   it("should enforce name guard on create", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ error: "Template name is required" }), {
         status: 400,
       })
@@ -926,7 +844,7 @@ describe("Email Templates Manifest Guards", () => {
   });
 
   it("should enforce subject guard on create", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ error: "Template subject is required" }), {
         status: 400,
       })
@@ -948,7 +866,7 @@ describe("Email Templates Manifest Guards", () => {
   });
 
   it("should enforce deletedAt guard on update", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
         JSON.stringify({ error: "Cannot update a deleted template" }),
         { status: 400 }
@@ -972,7 +890,7 @@ describe("Email Templates Manifest Guards", () => {
   });
 
   it("should enforce deletedAt guard on softDelete", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ error: "Template is already deleted" }), {
         status: 400,
       })
@@ -1030,7 +948,7 @@ describe("Email Templates Policy Tests", () => {
 
   it("should allow manager role to create templates", async () => {
     // EmailTemplateCreate policy: user.role in ["manager", "admin"]
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ data: {} }), { status: 201 })
     );
 
@@ -1044,13 +962,13 @@ describe("Email Templates Policy Tests", () => {
 
     const response = await listPOST(request);
 
-    // executeManifestCommand handles the policy check
-    expect(executeManifestCommand).toHaveBeenCalled();
+    // runManifestCommand handles the policy check
+    expect(runManifestCommand).toHaveBeenCalled();
   });
 
   it("should allow admin role to delete templates", async () => {
     // EmailTemplateDelete policy: user.role in ["admin"]
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ success: true }), { status: 200 })
     );
 
@@ -1062,8 +980,8 @@ describe("Email Templates Policy Tests", () => {
 
     const response = await detailDELETE(request, context);
 
-    // executeManifestCommand handles the policy check
-    expect(executeManifestCommand).toHaveBeenCalled();
+    // runManifestCommand handles the policy check
+    expect(runManifestCommand).toHaveBeenCalled();
   });
 });
 
@@ -1093,7 +1011,7 @@ describe("Email Templates Integration Tests", () => {
       id: "seq-template-id",
       name: "Sequence Template",
     });
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ data: createdTemplate }), { status: 201 })
     );
 
@@ -1111,11 +1029,10 @@ describe("Email Templates Integration Tests", () => {
     );
     await listPOST(createRequest);
 
-    expect(executeManifestCommand).toHaveBeenCalledWith(
-      createRequest,
+    expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        entityName: "EmailTemplate",
-        commandName: "create",
+        entity: "EmailTemplate",
+        command: "create",
       })
     );
 
@@ -1125,7 +1042,7 @@ describe("Email Templates Integration Tests", () => {
       id: "seq-template-id",
       name: "Updated Sequence Template",
     });
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ data: updatedTemplate }), { status: 200 })
     );
 
@@ -1139,18 +1056,16 @@ describe("Email Templates Integration Tests", () => {
     const updateContext = createMockContext("seq-template-id");
     await detailPUT(updateRequest, updateContext);
 
-    expect(executeManifestCommand).toHaveBeenCalledWith(
-      updateRequest,
+    expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        entityName: "EmailTemplate",
-        commandName: "update",
-        params: { id: "seq-template-id" },
+        entity: "EmailTemplate",
+        command: "update",
       })
     );
 
     // Step 3: Delete
     vi.clearAllMocks();
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(JSON.stringify({ success: true }), { status: 200 })
     );
 
@@ -1161,18 +1076,16 @@ describe("Email Templates Integration Tests", () => {
     const deleteContext = createMockContext("seq-template-id");
     await detailDELETE(deleteRequest, deleteContext);
 
-    expect(executeManifestCommand).toHaveBeenCalledWith(
-      deleteRequest,
+    expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        entityName: "EmailTemplate",
-        commandName: "softDelete",
-        params: { id: "seq-template-id" },
+        entity: "EmailTemplate",
+        command: "softDelete",
       })
     );
   });
 
   it("should handle concurrent updates to the same template", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
         JSON.stringify({
           data: createMockTemplate({ name: "Concurrent Update" }),
@@ -1204,12 +1117,12 @@ describe("Email Templates Integration Tests", () => {
 
     expect(response1.status).toBe(200);
     expect(response2.status).toBe(200);
-    expect(executeManifestCommand).toHaveBeenCalledTimes(2);
+    expect(runManifestCommand).toHaveBeenCalledTimes(2);
   });
 
   it("should verify EmailTemplateCreated event is emitted", async () => {
     const createdTemplate = createMockTemplate({ id: "event-template-id" });
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
         JSON.stringify({
           success: true,
@@ -1251,7 +1164,7 @@ describe("Email Templates Integration Tests", () => {
     const updatedTemplate = createMockTemplate({
       name: "Event Updated Template",
     });
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
         JSON.stringify({
           success: true,
@@ -1286,7 +1199,7 @@ describe("Email Templates Integration Tests", () => {
   });
 
   it("should verify EmailTemplateDeleted event is emitted", async () => {
-    vi.mocked(executeManifestCommand).mockResolvedValue(
+    vi.mocked(runManifestCommand).mockResolvedValue(
       new Response(
         JSON.stringify({
           success: true,

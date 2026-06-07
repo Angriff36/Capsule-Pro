@@ -2,14 +2,14 @@
 // Manifest spec for AI-powered workforce optimization features
 
 entity WorkforceOptimization {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property locationId: string = ""
   property optimizationType: string = "" // "schedule", "assignment", "performance"
   property status: string = "pending" // "pending", "in_progress", "completed", "failed"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  timestamps
+  property completedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
@@ -19,6 +19,11 @@ entity WorkforceOptimization {
   constraint validOptimizationType: self.optimizationType in ["schedule", "assignment", "performance"] "Invalid optimization type"
   constraint validStatus: self.status in ["pending", "in_progress", "completed", "failed"] "Invalid status"
 
+  // State transitions
+  transition status from "pending" to ["in_progress", "failed"]
+  transition status from "in_progress" to ["completed", "failed"]
+
+  default policy WorkforceOptimizationDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
   command create(locationId: string, optimizationType: string) {
     guard locationId != null "Location ID is required"
     guard optimizationType != null "Optimization type is required"
@@ -26,8 +31,6 @@ entity WorkforceOptimization {
     mutate locationId = locationId
     mutate optimizationType = optimizationType
     mutate status = "pending"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationCreated
   }
@@ -36,7 +39,6 @@ entity WorkforceOptimization {
     guard self.status == "pending" "Can only start pending optimizations"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationStarted
   }
@@ -46,22 +48,21 @@ entity WorkforceOptimization {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationCompleted
   }
 
   command fail(error: string) {
     mutate status = "failed"
-    mutate updatedAt = now()
 
     emit WorkforceOptimizationFailed
   }
 
-  store WorkforceOptimization in memory
+  store WorkforceOptimization in durable
 }
 
 entity PerformancePrediction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property employeeId: string = ""
@@ -70,7 +71,7 @@ entity PerformancePrediction {
   property predictionScore: decimal = 0 // 0-100
   property confidence: string = "medium" // "low", "medium", "high"
   property factors: string = "" // JSON string of factors
-  property createdAt: datetime = now()
+  timestamps
   property expiresAt: datetime = now()
 
   computed isExpired: boolean = self.expiresAt < now()
@@ -79,6 +80,7 @@ entity PerformancePrediction {
   constraint validConfidence: self.confidence in ["low", "medium", "high"] "Invalid confidence level"
   constraint validScore: self.predictionScore >= 0 and self.predictionScore <= 100 "Prediction score must be 0-100"
 
+  default policy PerformancePredictionDefaultAccess execute: user.role in ["manager", "admin"] "Workforce AI"
   command create(employeeId: string, predictionType: string, predictionHorizon: number, predictionScore: number, confidence: string, factors: string) {
     guard employeeId != null "Employee ID is required"
     guard predictionType != null "Prediction type is required"
@@ -90,14 +92,13 @@ entity PerformancePrediction {
     mutate predictionScore = predictionScore
     mutate confidence = confidence
     mutate factors = factors
-    mutate createdAt = now()
     // Predictions expire after 7 days
-    mutate expiresAt = now() + (7 * 24 * 60 * 60 * 1000)
+    mutate expiresAt = addDays(now(), 7)
 
     emit PerformancePredictionCreated
   }
 
-  store PerformancePrediction in memory
+  store PerformancePrediction in durable
 }
 
 // Policies for workforce AI operations
@@ -111,25 +112,25 @@ event WorkforceOptimizationCreated: "workforce.optimization.created" {
   tenantId: string
   locationId: string
   optimizationType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event WorkforceOptimizationStarted: "workforce.optimization.started" {
   optimizationId: string
   tenantId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event WorkforceOptimizationCompleted: "workforce.optimization.completed" {
   optimizationId: string
   tenantId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event WorkforceOptimizationFailed: "workforce.optimization.failed" {
   optimizationId: string
   tenantId: string
-  failedAt: number
+  failedAt: datetime
   error: string
 }
 
@@ -140,7 +141,7 @@ event PerformancePredictionCreated: "workforce.prediction.created" {
   predictionType: string
   predictionScore: number
   confidence: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
@@ -148,5 +149,5 @@ event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
   tenantId: string
   assignmentsCount: number
   totalEstimatedCost: number
-  optimizedAt: number
+  optimizedAt: datetime
 }

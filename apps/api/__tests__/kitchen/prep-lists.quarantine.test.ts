@@ -4,9 +4,9 @@
  * Tests prep list endpoints:
  * - GET    /api/kitchen/prep-lists           (list with filters + pagination)
  * - GET    /api/kitchen/prep-lists/[id]      (detail, station grouping)
- * - PATCH  /api/kitchen/prep-lists/[id]      (delegates to PrepList.update via executeManifestCommand)
- * - DELETE /api/kitchen/prep-lists/[id]      (delegates to PrepList.cancel via executeManifestCommand)
- * - POST   /api/kitchen/prep-lists           (delegates to PrepList.create via executeManifestCommand)
+ * - PATCH  /api/kitchen/prep-lists/[id]      (delegates to PrepList.update via runManifestCommand)
+ * - DELETE /api/kitchen/prep-lists/[id]      (delegates to PrepList.cancel via runManifestCommand)
+ * - POST   /api/kitchen/prep-lists           (delegates to PrepList.create via runManifestCommand)
  *
  * And the 10 command routes under /commands/* (each direct manifest runtime):
  *   activate, cancel, create, create-from-seed, deactivate, finalize,
@@ -42,8 +42,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 vi.mock("@/lib/manifest-response", async () => {
@@ -67,8 +67,8 @@ vi.mock("@/lib/manifest-response", async () => {
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-const { executeManifestCommand } = await import(
-  "@/lib/manifest-command-handler"
+const { runManifestCommand } = await import(
+  "@/lib/manifest/execute-command"
 );
 
 // --- Constants ---
@@ -419,9 +419,9 @@ describe("Prep Lists API", () => {
 
   // ========================================================== POST CREATE (root)
   describe("POST /api/kitchen/prep-lists", () => {
-    it("delegates to executeManifestCommand with PrepList.create", async () => {
+    it("delegates to runManifestCommand with PrepList.create", async () => {
       const { NextResponse } = await import("next/server");
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
@@ -431,10 +431,10 @@ describe("Prep Lists API", () => {
       });
       await POST(req);
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(req, {
-        entityName: "PrepList",
-        commandName: "create",
-      });
+      expect(runManifestCommand).toHaveBeenCalledWith(expect.objectContaining({
+        entity: "PrepList",
+        command: "create",
+      }));
     });
   });
 
@@ -563,9 +563,9 @@ describe("Prep Lists API", () => {
 
   // ========================================================== PATCH
   describe("PATCH /api/kitchen/prep-lists/[id]", () => {
-    it("delegates to executeManifestCommand with PrepList.update", async () => {
+    it("delegates to runManifestCommand with PrepList.update", async () => {
       const { NextResponse } = await import("next/server");
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
@@ -575,30 +575,21 @@ describe("Prep Lists API", () => {
       });
       await PATCH(req, { params: Promise.resolve({ id: TEST_PREP_LIST_ID }) });
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PrepList",
-          commandName: "update",
-          params: { id: TEST_PREP_LIST_ID },
+          entity: "PrepList",
+          command: "update",
+          body: expect.objectContaining({ name: "Updated", id: TEST_PREP_LIST_ID }),
         })
       );
-
-      // Validate transformBody injects id into body
-      const callArg = vi.mocked(executeManifestCommand).mock.calls[0][1];
-      const transformed = callArg.transformBody?.(
-        { name: "Updated" },
-        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" }
-      );
-      expect(transformed).toEqual({ name: "Updated", id: TEST_PREP_LIST_ID });
     });
   });
 
   // ========================================================== DELETE
   describe("DELETE /api/kitchen/prep-lists/[id]", () => {
-    it("delegates to executeManifestCommand with PrepList.cancel", async () => {
+    it("delegates to runManifestCommand with PrepList.cancel", async () => {
       const { NextResponse } = await import("next/server");
-      vi.mocked(executeManifestCommand).mockResolvedValue(
+      vi.mocked(runManifestCommand).mockResolvedValue(
         NextResponse.json({ success: true, result: { id: TEST_PREP_LIST_ID } })
       );
 
@@ -612,26 +603,17 @@ describe("Prep Lists API", () => {
         params: Promise.resolve({ id: TEST_PREP_LIST_ID }),
       });
 
-      expect(executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PrepList",
-          commandName: "cancel",
-          params: { id: TEST_PREP_LIST_ID },
+          entity: "PrepList",
+          command: "cancel",
+          body: expect.objectContaining({
+            id: TEST_PREP_LIST_ID,
+            reason: "Deleted via API",
+            canceledBy: TEST_USER_ID,
+          }),
         })
       );
-
-      // Validate transformBody synthesizes cancel payload using user context
-      const callArg = vi.mocked(executeManifestCommand).mock.calls[0][1];
-      const transformed = callArg.transformBody?.(
-        {},
-        { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" }
-      );
-      expect(transformed).toEqual({
-        id: TEST_PREP_LIST_ID,
-        reason: "Deleted via API",
-        canceledBy: TEST_USER_ID,
-      });
     });
   });
 

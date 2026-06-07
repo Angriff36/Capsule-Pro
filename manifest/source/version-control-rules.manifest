@@ -3,6 +3,7 @@
 // with change history, rollback capabilities, and approval workflows
 
 entity VersionedEntity {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required entityType: string
@@ -10,8 +11,7 @@ entity VersionedEntity {
   property required entityName: string
   property isLocked: boolean = false
   property currentVersionId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   // Derived from EntityVersion count
   computed versionCount: number = 0
@@ -31,6 +31,7 @@ entity VersionedEntity {
     }
   }
 
+  default policy VersionedEntityDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command register(entityType: string, entityId: string, entityName: string, initialSnapshot: string) {
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"
@@ -39,8 +40,6 @@ entity VersionedEntity {
     mutate entityType = entityType
     mutate entityId = entityId
     mutate entityName = entityName
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VersionedEntityRegistered
   }
@@ -57,7 +56,6 @@ entity VersionedEntity {
     }
 
     mutate isLocked = true
-    mutate updatedAt = now()
 
     emit VersionedEntityLocked
   }
@@ -66,7 +64,6 @@ entity VersionedEntity {
     guard self.isLocked == true "Entity is not locked"
 
     mutate isLocked = false
-    mutate updatedAt = now()
 
     emit VersionedEntityUnlocked
   }
@@ -76,26 +73,27 @@ entity VersionedEntity {
     guard self.isLocked == false "Cannot update name while entity is locked"
 
     mutate entityName = newName
-    mutate updatedAt = now()
 
     emit VersionedEntityRenamed
   }
+  store VersionedEntity in durable
 }
 
 entity EntityVersion {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required versionedEntityId: string
-  property required versionNumber: number
+  property required versionNumber: int
   property changeReason: string = ""
   property changeSummary: string = ""
   property required changeType: string
   property snapshotData: string = {}
   property metadata: string = {}
   property isApproved: boolean = false
-  property approvedAt: datetime = now()
+  property approvedAt: datetime
   property approvedBy: string = ""
-  property createdAt: datetime = now()
+  timestamps
   property createdBy: string = ""
 
   computed isInitialVersion: boolean = self.versionNumber == 1
@@ -106,6 +104,7 @@ entity EntityVersion {
   constraint validChangeType: self.changeType in ["create", "update", "restore", "approve", "auto"] "Change type must be valid"
   constraint validSnapshot: self.snapshotData != null "Snapshot data is required"
 
+  default policy EntityVersionDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command create(versionedEntityId: string, versionNumber: number, changeType: string, snapshot: string, reason: string, summary: string, userId: string) {
     guard versionedEntityId != null and versionedEntityId != "" "Versioned entity ID is required"
     guard versionNumber != null and versionNumber > 0 "Version number must be positive"
@@ -120,7 +119,6 @@ entity EntityVersion {
     mutate changeReason = reason
     mutate changeSummary = summary
     mutate createdBy = userId
-    mutate createdAt = now()
 
     emit EntityVersionCreated
   }
@@ -156,17 +154,19 @@ entity EntityVersion {
 
     emit EntityVersionRestored
   }
+  store EntityVersion in durable
 }
 
 entity VersionApproval {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required entityVersionId: string
   property required approverId: string
   property required status: string
   property comments: string = ""
-  property reviewedAt: datetime = now()
-  property createdAt: datetime = now()
+  property reviewedAt: datetime
+  timestamps
 
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"
@@ -174,6 +174,9 @@ entity VersionApproval {
   computed waitingTime: number = now() - self.createdAt
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Status must be pending, approved, or rejected"
+
+  // State transitions
+  transition status from "pending" to ["approved", "rejected", "cancelled"]
 
   constraint warnPendingTooLong:warn self.isPending and self.waitingTime > 604800000 {
     messageTemplate: "Approval pending for {days} days - may need follow-up"
@@ -183,6 +186,7 @@ entity VersionApproval {
     }
   }
 
+  default policy VersionApprovalDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command create(entityVersionId: string, approverId: string) {
     guard entityVersionId != null and entityVersionId != "" "Entity version ID is required"
     guard approverId != null and approverId != "" "Approver ID is required"
@@ -190,7 +194,6 @@ entity VersionApproval {
     mutate entityVersionId = entityVersionId
     mutate approverId = approverId
     mutate status = "pending"
-    mutate createdAt = now()
     mutate reviewedAt = now()
 
     emit VersionApprovalRequested
@@ -224,6 +227,7 @@ entity VersionApproval {
 
     emit VersionApprovalCancelled
   }
+  store VersionApproval in durable
 }
 
 // Policy definitions
@@ -238,7 +242,7 @@ event VersionedEntityRegistered: "version.entity.registered" {
   entityType: string
   entityId: string
   entityName: string
-  registeredAt: number
+  registeredAt: datetime
 }
 
 event VersionedEntityLocked: "version.entity.locked" {
@@ -247,7 +251,7 @@ event VersionedEntityLocked: "version.entity.locked" {
   entityType: string
   entityId: string
   reason: string
-  lockedAt: number
+  lockedAt: datetime
 }
 
 event VersionedEntityUnlocked: "version.entity.unlocked" {
@@ -255,7 +259,7 @@ event VersionedEntityUnlocked: "version.entity.unlocked" {
   tenantId: string
   entityType: string
   entityId: string
-  unlockedAt: number
+  unlockedAt: datetime
 }
 
 event VersionedEntityRenamed: "version.entity.renamed" {
@@ -263,7 +267,7 @@ event VersionedEntityRenamed: "version.entity.renamed" {
   tenantId: string
   oldName: string
   newName: string
-  renamedAt: number
+  renamedAt: datetime
 }
 
 event EntityVersionCreated: "version.entity.created" {
@@ -276,7 +280,7 @@ event EntityVersionCreated: "version.entity.created" {
   changeType: string
   changeReason: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EntityVersionApproved: "version.entity.approved" {
@@ -284,7 +288,7 @@ event EntityVersionApproved: "version.entity.approved" {
   tenantId: string
   versionedEntityId: string
   approvedBy: string
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event EntityVersionRejected: "version.entity.rejected" {
@@ -293,7 +297,7 @@ event EntityVersionRejected: "version.entity.rejected" {
   versionedEntityId: string
   rejectedBy: string
   rejectionReason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event EntityVersionRestored: "version.entity.restored" {
@@ -306,7 +310,7 @@ event EntityVersionRestored: "version.entity.restored" {
   fromVersion: number
   toVersion: number
   restoredBy: string
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event VersionApprovalRequested: "version.approval.requested" {
@@ -314,7 +318,7 @@ event VersionApprovalRequested: "version.approval.requested" {
   tenantId: string
   entityVersionId: string
   approverId: string
-  requestedAt: number
+  requestedAt: datetime
 }
 
 event VersionApprovalCompleted: "version.approval.completed" {
@@ -323,7 +327,7 @@ event VersionApprovalCompleted: "version.approval.completed" {
   entityVersionId: string
   approverId: string
   comments: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event VersionApprovalRejected: "version.approval.rejected" {
@@ -332,12 +336,12 @@ event VersionApprovalRejected: "version.approval.rejected" {
   entityVersionId: string
   approverId: string
   rejectionReason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event VersionApprovalCancelled: "version.approval.cancelled" {
   approvalId: string
   tenantId: string
   entityVersionId: string
-  cancelledAt: number
+  cancelledAt: datetime
 }

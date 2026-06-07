@@ -5,8 +5,10 @@
  * to open shifts based on availability, skills, seniority, and labor budget.
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { checkBudgetForShift } from "./labor-budget";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface ShiftRequirement {
   shiftId: string;
@@ -166,107 +168,206 @@ export async function getEligibleEmployeesForShift(
 /**
  * Fetches employees from database with seniority, skills, and conflict info
  */
-function fetchEmployeesForShift(
+function formatTime(value: Date): string {
+  return [
+    value.getUTCHours().toString().padStart(2, "0"),
+    value.getUTCMinutes().toString().padStart(2, "0"),
+  ].join(":");
+}
+
+async function fetchEmployeesForShift(
   tenantId: string,
   shiftId: string,
   shiftStart: Date,
   shiftEnd: Date,
   roleDuringShift?: string
 ): Promise<DbEmployee[]> {
-  return database.$queryRaw<DbEmployee[]>(
-    Prisma.sql`
-      WITH employee_seniority_current AS (
-        SELECT DISTINCT ON (employee_id)
-          employee_id,
-          level AS seniority_level,
-          rank AS seniority_rank
-        FROM tenant_staff.employee_seniority
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND effective_at <= CURRENT_TIMESTAMP
-        ORDER BY employee_id, effective_at DESC
-      ),
-      employee_skills_with_names AS (
-        SELECT
-          es.employee_id,
-          es.skill_id,
-          s.name AS skill_name,
-          es.proficiency_level
-        FROM tenant_staff.employee_skills es
-        JOIN tenant_staff.skills s ON s.tenant_id = es.tenant_id AND s.id = es.skill_id
-        WHERE es.tenant_id = ${tenantId}
-          AND s.deleted_at IS NULL
-      ),
-      employee_conflicts AS (
-        SELECT DISTINCT
-          ss.employee_id,
-          true AS has_conflicting_shift,
-          jsonb_agg(
-            jsonb_build_object(
-              'id', ss.id,
-              'shiftStart', ss.shift_start,
-              'shiftEnd', ss.shift_end,
-              'locationName', l.name
-            )
-          ) AS conflicting_shifts
-        FROM tenant_staff.schedule_shifts ss
-        JOIN tenant.locations l ON l.tenant_id = ss.tenant_id AND l.id = ss.location_id
-        WHERE ss.tenant_id = ${tenantId}
-          AND ss.deleted_at IS NULL
-          AND ss.id != ${shiftId}
-          AND (ss.shift_start < ${shiftEnd}) AND (ss.shift_end > ${shiftStart})
-        GROUP BY ss.employee_id
-      )
-      SELECT
-        e.id,
-        e.first_name,
-        e.last_name,
-        e.email,
-        e.role,
-        e.is_active,
-        e.hourly_rate,
-        esc.seniority_level,
-        esc.seniority_rank,
-        COALESCE(
-          jsonb_agg(
-            jsonb_build_object(
-              'skillId', esw.skill_id,
-              'skillName', esw.skill_name,
-              'proficiencyLevel', esw.proficiency_level
-            )
-          ) FILTER (WHERE esw.skill_id IS NOT NULL),
-          '[]'::jsonb
-        ) AS skills,
-        COALESCE(
-          jsonb_agg(
-            jsonb_build_object(
-              'dayOfWeek', ea.day_of_week,
-              'startTime', ea.start_time,
-              'endTime', ea.end_time,
-              'isAvailable', ea.is_available
-            )
-          ) FILTER (WHERE ea.day_of_week IS NOT NULL),
-          '[]'::jsonb
-        ) AS availability,
-        COALESCE(ec.has_conflicting_shift, false) AS has_conflicting_shift,
-        COALESCE(ec.conflicting_shifts, '[]'::jsonb) AS conflicting_shifts
-      FROM tenant_staff.employees e
-      LEFT JOIN employee_seniority_current esc ON esc.employee_id = e.id
-      LEFT JOIN employee_skills_with_names esw ON esw.employee_id = e.id
-      LEFT JOIN tenant_staff.employee_availability ea ON ea.employee_id = e.id AND ea.tenant_id = e.tenant_id AND ea.deleted_at IS NULL
-      LEFT JOIN employee_conflicts ec ON ec.employee_id = e.id
-      WHERE e.tenant_id = ${tenantId}
-        AND e.deleted_at IS NULL
-        AND e.is_active = true
-        ${roleDuringShift ? Prisma.sql`AND e.role = ${roleDuringShift}` : Prisma.empty}
-      GROUP BY e.id, e.first_name, e.last_name, e.email, e.role, e.is_active, e.hourly_rate, esc.seniority_level, esc.seniority_rank, ec.has_conflicting_shift, ec.conflicting_shifts
-      ORDER BY
-        ec.has_conflicting_shift ASC,
-        COALESCE(esc.seniority_rank, 0) DESC,
-        e.last_name ASC,
-        e.first_name ASC
-    `
+  const employees = await database.user.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      isActive: true,
+      ...(roleDuringShift ? { role: roleDuringShift } : {}),
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      role: true,
+      isActive: true,
+      hourlyRate: true,
+    },
+  });
+  const employeeIds = employees.map((employee) => employee.id);
+
+  const [seniorityRows, skillRows, availabilityRows, conflictRows] =
+    await Promise.all([
+      database.employee_seniority.findMany({
+        where: {
+          tenant_id: tenantId,
+          employee_id: { in: employeeIds },
+          deleted_at: null,
+          effective_at: { lte: new Date() },
+        },
+        orderBy: [{ employee_id: "asc" }, { effective_at: "desc" }],
+        select: {
+          employee_id: true,
+          level: true,
+          rank: true,
+        },
+      }),
+      database.employee_skills.findMany({
+        where: {
+          tenant_id: tenantId,
+          employee_id: { in: employeeIds },
+        },
+        select: {
+          employee_id: true,
+          skill_id: true,
+          proficiency_level: true,
+        },
+      }),
+      database.employeeAvailability.findMany({
+        where: {
+          tenantId,
+          employeeId: { in: employeeIds },
+          deletedAt: null,
+        },
+        select: {
+          employeeId: true,
+          dayOfWeek: true,
+          startTime: true,
+          endTime: true,
+          isAvailable: true,
+        },
+      }),
+      database.scheduleShift.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          id: { not: shiftId },
+          shift_start: { lt: shiftEnd },
+          shift_end: { gt: shiftStart },
+        },
+        select: {
+          id: true,
+          employeeId: true,
+          locationId: true,
+          shift_start: true,
+          shift_end: true,
+        },
+      }),
+    ]);
+
+  const skillNames = await database.skills.findMany({
+    where: {
+      tenant_id: tenantId,
+      id: { in: [...new Set(skillRows.map((skill) => skill.skill_id))] },
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+  const locations = await database.location.findMany({
+    where: {
+      tenantId,
+      id: { in: [...new Set(conflictRows.map((shift) => shift.locationId))] },
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  const seniorityByEmployeeId = new Map<
+    string,
+    { seniority_level: string | null; seniority_rank: number | null }
+  >();
+  for (const seniority of seniorityRows) {
+    if (!seniorityByEmployeeId.has(seniority.employee_id)) {
+      seniorityByEmployeeId.set(seniority.employee_id, {
+        seniority_level: seniority.level,
+        seniority_rank: seniority.rank,
+      });
+    }
+  }
+
+  const skillNamesById = new Map(
+    skillNames.map((skill) => [skill.id, skill.name])
   );
+  const skillsByEmployeeId = new Map<string, DbEmployee["skills"]>();
+  for (const skill of skillRows) {
+    const employeeSkills = skillsByEmployeeId.get(skill.employee_id) ?? [];
+    employeeSkills.push({
+      skill_id: skill.skill_id,
+      skill_name: skillNamesById.get(skill.skill_id) ?? "",
+      proficiency_level: skill.proficiency_level,
+    });
+    skillsByEmployeeId.set(skill.employee_id, employeeSkills);
+  }
+
+  const availabilityByEmployeeId = new Map<string, DbEmployee["availability"]>();
+  for (const availability of availabilityRows) {
+    const employeeAvailability =
+      availabilityByEmployeeId.get(availability.employeeId) ?? [];
+    employeeAvailability.push({
+      day_of_week: availability.dayOfWeek,
+      start_time: formatTime(availability.startTime),
+      end_time: formatTime(availability.endTime),
+      is_available: availability.isAvailable,
+    });
+    availabilityByEmployeeId.set(availability.employeeId, employeeAvailability);
+  }
+
+  const locationNamesById = new Map(
+    locations.map((location) => [location.id, location.name])
+  );
+  const conflictsByEmployeeId = new Map<string, DbEmployee["conflicting_shifts"]>();
+  for (const shift of conflictRows) {
+    const employeeConflicts = conflictsByEmployeeId.get(shift.employeeId) ?? [];
+    employeeConflicts.push({
+      id: shift.id,
+      shift_start: shift.shift_start,
+      shift_end: shift.shift_end,
+      location_name: locationNamesById.get(shift.locationId) ?? "",
+    });
+    conflictsByEmployeeId.set(shift.employeeId, employeeConflicts);
+  }
+
+  return employees
+    .map((employee) => {
+      const seniority = seniorityByEmployeeId.get(employee.id);
+      const conflictingShifts = conflictsByEmployeeId.get(employee.id) ?? [];
+      return {
+        id: employee.id,
+        first_name: employee.firstName,
+        last_name: employee.lastName,
+        email: employee.email,
+        role: employee.role,
+        is_active: employee.isActive,
+        hourly_rate: employee.hourlyRate ? Number(employee.hourlyRate) : null,
+        seniority_level: seniority?.seniority_level ?? null,
+        seniority_rank: seniority?.seniority_rank ?? null,
+        skills: skillsByEmployeeId.get(employee.id) ?? [],
+        availability: availabilityByEmployeeId.get(employee.id) ?? [],
+        has_conflicting_shift: conflictingShifts.length > 0,
+        conflicting_shifts: conflictingShifts,
+      };
+    })
+    .sort((a, b) => {
+      if (a.has_conflicting_shift !== b.has_conflicting_shift) {
+        return a.has_conflicting_shift ? 1 : -1;
+      }
+      return (
+        (b.seniority_rank ?? 0) - (a.seniority_rank ?? 0) ||
+        (a.last_name ?? "").localeCompare(b.last_name ?? "") ||
+        (a.first_name ?? "").localeCompare(b.first_name ?? "")
+      );
+    });
 }
 
 /**
@@ -590,21 +691,22 @@ export async function autoAssignShift(
   employeeId: string;
 }> {
   try {
-    const shift = await database.$queryRaw<
-      Array<{
-        tenant_id: string;
-        id: string;
-        schedule_id: string;
-      }>
-    >(Prisma.sql`
-      SELECT tenant_id, id, schedule_id
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `);
+    const shift = await database.scheduleShift.findFirst({
+      where: {
+        tenantId,
+        id: shiftId,
+        deletedAt: null,
+      },
+      select: {
+        locationId: true,
+        shift_start: true,
+        shift_end: true,
+        role_during_shift: true,
+        notes: true,
+      },
+    });
 
-    if (!shift || shift.length === 0) {
+    if (!shift) {
       return {
         success: false,
         message: "Shift not found",
@@ -613,22 +715,20 @@ export async function autoAssignShift(
       };
     }
 
-    const employee = await database.$queryRaw<
-      Array<{
-        id: string;
-        first_name: string | null;
-        last_name: string | null;
-      }>
-    >(Prisma.sql`
-      SELECT id, first_name, last_name
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${employeeId}
-        AND deleted_at IS NULL
-        AND is_active = true
-    `);
+    const employee = await database.user.findFirst({
+      where: {
+        tenantId,
+        id: employeeId,
+        deletedAt: null,
+        isActive: true,
+      },
+      select: {
+        firstName: true,
+        lastName: true,
+      },
+    });
 
-    if (!employee || employee.length === 0) {
+    if (!employee) {
       return {
         success: false,
         message: "Employee not found or inactive",
@@ -637,17 +737,50 @@ export async function autoAssignShift(
       };
     }
 
-    await database.$queryRaw(Prisma.sql`
-      UPDATE tenant_staff.schedule_shifts
-      SET employee_id = ${employeeId}, updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `);
+    // Resolve a system user identity for the Manifest command context
+    const systemUser = await database.user.findFirst({
+      where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+      select: { id: true, role: true },
+    });
+    const userId = systemUser?.id ?? "";
+    const userRole = systemUser?.role ?? "admin";
+
+    const result = await runManifestCommandCore(
+      {
+        createRuntime: ({ user, entityName }) =>
+          createManifestRuntime({
+            user: { id: user.id, tenantId: user.tenantId, role: user.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "ScheduleShift",
+        command: "update",
+        instanceId: shiftId,
+        user: { id: userId, tenantId, role: userRole },
+        body: {
+          employeeId,
+          locationId: shift.locationId,
+          shiftStart: shift.shift_start.getTime(),
+          shiftEnd: shift.shift_end.getTime(),
+          roleDuringShift: shift.role_during_shift ?? "",
+          notes: shift.notes ?? "",
+        },
+      }
+    );
+
+    if (!result.ok) {
+      return {
+        success: false,
+        message: result.message ?? "Manifest command failed",
+        shiftId,
+        employeeId,
+      };
+    }
 
     return {
       success: true,
-      message: `Successfully assigned ${employee[0].first_name} ${employee[0].last_name} to shift`,
+      message: `Successfully assigned ${employee.firstName} ${employee.lastName} to shift`,
       shiftId,
       employeeId,
     };

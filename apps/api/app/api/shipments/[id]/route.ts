@@ -11,8 +11,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export async function GET(
   _request: Request,
@@ -128,15 +128,17 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "Shipment",
-    commandName: "update",
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "Shipment",
+    command: "update",
+    body: {
+      ...rawBody,
       id,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -145,13 +147,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "Shipment",
-    commandName: "cancel",
-    params: { id },
-    transformBody: (_body, ctx) => ({
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "Shipment",
+    command: "cancel",
+    body: {
       id,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

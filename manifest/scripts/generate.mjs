@@ -14,6 +14,9 @@ import {
   ENTITY_DOMAIN_MAP,
   FLAT_SEGMENT_TO_ENTITY,
   resolveAccessor,
+  resolveDetailSegment,
+  applyFieldOverrides,
+  ENTITY_DETAIL_DROP,
 } from "./entity-domain-map.mjs";
 
 const repoRoot = resolve(process.cwd());
@@ -83,6 +86,7 @@ function remapToDomainPath(relativePath) {
 
   const entitySegment = parts[0];
   const domain = FLAT_SEGMENT_TO_DOMAIN[entitySegment];
+  const entity = FLAT_SEGMENT_TO_ENTITY[entitySegment] ?? null;
   if (!domain) {
     console.warn(
       `[manifest/generate] No domain mapping for entity segment "${entitySegment}" — skipping`
@@ -92,7 +96,14 @@ function remapToDomainPath(relativePath) {
 
   const rest = parts.slice(1); // e.g. ["create", "route.ts"] or ["list", "route.ts"]
   const routeFile = rest[rest.length - 1]; // "route.ts"
-  const commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
+  let commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
+
+  if (
+    entity &&
+    (commandOrAction === ":id" || commandOrAction === "[id]")
+  ) {
+    commandOrAction = `[${resolveDetailSegment(entity)}]`;
+  }
 
   // Command routes (non-list, non-detail) go under commands/
   const isReadRoute =
@@ -220,6 +231,7 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
   const copiedFiles = [];
   const droppedFiles = [];
   const rewrittenAccessors = [];
+  const rewrittenFields = [];
   let skippedOverwriteCount = 0;
 
   // Load commands manifest (used for dispatcher validation messaging only)
@@ -311,8 +323,13 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       ? resolveAccessor(entity)
       : { naive: null, accessor: null, drop: false, overridden: false };
 
-    if (drop) {
-      // No backing Prisma table — never emit a database.* read route for this entity.
+    // A detail route is any read route under a dynamic segment (e.g. `[id]`/`[threadId]`);
+    // list routes live under a static `list/` segment. Used for detail-only drops below.
+    const isDetailRoute = safeRelativePath.includes("/[");
+
+    if (drop || (isDetailRoute && entity && ENTITY_DETAIL_DROP.has(entity))) {
+      // Either the entity has no Prisma table at all (drop both routes), or its model has no
+      // single-column id so the by-id detail route can't be emitted (drop just the detail route).
       if (existsSync(destinationPath)) {
         const existing = readFileSync(destinationPath, "utf8");
         if (hasGeneratedMarker(existing)) {
@@ -348,12 +365,30 @@ const materializeRemappedOutput = (stagingDir, outputDir) => {
       }
     }
 
+    // Correct phantom Prisma field names (legacy snake_case models / missing created-at columns).
+    // The upstream projection hardcodes `where: { tenantId }` / `orderBy: { createdAt }`; rewrite
+    // those to the real field names for the few entities that need it (constitution §10 — fix the
+    // producer + regenerate, never hand-edit the "DO NOT EDIT" route).
+    const fieldResult = applyFieldOverrides(outputContent, entity);
+    if (fieldResult.rewrites.length > 0) {
+      outputContent = fieldResult.content;
+      rewrittenFields.push(
+        `${safeRelativePath} (${fieldResult.rewrites.join("; ")})`
+      );
+    }
+
     mkdirSync(resolve(destinationPath, ".."), { recursive: true });
     writeFileSync(destinationPath, outputContent, "utf8");
     copiedFiles.push(destinationPath.replace(/\\/g, "/"));
   }
 
-  return { copiedFiles, skippedOverwriteCount, droppedFiles, rewrittenAccessors };
+  return {
+    copiedFiles,
+    skippedOverwriteCount,
+    droppedFiles,
+    rewrittenAccessors,
+    rewrittenFields,
+  };
 };
 
 /**
@@ -508,6 +543,11 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     "      },",
     "    });",
     "  } catch (error) {",
+    "    // Auth/tenant resolution errors from requireCurrentUser should return 401, not 500.",
+    "    // InvariantError is thrown for: Unauthenticated, Tenant not found, User not found.",
+    "    if (error instanceof Error && error.name === \"InvariantError\") {",
+    "      return manifestErrorResponse(error.message, 401);",
+    "    }",
     "    captureException(error);",
     "    return manifestErrorResponse(\"Internal server error\", 500);",
     "  }",
@@ -543,6 +583,15 @@ if (routeResult.status === 0 && detailResult.status === 0) {
         `[manifest/generate] Dropped ${materializeResult.droppedFiles.length} read route(s) for entities with no Prisma table:`
       );
       for (const rel of materializeResult.droppedFiles) {
+        console.log(`  - ${rel}`);
+      }
+    }
+
+    if (materializeResult.rewrittenFields.length > 0) {
+      console.log(
+        `[manifest/generate] Rewrote phantom Prisma field name(s) in ${materializeResult.rewrittenFields.length} read route(s):`
+      );
+      for (const rel of materializeResult.rewrittenFields) {
         console.log(`  - ${rel}`);
       }
     }

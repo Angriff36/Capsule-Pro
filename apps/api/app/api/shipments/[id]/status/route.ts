@@ -1,18 +1,33 @@
 /**
  * Shipment Status API Endpoint
  *
- * POST   /api/shipments/[id]/status  - Update shipment status with validation
+ * POST   /api/shipments/[id]/status  - Update shipment status via Manifest runtime
+ *
+ * Maps status transitions to Manifest commands:
+ *   scheduled    -> startPreparing
+ *   preparing    -> ship
+ *   in_transit   -> markDelivered
+ *   draft        -> schedule (if transitioning to scheduled)
+ *   cancelled    -> cancel
+ *
+ * Inventory side effects (reservation on prepare, receipt on deliver, reversal
+ * on cancel) are governed via Manifest runtime — InventoryTransaction.create and
+ * InventoryItem.adjust commands.
  */
 
 import { auth } from "@repo/auth/server";
 import type { Shipment } from "@repo/database";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  getTenantIdForOrg,
+  resolveCurrentUser,
+} from "@/app/lib/tenant";
 import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * Transaction types for inventory transactions
@@ -32,21 +47,21 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   cancelled: [],
 };
 
+/** Maps a target status to the Manifest command name. */
+const STATUS_TO_COMMAND: Record<string, string> = {
+  scheduled: "schedule",
+  preparing: "startPreparing",
+  in_transit: "ship",
+  delivered: "markDelivered",
+  cancelled: "cancel",
+};
+
 interface ShipmentStatusRequestBody {
   status: string;
   shipped_date?: string | null;
   actual_delivery_date?: string | null;
   delivered_by?: string | null;
   received_by?: string | null;
-  signature?: string | null;
-}
-
-interface ShipmentUpdateData {
-  status: string;
-  shippedDate?: Date | null;
-  actualDeliveryDate?: Date | null;
-  deliveredBy?: string | null;
-  receivedBy?: string | null;
   signature?: string | null;
 }
 
@@ -118,7 +133,7 @@ async function authenticateAndGetTenant(
 }
 
 /**
- * Fetches an existing shipment by ID
+ * Fetches an existing shipment by ID (read — bypasses Manifest per §10)
  */
 async function fetchExistingShipment(
   tenantId: string,
@@ -136,86 +151,6 @@ async function fetchExistingShipment(
   }
 
   return existing;
-}
-
-/**
- * Builds the update data object from request body
- */
-function buildUpdateData(
-  body: ShipmentStatusRequestBody,
-  existingShipment: Shipment
-): ShipmentUpdateData {
-  const updateData: ShipmentUpdateData = { status: body.status };
-
-  if (body.shipped_date !== undefined) {
-    updateData.shippedDate = body.shipped_date
-      ? new Date(body.shipped_date)
-      : null;
-  }
-  if (body.actual_delivery_date !== undefined) {
-    updateData.actualDeliveryDate = body.actual_delivery_date
-      ? new Date(body.actual_delivery_date)
-      : null;
-  }
-  if (body.delivered_by !== undefined) {
-    updateData.deliveredBy = body.delivered_by;
-  }
-  if (body.received_by !== undefined) {
-    updateData.receivedBy = body.received_by;
-  }
-  if (body.signature !== undefined) {
-    updateData.signature = body.signature;
-  }
-
-  // Auto-set shipped_date when transitioning to in_transit
-  if (body.status === "in_transit" && !existingShipment.shippedDate) {
-    updateData.shippedDate = new Date();
-  }
-
-  return updateData;
-}
-
-/**
- * Executes the raw SQL update for shipment
- */
-async function updateShipmentInDatabase(
-  tenantId: string,
-  shipmentId: string,
-  updateData: ShipmentUpdateData
-): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."shipments"
-    SET
-      "status" = ${updateData.status}::text,
-      "shipped_date" = COALESCE(${updateData.shippedDate}::timestamptz, "shipped_date"),
-      "actual_delivery_date" = COALESCE(${updateData.actualDeliveryDate}::timestamptz, "actual_delivery_date"),
-      "delivered_by" = COALESCE(${updateData.deliveredBy}::uuid, "delivered_by"),
-      "received_by" = COALESCE(${updateData.receivedBy}, "received_by"),
-      "signature" = COALESCE(${updateData.signature}, "signature"),
-      "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${shipmentId}::uuid
-  `;
-}
-
-/**
- * Fetches the updated shipment after update
- */
-async function fetchUpdatedShipment(
-  tenantId: string,
-  shipmentId: string
-): Promise<Shipment | NextResponse> {
-  const updated = await database.shipment.findFirst({
-    where: { tenantId, id: shipmentId, deletedAt: null },
-  });
-
-  if (!updated) {
-    return NextResponse.json(
-      { message: "Shipment not found after update" },
-      { status: 404 }
-    );
-  }
-
-  return updated;
 }
 
 /**
@@ -253,7 +188,7 @@ function mapShipmentToResponse(shipment: Shipment) {
 }
 
 /**
- * Fetches shipment items for inventory processing
+ * Fetches shipment items for inventory processing (read — bypasses Manifest per §10)
  */
 async function fetchShipmentItems(
   tenantId: string,
@@ -276,7 +211,7 @@ async function fetchShipmentItems(
 }
 
 /**
- * Creates an inventory transaction for a received shipment item
+ * Creates an inventory transaction for a received shipment item (governed via Manifest runtime)
  */
 async function createInventoryTransaction(
   tenantId: string,
@@ -285,58 +220,59 @@ async function createInventoryTransaction(
   goodQuantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_PURCHASE}::text,
-      ${goodQuantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${goodQuantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_PURCHASE,
+      quantity: goodQuantity,
+      unitCost: item.unit_cost ?? 0,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      reason: "shipment_receipt",
+      notes:
         `Received from shipment ${shipmentNumber}` +
         (item.lot_number ? ` (Lot: ${item.lot_number})` : "") +
         (item.expiration_date
           ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})`
-          : "")
-      }::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_receipt"}::text
-    )
-  `;
+          : ""),
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
+    },
+    user: userContext,
+  });
 }
 
 /**
- * Updates inventory item quantity on hand
+ * Updates inventory item quantity on hand (governed via Manifest adjust command)
  */
 async function updateInventoryQuantity(
   tenantId: string,
   itemId: string,
-  goodQuantity: number
+  goodQuantity: number,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."inventory_items"
-    SET "quantity_on_hand" = "quantity_on_hand" + ${goodQuantity}::numeric,
-        "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid
-      AND "id" = ${itemId}::uuid
-      AND "deleted_at" IS NULL
-  `;
+  await runManifestCommand({
+    entity: "InventoryItem",
+    command: "adjust",
+    body: {
+      id: itemId,
+      tenantId,
+      quantity: goodQuantity,
+      reason: "shipment_receipt",
+      userId: userContext.id,
+    },
+    user: userContext,
+  });
 }
 
 /**
- * Creates an inventory reservation transaction for an outgoing shipment item
+ * Creates an inventory reservation transaction for an outgoing shipment item (governed via Manifest runtime)
  */
 async function createReservationTransaction(
   tenantId: string,
@@ -345,51 +281,52 @@ async function createReservationTransaction(
   quantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_TRANSFER}::text,
-      ${-quantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${-quantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_TRANSFER,
+      quantity: -quantity,
+      unitCost: item.unit_cost ?? 0,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      reason: "shipment_preparation",
+      notes:
         `Reserved for outgoing shipment ${shipmentNumber}` +
-        (item.lot_number ? ` (Lot: ${item.lot_number})` : "")
-      }::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_preparation"}::text
-    )
-  `;
+        (item.lot_number ? ` (Lot: ${item.lot_number})` : ""),
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
+    },
+    user: userContext,
+  });
 }
 
 /**
- * Reduces inventory item quantity on hand for outgoing shipments
+ * Reduces inventory item quantity on hand for outgoing shipments (governed via Manifest adjust command)
  */
 async function reduceInventoryQuantity(
   tenantId: string,
   itemId: string,
-  quantity: number
+  quantity: number,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."inventory_items"
-    SET "quantity_on_hand" = "quantity_on_hand" - ${quantity}::numeric,
-        "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid
-      AND "id" = ${itemId}::uuid
-      AND "deleted_at" IS NULL
-  `;
+  await runManifestCommand({
+    entity: "InventoryItem",
+    command: "adjust",
+    body: {
+      id: itemId,
+      tenantId,
+      quantity: -quantity,
+      reason: "shipment_preparation",
+      userId: userContext.id,
+    },
+    user: userContext,
+  });
 }
 
 /**
@@ -469,7 +406,8 @@ async function processPreparationInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -487,15 +425,16 @@ async function processPreparationInventory(
       quantityToReserve,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve);
+    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve, userContext);
   }
 }
 
 /**
- * Creates a reversal transaction when a shipment is cancelled during preparation
+ * Creates a reversal transaction when a shipment is cancelled during preparation (governed via Manifest runtime)
  */
 async function createReversalTransaction(
   tenantId: string,
@@ -504,30 +443,27 @@ async function createReversalTransaction(
   quantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.$executeRaw`
-    INSERT INTO "tenant_inventory"."inventory_transactions"
-      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
-       reference, notes, transaction_date, employee_id, reference_type, reference_id,
-       storage_location_id, reason)
-    VALUES (
-      ${tenantId}::uuid,
-      ${item.item_id}::uuid,
-      ${TRANSACTION_TYPE_TRANSFER}::text,
-      ${quantity}::numeric,
-      ${item.unit_cost}::numeric,
-      ${quantity * Number(item.unit_cost)}::numeric,
-      ${shipmentNumber}::text,
-      ${`Reversal: Cancelled shipment ${shipmentNumber}`}::text,
-      CURRENT_TIMESTAMP,
-      ${userId}::uuid,
-      ${"shipment"}::text,
-      ${shipmentId}::uuid,
-      ${locationId}::uuid,
-      ${"shipment_cancellation"}::text
-    )
-  `;
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
+      tenantId,
+      itemId: item.item_id,
+      transactionType: TRANSACTION_TYPE_TRANSFER,
+      quantity: quantity,
+      unitCost: item.unit_cost ?? 0,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      reason: "shipment_cancellation",
+      notes: `Reversal: Cancelled shipment ${shipmentNumber}`,
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
+    },
+    user: userContext,
+  });
 }
 
 /**
@@ -539,7 +475,8 @@ async function processCancellationInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -557,10 +494,11 @@ async function processCancellationInventory(
       quantityToRestore,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore);
+    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore, userContext);
   }
 }
 
@@ -572,7 +510,8 @@ async function processDeliveryInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -596,10 +535,11 @@ async function processDeliveryInventory(
       goodQuantity,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, goodQuantity);
+    await updateInventoryQuantity(tenantId, item.item_id, goodQuantity, userContext);
   }
 }
 
@@ -610,7 +550,8 @@ async function handleInventoryOnDelivery(
   updated: Shipment,
   previousStatus: string,
   tenantId: string,
-  shipmentId: string
+  shipmentId: string,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   if (updated.status !== "delivered" || previousStatus === "delivered") {
     return;
@@ -622,7 +563,8 @@ async function handleInventoryOnDelivery(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      updated.deliveredBy ?? updated.receivedBy ?? null
+      updated.deliveredBy ?? updated.receivedBy ?? null,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to update inventory for delivered shipment", {
@@ -641,7 +583,8 @@ async function handleInventoryOnPreparation(
   previousStatus: string,
   tenantId: string,
   shipmentId: string,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   // Only process when entering "preparing" status
   if (updated.status !== "preparing" || previousStatus === "preparing") {
@@ -659,7 +602,8 @@ async function handleInventoryOnPreparation(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      userId
+      userId,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to reserve inventory for preparing shipment", {
@@ -678,7 +622,8 @@ async function handleInventoryOnCancellation(
   previousStatus: string,
   tenantId: string,
   shipmentId: string,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   // Only process when entering "cancelled" status
   if (updated.status !== "cancelled") {
@@ -701,13 +646,60 @@ async function handleInventoryOnCancellation(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      userId
+      userId,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to reverse inventory for cancelled shipment", {
       error: inventoryError,
     });
     // Continue with the response even if inventory update fails
+  }
+}
+
+/**
+ * Builds the Manifest command body for a given status transition.
+ * Each command has different parameters per the shipment-rules.manifest spec.
+ */
+function buildCommandBody(
+  command: string,
+  shipmentId: string,
+  tenantId: string,
+  userId: string,
+  body: ShipmentStatusRequestBody
+): Record<string, unknown> {
+  const base = { id: shipmentId, tenantId };
+
+  switch (command) {
+    case "schedule":
+      return {
+        ...base,
+        userId,
+        scheduledDate: new Date(body.shipped_date ?? Date.now()).getTime(),
+      };
+    case "startPreparing":
+      return { ...base, userId };
+    case "ship":
+      return {
+        ...base,
+        userId,
+        trackingNumber: body.shipped_date ?? "",
+      };
+    case "markDelivered":
+      return {
+        ...base,
+        userId,
+        receivedBy: body.received_by ?? "",
+        signatureData: body.signature ?? "",
+      };
+    case "cancel":
+      return {
+        ...base,
+        userId,
+        reason: body.signature ?? "",
+      };
+    default:
+      return base;
   }
 }
 
@@ -724,6 +716,9 @@ export async function POST(
     }
     const { tenantId } = authResult;
 
+    // Resolve current user for Manifest runtime
+    const user = await resolveCurrentUser(request);
+
     // Parse request
     const { id } = await params;
     const body = (await request.json()) as ShipmentStatusRequestBody;
@@ -732,14 +727,22 @@ export async function POST(
       throw new InvariantError("status is required");
     }
 
-    // Fetch existing shipment
+    // Determine which Manifest command handles this transition
+    const command = STATUS_TO_COMMAND[body.status];
+    if (!command) {
+      throw new InvariantError(
+        `Unsupported target status: ${body.status}. No Manifest command maps to this status.`
+      );
+    }
+
+    // Fetch existing shipment (read — bypasses Manifest per §10)
     const existingResult = await fetchExistingShipment(tenantId, id);
     if (existingResult instanceof NextResponse) {
       return existingResult;
     }
     const existing = existingResult;
 
-    // Validate status transition
+    // Validate status transition (pre-validation before Manifest guards)
     validateStatusTransition(existing.status, body.status);
     validateDeliveryConfirmation(body.status, body);
 
@@ -748,19 +751,46 @@ export async function POST(
       await validateStockAvailability(tenantId, id);
     }
 
-    // Build and execute update
-    const updateData = buildUpdateData(body, existing);
-    await updateShipmentInDatabase(tenantId, id, updateData);
+    // Build command body and execute via Manifest runtime
+    const commandBody = buildCommandBody(
+      command,
+      id,
+      tenantId,
+      user.id,
+      body
+    );
 
-    // Fetch updated shipment
-    const updatedResult = await fetchUpdatedShipment(tenantId, id);
-    if (updatedResult instanceof NextResponse) {
-      return updatedResult;
+    const manifestResult = await runManifestCommand({
+      entity: "Shipment",
+      command,
+      body: commandBody,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    // If Manifest returned an error, forward it to the client.
+    // runManifestCommand already returns a Response with appropriate status.
+    if (!(manifestResult instanceof Response) || manifestResult.status >= 400) {
+      // Try to extract the Manifest error message for better UX on guard failures
+      if (manifestResult instanceof Response) {
+        return manifestResult;
+      }
     }
-    const updated = updatedResult;
+
+    // Re-fetch the updated shipment to return the same response shape
+    const updated = await database.shipment.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
+    if (!updated) {
+      return NextResponse.json(
+        { message: "Shipment not found after update" },
+        { status: 404 }
+      );
+    }
 
     // Handle inventory updates on delivery
-    await handleInventoryOnDelivery(updated, existing.status, tenantId, id);
+    const userContext = { id: user.id, tenantId: user.tenantId, role: user.role };
+    await handleInventoryOnDelivery(updated, existing.status, tenantId, id, userContext);
 
     // Handle inventory reservation on preparation (outgoing shipments)
     await handleInventoryOnPreparation(
@@ -768,7 +798,8 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      orgId ?? null
+      user.id,
+      userContext
     );
 
     // Handle inventory reversal on cancellation
@@ -777,7 +808,8 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      orgId ?? null
+      user.id,
+      userContext
     );
 
     // Fire-and-forget webhook dispatch for shipment status change

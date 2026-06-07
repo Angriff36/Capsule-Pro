@@ -99,30 +99,48 @@ async function processEditRequests(
   }>
 ) {
   for (const editRequest of editRequests) {
-    await tx.$queryRaw(
-      Prisma.sql`
-        INSERT INTO tenant_staff.timecard_edit_requests
-        (tenant_id, time_entry_id, employee_id, requested_clock_in,
-         requested_clock_out, requested_break_minutes, reason, status,
-         created_at, updated_at)
-        VALUES (
-          ${tenantId},
-          ${editRequest.timeEntryId},
-          (SELECT employee_id FROM tenant_staff.time_entries WHERE id = ${editRequest.timeEntryId} AND tenant_id = ${tenantId}),
-          ${editRequest.requestedClockIn ? new Date(editRequest.requestedClockIn) : null},
-          ${editRequest.requestedClockOut ? new Date(editRequest.requestedClockOut) : null},
-          ${editRequest.requestedBreakMinutes ?? null},
-          ${editRequest.reason},
-          'pending',
-          NOW(),
-          NOW()
-        )
-        ON CONFLICT (tenant_id, time_entry_id) DO UPDATE
-        SET status = 'pending',
-            reason = ${editRequest.reason},
-            updated_at = NOW()
-      `
-    );
+    const timeEntry = await tx.timeEntry.findUnique({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: editRequest.timeEntryId,
+        },
+      },
+      select: {
+        employeeId: true,
+      },
+    });
+
+    if (!timeEntry) {
+      continue;
+    }
+
+    await tx.timecardEditRequest.upsert({
+      where: {
+        tenantId_timeEntryId: {
+          tenantId,
+          timeEntryId: editRequest.timeEntryId,
+        },
+      },
+      create: {
+        tenantId,
+        timeEntryId: editRequest.timeEntryId,
+        employeeId: timeEntry.employeeId,
+        requestedClockIn: editRequest.requestedClockIn
+          ? new Date(editRequest.requestedClockIn)
+          : null,
+        requestedClockOut: editRequest.requestedClockOut
+          ? new Date(editRequest.requestedClockOut)
+          : null,
+        requestedBreakMinutes: editRequest.requestedBreakMinutes ?? null,
+        reason: editRequest.reason,
+        status: "pending",
+      },
+      update: {
+        status: "pending",
+        reason: editRequest.reason,
+      },
+    });
   }
 }
 
@@ -136,16 +154,32 @@ async function processExceptionFlags(
   }>
 ) {
   for (const flag of flagExceptions) {
-    await tx.$queryRaw(
-      Prisma.sql`
-        UPDATE tenant_staff.time_entries
-        SET notes = COALESCE(notes, '') || ' [EXCEPTION: ' || ${flag.exceptionType} || '] ' || ${flag.notes},
-            updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${flag.timeEntryId}
-          AND deleted_at IS NULL
-      `
-    );
+    const timeEntry = await tx.timeEntry.findUnique({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: flag.timeEntryId,
+        },
+      },
+      select: {
+        notes: true,
+      },
+    });
+
+    if (!timeEntry) {
+      continue;
+    }
+
+    await tx.timeEntry.updateMany({
+      where: {
+        tenantId,
+        id: flag.timeEntryId,
+        deletedAt: null,
+      },
+      data: {
+        notes: `${timeEntry.notes ?? ""} [EXCEPTION: ${flag.exceptionType}] ${flag.notes}`,
+      },
+    });
   }
 }
 

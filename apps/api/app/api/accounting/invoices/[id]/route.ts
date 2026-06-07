@@ -1,7 +1,9 @@
 /**
  * Single Invoice API Routes
  *
- * Handles operations on individual invoices
+ * Handles operations on individual invoices.
+ * PUT / PATCH / POST / DELETE delegate to governed Manifest commands per constitution §10.
+ * GET reads bypass runtime.
  */
 
 import { database } from "@repo/database";
@@ -10,7 +12,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireApiManager } from "@/app/lib/auth-roles";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireTenantId, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { translatePrismaError } from "@/lib/prisma-error";
 import {
   calculateInvoiceTotals,
@@ -49,7 +52,7 @@ function formatInvoiceResponse(invoice: Record<string, unknown>) {
 
 /**
  * GET /api/accounting/invoices/[id]
- * Get a single invoice by ID
+ * Get a single invoice by ID (read — bypasses Manifest per §10)
  */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
@@ -120,12 +123,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 /**
  * PUT /api/accounting/invoices/[id]
- * Update an invoice
+ * Update an invoice via Manifest runtime.
+ *
+ * Pre-validation reads stay as direct Prisma reads per constitution §10.
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
-    // Manager-tier role guard (P1.AM). Invoice edits change billed totals and
-    // tax/line-item state — must not be reachable from a base-staff session.
     const guard = await requireApiManager();
     if (!guard.ok) {
       return guard.response;
@@ -149,68 +152,39 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     validateInvoiceAccess(invoice, tenantId, ["DRAFT"]);
 
     // Calculate new totals if line items provided
-    const updateData: Record<string, unknown> = {};
+    let subtotal = Number(invoice.subtotal);
+    let taxAmount = Number(invoice.taxAmount);
+    let total = Number(invoice.total);
+    let amountDue = Number(invoice.amountDue);
+    let lineItems = typeof invoice.lineItems === "string" ? invoice.lineItems : JSON.stringify(invoice.lineItems);
+
     if (body.lineItems) {
-      const { subtotal, taxAmount, total } = calculateInvoiceTotals(
-        body.lineItems
-      );
-      updateData.subtotal = subtotal;
-      updateData.taxAmount = taxAmount;
-      updateData.total = total;
-      updateData.amountDue = total - Number(invoice.amountPaid);
+      const totals = calculateInvoiceTotals(body.lineItems);
+      subtotal = totals.subtotal;
+      taxAmount = totals.taxAmount;
+      total = totals.total;
+      amountDue = total - Number(invoice.amountPaid);
+      lineItems = JSON.stringify(body.lineItems);
     }
 
-    // Copy other allowed fields
-    if (body.notes !== undefined) updateData.notes = body.notes;
-    if (body.internalNotes !== undefined)
-      updateData.internalNotes = body.internalNotes;
-    if (body.dueDate !== undefined) updateData.dueDate = new Date(body.dueDate);
-    if (body.paymentTerms !== undefined)
-      updateData.paymentTerms = body.paymentTerms;
-
-    // Update invoice
-    const updatedInvoice = await database.invoice.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "Invoice",
+      command: "update",
+      body: {
+        id,
+        tenantId,
+        subtotal,
+        taxAmount,
+        total,
+        amountDue,
+        notes: body.notes ?? (invoice.notes as string ?? ""),
+        internalNotes: body.internalNotes ?? (invoice.internalNotes as string ?? ""),
+        dueDate: body.dueDate ? new Date(body.dueDate) : invoice.dueDate,
+        paymentTerms: body.paymentTerms ?? (invoice.paymentTerms as number ?? 30),
+        lineItems,
       },
-      data: updateData,
-      include: {
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-            defaultPaymentTerms: true,
-          },
-        },
-        event: {
-          select: {
-            id: true,
-            title: true,
-            eventDate: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json<InvoiceResponse>({
-      ...updatedInvoice,
-      subtotal: updatedInvoice.subtotal.toString(),
-      taxAmount: updatedInvoice.taxAmount.toString(),
-      discountAmount: updatedInvoice.discountAmount.toString(),
-      total: updatedInvoice.total.toString(),
-      amountPaid: updatedInvoice.amountPaid.toString(),
-      amountDue: updatedInvoice.amountDue.toString(),
-      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
-      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
-      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
-      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
-      metadata: updatedInvoice.metadata as Record<string, unknown>,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   } catch (error) {
     captureException(error);
@@ -231,13 +205,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 /**
  * PATCH /api/accounting/invoices/[id]
- * Handle invoice command actions
+ * Handle invoice command actions via Manifest runtime.
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    // Manager-tier role guard (P1.AM). apply-payment / mark-as-paid /
-    // mark-overdue / send-reminder mutate ledger state and trigger customer
-    // emails — staff-tier sessions must not reach these branches.
     const guard = await requireApiManager();
     if (!guard.ok) {
       return guard.response;
@@ -264,6 +235,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
+    const user = await resolveCurrentUser(request);
+    const manifestUser = { id: user.id, tenantId: user.tenantId, role: user.role };
     const action = body.action;
 
     if (action === "apply-payment") {
@@ -275,61 +248,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
 
-      const newAmountPaid = Number(invoice.amountPaid) + amount;
-      const newAmountDue = Number(invoice.total) - newAmountPaid;
-      const newStatus = newAmountDue <= 0.01 ? "PAID" : "PARTIALLY_PAID";
-
-      const updated = await database.invoice.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: {
-          amountPaid: newAmountPaid,
-          amountDue: Math.max(0, newAmountDue),
-          status: newStatus,
-          paidAt: newStatus === "PAID" ? new Date() : invoice.paidAt,
-          updatedAt: new Date(),
+      return runManifestCommand({
+        entity: "Invoice",
+        command: "applyPayment",
+        body: {
+          id,
+          tenantId,
+          paymentAmount: amount,
+          paymentId: body.paymentId ?? "",
         },
-        include: {
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-            },
-          },
-          event: { select: { id: true, title: true, eventDate: true } },
-        },
+        user: manifestUser,
       });
-
-      return NextResponse.json(formatInvoiceResponse(updated));
     }
 
     if (action === "mark-as-paid") {
-      const updated = await database.invoice.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: {
-          amountPaid: invoice.total,
-          amountDue: 0,
-          status: "PAID",
-          paidAt: new Date(),
-          updatedAt: new Date(),
-        },
-        include: {
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-            },
-          },
-          event: { select: { id: true, title: true, eventDate: true } },
-        },
+      return runManifestCommand({
+        entity: "Invoice",
+        command: "markAsPaid",
+        body: { id, tenantId },
+        user: manifestUser,
       });
-
-      return NextResponse.json(formatInvoiceResponse(updated));
     }
 
     if (action === "mark-overdue") {
@@ -340,27 +278,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
 
-      const updated = await database.invoice.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: {
-          status: "OVERDUE",
-          updatedAt: new Date(),
-        },
-        include: {
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-            },
-          },
-          event: { select: { id: true, title: true, eventDate: true } },
-        },
+      return runManifestCommand({
+        entity: "Invoice",
+        command: "markOverdue",
+        body: { id, tenantId },
+        user: manifestUser,
       });
-
-      return NextResponse.json(formatInvoiceResponse(updated));
     }
 
     if (action === "send-reminder") {
@@ -371,61 +294,54 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         );
       }
 
-      // Send reminder email (best-effort)
-      const clientEmail = invoice.client?.email;
-      if (clientEmail) {
-        try {
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
-          const paymentUrl = `${appUrl}/invoices/${invoice.id}`;
-          const currency = "USD";
+      // Governed write first, then best-effort email
+      const result = await runManifestCommand({
+        entity: "Invoice",
+        command: "sendReminder",
+        body: { id, tenantId },
+        user: manifestUser,
+      });
 
-          await resend.emails.send({
-            from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
-            to: clientEmail,
-            subject: `Reminder: Invoice ${invoice.invoiceNumber} — ${invoice.amountDue.toString()} ${currency} due`,
-            react: InvoiceTemplate({
-              clientName:
-                invoice.client?.first_name ||
-                invoice.client?.company_name ||
-                "Valued Client",
-              invoiceNumber: invoice.invoiceNumber,
-              amountDue: invoice.amountDue.toString(),
-              currency,
-              dueDate: invoice.dueDate
-                ? new Date(invoice.dueDate).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : undefined,
-              paymentUrl,
-              notes: invoice.notes ?? undefined,
-            }),
-          });
-        } catch (emailError) {
-          captureException(emailError);
-          log.error("Failed to send reminder email", { error: emailError });
+      // Send reminder email (best-effort, non-fatal)
+      if (result.status === 200) {
+        const clientEmail = invoice.client?.email;
+        if (clientEmail) {
+          try {
+            const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
+            const paymentUrl = `${appUrl}/invoices/${invoice.id}`;
+            const currency = "USD";
+
+            await resend.emails.send({
+              from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
+              to: clientEmail,
+              subject: `Reminder: Invoice ${invoice.invoiceNumber} — ${invoice.amountDue.toString()} ${currency} due`,
+              react: InvoiceTemplate({
+                clientName:
+                  invoice.client?.first_name ||
+                  invoice.client?.company_name ||
+                  "Valued Client",
+                invoiceNumber: invoice.invoiceNumber,
+                amountDue: invoice.amountDue.toString(),
+                currency,
+                dueDate: invoice.dueDate
+                  ? new Date(invoice.dueDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })
+                  : undefined,
+                paymentUrl,
+                notes: invoice.notes ?? undefined,
+              }),
+            });
+          } catch (emailError) {
+            captureException(emailError);
+            log.error("Failed to send reminder email", { error: emailError });
+          }
         }
       }
 
-      const updated = await database.invoice.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { updatedAt: new Date() },
-        include: {
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-            },
-          },
-          event: { select: { id: true, title: true, eventDate: true } },
-        },
-      });
-
-      return NextResponse.json(formatInvoiceResponse(updated));
+      return result;
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -448,13 +364,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
 /**
  * POST /api/accounting/invoices/[id]/send
- * Send an invoice to client
+ * Send an invoice to client via Manifest runtime.
+ *
+ * Pre-validation reads stay as direct Prisma reads per constitution §10.
+ * Email sending is a best-effort side-effect after the governed write.
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
-    // Manager-tier role guard (P1.AM). Sending an invoice transitions it to
-    // SENT and triggers a client-visible email — keep it off staff-tier
-    // sessions.
     const guard = await requireApiManager();
     if (!guard.ok) {
       return guard.response;
@@ -467,6 +383,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         tenantId,
         id,
         deletedAt: null,
+      },
+      include: {
+        client: true,
+        event: true,
       },
     });
 
@@ -484,22 +404,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       "send"
     );
 
-    // Update invoice status
-    const updatedInvoice = await database.invoice.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+    // Governed write: transition to SENT via Manifest runtime
+    const user = await resolveCurrentUser(request);
+    const result = await runManifestCommand({
+      entity: "Invoice",
+      command: "send",
+      body: {
+        id,
+        tenantId,
+        clientContactId: invoice.clientId,
       },
-      data: {
-        status: "SENT",
-        sentAt: new Date(),
-      },
-      include: {
-        client: true,
-        event: true,
-      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
     // Send notification email (best-effort — failure does not roll back send).
@@ -507,64 +422,50 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // the email is a side-effect that should eventually move into a manifest
     // event handler. Failing OPEN preserves invoice send semantics during a
     // transient Resend/SMTP outage.
-    const clientEmail = updatedInvoice.client?.email;
-    if (clientEmail) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
-      const paymentUrl = `${appUrl}/invoices/${updatedInvoice.id}`;
-      const clientName =
-        updatedInvoice.client?.first_name ||
-        updatedInvoice.client?.company_name ||
-        "Valued Client";
-      const dueDate = updatedInvoice.dueDate
-        ? new Date(updatedInvoice.dueDate).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : undefined;
+    if (result.status === 200) {
+      const clientEmail = invoice.client?.email;
+      if (clientEmail) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL;
+        const paymentUrl = `${appUrl}/invoices/${invoice.id}`;
+        const clientName =
+          invoice.client?.first_name ||
+          invoice.client?.company_name ||
+          "Valued Client";
+        const dueDate = invoice.dueDate
+          ? new Date(invoice.dueDate).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })
+          : undefined;
 
-      // Invoice amounts are stored as Postgres `money` (single tenant currency,
-      // USD by default). When a per-tenant currency setting lands, replace this
-      // literal with that value.
-      const currency = "USD";
-      const amountDue = updatedInvoice.amountDue.toString();
+        const currency = "USD";
+        const amountDue = invoice.amountDue.toString();
 
-      try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
-          to: clientEmail,
-          subject: `Invoice ${updatedInvoice.invoiceNumber} — ${amountDue} ${currency} due`,
-          react: InvoiceTemplate({
-            clientName,
-            invoiceNumber: updatedInvoice.invoiceNumber,
-            amountDue,
-            currency,
-            dueDate,
-            paymentUrl,
-            notes: updatedInvoice.notes ?? undefined,
-          }),
-        });
-      } catch (emailError) {
-        // Non-fatal: status transition already committed.
-        captureException(emailError);
-        log.error("Failed to send invoice email", { error: emailError });
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM ?? DEFAULT_FROM_ADDRESS,
+            to: clientEmail,
+            subject: `Invoice ${invoice.invoiceNumber} — ${amountDue} ${currency} due`,
+            react: InvoiceTemplate({
+              clientName,
+              invoiceNumber: invoice.invoiceNumber,
+              amountDue,
+              currency,
+              dueDate,
+              paymentUrl,
+              notes: invoice.notes ?? undefined,
+            }),
+          });
+        } catch (emailError) {
+          // Non-fatal: status transition already committed.
+          captureException(emailError);
+          log.error("Failed to send invoice email", { error: emailError });
+        }
       }
     }
 
-    return NextResponse.json<InvoiceResponse>({
-      ...updatedInvoice,
-      subtotal: updatedInvoice.subtotal.toString(),
-      taxAmount: updatedInvoice.taxAmount.toString(),
-      discountAmount: updatedInvoice.discountAmount.toString(),
-      total: updatedInvoice.total.toString(),
-      amountPaid: updatedInvoice.amountPaid.toString(),
-      amountDue: updatedInvoice.amountDue.toString(),
-      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
-      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
-      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
-      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
-      metadata: updatedInvoice.metadata as Record<string, unknown>,
-    });
+    return result;
   } catch (error) {
     captureException(error);
     const prismaResult = translatePrismaError(error);
@@ -584,12 +485,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
 /**
  * DELETE /api/accounting/invoices/[id]
- * Void an invoice
+ * Void an invoice via Manifest runtime.
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
-    // Manager-tier role guard (P1.AM). Voiding an invoice removes a
-    // receivable from the AR ledger — staff-tier sessions must not reach it.
     const guard = await requireApiManager();
     if (!guard.ok) {
       return guard.response;
@@ -619,32 +518,16 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       "void"
     );
 
-    // Update invoice status to VOID
-    const updatedInvoice = await database.invoice.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "Invoice",
+      command: "voidInvoice",
+      body: {
+        id,
+        tenantId,
+        reason: "Voided via API",
       },
-      data: {
-        status: "VOID",
-      },
-    });
-
-    return NextResponse.json<InvoiceResponse>({
-      ...updatedInvoice,
-      subtotal: updatedInvoice.subtotal.toString(),
-      taxAmount: updatedInvoice.taxAmount.toString(),
-      discountAmount: updatedInvoice.discountAmount.toString(),
-      total: updatedInvoice.total.toString(),
-      amountPaid: updatedInvoice.amountPaid.toString(),
-      amountDue: updatedInvoice.amountDue.toString(),
-      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
-      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
-      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
-      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
-      metadata: updatedInvoice.metadata as Record<string, unknown>,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   } catch (error) {
     captureException(error);

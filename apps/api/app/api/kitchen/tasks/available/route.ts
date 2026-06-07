@@ -61,7 +61,6 @@ export async function GET(request: Request) {
   const whereClause: Prisma.KitchenTaskWhereInput = {
     AND: [
       { tenantId },
-      { deletedAt: null },
       // Exclude tasks already claimed by me
       ...(myClaimedTaskIds.size > 0
         ? [{ id: { notIn: Array.from(myClaimedTaskIds) } }]

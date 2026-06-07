@@ -2,6 +2,7 @@
 // Manifest spec for revenue recognition schedules and accrual accounting
 
 entity RevenueRecognitionSchedule {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -12,9 +13,9 @@ entity RevenueRecognitionSchedule {
   property required clientId: string
 
   // Revenue details
-  property required totalAmount: number = 0
-  property required recognizedAmount: number = 0
-  property required remainingAmount: number = 0
+  property required totalAmount: money = 0
+  property required recognizedAmount: money = 0
+  property required remainingAmount: money = 0
 
   // Recognition configuration
   property required method: string = "IMMEDIATE"
@@ -23,7 +24,7 @@ entity RevenueRecognitionSchedule {
   // Timing
   property required startDate: datetime = now()
   property required endDate: datetime = now()
-  property recognitionPeriod: number = 0
+  property recognitionPeriod: int = 0
 
   // Service period (for SERVICE_PERIOD method)
   property serviceStartDate: datetime = now()
@@ -39,18 +40,20 @@ entity RevenueRecognitionSchedule {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  timestamps
+  property completedAt: datetime
 
   // Computed properties
-  computed recognitionPercentage: number = self.totalAmount > 0 ? (self.recognizedAmount / self.totalAmount) * 100 : 0
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount)
   computed isFullyRecognized: boolean = self.recognizedAmount >= self.totalAmount - 0.01
-  computed milestonePercentage: number = self.totalMilestones > 0 ? (self.completedMilestones / self.totalMilestones) * 100 : 0
+  computed milestonePercentage: number = percent(self.completedMilestones, self.totalMilestones)
   computed daysRemaining: number = self.endDate > now() ? self.endDate - now() : 0
   computed totalDays: number = self.endDate - self.startDate
 
   // Constraints
+  relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint amount_positive: self.totalAmount > 0 "Total amount must be positive"
   constraint amount_consistent: self.totalAmount == self.recognizedAmount + self.remainingAmount "Total must equal recognized plus remaining"
   constraint dates_valid: self.endDate >= self.startDate "End date must be after start date"
@@ -58,18 +61,23 @@ entity RevenueRecognitionSchedule {
   constraint validMethod: self.method in ["IMMEDIATE", "PROPORTIONAL", "MILESTONE_BASED", "PERCENTAGE_COMPLETE", "STRAIGHT_LINE", "SERVICE_PERIOD"] "Method must be valid"
 
   // Commands
-  command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: number, endDate: number, recognitionPeriod: number, description: string, notes: string) {
+  default policy RevenueRecognitionScheduleDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
+  // eventId + clientId are NOT caller input: they are inherited server-side from
+  // the linked Invoice via parent-context propagation (Task 8.10,
+  // specs/parent-context-propagation.md). The Invoice always owns a real
+  // eventId/clientId (both required), so the schedule never has to re-ask for a
+  // fact the parent already holds. `metadata` is kept as an explicit create param
+  // ONLY to fence the generic resolver: Invoice also owns a `metadata` string, and
+  // the schedule's metadata is its own — listing it as a param excludes it from
+  // inheritance so the invoice's metadata never bleeds onto the schedule.
+  command create(invoiceId: string, contractId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: string) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
-    guard eventId != null and eventId != "" "Event ID is required"
     guard contractId != null and contractId != "" "Contract ID is required"
-    guard clientId != null and clientId != "" "Client ID is required"
     guard totalAmount > 0 "Total amount must be positive"
     guard endDate >= startDate "End date must be after start date"
 
     mutate invoiceId = invoiceId
-    mutate eventId = eventId
     mutate contractId = contractId
-    mutate clientId = clientId
     mutate totalAmount = totalAmount
     mutate recognizedAmount = 0
     mutate remainingAmount = totalAmount
@@ -80,8 +88,7 @@ entity RevenueRecognitionSchedule {
     mutate recognitionPeriod = recognitionPeriod
     mutate description = description
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
+    mutate metadata = metadata != null ? metadata : ""
 
     emit RecognitionStarted
   }
@@ -90,7 +97,6 @@ entity RevenueRecognitionSchedule {
     guard self.status == "PENDING" "Can only start pending recognition"
     guard now() >= self.startDate "Cannot start before start date"
     mutate status = "IN_PROGRESS"
-    mutate updatedAt = now()
     emit RecognitionStarted
   }
 
@@ -100,7 +106,6 @@ entity RevenueRecognitionSchedule {
     guard amount <= self.remainingAmount "Cannot recognize more than remaining amount"
     mutate recognizedAmount = self.recognizedAmount + amount
     mutate remainingAmount = self.remainingAmount - amount
-    mutate updatedAt = now()
     emit RevenueRecognized
   }
 
@@ -109,7 +114,6 @@ entity RevenueRecognitionSchedule {
     guard self.remainingAmount <= 0.01 "Not fully recognized yet"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
@@ -120,7 +124,6 @@ entity RevenueRecognitionSchedule {
     mutate completedMilestones = self.completedMilestones + 1
     mutate recognizedAmount = self.recognizedAmount + amount
     mutate remainingAmount = self.remainingAmount - amount
-    mutate updatedAt = now()
     emit MilestoneRecognized
   }
 
@@ -130,7 +133,6 @@ entity RevenueRecognitionSchedule {
     guard self.completedMilestones >= self.totalMilestones or self.remainingAmount <= 0.01 "Not all milestones completed"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
@@ -141,7 +143,6 @@ entity RevenueRecognitionSchedule {
     guard (self.totalAmount * percentage) / 100 > self.recognizedAmount "Target percentage already reached"
     mutate recognizedAmount = (self.totalAmount * percentage) / 100
     mutate remainingAmount = self.totalAmount - (self.totalAmount * percentage) / 100
-    mutate updatedAt = now()
     emit PercentageRecognized
   }
 
@@ -151,21 +152,18 @@ entity RevenueRecognitionSchedule {
     guard self.remainingAmount <= 0.01 "Not fully recognized yet"
     mutate status = "COMPLETED"
     mutate completedAt = now()
-    mutate updatedAt = now()
     emit RecognitionCompleted
   }
 
   command pause() {
     guard self.status == "IN_PROGRESS" "Can only pause in-progress recognition"
     mutate status = "PAUSED"
-    mutate updatedAt = now()
     emit RecognitionPaused
   }
 
   command resume() {
     guard self.status == "PAUSED" "Can only resume paused recognition"
     mutate status = "IN_PROGRESS"
-    mutate updatedAt = now()
     emit RecognitionResumed
   }
 
@@ -173,37 +171,57 @@ entity RevenueRecognitionSchedule {
     guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot cancel completed recognition"
     mutate status = "CANCELLED"
     mutate notes = self.notes + "\nCancelled: " + reason
-    mutate updatedAt = now()
     emit RecognitionCancelled
   }
 
-  command adjustSchedule(newEndDate: timestamp, newTotalAmount: decimal) {
+  command adjustSchedule(newEndDate: timestamp, newTotalAmount: decimal, description: string, notes: string, recognitionPeriod: decimal) {
     guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot adjust completed recognition"
     guard newEndDate > now() "New end date must be in the future"
     mutate endDate = newEndDate
     mutate remainingAmount = self.remainingAmount + (newTotalAmount - self.totalAmount)
     mutate totalAmount = newTotalAmount
-    mutate updatedAt = now()
+    mutate description = description
+    mutate notes = notes
+    mutate recognitionPeriod = recognitionPeriod
     emit ScheduleAdjusted
   }
 
-  store RevenueRecognitionSchedule in memory
+  command reverseRecognition(recognizedAmount: decimal, remainingAmount: decimal) {
+    guard self.status in ["IN_PROGRESS", "COMPLETED"] "Can only reverse active or completed recognition"
+    guard recognizedAmount >= 0 "Recognized amount must be non-negative"
+    guard remainingAmount >= 0 "Remaining amount must be non-negative"
+    mutate recognizedAmount = recognizedAmount
+    mutate remainingAmount = remainingAmount
+    mutate status = "IN_PROGRESS"
+    mutate completedAt = null
+    emit RecognitionReversed
+  }
+
+  // State transitions
+  transition status from "PENDING" to ["IN_PROGRESS", "CANCELLED", "SKIPPED"]
+  transition status from "IN_PROGRESS" to ["PAUSED", "COMPLETED", "CANCELLED"]
+  transition status from "PAUSED" to ["IN_PROGRESS", "CANCELLED"]
+  transition status from "COMPLETED" to ["IN_PROGRESS"]
+  // "COMPLETED", "CANCELLED", "SKIPPED" are terminal states
+
+  store RevenueRecognitionSchedule in durable
 }
 
 entity RevenueRecognitionLine {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required scheduleId: string
 
   // Line details
   property required sequence: int = 0
-  property required amount: number = 0
-  property required recognizedAmount: number = 0
+  property required amount: money = 0
+  property required recognizedAmount: money = 0
   property required status: string = "PENDING"
 
   // Timing
   property required dueDate: datetime = now()
-  property recognizedAt: datetime = now()
+  property recognizedAt: datetime
 
   // Milestone info (for milestone-based recognition)
   property milestoneId: string = ""
@@ -216,23 +234,25 @@ entity RevenueRecognitionLine {
   property metadata: string = ""
 
   // Timestamps
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
 
   // Computed properties
   computed isRecognized: boolean = self.status == "RECOGNIZED"
   computed isOverdue: boolean = self.status == "PENDING" and self.dueDate < now()
   computed daysUntilDue: number = self.dueDate - now()
-  computed recognitionPercentage: number = self.amount > 0 ? (self.recognizedAmount / self.amount) * 100 : 0
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.amount)
 
   // Constraints
+  relationship belongsTo schedule: RevenueRecognitionSchedule fields [tenantId, scheduleId] references [tenantId, id]
+
   constraint amount_positive: self.amount > 0 "Line amount must be positive"
   constraint recognized_not_exceed: self.recognizedAmount <= self.amount "Recognized amount cannot exceed line amount"
   constraint sequence_positive: self.sequence >= 0 "Sequence must be non-negative"
-  constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "SKIPPED", "CANCELLED"] "Status must be valid"
+  constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "REVERSED", "SKIPPED", "CANCELLED"] "Status must be valid"
 
   // Commands
-  command create(scheduleId: string, sequence: number, amount: number, dueDate: number, milestoneId: string, milestoneName: string, description: string, notes: string) {
+  default policy RevenueRecognitionLineDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
+  command create(scheduleId: string, sequence: number, amount: number, dueDate: datetime, milestoneId: string, milestoneName: string, description: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard amount > 0 "Line amount must be positive"
     guard sequence >= 0 "Sequence must be non-negative"
@@ -247,8 +267,6 @@ entity RevenueRecognitionLine {
     mutate milestoneName = milestoneName
     mutate description = description
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LineCreated
   }
@@ -260,7 +278,6 @@ entity RevenueRecognitionLine {
     mutate recognizedAmount = amount
     mutate status = "RECOGNIZED"
     mutate recognizedAt = recognizedAt != null and recognizedAt > 0 ? recognizedAt : now()
-    mutate updatedAt = now()
     emit LineRecognized
   }
 
@@ -268,18 +285,22 @@ entity RevenueRecognitionLine {
     guard self.status == "PENDING" "Can only skip pending lines"
     mutate status = "SKIPPED"
     mutate notes = self.notes + "\nSkipped: " + reason
-    mutate updatedAt = now()
     emit LineSkipped
   }
 
   command cancel() {
     guard self.status == "PENDING" "Can only cancel pending lines"
     mutate status = "CANCELLED"
-    mutate updatedAt = now()
     emit LineCancelled
   }
 
-  store RevenueRecognitionLine in memory
+  command reverse() {
+    guard self.status == "RECOGNIZED" "Can only reverse recognized lines"
+    mutate status = "REVERSED"
+    emit LineReversed
+  }
+
+  store RevenueRecognitionLine in durable
 }
 
 // Policy definitions
@@ -294,7 +315,7 @@ event RecognitionStarted: "finance.revenue-recognition.started" {
   invoiceId: string
   totalAmount: number
   method: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
@@ -304,7 +325,7 @@ event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
   amount: number
   recognizedAmount: number
   remainingAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionCompleted: "finance.revenue-recognition.completed" {
@@ -313,7 +334,7 @@ event RecognitionCompleted: "finance.revenue-recognition.completed" {
   invoiceId: string
   recognizedAmount: number
   totalAmount: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
@@ -324,7 +345,7 @@ event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
   amount: number
   completedMilestones: number
   totalMilestones: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" {
@@ -334,7 +355,7 @@ event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" 
   percentage: number
   recognizedAmount: number
   totalAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionPaused: "finance.revenue-recognition.paused" {
@@ -342,14 +363,14 @@ event RecognitionPaused: "finance.revenue-recognition.paused" {
   tenantId: string
   invoiceId: string
   recognizedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionResumed: "finance.revenue-recognition.resumed" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
@@ -358,16 +379,16 @@ event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
   invoiceId: string
   reason: string
   recognizedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ScheduleAdjusted: "finance.revenue-recognition.schedule_adjusted" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  newEndDate: number
+  newEndDate: datetime
   newAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LineCreated: "finance.revenue-recognition.line_created" {
@@ -376,7 +397,7 @@ event LineCreated: "finance.revenue-recognition.line_created" {
   scheduleId: string
   sequence: number
   amount: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event LineRecognized: "finance.revenue-recognition.line_recognized" {
@@ -384,7 +405,7 @@ event LineRecognized: "finance.revenue-recognition.line_recognized" {
   tenantId: string
   scheduleId: string
   amount: number
-  recognizedAt: number
+  recognizedAt: datetime
 }
 
 event LineSkipped: "finance.revenue-recognition.line_skipped" {
@@ -392,12 +413,29 @@ event LineSkipped: "finance.revenue-recognition.line_skipped" {
   tenantId: string
   scheduleId: string
   reason: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LineCancelled: "finance.revenue-recognition.line_cancelled" {
   lineId: string
   tenantId: string
   scheduleId: string
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event LineReversed: "finance.revenue-recognition.line_reversed" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  amount: number
+  updatedAt: datetime
+}
+
+event RecognitionReversed: "finance.revenue-recognition.recognition_reversed" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  recognizedAmount: number
+  remainingAmount: number
+  updatedAt: datetime
 }

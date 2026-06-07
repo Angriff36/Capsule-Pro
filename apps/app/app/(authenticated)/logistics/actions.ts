@@ -4,15 +4,14 @@
  * Logistics Server Actions
  *
  * Server actions for Driver and Vehicle CRUD operations.
+ * All writes go through governed Manifest runtime (constitution §9).
  */
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -96,12 +95,6 @@ const vehicleSchema = z.object({
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function requireAuth() {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  return getTenantId();
-}
-
 /**
  * Parse FormData into a plain object and validate with the given Zod schema.
  * Uses safeParse per Zod best-practice to avoid unhandled ZodError exceptions
@@ -129,30 +122,44 @@ function parseFormData<T extends z.ZodTypeAny>(
 
 /**
  * Create a new driver.
+ *
+ * Governed write: Driver.create runs through the Manifest runtime (constitution §9).
+ * requireCurrentUser supplies the actor + tenant for policy + audit context (§19).
+ * licenseExpiry is sent as epoch-ms (GenericPrismaStore coerces to DateTime for
+ * @db.Date columns). Empty optionals are sent as "" — GenericPrismaStore coerces
+ * "" → NULL for nullable columns (lossless).
  */
 export async function createDriver(formData: FormData) {
-  const tenantId = await requireAuth();
+  const user = await requireCurrentUser();
 
   const data = parseFormData(formData, driverSchema);
 
-  // Parse licenseExpiry to Date if provided
+  // Convert licenseExpiry to epoch-ms for GenericPrismaStore DateTime coercion.
+  // The Prisma column is @db.Date, so GenericPrismaStore applies asNullableDate()
+  // which does `new Date(value)` — an ISO string or epoch-ms both work.
   const licenseExpiry = data.licenseExpiry
-    ? new Date(`${data.licenseExpiry}T00:00:00.000Z`)
+    ? new Date(`${data.licenseExpiry}T00:00:00.000Z`).getTime()
     : null;
 
-  await database.driver.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "Driver",
+    command: "create",
+    body: {
       name: data.name,
-      phone: data.phone,
-      email: data.email,
-      licenseNumber: data.licenseNumber,
+      phone: data.phone ?? "",
+      email: data.email ?? "",
+      licenseNumber: data.licenseNumber ?? "",
       licenseExpiry,
-      vehicleId: data.vehicleId,
+      vehicleId: data.vehicleId ?? "",
       status: data.status,
-      notes: data.notes,
+      notes: data.notes ?? "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create driver");
+  }
 
   revalidatePath("/logistics/drivers");
   revalidatePath("/logistics");
@@ -161,28 +168,39 @@ export async function createDriver(formData: FormData) {
 
 /**
  * Create a new vehicle.
+ *
+ * Governed write: Vehicle.create runs through the Manifest runtime (constitution §9).
+ * Decimal fields (capacityWeight, capacityVolume, mileage) are sent as numbers —
+ * GenericPrismaStore applies toDecimalInput() for Prisma Decimal columns.
+ * Empty optionals are sent as "" → GenericPrismaStore coerces to NULL (lossless).
  */
 export async function createVehicle(formData: FormData) {
-  const tenantId = await requireAuth();
+  const user = await requireCurrentUser();
 
   const data = parseFormData(formData, vehicleSchema);
 
-  await database.vehicle.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "Vehicle",
+    command: "create",
+    body: {
       make: data.make,
       model: data.model,
-      year: data.year,
-      plateNumber: data.plateNumber,
-      vin: data.vin,
-      capacityWeight: data.capacityWeight,
-      capacityVolume: data.capacityVolume,
-      fuelType: data.fuelType,
-      mileage: data.mileage,
+      year: data.year ?? 0,
+      plateNumber: data.plateNumber ?? "",
+      vin: data.vin ?? "",
+      capacityWeight: data.capacityWeight ?? 0,
+      capacityVolume: data.capacityVolume ?? 0,
+      fuelType: data.fuelType ?? "",
+      mileage: data.mileage ?? 0,
       status: data.status,
-      notes: data.notes,
+      notes: data.notes ?? "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create vehicle");
+  }
 
   revalidatePath("/logistics/vehicles");
   revalidatePath("/logistics");

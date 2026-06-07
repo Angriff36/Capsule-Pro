@@ -7,7 +7,8 @@ import type {
   AvailabilityFilters,
   DayOfWeek,
 } from "@/app/lib/staff/availability/types";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 /**
  * Get all availability records with optional filters
@@ -177,14 +178,12 @@ export async function getAvailabilityById(availabilityId: string) {
  * Create a new availability record
  */
 export async function createAvailability(formData: FormData) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  // Governed write: EmployeeAvailability.create runs through the Manifest runtime
+  // (constitution §9) — no direct database.employeeAvailability.create.
+  // requireCurrentUser supplies the actor + tenant the command needs for its
+  // access policy (hr_admin/payroll_admin/manager/admin) and audit context (§19).
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const employeeId = formData.get("employeeId") as string;
   const dayOfWeekRaw = formData.get("dayOfWeek") as string;
@@ -256,18 +255,38 @@ export async function createAvailability(formData: FormData) {
     throw new Error("Employee already has active availability for this day");
   }
 
-  // Create the availability record
-  const availability = await database.employeeAvailability.create({
-    data: {
-      tenantId,
+  // Governed create. startTime/endTime are @db.Time(6) and effectiveFrom/
+  // effectiveUntil are @db.Date columns; the GenericPrismaStore coerces the
+  // command's string params via `new Date(value)`, so we pass ISO strings built
+  // from the already-validated Date objects (a bare "HH:MM" would parse to an
+  // invalid Date and NULL the NOT NULL Time column).
+  const result = await runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "create",
+    body: {
       employeeId,
       dayOfWeek,
-      startTime: startTimeDate,
-      endTime: endTimeDate,
+      startTime: startTimeDate.toISOString(),
+      endTime: endTimeDate.toISOString(),
       isAvailable,
-      effectiveFrom: createEffectiveFrom2,
-      effectiveUntil: effectiveUntilDate,
+      effectiveFrom: createEffectiveFrom2.toISOString(),
+      effectiveUntil: effectiveUntilDate ? effectiveUntilDate.toISOString() : "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create availability");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  if (!createdId) {
+    throw new Error("EmployeeAvailability.create did not return an id");
+  }
+
+  // Read back the persisted row to preserve the prior return shape.
+  const availability = await database.employeeAvailability.findFirst({
+    where: { tenantId, id: createdId },
   });
 
   revalidatePath("/scheduling/availability");
@@ -281,35 +300,40 @@ export async function updateAvailability(
   availabilityId: string,
   formData: FormData
 ) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  // Governed write: EmployeeAvailability.update runs through the Manifest runtime
+  // (constitution §9) — no direct database.employeeAvailability.update.
+  // The Manifest `update` command requires all fields (full-field mutate pattern),
+  // so we load the existing row, merge caller-supplied changes, and dispatch.
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
-  const dayOfWeek = formData.get("dayOfWeek") as unknown as
-    | DayOfWeek
-    | undefined;
-  const startTime = formData.get("startTime") as string | undefined;
-  const endTime = formData.get("endTime") as string | undefined;
-  const isAvailable = formData.get("isAvailable") as unknown as
-    | boolean
-    | undefined;
-  const effectiveFrom = formData.get("effectiveFrom") as string | undefined;
-  const effectiveUntil = formData.get("effectiveUntil") as
+  const dayOfWeekRaw = formData.get("dayOfWeek") as string | undefined;
+  const startTimeRaw = formData.get("startTime") as string | undefined;
+  const endTimeRaw = formData.get("endTime") as string | undefined;
+  const isAvailableRaw = formData.get("isAvailable") as string | undefined;
+  const effectiveFromRaw = formData.get("effectiveFrom") as string | undefined;
+  const effectiveUntilRaw = formData.get("effectiveUntil") as
     | string
     | null
     | undefined;
 
-  // Get existing availability
+  // Load existing record (constitution §10 — reads bypass Manifest).
+  // We need all current fields to merge with caller-supplied overrides
+  // because the Manifest `update` command mutates every field.
   const [existing] = await database.$queryRaw<
-    Array<{ employeeId: string; dayOfWeek: number }>
+    Array<{
+      employee_id: string;
+      day_of_week: number;
+      start_time: Date;
+      end_time: Date;
+      is_available: boolean;
+      effective_from: Date | null;
+      effective_until: Date | null;
+    }>
   >(
     Prisma.sql`
-      SELECT employee_id, day_of_week
+      SELECT employee_id, day_of_week, start_time, end_time,
+             is_available, effective_from, effective_until
       FROM tenant_staff.employee_availability
       WHERE tenant_id = ${tenantId}
         AND id = ${availabilityId}
@@ -321,112 +345,130 @@ export async function updateAvailability(
     throw new Error("Availability record not found");
   }
 
-  // Update only provided fields
-  interface EmployeeAvailabilityUpdateData {
-    dayOfWeek?: number;
-    startTime?: string;
-    endTime?: string;
-    isAvailable?: boolean;
-    effectiveFrom?: Date;
-    effectiveUntil?: Date | null;
+  // Merge: caller values override existing values.
+  const dayOfWeek =
+    dayOfWeekRaw !== undefined ? Number.parseInt(dayOfWeekRaw, 10) : existing.day_of_week;
+  const startTime = startTimeRaw ?? String(existing.start_time);
+  const endTime = endTimeRaw ?? String(existing.end_time);
+  const isAvailable =
+    isAvailableRaw !== undefined ? isAvailableRaw !== "false" : existing.is_available;
+  const effectiveFrom =
+    effectiveFromRaw !== undefined
+      ? effectiveFromRaw
+      : existing.effective_from
+        ? existing.effective_from.toISOString()
+        : "";
+  const effectiveUntil =
+    effectiveUntilRaw !== undefined
+      ? effectiveUntilRaw
+      : existing.effective_until
+        ? existing.effective_until.toISOString()
+        : "";
+
+  // Validate time format and range
+  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+  if (!(timeRegex.test(startTime) && timeRegex.test(endTime))) {
+    throw new Error("Time must be in HH:MM format (24-hour)");
   }
 
-  const updateData: EmployeeAvailabilityUpdateData = {};
-
-  if (dayOfWeek !== undefined) {
-    updateData.dayOfWeek = dayOfWeek;
-  }
-  if (startTime !== undefined) {
-    updateData.startTime = startTime;
-  }
-  if (endTime !== undefined) {
-    updateData.endTime = endTime;
-  }
-  if (isAvailable !== undefined) {
-    updateData.isAvailable = isAvailable;
-  }
-  if (effectiveFrom !== undefined) {
-    const updateEffectiveFrom = new Date(effectiveFrom);
-    updateData.effectiveFrom = updateEffectiveFrom;
-  }
-  if (effectiveUntil !== undefined) {
-    updateData.effectiveUntil = effectiveUntil
-      ? new Date(effectiveUntil)
-      : null;
+  if (endTime <= startTime) {
+    throw new Error("End time must be after start time");
   }
 
-  // Validate time format and range if provided
-  if (startTime && endTime) {
-    const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-    if (!(timeRegex.test(startTime) && timeRegex.test(endTime))) {
-      throw new Error("Time must be in HH:MM format (24-hour)");
-    }
+  // Convert HH:MM → ISO datetime for @db.Time(6) columns (GenericPrismaStore
+  // coerces string params via `new Date(value)` — bare "HH:MM" produces invalid
+  // Date → NULL → NOT-NULL violation).
+  const [startH, startM] = startTime.split(":").map(Number);
+  const [endH, endM] = endTime.split(":").map(Number);
+  const startTimeDate = new Date(1970, 0, 1, startH, startM);
+  const endTimeDate = new Date(1970, 0, 1, endH, endM);
 
-    if (endTime <= startTime) {
-      throw new Error("End time must be after start time");
-    }
-  }
+  // Validate effective dates
+  const effectiveFromDate = effectiveFrom ? new Date(effectiveFrom) : null;
+  const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
 
-  // Validate effective dates if provided
-  if (effectiveFrom && effectiveUntil !== undefined) {
-    const createEffectiveFrom2 = new Date(effectiveFrom);
-    const effectiveUntilDate = effectiveUntil ? new Date(effectiveUntil) : null;
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const createEffectiveFrom22 = new Date(createEffectiveFrom2);
-    createEffectiveFrom22.setHours(0, 0, 0, 0);
-
-    if (createEffectiveFrom22 < today) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (effectiveFromDate) {
+    const fromNorm = new Date(effectiveFromDate);
+    fromNorm.setHours(0, 0, 0, 0);
+    if (fromNorm < today) {
       throw new Error("Effective from date cannot be in the past");
     }
-
-    if (effectiveUntilDate && effectiveUntilDate < createEffectiveFrom22) {
+    if (effectiveUntilDate && effectiveUntilDate < fromNorm) {
       throw new Error(
         "Effective until date must be on or after effective from date"
       );
     }
   }
 
-  // Update the availability record
-  const availability = await database.employeeAvailability.update({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: availabilityId,
-      },
+  // Governed update — dispatches through Manifest runtime with RBAC, audit, events.
+  const result = await runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "update",
+    body: {
+      id: availabilityId,
+      dayOfWeek,
+      startTime: startTimeDate.toISOString(),
+      endTime: endTimeDate.toISOString(),
+      isAvailable,
+      effectiveFrom: effectiveFromDate ? effectiveFromDate.toISOString() : "",
+      effectiveUntil: effectiveUntilDate ? effectiveUntilDate.toISOString() : "",
     },
-    data: updateData,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update availability");
+  }
+
+  // Read back the updated record (constitution §10 — reads bypass Manifest).
+  const [updated] = await database.$queryRaw<
+    Array<{
+      id: string;
+      employee_id: string;
+      day_of_week: number;
+      start_time: Date;
+      end_time: Date;
+      is_available: boolean;
+      effective_from: Date | null;
+      effective_until: Date | null;
+    }>
+  >(
+    Prisma.sql`
+      SELECT id, employee_id, day_of_week, start_time, end_time,
+             is_available, effective_from, effective_until
+      FROM tenant_staff.employee_availability
+      WHERE tenant_id = ${tenantId}
+        AND id = ${availabilityId}
+        AND deleted_at IS NULL
+    `
+  );
+
   revalidatePath("/scheduling/availability");
-  return { availability };
+  return { availability: updated };
 }
 
 /**
  * Delete (soft delete) an availability record
  */
 export async function deleteAvailability(availabilityId: string) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  // Governed soft delete via the Manifest runtime (constitution §9) — sets
+  // deletedAt + emits EmployeeAvailabilityDeleted, no direct
+  // database.employeeAvailability.update. softDelete only patches deletedAt, so
+  // the @db.Time/@db.Date columns are left untouched.
+  const user = await requireCurrentUser();
 
-  await database.employeeAvailability.update({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: availabilityId,
-      },
-    },
-    data: {
-      deletedAt: new Date(),
-    },
+  const result = await runManifestCommand({
+    entity: "EmployeeAvailability",
+    command: "softDelete",
+    body: { id: availabilityId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete availability");
+  }
 
   revalidatePath("/scheduling/availability");
   return { success: true };
@@ -436,14 +478,11 @@ export async function deleteAvailability(availabilityId: string) {
  * Create batch availability records (recurring weekly patterns)
  */
 export async function createBatchAvailability(formData: FormData) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  // Governed batch create — each pattern routes through EmployeeAvailability.create
+  // on the Manifest runtime (constitution §9). requireCurrentUser supplies the
+  // actor + tenant for the access policy + audit context.
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const employeeId = formData.get("employeeId") as string;
   const patternsJson = formData.get("patterns") as string;
@@ -535,23 +574,50 @@ export async function createBatchAvailability(formData: FormData) {
     );
   }
 
-  // Create all availability records
-  const createdAvailability = await Promise.all(
-    patterns.map(async (pattern) => {
-      return database.employeeAvailability.create({
-        data: {
-          tenantId,
+  // Govern each pattern through EmployeeAvailability.create. Time/date params are
+  // passed as ISO strings the GenericPrismaStore can coerce to the @db.Time(6) /
+  // @db.Date columns — converting the "HH:MM" pattern times to a 1970-epoch ISO
+  // datetime. (The prior direct write passed the raw "HH:MM" string straight to a
+  // DateTime column, which Prisma rejects — this path also fixes that latent bug.)
+  const effectiveFromIso = createEffectiveFrom2.toISOString();
+  const effectiveUntilIso = effectiveUntilDate
+    ? effectiveUntilDate.toISOString()
+    : "";
+
+  const results = await Promise.all(
+    patterns.map((pattern) => {
+      const [ph, pm] = pattern.startTime.split(":").map(Number);
+      const [eh, em] = pattern.endTime.split(":").map(Number);
+      return runManifestCommand({
+        entity: "EmployeeAvailability",
+        command: "create",
+        body: {
           employeeId,
           dayOfWeek: pattern.dayOfWeek,
-          startTime: pattern.startTime,
-          endTime: pattern.endTime,
+          startTime: new Date(1970, 0, 1, ph, pm).toISOString(),
+          endTime: new Date(1970, 0, 1, eh, em).toISOString(),
           isAvailable: pattern.isAvailable ?? true,
-          effectiveFrom: createEffectiveFrom2,
-          effectiveUntil: effectiveUntilDate,
+          effectiveFrom: effectiveFromIso,
+          effectiveUntil: effectiveUntilIso,
         },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });
     })
   );
+
+  for (const result of results) {
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to create availability");
+    }
+  }
+
+  const createdIds = results
+    .map((r) => (r.ok ? (r.result as { id?: string } | null)?.id : undefined))
+    .filter((id): id is string => Boolean(id));
+
+  const createdAvailability = await database.employeeAvailability.findMany({
+    where: { tenantId, id: { in: createdIds } },
+  });
 
   revalidatePath("/scheduling/availability");
   return { availability: createdAvailability };

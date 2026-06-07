@@ -1,8 +1,10 @@
 "use server";
 
-import { tenantDatabase, type WasteEntry } from "@repo/database";
+import { database, type WasteEntry } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -52,7 +54,7 @@ const getDecimal = (formData: FormData, key: string): number | undefined => {
 };
 
 // ============================================================================
-// Query Operations
+// Query Operations (direct Prisma reads — constitution §10)
 // ============================================================================
 
 /**
@@ -64,10 +66,11 @@ export const getWasteEntries = async (filters?: {
   locationId?: string;
 }): Promise<WasteEntry[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.wasteEntry.findMany({
+  return database.wasteEntry.findMany({
     where: {
+      tenantId,
+      deletedAt: null,
       ...(filters?.itemId && { inventoryItemId: filters.itemId }),
       ...(filters?.reasonId && { reasonId: filters.reasonId }),
       ...(filters?.locationId && { locationId: filters.locationId }),
@@ -87,10 +90,9 @@ export const getWasteEntryById = async (
   entryId: string
 ): Promise<WasteEntry | null> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.wasteEntry.findFirst({
-    where: { id: entryId },
+  return database.wasteEntry.findFirst({
+    where: { tenantId, id: entryId, deletedAt: null },
     include: {
       inventoryItem: true,
       reason: true,
@@ -99,18 +101,22 @@ export const getWasteEntryById = async (
 };
 
 // ============================================================================
-// Create Operation
+// Create Operation (governed via Manifest runtime)
 // ============================================================================
 
 /**
- * Create a new waste entry
+ * Create a new waste entry.
+ *
+ * NOTE: locationId is NOT a create param — when eventId is set, location
+ * is inherited from the parent Event via parent-context propagation.
+ * totalCost is auto-computed (quantity × unitCost). status defaults to
+ * "logged" via property default (never set explicitly — self-transition bug).
  */
 export const createWasteEntry = async (
   formData: FormData
 ): Promise<WasteEntry> => {
-  const tenantId = await requireTenantId();
-  const currentUser = await requireCurrentUser();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const inventoryItemId = getString(formData, "inventoryItemId");
   if (!inventoryItemId) {
@@ -131,53 +137,42 @@ export const createWasteEntry = async (
     throw new Error("Quantity must be greater than 0.");
   }
 
-  const unitId = getInt(formData, "unitId");
-  const locationId = getOptionalString(formData, "locationId");
-  const eventId = getOptionalString(formData, "eventId");
-  const unitCost = getDecimal(formData, "unitCost");
-  const totalCost = getDecimal(formData, "totalCost");
-  const notes = getOptionalString(formData, "notes");
+  const unitId = getInt(formData, "unitId") ?? 0;
+  const eventId = getOptionalString(formData, "eventId") ?? "";
+  const unitCost = getDecimal(formData, "unitCost") ?? 0;
+  const notes = getOptionalString(formData, "notes") ?? "";
 
-  const entry = await client.$transaction(async (tx) => {
-    const created = await tx.wasteEntry.create({
-      data: {
-        tenantId,
-        inventoryItemId,
-        reasonId,
-        quantity,
-        unitId,
-        locationId,
-        eventId,
-        loggedBy: currentUser.id,
-        unitCost,
-        totalCost,
-        notes,
-      },
-      include: {
-        inventoryItem: true,
-        reason: true,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.waste",
-        aggregateId: created.id,
-        eventType: "kitchen.waste.created",
-        payload: {
-          wasteEntryId: created.id,
-          inventoryItemId: created.inventoryItemId,
-          reasonId: created.reasonId,
-          quantity: Number(created.quantity),
-          loggedBy: created.loggedBy,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return created;
+  const result = await runManifestCommand({
+    entity: "WasteEntry",
+    command: "create",
+    body: {
+      inventoryItemId,
+      reasonId,
+      quantity,
+      unitId,
+      eventId,
+      loggedBy: user.id,
+      unitCost,
+      notes,
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create waste entry");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "WasteEntry.create did not return an id");
+
+  const entry = await database.wasteEntry.findFirst({
+    where: { tenantId, id: createdId },
+    include: {
+      inventoryItem: true,
+      reason: true,
+    },
+  });
+  invariant(entry, "Created waste entry could not be loaded");
 
   revalidatePath("/kitchen/waste");
 
@@ -185,70 +180,64 @@ export const createWasteEntry = async (
 };
 
 // ============================================================================
-// Update Operation
+// Update Operation (governed via Manifest runtime)
 // ============================================================================
 
 /**
- * Update a waste entry
+ * Update a waste entry.
+ *
+ * The update command mutates quantity, unitId, locationId, notes, unitCost.
+ * totalCost is auto-recalculated. reasonId is NOT updatable.
  */
 export const updateWasteEntry = async (
   formData: FormData
 ): Promise<WasteEntry> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const entryId = getString(formData, "entryId");
   if (!entryId) {
     throw new Error("Entry ID is required.");
   }
 
+  // Read existing for merge (update is full-field mutation)
+  const existing = await database.wasteEntry.findFirst({
+    where: { tenantId, id: entryId, deletedAt: null },
+  });
+  invariant(existing, "Waste entry not found");
+
   const quantity = getDecimal(formData, "quantity");
-  const reasonIdStr = getString(formData, "reasonId");
-  const reasonId = reasonIdStr ? Number.parseInt(reasonIdStr, 10) : undefined;
   const unitId = getInt(formData, "unitId");
   const locationId = getOptionalString(formData, "locationId");
   const unitCost = getDecimal(formData, "unitCost");
-  const totalCost = getDecimal(formData, "totalCost");
   const notes = getOptionalString(formData, "notes");
 
-  const entry = await client.$transaction(async (tx) => {
-    const updated = await tx.wasteEntry.update({
-      where: { tenantId_id: { tenantId, id: entryId } },
-      data: {
-        ...(quantity !== undefined && { quantity }),
-        ...(reasonId !== undefined && !Number.isNaN(reasonId) && { reasonId }),
-        ...(unitId !== undefined && { unitId }),
-        ...(locationId !== undefined && {
-          locationId: locationId || null,
-        }),
-        ...(unitCost !== undefined && { unitCost }),
-        ...(totalCost !== undefined && { totalCost }),
-        ...(notes !== undefined && { notes: notes || null }),
-      },
-      include: {
-        inventoryItem: true,
-        reason: true,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.waste",
-        aggregateId: updated.id,
-        eventType: "kitchen.waste.updated",
-        payload: {
-          wasteEntryId: updated.id,
-          inventoryItemId: updated.inventoryItemId,
-          reasonId: updated.reasonId,
-          quantity: Number(updated.quantity),
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return updated;
+  const result = await runManifestCommand({
+    entity: "WasteEntry",
+    command: "update",
+    body: {
+      id: entryId,
+      quantity: quantity ?? Number(existing.quantity),
+      unitId: unitId ?? existing.unitId ?? 0,
+      locationId: locationId !== undefined ? (locationId ?? "") : (existing.locationId ?? ""),
+      notes: notes !== undefined ? (notes ?? "") : (existing.notes ?? ""),
+      unitCost: unitCost ?? Number(existing.unitCost),
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update waste entry");
+  }
+
+  const entry = await database.wasteEntry.findFirst({
+    where: { tenantId, id: entryId },
+    include: {
+      inventoryItem: true,
+      reason: true,
+    },
+  });
+  invariant(entry, "Updated waste entry could not be loaded");
 
   revalidatePath("/kitchen/waste");
 
@@ -256,38 +245,33 @@ export const updateWasteEntry = async (
 };
 
 // ============================================================================
-// Delete Operation
+// Delete Operation (governed via Manifest runtime — soft delete)
 // ============================================================================
 
 /**
- * Delete a waste entry
+ * Soft delete a waste entry
  */
 export const deleteWasteEntry = async (entryId: string): Promise<void> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
 
   if (!entryId) {
     throw new Error("Entry ID is required.");
   }
 
-  await client.$transaction(async (tx) => {
-    await tx.wasteEntry.delete({
-      where: { tenantId_id: { tenantId, id: entryId } },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.waste",
-        aggregateId: entryId,
-        eventType: "kitchen.waste.deleted",
-        payload: {
-          wasteEntryId: entryId,
-        },
-        status: "pending" as const,
-      },
-    });
+  const result = await runManifestCommand({
+    entity: "WasteEntry",
+    command: "softDelete",
+    body: {
+      id: entryId,
+      reason: "Deleted by user",
+      userId: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete waste entry");
+  }
 
   revalidatePath("/kitchen/waste");
 };

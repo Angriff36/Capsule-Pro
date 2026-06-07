@@ -4,6 +4,7 @@
 // that EventStaff assignments reference. Authored 2026-05-30 for the Manifest vertical slice.
 
 entity StaffMember {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required displayName: string = "Unnamed"
@@ -12,8 +13,7 @@ entity StaffMember {
   property role: string = "server"
   property required status: string = "active"
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
@@ -21,6 +21,11 @@ entity StaffMember {
   constraint requireDisplayName: self.displayName != null and self.displayName != "" "Display name is required"
   constraint validStatus: self.status in ["active", "inactive"] "Status must be active or inactive"
 
+  // State transitions
+  transition status from "active" to ["inactive"]
+  transition status from "inactive" to ["active"]
+
+  default policy StaffMemberDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff member management"
   command create(displayName: string, email: string, phone: string, role: string) {
     guard displayName != null and displayName != "" "Display name is required"
 
@@ -29,8 +34,6 @@ entity StaffMember {
     mutate phone = phone
     mutate role = role
     mutate status = "active"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit StaffMemberCreated
   }
@@ -42,7 +45,6 @@ entity StaffMember {
     mutate email = email
     mutate phone = phone
     mutate role = role
-    mutate updatedAt = now()
 
     emit StaffMemberUpdated
   }
@@ -51,9 +53,25 @@ entity StaffMember {
     guard self.isActive "Staff member is already inactive"
 
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit StaffMemberDeactivated
+  }
+
+  command reactivate() {
+    guard self.status == "inactive" "Staff member is already active"
+
+    mutate status = "active"
+
+    emit StaffMemberReactivated
+  }
+
+  command changeRole(role: string, changedBy: string) {
+    guard self.isActive "Cannot change the role of an inactive staff member"
+    guard role != null and role != "" "Role is required"
+
+    mutate role = role
+
+    emit StaffMemberRoleChanged
   }
 
   store StaffMember in durable
@@ -66,7 +84,7 @@ event StaffMemberCreated: "staff.staff-member.created" {
   tenantId: string
   displayName: string
   role: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event StaffMemberUpdated: "staff.staff-member.updated" {
@@ -74,12 +92,26 @@ event StaffMemberUpdated: "staff.staff-member.updated" {
   tenantId: string
   displayName: string
   role: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event StaffMemberDeactivated: "staff.staff-member.deactivated" {
   staffMemberId: string
   tenantId: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
+}
+
+event StaffMemberReactivated: "staff.staff-member.reactivated" {
+  staffMemberId: string
+  tenantId: string
+  reactivatedAt: datetime
+}
+
+event StaffMemberRoleChanged: "staff.staff-member.role-changed" {
+  staffMemberId: string
+  tenantId: string
+  role: string
+  changedBy: string
+  changedAt: datetime
 }

@@ -1,7 +1,8 @@
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * PATCH /api/kitchen/prep-lists/items/[id]
@@ -23,12 +24,11 @@ export async function PATCH(
 ) {
   const { id } = await params;
 
-  // Clone the request so we can read the body to determine the command,
-  // while still passing the original request to executeManifestCommand
-  const clonedRequest = request.clone();
+  // Parse the body to determine the command
+  const user = await resolveCurrentUser(request);
   let body: Record<string, unknown> = {};
   try {
-    body = await clonedRequest.json();
+    body = await request.json();
   } catch (error) {
     log.error("[PrepListItem/PATCH] Failed to parse request body", { error });
     return NextResponse.json(
@@ -36,6 +36,8 @@ export async function PATCH(
       { status: 400 }
     );
   }
+
+  const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
 
   // Route to the appropriate manifest command based on the field being updated
 
@@ -45,28 +47,22 @@ export async function PATCH(
       log.debug("[PrepListItem/PATCH] Delegating to markCompleted command", {
         itemId: id,
       });
-      return executeManifestCommand(request, {
-        entityName: "PrepListItem",
-        commandName: "markCompleted",
-        params: { id },
-        transformBody: (_body, ctx) => ({
-          id,
-          userId: ctx.userId,
-        }),
+      return runManifestCommand({
+        entity: "PrepListItem",
+        command: "markCompleted",
+        body: { id, userId: user.id },
+        user: userCtx,
       });
     }
 
     log.debug("[PrepListItem/PATCH] Delegating to markUncompleted command", {
       itemId: id,
     });
-    return executeManifestCommand(request, {
-      entityName: "PrepListItem",
-      commandName: "markUncompleted",
-      params: { id },
-      transformBody: (_body, ctx) => ({
-        id,
-        userId: ctx.userId,
-      }),
+    return runManifestCommand({
+      entity: "PrepListItem",
+      command: "markUncompleted",
+      body: { id, userId: user.id },
+      user: userCtx,
     });
   }
 
@@ -76,15 +72,11 @@ export async function PATCH(
       itemId: id,
       scaledQuantity: body.scaledQuantity,
     });
-    return executeManifestCommand(request, {
-      entityName: "PrepListItem",
-      commandName: "updateQuantity",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
-        id,
-        scaledQuantity: reqBody.scaledQuantity,
-        userId: ctx.userId,
-      }),
+    return runManifestCommand({
+      entity: "PrepListItem",
+      command: "updateQuantity",
+      body: { id, scaledQuantity: body.scaledQuantity, userId: user.id },
+      user: userCtx,
     });
   }
 
@@ -93,15 +85,11 @@ export async function PATCH(
     log.debug("[PrepListItem/PATCH] Delegating to updatePrepNotes command", {
       itemId: id,
     });
-    return executeManifestCommand(request, {
-      entityName: "PrepListItem",
-      commandName: "updatePrepNotes",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
-        id,
-        preparationNotes: reqBody.preparationNotes,
-        userId: ctx.userId,
-      }),
+    return runManifestCommand({
+      entity: "PrepListItem",
+      command: "updatePrepNotes",
+      body: { id, preparationNotes: body.preparationNotes, userId: user.id },
+      user: userCtx,
     });
   }
 
@@ -111,16 +99,11 @@ export async function PATCH(
       itemId: id,
       stationId: body.stationId,
     });
-    return executeManifestCommand(request, {
-      entityName: "PrepListItem",
-      commandName: "updateStation",
-      params: { id },
-      transformBody: (reqBody, ctx) => ({
-        id,
-        stationId: reqBody.stationId,
-        stationName: reqBody.stationName,
-        userId: ctx.userId,
-      }),
+    return runManifestCommand({
+      entity: "PrepListItem",
+      command: "updateStation",
+      body: { id, stationId: body.stationId, stationName: body.stationName, userId: user.id },
+      user: userCtx,
     });
   }
 
@@ -157,13 +140,13 @@ export async function DELETE(
     { itemId: id }
   );
 
-  return executeManifestCommand(request, {
-    entityName: "PrepListItem",
-    commandName: "markUncompleted",
-    params: { id },
-    transformBody: (_body, ctx) => ({
-      id,
-      userId: ctx.userId,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "PrepListItem",
+    command: "markUncompleted",
+    body: { ...rawBody, id, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

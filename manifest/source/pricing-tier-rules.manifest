@@ -1,34 +1,52 @@
 // Pricing Tier Rules
 // Manifest spec for pricing tier management
-// Version: @angriff36/manifest v0.3.35
+// A PricingTier defines a quantity-based price band for a catalog entry.
+// Enriched with: activate/deactivate lifecycle (separate from soft-delete),
+//   price-reduction warning on update.
+// Bug fix: isEffective computed used == 0 on datetime fields — replaced with == null.
 
 entity PricingTier {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required catalogEntryId: string
   property tierName: string = ""
-  property required minQuantity: number = 1
-  property maxQuantity: number = 0
-  property required unitCost: number = 0
-  property discountPercent: number = 0
-  property effectiveFrom: number = 0
-  property effectiveTo: number = 0
+  property required minQuantity: int = 1
+  property maxQuantity: int = 0
+  property required unitCost: money = 0
+  property discountPercent: decimal = 0
+  // effectiveFrom/effectiveTo are optional bounds; null = unbounded on that side.
+  property effectiveFrom: datetime
+  property effectiveTo: datetime
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
-  computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
+  computed isDeleted: boolean = self.deletedAt != null
+  // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+  computed hasQuantityCap: boolean = self.maxQuantity > 0
 
   constraint requireTierName: self.tierName != null and self.tierName != "" "Tier name is required"
   constraint requireMinQuantity: self.minQuantity >= 1 "Minimum quantity must be at least 1"
   constraint requireUnitCost: self.unitCost >= 0 "Unit cost must be non-negative"
+  constraint validDiscount: self.discountPercent >= 0 and self.discountPercent <= 100 "Discount percent must be between 0 and 100"
+  constraint validQuantityRange: self.maxQuantity == 0 or self.maxQuantity >= self.minQuantity "Max quantity must be >= min quantity when set"
 
+  constraint warnZeroCost:warn self.unitCost == 0 and self.isActive {
+    messageTemplate: "Pricing tier '{tierName}' has zero unit cost — verify this is intentional"
+    details: {
+      tierName: self.tierName
+      catalogEntryId: self.catalogEntryId
+    }
+  }
+
+  default policy PricingTierDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Pricing tier management"
   command create(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number) {
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
     guard unitCost >= 0 "Unit cost must be non-negative"
+    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
 
     mutate catalogEntryId = catalogEntryId
     mutate tierName = tierName
@@ -39,14 +57,25 @@ entity PricingTier {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PricingTierCreated
   }
 
   command update(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted pricing tier"
+    guard self.deletedAt == null "Cannot update a deleted pricing tier"
+    guard tierName != null and tierName != "" "Tier name is required"
+    guard minQuantity >= 1 "Minimum quantity must be at least 1"
+    guard unitCost >= 0 "Unit cost must be non-negative"
+    guard discountPercent >= 0 and discountPercent <= 100 "Discount percent must be between 0 and 100"
+
+    constraint warnPriceReduction:warn unitCost < self.unitCost and self.unitCost > 0 {
+      messageTemplate: "Unit cost reduced from {oldCost} to {newCost} for tier '{tierName}'"
+      details: {
+        tierName: tierName
+        oldCost: self.unitCost
+        newCost: unitCost
+      }
+    }
 
     mutate catalogEntryId = catalogEntryId
     mutate tierName = tierName
@@ -57,13 +86,32 @@ entity PricingTier {
     mutate effectiveFrom = effectiveFrom
     mutate effectiveTo = effectiveTo
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit PricingTierUpdated
   }
 
+  // Activate a previously deactivated (but not deleted) tier — e.g. re-enable a seasonal rate.
+  command activate() {
+    guard self.deletedAt == null "Cannot activate a deleted pricing tier"
+    guard self.isActive == false "Pricing tier is already active"
+
+    mutate isActive = true
+
+    emit PricingTierActivated
+  }
+
+  // Deactivate a tier without deleting it — suspends it from applying to new orders.
+  command deactivate(reason: string) {
+    guard self.deletedAt == null "Cannot deactivate a deleted pricing tier"
+    guard self.isActive "Pricing tier is already inactive"
+
+    mutate isActive = false
+
+    emit PricingTierDeactivated
+  }
+
   command softDelete(reason: string) {
-    guard self.deletedAt == 0 "Pricing tier is already deleted"
+    guard self.deletedAt == null "Pricing tier is already deleted"
 
     constraint warnActiveTier:warn self.isActive {
       messageTemplate: "Deleting active pricing tier '{tierName}'"
@@ -75,12 +123,11 @@ entity PricingTier {
 
     mutate isActive = false
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
-    emit PricingTierDeactivated
+    emit PricingTierDeleted
   }
 
-  store PricingTier in memory
+  store PricingTier in durable
 }
 
 event PricingTierCreated: "inventory.pricing-tier.created" {
@@ -92,7 +139,7 @@ event PricingTierCreated: "inventory.pricing-tier.created" {
   maxQuantity: number
   unitCost: number
   discountPercent: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PricingTierUpdated: "inventory.pricing-tier.updated" {
@@ -104,7 +151,15 @@ event PricingTierUpdated: "inventory.pricing-tier.updated" {
   maxQuantity: number
   unitCost: number
   discountPercent: number
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event PricingTierActivated: "inventory.pricing-tier.activated" {
+  tierId: string
+  tenantId: string
+  catalogEntryId: string
+  tierName: string
+  activatedAt: datetime
 }
 
 event PricingTierDeactivated: "inventory.pricing-tier.deactivated" {
@@ -113,5 +168,14 @@ event PricingTierDeactivated: "inventory.pricing-tier.deactivated" {
   catalogEntryId: string
   tierName: string
   reason: string
-  deletedAt: number
+  deactivatedAt: datetime
+}
+
+event PricingTierDeleted: "inventory.pricing-tier.deleted" {
+  tierId: string
+  tenantId: string
+  catalogEntryId: string
+  tierName: string
+  reason: string
+  deletedAt: datetime
 }

@@ -6,6 +6,8 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Types for labor budget operations
 export interface LaborBudgetInput {
@@ -240,44 +242,33 @@ export async function createLaborBudget(input: LaborBudgetInput) {
     );
   }
 
-  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant_staff.labor_budgets (
-        tenant_id,
-        location_id,
-        event_id,
-        name,
-        description,
-        budget_type,
-        period_start,
-        period_end,
-        budget_target,
-        budget_unit,
-        threshold_80_pct,
-        threshold_90_pct,
-        threshold_100_pct,
-        status
-      ) VALUES (
-        ${tenantId},
-        ${locationId || null},
-        ${eventId || null},
-        ${name},
-        ${description || null},
-        ${budgetType},
-        ${periodStart || null},
-        ${periodEnd || null},
-        ${budgetTarget},
-        ${budgetUnit},
-        ${threshold80Pct},
-        ${threshold90Pct},
-        ${threshold100Pct},
-        'active'
-      )
-      RETURNING id, name
-    `
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "LaborBudget",
+      command: "create",
+      instanceId: undefined,
+      user: { id: "", tenantId, role: "admin" },
+      body: {
+        locationId: locationId || "",
+        periodStart: periodStart ? periodStart.toISOString() : "",
+        periodEnd: periodEnd ? periodEnd.toISOString() : "",
+        budgetAmount: budgetTarget,
+        budgetType,
+        notes: description || "",
+        createdBy: "",
+      },
+    }
   );
 
-  return result[0];
+  const created = result.ok ? (result.result as { id?: string } | null) : null;
+  return { id: created?.id ?? "", name };
 }
 
 /**
@@ -288,65 +279,80 @@ export async function updateLaborBudget(
   budgetId: string,
   updates: Partial<Omit<LaborBudgetInput, "tenantId">>
 ) {
-  const setClauses: Prisma.Sql[] = [];
+  const data = {
+    ...(updates.name !== undefined && { name: updates.name }),
+    ...(updates.description !== undefined && {
+      description: updates.description,
+    }),
+    ...(updates.budgetTarget !== undefined && {
+      budgetTarget: new Prisma.Decimal(updates.budgetTarget),
+    }),
+    ...(updates.status !== undefined && { status: updates.status }),
+    ...(updates.overrideReason !== undefined && {
+      overrideReason: updates.overrideReason,
+    }),
+    ...(updates.threshold80Pct !== undefined && {
+      threshold80Pct: updates.threshold80Pct,
+    }),
+    ...(updates.threshold90Pct !== undefined && {
+      threshold90Pct: updates.threshold90Pct,
+    }),
+    ...(updates.threshold100Pct !== undefined && {
+      threshold100Pct: updates.threshold100Pct,
+    }),
+  };
 
-  if (updates.name !== undefined) {
-    setClauses.push(Prisma.sql`name = ${updates.name}`);
-  }
-  if (updates.description !== undefined) {
-    setClauses.push(Prisma.sql`description = ${updates.description}`);
-  }
-  if (updates.budgetTarget !== undefined) {
-    setClauses.push(Prisma.sql`budget_target = ${updates.budgetTarget}`);
-  }
-  if (updates.status !== undefined) {
-    setClauses.push(Prisma.sql`status = ${updates.status}`);
-  }
-  if (updates.overrideReason !== undefined) {
-    setClauses.push(Prisma.sql`override_reason = ${updates.overrideReason}`);
-  }
-  if (updates.threshold80Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_80_pct = ${updates.threshold80Pct}`);
-  }
-  if (updates.threshold90Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_90_pct = ${updates.threshold90Pct}`);
-  }
-  if (updates.threshold100Pct !== undefined) {
-    setClauses.push(Prisma.sql`threshold_100_pct = ${updates.threshold100Pct}`);
-  }
-
-  if (setClauses.length === 0) {
+  if (Object.keys(data).length === 0) {
     return null;
   }
 
-  setClauses.push(Prisma.sql`updated_at = CURRENT_TIMESTAMP`);
-
-  const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
-    Prisma.sql`
-      UPDATE tenant_staff.labor_budgets
-      SET ${Prisma.join(setClauses, ", ")}
-      WHERE tenant_id = ${tenantId}
-        AND id = ${budgetId}
-        AND deleted_at IS NULL
-      RETURNING id, name
-    `
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "LaborBudget",
+      command: "update",
+      instanceId: budgetId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {
+        locationId: updates.locationId ?? "",
+        periodStart: updates.periodStart ? updates.periodStart.toISOString() : "",
+        periodEnd: updates.periodEnd ? updates.periodEnd.toISOString() : "",
+        budgetAmount: updates.budgetTarget ?? 0,
+        budgetType: updates.budgetType ?? "",
+        notes: updates.description ?? "",
+      },
+    }
   );
 
-  return result[0] || null;
+  if (!result.ok) return null;
+  return { id: budgetId, name: updates.name ?? "" };
 }
 
 /**
  * Delete (soft delete) a labor budget
  */
 export async function deleteLaborBudget(tenantId: string, budgetId: string) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.labor_budgets
-      SET deleted_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${budgetId}
-        AND deleted_at IS NULL
-    `
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "LaborBudget",
+      command: "softDelete",
+      instanceId: budgetId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {},
+    }
   );
 
   return { success: true };
@@ -670,22 +676,27 @@ async function getApplicableBudgets(
  * Create a budget alert
  */
 export async function createBudgetAlert(input: BudgetAlertInput) {
-  await database.$queryRaw(
-    Prisma.sql`
-      INSERT INTO tenant_staff.budget_alerts (
-        tenant_id,
-        budget_id,
-        alert_type,
-        utilization,
-        message
-      ) VALUES (
-        ${input.tenantId},
-        ${input.budgetId},
-        ${input.alertType},
-        ${input.utilization},
-        ${input.message}
-      )
-    `
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "BudgetAlert",
+      command: "create",
+      instanceId: undefined,
+      user: { id: "", tenantId: input.tenantId, role: "admin" },
+      body: {
+        budgetId: input.budgetId,
+        alertType: input.alertType,
+        thresholdPct: input.utilization,
+        actualPct: input.utilization,
+        message: input.message,
+      },
+    }
   );
 
   return { success: true };
@@ -762,18 +773,23 @@ export async function acknowledgeBudgetAlert(
   alertId: string,
   acknowledgedBy: string
 ) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.budget_alerts
-      SET
-        is_acknowledged = true,
-        acknowledged_by = ${acknowledgedBy},
-        acknowledged_at = CURRENT_TIMESTAMP,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${alertId}
-        AND deleted_at IS NULL
-    `
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "BudgetAlert",
+      command: "acknowledge",
+      instanceId: alertId,
+      user: { id: acknowledgedBy, tenantId, role: "admin" },
+      body: {
+        acknowledgedBy,
+      },
+    }
   );
 
   return { success: true };
@@ -783,17 +799,21 @@ export async function acknowledgeBudgetAlert(
  * Resolve a budget alert
  */
 export async function resolveBudgetAlert(tenantId: string, alertId: string) {
-  await database.$queryRaw(
-    Prisma.sql`
-      UPDATE tenant_staff.budget_alerts
-      SET
-        resolved = true,
-        resolved_at = CURRENT_TIMESTAMP,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE tenant_id = ${tenantId}
-        AND id = ${alertId}
-        AND deleted_at IS NULL
-    `
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "BudgetAlert",
+      command: "markResolved",
+      instanceId: alertId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {},
+    }
   );
 
   return { success: true };

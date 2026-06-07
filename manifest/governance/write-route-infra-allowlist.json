@@ -665,7 +665,7 @@
     {
       "prefix": "/api/crm/venues",
       "methods": ["POST"],
-      "comment": "Direct Prisma — Venue create (no manifest yet, mirrors server actions)"
+      "comment": "Uses runManifestCommand — Venue.create"
     },
     {
       "prefix": "/api/kitchen/prep-lists/generate",
@@ -680,7 +680,7 @@
     {
       "pattern": "^/api/crm/venues/[^/]+$",
       "methods": ["PUT", "DELETE"],
-      "comment": "Direct Prisma — Venue update + soft-delete (no manifest yet, active-events guard enforced)"
+      "comment": "Uses runManifestCommand — Venue.update + Venue.deactivate (active-events 409 guard retained)"
     },
     {
       "prefix": "/api/inventory/vendor-catalogs/commands/update-cost",

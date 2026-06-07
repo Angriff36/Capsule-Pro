@@ -166,14 +166,7 @@ export function getKitchenIr(): RawKitchenIr {
   }
 
   const repoRoot = findRepoRoot(process.cwd());
-  const path = join(
-    repoRoot,
-    "packages",
-    "manifest-ir",
-    "ir",
-    "kitchen",
-    "kitchen.ir.json"
-  );
+  const path = join(repoRoot, "manifest", "ir", "kitchen.ir.json");
   const raw = readFileSync(path, "utf8");
   cachedKitchenIr = JSON.parse(raw) as RawKitchenIr;
   return cachedKitchenIr;

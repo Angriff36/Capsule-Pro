@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,13 +27,10 @@ const NewIngredientPage = async () => {
     notFound();
   }
 
-  const units = await database.$queryRaw<UnitOption[]>(
-    Prisma.sql`
-      SELECT id, code, name
-      FROM core.units
-      ORDER BY code ASC
-    `
-  );
+  const units: UnitOption[] = await database.units.findMany({
+    select: { id: true, code: true, name: true },
+    orderBy: { code: "asc" },
+  });
 
   return (
     <>

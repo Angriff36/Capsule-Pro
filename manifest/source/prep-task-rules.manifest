@@ -2,6 +2,7 @@
 // Manifest spec for prep task operations with constraints, guards, and events
 
 entity PrepTask {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -11,25 +12,31 @@ entity PrepTask {
   property required status: string = "open"
   property stationId: string = ""
   property claimedBy: string = ""
-  property claimedAt: datetime = now()
-  property quantityTotal: number = 0
-  property quantityCompleted: number = 0
+  property claimedAt: datetime
+  property quantityTotal: int = 0
+  property quantityCompleted: int = 0
   property quantityUnitId: string = ""
   property servingsTotal: int = 0
   property startByDate: datetime = now()
-  property dueByDate: datetime = now()
-  property priority: number = 5
+  property dueByDate: datetime
+  property priority: int = 5
+  property dishId: string = ""
+  property locationId: string = ""
+  property estimatedMinutes: int = 0
+  property dueByTime: datetime
   property notes: string = ""
   property ingredients: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed isClaimed: boolean = self.claimedBy != ""
-  computed isOverdue: boolean = self.dueByDate != 0 and now() > self.dueByDate and self.status != "done"
+  computed isOverdue: boolean = self.dueByDate != null and now() > self.dueByDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"
-  computed percentComplete: number = self.quantityTotal > 0 ? (self.quantityCompleted / self.quantityTotal) * 100 : 0
+  computed percentComplete: number = percent(self.quantityCompleted, self.quantityTotal)
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
+
+  relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
+  relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
 
   // State transitions enforce valid status flows at runtime
   transition status from "open" to ["in_progress", "canceled"]
@@ -46,7 +53,7 @@ entity PrepTask {
     details: {
       taskName: self.name
       dueDate: self.dueByDate
-      daysOverdue: (now() - self.dueByDate) / 86400000
+      daysOverdue: daysBetween(self.dueByDate, now())
     }
   }
 
@@ -58,6 +65,7 @@ entity PrepTask {
     }
   }
 
+  default policy PrepTaskDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep task management"
   command claim(userId: string, stationId: string) {
     guard userId != null and userId != "" "User ID is required"
     guard self.status == "open" or self.status == "pending" "Task is not claimable"
@@ -87,9 +95,8 @@ entity PrepTask {
 
     mutate status = "open"
     mutate claimedBy = ""
-    mutate claimedAt = 0
+    mutate claimedAt = null
     mutate stationId = ""
-    mutate updatedAt = now()
 
     emit PrepTaskUnclaimed
   }
@@ -106,7 +113,7 @@ entity PrepTask {
     emit PrepTaskStarted
   }
 
-  command complete(quantityCompleted: number, userId: string, completedAt: number) {
+  command complete(quantityCompleted: number, userId: string, completedAt: datetime) {
     guard quantityCompleted != null and quantityCompleted >= 0 "Completed quantity must be non-negative"
     guard self.status == "in_progress" "Can only complete in-progress tasks"
     guard self.claimedBy == userId or userId == "" "Only claimer can complete task"
@@ -135,9 +142,8 @@ entity PrepTask {
 
     mutate status = "open"
     mutate claimedBy = ""
-    mutate claimedAt = 0
+    mutate claimedAt = null
     mutate stationId = ""
-    mutate updatedAt = now()
 
     emit PrepTaskReleased
   }
@@ -157,7 +163,6 @@ entity PrepTask {
 
     mutate claimedBy = newUserId
     mutate claimedAt = now()
-    mutate updatedAt = now()
 
     emit PrepTaskReassigned
   }
@@ -177,7 +182,6 @@ entity PrepTask {
 
     mutate quantityTotal = quantityTotal
     mutate quantityCompleted = quantityCompleted
-    mutate updatedAt = now()
 
     emit PrepTaskQuantityUpdated
   }
@@ -194,12 +198,11 @@ entity PrepTask {
     }
 
     mutate status = "canceled"
-    mutate updatedAt = now()
 
     emit PrepTaskCanceled
   }
 
-  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
+  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: datetime, dueByDate: datetime, notes: string, ingredients: string) {
     guard name != null and name != "" "Task name is required"
     guard eventId != null and eventId != "" "Event ID is required"
     // prepListId is optional — AI-generated tasks may not have a prep list yet
@@ -217,8 +220,6 @@ entity PrepTask {
     mutate dueByDate = dueByDate
     mutate notes = notes
     mutate ingredients = ingredients
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepTaskCreated
   }
@@ -227,7 +228,6 @@ entity PrepTask {
     guard status in ["open", "pending", "in_progress", "done", "canceled"] "Invalid status"
 
     mutate status = status
-    mutate updatedAt = now()
 
     emit PrepTaskStatusUpdated
   }
@@ -236,26 +236,32 @@ entity PrepTask {
     guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
 
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit PrepTaskPriorityUpdated
   }
 
   command updateAssignment(claimedBy: string) {
     mutate claimedBy = claimedBy
-    mutate updatedAt = now()
 
     emit PrepTaskAssignmentUpdated
   }
 
-  command updateDueDate(dueByDate: number) {
+  command updateDueDate(dueByDate: datetime) {
     mutate dueByDate = dueByDate
-    mutate updatedAt = now()
 
     emit PrepTaskDueDateUpdated
   }
 
-  store PrepTask in memory
+  command updateDetails(dishId: string, locationId: string, estimatedMinutes: int, dueByTime: datetime) {
+    mutate dishId = dishId
+    mutate locationId = locationId
+    mutate estimatedMinutes = estimatedMinutes
+    mutate dueByTime = dueByTime
+
+    emit PrepTaskDetailsUpdated
+  }
+
+  store PrepTask in durable
 }
 
 policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can claim prep tasks for their tenant"
@@ -267,34 +273,34 @@ event PrepTaskClaimed: "kitchen.preptask.claimed" {
   taskId: string
   userId: string
   stationId: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event PrepTaskStarted: "kitchen.preptask.started" {
   taskId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event PrepTaskCompleted: "kitchen.preptask.completed" {
   taskId: string
   userId: string
   quantityCompleted: number
-  completedAt: number
+  completedAt: datetime
 }
 
 event PrepTaskUnclaimed: "kitchen.preptask.unclaimed" {
   taskId: string
   userId: string
   reason: string
-  unclaimedAt: number
+  unclaimedAt: datetime
 }
 
 event PrepTaskReleased: "kitchen.preptask.released" {
   taskId: string
   previousUserId: string
   reason: string
-  releasedAt: number
+  releasedAt: datetime
 }
 
 event PrepTaskReassigned: "kitchen.preptask.reassigned" {
@@ -302,7 +308,7 @@ event PrepTaskReassigned: "kitchen.preptask.reassigned" {
   previousUserId: string
   newUserId: string
   reassignedBy: string
-  reassignedAt: number
+  reassignedAt: datetime
 }
 
 event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
@@ -310,7 +316,7 @@ event PrepTaskQuantityUpdated: "kitchen.preptask.quantity.updated" {
   oldQuantityTotal: number
   newQuantityTotal: number
   quantityCompleted: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskCreated: "kitchen.preptask.created" {
@@ -320,40 +326,49 @@ event PrepTaskCreated: "kitchen.preptask.created" {
   name: string
   taskType: string
   priority: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepTaskCanceled: "kitchen.preptask.canceled" {
   taskId: string
   reason: string
   canceledBy: string
-  canceledAt: number
+  canceledAt: datetime
 }
 
 event PrepTaskStatusUpdated: "kitchen.preptask.status.updated" {
   taskId: string
   oldStatus: string
   newStatus: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskPriorityUpdated: "kitchen.preptask.priority.updated" {
   taskId: string
   oldPriority: number
   newPriority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskAssignmentUpdated: "kitchen.preptask.assignment.updated" {
   taskId: string
   oldClaimedBy: string
   newClaimedBy: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepTaskDueDateUpdated: "kitchen.preptask.duedate.updated" {
   taskId: string
-  oldDueByDate: number
-  newDueByDate: number
-  updatedAt: number
+  oldDueByDate: datetime
+  newDueByDate: datetime
+  updatedAt: datetime
+}
+
+event PrepTaskDetailsUpdated: "kitchen.preptask.details.updated" {
+  taskId: string
+  dishId: string
+  locationId: string
+  estimatedMinutes: number
+  dueByTime: datetime
+  updatedAt: datetime
 }

@@ -123,6 +123,105 @@ export const ENTITY_DOMAIN_MAP = {
   ChartOfAccount: "accounting/chart-of-accounts",
   // ─── Role Policy ───
   RolePolicy: "rolepolicy/policies",
+  // ─── Full-generation additions (2026-06-01) ───
+  BankAccount: "accounting/bank-accounts",
+  Budget: "accounting/budgets",
+  CollectionCase: "accounting/collections/cases",
+  CollectionAction: "accounting/collections/actions",
+  CollectionPaymentPlan: "accounting/collections/payment-plans",
+  Invoice: "accounting/invoices",
+  PaymentMethod: "accounting/payment-methods",
+  Payment: "accounting/payments",
+  PaymentRefundAttempt: "accounting/payment-refund-attempts",
+  RevenueRecognitionSchedule: "accounting/revenue-recognition/schedules",
+  RevenueRecognitionLine: "accounting/revenue-recognition/lines",
+  ProposalTemplate: "crm/proposal-templates",
+  InteractionAttachment: "crm/interaction-attachments",
+  CrmScoringRule: "crm/scoring-rules",
+  Deal: "crm/deals",
+  Venue: "events/venues",
+  EventTimeline: "events/timelines",
+  TimelineTask: "events/timeline-tasks",
+  EventImport: "events/imports",
+  EventFollowup: "events/followups",
+  EventTimelineItem: "events/timeline-items",
+  EventWaitlistEntry: "events/waitlist-entries",
+  BoardProjection: "command-board/projections",
+  BoardAnnotation: "command-board/annotations",
+  AiEventSetupSession: "events/ai-setup-sessions",
+  AutomatedFollowup: "events/automated-followups",
+  TemperatureProbe: "kitchen/temperature-probes",
+  TemperatureLog: "kitchen/temperature-logs",
+  TemperatureReading: "kitchen/temperature-readings",
+  IotAlertRule: "kitchen/iot-alert-rules",
+  IoTAlert: "kitchen/iot-alerts",
+  CorrectiveAction: "kitchen/corrective-actions",
+  QualityCheck: "kitchen/quality-checks",
+  QualityCheckItem: "kitchen/quality-check-items",
+  KitchenTaskClaim: "kitchen/task-claims",
+  KitchenTaskProgress: "kitchen/task-progress",
+  TaskBundle: "kitchen/task-bundles",
+  TaskBundleItem: "kitchen/task-bundle-items",
+  BulkCombineRule: "kitchen/bulk-combine-rules",
+  MethodVideo: "kitchen/method-videos",
+  PrepListImport: "kitchen/prep-list-imports",
+  QACheck: "kitchen/qa-checks",
+  QACorrectiveAction: "kitchen/qa-corrective-actions",
+  QATemperatureLog: "kitchen/qa-temperature-logs",
+  StorageLocation: "inventory/storage-locations",
+  InventoryStock: "inventory/stock",
+  InventoryAlert: "inventory/alerts",
+  InventoryForecast: "inventory/forecasts",
+  ForecastInput: "inventory/forecast-inputs",
+  ReorderSuggestion: "inventory/reorder-suggestions",
+  VendorContact: "inventory/vendor-contacts",
+  VendorRating: "inventory/vendor-ratings",
+  InventoryTransferItem: "inventory/transfer-items",
+  InventoryTransfer: "inventory/transfers",
+  ProcurementBudget: "procurement/budgets",
+  ProcurementBudgetAlert: "procurement/budget-alerts",
+  AuditSchedule: "inventory/audit-schedules",
+  Vendor: "inventory/vendors",
+  Equipment: "facilities/equipment",
+  MaintenanceWorkOrder: "facilities/maintenance-work-orders",
+  Facility: "facilities/facilities",
+  FacilityArea: "facilities/areas",
+  FacilityAsset: "facilities/assets",
+  FacilitySchedule: "facilities/schedules",
+  FacilityWorkOrder: "facilities/work-orders",
+  PreventiveMaintenanceSchedule: "facilities/preventive-maintenance",
+  WorkOrder: "facilities/general-work-orders",
+  Driver: "logistics/drivers",
+  Vehicle: "logistics/vehicles",
+  LogisticsRoute: "logistics/routes",
+  LogisticsDispatch: "logistics/dispatches",
+  DeliveryRoute: "logistics/delivery-routes",
+  RouteStop: "logistics/route-stops",
+  TimecardApproval: "staff/timecard-approvals",
+  PayrollLineItem: "staff/payroll-line-items",
+  TipPool: "staff/tip-pools",
+  DisciplinaryAction: "staff/disciplinary-actions",
+  ActionMilestone: "staff/action-milestones",
+  PerformanceReview: "staff/performance-reviews",
+  TrainingCompletion: "staff/training-completions",
+  OnboardingTask: "staff/onboarding-tasks",
+  OnboardingCompletion: "staff/onboarding-completions",
+  OpenShift: "staff/open-shifts",
+  StaffPerformance: "staff/performance",
+  WorkforceOptimization: "staff/workforce-optimization",
+  PerformancePrediction: "staff/performance-predictions",
+  Report: "administrative/reports",
+  Document: "administrative/documents",
+  DocumentVersion: "administrative/document-versions",
+  AdminChatThread: "administrative/chat/threads",
+  AdminChatMessage: "administrative/chat/messages",
+  Note: "administrative/notes",
+  KnowledgeBaseEntry: "administrative/knowledge-base",
+  SampleData: "administrative/sample-data",
+  SmsAutomationRule: "administrative/sms-automation-rules",
+  VersionedEntity: "administrative/versioned-entities",
+  EntityVersion: "administrative/entity-versions",
+  VersionApproval: "administrative/version-approvals",
 };
 
 // Naive accessor derivation, IDENTICAL to the upstream nextjs projection's toCamelCase
@@ -141,11 +240,6 @@ export function toCamelCase(value) {
 //   null    → entity has NO Prisma table; do not emit a `database.*` read route (drop the file).
 //
 // Each entry is verified — NOT guessed (constitution: never invent Prisma accessors):
-//   EventStaff           model EventStaffAssignment @@map("event_staff_assignments")
-//                        (packages/database/prisma/schema.prisma:1394) →
-//                        accessor `eventStaffAssignment`. Confirmed by store header
-//                        manifest/runtime/src/prisma-stores/broken-read-batch09-event-staff-summary.ts
-//                        ("manifest entity \"EventStaff\" → tenant_events.event_staff_assignments").
 //   EventImportWorkflow  model EventImport @@map("event_imports")
 //                        (packages/database/prisma/schema.prisma:1437) →
 //                        accessor `eventImport`. Confirmed by store header
@@ -154,8 +248,123 @@ export function toCamelCase(value) {
 // (This corrects the stale phase-out-registry.md claim that EventImportWorkflow "has no table by
 //  design" — the event_imports table exists, so the route is REMAPPED, not deleted.)
 export const ENTITY_ACCESSOR_OVERRIDES = {
-  EventStaff: "eventStaffAssignment",
   EventImportWorkflow: "eventImport",
+
+  // ─── Renamed Prisma models (verified same domain concept; remap) ───
+  // BankAccount → model EmployeeBankAccount @@map("employee_bank_accounts"). Identical field
+  //   schema (employeeId, accountNumber, routingNumber, accountType, bankName, status, verifiedAt).
+  //   schema.prisma:288. Verified 2026-06-03.
+  BankAccount: "employeeBankAccount",
+  // LogisticsRoute → model DeliveryRoute @@map("delivery_routes"). Same delivery-route concept
+  //   (driver/vehicle assignment, distance, duration, actual-execution tracking). schema.prisma:6219.
+  LogisticsRoute: "deliveryRoute",
+
+  // ─── Accessor name mismatches (Prisma's own "Did you mean" suggestions; authoritative) ───
+  // Each value is the EXACT accessor PrismaClient exposes for the committed model.
+  Document: "documents",
+  SmsAutomationRule: "sms_automation_rules",
+  EventTimelineItem: "eventTimeline",
+  StorageLocation: "storage_locations",
+  BulkCombineRule: "bulk_combine_rules",
+  MethodVideo: "method_videos",
+  PrepListImport: "prep_list_imports",
+  QACorrectiveAction: "correctiveAction",
+  QATemperatureLog: "temperatureLog",
+  TaskBundleItem: "task_bundle_items",
+  TaskBundle: "task_bundles",
+  OpenShift: "open_shifts",
+
+  // ─── No Prisma table (drop the generated read route; constitution §10 — never invent a
+  //     read surface over a non-existent/mismatched table). These IR entities have commands,
+  //     events and constraints but no backing model. Tracked for table creation in Task 0.3;
+  //     until then they have no read surface. ───
+  Deal: null,
+  AiEventSetupSession: null,
+  AutomatedFollowup: null,
+  EntityVersion: null,
+  EventWaitlistEntry: null,
+  FacilitySchedule: null,
+  FacilityWorkOrder: null,
+  LogisticsDispatch: null,
+  PerformancePrediction: null,
+  SampleData: null,
+  StaffPerformance: null,
+  VersionApproval: null,
+  VersionedEntity: null,
+  WorkforceOptimization: null,
+  Budget: null,
+  Vendor: null,
+  // QACheck: model QualityCheck exists but is a DIFFERENT concept (QC session with itemized
+  //   QualityCheckItem children, status passed/failed/needs_review), whereas IR QACheck is a single
+  //   inspection task (result pass/fail/na, reinspectedAt, checkTypes temperature/sanitation/...).
+  //   Remapping would invent semantics over a mismatched table (constitution §10), so DROP rather
+  //   than remap. If business confirms equivalence, create a dedicated mapping/table (Task 0.3).
+  QACheck: null,
+};
+
+// Per-entity Prisma FIELD-name corrections for generated read routes.
+//
+// Why: the upstream nextjs projection emits `where: { tenantId, ... }` (shorthand) and
+// `orderBy: { createdAt: "desc" }` assuming camelCase Prisma fields. A handful of LEGACY models use
+// RAW snake_case fields (`tenant_id`, `created_at`) with no @map, or lack a created-at column
+// entirely — so those literal field names are phantom and break api typecheck (TS2561 / TS2353).
+// The fix belongs in the producer (regenerate), never by hand-editing the "DO NOT EDIT" routes.
+//
+// Value semantics per field key:
+//   tenantId: "<col>"   → rewrite the `where` shorthand `tenantId` to `<col>: tenantId`.
+//   createdAt: "<col>"  → rewrite the `orderBy` field `createdAt` to `<col>`.
+//   createdAt: null     → the model has NO created-at column; remove the `orderBy` clause entirely.
+//   deletedAt: "<col>"  → rewrite the `where` soft-delete field `deletedAt` to `<col>`.
+//   deletedAt: null     → the model has NO soft-delete column; remove the `deletedAt: null` filter.
+//
+// Verified against packages/database/prisma/schema.prisma (2026-06-03):
+//   tenant_id raw + created_at raw: EventFollowup, ActionMilestone, DisciplinaryAction,
+//     OnboardingCompletion, OnboardingTask, PerformanceReview.
+//   tenantId @map + created_at raw: ReorderSuggestion (where ok, orderBy needs rewrite).
+//   no created-at column: ForecastInput (absent), InventoryForecast (uses last_updated).
+// Soft-delete drift verified 2026-06-06 (upstream emits `deletedAt: null`, but these models differ):
+//   raw `deleted_at` column: Document, SmsAutomationRule, StorageLocation, OnboardingTask.
+//   no soft-delete column at all: CrmScoringRule, EventFollowup (IR declares deletedAt but the
+//     Prisma table has no such column — read route must not filter on a phantom field).
+export const ENTITY_FIELD_OVERRIDES = {
+  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: null },
+  ActionMilestone: { tenantId: "tenant_id", createdAt: "created_at" },
+  DisciplinaryAction: { tenantId: "tenant_id", createdAt: "created_at" },
+  OnboardingCompletion: { tenantId: "tenant_id", createdAt: "created_at" },
+  OnboardingTask: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  PerformanceReview: { tenantId: "tenant_id", createdAt: "created_at" },
+  ReorderSuggestion: { createdAt: "created_at" },
+  ForecastInput: { createdAt: null },
+  InventoryForecast: { createdAt: null },
+  CrmScoringRule: { deletedAt: null },
+
+  // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
+  // exposed that these models also use raw `tenant_id` + `created_at` (no @map). Verified
+  // 2026-06-03 against schema.prisma (all 9 have raw tenant_id + created_at columns).
+  Document: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  SmsAutomationRule: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  StorageLocation: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
+  BulkCombineRule: { tenantId: "tenant_id", createdAt: "created_at" },
+  MethodVideo: { tenantId: "tenant_id", createdAt: "created_at" },
+  PrepListImport: { tenantId: "tenant_id", createdAt: "created_at" },
+  TaskBundle: { tenantId: "tenant_id", createdAt: "created_at" },
+  TaskBundleItem: { tenantId: "tenant_id", createdAt: "created_at" },
+  OpenShift: { tenantId: "tenant_id", createdAt: "created_at" },
+};
+
+// Entities whose generated DETAIL route (`[id]/route.ts`, fetch-by-single-id) cannot be emitted
+// because the backing Prisma model has NO single-column `id` (composite primary key only). The
+// list route is still valid and kept; only the by-id detail route is dropped.
+//   TaskBundleItem → model task_bundle_items @@id([tenant_id, bundle_id, task_id]) — no `id` column,
+//     so `findFirst({ where: { id } })` references a phantom field. schema.prisma (tenant_kitchen).
+export const ENTITY_DETAIL_DROP = new Set(["TaskBundleItem"]);
+
+// Detail-route segment names for domain routes that already use a resource-specific
+// slug. This keeps regenerated read routes from colliding with handcrafted sibling
+// routes at the same URL shape.
+export const ENTITY_DETAIL_SEGMENT_OVERRIDES = {
+  AdminChatThread: "threadId",
+  EventImport: "importId",
 };
 
 // Reverse map: flat entity path segment (entityName.toLowerCase(), as the upstream CLI emits)
@@ -184,4 +393,74 @@ export function resolveAccessor(entityName) {
     return { naive, accessor: null, drop: true, overridden: false };
   }
   return { naive, accessor: override, drop: false, overridden: override !== naive };
+}
+
+export function resolveDetailSegment(entityName) {
+  return ENTITY_DETAIL_SEGMENT_OVERRIDES[entityName] ?? "id";
+}
+
+/**
+ * Rewrite phantom Prisma field names in a generated read-route body for `entityName`,
+ * per ENTITY_FIELD_OVERRIDES. No-op when the entity has no field overrides.
+ * Only the exact shapes the upstream nextjs projection emits are matched:
+ *   - `where: { tenantId, ... }` shorthand  → `where: { <col>: tenantId, ... }`
+ *     (composite `tenantId_id:` and explicit `tenantId: x` are left untouched).
+ *   - `orderBy: { createdAt: "desc" }`       → rename field, or remove the clause when null.
+ * @param {string} content - generated route source
+ * @param {string} entityName
+ * @returns {{ content: string, rewrites: string[] }}
+ */
+export function applyFieldOverrides(content, entityName) {
+  const overrides = entityName ? ENTITY_FIELD_OVERRIDES[entityName] : undefined;
+  if (!overrides) return { content, rewrites: [] };
+  let out = content;
+  const rewrites = [];
+
+  if (overrides.tenantId) {
+    const before = out;
+    out = out.replace(
+      /(\n[^\S\n]*)tenantId(,?)(?=\s*\n)/g,
+      `$1${overrides.tenantId}: tenantId$2`
+    );
+    if (out !== before) rewrites.push(`where.tenantId → ${overrides.tenantId}`);
+  }
+
+  if (overrides.createdAt === null) {
+    const before = out;
+    out = out.replace(
+      /\n[^\S\n]*orderBy:\s*\{\s*createdAt:\s*"desc",?\s*\},?/g,
+      ""
+    );
+    if (out !== before) {
+      rewrites.push("orderBy.createdAt removed (no created-at column)");
+    }
+  } else if (overrides.createdAt) {
+    const before = out;
+    out = out.replace(
+      /(orderBy:\s*\{\s*)createdAt(\s*:\s*"desc")/g,
+      `$1${overrides.createdAt}$2`
+    );
+    if (out !== before) rewrites.push(`orderBy.createdAt → ${overrides.createdAt}`);
+  }
+
+  if (overrides.deletedAt === null) {
+    // Model has NO soft-delete column → remove the `deletedAt: null` filter entirely.
+    // It is always the last `where` property (no trailing comma), so dropping the line
+    // leaves the preceding property's comma as a valid trailing comma before `}`.
+    const before = out;
+    out = out.replace(/\n[^\S\n]*deletedAt:\s*null,?/g, "");
+    if (out !== before) {
+      rewrites.push("where.deletedAt removed (no soft-delete column)");
+    }
+  } else if (overrides.deletedAt) {
+    // Legacy snake_case model: rewrite the `where` soft-delete field name.
+    const before = out;
+    out = out.replace(
+      /deletedAt(\s*:\s*null)/g,
+      `${overrides.deletedAt}$1`
+    );
+    if (out !== before) rewrites.push(`where.deletedAt → ${overrides.deletedAt}`);
+  }
+
+  return { content: out, rewrites };
 }

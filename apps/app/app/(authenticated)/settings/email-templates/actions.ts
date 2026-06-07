@@ -11,7 +11,8 @@ import type { EmailTemplate, email_template_type } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // Types
 export type EmailTemplateType = email_template_type;
@@ -172,41 +173,95 @@ export async function getDefaultTemplate(templateType: EmailTemplateType) {
 
 /**
  * Create a new email template
+ *
+ * Governed write: EmailTemplate.create runs through the Manifest runtime
+ * (constitution §9) — no direct database.emailTemplate.create.
+ * requireCurrentUser supplies the actor + tenant the command needs for
+ * policy + audit context (§19 Clerk→Manifest context).
+ *
+ * The updateMany to unset other defaults of the same type is now governed
+ * via individual Manifest update commands per affected record (constitution §9).
  */
 export async function createEmailTemplate(input: CreateEmailTemplateInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(input.name, "Template name is required");
   invariant(input.subject, "Template subject is required");
   invariant(input.body, "Template body is required");
 
-  // If setting as default, unset other defaults of the same type
+  // If setting as default, unset other defaults of the same type.
+  // Governed via Manifest update commands — one per affected record
+  // (constitution §9). The update command mutates ALL fields, so existing
+  // values must be carried forward.
   if (input.isDefault) {
-    await database.emailTemplate.updateMany({
+    const otherDefaults = await database.emailTemplate.findMany({
       where: {
         tenantId,
         templateType: input.templateType,
         isDefault: true,
         deletedAt: null,
       },
-      data: { isDefault: false },
+      select: {
+        id: true,
+        name: true,
+        templateType: true,
+        subject: true,
+        body: true,
+        mergeFields: true,
+        isActive: true,
+      },
     });
+
+    for (const tpl of otherDefaults) {
+      await runManifestCommand({
+        entity: "EmailTemplate",
+        command: "update",
+        body: {
+          id: tpl.id,
+          name: tpl.name,
+          templateType: tpl.templateType,
+          subject: tpl.subject,
+          body: tpl.body,
+          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          isActive: tpl.isActive,
+          isDefault: false,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+    }
   }
 
-  const template = await database.emailTemplate.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "EmailTemplate",
+    command: "create",
+    body: {
       name: input.name,
       templateType: input.templateType,
       subject: input.subject,
       body: input.body,
-      mergeFields: input.mergeFields ?? [],
+      // Manifest declares mergeFields: string, but the Prisma column is Json.
+      // GenericPrismaStore's asJsonInput passes the value through verbatim,
+      // so we pass the array directly (same as prior direct-write behavior).
+      mergeFields: (input.mergeFields ?? []) as unknown as string,
       isActive: true,
       isDefault: input.isDefault ?? false,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create email template");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "EmailTemplate.create did not return an id");
+
+  // Read back the persisted row to preserve the EmailTemplate return shape
+  // (constitution §10 — reads may bypass runtime).
+  const template = await database.emailTemplate.findFirst({
+    where: { tenantId, id: createdId },
+  });
+  invariant(template, "Created email template could not be loaded");
 
   revalidatePath("/settings/email-templates");
 
@@ -215,18 +270,22 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
 
 /**
  * Update an email template
+ *
+ * Governed write: EmailTemplate.update runs through the Manifest runtime
+ * (constitution §9). The update command mutates ALL fields, so partial input
+ * is merged with existing values to preserve partial-update semantics.
+ * The updateMany to unset other defaults is governed via individual Manifest
+ * update commands per affected record (constitution §9).
  */
 export async function updateEmailTemplate(
   id: string,
   input: UpdateEmailTemplateInput
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Template ID is required");
 
-  // Verify template exists and belongs to tenant
+  // Verify template exists and belongs to tenant (read — constitution §10)
   const existing = await database.emailTemplate.findFirst({
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
@@ -235,9 +294,12 @@ export async function updateEmailTemplate(
 
   invariant(existing, "Template not found");
 
-  // If setting as default, unset other defaults of the same type
+  // If setting as default, unset other defaults of the same type.
+  // Governed via Manifest update commands — one per affected record
+  // (constitution §9). The update command mutates ALL fields, so existing
+  // values must be carried forward.
   if (input.isDefault) {
-    await database.emailTemplate.updateMany({
+    const otherDefaults = await database.emailTemplate.findMany({
       where: {
         tenantId,
         templateType: input.templateType ?? existing.templateType,
@@ -245,28 +307,66 @@ export async function updateEmailTemplate(
         id: { not: id },
         deletedAt: null,
       },
-      data: { isDefault: false },
+      select: {
+        id: true,
+        name: true,
+        templateType: true,
+        subject: true,
+        body: true,
+        mergeFields: true,
+        isActive: true,
+      },
     });
+
+    for (const tpl of otherDefaults) {
+      await runManifestCommand({
+        entity: "EmailTemplate",
+        command: "update",
+        body: {
+          id: tpl.id,
+          name: tpl.name,
+          templateType: tpl.templateType,
+          subject: tpl.subject,
+          body: tpl.body,
+          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          isActive: tpl.isActive,
+          isDefault: false,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+    }
   }
 
-  const template = await database.emailTemplate.update({
-    where: {
-      tenantId_id: { tenantId, id },
+  // Merge partial input over current values: the governed EmailTemplate.update
+  // mutates the FULL field set, so any field the caller omits must carry its
+  // existing value (same pattern as Venue.update migration).
+  const result = await runManifestCommand({
+    entity: "EmailTemplate",
+    command: "update",
+    body: {
+      id,
+      name: input.name ?? existing.name,
+      templateType: input.templateType ?? existing.templateType,
+      subject: input.subject ?? existing.subject,
+      body: input.body ?? existing.body,
+      // Manifest declares mergeFields: string, Prisma column is Json.
+      // Pass array directly — GenericPrismaStore handles coercion.
+      mergeFields: (input.mergeFields ?? (existing.mergeFields as string[] | null) ?? []) as unknown as string,
+      isActive: input.isActive ?? existing.isActive,
+      isDefault: input.isDefault ?? existing.isDefault,
     },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.templateType !== undefined && {
-        templateType: input.templateType,
-      }),
-      ...(input.subject !== undefined && { subject: input.subject }),
-      ...(input.body !== undefined && { body: input.body }),
-      ...(input.mergeFields !== undefined && {
-        mergeFields: input.mergeFields,
-      }),
-      ...(input.isActive !== undefined && { isActive: input.isActive }),
-      ...(input.isDefault !== undefined && { isDefault: input.isDefault }),
-    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update email template");
+  }
+
+  // Read back the persisted row to preserve the EmailTemplate return shape.
+  const template = await database.emailTemplate.findFirst({
+    where: { tenantId, id },
+  });
+  invariant(template, "Updated email template could not be loaded");
 
   revalidatePath("/settings/email-templates");
   revalidatePath(`/settings/email-templates/${id}`);
@@ -276,16 +376,19 @@ export async function updateEmailTemplate(
 
 /**
  * Delete an email template (soft delete)
- * Per invariants: templates must never be deleted if actively used in workflows
+ *
+ * Per invariants: templates must never be deleted if actively used in workflows.
+ * Governed write: EmailTemplate.softDelete runs through the Manifest runtime
+ * (constitution §9) — sets deletedAt + emits EmailTemplateDeleted, no direct
+ * database.emailTemplate.update. The active-workflow guard is a cross-entity
+ * READ kept in the action (a Manifest guard can't query another table).
  */
 export async function deleteEmailTemplate(id: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Template ID is required");
 
-  // Verify template exists and belongs to tenant
+  // Verify template exists and belongs to tenant (read — constitution §10)
   const existing = await database.emailTemplate.findFirst({
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
@@ -294,7 +397,9 @@ export async function deleteEmailTemplate(id: string) {
 
   invariant(existing, "Template not found");
 
-  // Check if any active email workflow references this template
+  // Domain read-guard: block soft-delete when the template is actively used
+  // by email workflows. Cross-entity READ stays in the action (constitution
+  // §10 — reads may bypass runtime).
   const activeWorkflow = await database.emailWorkflow.findFirst({
     where: {
       tenantId,
@@ -309,15 +414,18 @@ export async function deleteEmailTemplate(id: string) {
     "Cannot delete template: it is actively used by one or more email workflows"
   );
 
-  // Soft delete
-  await database.emailTemplate.update({
-    where: {
-      tenantId_id: { tenantId, id },
-    },
-    data: {
-      deletedAt: new Date(),
-    },
+  // Governed soft delete via the Manifest runtime — sets deletedAt + emits
+  // EmailTemplateDeleted, no direct database write.
+  const result = await runManifestCommand({
+    entity: "EmailTemplate",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete email template");
+  }
 
   revalidatePath("/settings/email-templates");
 

@@ -32,6 +32,11 @@ import {
   validateCreatePaymentRequest,
 } from "./validation";
 
+// This route constructs the Manifest runtime (createManifestRuntime), which depends on
+// Node-only APIs (Prisma, node:crypto). Pin it to the Node.js runtime so it never gets
+// bundled for the Edge runtime. Enforced by manifest-runtime-node.invariant.test.ts.
+export const runtime = "nodejs";
+
 /**
  * Cache scope for `Idempotency-Key`-protected payment creation.
  * Stored as `http:accounting:payments:create:<key>` in `manifest_idempotency`.
@@ -230,27 +235,7 @@ export async function POST(request: NextRequest) {
     // Generate payment reference
     const paymentNumber = generatePaymentNumber(tenantId);
 
-    // Create payment - only use fields that exist in the schema
-    const payment = await database.payment.create({
-      data: {
-        tenantId,
-        invoiceId: body.invoiceId,
-        eventId: body.eventId,
-        clientId: invoice.clientId,
-        amount: body.amount,
-        currency: body.currency || "USD",
-        status: "PENDING",
-        methodType: body.methodType,
-        gatewayPaymentMethodId: body.paymentMethodId || null,
-        gatewayTransactionId: paymentNumber,
-        processor: body.processor || null,
-        processedAt: new Date(),
-      },
-    });
-
-    // ── Manifest-governed payment processing ──
-    // Process the payment through Manifest's command layer, which handles
-    // status transitions, event emission, and cross-entity updates.
+    // ── Manifest runtime (governs all domain mutations) ──
     const manifestRuntime = await createManifestRuntime({
       user: {
         id: invoice.clientId,
@@ -259,21 +244,82 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // ── Manifest-governed payment creation ──
+    // Create the Payment through Manifest's command layer so guards,
+    // policies, constraints, and event emission are all enforced.
+    const createResult = await manifestRuntime.runCommand(
+      "create",
+      {
+        tenantId,
+        invoiceId: body.invoiceId,
+        eventId: body.eventId,
+        clientId: invoice.clientId,
+        amount: body.amount,
+        currency: body.currency || "USD",
+        status: "PENDING",
+        methodType: body.methodType,
+        gatewayPaymentMethodId: body.paymentMethodId || "",
+        gatewayTransactionId: paymentNumber,
+        processor: body.processor || "",
+        processedAt: new Date().toISOString(),
+      },
+      { entityName: "Payment" }
+    );
+
+    if (!createResult.success) {
+      log.error("Payment.create via Manifest failed", {
+        invoiceId: body.invoiceId,
+        error: createResult.error,
+        policyDenial: createResult.policyDenial,
+        guardFailure: createResult.guardFailure,
+      });
+      if (createResult.policyDenial) {
+        return NextResponse.json(
+          { error: `Access denied: ${createResult.policyDenial.policyName}` },
+          { status: 403 }
+        );
+      }
+      if (createResult.guardFailure) {
+        return NextResponse.json(
+          { error: `Guard ${createResult.guardFailure.index} failed: ${createResult.guardFailure.formatted}` },
+          { status: 422 }
+        );
+      }
+      return NextResponse.json(
+        { error: `Payment creation failed: ${createResult.error ?? "manifest rejection"}` },
+        { status: 500 }
+      );
+    }
+
+    // Extract the created payment's data from the governed create result.
+    const paymentData = createResult.result as Record<string, unknown> | undefined;
+    const paymentId = createResult.instance?.id ?? String(paymentData?.id ?? "");
+    if (!paymentId) {
+      log.error("Payment.create succeeded but no id returned", { createResult });
+      return NextResponse.json(
+        { error: "Payment created but ID not available" },
+        { status: 500 }
+      );
+    }
+
+    // ── Manifest-governed payment processing ──
+    // Process the payment through Manifest's command layer, which handles
+    // status transitions and emits PaymentProcessed event.
     const processResult = await manifestRuntime.runCommand(
       "process",
       { gatewayTransactionId: paymentNumber },
-      { entityName: "Payment", instanceId: payment.id }
+      { entityName: "Payment", instanceId: paymentId }
     );
 
     if (!processResult.success) {
-      // Payment could not be processed — mark as FAILED and return error.
-      // The row exists (created via Prisma) but Manifest rejected the command.
-      await database.payment.update({
-        where: { id: payment.id },
-        data: { status: "FAILED" },
-      });
+      // Payment created but could not be processed — mark as FAILED via governed command.
+      await manifestRuntime.runCommand(
+        "processFailed",
+        {},
+        { entityName: "Payment", instanceId: paymentId }
+      );
       log.error("Payment.process via Manifest failed", {
-        paymentId: payment.id,
+        paymentId,
         invoiceId: body.invoiceId,
         error: processResult.error,
       });
@@ -283,25 +329,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Apply payment to the linked invoice
-    const applyResult = await manifestRuntime.runCommand(
-      "applyPayment",
-      { paymentAmount: body.amount, paymentId: payment.id },
-      { entityName: "Invoice", instanceId: body.invoiceId }
-    );
+    // NOTE: The PaymentProcessed event emitted by the `process` command triggers
+    // the PaymentProcessed→Invoice.applyPayment reaction automatically
+    // (see manifest/source/reactions.manifest). We no longer call
+    // Invoice.applyPayment explicitly here.
+    //
+    // However, if the reaction fails (e.g. invoice in DRAFT status where the
+    // guard rejects applyPayment), we need a fallback. Since reactions are
+    // fire-and-forget in the current runtime, we do a diagnostic check here.
+    // TODO: Replace this check with reaction-failure notifications once the
+    // runtime supports them (§9.3 in IMPLEMENTATION_PLAN.md).
 
-    if (!applyResult.success) {
-      // Payment is COMPLETED but couldn't be applied to the invoice.
-      // Common cause: invoice is DRAFT (guard requires SENT/VIEWED/OVERDUE/PARTIALLY_PAID).
-      // Mark as accepted-but-not-applied so this state is visible and recoverable.
-      await database.payment.update({
-        where: { id: payment.id },
-        data: { status: "ACCEPTED_NOT_APPLIED" },
-      });
-      log.warn("Invoice.applyPayment via Manifest failed — payment accepted but not applied to invoice", {
+    // Check if the invoice was actually updated by verifying its balance.
+    // This is a read-path check (constitutional: reads bypass Manifest, §10).
+    const invoiceAfterPayment = await database.invoice.findFirst({
+      where: { id: body.invoiceId, tenantId, deletedAt: null },
+      select: { status: true, amountDue: true },
+    });
+
+    const invoiceWasUpdated = invoiceAfterPayment
+      ? invoiceAfterPayment.status !== "DRAFT"
+      : false;
+
+    if (!invoiceWasUpdated) {
+      // Payment is COMPLETED but the reaction likely couldn't apply it to
+      // the invoice (e.g. invoice is DRAFT). Mark as accepted-but-not-applied
+      // via governed command so this state is visible and recoverable.
+      await manifestRuntime.runCommand(
+        "markAcceptedNotApplied",
+        {},
+        { entityName: "Payment", instanceId: paymentId }
+      );
+      log.warn("Payment processed but invoice not updated (reaction may have failed)", {
         invoiceId: body.invoiceId,
-        paymentId: payment.id,
-        error: applyResult.error,
+        paymentId,
+        invoiceStatus: invoiceAfterPayment?.status,
       });
 
       // Write activity feed entry for the partial success
@@ -310,10 +372,10 @@ export async function POST(request: NextRequest) {
           tenantId,
           activityType: "payment",
           entityType: "Payment",
-          entityId: payment.id,
+          entityId: paymentId,
           action: "process",
           title: `Payment of $${body.amount} accepted (not applied to invoice)`,
-          description: `Payment for invoice ${body.invoiceId} on event ${body.eventId} via ${body.methodType}. Apply failed: ${applyResult.error}`,
+          description: `Payment for invoice ${body.invoiceId} on event ${body.eventId} via ${body.methodType}. Invoice may not have been ready for payment application.`,
           metadata: {
             invoiceId: body.invoiceId,
             eventId: body.eventId,
@@ -321,25 +383,40 @@ export async function POST(request: NextRequest) {
             paymentNumber,
             manifestProcessed: true,
             invoiceUpdated: false,
-            applyError: applyResult.error,
           },
           performedBy: invoice.clientId,
           sourceType: "Payment",
-          sourceId: payment.id,
+          sourceId: paymentId,
           importance: "high",
           visibility: "all",
           createdAt: new Date(),
         },
       });
 
+      // Build the response from the governed create result + status override
       const acceptedResponse: PaymentResponse = {
-        ...payment,
-        amount: payment.amount.toString(),
+        id: paymentId,
+        tenantId,
+        invoiceId: body.invoiceId,
+        eventId: body.eventId,
+        clientId: invoice.clientId,
+        amount: String(body.amount),
+        currency: body.currency || "USD",
         status: "ACCEPTED_NOT_APPLIED" as PaymentResponse["status"],
+        methodType: body.methodType,
+        gatewayPaymentMethodId: body.paymentMethodId || null,
+        gatewayTransactionId: paymentNumber,
+        processor: body.processor || null,
+        processedAt: new Date(),
+        completedAt: null,
+        refundedAt: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null,
       };
 
       return NextResponse.json<PaymentResponse & { warning: string }>(
-        { ...acceptedResponse, warning: `Payment accepted but not applied to invoice: ${applyResult.error}` },
+        { ...acceptedResponse, warning: "Payment accepted but not applied to invoice — invoice may not be ready for payment application" },
         { status: 201 }
       );
     }
@@ -350,7 +427,7 @@ export async function POST(request: NextRequest) {
         tenantId,
         activityType: "payment",
         entityType: "Payment",
-        entityId: payment.id,
+        entityId: paymentId,
         action: "process",
         title: `Payment of $${body.amount} processed`,
         description: `Payment for invoice ${body.invoiceId} on event ${body.eventId} via ${body.methodType}`,
@@ -364,16 +441,33 @@ export async function POST(request: NextRequest) {
         },
         performedBy: invoice.clientId,
         sourceType: "Payment",
-        sourceId: payment.id,
+        sourceId: paymentId,
         importance: "normal",
         visibility: "all",
         createdAt: new Date(),
       },
     });
 
+    // Build the response from the governed create result
     const responseBody: PaymentResponse = {
-      ...payment,
-      amount: payment.amount.toString(),
+      id: paymentId,
+      tenantId,
+      invoiceId: body.invoiceId,
+      eventId: body.eventId,
+      clientId: invoice.clientId,
+      amount: String(body.amount),
+      currency: body.currency || "USD",
+      status: "COMPLETED",
+      methodType: body.methodType,
+      gatewayPaymentMethodId: body.paymentMethodId || null,
+      gatewayTransactionId: paymentNumber,
+      processor: body.processor || null,
+      processedAt: new Date(),
+      completedAt: new Date(),
+      refundedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      deletedAt: null,
     };
 
     if (idempotencyKey !== undefined) {

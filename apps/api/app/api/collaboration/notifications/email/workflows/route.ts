@@ -9,8 +9,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/collaboration/notifications/email/workflows
@@ -79,17 +79,21 @@ export async function GET(request: NextRequest) {
  * POST /api/collaboration/notifications/email/workflows
  * Create a new email workflow
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EmailWorkflow",
-    commandName: "create",
-    transformBody: (body) => ({
-      name: body.name || "",
-      triggerType: body.triggerType || "custom",
-      triggerConfig: JSON.stringify(body.triggerConfig || {}),
-      emailTemplateId: body.emailTemplateId || "",
-      recipientConfig: JSON.stringify(body.recipientConfig || {}),
-      isActive: body.isActive ?? true,
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "EmailWorkflow",
+    command: "create",
+    body: {
+      name: rawBody.name || "",
+      triggerType: rawBody.triggerType || "custom",
+      triggerConfig: JSON.stringify(rawBody.triggerConfig || {}),
+      emailTemplateId: rawBody.emailTemplateId || "",
+      recipientConfig: JSON.stringify(rawBody.recipientConfig || {}),
+      isActive: rawBody.isActive ?? true,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

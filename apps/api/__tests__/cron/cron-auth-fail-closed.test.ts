@@ -72,6 +72,16 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
+// Manifest runtime — imported by email-reminders and contract-expiration-alerts
+// for the governed `recordTriggered` command. Not exercised in auth tests, but
+// must be mocked so the module import chain doesn't trigger env validation.
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
+
 // Imported lazily inside `it()` blocks so the env stub above is in place
 // before the route module evaluates its `process.env.CRON_SECRET` reads.
 async function importEmailRemindersPOST() {

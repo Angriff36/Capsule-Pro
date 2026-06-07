@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -33,78 +33,65 @@ export async function GET(request: Request) {
   const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
   const offset = (page - 1) * limit;
 
-  const certifications = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employee_id: string;
-      certification_type: string;
-      certification_name: string;
-      issued_date: Date;
-      expiry_date: Date | null;
-      document_url: string | null;
-      created_at: Date;
-      updated_at: Date;
-      employee_first_name: string | null;
-      employee_last_name: string | null;
-      employee_email: string;
-      days_until_expiry: number | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        ec.id,
-        ec.tenant_id,
-        ec.employee_id,
-        ec.certification_type,
-        ec.certification_name,
-        ec.issued_date,
-        ec.expiry_date,
-        ec.document_url,
-        ec.created_at,
-        ec.updated_at,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        CASE
-          WHEN ec.expiry_date IS NOT NULL THEN
-            DATE_PART('day', ec.expiry_date - CURRENT_DATE)::integer
-          ELSE NULL
-        END AS days_until_expiry
-      FROM tenant_staff.employee_certifications ec
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = ec.tenant_id
-        AND e.id = ec.employee_id
-      WHERE ec.tenant_id = ${tenantId}
-        AND ec.deleted_at IS NULL
-        ${employeeId ? Prisma.sql`AND ec.employee_id = ${employeeId}` : Prisma.empty}
-        ${type ? Prisma.sql`AND ec.certification_type = ${type}` : Prisma.empty}
-        ${expiringWithin ? Prisma.sql`AND ec.expiry_date IS NOT NULL AND ec.expiry_date <= CURRENT_DATE + INTERVAL '1 day' * ${Number(expiringWithin)}` : Prisma.empty}
-      ORDER BY ec.expiry_date ASC NULLS LAST, ec.created_at DESC
-      LIMIT ${limit}
-      OFFSET ${offset}
-    `
-  );
-
-  const totalCountResult = await database.$queryRaw<[{ count: bigint }]>(
-    Prisma.sql`
-      SELECT COUNT(*)::bigint
-      FROM tenant_staff.employee_certifications ec
-      WHERE ec.tenant_id = ${tenantId}
-        AND ec.deleted_at IS NULL
-        ${employeeId ? Prisma.sql`AND ec.employee_id = ${employeeId}` : Prisma.empty}
-        ${type ? Prisma.sql`AND ec.certification_type = ${type}` : Prisma.empty}
-        ${expiringWithin ? Prisma.sql`AND ec.expiry_date IS NOT NULL AND ec.expiry_date <= CURRENT_DATE + INTERVAL '1 day' * ${Number(expiringWithin)}` : Prisma.empty}
-    `
-  );
+  const expiryCutoff = expiringWithin
+    ? new Date(Date.now() + Number(expiringWithin) * 24 * 60 * 60 * 1000)
+    : null;
+  const where: Prisma.EmployeeCertificationWhereInput = {
+    tenantId,
+    deletedAt: null,
+    ...(employeeId ? { employeeId } : {}),
+    ...(type ? { certificationType: type } : {}),
+    ...(expiryCutoff ? { expiryDate: { not: null, lte: expiryCutoff } } : {}),
+  };
+  const [certificationRecords, totalCount] = await Promise.all([
+    database.employeeCertification.findMany({
+      where,
+      orderBy: [{ expiryDate: "asc" }, { createdAt: "desc" }],
+      take: limit,
+      skip: offset,
+    }),
+    database.employeeCertification.count({ where }),
+  ]);
+  const employees = await database.user.findMany({
+    where: {
+      tenantId,
+      id: { in: certificationRecords.map((cert) => cert.employeeId) },
+      deletedAt: null,
+    },
+    select: { id: true, firstName: true, lastName: true, email: true },
+  });
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const certifications = certificationRecords.map((cert) => {
+    const employee = employeesById.get(cert.employeeId);
+    return {
+      id: cert.id,
+      tenant_id: cert.tenantId,
+      employee_id: cert.employeeId,
+      certification_type: cert.certificationType,
+      certification_name: cert.certificationName,
+      issued_date: cert.issuedDate,
+      expiry_date: cert.expiryDate,
+      document_url: cert.documentUrl,
+      created_at: cert.createdAt,
+      updated_at: cert.updatedAt,
+      employee_first_name: employee?.firstName ?? null,
+      employee_last_name: employee?.lastName ?? null,
+      employee_email: employee?.email ?? "",
+      days_until_expiry: cert.expiryDate
+        ? Math.ceil((cert.expiryDate.getTime() - today.getTime()) / 86_400_000)
+        : null,
+    };
+  });
 
   return NextResponse.json({
     certifications,
     pagination: {
       page,
       limit,
-      total: Number(totalCountResult[0].count),
-      totalPages: Math.ceil(Number(totalCountResult[0].count) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   });
 }
@@ -113,17 +100,20 @@ export async function GET(request: Request) {
  * POST /api/staff/certifications
  * Create a new employee certification via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "EmployeeCertification",
-    commandName: "create",
-    transformBody: (body) => ({
-      employeeId: body.employeeId || body.employee_id,
-      certificationType: body.certificationType || body.certification_type,
-      certificationName: body.certificationName || body.certification_name,
-      issuedDate: body.issuedDate || body.issued_date,
-      expiryDate: body.expiryDate || body.expiry_date || "",
-      documentUrl: body.documentUrl || body.document_url || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "EmployeeCertification",
+    command: "create",
+    body: {
+      employeeId: rawBody.employeeId || rawBody.employee_id,
+      certificationType: rawBody.certificationType || rawBody.certification_type,
+      certificationName: rawBody.certificationName || rawBody.certification_name,
+      issuedDate: rawBody.issuedDate || rawBody.issued_date,
+      expiryDate: rawBody.expiryDate || rawBody.expiry_date || "",
+      documentUrl: rawBody.documentUrl || rawBody.document_url || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

@@ -1,28 +1,51 @@
 // Kitchen Ops - Ingredient Rules
 // Manifest spec for ingredient catalog management, allergen tracking, and shelf life
+// Enriched with: recordLot (track a received lot with expiry), flagRecall (supplier recall),
+//   and reactivate commands.
 
 entity Ingredient {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
   property category: string = ""
-  property defaultUnitId: number = 0
-  property densityGPerMl: number = 0
-  property shelfLifeDays: number = 0
+  property defaultUnitId: int = 0
+  property densityGPerMl: decimal = 0
+  property shelfLifeDays: int = 0
   property storageInstructions: string = ""
   property allergens: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property inventoryItemId: string = ""
+  // Lot/recall tracking: last received lot number and expiry for kitchen food-safety audits.
+  property currentLotNumber: string = ""
+  property currentLotReceivedAt: datetime
+  property currentLotExpiresAt: datetime
+  property isRecalled: boolean = false
+  property recallReason: string = ""
+  property recalledAt: datetime
+  timestamps
+  property deletedAt: datetime
 
   computed isExpirable: boolean = self.shelfLifeDays > 0
   computed hasAllergens: boolean = self.allergens != ""
   computed isDeactivated: boolean = self.isActive == false
+  computed hasLot: boolean = self.currentLotNumber != ""
+  computed isLotExpired: boolean = self.currentLotExpiresAt != null
+  computed hasInventoryItem: boolean = self.inventoryItemId != ""
+
+  relationship belongsTo inventoryItem: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
 
   constraint requireName: self.name != null and self.name != "" "Ingredient name is required"
+  constraint positiveShelfLife: self.shelfLifeDays >= 0 "Shelf life days cannot be negative"
+  constraint warnNoInventoryItem:warn self.inventoryItemId == "" {
+    messageTemplate: "Ingredient '{ingredientName}' is not linked to an inventory item"
+    details: {
+      ingredientName: self.name
+      ingredientId: self.id
+    }
+  }
 
-  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten") {
+  constraint warnMajorAllergen:warn self.allergens != null and containsAny(self.allergens, ["nuts", "dairy", "gluten"]) {
     messageTemplate: "Ingredient contains major allergen: {allergens}"
     details: {
       allergens: self.allergens
@@ -36,6 +59,7 @@ entity Ingredient {
     }
   }
 
+  default policy IngredientDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Ingredient management"
   command create(name: string, category: string, defaultUnitId: number, densityGPerMl: number, shelfLifeDays: number, storageInstructions: string, allergens: string) {
     guard name != null and name != "" "Ingredient name is required"
     guard defaultUnitId != null and defaultUnitId > 0 "Default unit ID is required"
@@ -48,8 +72,7 @@ entity Ingredient {
     mutate storageInstructions = storageInstructions
     mutate allergens = allergens
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
+    mutate isRecalled = false
 
     emit IngredientCreated
   }
@@ -63,7 +86,6 @@ entity Ingredient {
     mutate defaultUnitId = defaultUnitId
     mutate densityGPerMl = densityGPerMl
     mutate storageInstructions = storageInstructions
-    mutate updatedAt = now()
 
     emit IngredientUpdated
   }
@@ -81,16 +103,24 @@ entity Ingredient {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit IngredientDeactivated
+  }
+
+  // Reactivate a previously deactivated ingredient — restores it to the active catalog.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Ingredient is already active"
+    guard self.isRecalled == false "Cannot reactivate a recalled ingredient — clear recall first"
+
+    mutate isActive = true
+
+    emit IngredientReactivated
   }
 
   command updateAllergens(allergens: string, userId: string) {
     guard self.isActive "Cannot update allergens on a deactivated ingredient"
 
     mutate allergens = allergens
-    mutate updatedAt = now()
 
     emit IngredientAllergensUpdated
   }
@@ -101,12 +131,74 @@ entity Ingredient {
 
     mutate shelfLifeDays = shelfLifeDays
     mutate storageInstructions = storageInstructions
-    mutate updatedAt = now()
 
     emit IngredientShelfLifeUpdated
   }
 
-  store Ingredient in memory
+  command linkInventoryItem(inventoryItemId: string, userId: string) {
+    guard self.isActive "Cannot link inventory item on a deactivated ingredient"
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
+
+    mutate inventoryItemId = inventoryItemId
+
+    emit IngredientInventoryItemLinked
+  }
+
+  command unlinkInventoryItem(reason: string, userId: string) {
+    guard self.inventoryItemId != "" "Ingredient is not linked to an inventory item"
+    guard reason != null and reason != "" "Reason is required"
+
+    mutate inventoryItemId = ""
+
+    emit IngredientInventoryItemUnlinked
+  }
+
+  // Record a received lot number and expiry date for food-safety / FIFO tracking.
+  command recordLot(lotNumber: string, receivedAt: datetime, expiresAt: datetime) {
+    guard self.isActive "Cannot record a lot for a deactivated ingredient"
+    guard lotNumber != null and lotNumber != "" "Lot number is required"
+
+    constraint warnNoExpiry:warn expiresAt == 0 {
+      messageTemplate: "Lot '{lotNumber}' recorded without an expiry date — verify this is a non-perishable ingredient"
+      details: {
+        ingredientName: self.name
+        lotNumber: lotNumber
+      }
+    }
+
+    mutate currentLotNumber = lotNumber
+    mutate currentLotReceivedAt = now()
+    mutate currentLotExpiresAt = expiresAt
+
+    emit IngredientLotRecorded
+  }
+
+  // Flag ingredient as recalled by supplier — immediately deactivates it from use.
+  command flagRecall(recallReason: string, userId: string) {
+    guard recallReason != null and recallReason != "" "Recall reason is required"
+    guard self.isRecalled == false "Ingredient is already recalled"
+
+    mutate isRecalled = true
+    mutate recallReason = recallReason
+    mutate recalledAt = now()
+    mutate isActive = false
+
+    emit IngredientRecallFlagged
+  }
+
+  // Clear a recall once the supplier has confirmed resolution and the ingredient is safe again.
+  command clearRecall(clearanceNote: string, userId: string) {
+    guard self.isRecalled "Ingredient is not currently recalled"
+    guard clearanceNote != null and clearanceNote != "" "Clearance note is required"
+
+    mutate isRecalled = false
+    mutate recallReason = ""
+    mutate recalledAt = null
+
+    emit IngredientRecallCleared
+  }
+
+  store Ingredient in durable
 }
 
 policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage ingredients"
@@ -119,14 +211,14 @@ event IngredientCreated: "kitchen.ingredient.created" {
   category: string
   allergens: string
   shelfLifeDays: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event IngredientUpdated: "kitchen.ingredient.updated" {
   ingredientId: string
   name: string
   category: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientDeactivated: "kitchen.ingredient.deactivated" {
@@ -134,7 +226,15 @@ event IngredientDeactivated: "kitchen.ingredient.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
+}
+
+event IngredientReactivated: "kitchen.ingredient.reactivated" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: datetime
 }
 
 event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
@@ -142,7 +242,7 @@ event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   name: string
   allergens: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
@@ -151,5 +251,50 @@ event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
   shelfLifeDays: number
   storageInstructions: string
   userId: string
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event IngredientInventoryItemLinked: "kitchen.ingredient.inventory-item.linked" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  inventoryItemId: string
+  userId: string
+  updatedAt: datetime
+}
+
+event IngredientInventoryItemUnlinked: "kitchen.ingredient.inventory-item.unlinked" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  inventoryItemId: string
+  reason: string
+  userId: string
+  updatedAt: datetime
+}
+
+event IngredientLotRecorded: "kitchen.ingredient.lot.recorded" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  lotNumber: string
+  receivedAt: datetime
+}
+
+event IngredientRecallFlagged: "kitchen.ingredient.recall.flagged" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  recallReason: string
+  userId: string
+  recalledAt: datetime
+}
+
+event IngredientRecallCleared: "kitchen.ingredient.recall.cleared" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  clearanceNote: string
+  userId: string
+  clearedAt: datetime
 }

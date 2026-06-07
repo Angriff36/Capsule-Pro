@@ -5,7 +5,8 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TEAM_THREAD_TYPE = "team";
 const UUID_REGEX =
@@ -35,26 +36,54 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
   });
 };
 
-const ensureParticipant = async (options: {
+/**
+ * Ensures a participant exists for a team thread using Manifest commands.
+ * For team threads, auto-join is allowed; for direct threads, the participant
+ * must already exist. Returns the participant record (read per constitution §10).
+ */
+const ensureTeamThreadParticipant = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
+  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
 }) => {
-  return await database.adminChatParticipant.upsert({
+  // Read: check if participant exists (read per constitution §10)
+  const existing = await database.adminChatParticipant.findFirst({
     where: {
-      tenantId_threadId_userId: {
-        tenantId: options.tenantId,
-        threadId: options.threadId,
-        userId: options.userId,
-      },
-    },
-    update: {
-      deletedAt: null,
-    },
-    create: {
       tenantId: options.tenantId,
       threadId: options.threadId,
       userId: options.userId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      archivedAt: true,
+      clearedAt: true,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  // Write: create participant via Manifest
+  await runManifestCommand({
+    entity: "AdminChatParticipant",
+    command: "create",
+    body: {
+      threadId: options.threadId,
+      userId: options.userId,
+    },
+    user: options.user,
+  });
+
+  // Re-read to get the created record (read per constitution §10)
+  return await database.adminChatParticipant.findFirst({
+    where: {
+      tenantId: options.tenantId,
+      threadId: options.threadId,
+      userId: options.userId,
+      deletedAt: null,
     },
     select: {
       id: true,
@@ -123,11 +152,20 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!participant) {
       if (thread.threadType === TEAM_THREAD_TYPE) {
-        participant = await ensureParticipant({
+        const user = await resolveCurrentUser(request);
+        const ensured = await ensureTeamThreadParticipant({
           tenantId,
           threadId,
           userId: employee.id,
+          user,
         });
+        if (!ensured) {
+          return NextResponse.json(
+            { message: "Failed to ensure participant" },
+            { status: 500, headers: corsHeaders(request, "PATCH, OPTIONS") }
+          );
+        }
+        participant = ensured!;
       } else {
         return NextResponse.json(
           { message: "Thread not found" },
@@ -135,6 +173,10 @@ export async function PATCH(request: Request, context: RouteContext) {
         );
       }
     }
+
+    // At this point participant is guaranteed non-null — either it existed
+    // or we ensured it (returning early on failure above).
+    const activeParticipant = participant!;
 
     const body = (await request.json().catch(() => null)) as {
       action?: string;
@@ -146,24 +188,36 @@ export async function PATCH(request: Request, context: RouteContext) {
       "action must be archive, unarchive, or clear"
     );
 
-    const now = new Date();
-    let data: { archivedAt: Date } | { archivedAt: null } | { clearedAt: Date };
-    if (action === "archive") {
-      data = { archivedAt: now };
-    } else if (action === "unarchive") {
-      data = { archivedAt: null };
-    } else {
-      data = { clearedAt: now };
+    // Map action to Manifest command
+    const commandMap: Record<string, string> = {
+      archive: "archive",
+      unarchive: "unarchive",
+      clear: "clearHistory",
+    };
+    const command = commandMap[action];
+
+    const user = await resolveCurrentUser(request);
+    const result = await runManifestCommand({
+      entity: "AdminChatParticipant",
+      command,
+      body: {
+        id: activeParticipant.id,
+        threadId,
+      },
+      user,
+    });
+
+    if (result.status !== 200) {
+      return result;
     }
 
-    const updated = await database.adminChatParticipant.update({
+    // Re-read participant to return fresh state (read per constitution §10)
+    const updated = await database.adminChatParticipant.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id: participant.id,
-        },
+        tenantId,
+        id: activeParticipant.id,
+        deletedAt: null,
       },
-      data,
       select: {
         id: true,
         archivedAt: true,

@@ -67,7 +67,7 @@ const ENTITY_DEPENDENCIES: Record<
   // Events are referenced by many entities
   Event: [
     {
-      referencedEntity: "EventStaffAssignment",
+      referencedEntity: "EventStaff",
       field: "eventId",
       type: "optional",
       description: "Staff assignments",
@@ -310,7 +310,7 @@ const ENTITY_DEPENDENCIES: Record<
       description: "Time entries",
     },
     {
-      referencedEntity: "EventStaffAssignment",
+      referencedEntity: "EventStaff",
       field: "userId",
       type: "required",
       description: "Staff assignments",

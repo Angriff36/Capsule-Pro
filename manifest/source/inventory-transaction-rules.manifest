@@ -2,13 +2,14 @@
 // Manifest spec for immutable inventory transaction log entries
 
 entity InventoryTransaction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required itemId: string
   property required transactionType: string
-  property quantity: number = 0
-  property unitCost: number = 0
-  property totalCost: number = 0
+  property quantity: int = 0
+  property unitCost: money = 0
+  property totalCost: money = 0
   property reference: string = ""
   property referenceType: string = ""
   property referenceId: string = ""
@@ -16,8 +17,12 @@ entity InventoryTransaction {
   property reason: string = ""
   property employeeId: string = ""
   property storageLocationId: string = ""
-  property transactionDate: datetime = now()
-  property createdAt: datetime = now()
+  property transactionDate: datetime
+  property reversedAt: datetime
+  property reversedBy: string = ""
+  property reverseOfTransactionId: string = ""
+  property isReversed: boolean = false
+  timestamps
 
   computed isReceipt: boolean = self.transactionType == "receipt"
   computed isIssue: boolean = self.transactionType == "issue"
@@ -26,6 +31,10 @@ entity InventoryTransaction {
   computed isWaste: boolean = self.transactionType == "waste"
   computed isReturn: boolean = self.transactionType == "return"
   computed hasReference: boolean = self.referenceId != ""
+  computed isReversible: boolean = self.isReversed == false
+
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+  relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
 
   constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
 
@@ -37,6 +46,7 @@ entity InventoryTransaction {
     }
   }
 
+  default policy InventoryTransactionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(itemId: string, transactionType: string, quantity: number, unitCost: number, referenceType: string, referenceId: string, reason: string, notes: string, employeeId: string, storageLocationId: string) {
     guard itemId != null and itemId != "" "Item ID is required"
     guard transactionType != null and transactionType != "" "Transaction type is required"
@@ -79,12 +89,42 @@ entity InventoryTransaction {
     mutate employeeId = employeeId
     mutate storageLocationId = storageLocationId
     mutate transactionDate = now()
-    mutate createdAt = now()
+    mutate isReversed = false
 
     emit InventoryTransactionCreated
   }
 
-  store InventoryTransaction in memory
+  // Reverse a mistaken transaction — creates an equal-and-opposite correction record.
+  // The original transaction is marked reversed so it no longer counts toward stock.
+  command reverse(reversedBy: string, reason: string) {
+    guard self.isReversed == false "Transaction has already been reversed"
+    guard reversedBy != null and reversedBy != "" "Reversing user is required"
+    guard reason != null and reason != "" "Reversal reason is required"
+
+    mutate isReversed = true
+    mutate reversedBy = reversedBy
+    mutate reversedAt = now()
+    mutate notes = reason
+
+    emit InventoryTransactionReversed
+  }
+
+  // Adjust the cost or notes on a transaction without reversing quantity impact.
+  // Only allowed before the transaction date is more than 24 h in the past (enforced
+  // upstream) and only by a manager.
+  command adjustCost(newUnitCost: number, reason: string) {
+    guard self.isReversed == false "Cannot adjust a reversed transaction"
+    guard newUnitCost >= 0 "Unit cost cannot be negative"
+    guard reason != null and reason != "" "Adjustment reason is required"
+
+    mutate unitCost = newUnitCost
+    mutate totalCost = self.quantity * newUnitCost
+    mutate notes = reason
+
+    emit InventoryTransactionCostAdjusted
+  }
+
+  store InventoryTransaction in durable
 }
 
 policy StaffCanCreateTransaction execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create inventory transactions"
@@ -102,5 +142,26 @@ event InventoryTransactionCreated: "inventory.transaction.created" {
   referenceId: string
   reason: string
   employeeId: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event InventoryTransactionReversed: "inventory.transaction.reversed" {
+  transactionId: string
+  tenantId: string
+  itemId: string
+  transactionType: string
+  quantity: number
+  reversedBy: string
+  reason: string
+  reversedAt: datetime
+}
+
+event InventoryTransactionCostAdjusted: "inventory.transaction.cost-adjusted" {
+  transactionId: string
+  tenantId: string
+  itemId: string
+  oldUnitCost: number
+  newUnitCost: number
+  reason: string
+  adjustedAt: datetime
 }

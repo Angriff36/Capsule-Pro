@@ -18,7 +18,7 @@ vi.mock("@repo/database", () => ({
   database: {
     event: { findFirst: vi.fn(), findMany: vi.fn() },
     eventGuest: { count: vi.fn(), groupBy: vi.fn() },
-    eventStaffAssignment: { count: vi.fn() },
+    eventStaff: { count: vi.fn() },
     eventContract: { count: vi.fn() },
     $queryRaw: mockQueryRaw,
   },

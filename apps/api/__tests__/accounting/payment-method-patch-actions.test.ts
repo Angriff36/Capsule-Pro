@@ -5,19 +5,20 @@
  * `PATCH /api/accounting/payment-methods/[id]`. Actions:
  *   mark-as-default | verify | flag-for-fraud | mark-expired | remove
  *
+ * Post-migration (Task 8.2): all mutations go through `runManifestCommand`.
+ * Post-migration (updateMany→governed): clearing sibling defaults now goes
+ * through `markNotDefault` Manifest commands instead of raw `updateMany`.
+ *
  * Why these tests matter:
  *   - `mark-as-default` MUST unset prior defaults for the same client before
  *     marking the target. A regression here lets two payment methods both
  *     hold `isDefault=true`, which silently picks an arbitrary card at charge
- *     time. The route does this via `updateMany` filtered by clientId — we
- *     assert the filter shape so a typo doesn't quietly demote every default
- *     in the tenant.
- *   - `flag-for-fraud` is a security control. If the status update never
- *     persists, fraudulent cards stay in the rotation and continue to charge.
- *     Capture the data shape and ensure the database write actually fires.
- *   - `remove` is a soft-delete that returns `{ success: true }` rather than
- *     the entity — clients that read `response.id` will break if we
- *     accidentally return the entity here.
+ *     time. The route does this via governed `markNotDefault` commands
+ *     filtered by clientId — we assert the findMany filter shape so a typo
+ *     doesn't quietly demote every default in the tenant.
+ *   - `flag-for-fraud` is a security control. The command must be delegated
+ *     with the correct entity/command to ensure runtime RBAC + audit trail.
+ *   - `remove` is a soft-delete. The Manifest command handles this.
  *   - Cross-tenant access on findFirst returning a record from another tenant
  *     must reject (covered via `validatePaymentMethodAccess`).
  *
@@ -27,15 +28,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const TENANT_ID = "00000000-0000-0000-0000-000000000001";
+const USER_ID = "00000000-0000-0000-0000-000000000099";
 const TENANT_ID_OTHER = "00000000-0000-0000-0000-000000000002";
 const PM_ID = "11111111-1111-1111-1111-111111111111";
 const CLIENT_ID = "22222222-2222-2222-2222-222222222222";
 
 const mocks = vi.hoisted(() => ({
   pmFindFirstMock: vi.fn(),
-  pmUpdateMock: vi.fn(),
-  pmUpdateManyMock: vi.fn(),
-  requireTenantIdMock: vi.fn(),
+  pmFindManyMock: vi.fn(),
+  runManifestCommandMock: vi.fn(),
+  runManifestCommandCoreMock: vi.fn(),
+  resolveCurrentUserMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   consoleErrorMock: vi.fn(),
 }));
@@ -44,14 +47,26 @@ vi.mock("@repo/database", () => ({
   database: {
     paymentMethod: {
       findFirst: mocks.pmFindFirstMock,
-      update: mocks.pmUpdateMock,
-      updateMany: mocks.pmUpdateManyMock,
+      findMany: mocks.pmFindManyMock,
     },
   },
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
-  requireTenantId: mocks.requireTenantIdMock,
+  requireTenantId: vi.fn().mockResolvedValue("00000000-0000-0000-0000-000000000001"),
+  resolveCurrentUser: mocks.resolveCurrentUserMock,
+}));
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommandMock,
+}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: mocks.runManifestCommandCoreMock,
+}));
+
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -91,14 +106,28 @@ const params = Promise.resolve({ id: PM_ID });
 describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () => {
   beforeEach(() => {
     mocks.pmFindFirstMock.mockReset();
-    mocks.pmUpdateMock.mockReset();
-    mocks.pmUpdateManyMock.mockReset();
-    mocks.requireTenantIdMock.mockReset();
+    mocks.pmFindManyMock.mockReset();
+    mocks.runManifestCommandMock.mockReset();
+    mocks.runManifestCommandCoreMock.mockReset();
+    mocks.resolveCurrentUserMock.mockReset();
     mocks.captureExceptionMock.mockReset();
     mocks.consoleErrorMock.mockReset();
 
-    mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
-    mocks.pmUpdateManyMock.mockResolvedValue({ count: 0 });
+    mocks.resolveCurrentUserMock.mockResolvedValue({
+      id: USER_ID,
+      tenantId: TENANT_ID,
+      role: "admin",
+    });
+    mocks.pmFindManyMock.mockResolvedValue([]);
+    mocks.runManifestCommandCoreMock.mockResolvedValue({
+      ok: true,
+      entity: "PaymentMethod",
+      command: "markNotDefault",
+      result: { id: "sibling-id" },
+    });
+    mocks.runManifestCommandMock.mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 200 })
+    );
     vi.spyOn(console, "error").mockImplementation(mocks.consoleErrorMock);
   });
 
@@ -116,13 +145,10 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
     });
 
     expect(response.status).toBe(404);
-    expect(mocks.pmUpdateMock).not.toHaveBeenCalled();
+    expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
   });
 
   it("returns 500 (caught invariant) when payment method belongs to another tenant", async () => {
-    // Cross-tenant: lookup returns a PM owned by TENANT_ID_OTHER but
-    // requireTenantId returns TENANT_ID — validatePaymentMethodAccess
-    // throws an InvariantError caught in the route's catch block.
     mocks.pmFindFirstMock.mockResolvedValue({
       ...basePaymentMethod,
       tenantId: TENANT_ID_OTHER,
@@ -133,7 +159,7 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
     });
 
     expect(response.status).toBe(500);
-    expect(mocks.pmUpdateMock).not.toHaveBeenCalled();
+    expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     expect(mocks.captureExceptionMock).toHaveBeenCalled();
   });
 
@@ -145,18 +171,14 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
     });
 
     expect(response.status).toBe(400);
-    expect(mocks.pmUpdateMock).not.toHaveBeenCalled();
+    expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
   });
 
   // ---------------------------------------------------------------- mark-as-default
 
   describe("action: mark-as-default", () => {
-    it("unsets sibling defaults via updateMany before promoting the target", async () => {
+    it("clears sibling defaults via governed markNotDefault commands before delegating to Manifest runtime", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        isDefault: true,
-      });
 
       const response = await PATCH(makeRequest({ action: "mark-as-default" }), {
         params,
@@ -164,8 +186,8 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
 
       expect(response.status).toBe(200);
 
-      // updateMany must scope to (tenantId, clientId, NOT this id, isDefault=true)
-      expect(mocks.pmUpdateManyMock).toHaveBeenCalledWith(
+      // findMany must scope to (tenantId, clientId, NOT this id, isDefault=true)
+      expect(mocks.pmFindManyMock).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             tenantId: TENANT_ID,
@@ -173,150 +195,167 @@ describe("PATCH /api/accounting/payment-methods/[id] — action dispatcher", () 
             id: { not: PM_ID },
             isDefault: true,
           }),
-          data: { isDefault: false },
+          select: { id: true },
         })
       );
 
-      // Single update must promote this PM
-      expect(mocks.pmUpdateMock).toHaveBeenCalledWith(
+      // Manifest runtime receives the markAsDefault command
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({ isDefault: true }),
+          entity: "PaymentMethod",
+          command: "markAsDefault",
+          body: { id: PM_ID },
         })
       );
     });
 
-    it("invokes updateMany BEFORE update (ordering matters)", async () => {
+    it("issues markNotDefault for each sibling default found", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        isDefault: true,
-      });
+      const siblingIds = [
+        "33333333-3333-3333-3333-333333333333",
+        "44444444-4444-4444-4444-444444444444",
+      ];
+      mocks.pmFindManyMock.mockResolvedValue(
+        siblingIds.map((id) => ({ id }))
+      );
 
       await PATCH(makeRequest({ action: "mark-as-default" }), { params });
 
-      const updateManyOrder =
-        mocks.pmUpdateManyMock.mock.invocationCallOrder[0];
-      const updateOrder = mocks.pmUpdateMock.mock.invocationCallOrder[0];
-      expect(updateManyOrder).toBeLessThan(updateOrder);
+      // Two markNotDefault calls — one per sibling
+      expect(mocks.runManifestCommandCoreMock).toHaveBeenCalledTimes(2);
+      expect(mocks.runManifestCommandCoreMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "markNotDefault",
+          instanceId: siblingIds[0],
+        })
+      );
+      expect(mocks.runManifestCommandCoreMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "markNotDefault",
+          instanceId: siblingIds[1],
+        })
+      );
     });
 
-    it("returns the entity with computed displayInfo", async () => {
+    it("clears siblings BEFORE issuing markAsDefault (ordering matters)", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        isDefault: true,
-      });
+      mocks.pmFindManyMock.mockResolvedValue([
+        { id: "33333333-3333-3333-3333-333333333333" },
+      ]);
 
-      const response = await PATCH(makeRequest({ action: "mark-as-default" }), {
-        params,
-      });
-      const body = await response.json();
+      await PATCH(makeRequest({ action: "mark-as-default" }), { params });
 
-      expect(body.displayInfo).toBe("VISA •••• 4242");
-      expect(body.isDefault).toBe(true);
+      const coreOrder =
+        mocks.runManifestCommandCoreMock.mock.invocationCallOrder[0];
+      const manifestOrder =
+        mocks.runManifestCommandMock.mock.invocationCallOrder[0];
+      expect(coreOrder).toBeLessThan(manifestOrder);
     });
   });
 
   // ---------------------------------------------------------------- verify
 
   describe("action: verify", () => {
-    it("sets status to VERIFIED and stamps updatedAt", async () => {
+    it("delegates verify command to Manifest runtime", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        status: "VERIFIED",
-      });
 
       const response = await PATCH(makeRequest({ action: "verify" }), {
         params,
       });
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.pmUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.status).toBe("VERIFIED");
-      expect(dataArg.updatedAt).toBeInstanceOf(Date);
-      // Must not call updateMany — verify does not touch sibling defaults.
-      expect(mocks.pmUpdateManyMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "verify",
+          body: expect.objectContaining({ id: PM_ID }),
+        })
+      );
+      // Must not call findMany or markNotDefault — verify does not touch sibling defaults.
+      expect(mocks.pmFindManyMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandCoreMock).not.toHaveBeenCalled();
     });
   });
 
   // ---------------------------------------------------------------- flag-for-fraud
 
   describe("action: flag-for-fraud", () => {
-    it("sets status to FLAGGED", async () => {
+    it("delegates flagForFraud command to Manifest runtime", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        status: "FLAGGED",
-      });
 
       const response = await PATCH(makeRequest({ action: "flag-for-fraud" }), {
         params,
       });
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.pmUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.status).toBe("FLAGGED");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "flagForFraud",
+          body: expect.objectContaining({ id: PM_ID }),
+        })
+      );
     });
   });
 
   // ---------------------------------------------------------------- mark-expired
 
   describe("action: mark-expired", () => {
-    it("sets status to EXPIRED", async () => {
+    it("delegates markExpired command to Manifest runtime", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        status: "EXPIRED",
-      });
 
       const response = await PATCH(makeRequest({ action: "mark-expired" }), {
         params,
       });
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.pmUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.status).toBe("EXPIRED");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "markExpired",
+          body: { id: PM_ID },
+        })
+      );
     });
   });
 
   // ---------------------------------------------------------------- remove
 
   describe("action: remove", () => {
-    it("soft-deletes by stamping deletedAt and returns success envelope", async () => {
+    it("delegates remove command to Manifest runtime", async () => {
       mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-      mocks.pmUpdateMock.mockResolvedValue({
-        ...basePaymentMethod,
-        deletedAt: new Date(),
-      });
 
       const response = await PATCH(makeRequest({ action: "remove" }), {
         params,
       });
 
       expect(response.status).toBe(200);
-      const body = await response.json();
-      expect(body).toEqual({ success: true });
-
-      const dataArg = mocks.pmUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.deletedAt).toBeInstanceOf(Date);
-      // Must NOT touch isDefault, type, or other fields on remove.
-      expect(dataArg.status).toBeUndefined();
-      expect(dataArg.isDefault).toBeUndefined();
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PaymentMethod",
+          command: "remove",
+          body: { id: PM_ID },
+        })
+      );
     });
   });
 
   // ---------------------------------------------------------------- error path
 
-  it("returns 500 on unexpected database error during write", async () => {
+  it("returns 500 when Manifest command returns error response", async () => {
     mocks.pmFindFirstMock.mockResolvedValue(basePaymentMethod);
-    mocks.pmUpdateMock.mockRejectedValue(new Error("DB exploded"));
+    mocks.runManifestCommandMock.mockResolvedValue(
+      new Response(JSON.stringify({ error: "Internal error" }), { status: 500 })
+    );
 
     const response = await PATCH(makeRequest({ action: "verify" }), {
       params,
     });
 
     expect(response.status).toBe(500);
-    expect(mocks.captureExceptionMock).toHaveBeenCalled();
   });
 });

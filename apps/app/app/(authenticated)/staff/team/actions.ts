@@ -3,13 +3,14 @@
 import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { InvariantError, invariant } from "../../../lib/invariant";
 
 // revalidatePath is intentionally NOT called from syncCurrentUser.
 // The client component (AutoRegisterStaff) handles refresh via router.refresh()
 // to avoid clearing form field values in sibling components during revalidation.
-// See: https://github.com/vercel/next.js/discussions/50090
-import { getTenantIdForOrg } from "../../../lib/tenant";
+// See: https://github.com/vercel/Next.js/discussions/50090
+import { getTenantIdForOrg, requireCurrentUser } from "../../../lib/tenant";
 import {
   type EmploymentTypeValue,
   employmentTypeOptions,
@@ -50,6 +51,14 @@ const resolveEmploymentType = (value: string): EmploymentTypeValue => {
  *
  * authUserId is @@unique([tenantId, authUserId]) so the same Clerk user
  * can be an employee in multiple orgs simultaneously.
+ *
+ * TODO: Not migrated to governed commands. This is an auth bootstrap function
+ * that runs BEFORE a User record exists — it creates the User that subsequent
+ * governed commands require as actor context. Migrating it would create a
+ * circular dependency (requireCurrentUser -> syncCurrentUser -> governed command
+ * -> requireCurrentUser). It also doesn't supply all User.create required params
+ * (e.g. hireDate). Kept as direct Prisma per constitution §10 exception for
+ * bootstrapping identity.
  */
 export const syncCurrentUser = async (): Promise<ActionState> => {
   try {
@@ -158,11 +167,8 @@ export const addStaffMember = async (
   formData: FormData
 ): Promise<ActionState> => {
   try {
-    const { orgId, userId } = await auth();
-    invariant(orgId, "You must be signed in to add staff.");
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    invariant(tenantId, "Tenant not found for this organization.");
+    const user = await requireCurrentUser();
+    const tenantId = user.tenantId;
 
     const email = readText(formData, "email").toLowerCase();
     const firstName = readText(formData, "firstName");
@@ -177,6 +183,7 @@ export const addStaffMember = async (
     invariant(firstName, "First name is required.");
     invariant(lastName, "Last name is required.");
 
+    // Read: check for duplicates (constitution §10)
     const existing = await database.user.findFirst({
       where: {
         tenantId,
@@ -190,17 +197,30 @@ export const addStaffMember = async (
 
     invariant(!existing, "A staff member with this email already exists.");
 
-    // Simple create - no Clerk linking
-    await database.user.create({
-      data: {
-        tenantId,
+    // Governed write: User.create runs through Manifest runtime (constitution §9).
+    // User.create requires phone, hourlyRate, salaryAnnual, hireDate, employeeNumber
+    // which the staff form doesn't collect — supply sensible defaults.
+    const result = await runManifestCommand({
+      entity: "User",
+      command: "create",
+      body: {
         email,
         firstName,
         lastName,
         role,
+        phone: "",
         employmentType,
+        hourlyRate: 0,
+        salaryAnnual: 0,
+        hireDate: new Date().toISOString(),
+        employeeNumber: "",
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to add staff member.");
+    }
 
     revalidatePath("/staff/team");
 
@@ -226,11 +246,8 @@ export const updateStaffMember = async (
   formData: FormData
 ): Promise<ActionState> => {
   try {
-    const { orgId } = await auth();
-    invariant(orgId, "You must be signed in to update staff.");
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    invariant(tenantId, "Tenant not found for this organization.");
+    const user = await requireCurrentUser();
+    const tenantId = user.tenantId;
 
     const id = readText(formData, "id");
     const email = readText(formData, "email").toLowerCase();
@@ -248,7 +265,7 @@ export const updateStaffMember = async (
     invariant(firstName, "First name is required.");
     invariant(lastName, "Last name is required.");
 
-    // Check employee exists
+    // Read: verify employee exists (constitution §10)
     const existing = await database.user.findFirst({
       where: {
         tenantId,
@@ -257,24 +274,98 @@ export const updateStaffMember = async (
       },
       select: {
         id: true,
+        role: true,
+        isActive: true,
+        phone: true,
+        hourlyRate: true,
+        salaryAnnual: true,
+        avatarUrl: true,
       },
     });
 
     invariant(existing, "Staff member not found.");
 
-    await database.user.update({
-      where: {
-        tenantId_id: { tenantId, id },
-      },
-      data: {
+    // Governed write: User.update runs through Manifest runtime (constitution §9).
+    // User.update mutates email, firstName, lastName, phone, employmentType,
+    // hourlyRate, salaryAnnual, avatarUrl. It does NOT mutate role or isActive.
+    // Supply existing values for fields not in the form (phone, hourlyRate, etc.).
+    const updateResult = await runManifestCommand({
+      entity: "User",
+      command: "update",
+      body: {
+        id,
         email,
         firstName,
         lastName,
-        role,
+        phone: existing.phone ?? "",
         employmentType,
-        isActive,
+        hourlyRate: existing.hourlyRate
+          ? Number(existing.hourlyRate)
+          : 0,
+        salaryAnnual: existing.salaryAnnual
+          ? Number(existing.salaryAnnual)
+          : 0,
+        avatarUrl: existing.avatarUrl ?? "",
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!updateResult.ok) {
+      throw new Error(updateResult.message || "Failed to update staff member.");
+    }
+
+    // Governed write: User.updateRole if role changed.
+    // User.updateRole only mutates the `role` field and requires the user to be active.
+    if (role !== existing.role) {
+      const roleResult = await runManifestCommand({
+        entity: "User",
+        command: "updateRole",
+        body: {
+          userId: id,
+          newRole: role,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      });
+
+      if (!roleResult.ok) {
+        throw new Error(roleResult.message || "Failed to update staff role.");
+      }
+    }
+
+    // Governed write: User.deactivate or User.reactivate if isActive changed.
+    if (isActive !== existing.isActive) {
+      if (!isActive) {
+        const deactivateResult = await runManifestCommand({
+          entity: "User",
+          command: "deactivate",
+          body: {
+            userId: id,
+            reason: "Deactivated by admin",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+
+        if (!deactivateResult.ok) {
+          throw new Error(
+            deactivateResult.message || "Failed to deactivate staff member."
+          );
+        }
+      } else {
+        // Governed write: User.reactivate (constitution §9).
+        const reactivateResult = await runManifestCommand({
+          entity: "User",
+          command: "reactivate",
+          body: { userId: id },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+
+        if (!reactivateResult.ok) {
+          throw new Error(
+            reactivateResult.message || "Failed to reactivate staff member."
+          );
+        }
+      }
+    }
 
     revalidatePath("/staff/team");
 
@@ -295,22 +386,24 @@ export const updateStaffMember = async (
   }
 };
 
+/**
+ * Soft-delete a staff member.
+ *
+ * Governed write: User.softDelete sets deletedAt = now() via Manifest runtime.
+ */
 export const deleteStaffMember = async (
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
   try {
-    const { orgId } = await auth();
-    invariant(orgId, "You must be signed in to delete staff.");
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    invariant(tenantId, "Tenant not found for this organization.");
+    const user = await requireCurrentUser();
+    const tenantId = user.tenantId;
 
     const id = readText(formData, "id");
 
     invariant(id, "Staff ID is required.");
 
-    // Check employee exists
+    // Read: verify employee exists (constitution §10)
     const existing = await database.user.findFirst({
       where: {
         tenantId,
@@ -324,15 +417,17 @@ export const deleteStaffMember = async (
 
     invariant(existing, "Staff member not found.");
 
-    // Soft delete - set deletedAt
-    await database.user.update({
-      where: {
-        tenantId_id: { tenantId, id },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
+    // Governed write: User.softDelete (constitution §9).
+    const deleteResult = await runManifestCommand({
+      entity: "User",
+      command: "softDelete",
+      body: { userId: id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!deleteResult.ok) {
+      throw new Error(deleteResult.message || "Failed to delete staff member.");
+    }
 
     revalidatePath("/staff/team");
 

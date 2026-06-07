@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -22,54 +22,34 @@ export async function GET(_request: Request, context: RouteContext) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await context.params;
 
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      email: string;
-      first_name: string | null;
-      last_name: string | null;
-      role: string;
-      is_active: boolean;
-      phone: string | null;
-      avatar_url: string | null;
-      employment_type: string;
-      hourly_rate: number | null;
-      hire_date: Date;
-      created_at: Date;
-      updated_at: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        email,
-        first_name,
-        last_name,
-        role,
-        is_active,
-        phone,
-        avatar_url,
-        employment_type,
-        hourly_rate,
-        hire_date,
-        created_at,
-        updated_at
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${id}
-        AND deleted_at IS NULL
-      LIMIT 1
-    `
-  );
+  const employeeRecord = await database.user.findFirst({
+    where: { tenantId, id, deletedAt: null },
+  });
 
-  if (employees.length === 0) {
+  if (!employeeRecord) {
     return NextResponse.json(
       { message: "Employee not found" },
       { status: 404 }
     );
   }
 
-  return NextResponse.json({ employee: employees[0] });
+  return NextResponse.json({
+    employee: {
+      id: employeeRecord.id,
+      email: employeeRecord.email,
+      first_name: employeeRecord.firstName,
+      last_name: employeeRecord.lastName,
+      role: employeeRecord.role,
+      is_active: employeeRecord.isActive,
+      phone: employeeRecord.phone,
+      avatar_url: employeeRecord.avatarUrl,
+      employment_type: employeeRecord.employmentType,
+      hourly_rate: employeeRecord.hourlyRate,
+      hire_date: employeeRecord.hireDate,
+      created_at: employeeRecord.createdAt,
+      updated_at: employeeRecord.updatedAt,
+    },
+  });
 }
 
 /**
@@ -78,15 +58,14 @@ export async function GET(_request: Request, context: RouteContext) {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "User",
-    commandName: "update",
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
-      id,
-      tenantId: ctx.tenantId,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "User",
+    command: "update",
+    body: { ...rawBody, id, tenantId: user.tenantId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 

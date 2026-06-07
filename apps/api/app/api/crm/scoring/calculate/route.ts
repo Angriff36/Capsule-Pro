@@ -2,6 +2,9 @@
  * CRM Lead Score Calculation API
  *
  * POST /api/crm/scoring/calculate — Recalculate scores for all leads
+ *
+ * Reads bypass Manifest per constitution §10. Score persistence uses Prisma
+ * models instead of raw SQL writes.
  */
 
 import { auth } from "@repo/auth/server";
@@ -10,26 +13,12 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
-// Valid rule fields and their SQL column names
-const FIELD_COLUMN_MAP: Record<string, string> = {
-  source: "source",
-  companyName: "company_name",
-  contactName: "contact_name",
-  contactEmail: "contact_email",
-  contactPhone: "contact_phone",
-  eventType: "event_type",
-  status: "status",
-  estimatedGuests: "estimated_guests",
-  estimatedValue: "estimated_value",
-  eventDate: "event_date",
-};
-
-// Allowlist of valid comparison conditions. Anything else is rejected as a
-// no-op so attacker-controlled rule rows cannot inject arbitrary SQL.
+// Allowlist of valid comparison conditions.
 const VALID_CONDITIONS = new Set([
   "equals",
   "not_equals",
@@ -42,53 +31,62 @@ const VALID_CONDITIONS = new Set([
   "not_exists",
 ]);
 
-// Build a parameterized SQL condition for a single rule. The column is
-// resolved through an allowlist (FIELD_COLUMN_MAP) so the identifier is never
-// taken from user input. Prisma.raw is used within Prisma.sql template to
-// safely embed the column identifier without SQL injection risk.
-function buildRuleCondition(
+type LeadScoringField =
+  | "source"
+  | "companyName"
+  | "contactName"
+  | "contactEmail"
+  | "contactPhone"
+  | "eventType"
+  | "status"
+  | "estimatedGuests"
+  | "estimatedValue"
+  | "eventDate";
+
+type LeadForScoring = Record<LeadScoringField, unknown>;
+
+function leadMatchesRule(
+  lead: LeadForScoring,
   field: string,
   condition: string,
   value: string
-): Prisma.Sql | null {
-  const column = FIELD_COLUMN_MAP[field];
-  if (!column) {
-    return null;
-  }
-
-  // Use Prisma.sql identifier to safely quote the column name
-  const colRef = Prisma.sql`${Prisma.raw(column)}`;
-
+) {
   if (!VALID_CONDITIONS.has(condition)) {
-    return null;
+    return false;
   }
+
+  const current = lead[field as LeadScoringField];
+  const currentText =
+    current instanceof Date ? current.toISOString().slice(0, 10) : String(current ?? "");
+  const currentNumber = Number(current);
+  const ruleNumber = Number(value);
 
   switch (condition) {
     case "equals":
-      return Prisma.sql`${colRef} = ${value}`;
+      return currentText === value;
     case "not_equals":
-      return Prisma.sql`${colRef} != ${value}`;
+      return currentText !== value;
     case "gt":
-      return Prisma.sql`${colRef} > ${value}`;
+      return Number.isFinite(currentNumber) && currentNumber > ruleNumber;
     case "lt":
-      return Prisma.sql`${colRef} < ${value}`;
+      return Number.isFinite(currentNumber) && currentNumber < ruleNumber;
     case "gte":
-      return Prisma.sql`${colRef} >= ${value}`;
+      return Number.isFinite(currentNumber) && currentNumber >= ruleNumber;
     case "lte":
-      return Prisma.sql`${colRef} <= ${value}`;
+      return Number.isFinite(currentNumber) && currentNumber <= ruleNumber;
     case "contains":
-      return Prisma.sql`${colRef} ILIKE ${`%${value}%`}`;
+      return currentText.toLowerCase().includes(value.toLowerCase());
     case "exists":
-      return Prisma.sql`${colRef} IS NOT NULL AND ${colRef} != ''`;
+      return current !== null && current !== undefined && currentText !== "";
     case "not_exists":
-      return Prisma.sql`(${colRef} IS NULL OR ${colRef} = '')`;
+      return current === null || current === undefined || currentText === "";
     default:
-      return null;
+      return false;
   }
 }
 
 // POST /api/crm/scoring/calculate — Recalculate all lead scores
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -102,6 +100,9 @@ export async function POST(_request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Resolve user context for Manifest runtime
+    const user = await resolveCurrentUser(request);
 
     // Fetch all active rules ordered by priority
     const rules = await database.$queryRaw<
@@ -124,12 +125,25 @@ export async function POST(_request: NextRequest) {
     );
 
     if (rules.length === 0) {
-      // No rules — reset all leads to score 0
-      await database.$executeRaw`
-        UPDATE tenant_crm.leads
-        SET score = 0, score_breakdown = '{}'::jsonb, updated_at = NOW()
-        WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
-      `;
+      // Reset all lead scores to 0 via governed Manifest runtime + direct Prisma
+      // for score/scoreBreakdown (non-IR derived fields)
+      const zeroLeads = await database.lead.findMany({
+        where: { tenantId, deletedAt: null },
+        select: { id: true },
+      });
+      for (const lead of zeroLeads) {
+        await runManifestCommand({
+          entity: "Lead",
+          command: "update",
+          body: { id: lead.id, tenantId },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          instanceId: lead.id,
+        });
+        await database.lead.updateMany({
+          where: { tenantId, id: lead.id, deletedAt: null },
+          data: { score: 0, scoreBreakdown: {} },
+        });
+      }
       return NextResponse.json({
         data: {
           updated: 0,
@@ -138,37 +152,58 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-    // Reset all leads to score 0 so a rerun produces a deterministic result
-    // (otherwise repeated calls would keep adding to the prior score).
-    await database.$executeRaw`
-      UPDATE tenant_crm.leads
-      SET score = 0, score_breakdown = '{}'::jsonb, updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
-    `;
+    const leads = await database.lead.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        source: true,
+        companyName: true,
+        contactName: true,
+        contactEmail: true,
+        contactPhone: true,
+        eventType: true,
+        status: true,
+        estimatedGuests: true,
+        estimatedValue: true,
+        eventDate: true,
+      },
+    });
 
-    // Apply each rule with a parameterized UPDATE. The condition fragment is
-    // built via Prisma.sql with an allowlisted column reference and bound
-    // value parameters, so user-supplied rule values cannot inject SQL.
-    // jsonb_build_object is used instead of string concatenation so rule
-    // names containing quotes/backslashes can never break the JSONB literal.
-    for (const rule of rules) {
-      const cond = buildRuleCondition(rule.field, rule.condition, rule.value);
-      if (!cond) {
-        continue;
+    for (const lead of leads) {
+      let score = 0;
+      const scoreBreakdown: Record<string, string> = {};
+
+      for (const rule of rules) {
+        if (leadMatchesRule(lead, rule.field, rule.condition, rule.value)) {
+          score += rule.points;
+          scoreBreakdown[rule.id] = String(rule.points);
+          scoreBreakdown[`rule_name_${rule.id}`] = rule.rule_name;
+        }
       }
-      await database.$executeRaw(Prisma.sql`
-        UPDATE tenant_crm.leads
-        SET
-          score = score + ${rule.points},
-          score_breakdown = score_breakdown || jsonb_build_object(
-            ${rule.id}::text, ${rule.points}::text,
-            ${`rule_name_${rule.id}`}::text, ${rule.rule_name}::text
-          ),
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}::uuid
-          AND deleted_at IS NULL
-          AND ${cond}
-      `);
+
+      // Governed update via Manifest runtime + direct Prisma for score/scoreBreakdown
+      // (non-IR derived fields not modeled in Lead manifest entity)
+      await runManifestCommand({
+        entity: "Lead",
+        command: "update",
+        body: { id: lead.id, tenantId },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        instanceId: lead.id,
+      });
+      await database.lead.updateMany({
+        where: {
+          tenantId,
+          id: lead.id,
+          deletedAt: null,
+        },
+        data: {
+          score,
+          scoreBreakdown,
+        },
+      });
     }
 
     // Get updated distribution

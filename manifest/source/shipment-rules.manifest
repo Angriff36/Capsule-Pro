@@ -2,6 +2,7 @@
 // Manifest spec for shipment tracking and receiving
 
 entity Shipment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required shipmentNumber: string
@@ -10,25 +11,24 @@ entity Shipment {
   property eventId: string = ""
   property supplierId: string = ""
   property locationId: string = ""
-  property scheduledDate: datetime = now()
-  property shippedDate: datetime = now()
+  property scheduledDate: datetime
+  property shippedDate: datetime
   property estimatedDeliveryDate: datetime = now()
-  property actualDeliveryDate: datetime = now()
+  property actualDeliveryDate: datetime
   property totalItems: int = 0
-  property shippingCost: number = 0
-  property totalValue: number = 0
+  property shippingCost: money = 0
+  property totalValue: decimal = 0
   property trackingNumber: string = ""
   property carrier: string = ""
   property shippingMethod: string = ""
   property deliveredBy: string = ""
   property receivedBy: string = ""
-  property signature: string = ""
+  property signatureData: string = ""
   property notes: string = ""
   property internalNotes: string = ""
   property reference: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isScheduled: boolean = self.status == "scheduled"
@@ -38,14 +38,23 @@ entity Shipment {
   computed hasItems: boolean = self.totalItems > 0
   computed hasTracking: boolean = self.trackingNumber != ""
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
-  command create(shipmentNumber: string, supplierId: string, locationId: string, eventId: string, scheduledDate: number, carrier: string, shippingMethod: string, notes: string) {
+  default policy ShipmentDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
+  // locationId is NOT a create param: when a shipment is created against an event
+  // (eventId), the delivery location is inherited server-side from the parent
+  // Event via parent-context propagation (manifest/runtime/src/parent-context-resolver.ts).
+  // The caller supplies only the eventId link + shipment-specific input, so the
+  // UI never re-asks for the location the Event already owns. A standalone
+  // shipment (no eventId) simply has no inherited location. See
+  // specs/parent-context-propagation.md.
+  command create(shipmentNumber: string, supplierId: string, eventId: string, scheduledDate: datetime, carrier: string, shippingMethod: string, notes: string) {
     guard shipmentNumber != null and shipmentNumber != "" "Shipment number is required"
 
     mutate shipmentNumber = shipmentNumber
     mutate supplierId = supplierId
-    mutate locationId = locationId
     mutate eventId = eventId
     mutate scheduledDate = scheduledDate
     mutate carrier = carrier
@@ -55,13 +64,11 @@ entity Shipment {
     mutate totalItems = 0
     mutate shippingCost = 0
     mutate totalValue = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ShipmentCreated
   }
 
-  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: number, shippingCost: number, notes: string) {
+  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: datetime, shippingCost: number, notes: string) {
     guard self.status != "delivered" "Cannot update a delivered shipment"
     guard self.status != "cancelled" "Cannot update a cancelled shipment"
 
@@ -71,12 +78,11 @@ entity Shipment {
     mutate estimatedDeliveryDate = estimatedDeliveryDate
     mutate shippingCost = shippingCost
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ShipmentUpdated
   }
 
-  command schedule(userId: string, scheduledDate: number) {
+  command schedule(userId: string, scheduledDate: datetime) {
     guard self.status == "draft" "Can only schedule draft shipments"
 
     constraint blockNoItems:block self.totalItems == 0 {
@@ -88,7 +94,6 @@ entity Shipment {
     }
 
     mutate status = "scheduled"
-    mutate updatedAt = now()
 
     emit ShipmentScheduled
   }
@@ -97,7 +102,6 @@ entity Shipment {
     guard self.status == "scheduled" "Can only start preparing scheduled shipments"
 
     mutate status = "preparing"
-    mutate updatedAt = now()
 
     emit ShipmentPreparationStarted
   }
@@ -107,12 +111,11 @@ entity Shipment {
 
     mutate status = "in_transit"
     mutate trackingNumber = trackingNumber
-    mutate updatedAt = now()
 
     emit ShipmentShipped
   }
 
-  command markDelivered(userId: string, receivedBy: string, signature: string) {
+  command markDelivered(userId: string, receivedBy: string, signatureData: string) {
     guard self.status == "in_transit" or self.status == "scheduled" "Can only deliver in-transit or scheduled shipments"
 
     constraint blockNoItems:block self.totalItems == 0 {
@@ -125,9 +128,8 @@ entity Shipment {
     mutate status = "delivered"
     mutate deliveredBy = userId
     mutate receivedBy = receivedBy
-    mutate signature = signature
+    mutate signatureData = signatureData
     mutate actualDeliveryDate = now()
-    mutate updatedAt = now()
 
     emit ShipmentDelivered
   }
@@ -147,40 +149,49 @@ entity Shipment {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit ShipmentCancelled
   }
 
-  store Shipment in memory
+  // State transitions
+  transition status from "draft" to ["scheduled", "cancelled"]
+  transition status from "scheduled" to ["preparing", "cancelled"]
+  transition status from "preparing" to ["in_transit", "cancelled"]
+  transition status from "in_transit" to ["delivered", "cancelled"]
+  // "delivered" and "cancelled" are terminal states
+
+  store Shipment in durable
 }
 
 entity ShipmentItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required shipmentId: string
   property required itemId: string
-  property quantityShipped: number = 0
-  property quantityReceived: number = 0
-  property quantityDamaged: number = 0
-  property unitId: number = 0
-  property unitCost: number = 0
-  property totalCost: number = 0
+  property quantityShipped: int = 0
+  property quantityReceived: int = 0
+  property quantityDamaged: int = 0
+  property unitId: int = 0
+  property unitCost: money = 0
+  property totalCost: money = 0
   property condition: string = "good"
   property conditionNotes: string = ""
   property lotNumber: string = ""
   property expirationDate: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
   computed hasDamage: boolean = self.quantityDamaged > 0
-  computed receivedPercentage: number = self.quantityShipped > 0 ? (self.quantityReceived / self.quantityShipped) * 100 : 0
+  computed receivedPercentage: number = percent(self.quantityReceived, self.quantityShipped)
 
   constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
 
-  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: number) {
+  relationship belongsTo shipment: Shipment fields [tenantId, shipmentId] references [tenantId, id]
+
+  default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
+  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"
@@ -196,8 +207,6 @@ entity ShipmentItem {
     mutate condition = "good"
     mutate lotNumber = lotNumber
     mutate expirationDate = expirationDate
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ShipmentItemCreated
   }
@@ -228,12 +237,34 @@ entity ShipmentItem {
     mutate quantityDamaged = quantityDamaged
     mutate condition = condition
     mutate conditionNotes = conditionNotes
-    mutate updatedAt = now()
 
     emit ShipmentItemReceived
   }
 
-  store ShipmentItem in memory
+  command update(quantityShipped: number, unitId: number, unitCost: number, condition: string, conditionNotes: string, lotNumber: string, expirationDate: datetime) {
+    guard quantityShipped == null or quantityShipped > 0 "Quantity shipped must be positive"
+
+    mutate quantityShipped = quantityShipped
+    mutate unitId = unitId
+    mutate unitCost = unitCost
+    mutate totalCost = quantityShipped * unitCost
+    mutate condition = condition
+    mutate conditionNotes = conditionNotes
+    mutate lotNumber = lotNumber
+    mutate expirationDate = expirationDate
+
+    emit ShipmentItemUpdated
+  }
+
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Item is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ShipmentItemDeleted
+  }
+
+  store ShipmentItem in durable
 }
 
 policy ManagersCanCreateShipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can create shipments"
@@ -246,7 +277,7 @@ event ShipmentCreated: "purchasing.shipment.created" {
   shipmentNumber: string
   supplierId: string
   locationId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ShipmentUpdated: "purchasing.shipment.updated" {
@@ -254,7 +285,7 @@ event ShipmentUpdated: "purchasing.shipment.updated" {
   shipmentNumber: string
   trackingNumber: string
   carrier: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ShipmentDelivered: "purchasing.shipment.delivered" {
@@ -265,7 +296,7 @@ event ShipmentDelivered: "purchasing.shipment.delivered" {
   receivedBy: string
   totalItems: number
   totalValue: number
-  deliveredAt: number
+  deliveredAt: datetime
 }
 
 event ShipmentCancelled: "purchasing.shipment.cancelled" {
@@ -273,7 +304,7 @@ event ShipmentCancelled: "purchasing.shipment.cancelled" {
   shipmentNumber: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event ShipmentScheduled: "purchasing.shipment.scheduled" {
@@ -281,7 +312,7 @@ event ShipmentScheduled: "purchasing.shipment.scheduled" {
   tenantId: string
   purchaseOrderId: string
   userId: string
-  scheduledAt: number
+  scheduledAt: datetime
 }
 
 event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
@@ -289,7 +320,7 @@ event ShipmentPreparationStarted: "purchasing.shipment.preparation_started" {
   tenantId: string
   purchaseOrderId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event ShipmentShipped: "purchasing.shipment.shipped" {
@@ -298,7 +329,7 @@ event ShipmentShipped: "purchasing.shipment.shipped" {
   purchaseOrderId: string
   trackingNumber: string
   userId: string
-  shippedAt: number
+  shippedAt: datetime
 }
 
 event ShipmentItemCreated: "purchasing.shipment.item.created" {
@@ -307,7 +338,7 @@ event ShipmentItemCreated: "purchasing.shipment.item.created" {
   itemId: string
   quantityShipped: number
   unitCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event ShipmentItemReceived: "purchasing.shipment.item.received" {
@@ -318,5 +349,23 @@ event ShipmentItemReceived: "purchasing.shipment.item.received" {
   quantityDamaged: number
   condition: string
   userId: string
-  receivedAt: number
+  receivedAt: datetime
+}
+
+event ShipmentItemUpdated: "purchasing.shipment.item.updated" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  quantityShipped: number
+  unitCost: number
+  totalCost: number
+  updatedAt: datetime
+}
+
+event ShipmentItemDeleted: "purchasing.shipment.item.deleted" {
+  shipmentItemId: string
+  shipmentId: string
+  itemId: string
+  userId: string
+  deletedAt: datetime
 }

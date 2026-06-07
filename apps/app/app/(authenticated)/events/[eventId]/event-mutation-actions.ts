@@ -1,7 +1,8 @@
 "use server";
 
 import { database, Prisma } from "@repo/database";
-import { requireTenantId } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { type EventStatus, eventStatuses } from "../constants";
 
 /**
@@ -78,7 +79,8 @@ const getList = (formData: FormData, key: string): string[] =>
 export async function updateEventForMutation(
   formData: FormData
 ): Promise<void> {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const eventId = getString(formData, "eventId");
   const eventDate = getDate(formData, "eventDate");
   const title = getString(formData, "title");
@@ -122,7 +124,7 @@ export async function updateEventForMutation(
   if (!guestCount || guestCount <= 0) missing.push("headcount");
   if (!venueName?.trim()) missing.push("venueName");
 
-  // Check menu items
+  // Check menu items — read query per constitution §10
   const [menuRow] = await database.$queryRaw<Array<{ count: number }>>(
     Prisma.sql`
       SELECT COUNT(*)::int AS count
@@ -145,31 +147,51 @@ export async function updateEventForMutation(
   }
   const tags = Array.from(tagSet);
 
-  const eventNumberInput = getOptionalString(formData, "eventNumber");
+  // The Event.update command requires clientId and eventNumber params (guards
+  // check != null). The form may not always send these, so read the existing
+  // event and use its values as fallbacks.
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: eventId, deletedAt: null },
+    select: { clientId: true, eventNumber: true },
+  });
 
-  await database.event.updateMany({
-    where: {
-      AND: [{ tenantId }, { id: eventId }],
-    },
-    data: {
-      ...(eventNumberInput !== undefined && { eventNumber: eventNumberInput }),
+  if (!existing) {
+    throw new Error("Event not found.");
+  }
+
+  const clientId = getOptionalString(formData, "clientId") ?? existing.clientId ?? "";
+  const eventNumberInput = getOptionalString(formData, "eventNumber") ?? existing.eventNumber ?? "";
+
+  // Governed write via Manifest (constitution §9)
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "update",
+    instanceId: eventId,
+    body: {
+      clientId,
+      eventNumber: eventNumberInput,
       title,
       eventType,
-      eventDate,
+      eventDate: eventDate.toISOString(),
       guestCount,
-      status,
-      budget: getNumberOrNull(formData, "budget"),
-      ticketPrice: getNumberOrNull(formData, "ticketPrice"),
-      ticketTier: getOptionalString(formData, "ticketTier"),
-      eventFormat: getOptionalString(formData, "eventFormat"),
-      accessibilityOptions: getList(formData, "accessibilityOptions"),
-      featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
-      venueName: getOptionalString(formData, "venueName"),
-      venueAddress: getOptionalString(formData, "venueAddress"),
-      notes: getOptionalString(formData, "notes"),
-      clientId: getOptionalString(formData, "clientId"),
+      venueName: getOptionalString(formData, "venueName") ?? "",
+      venueAddress: getOptionalString(formData, "venueAddress") ?? "",
+      notes: getOptionalString(formData, "notes") ?? "",
       tags,
+      status,
+      budget: getNumberOrNull(formData, "budget") ?? 0,
+      ticketPrice: getNumberOrNull(formData, "ticketPrice") ?? 0,
+      ticketTier: getOptionalString(formData, "ticketTier") ?? "",
+      eventFormat: getOptionalString(formData, "eventFormat") ?? "",
+      accessibilityOptions: getList(formData, "accessibilityOptions"),
+      featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl") ?? "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message ?? "Failed to update event.");
+  }
+
   // No revalidatePath, no redirect — TanStack Query handles the refetch
 }

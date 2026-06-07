@@ -1,6 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface UnitConversion {
   fromUnitId: number;
@@ -149,16 +151,17 @@ const calculateRecipeIngredientCost = async (
     cost = convertedQuantity * Number(ing.inventory_unit_cost);
   }
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipe_ingredients
-      SET
-        adjusted_quantity = ${adjustedQuantity},
-        ingredient_cost = ${cost},
-        cost_calculated_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${recipeIngredientId}
-    `
-  );
+  // GOVERNED BYPASS: adjustedQuantity, ingredientCost, costCalculatedAt are not in
+  // RecipeIngredient IR entity. No command covers cost computation fields.
+  // A future "updateCosts" command should be added to RecipeIngredient IR.
+  await database.recipeIngredient.updateMany({
+    where: { tenantId, id: recipeIngredientId },
+    data: {
+      adjustedQuantity,
+      ingredientCost: cost,
+      costCalculatedAt: new Date(),
+    },
+  });
 
   return {
     id: ing.id,
@@ -246,16 +249,33 @@ const calculateRecipeCost = async (
   const yieldQuantity = Number(recipeVersion[0].yield_quantity);
   const costPerYield = yieldQuantity > 0 ? totalCost / yieldQuantity : 0;
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipe_versions
-      SET
-        total_cost = ${totalCost},
-        cost_per_yield = ${costPerYield},
-        cost_calculated_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${recipeVersionId}
-    `
+  // Governed write: RecipeVersion.updateCosts covers totalCost + costPerYield
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "RecipeVersion",
+      command: "updateCosts",
+      instanceId: recipeVersionId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: recipeVersionId,
+        tenantId,
+        newTotalCost: totalCost,
+        newCostPerYield: costPerYield,
+      },
+    }
   );
+  // costCalculatedAt is not in IR entity — direct Prisma supplement
+  await database.recipeVersion.updateMany({
+    where: { tenantId, id: recipeVersionId },
+    data: { costCalculatedAt: new Date() },
+  });
 
   return {
     totalCost,
@@ -364,12 +384,26 @@ export const updateRecipeIngredientWasteFactor = async (
     throw new Error("Waste factor must be greater than 0");
   }
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipe_ingredients
-      SET waste_factor = ${wasteFactor}, updated_at = NOW()
-      WHERE tenant_id = ${tenantId} AND id = ${recipeIngredientId}
-    `
+  // Governed write: RecipeIngredient.updateWasteFactor
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "RecipeIngredient",
+      command: "updateWasteFactor",
+      instanceId: recipeIngredientId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: recipeIngredientId,
+        tenantId,
+        newWasteFactor: wasteFactor,
+      },
+    }
   );
 };
 
@@ -435,7 +469,9 @@ export const updateEventBudgetsForRecipe = async (
   }
   const tenantId = await getTenantIdForOrg(orgId);
 
-  await database.$executeRaw(
+  const eventRecipeCosts = await database.$queryRaw<
+    { event_id: string; current_budget: Prisma.Decimal | null; total_recipe_cost: Prisma.Decimal | number | string }[]
+  >(
     Prisma.sql`
       WITH recipe_events AS (
         SELECT DISTINCT pt.event_id
@@ -443,37 +479,56 @@ export const updateEventBudgetsForRecipe = async (
         WHERE pt.tenant_id = ${tenantId}
           AND pt.recipe_version_id = ${recipeVersionId}
           AND pt.deleted_at IS NULL
-      ),
-      event_recipe_costs AS (
-        SELECT
-          e.id as event_id,
-          COALESCE(SUM(rv.total_cost), 0) as total_recipe_cost
-        FROM recipe_events re
-        JOIN tenant_events.events e ON e.id = re.event_id
-        JOIN tenant_kitchen.recipe_versions rv
-          ON rv.recipe_id IN (
-            SELECT DISTINCT pt.dish_id
-            FROM tenant_kitchen.prep_tasks pt
-            WHERE pt.event_id = e.id
-              AND pt.tenant_id = ${tenantId}
-              AND pt.deleted_at IS NULL
-          )
-          AND rv.version_number = (
-            SELECT MAX(version_number)
-            FROM tenant_kitchen.recipe_versions
-            WHERE recipe_id = rv.recipe_id
-          )
-        WHERE e.tenant_id = ${tenantId}
-          AND e.budget IS NOT NULL
-        GROUP BY e.id
       )
-      UPDATE tenant_events.events e
-      SET budget = COALESCE(e.budget, 0) + COALESCE(
-        (SELECT total_recipe_cost FROM event_recipe_costs WHERE event_id = e.id),
-        0
-      )
+      SELECT
+        e.id as event_id,
+        e.budget as current_budget,
+        COALESCE(SUM(rv.total_cost), 0) as total_recipe_cost
+      FROM recipe_events re
+      JOIN tenant_events.events e ON e.id = re.event_id
+      JOIN tenant_kitchen.recipe_versions rv
+        ON rv.recipe_id IN (
+          SELECT DISTINCT pt.dish_id
+          FROM tenant_kitchen.prep_tasks pt
+          WHERE pt.event_id = e.id
+            AND pt.tenant_id = ${tenantId}
+            AND pt.deleted_at IS NULL
+        )
+        AND rv.version_number = (
+          SELECT MAX(version_number)
+          FROM tenant_kitchen.recipe_versions
+          WHERE recipe_id = rv.recipe_id
+        )
       WHERE e.tenant_id = ${tenantId}
-        AND e.id IN (SELECT event_id FROM recipe_events)
+        AND e.budget IS NOT NULL
+      GROUP BY e.id, e.budget
     `
   );
+
+  for (const row of eventRecipeCosts) {
+    // Governed write: Event.updateBudget
+    const newBudget = new Prisma.Decimal(row.current_budget ?? 0).plus(
+      row.total_recipe_cost
+    );
+    await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "Event",
+        command: "updateBudget",
+        instanceId: row.event_id,
+        user: { id: "system", tenantId, role: "admin" },
+        body: {
+          id: row.event_id,
+          tenantId,
+          newBudget: newBudget.toFixed(2),
+        },
+      }
+    );
+  }
 };

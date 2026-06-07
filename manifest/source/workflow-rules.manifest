@@ -2,6 +2,7 @@
 // Manifest spec for workflow automation with triggers, steps, and lifecycle management
 
 entity Workflow {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property name: string = ""
@@ -9,17 +10,17 @@ entity Workflow {
   property triggerType: string = ""
   property triggerConfig: string = "{}"
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isInactive: boolean = self.isActive == false
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed hasTriggerConfig: boolean = self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}"
 
   constraint validName: self.name != null and self.name != "" "Workflow name is required"
   constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
 
+  default policy WorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Workflow management"
   command create(name: string, description: string, triggerType: string, triggerConfig: string) {
     guard name != null and name != "" "Workflow name is required"
     guard triggerType != null and triggerType != "" "Trigger type is required"
@@ -29,8 +30,6 @@ entity Workflow {
     mutate triggerType = triggerType
     mutate triggerConfig = triggerConfig
     mutate isActive = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WorkflowCreated
   }
@@ -51,7 +50,6 @@ entity Workflow {
     mutate description = newDescription
     mutate triggerType = newTriggerType
     mutate triggerConfig = newTriggerConfig
-    mutate updatedAt = now()
 
     emit WorkflowUpdated
   }
@@ -68,7 +66,6 @@ entity Workflow {
     }
 
     mutate isActive = true
-    mutate updatedAt = now()
 
     emit WorkflowActivated
   }
@@ -85,12 +82,11 @@ entity Workflow {
     }
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit WorkflowDeactivated
   }
 
-  store Workflow in memory
+  store Workflow in durable
 }
 
 // Policy definitions
@@ -104,7 +100,7 @@ event WorkflowCreated: "workflow.created" {
   name: string
   triggerType: string
   isActive: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event WorkflowUpdated: "workflow.updated" {
@@ -113,7 +109,7 @@ event WorkflowUpdated: "workflow.updated" {
   oldName: string
   newName: string
   triggerType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event WorkflowActivated: "workflow.activated" {
@@ -122,7 +118,7 @@ event WorkflowActivated: "workflow.activated" {
   workflowName: string
   triggerType: string
   userId: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event WorkflowDeactivated: "workflow.deactivated" {
@@ -131,5 +127,5 @@ event WorkflowDeactivated: "workflow.deactivated" {
   workflowName: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }

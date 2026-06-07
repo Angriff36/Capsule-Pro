@@ -2,6 +2,7 @@
 // Manifest spec for payroll banking destinations
 
 entity BankAccount {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required employeeId: string
@@ -12,13 +13,18 @@ entity BankAccount {
   property bankName: string = ""
   property isDefault: boolean = false
   property status: string = "active"
-  property verifiedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  readonly property verifiedAt: datetime
+  property verificationFailedAt: datetime
+  property verificationFailureReason: string = ""
+  timestamps
+
+  computed isVerified: boolean = self.verifiedAt != null
+  computed isPendingVerification: boolean = self.status == "pending_verification"
 
   constraint validAccountType: self.accountType in ["checking", "savings"] "Invalid account type"
-  constraint validStatus: self.status in ["active", "inactive", "pending_verification"] "Invalid bank account status"
+  constraint validStatus: self.status in ["active", "inactive", "pending_verification", "verification_failed"] "Invalid bank account status"
 
+  default policy BankAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Bank account management"
   command create(employeeId: string, accountHolderName: string, accountNumber: string, routingNumber: string, accountType: string, bankName: string, isDefault: boolean) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard accountHolderName != null and accountHolderName != "" "Account holder name is required"
@@ -33,25 +39,21 @@ entity BankAccount {
     mutate bankName = bankName
     mutate isDefault = isDefault
     mutate status = "pending_verification"
-    mutate verifiedAt = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BankAccountCreated
   }
 
   command remove() {
     mutate status = "inactive"
-    mutate updatedAt = now()
 
     emit BankAccountDeleted
   }
 
   command markDefault() {
     guard self.status == "active" "Cannot set inactive account as default"
+    guard self.verifiedAt != null "Account must be verified before setting as default"
 
     mutate isDefault = true
-    mutate updatedAt = now()
 
     emit BankAccountDefaultSet
   }
@@ -62,7 +64,6 @@ entity BankAccount {
     mutate routingNumber = routingNumber
     mutate accountType = accountType
     mutate bankName = bankName
-    mutate updatedAt = now()
 
     emit BankAccountUpdated
   }
@@ -72,10 +73,36 @@ entity BankAccount {
 
     mutate status = "active"
     mutate verifiedAt = now()
-    mutate updatedAt = now()
 
     emit BankAccountVerified
   }
+
+  command verifyFailed(reason: string) {
+    guard self.status == "pending_verification" "Account is not pending verification"
+    guard reason != null and reason != "" "Failure reason is required"
+
+    mutate status = "verification_failed"
+    mutate verificationFailedAt = now()
+    mutate verificationFailureReason = reason
+
+    emit BankAccountVerificationFailed
+  }
+
+  command retryVerification() {
+    guard self.status == "verification_failed" "Can only retry verification on a failed account"
+
+    mutate status = "pending_verification"
+    mutate verificationFailureReason = ""
+
+    emit BankAccountVerificationRetried
+  }
+
+  // State transitions
+  transition status from "pending_verification" to ["active", "verification_failed"]
+  transition status from "verification_failed" to ["pending_verification"]
+  transition status from "active" to ["inactive"]
+
+  store BankAccount in durable
 }
 
 policy PayrollAdminsCanManageBankAccounts execute: user.role in ["payroll_admin", "manager", "admin"] "Only payroll admins can manage bank accounts"
@@ -85,26 +112,39 @@ event BankAccountCreated: "payroll.bankaccount.created" {
   tenantId: string
   employeeId: string
   accountType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event BankAccountDeleted: "payroll.bankaccount.deleted" {
   accountId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event BankAccountDefaultSet: "payroll.bankaccount.default.set" {
   accountId: string
   employeeId: string
-  setAt: number
+  setAt: datetime
 }
 
 event BankAccountUpdated: "payroll.bankaccount.updated" {
   accountId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BankAccountVerified: "payroll.bankaccount.verified" {
   accountId: string
-  verifiedAt: number
+  verifiedAt: datetime
+}
+
+event BankAccountVerificationFailed: "payroll.bankaccount.verification_failed" {
+  accountId: string
+  employeeId: string
+  reason: string
+  failedAt: datetime
+}
+
+event BankAccountVerificationRetried: "payroll.bankaccount.verification_retried" {
+  accountId: string
+  employeeId: string
+  retriedAt: datetime
 }

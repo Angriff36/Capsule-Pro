@@ -3,7 +3,8 @@
 import { openai } from "@ai-sdk/openai";
 import { database, Prisma } from "@repo/database";
 import { generateText } from "ai";
-import { requireTenantId } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import { calculateEventProfitability } from "../../analytics/events/actions/get-event-profitability";
 
 const AI_MODEL = "gpt-4o-mini";
@@ -116,7 +117,8 @@ export async function getEventSummary(
 export async function generateEventSummary(
   eventId: string
 ): Promise<GeneratedEventSummary> {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const startTime = Date.now();
 
   const event = await database.event.findFirst({
@@ -204,11 +206,11 @@ export async function generateEventSummary(
         esa.id,
         esa.role,
         CONCAT(e.first_name, ' ', e.last_name) as employee_name
-      FROM tenant_events.event_staff_assignments esa
-      LEFT JOIN tenant_staff.employees e ON esa.employeeId = e.id
-      WHERE esa.tenant_id = ${tenantId}
-        AND esa.event_id = ${eventId}
-        AND esa.deleted_at IS NULL
+      FROM tenant_events.event_staff esa
+      LEFT JOIN tenant_staff.employees e ON esa.staffMemberId = e.id
+      WHERE esa.tenantId = ${tenantId}
+        AND esa.eventId = ${eventId}
+        AND esa.deletedAt IS NULL
     `
   );
 
@@ -338,43 +340,39 @@ Please provide a comprehensive executive summary following the system prompt gui
   const endTime = Date.now();
   const generationDurationMs = endTime - startTime;
 
-  const summaryRecord = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_summaries (
-        tenant_id,
-        id,
-        event_id,
-        highlights,
-        issues,
-        "financialPerformance",
-        "clientFeedback",
-        insights,
-        overall_summary,
-        generated_at,
-        generation_duration_ms,
-        created_at,
-        updated_at
-      ) VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${eventId},
-        ${JSON.stringify(summaryData.highlights)}::jsonb,
-        ${JSON.stringify(summaryData.issues)}::jsonb,
-        ${JSON.stringify(summaryData.financialPerformance)}::jsonb,
-        ${JSON.stringify(summaryData.clientFeedback)}::jsonb,
-        ${JSON.stringify(summaryData.insights)}::jsonb,
-        ${summaryData.overallSummary},
-        NOW(),
-        ${generationDurationMs},
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `
-  );
+  // Governed write: EventSummary.create via Manifest runtime
+  const createResult = await runManifestCommand({
+    entity: "EventSummary",
+    command: "create",
+    body: {
+      eventId,
+      highlights: JSON.stringify(summaryData.highlights),
+      issues: JSON.stringify(summaryData.issues),
+      financialPerformance: JSON.stringify(summaryData.financialPerformance),
+      clientFeedback: JSON.stringify(summaryData.clientFeedback),
+      insights: JSON.stringify(summaryData.insights),
+      overallSummary: summaryData.overallSummary,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!createResult.ok) {
+    throw new Error(
+      `Failed to create EventSummary: ${createResult.message}`
+    );
+  }
+
+  // generationDurationMs is not in the EventSummary.create command's mutations
+  // (IR gap), so we backfill it via direct write.
+  const summaryId = (createResult.result as { id: string }).id;
+  await database.$executeRaw`
+    UPDATE tenant_events.event_summaries
+    SET generation_duration_ms = ${generationDurationMs}
+    WHERE id = ${summaryId}
+  `;
 
   return {
-    id: summaryRecord[0].id,
+    id: summaryId,
     eventId,
     highlights: summaryData.highlights,
     issues: summaryData.issues,
@@ -390,6 +388,8 @@ Please provide a comprehensive executive summary following the system prompt gui
 export async function deleteEventSummary(summaryId: string): Promise<void> {
   const tenantId = await requireTenantId();
 
+  // No softDelete command in EventSummary IR — kept as direct Prisma write
+  // until a governed softDelete command is added.
   await database.$queryRaw(
     Prisma.sql`
       UPDATE tenant_events.event_summaries

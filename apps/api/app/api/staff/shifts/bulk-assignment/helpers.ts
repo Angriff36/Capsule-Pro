@@ -3,7 +3,7 @@
  * Extracted to reduce cognitive complexity of the main route handler
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
@@ -42,34 +42,32 @@ export async function fetchShiftsForAutoAssignment(
 ) {
   const shiftIds = shiftsToAutoAssign.map((s) => s.shiftId);
 
-  const shiftsFromDb = await database.$queryRaw<
-    Array<{
-      tenant_id: string;
-      id: string;
-      schedule_id: string;
-      location_id: string;
-      shift_start: Date;
-      shift_end: Date;
-      role_during_shift: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        tenant_id,
-        id,
-        schedule_id,
-        location_id,
-        shift_start,
-        shift_end,
-        role_during_shift
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ANY(${shiftIds})
-        AND deleted_at IS NULL
-    `
-  );
+  const shiftsFromDb = await database.scheduleShift.findMany({
+    where: {
+      tenantId,
+      id: { in: shiftIds },
+      deletedAt: null,
+    },
+    select: {
+      tenantId: true,
+      id: true,
+      scheduleId: true,
+      locationId: true,
+      shift_start: true,
+      shift_end: true,
+      role_during_shift: true,
+    },
+  });
 
-  return shiftsFromDb;
+  return shiftsFromDb.map((shift) => ({
+    tenant_id: shift.tenantId,
+    id: shift.id,
+    schedule_id: shift.scheduleId,
+    location_id: shift.locationId,
+    shift_start: shift.shift_start,
+    shift_end: shift.shift_end,
+    role_during_shift: shift.role_during_shift,
+  }));
 }
 
 /**
@@ -127,31 +125,27 @@ async function validateEmployeeForDryRun(
   firstName: string | null;
   lastName: string | null;
 }> {
-  const employee = await database.$queryRaw<
-    Array<{
-      id: string;
-      first_name: string | null;
-      last_name: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, first_name, last_name
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${employeeId}
-        AND deleted_at IS NULL
-        AND is_active = true
-    `
-  );
+  const employee = await database.user.findFirst({
+    where: {
+      tenantId,
+      id: employeeId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      firstName: true,
+      lastName: true,
+    },
+  });
 
-  if (!employee || employee.length === 0) {
+  if (!employee) {
     return { valid: false, firstName: null, lastName: null };
   }
 
   return {
     valid: true,
-    firstName: employee[0].first_name,
-    lastName: employee[0].last_name,
+    firstName: employee.firstName,
+    lastName: employee.lastName,
   };
 }
 

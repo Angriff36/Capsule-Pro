@@ -1,21 +1,27 @@
 // Kitchen Ops - Prep Comment Rules
 // Manifest spec for prep task comment threading, resolution, and moderation
+// Bug fixes:
+//   - resolvedAt: removed = now() default (lifecycle timestamp, must be nullable)
+//   - hasBeenResolved computed: was != 0 (invalid for datetime) → now uses != null
+//   - unresolve command: was mutate resolvedAt = 0 (invalid) → mutate resolvedAt = null
 
 entity PrepComment {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required taskId: string
   property required employeeId: string
   property required commentText: string
   property isResolved: boolean = false
-  property resolvedAt: datetime = now()
+  // BUG FIX: lifecycle timestamp — no default (nullable until resolved)
+  property resolvedAt: datetime
   property resolvedBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isActive: boolean = self.deletedAt == 0
-  computed hasBeenResolved: boolean = self.resolvedAt != 0
+  computed isActive: boolean = self.deletedAt == null
+  // BUG FIX: was != 0, invalid for datetime — use != null
+  computed hasBeenResolved: boolean = self.resolvedAt != null
 
   constraint blockDeleteIfResolved:block self.isResolved {
     messageTemplate: "Cannot delete resolved comment '{commentId}' on task '{taskId}'"
@@ -23,10 +29,10 @@ entity PrepComment {
       commentId: self.id
       taskId: self.taskId
       resolvedBy: self.resolvedBy
-      resolvedAt: self.resolvedAt
     }
   }
 
+  default policy PrepCommentDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep comment management"
   command create(taskId: string, employeeId: string, commentText: string) {
     guard taskId != null and taskId != "" "Task ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -36,13 +42,23 @@ entity PrepComment {
     mutate employeeId = employeeId
     mutate commentText = commentText
     mutate isResolved = false
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepCommentCreated
   }
 
-  command resolve(resolvedBy: string) {
+  // Edit the text of an unresolved comment (e.g. to fix a typo or add context).
+  command edit(newText: string, userId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard newText != null and newText != "" "Comment text cannot be empty"
+    guard self.isActive "Cannot edit a deleted comment"
+    guard self.isResolved == false "Cannot edit a resolved comment"
+
+    mutate commentText = newText
+
+    emit PrepCommentEdited
+  }
+
+  command markResolved(resolvedBy: string) {
     guard resolvedBy != null and resolvedBy != "" "Resolver ID is required"
     guard self.isActive "Cannot resolve a deleted comment"
 
@@ -52,14 +68,12 @@ entity PrepComment {
         commentId: self.id
         taskId: self.taskId
         resolvedBy: self.resolvedBy
-        resolvedAt: self.resolvedAt
       }
     }
 
     mutate isResolved = true
     mutate resolvedAt = now()
     mutate resolvedBy = resolvedBy
-    mutate updatedAt = now()
 
     emit PrepCommentResolved
   }
@@ -69,10 +83,10 @@ entity PrepComment {
     guard self.isResolved "Comment is not resolved"
     guard self.isActive "Cannot unresolve a deleted comment"
 
+    // BUG FIX: was `mutate resolvedAt = 0` — datetime cannot be set to 0; use null
     mutate isResolved = false
-    mutate resolvedAt = 0
+    mutate resolvedAt = null
     mutate resolvedBy = ""
-    mutate updatedAt = now()
 
     emit PrepCommentUnresolved
   }
@@ -91,12 +105,11 @@ entity PrepComment {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PrepCommentDeleted
   }
 
-  store PrepComment in memory
+  store PrepComment in durable
 }
 
 policy KitchenStaffCanComment execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can create and manage comments"
@@ -109,26 +122,34 @@ event PrepCommentCreated: "kitchen.prepcomment.created" {
   taskId: string
   employeeId: string
   commentText: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event PrepCommentEdited: "kitchen.prepcomment.edited" {
+  commentId: string
+  tenantId: string
+  taskId: string
+  userId: string
+  updatedAt: datetime
 }
 
 event PrepCommentResolved: "kitchen.prepcomment.resolved" {
   commentId: string
   taskId: string
   resolvedBy: string
-  resolvedAt: number
+  resolvedAt: datetime
 }
 
 event PrepCommentUnresolved: "kitchen.prepcomment.unresolved" {
   commentId: string
   taskId: string
   unresolvedBy: string
-  unresolvedAt: number
+  unresolvedAt: datetime
 }
 
 event PrepCommentDeleted: "kitchen.prepcomment.deleted" {
   commentId: string
   taskId: string
   deletedBy: string
-  deletedAt: number
+  deletedAt: datetime
 }

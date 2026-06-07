@@ -2,6 +2,7 @@
 // Manifest spec for user/employee lifecycle management
 
 entity User {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required email: string
@@ -12,15 +13,14 @@ entity User {
   property employeeNumber: string = ""
   property phone: string = ""
   property employmentType: string = "full_time"
-  property hourlyRate: number = 0
-  property salaryAnnual: number = 0
+  property hourlyRate: money = 0
+  property salaryAnnual: decimal = 0
   property required hireDate: datetime = now()
   property terminationDate: datetime
   property required isActive: boolean = true
   property avatarUrl: string = ""
   property roleId: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   computed fullName: string = self.firstName + " " + self.lastName
@@ -31,7 +31,8 @@ entity User {
   constraint validRole: self.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Invalid user role"
   constraint validEmploymentType: self.employmentType in ["full_time", "part_time", "contractor", "temp"] "Invalid employment type"
 
-  command create(email: string, firstName: string, lastName: string, role: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, hireDate: number, employeeNumber: string) {
+  default policy UserDefaultAccess execute: user.role in ["manager", "admin"] "User management"
+  command create(email: string, firstName: string, lastName: string, role: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, hireDate: datetime, employeeNumber: string) {
     guard email != null and email != "" "Email is required"
     guard firstName != null and firstName != "" "First name is required"
     guard lastName != null and lastName != "" "Last name is required"
@@ -48,15 +49,14 @@ entity User {
     mutate employeeNumber = employeeNumber
     mutate isActive = true
     mutate terminationDate = null
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit UserCreated
   }
 
-  command update(firstName: string, lastName: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, avatarUrl: string) {
+  command update(email: string, firstName: string, lastName: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, avatarUrl: string) {
     guard self.isActive "Cannot update an inactive user"
 
+    mutate email = email
     mutate firstName = firstName
     mutate lastName = lastName
     mutate phone = phone
@@ -64,7 +64,6 @@ entity User {
     mutate hourlyRate = hourlyRate
     mutate salaryAnnual = salaryAnnual
     mutate avatarUrl = avatarUrl
-    mutate updatedAt = now()
 
     emit UserUpdated
   }
@@ -73,12 +72,11 @@ entity User {
     guard self.isActive "User is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit UserDeactivated
   }
 
-  command terminate(userId: string, reason: string, terminationDate: number) {
+  command terminate(userId: string, reason: string, terminationDate: datetime) {
     guard self.isActive "User is already inactive"
 
     constraint blockAlreadyTerminated:block self.isTerminated {
@@ -92,7 +90,6 @@ entity User {
 
     mutate isActive = false
     mutate terminationDate = terminationDate
-    mutate updatedAt = now()
 
     emit UserTerminated
   }
@@ -112,9 +109,25 @@ entity User {
     }
 
     mutate role = newRole
-    mutate updatedAt = now()
 
     emit UserRoleUpdated
+  }
+
+  command reactivate(userId: string) {
+    guard self.isActive == false "User is already active"
+    guard self.deletedAt == null "Cannot reactivate a deleted user"
+
+    mutate isActive = true
+
+    emit UserReactivated
+  }
+
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "User is already deleted"
+
+    mutate deletedAt = now()
+
+    emit UserSoftDeleted
   }
 
   store User in durable
@@ -134,7 +147,7 @@ event UserCreated: "staff.user.created" {
   lastName: string
   role: string
   employmentType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event UserUpdated: "staff.user.updated" {
@@ -142,7 +155,7 @@ event UserUpdated: "staff.user.updated" {
   email: string
   firstName: string
   lastName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event UserDeactivated: "staff.user.deactivated" {
@@ -151,7 +164,7 @@ event UserDeactivated: "staff.user.deactivated" {
   name: string
   userId: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event UserTerminated: "staff.user.terminated" {
@@ -159,8 +172,8 @@ event UserTerminated: "staff.user.terminated" {
   email: string
   name: string
   reason: string
-  terminationDate: number
-  terminatedAt: number
+  terminationDate: datetime
+  terminatedAt: datetime
 }
 
 event UserRoleUpdated: "staff.user.role.updated" {
@@ -170,5 +183,19 @@ event UserRoleUpdated: "staff.user.role.updated" {
   previousRole: string
   newRole: string
   updatedBy: string
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event UserReactivated: "staff.user.reactivated" {
+  userId: string
+  email: string
+  name: string
+  reactivatedAt: datetime
+}
+
+event UserSoftDeleted: "staff.user.soft_deleted" {
+  userId: string
+  email: string
+  name: string
+  deletedAt: datetime
 }

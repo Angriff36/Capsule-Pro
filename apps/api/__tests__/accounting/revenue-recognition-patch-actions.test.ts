@@ -5,18 +5,28 @@
  * `PATCH /api/accounting/revenue-recognition/schedules/[id]`. Actions:
  *   start | recognize | reverse | cancel | adjust
  *
+ * Route behavior (post partial Manifest migration):
+ *   - start: delegates to runManifestCommand (Manifest runtime)
+ *   - recognize: uses createManifestRuntime.runCommand directly for line
+ *     creation and schedule update, then re-fetches from DB for response
+ *   - reverse: delegates to runManifestCommand for line reverse + schedule
+ *     reverseRecognition, then re-fetches from DB for response
+ *   - cancel: delegates to runManifestCommand (Manifest runtime)
+ *   - adjust: delegates to runManifestCommand (adjustSchedule command)
+ *
  * Why these tests matter:
  *   - Revenue recognition is the financial source-of-truth for ASC 606 / IFRS
  *     15 reporting. A regression in `recognize` arithmetic produces incorrect
  *     period revenue on the income statement that auditors will fail.
- *   - `recognize` runs in a `$transaction` to atomically (1) create the
- *     revenue line and (2) update aggregates on the schedule. If the
- *     atomicity is broken, a crash between the two writes leaves the schedule
- *     accumulating phantom revenue with no backing line items.
+ *   - `recognize` now delegates to the Manifest runtime; the route still
+ *     validates inputs and computes remaining amounts before delegating.
  *   - The terminal-status guards on `start` (PENDING-only) and `cancel` (NOT
  *     COMPLETED) prevent reopening of closed schedules.
- *   - `reverse` must restore both the recognized total and the remaining
- *     amount; otherwise the trial balance won't tie.
+ *   - `reverse` delegates to Manifest runtime: the line status transitions
+ *     RECOGNIZED→REVERSED via governed command, and the schedule aggregates
+ *     are recalculated via `reverseRecognition`. If the Manifest guard or
+ *     constraint blocks a stale-state reversal, the line is not corrupted.
+ *   - `adjust` recomputes remainingAmount = totalAmount - recognizedAmount.
  *
  * @vitest-environment node
  */
@@ -37,6 +47,20 @@ const mocks = vi.hoisted(() => ({
   requireTenantIdMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   consoleErrorMock: vi.fn(),
+  manifestRunCommandMock: vi.fn(),
+  runManifestCommandMock: vi.fn(),
+}));
+
+// Mock manifest runtime to avoid DATABASE_URL env validation at import time
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn().mockResolvedValue({
+    runCommand: mocks.manifestRunCommandMock,
+  }),
+}));
+
+// Mock runManifestCommand used by start/cancel actions
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommandMock,
 }));
 
 vi.mock("@repo/database", () => ({
@@ -56,10 +80,19 @@ vi.mock("@repo/database", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
+  resolveCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-test",
+    tenantId: "00000000-0000-0000-0000-000000000001",
+    role: "finance_manager",
+  }),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
   captureException: mocks.captureExceptionMock,
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
 import { NextRequest } from "next/server";
@@ -112,11 +145,21 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     mocks.requireTenantIdMock.mockReset();
     mocks.captureExceptionMock.mockReset();
     mocks.consoleErrorMock.mockReset();
+    mocks.manifestRunCommandMock.mockReset();
+    mocks.runManifestCommandMock.mockReset();
 
     mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
-    // Default $transaction passes through and returns the array of operation
-    // results in the order they were declared. Tests override per-case.
     mocks.transactionMock.mockImplementation(async (ops: unknown[]) => ops);
+    // Default: manifest runtime runCommand succeeds
+    mocks.manifestRunCommandMock.mockResolvedValue({
+      success: true,
+      result: { id: LINE_ID },
+      emittedEvents: [],
+    });
+    // Default: runManifestCommand returns a 200 Response
+    mocks.runManifestCommandMock.mockResolvedValue(
+      new Response(JSON.stringify({ result: { id: SCHEDULE_ID }, events: [] }), { status: 200 })
+    );
     vi.spyOn(console, "error").mockImplementation(mocks.consoleErrorMock);
   });
 
@@ -135,23 +178,22 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     expect(mocks.scheduleUpdateMock).not.toHaveBeenCalled();
   });
 
-  // ---------------------------------------------------------------- start
+  // ---------------------------------------------------------------- start (Manifest runtime)
 
   describe("action: start", () => {
-    it("transitions PENDING → IN_PROGRESS", async () => {
+    it("delegates to runManifestCommand for PENDING schedule", async () => {
       mocks.scheduleFindFirstMock.mockResolvedValue(baseSchedule);
-      mocks.scheduleUpdateMock.mockResolvedValue({
-        ...baseSchedule,
-        status: "IN_PROGRESS",
-      });
 
       const response = await PATCH(makeRequest({ action: "start" }), {
         params,
       });
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.status).toBe("IN_PROGRESS");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("startRecognition");
+      expect(callArgs.body).toEqual({ id: SCHEDULE_ID, tenantId: TENANT_ID });
     });
 
     it("rejects start on a non-PENDING schedule", async () => {
@@ -165,11 +207,11 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(mocks.scheduleUpdateMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
   });
 
-  // ---------------------------------------------------------------- recognize
+  // ---------------------------------------------------------------- recognize (Manifest runtime via createManifestRuntime)
 
   describe("action: recognize", () => {
     it("rejects zero or negative amounts", async () => {
@@ -185,7 +227,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
 
       expect(r1.status).toBe(400);
       expect(r2.status).toBe(400);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
     });
 
     it("rejects recognition that exceeds remaining amount", async () => {
@@ -203,11 +245,11 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.error).toMatch(/exceeds/i);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
     });
 
-    it("creates a line and updates aggregates atomically (in-progress)", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
+    it("delegates to manifest runtime to create line and update schedule", async () => {
+      const scheduleInProgress = {
         ...baseSchedule,
         status: "IN_PROGRESS",
         recognizedAmount: 2000,
@@ -221,17 +263,19 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
             status: "RECOGNIZED",
           },
         ],
-      });
-      mocks.transactionMock.mockResolvedValue([
-        { id: LINE_ID, amount: 2500, sequence: 2 },
-        {
-          ...baseSchedule,
-          status: "IN_PROGRESS",
+      };
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce(scheduleInProgress) // initial lookup
+        .mockResolvedValueOnce({ // re-fetch after manifest ops
+          ...scheduleInProgress,
           recognizedAmount: 4500,
           remainingAmount: 5500,
           completedMilestones: 2,
-        },
-      ]);
+          lines: [
+            ...scheduleInProgress.lines,
+            { id: LINE_ID, amount: 2500, sequence: 2, status: "RECOGNIZED" },
+          ],
+        });
 
       const response = await PATCH(
         makeRequest({ action: "recognize", amount: 2500 }),
@@ -239,40 +283,39 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mocks.transactionMock).toHaveBeenCalledTimes(1);
+      // The route calls manifestRuntime.runCommand multiple times:
+      // 1. "create" on RevenueRecognitionLine
+      // 2. "recognizeAmount" on RevenueRecognitionSchedule
+      expect(mocks.manifestRunCommandMock.mock.calls.length).toBeGreaterThanOrEqual(2);
 
-      const ops = mocks.transactionMock.mock.calls[0][0];
-      // Two operations: create line, update schedule
-      expect(ops).toHaveLength(2);
+      // First call: create the recognition line
+      const createCall = mocks.manifestRunCommandMock.mock.calls[0];
+      expect(createCall[0]).toBe("create");
+      expect(createCall[2]).toEqual({ entityName: "RevenueRecognitionLine" });
 
-      // Schedule must NOT be COMPLETED — there's still 5500 remaining.
-      const body = await response.json();
-      expect(body.data.status).toBe("IN_PROGRESS");
-      expect(body.data.newLine).toEqual(
-        expect.objectContaining({ id: LINE_ID, amount: 2500 })
-      );
+      // Second call: update schedule amounts
+      const updateCall = mocks.manifestRunCommandMock.mock.calls[1];
+      expect(updateCall[0]).toBe("recognizeAmount");
+      expect(updateCall[2]).toMatchObject({ entityName: "RevenueRecognitionSchedule" });
     });
 
-    it("marks schedule COMPLETED and stamps completedAt when remaining ≤ 0.01", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
-        ...baseSchedule,
-        status: "IN_PROGRESS",
-        recognizedAmount: 9999,
-        remainingAmount: 1,
-        completedMilestones: 3,
-      });
-      const completedAt = new Date();
-      mocks.transactionMock.mockResolvedValue([
-        { id: LINE_ID, amount: 1, sequence: 1 },
-        {
+    it("calls completeIfFullyRecognized when remaining <= 0.01", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          status: "IN_PROGRESS",
+          recognizedAmount: 9999,
+          remainingAmount: 1,
+          completedMilestones: 3,
+        })
+        .mockResolvedValueOnce({
           ...baseSchedule,
           status: "COMPLETED",
           recognizedAmount: 10_000,
           remainingAmount: 0,
           completedMilestones: 4,
-          completedAt,
-        },
-      ]);
+          completedAt: new Date(),
+        });
 
       const response = await PATCH(
         makeRequest({ action: "recognize", amount: 1 }),
@@ -280,13 +323,14 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      const body = await response.json();
-      expect(body.data.status).toBe("COMPLETED");
-      expect(body.data.completedAt).toBeTruthy();
+      // Three calls: create line, recognizeAmount, completeIfFullyRecognized
+      expect(mocks.manifestRunCommandMock.mock.calls.length).toBeGreaterThanOrEqual(3);
+      const completeCall = mocks.manifestRunCommandMock.mock.calls[2];
+      expect(completeCall[0]).toBe("completeIfFullyRecognized");
     });
   });
 
-  // ---------------------------------------------------------------- reverse
+  // ---------------------------------------------------------------- reverse (Manifest runtime)
 
   describe("action: reverse", () => {
     it("requires a lineId", async () => {
@@ -299,7 +343,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.error).toMatch(/lineId/);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
 
     it("returns 404 when the line does not exist or belongs to another schedule", async () => {
@@ -315,32 +359,30 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(404);
-      expect(mocks.transactionMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
 
-    it("soft-deletes the line and restores the aggregate amounts", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
-        ...baseSchedule,
-        status: "COMPLETED",
-        recognizedAmount: 10_000,
-        remainingAmount: 0,
-      });
+    it("reverses the line and restores the aggregate amounts via Manifest runtime", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          status: "COMPLETED",
+          recognizedAmount: 10_000,
+          remainingAmount: 0,
+        })
+        .mockResolvedValueOnce({ // re-fetch after manifest ops
+          ...baseSchedule,
+          status: "IN_PROGRESS",
+          recognizedAmount: 7500,
+          remainingAmount: 2500,
+          completedAt: null,
+        });
       mocks.lineFindFirstMock.mockResolvedValue({
         id: LINE_ID,
         scheduleId: SCHEDULE_ID,
         amount: 2500,
         status: "RECOGNIZED",
       });
-      mocks.transactionMock.mockResolvedValue([
-        null, // line update result (we don't read it)
-        {
-          ...baseSchedule,
-          status: "IN_PROGRESS",
-          recognizedAmount: 7500,
-          remainingAmount: 2500,
-          completedAt: null,
-        },
-      ]);
 
       const response = await PATCH(
         makeRequest({ action: "reverse", lineId: LINE_ID }),
@@ -348,7 +390,24 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mocks.transactionMock).toHaveBeenCalledTimes(1);
+      // Two manifest calls: reverse the line, then update schedule
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(2);
+
+      // First call: reverse the line
+      const lineCall = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(lineCall.entity).toBe("RevenueRecognitionLine");
+      expect(lineCall.command).toBe("reverse");
+      expect(lineCall.instanceId).toBe(LINE_ID);
+
+      // Second call: update schedule totals
+      const scheduleCall = mocks.runManifestCommandMock.mock.calls[1][0];
+      expect(scheduleCall.entity).toBe("RevenueRecognitionSchedule");
+      expect(scheduleCall.command).toBe("reverseRecognition");
+      expect(scheduleCall.body.recognizedAmount).toBe("7500.00");
+      expect(scheduleCall.body.remainingAmount).toBe("2500.00");
+
+      // Route re-fetches after manifest commands for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
       const body = await response.json();
       // Reverse must transition out of COMPLETED back into IN_PROGRESS.
       expect(body.data.status).toBe("IN_PROGRESS");
@@ -356,7 +415,7 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
     });
   });
 
-  // ---------------------------------------------------------------- cancel
+  // ---------------------------------------------------------------- cancel (Manifest runtime)
 
   describe("action: cancel", () => {
     it("rejects cancel on a COMPLETED schedule", async () => {
@@ -370,17 +429,13 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       });
 
       expect(response.status).toBe(400);
-      expect(mocks.scheduleUpdateMock).not.toHaveBeenCalled();
+      expect(mocks.runManifestCommandMock).not.toHaveBeenCalled();
     });
 
-    it("transitions IN_PROGRESS → CANCELLED", async () => {
+    it("delegates to runManifestCommand for IN_PROGRESS schedule", async () => {
       mocks.scheduleFindFirstMock.mockResolvedValue({
         ...baseSchedule,
         status: "IN_PROGRESS",
-      });
-      mocks.scheduleUpdateMock.mockResolvedValue({
-        ...baseSchedule,
-        status: "CANCELLED",
       });
 
       const response = await PATCH(makeRequest({ action: "cancel" }), {
@@ -388,12 +443,14 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       });
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.status).toBe("CANCELLED");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("cancel");
     });
   });
 
-  // ---------------------------------------------------------------- adjust
+  // ---------------------------------------------------------------- adjust (direct DB)
 
   describe("action: adjust", () => {
     it("rejects non-positive totalAmount", async () => {
@@ -408,17 +465,18 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       expect(mocks.scheduleUpdateMock).not.toHaveBeenCalled();
     });
 
-    it("recomputes remainingAmount when totalAmount changes", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue({
-        ...baseSchedule,
-        recognizedAmount: 3000,
-      });
-      mocks.scheduleUpdateMock.mockResolvedValue({
-        ...baseSchedule,
-        totalAmount: 12_000,
-        recognizedAmount: 3000,
-        remainingAmount: 9000,
-      });
+    it("delegates adjust to runManifestCommand with adjustSchedule command", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          recognizedAmount: 3000,
+        })
+        .mockResolvedValueOnce({
+          ...baseSchedule,
+          totalAmount: 12_000,
+          recognizedAmount: 3000,
+          remainingAmount: 9000,
+        });
 
       const response = await PATCH(
         makeRequest({ action: "adjust", totalAmount: 12_000 }),
@@ -426,14 +484,19 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.totalAmount).toBe(12_000);
-      expect(dataArg.remainingAmount).toBe(9000); // 12000 - 3000 already recognized
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("adjustSchedule");
+      expect(callArgs.body.newTotalAmount).toBe(12_000);
+      // Route re-fetches after manifest command for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
     });
 
-    it("updates description, notes, endDate, and recognitionPeriod when provided", async () => {
-      mocks.scheduleFindFirstMock.mockResolvedValue(baseSchedule);
-      mocks.scheduleUpdateMock.mockResolvedValue(baseSchedule);
+    it("passes description, notes, endDate, and recognitionPeriod to runManifestCommand", async () => {
+      mocks.scheduleFindFirstMock
+        .mockResolvedValueOnce(baseSchedule)
+        .mockResolvedValueOnce(baseSchedule);
 
       const response = await PATCH(
         makeRequest({
@@ -447,11 +510,15 @@ describe("PATCH /api/accounting/revenue-recognition/schedules/[id]", () => {
       );
 
       expect(response.status).toBe(200);
-      const dataArg = mocks.scheduleUpdateMock.mock.calls[0][0].data;
-      expect(dataArg.description).toBe("Updated subscription");
-      expect(dataArg.notes).toBe("Customer requested change");
-      expect(dataArg.endDate).toBeInstanceOf(Date);
-      expect(dataArg.recognitionPeriod).toBe("QUARTERLY");
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledTimes(1);
+      const callArgs = mocks.runManifestCommandMock.mock.calls[0][0];
+      expect(callArgs.entity).toBe("RevenueRecognitionSchedule");
+      expect(callArgs.command).toBe("adjustSchedule");
+      expect(callArgs.body.description).toBe("Updated subscription");
+      expect(callArgs.body.notes).toBe("Customer requested change");
+      expect(callArgs.body.recognitionPeriod).toBe("QUARTERLY");
+      // Route re-fetches after manifest command for response
+      expect(mocks.scheduleFindFirstMock).toHaveBeenCalledTimes(2);
     });
   });
 

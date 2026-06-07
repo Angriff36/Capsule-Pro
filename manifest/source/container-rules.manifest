@@ -1,21 +1,22 @@
 // Kitchen Ops - Container Rules
 // Manifest spec for container inventory, capacity tracking, and storage management
+// Enriched with: reactivate + relocate commands for real kitchen ops needs.
 
 entity Container {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
   property required containerType: string
   property locationId: string = ""
   property sizeDescription: string = ""
-  property capacityVolumeMl: number = 0
-  property capacityWeightG: number = 0
+  property capacityVolumeMl: decimal = 0
+  property capacityWeightG: decimal = 0
   property capacityPortions: int = 0
   property isReusable: boolean = true
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed hasVolumeCapacity: boolean = self.capacityVolumeMl > 0
   computed hasWeightCapacity: boolean = self.capacityWeightG > 0
@@ -36,6 +37,7 @@ entity Container {
     }
   }
 
+  default policy ContainerDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Container management"
   command create(name: string, containerType: string, locationId: string, sizeDescription: string, capacityVolumeMl: number, capacityWeightG: number, capacityPortions: number, isReusable: boolean) {
     guard name != null and name != "" "Container name is required"
     guard containerType != null and containerType != "" "Container type is required"
@@ -52,8 +54,6 @@ entity Container {
     mutate capacityPortions = capacityPortions
     mutate isReusable = isReusable
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ContainerCreated
   }
@@ -73,7 +73,6 @@ entity Container {
     mutate capacityWeightG = capacityWeightG
     mutate capacityPortions = capacityPortions
     mutate isReusable = isReusable
-    mutate updatedAt = now()
 
     emit ContainerUpdated
   }
@@ -82,9 +81,28 @@ entity Container {
     guard self.isActive "Container is already deactivated"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit ContainerDeactivated
+  }
+
+  // Reactivate a deactivated container — puts it back in circulation.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Container is already active"
+
+    mutate isActive = true
+
+    emit ContainerReactivated
+  }
+
+  // Relocate a container to a different storage location (e.g. move from cold room to prep area).
+  command relocate(newLocationId: string, userId: string) {
+    guard self.isActive "Cannot relocate a deactivated container"
+    guard newLocationId != null and newLocationId != "" "New location ID is required"
+    guard newLocationId != self.locationId "Container is already at this location"
+
+    mutate locationId = newLocationId
+
+    emit ContainerRelocated
   }
 
   store Container in durable
@@ -102,14 +120,14 @@ event ContainerCreated: "kitchen.container.created" {
   capacityWeightG: number
   capacityPortions: number
   isReusable: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event ContainerUpdated: "kitchen.container.updated" {
   containerId: string
   name: string
   containerType: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ContainerDeactivated: "kitchen.container.deactivated" {
@@ -117,5 +135,23 @@ event ContainerDeactivated: "kitchen.container.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
+}
+
+event ContainerReactivated: "kitchen.container.reactivated" {
+  containerId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: datetime
+}
+
+event ContainerRelocated: "kitchen.container.relocated" {
+  containerId: string
+  tenantId: string
+  name: string
+  oldLocationId: string
+  newLocationId: string
+  userId: string
+  relocatedAt: datetime
 }

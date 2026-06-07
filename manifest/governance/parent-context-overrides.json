@@ -1,0 +1,131 @@
+{
+  "$comment": "Documented override reasons for the parent-context propagation audit (manifest/scripts/audit-parent-context.mjs). A child `create` command should INHERIT parent-owned context via parent-context propagation (specs/parent-context-propagation.md), not require it as user input. Each entry below records WHY a required create parameter that name+type-matches a belongsTo-parent property is acceptable. Two categories: (1) FALSE_POSITIVE — coincidental name match; the child value is semantically independent of the parent's. (2) BASELINE — a genuine propagation candidate that predates the propagation mechanism (2026-06-05); tracked in IMPLEMENTATION_PLAN.md for follow-up migration. New, undocumented cases must be fixed (inherit server-side) or added here with a reason. BattleBoard is intentionally ABSENT: its create inherits event context and requires no parent-owned input.",
+  "overrides": {
+    "AllergenWarning": {
+      "fields": ["allergens"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A warning's allergen string is authored for the warning, not copied from the Dish's allergen list.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "ClientContact": {
+      "fields": ["firstName", "lastName", "email", "phone"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A contact's own PII is distinct from the Client (company/account) record's fields with the same names.",
+      "owner": "crm",
+      "reviewed": "2026-06-05"
+    },
+    "VendorContact": {
+      "fields": ["email", "phone"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A vendor contact's own email/phone is distinct from the InventorySupplier record's contact fields.",
+      "owner": "procurement",
+      "reviewed": "2026-06-05"
+    },
+    "Dish": {
+      "fields": ["category"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A dish's menu category is independent of the source Recipe's category.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "Ingredient": {
+      "fields": ["category"],
+      "category": "FALSE_POSITIVE",
+      "reason": "An ingredient's food category (e.g. 'Produce') is authored per ingredient and semantically independent of the linked InventoryItem's category. The name match is coincidental.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-06"
+    },
+    "PrepListItem": {
+      "fields": ["category", "allergens"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Prep-line category/allergens are denormalized per source (Ingredient/Dish/RecipeVersion) and provided explicitly; not a single inferable parent value.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "IotAlertRule": {
+      "fields": ["condition", "isActive"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A rule's condition/isActive are the rule's own configuration, not inherited from the Equipment it monitors.",
+      "owner": "facilities",
+      "reviewed": "2026-06-05"
+    },
+    "IoTAlert": {
+      "fields": ["severity"],
+      "category": "FALSE_POSITIVE",
+      "reason": "An alert's severity is evaluated per-event, not copied from the IotAlertRule's name-matching field.",
+      "owner": "facilities",
+      "reviewed": "2026-06-05"
+    },
+    "FacilityArea": {
+      "fields": ["code"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Surfaced 2026-06-06 when the Facility entity was reconciled to its real `facilities` columns (Task 8.3) and gained a `code` property. FacilityArea.code is the AREA's own short code (e.g. \"KITCHEN-1\"), authored per area; it is semantically independent of the parent Facility's `code` (e.g. \"MAIN-KIT\"). The name match is coincidental — the area code must NOT inherit the facility code.",
+      "owner": "facilities",
+      "reviewed": "2026-06-06"
+    },
+    "TimecardEditRequest": {
+      "fields": ["employeeId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "The requesting employee is supplied by the caller; coincidental name match with TimeEntry.employeeId.",
+      "owner": "staff",
+      "reviewed": "2026-06-05"
+    },
+    "EventContract": {
+      "fields": ["clientId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): clientId is inferable from the linked Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "TimelineTask": {
+      "fields": ["assignedTo"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "EventFollowup": {
+      "fields": ["assignedTo"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): default assignee inferable from the Event. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "events",
+      "reviewed": "2026-06-05"
+    },
+    "PrepTask": {
+      "fields": ["eventId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): eventId inferable from the linked PrepList. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "kitchen",
+      "reviewed": "2026-06-05"
+    },
+    "RevenueRecognitionSchedule": {
+      "fields": ["metadata"],
+      "category": "FALSE_POSITIVE",
+      "reason": "MIGRATED 2026-06-05 (6th parent-context adopter): eventId/clientId (formerly BASELINE) are now inherited server-side from the linked Invoice — dropped as create params. `metadata` remains an explicit create param ONLY to fence the generic resolver: Invoice also owns a `metadata` string, but the schedule's metadata is its own, authored for the schedule (not copied from the invoice). Listing it as a param excludes it from inheritance so Invoice.metadata never bleeds onto the schedule.",
+      "owner": "accounting",
+      "reviewed": "2026-06-05"
+    },
+    "ScheduleShift": {
+      "fields": ["locationId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the parent Schedule. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "staff",
+      "reviewed": "2026-06-05"
+    },
+    "TrainingQuestion": {
+      "fields": ["code"],
+      "category": "FALSE_POSITIVE",
+      "reason": "A question's code (e.g. 'FS-Q1') is its own unique identifier within the module, not inherited from the parent TrainingModule's code (e.g. 'FOOD-SAFETY-101'). The name match is coincidental — each question authors its own code.",
+      "owner": "training",
+      "reviewed": "2026-06-06"
+    },
+    "TrainingAttempt": {
+      "fields": ["moduleId", "staffMemberId", "managerReviewRequired"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-06): moduleId, staffMemberId, and managerReviewRequired are all inferable from the parent TrainingAssignment, which already holds these values. Candidates for propagation; tracked in IMPLEMENTATION_PLAN.md.",
+      "owner": "training",
+      "reviewed": "2026-06-06"
+    }
+  }
+}

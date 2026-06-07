@@ -8,7 +8,8 @@
 
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -21,16 +22,23 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   log.info("[RolePolicy/update] Delegating to manifest update command");
 
-  return executeManifestCommand(request, {
-    entityName: "RolePolicy",
-    commandName: "update",
-    params: {},
-    transformBody: (body) => ({
-      id: body.id,
-      roleName: body.roleName,
-      permissions: body.permissions,
-      description: body.description,
-      isActive: body.isActive,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "RolePolicy",
+    command: "update",
+    body: {
+      id: rawBody.id,
+      roleName: rawBody.roleName,
+      permissions: rawBody.permissions,
+      description: rawBody.description,
+      isActive: rawBody.isActive,
+    },
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    },
   });
 }

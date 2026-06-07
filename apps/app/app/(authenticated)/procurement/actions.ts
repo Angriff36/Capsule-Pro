@@ -4,15 +4,17 @@
  * Procurement Server Actions
  *
  * Server actions for Purchase Order and Purchase Requisition creation.
+ * Governed writes (create) go through Manifest runtime (constitution §9).
+ * Reads remain direct Prisma (constitution §10).
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 // ---------------------------------------------------------------------------
 // Schemas
@@ -89,16 +91,6 @@ export type CreatePurchaseRequisitionInput = z.infer<
 // Helpers
 // ---------------------------------------------------------------------------
 
-async function requireAuth() {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const user = await auth();
-  invariant(user.userId, "Unauthorized");
-  const tenantId = await getTenantId();
-  return { tenantId, userId: user.userId };
-}
-
 function generatePoNumber(year: number, suffix: string): string {
   return `PO-${year}-${suffix}`;
 }
@@ -114,11 +106,17 @@ function generateRequisitionNumber(year: number, suffix: string): string {
 /**
  * Create a new purchase order with line items.
  *
- * This action accepts a typed input object (called from onSubmit) rather than
- * FormData, because the line items are managed in React state.
+ * Governed write: PurchaseOrder.create + PurchaseOrderItem.create +
+ * PurchaseOrder.updateTotals all run through the Manifest runtime
+ * (constitution §9). requireCurrentUser supplies the actor + tenant for
+ * policy + audit context (§19).
+ *
+ * NOTE: submittedBy/submittedAt are intentionally NOT set here — the PO is
+ * still in draft status. These fields belong to the `submit` command.
  */
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
-  const { tenantId, userId } = await requireAuth();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const parsed = purchaseOrderSchema.safeParse(input);
   if (!parsed.success) {
@@ -141,60 +139,94 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   }
   invariant(locationId, "No location available — create a location first");
 
+  // Generate a unique PO number
+  const year = new Date().getFullYear();
+  const suffix = Date.now().toString(36).slice(-6).toUpperCase();
+  const poNumber = generatePoNumber(year, suffix);
+
   // Calculate subtotal
   const subtotal = data.items.reduce(
     (sum, item) => sum + item.quantityOrdered * item.unitCost,
     0
   );
 
-  // Generate a unique PO number
-  const year = new Date().getFullYear();
-  const suffix = Date.now().toString(36).slice(-6).toUpperCase();
-  const poNumber = generatePoNumber(year, suffix);
-
-  const order = await database.purchaseOrder.create({
-    data: {
-      tenantId,
+  // --- Governed create: PurchaseOrder header ---
+  const headerResult = await runManifestCommand({
+    entity: "PurchaseOrder",
+    command: "create",
+    body: {
       poNumber,
       vendorId: data.vendorId,
-      expectedDeliveryDate: data.expectedDeliveryDate
-        ? new Date(`${data.expectedDeliveryDate}T00:00:00.000Z`)
-        : null,
-      notes: data.notes,
+      locationId,
+      notes: data.notes ?? "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!headerResult.ok) {
+    throw new Error(headerResult.message || "Failed to create purchase order");
+  }
+
+  const orderId = (headerResult.result as Record<string, unknown>)?.id as string;
+
+  // --- Governed create: PurchaseOrderItem for each line item ---
+  for (const item of data.items) {
+    const itemResult = await runManifestCommand({
+      entity: "PurchaseOrderItem",
+      command: "create",
+      body: {
+        purchaseOrderId: orderId,
+        itemId: item.itemId,
+        quantityOrdered: item.quantityOrdered,
+        unitId: item.unitId,
+        unitCost: item.unitCost,
+        notes: "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!itemResult.ok) {
+      throw new Error(itemResult.message || "Failed to create purchase order item");
+    }
+  }
+
+  // --- Update header financial fields via governed command ---
+  const totalsResult = await runManifestCommand({
+    entity: "PurchaseOrder",
+    command: "updateTotals",
+    instanceId: orderId,
+    body: {
       subtotal,
       total: subtotal,
-      submittedBy: userId,
-      submittedAt: new Date(),
-      status: "draft",
-      locationId,
-      items: {
-        create: data.items.map((item) => ({
-          tenantId,
-          itemId: item.itemId,
-          quantityOrdered: item.quantityOrdered,
-          unitCost: item.unitCost,
-          unitId: item.unitId,
-          totalCost: item.quantityOrdered * item.unitCost,
-        })),
-      },
+      itemCount: data.items.length,
+      expectedDeliveryDate: data.expectedDeliveryDate
+        ? new Date(`${data.expectedDeliveryDate}T00:00:00.000Z`).getTime()
+        : 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!totalsResult.ok) {
+    throw new Error(totalsResult.message || "Failed to update purchase order totals");
+  }
 
   revalidatePath("/procurement/purchase-orders");
   revalidatePath("/procurement");
-  redirect(`/procurement/purchase-orders/${order.id}`);
+  redirect(`/procurement/purchase-orders/${orderId}`);
 }
 
 /**
  * Create a new purchase requisition with line items.
  *
- * This action accepts a typed input object (called from onSubmit) rather than
- * FormData, because the line items are managed in React state.
+ * Governed write: PurchaseRequisition.create + PurchaseRequisitionItem.create
+ * run through the Manifest runtime (constitution §9). After items are created,
+ * completeDraftFromPrepDemand updates the header financial fields.
+ * requireCurrentUser supplies the actor + tenant for policy + audit (§19).
  */
 export async function createPurchaseRequisition(
   input: CreatePurchaseRequisitionInput
 ) {
-  const { tenantId, userId } = await requireAuth();
+  const user = await requireCurrentUser();
 
   const parsed = purchaseRequisitionSchema.safeParse(input);
   if (!parsed.success) {
@@ -213,32 +245,82 @@ export async function createPurchaseRequisition(
   const suffix = Date.now().toString(36).slice(-6).toUpperCase();
   const requisitionNumber = generateRequisitionNumber(year, suffix);
 
-  const requisition = await database.purchaseRequisition.create({
-    data: {
-      tenantId,
+  // --- Governed create: PurchaseRequisition header ---
+  const headerResult = await runManifestCommand({
+    entity: "PurchaseRequisition",
+    command: "create",
+    body: {
       requisitionNumber,
-      requestedBy: userId,
+      locationId: "",
+      department: data.department ?? "",
+      requestedBy: user.id,
       requiredBy: data.requiredBy
-        ? new Date(`${data.requiredBy}T00:00:00.000Z`)
-        : null,
-      department: data.department,
-      justification: data.justification,
+        ? new Date(`${data.requiredBy}T00:00:00.000Z`).getTime()
+        : 0,
+      justification: data.justification ?? "",
       priority: data.priority,
-      notes: data.notes,
-      subtotal,
-      estimatedTotal: subtotal,
-      items: {
-        create: data.items.map((item) => ({
-          tenantId,
-          itemId: item.itemId,
-          itemName: item.itemName,
-          quantityRequested: item.quantityRequested,
-          estimatedUnitCost: item.estimatedUnitCost,
-          estimatedTotalCost: item.estimatedTotalCost,
-        })),
-      },
+      itemCategory: "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!headerResult.ok) {
+    throw new Error(
+      headerResult.message || "Failed to create purchase requisition"
+    );
+  }
+
+  const requisitionId = (headerResult.result as Record<string, unknown>)
+    ?.id as string;
+
+  // --- Governed create: PurchaseRequisitionItem for each line item ---
+  for (const item of data.items) {
+    const itemResult = await runManifestCommand({
+      entity: "PurchaseRequisitionItem",
+      command: "create",
+      body: {
+        requisitionId,
+        itemId: item.itemId,
+        itemName: item.itemName ?? "",
+        quantityRequested: item.quantityRequested,
+        unitId: 0,
+        estimatedUnitCost: item.estimatedUnitCost,
+        suggestedVendorId: "",
+        suggestedVendorName: "",
+        specifications: "",
+        notes: "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!itemResult.ok) {
+      throw new Error(
+        itemResult.message || "Failed to create requisition item"
+      );
+    }
+  }
+
+  // --- Update header financial fields via governed command ---
+  const completeResult = await runManifestCommand({
+    entity: "PurchaseRequisition",
+    command: "completeDraftFromPrepDemand",
+    instanceId: requisitionId,
+    body: {
+      itemCount: data.items.length,
+      subtotal,
+      estimatedTax: 0,
+      estimatedShipping: 0,
+      estimatedTotal: subtotal,
+      notes: data.notes ?? "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!completeResult.ok) {
+    throw new Error(
+      completeResult.message || "Failed to complete requisition draft"
+    );
+  }
 
   revalidatePath("/procurement/requisitions");
   revalidatePath("/procurement");

@@ -157,6 +157,7 @@ export const database: Record<string, unknown> = {
   documentVersion: createMockModel(),
   // Kitchen task model
   kitchenTask: createMockModel(),
+  kitchenTaskClaim: createMockModel(),
   // Workforce optimization model
   workforceOptimization: createMockModel(),
   // Supplier / vendor catalog models (webhook)
@@ -199,8 +200,18 @@ export const database: Record<string, unknown> = {
   // Time tracking models
   timeEntry: createMockModel(),
   employeeTimeOffRequest: createMockModel(),
+  employeeAvailability: createMockModel(),
+  employeeCertification: createMockModel(),
   // Role policy model
   rolePolicy: createMockModel(),
+  // Staff auto-assignment models
+  employee_seniority: createMockModel(),
+  employee_skills: createMockModel(),
+  skills: createMockModel(),
+  location: createMockModel(),
+  // Budget models for auto-assignment budget checks
+  budget: createMockModel(),
+  eventBudget: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

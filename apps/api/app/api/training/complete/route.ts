@@ -3,7 +3,8 @@ import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type { CompleteTrainingInput, StartTrainingInput } from "../types";
 
 /**
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
   const body = (await request.json()) as StartTrainingInput &
     CompleteTrainingInput & { action: "start" | "complete" };
 
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Verify assignment exists and belongs to user (or user is admin)
+  // Verify assignment exists and belongs to user (or user is admin) — read per §10
   const assignments = await database.$queryRaw<
     Array<{
       id: string;
@@ -72,9 +74,8 @@ export async function POST(request: Request) {
 
   const assignment = assignments[0];
 
-  // For non-assigned-to-all, verify user is the assigned employee
+  // For non-assigned-to-all, verify user is the assigned employee — read per §10
   if (!assignment.assigned_to_all && assignment.employee_id) {
-    // Get employee record for current user
     const employees = await database.$queryRaw<Array<{ id: string }>>(
       Prisma.sql`
         SELECT id FROM tenant_staff.employees
@@ -92,8 +93,10 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Resolve current user for Manifest runtime — read per §10
+    const currentUser = await resolveCurrentUser(request);
     if (body.action === "start") {
-      // Check for existing completion record
+      // Check for existing completion record — read per §10
       const existingCompletions = await database.$queryRaw<
         Array<{ id: string; started_at: Date | null }>
       >(
@@ -112,7 +115,7 @@ export async function POST(request: Request) {
         });
       }
 
-      // Get employee ID for current user
+      // Get employee ID for current user — read per §10
       const employees = await database.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`
           SELECT id FROM tenant_staff.employees
@@ -132,47 +135,61 @@ export async function POST(request: Request) {
         );
       }
 
-      // Create or update completion record with start time
-      const result = await database.$queryRaw<
-        Array<{ id: string; started_at: Date }>
-      >(
-        Prisma.sql`
-          INSERT INTO tenant_staff.training_completions (
-            tenant_id,
-            assignment_id,
-            employee_id,
-            module_id,
-            started_at,
-            passed
-          )
-          VALUES (
-            ${tenantId},
-            ${body.assignmentId},
-            ${employeeId},
-            ${assignment.module_id},
-            NOW(),
-            false
-          )
-          ON CONFLICT (tenant_id, employee_id, module_id)
-          DO UPDATE SET started_at = NOW()
-          RETURNING id, started_at
-        `
-      );
+      // Delegate governed write: start training assignment via Manifest runtime
+      // The Manifest command transitions status -> in_progress, sets startedAt,
+      // and the reaction pipeline auto-creates TrainingAttempt records.
+      // We also create a legacy training_completions record for backward compatibility.
+      const manifestResult = await runManifestCommand({
+        entity: "TrainingAssignment",
+        command: "start",
+        body: {
+          id: body.assignmentId,
+          assignmentId: body.assignmentId,
+          moduleId: assignment.module_id,
+          staffMemberId: employeeId,
+        },
+        user: { id: currentUser.id, tenantId, role: currentUser.role },
+      });
 
-      // Update assignment status to in_progress
-      await database.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_staff.training_assignments
-          SET status = 'in_progress', updated_at = NOW()
-          WHERE tenant_id = ${tenantId}
-            AND id = ${body.assignmentId}
-        `
-      );
+      if (manifestResult.status < 200 || manifestResult.status >= 300) {
+        return manifestResult;
+      }
 
-      return NextResponse.json({ completion: result[0] });
+      const startedAt = new Date();
+      const result = await database.trainingCompletion.upsert({
+        where: {
+          tenantId_employeeId_moduleId: {
+            tenantId,
+            employeeId,
+            moduleId: assignment.module_id,
+          },
+        },
+        create: {
+          tenantId,
+          assignmentId: body.assignmentId,
+          employeeId,
+          moduleId: assignment.module_id,
+          startedAt,
+          passed: false,
+        },
+        update: {
+          startedAt,
+        },
+        select: {
+          id: true,
+          startedAt: true,
+        },
+      });
+
+      return NextResponse.json({
+        completion: {
+          id: result.id,
+          started_at: result.startedAt,
+        },
+      });
     }
     if (body.action === "complete") {
-      // Get employee ID for current user
+      // Get employee ID for current user — read per §10
       const employees = await database.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`
           SELECT id FROM tenant_staff.employees
@@ -192,64 +209,84 @@ export async function POST(request: Request) {
         );
       }
 
-      // Update completion record
-      const result = await database.$queryRaw<
-        Array<{
-          id: string;
-          completed_at: Date;
-          score: number | null;
-          passed: boolean;
-        }>
-      >(
-        Prisma.sql`
-          INSERT INTO tenant_staff.training_completions (
-            tenant_id,
-            assignment_id,
-            employee_id,
-            module_id,
-            started_at,
-            completed_at,
-            score,
-            passed,
-            notes
-          )
-          VALUES (
-            ${tenantId},
-            ${body.assignmentId},
-            ${employeeId},
-            ${assignment.module_id},
-            COALESCE(
-              (SELECT started_at FROM tenant_staff.training_completions
-               WHERE tenant_id = ${tenantId} AND assignment_id = ${body.assignmentId}),
-              NOW()
-            ),
-            NOW(),
-            ${body.score ?? null},
-            ${body.passed ?? true},
-            ${body.notes || null}
-          )
-          ON CONFLICT (tenant_id, employee_id, module_id)
-          DO UPDATE SET
-            completed_at = NOW(),
-            score = ${body.score ?? null},
-            passed = ${body.passed ?? true},
-            notes = ${body.notes || null},
-            updated_at = NOW()
-          RETURNING id, completed_at, score, passed
-        `
-      );
+      const score = body.score ?? 0;
+      const passed = body.passed ?? true;
 
-      // Update assignment status to completed
-      await database.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_staff.training_assignments
-          SET status = 'completed', updated_at = NOW()
-          WHERE tenant_id = ${tenantId}
-            AND id = ${body.assignmentId}
-        `
-      );
+      // Delegate governed write: submit passing attempt via Manifest runtime
+      // The Manifest command transitions status -> completed, sets completedAt/score,
+      // and the reaction pipeline auto-creates TrainingAttempt + StaffTrainingSignal records.
+      // For failed attempts, the caller should use a different command — this route
+      // historically only handled the complete (pass) case.
+      const manifestResult = await runManifestCommand({
+        entity: "TrainingAssignment",
+        command: "submitPassingAttempt",
+        body: {
+          id: body.assignmentId,
+          assignmentId: body.assignmentId,
+          attemptId: crypto.randomUUID(),
+          moduleId: assignment.module_id,
+          staffMemberId: employeeId,
+          scorePercent: score,
+          answersJson: JSON.stringify({ notes: body.notes ?? "" }),
+        },
+        user: { id: currentUser.id, tenantId, role: currentUser.role },
+      });
 
-      return NextResponse.json({ completion: result[0] });
+      if (manifestResult.status < 200 || manifestResult.status >= 300) {
+        return manifestResult;
+      }
+
+      const existingCompletion = await database.trainingCompletion.findFirst({
+        where: {
+          tenantId,
+          assignmentId: body.assignmentId,
+        },
+        select: {
+          startedAt: true,
+        },
+      });
+      const completedAt = new Date();
+      const result = await database.trainingCompletion.upsert({
+        where: {
+          tenantId_employeeId_moduleId: {
+            tenantId,
+            employeeId,
+            moduleId: assignment.module_id,
+          },
+        },
+        create: {
+          tenantId,
+          assignmentId: body.assignmentId,
+          employeeId,
+          moduleId: assignment.module_id,
+          startedAt: existingCompletion?.startedAt ?? completedAt,
+          completedAt,
+          score: new Prisma.Decimal(score),
+          passed,
+          notes: body.notes || null,
+        },
+        update: {
+          completedAt,
+          score: new Prisma.Decimal(score),
+          passed,
+          notes: body.notes || null,
+        },
+        select: {
+          id: true,
+          completedAt: true,
+          score: true,
+          passed: true,
+        },
+      });
+
+      return NextResponse.json({
+        completion: {
+          id: result.id,
+          completed_at: result.completedAt,
+          score: result.score,
+          passed: result.passed,
+        },
+      });
     }
     return NextResponse.json(
       { message: "Invalid action. Use 'start' or 'complete'" },

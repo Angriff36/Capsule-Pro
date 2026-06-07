@@ -24,19 +24,13 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
-// Minimal storeProvider mock required by Manifest 1.0.5+ for durable entities.
-// These are compilation/instantiation smoke tests — real store logic is tested
-// in integration tests that wire a Prisma-backed storeProvider.
-const MOCK_STORE_PROVIDER = {
-  getEntityStore: () => ({
-    findOne: async () => null,
-    findMany: async () => [],
-    create: async () => ({}),
-    update: async () => ({}),
-    delete: async () => {},
-  }),
-} as any;
+// Durable entities require a storeProvider (durable is backend-neutral) — the
+// engine throws at construction without one. These are compilation/instantiation
+// smoke tests, so a persistent in-memory storeProvider is sufficient; real store
+// logic is tested in integration tests that wire a Prisma-backed storeProvider.
+// NOTE: storeProvider is the THIRD ctor arg (RuntimeOptions), not the context.
 
 const MANIFEST_DIR = join(
   process.cwd(),
@@ -80,7 +74,7 @@ const MANIFEST_SPECS: ManifestSpec[] = [
     entities: [
       {
         name: "PrepComment",
-        commands: ["create", "resolve", "unresolve", "softDelete"],
+        commands: ["create", "edit", "markResolved", "unresolve", "softDelete"],
       },
     ],
   },
@@ -691,14 +685,17 @@ describe("Manifest All-Phases Compilation", () => {
 
       const normalized = enforceCommandOwnership(ir, manifest);
 
-      const runtime = new ManifestRuntimeEngine(normalized, {
-        user: {
-          id: "test-user",
-          tenantId: "test-tenant",
-          role: "admin",
+      const runtime = new ManifestRuntimeEngine(
+        normalized,
+        {
+          user: {
+            id: "test-user",
+            tenantId: "test-tenant",
+            role: "admin",
+          },
         },
-        storeProvider: MOCK_STORE_PROVIDER,
-      });
+        { storeProvider: inMemoryStoreProvider() }
+      );
 
       expect(runtime).toBeDefined();
       expect(runtime).toBeInstanceOf(ManifestRuntimeEngine);

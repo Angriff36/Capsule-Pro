@@ -2,6 +2,7 @@
 // Manifest spec for managing chart of accounts (general ledger account definitions)
 
 entity ChartOfAccount {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property accountNumber: string = ""
@@ -10,15 +11,17 @@ entity ChartOfAccount {
   property parentId: string = ""
   property description: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  timestamps
 
   computed hasParent: boolean = self.parentId != ""
+  computed isRoot: boolean = self.parentId == ""
 
   constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
   constraint requireAccountName: self.accountName != "" "Account name is required"
   constraint requireAccountType: self.accountType != "" "Account type is required"
+  constraint validAccountType: self.accountType in ["asset", "liability", "equity", "revenue", "expense", "cogs", "other"] "Invalid account type"
 
+  default policy ChartOfAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Chart of accounts"
   command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
     guard accountNumber != null and accountNumber != "" "Account number is required"
     guard accountName != null and accountName != "" "Account name is required"
@@ -30,8 +33,6 @@ entity ChartOfAccount {
     mutate parentId = parentId
     mutate description = description
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ChartOfAccountCreated
   }
@@ -45,7 +46,6 @@ entity ChartOfAccount {
     mutate parentId = parentId
     mutate description = description
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit ChartOfAccountUpdated
   }
@@ -54,12 +54,11 @@ entity ChartOfAccount {
     guard self.isActive == true "Account is already inactive"
 
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit ChartOfAccountDeactivated
   }
 
-  store ChartOfAccount in memory
+  store ChartOfAccount in durable
 }
 
 policy AccountManagement execute: user.role in ["manager", "admin"] "Managers can manage chart of accounts"
@@ -70,15 +69,15 @@ event ChartOfAccountCreated: "accounting.chart-of-account.created" {
   accountNumber: string
   accountName: string
   accountType: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ChartOfAccountUpdated: "accounting.chart-of-account.updated" {
   accountId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ChartOfAccountDeactivated: "accounting.chart-of-account.deactivated" {
   accountId: string
-  updatedAt: number
+  updatedAt: datetime
 }

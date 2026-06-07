@@ -12,22 +12,24 @@
     "./route-helpers": "./src/route-helpers.ts",
     "./ir-contract": "./src/ir-contract.ts",
     "./runtime-engine": "./src/runtime-engine.ts",
-    "./manifest-runtime": "./src/manifest-runtime.ts",
     "./runtime/loadManifests": "./src/runtime/loadManifests.ts",
     "./prisma-json-store": "./src/prisma-json-store.ts",
     "./prisma-idempotency-store": "./src/prisma-idempotency-store.ts",
     "./manifest-runtime-factory": "./src/manifest-runtime-factory.ts",
+    "./middleware": "./src/middleware/index.ts",
+    "./middleware/prep-inventory-demand-middleware": "./src/middleware/prep-inventory-demand-middleware.ts",
     "./commands-registry": "./src/commands-registry.ts",
     "./command-resolver": "./src/command-resolver.ts",
     "./run-manifest-command-core": "./src/run-manifest-command-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts"
   },
   "dependencies": {
-    "@angriff36/manifest": "1.7.0",
+    "@angriff36/manifest": "2.2.0",
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
     "@sentry/node": "^10.54.0",
-    "hono": "^4.12.23"
+    "hono": "^4.12.23",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",

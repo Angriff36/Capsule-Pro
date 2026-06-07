@@ -130,21 +130,24 @@ export default function FacilitiesWorkOrdersPage() {
         priority: createForm.priority,
         workOrderType: createForm.workOrderType,
         scheduledDate: createForm.scheduledDate || undefined,
-      });
+      }) as Record<string, unknown>;
       setWorkOrders((prev) => [
         {
-          id: result.id,
-          work_order_number: result.workOrderNumber,
-          priority: result.priority,
-          title: result.title,
-          status: result.status,
-          work_order_type: result.workOrderType,
-          description: result.description,
-          assigned_to: result.assignedTo,
+          id: (result.id as string) ?? "",
+          work_order_number: (result.workOrderNumber as string) ?? "",
+          priority: (result.priority as string) ?? "medium",
+          title: (result.title as string) ?? "",
+          status: (result.status as string) ?? "open",
+          work_order_type: (result.workOrderType as string) ?? "corrective",
+          description: (result.description as string) ?? "",
+          assigned_to: (result.assignedTo as string) ?? "",
           assigned_vendor: null,
-          scheduled_date: result.scheduledDate?.toISOString() ?? null,
-          reported_at:
-            result.createdAt?.toISOString() ?? new Date().toISOString(),
+          scheduled_date: result.scheduledDate
+            ? new Date(result.scheduledDate as string).toISOString()
+            : null,
+          reported_at: result.createdAt
+            ? new Date(result.createdAt as string).toISOString()
+            : new Date().toISOString(),
         },
         ...prev,
       ]);

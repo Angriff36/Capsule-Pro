@@ -12,7 +12,7 @@ entity PurchaseRequisition {
   property required requisitionNumber: string
   property required requestedBy: string = ""
   property required requestDate: datetime = now()
-  property requiredBy: datetime = now()
+  property requiredBy: datetime
   property locationId: string = ""
   property department: string = ""
   property justification: string = ""
@@ -22,21 +22,20 @@ entity PurchaseRequisition {
   property required estimatedShipping: money = 0
   property required estimatedTotal: money = 0
   property approvedBy: string = ""
-  property approvedAt: datetime = now()
+  property approvedAt: datetime
   property managerApprovalBy: string = ""
-  property managerApprovalAt: datetime = now()
+  property managerApprovalAt: datetime
   property financeApprovalBy: string = ""
-  property financeApprovalAt: datetime = now()
+  property financeApprovalAt: datetime
   property convertedToPoId: string = ""
-  property convertedAt: datetime = now()
+  property convertedAt: datetime
   property rejectionReason: string = ""
   property notes: string = ""
-  property submittedAt: datetime = now()
+  property submittedAt: datetime
   property itemCategory: string = ""
   property required priority: string = "normal"
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -54,10 +53,21 @@ entity PurchaseRequisition {
 
   constraint validStatus: self.status in ["draft", "pending_manager", "pending_finance", "approved", "rejected", "converted", "cancelled"] "Invalid requisition status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent", "critical"] "Invalid priority level"
-  constraint blockEditAfterSubmit:block self.status != "draft" {
-    messageTemplate: "Cannot edit requisition after submission"
+
+  transition status from "draft" to ["pending_manager", "cancelled"]
+  transition status from "pending_manager" to ["pending_finance", "approved", "rejected", "cancelled"]
+  transition status from "pending_finance" to ["approved", "rejected", "cancelled"]
+  transition status from "approved" to ["converted", "cancelled"]
+
+  constraint warnNotDraft:warn self.status != "draft" {
+    messageTemplate: "Requisition '{requisitionNumber}' is no longer in draft — most edits are blocked"
+    details: {
+      requisitionNumber: self.requisitionNumber
+      status: self.status
+    }
   }
 
+  default policy PurchaseRequisitionDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
     guard requestedBy != null and requestedBy != "" "Requester is required"
@@ -72,14 +82,11 @@ entity PurchaseRequisition {
     mutate justification = justification
     mutate priority = priority
     mutate itemCategory = itemCategory
-    mutate status = "draft"
     mutate subtotal = 0
     mutate estimatedTax = 0
     mutate estimatedShipping = 0
     mutate estimatedTotal = 0
     mutate itemCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionCreated
   }
@@ -91,15 +98,30 @@ entity PurchaseRequisition {
     mutate requiredBy = requiredBy
     mutate priority = priority
     mutate department = department
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionUpdated
+  }
+
+  command completeDraftFromPrepDemand(itemCount: number, subtotal: number, estimatedTax: number, estimatedShipping: number, estimatedTotal: number, notes: string) {
+    guard self.status == "draft" "Can only complete draft requisitions"
+    guard itemCount != null and itemCount > 0 "At least one line item is required"
+    guard subtotal != null and subtotal >= 0 "Subtotal cannot be negative"
+    guard estimatedTotal != null and estimatedTotal >= 0 "Estimated total cannot be negative"
+
+    mutate itemCount = itemCount
+    mutate subtotal = subtotal
+    mutate estimatedTax = estimatedTax
+    mutate estimatedShipping = estimatedShipping
+    mutate estimatedTotal = estimatedTotal
+    mutate notes = notes
+
+    emit PurchaseRequisitionDraftCompleted
   }
 
   command submit(userId: string) {
     guard self.status == "draft" "Can only submit draft requisitions"
 
-    constraint blockNoItems:block self.itemCount == 0 {
+    constraint blockNoItems:block self.itemCount > 0 {
       messageTemplate: "Cannot submit requisition '{requisitionNumber}' with no items"
       details: {
         requisitionNumber: self.requisitionNumber
@@ -108,7 +130,6 @@ entity PurchaseRequisition {
 
     mutate status = "pending_manager"
     mutate submittedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionSubmitted
   }
@@ -121,8 +142,7 @@ entity PurchaseRequisition {
     mutate managerApprovalBy = userId
     mutate managerApprovalAt = now()
     mutate approvedBy = self.estimatedTotal >= 5000 ? "" : userId
-    mutate approvedAt = self.estimatedTotal >= 5000 ? 0 : now()
-    mutate updatedAt = now()
+    mutate approvedAt = self.estimatedTotal >= 5000 ? null : now()
 
     emit PurchaseRequisitionManagerApproved
   }
@@ -135,7 +155,6 @@ entity PurchaseRequisition {
     mutate financeApprovalAt = now()
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionFinanceApproved
   }
@@ -148,7 +167,6 @@ entity PurchaseRequisition {
     mutate rejectionReason = reason
     mutate approvedBy = userId
     mutate approvedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionRejected
   }
@@ -160,7 +178,6 @@ entity PurchaseRequisition {
     mutate status = "converted"
     mutate convertedToPoId = purchaseOrderId
     mutate convertedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionConverted
   }
@@ -170,7 +187,6 @@ entity PurchaseRequisition {
 
     mutate status = "cancelled"
     mutate rejectionReason = reason
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionCancelled
   }
@@ -192,9 +208,8 @@ entity PurchaseRequisitionItem {
   property suggestedVendorName: string = ""
   property specifications: string = ""
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   key [tenantId, id]
 
@@ -206,6 +221,7 @@ entity PurchaseRequisitionItem {
   constraint positiveQuantity: self.quantityRequested > 0 "Quantity requested must be positive"
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
+  default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
   command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: number, unitId: number, estimatedUnitCost: number, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
     guard requisitionId != null and requisitionId != "" "Requisition ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -223,8 +239,6 @@ entity PurchaseRequisitionItem {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemCreated
   }
@@ -240,14 +254,12 @@ entity PurchaseRequisitionItem {
     mutate suggestedVendorName = suggestedVendorName
     mutate specifications = specifications
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemUpdated
   }
 
   command remove(userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseRequisitionItemRemoved
   }
@@ -282,13 +294,21 @@ event PurchaseRequisitionCreated: "procurement.requisition.created" {
   requestedBy: string
   department: string
   priority: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseRequisitionUpdated: "procurement.requisition.updated" {
   requisitionId: string
   requisitionNumber: string
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event PurchaseRequisitionDraftCompleted: "procurement.requisition.draft_completed" {
+  requisitionId: string
+  requisitionNumber: string
+  itemCount: number
+  estimatedTotal: number
+  completedAt: datetime
 }
 
 event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
@@ -297,7 +317,7 @@ event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
   submittedBy: string
   itemCount: number
   estimatedTotal: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_approved" {
@@ -305,7 +325,7 @@ event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_appro
   requisitionNumber: string
   approvedBy: string
   estimatedTotal: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_approved" {
@@ -313,7 +333,7 @@ event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_appro
   requisitionNumber: string
   approvedBy: string
   estimatedTotal: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseRequisitionRejected: "procurement.requisition.rejected" {
@@ -321,14 +341,14 @@ event PurchaseRequisitionRejected: "procurement.requisition.rejected" {
   requisitionNumber: string
   rejectedBy: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event PurchaseRequisitionConverted: "procurement.requisition.converted" {
   requisitionId: string
   requisitionNumber: string
   purchaseOrderId: string
-  convertedAt: number
+  convertedAt: datetime
 }
 
 event PurchaseRequisitionCancelled: "procurement.requisition.cancelled" {
@@ -336,7 +356,7 @@ event PurchaseRequisitionCancelled: "procurement.requisition.cancelled" {
   requisitionNumber: string
   cancelledBy: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
@@ -347,7 +367,7 @@ event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
   quantityRequested: number
   estimatedUnitCost: number
   estimatedTotalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
@@ -357,11 +377,11 @@ event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
   quantityRequested: number
   estimatedUnitCost: number
   estimatedTotalCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PurchaseRequisitionItemRemoved: "procurement.requisition.item.removed" {
   requisitionItemId: string
   requisitionId: string
-  removedAt: number
+  removedAt: datetime
 }

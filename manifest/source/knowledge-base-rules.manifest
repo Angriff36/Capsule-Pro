@@ -2,6 +2,7 @@
 // Manifest spec for internal knowledge base articles and documentation
 
 entity KnowledgeBaseEntry {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required title: string
@@ -10,10 +11,9 @@ entity KnowledgeBaseEntry {
   property tags: string = ""
   property status: string = "draft"
   property authorId: string = ""
-  property publishedAt: datetime = now()
-  property viewCount: number = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property publishedAt: datetime
+  property viewCount: int = 0
+  timestamps
 
   computed isPublished: boolean = self.status == "published"
   computed isDraft: boolean = self.status == "draft"
@@ -21,6 +21,11 @@ entity KnowledgeBaseEntry {
   constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid entry status"
   constraint validCategory: self.category in ["general", "policies", "procedures", "recipes", "safety", "training", "other"] "Invalid category"
 
+  // State transitions
+  transition status from "draft" to ["published", "archived"]
+  transition status from "published" to ["draft", "archived"]
+
+  default policy KnowledgeBaseEntryDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Knowledge base"
   command create(title: string, category: string, content: string, tags: string, authorId: string) {
     guard title != null and title != "" "Title is required"
     guard authorId != null and authorId != "" "Author ID is required"
@@ -32,15 +37,12 @@ entity KnowledgeBaseEntry {
     mutate authorId = authorId
     mutate status = "draft"
     mutate viewCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryCreated
   }
 
   command remove() {
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryDeleted
   }
@@ -52,7 +54,6 @@ entity KnowledgeBaseEntry {
     mutate category = category
     mutate content = content
     mutate tags = tags
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryUpdated
   }
@@ -64,10 +65,29 @@ entity KnowledgeBaseEntry {
 
     mutate status = "published"
     mutate publishedAt = now()
-    mutate updatedAt = now()
 
     emit KnowledgeBaseEntryPublished
   }
+
+  // Pull a published entry back to draft for revision.
+  command unpublish(reason: string) {
+    guard self.status == "published" "Only a published entry can be unpublished"
+
+    mutate status = "draft"
+
+    emit KnowledgeBaseEntryUnpublished
+  }
+
+  // Track readership of published articles.
+  command recordView() {
+    guard self.status == "published" "Only published entries accrue views"
+
+    mutate viewCount = self.viewCount + 1
+
+    emit KnowledgeBaseEntryViewed
+  }
+
+  store KnowledgeBaseEntry in durable
 }
 
 policy EditorsCanManageKB execute: user.role in ["editor", "manager", "admin"] "Editors can manage knowledge base"
@@ -79,22 +99,34 @@ event KnowledgeBaseEntryCreated: "knowledgebase.entry.created" {
   title: string
   category: string
   authorId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event KnowledgeBaseEntryDeleted: "knowledgebase.entry.deleted" {
   entryId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event KnowledgeBaseEntryUpdated: "knowledgebase.entry.updated" {
   entryId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KnowledgeBaseEntryPublished: "knowledgebase.entry.published" {
   entryId: string
   title: string
-  publishedAt: number
+  publishedAt: datetime
+}
+
+event KnowledgeBaseEntryUnpublished: "knowledgebase.entry.unpublished" {
+  entryId: string
+  title: string
+  reason: string
+  unpublishedAt: datetime
+}
+
+event KnowledgeBaseEntryViewed: "knowledgebase.entry.viewed" {
+  entryId: string
+  viewCount: number
 }

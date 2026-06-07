@@ -10,8 +10,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -50,18 +50,21 @@ export async function GET() {
  * POST /api/settings/rate-limits
  * Create a new rate limit configuration via Manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "RateLimitConfig",
-    commandName: "create",
-    transformBody: (body) => ({
-      name: body.name || "",
-      endpointPattern: body.endpointPattern || "",
-      windowMs: body.windowMs ?? 60_000,
-      maxRequests: body.maxRequests ?? 100,
-      burstAllowance: body.burstAllowance ?? 0,
-      priority: body.priority ?? 0,
-      isActive: body.isActive ?? true,
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "RateLimitConfig",
+    command: "create",
+    body: {
+      name: rawBody.name || "",
+      endpointPattern: rawBody.endpointPattern || "",
+      windowMs: rawBody.windowMs ?? 60_000,
+      maxRequests: rawBody.maxRequests ?? 100,
+      burstAllowance: rawBody.burstAllowance ?? 0,
+      priority: rawBody.priority ?? 0,
+      isActive: rawBody.isActive ?? true,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

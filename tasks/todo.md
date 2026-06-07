@@ -1,418 +1,55 @@
-# Current Task
-
-## cp-092 — Feature Inventory — 2026-04-13
-
-**Goal:** Inventory all routes, map feature modules, and identify data tables/models touched.
-
-### Current Task
-- [x] Discover route surfaces and schema sources
-- [x] Audit API/frontend route files by feature area
-- [x] Read Prisma schema and model inventory
-- [x] Produce `planning/feature-inventory.md`
-- [x] Verify saved doc contents
-
----
-
-## Phase 5 — Performance Pass (TEAM: perf) — 2026-04-06
-
-**Goal:** Measure and fix slow paths across dev, client, and API.
-
-### Task 1: Dev Process Count (DONE)
-
-| Command | Processes | What runs |
-|---------|-----------|-----------|
-| `pnpm dev` | ~12 | app + api + stripe + docs + email + storybook + studio + web + basehub + ai + cms + manifest-runtime + sentry-integration |
-| `pnpm dev:web` | 4 | app(2221) + api(2223) + stripe listener |
-| `pnpm dev:app` | 1 | app(2221) only |
-| `pnpm dev:api` | 2 | api(2223) + stripe listener |
-
-**Finding:** `pnpm dev:web` cuts concurrent processes by ~67% (4 vs 12) while keeping the full web+API stack.
-
-### Task 2: Client Bundle Analysis (DONE)
-
-Ran `ANALYZE=true` build. Top client-side chunks:
-
-| Chunk | Size | Library | Action |
-|-------|------|---------|--------|
-| 757 | 663KB | Zod + Next router | Framework, not actionable |
-| 9471 | 508KB | Radix UI + Lucide | Shared UI, not actionable |
-| 7737 | 503KB | Vega | Already lazy-loaded (sales dashboard) |
-| main | 484KB | Next.js runtime | Framework, not actionable |
-| 2733 | 484KB | Recharts | **Fixed: now lazy-loaded** |
-| 3087 | 449KB | Radix UI | Shared UI, not actionable |
-| db53 | 403KB | xlsx | Behind lazy boundary (sales export) |
-
-**Fix applied:** Wrapped `/analytics/kitchen` and `/inventory/forecasts` with `next/dynamic` + skeleton loading. Recharts (484KB) now code-split.
-
-### Task 3: API N+1 Fix — Prep List Save (DONE)
-
-**Documented slow user journey:** Saving a generated prep list to the database.
-
-**Before:** `savePrepListToDatabase` executed 1 INSERT per ingredient in a nested loop. A 50-ingredient prep list = 50 sequential round trips to Neon. `savePrepListToProductionBoard` executed SELECT + INSERT per task (2N queries for N tasks).
-
-**After:** Both functions batch all operations into single queries using PostgreSQL `unnest()`:
-- `savePrepListToDatabase`: 1 bulk INSERT via unnest (was N individual INSERTs)
-- `savePrepListToProductionBoard`: 1 INSERT ... WHERE NOT EXISTS via unnest (was 2N SELECT+INSERT)
-
-**Impact:** 50-ingredient, 5-station prep list: ~55 queries -> 2. At ~5ms per Neon HTTP round trip = ~265ms saved.
-
-### Task 4: Infrastructure Status (DONE)
-
-- **DB pooling:** Neon serverless + `PrismaNeon` adapter, HTTP fetch pooling enabled. Managed by Neon.
-- **Cold starts:** Sentry `automaticVercelMonitors` enabled. Typical Vercel cold starts 200-500ms.
-- **Observability:** Sentry + Logtail/BetterStack. No custom perf tracing needed.
-
-### Bonus: Merge Conflict Resolution
-
-Fixed pre-existing merge conflict in `apps/app/proxy.ts`. Removed dead `setLoopCookie` function.
-
-### Exit Criteria
-
-- [x] One documented slow user journey fixed: prep list save N+1 (55 queries -> 2)
-- [x] Dev process reduction confirmed: `dev:web` = 4 processes vs `dev` = 12
-- [x] Bundle analysis run and heavy routes lazy-loaded (recharts 484KB)
-- [x] Infra documented: Neon pooling, Sentry monitors, no blockers
-
----
-
-## Agent 88 — 2026-04-02
-
-**Goal:** Fix the remaining non-Command-Board app typecheck cluster in the UI regression bugfix worktree with minimal diffs.
-
-### Classification
-
-**Issue Layer**:
-- [ ] Spec violation
-- [ ] IR violation
-- [ ] Runtime violation
-- [ ] Projection mismatch
-- [x] Integration bug - wiring between typed React/UI/test code
-
-**Governing Authority**: `.opencode/context/project-intelligence/technical-domain.md` (strict TypeScript, named exports, app-level typed props) + `.opencode/context/core/standards/issue-classification.md` + `.opencode/context/core/standards/code-quality.md`
-
-**Contract Impact**:
-- [ ] Language contract violation
-- [ ] Missing conformance coverage
-- [ ] Runtime implementation bug
-- [ ] Projection artifact mismatch
-- [x] Pure integration issue
-
-### Current Task
-- [x] Read `tasks/ledger.md` and `tasks/lessons.md`
-- [x] Inspect current diagnostics for the requested settings/recipes/costing files
-- [x] Load ContextScout guidance and project standards
-- [ ] Apply minimal diffs for the typecheck cluster
-- [ ] Run focused verification for touched files
-- [ ] Update ledger with evidence
-
-### Governance Note: UI/App Typecheck Cluster
-
-**Why conformance doesn't apply**: This is a localized TypeScript integration cleanup in app tests and React components, not a manifest/IR/runtime behavior issue.
-
-**Alternative coverage**: Focused TypeScript diagnostics for touched files plus targeted app test verification.
-
-**Risk**: Optional-chain cleanup and null guards can accidentally change render behavior if done broadly, so diffs must stay surgical.
-
----
-
-## Agent 2 — 2026-02-22
-
-**Goal:** Enforce CLAUDE.md compliance — create missing task files, add blocking session checklist to CLAUDE.md
-
-- [x] Read `tasks/ledger.md` — last Agent ID is 1 (example), mine is 2
-- [x] Identify what CLAUDE.md rules agents have been ignoring
-- [x] Add blocking session start/end checklist to project CLAUDE.md
-- [x] Create `tasks/lessons.md` with initial lessons
-- [x] Create `tasks/todo.md` (this file)
-- [x] Append ledger entry to `tasks/ledger.md`
-
-## Review
-
-All three enforcement mechanisms now exist:
-
-- `CLAUDE.md` has a blocking checklist at the top that agents cannot miss
-- `tasks/lessons.md` initialized with 3 lessons from this session
-- `tasks/todo.md` initialized with this session's work
-- Ralph loop exemption preserved ("If you are a ralph loop agent working on `implementation_plan.md`, skip this checklist")
-
----
-
-## Agent 3 — 2026-02-23
-
-**Goal:** Fix MCP server runtime boot — resolve `server-only`, dotenv, and ESM interop blockers
-
-### Current Task
-- [x] Diagnose `server-only` crash in standalone Node.js
-- [x] Diagnose ESM named export failure from CJS `.ts` workspace packages
-- [x] Create preload.cts shim for `server-only` + dotenv
-- [ ] Fix `@prisma/client` → `.prisma/client/default` missing module
-- [ ] Fix ESM interop for `@repo/database` (CJS `.ts` → ESM named exports)
-- [ ] Boot test the MCP server end-to-end
-- [ ] Typecheck passes
-- [ ] Update ledger
-
-### Bugs Found During MCP Server Boot Debugging
-
-#### BUG-1: `ingredient-resolution.ts` imports from `@prisma/client` instead of generated client
-- **File:** `packages/database/src/ingredient-resolution.ts:7`
-- **Issue:** `import { Prisma as PrismaNamespace } from "@prisma/client"` — Prisma v7 with custom `output = "../generated"` does NOT populate `@prisma/client` with the generated types. Per official Prisma docs: "Under no circumstances should `import { PrismaClient } from '@prisma/client'` be used in this configuration."
-- **Impact:** Runtime crash — `@prisma/client/default.js` tries `require('.prisma/client/default')` which doesn't exist. Works in Next.js only because webpack resolves it differently.
-- **Fix:** Change to `import { Prisma as PrismaNamespace } from "../generated/client.js"` — BUT the generated `Prisma` namespace has a different shape (no `.prototype.$queryRaw`). Needs investigation of what `PrismaNamespace.prototype.$queryRaw`, `PrismaNamespace.sql`, and `PrismaNamespace.join` map to in the generated client.
-- **Typecheck also broken:** `pnpm --filter @repo/database typecheck` fails with 4 errors in this file.
-
-#### BUG-2: `@repo/database` missing `"type": "module"` causes ESM interop failures
-- **File:** `packages/database/package.json`
-- **Issue:** No `"type": "module"` field. `"main": "./index.ts"` is a TypeScript file. When ESM packages (like `manifest-adapters/dist/*.js`) do `import { Prisma } from "@repo/database"`, Node treats the `.ts` file as CJS. Node's CJS-to-ESM named export detection fails for `.ts` files — it can't statically analyze TypeScript.
-- **Impact:** Any standalone ESM process that transitively imports `@repo/database` gets `SyntaxError: The requested module '@repo/database' does not provide an export named 'X'`. Works in Next.js because webpack handles the resolution.
-- **Fix:** Add `"type": "module"` to `packages/database/package.json`. Requires testing all consumers (apps/api, apps/app, etc.) to ensure nothing breaks.
-
-#### BUG-3: `@repo/database` imports `server-only` which blocks non-Next.js usage
-- **File:** `packages/database/index.ts:1`
-- **Issue:** `import "server-only"` at the top of the entry point. This is a Next.js RSC guard that throws `Error: This module cannot be imported from a Client Component module` in ANY non-Next.js Node.js process.
-- **Impact:** No standalone Node.js script, CLI tool, or MCP server can import `@repo/database` without shimming `server-only` first. The package is effectively locked to Next.js.
-- **Fix options:** (a) Move `server-only` behind a conditional check, (b) Add a separate entry point without the guard (e.g., `@repo/database/standalone`), (c) Use package.json `exports` with conditions to serve different entry points.
-
-#### BUG-4: `.prisma/client/default` not generated with custom output
-- **File:** `packages/database/prisma/schema.prisma` — `output = "../generated"`
-- **Issue:** Prisma 7 with custom `output` does NOT create the `.prisma/client/default` module that `@prisma/client/default.js` expects. The `@prisma/client` npm package does `require('.prisma/client/default')` which fails with `MODULE_NOT_FOUND`.
-- **Impact:** Any code importing from `@prisma/client` (instead of the generated client path) crashes at runtime. This is a known Prisma v7 migration issue.
-- **Fix:** Either (a) fix all imports to use the generated client path, or (b) add a postgenerate script that creates the `.prisma/client/default` shim, or (c) add `@prisma/client` `exports` override in package.json.
-
-### Fix Strategy Options (for next agent)
-
-All 4 bugs are interconnected. Each partial fix exposes the next. Three strategies:
-
-**Option A: Fix `@repo/database` properly (correct fix, bigger scope)**
-1. Add `"type": "module"` to `packages/database/package.json` → fixes BUG-2
-2. Fix `ingredient-resolution.ts` import to use `../generated/client.js` → fixes BUG-1 + BUG-4
-   - NOTE: `Prisma` namespace from generated client has different shape than `@prisma/client`. Need to investigate `PrismaNamespace.prototype.$queryRaw`, `.sql`, `.join` equivalents.
-3. Add conditional `server-only` or separate entry point → fixes BUG-3
-4. Test ALL consumers: `apps/api`, `apps/app`, `apps/mobile`, any scripts
-5. MCP server preload.cts becomes just dotenv loading (no shims needed)
-
-**Option B: Preload shim + `type:module` (MCP-only workaround)**
-1. Add `"type": "module"` to `packages/database/package.json` → fixes BUG-2
-2. Preload shims `server-only` (already done) → fixes BUG-3 for MCP only
-3. Preload shims `@prisma/client` to redirect to generated client → fixes BUG-1 + BUG-4 for MCP only
-4. Only test MCP server, defer full consumer testing
-5. Risk: `type:module` change may break Next.js apps
-
-**Option C: Bypass `@repo/database` entirely in MCP server**
-1. Create standalone PrismaClient in MCP server using Neon adapter directly
-2. Don't import `@repo/database` at all — duplicate ~30 lines of setup
-3. Still need preload for `manifest-adapters` transitive dependency (it imports `@repo/database` via `prisma-store.js`)
-4. This means Option C still needs BUG-2 fixed (or the transitive import crashes)
-5. Least invasive to other packages but doesn't actually solve the root cause
-
-**Recommendation:** Option A is the correct fix. The database package needs to work outside Next.js — MCP server is just the first consumer, there will be more (CLI tools, scripts, workers). The `type:module` + generated client import fix is the Prisma v7 documented pattern.
-
-### What's Already Done (files to keep)
-- `packages/mcp-server/` — all 12 source files are written and typecheck clean
-- `packages/mcp-server/src/preload.cts` — shims `server-only` + loads dotenv (keep regardless of strategy)
-- `.mcp.json` — updated with capsule-pro server entries
-- `node_modules/.prisma/client/default.js` — ephemeral shim, will be lost on `pnpm install`
-
-### What's NOT Done
-- ~~MCP server has never successfully booted~~
-- No runtime testing of any tools
-- No integration test with actual MCP client
-
----
-
-## Agent 87 — 2026-03-26
-
-**Goal:** Full Manual QA Pass - Capsule Pro (REAL BROWSER)
-
-- [ ] Open Capsule Pro app in a REAL browser (not headless)
-- [ ] Click EVERY button in the app
-- [ ] Fill out EVERY form
-- [ ] SUBMIT every form
-- [ ] Verify all functionality works end-to-end
-- [ ] Document any failures with screenshots and reproduction steps
-- [ ] Task requires @sentinel sign-off to close
-
----
-
-## Agent 46 — 2026-02-28
-
-**Goal:** Fix false-positive COMMAND_ROUTE_ORPHAN detection in manifest CLI audit
-
-### Completed
-- [x] Diagnosed root cause: `hasCommandManifestBacking` compared kebab-case filesystem paths against lowercased camelCase IR commands without normalization
-- [x] Wrote failing test proving the bug (kebab-case vs camelCase multi-word commands)
-- [x] Fixed `hasCommandManifestBacking` with `toKebabCase()` normalization
-- [x] All 741 manifest tests pass
-- [x] Published `@angriff36/manifest@0.3.29`
-- [x] Updated capsule-pro dependency (4 package.json + lockfile)
-- [x] Verified: COMMAND_ROUTE_ORPHAN warnings dropped from 61 → 2 (genuine orphans only)
-- [x] Full build pipeline verified: 539 files audited, 172 errors, 43 warnings
-- [x] Ledger entry written
-
-### Follow-ups (separate PRs per handoff constraint)
-- [ ] Delete 4 camelCase duplicate station command routes
-- [ ] Delete 6 prep-lists/items duplicate routes
-- [ ] Triage 2 genuine orphans: staff/shifts/commands/{update,create}-validated
-- [ ] Fix known issues: conflicts/detect auth gap, user-preferences dead exports, prep-lists/save legacy
-- [ ] Implement missing plan tests A, B, C, G
-
----
-
-## Agent 7 — 2026-02-23
-
-**Goal:** Fix MCP server boot — resolve remaining blockers
-
-### Fixes Applied
-- [x] Fix BUG-1: `ingredient-resolution.ts` was already fixed (imports from `../generated/client`)
-- [x] Fix BUG-2: Added `"type": "module"` to `packages/database/package.json`
-- [x] Fix BUG-3: Handled by `preload.cts` shim (server-only stub)
-- [x] Fix BUG-4: Handled by `preload.cts` shim (@prisma/client cache population)
-- [x] Fix `preload.cts`: Changed `import.meta.dirname` to `__dirname` for CJS compatibility
-- [x] MCP server boots successfully
-- [x] TypeScript passes
-- [x] Build passes
-- [x] Tests pass (667/667)
-
-### Files Changed
-- `packages/database/package.json` — Added `"type": "module"`
-- `packages/mcp-server/src/preload.cts` — Fixed CJS compatibility (`__dirname` vs `import.meta.dirname`)
-
-### Verification
-```
-$ pnpm --filter @repo/mcp-server start
-[db] Using Neon host: ... (pooler: true)
-{"level":"info","message":"MCP server starting","mode":"tenant",...}
-{"level":"info","message":"MCP server connected via stdio transport","mode":"tenant"}
-
-$ pnpm tsc --noEmit
-(no errors)
-
-$ pnpm turbo build --filter=api
-Tasks: 7 successful, 7 total
-
-$ pnpm vitest run (manifest-runtime)
-Test Files: 14 passed, Tests: 667 passed
-```
-
----
-
-## Agent 55 — 2026-02-28
-
-**Goal:** Audit Agent 54's 113→0 claim, revert blanket suppression, genuinely convert 3 event contract routes to manifest runtime
-
-- [x] Audit Agent 54's Phase 2 — identified blanket WRITE_ROUTE_BYPASSES_RUNTIME suppression hiding 49 legacy-migrate routes
-- [x] Revert suppression (commit 7612c8e43) — error count restored to honest 102
-- [x] Convert `events/contracts/[id]/status` PATCH → Maps to specific EventContract commands (send/sign/expire/cancel/markViewed)
-- [x] Convert `events/contracts/[id]/send` POST → EventContract.send via createManifestRuntime + email side-effect
-- [x] Convert `events/contracts/[id]/signature` POST → ContractSignature.create via executeManifestCommand
-- [x] Add `export const runtime = "nodejs"` to status and send routes
-- [x] Add 3 entries to write-route-infra-allowlist.json
-- [x] Correct Agent 54's score from 20→12 (-8 for Phase 2 suppression)
-- [x] Write ledger entry (16 points), archive Agent 50
-- [x] Verify: build 99 errors, kitchen 374/374, audit-routes 31/31, tsc clean, biome clean
-- [x] Commit (01c6b2afa)
-
----
-
-## Agent 56 — 2026-02-28
-
-**Goal:** Record Agent 55's session, then correct after user review — honest A/B decomposition of error trajectory
-
-### Phase 1 (uncritical recording — corrected)
-- [x] Update manifest-route-ownership-handoff.md with Agent 55 state (99 errors, 535 routes, v0.3.35)
-- [x] Update tasks/todo.md with Agent 55 completed work
-- [x] Add Agent 56 ledger entry (initially 2 points)
-- [x] Clean up untracked session files
-
-### Phase 2 (after user correction)
-- [x] Read session-ses_3585.md to understand user's critique
-- [x] Decompose 171→99 trajectory into A (route conversion) vs B (audit tool change)
-- [x] Result: 14 genuine conversions (A), 47 audit tool regex expansion (B), 11 churn (net zero) = 80% B, 20% A
-- [x] Add Lesson 8 to lessons.md: "Audit tool changes during active debt are governance drift"
-- [x] Add honest A/B decomposition to handoff doc
-- [x] Correct Agent 56 ledger entry: 2 → -1 points (-3 for uncritical recording caught by user)
-- [ ] Commit
-
----
-
-## Agent 61 — 2026-03-04
-
-**Goal:** Lock down PrepTask.claim golden path — fix input-clobbering bug, add conformance test suite
-
-- [x] Explore codebase: manifest DSL, IR, RuntimeEngine pipeline, PrismaStore, route handlers, existing tests
-- [x] Identify root cause: `Object.assign(evalContext, enriched)` clobbers input params with instance values
-- [x] Write 11-test conformance suite (fails pre-fix on stationId)
-- [x] Fix runtime engine: re-apply input after context refresh (1 line)
-- [x] Correct 2 existing test assertions that accepted the bug
-- [x] Rebuild dist, copy to node_modules
-- [x] Verify: 18/18 claim tests pass, 707/707 manifest-runtime tests pass, tsc clean
-- [x] Write ledger entry (20 points), archive Agent 52
-
----
-
-## Agent 53 — 2026-03-01
-
-**Goal:** Eliminate 47 false-positive WRITE_ROUTE_BYPASSES_RUNTIME audit errors by recognizing executeManifestCommand as valid runtime usage
-
-- [x] Update RUNTIME_COMMAND_RE to match executeManifestCommand
-- [x] Add EXECUTE_MANIFEST_COMMAND_RE to suppress user context warnings
-- [x] Add 2 new tests (bypass detection + user context suppression)
-- [x] Reclassify 33 exemptions from legacy-migrate to manifest-runtime
-- [x] Fix 6 exemption metadata errors (missing allowPermanent)
-- [x] Publish @angriff36/manifest@0.3.35, update 4 consumers
-- [x] Verify build pipeline: errors 171→124, warnings 41, strict gate passes
-- [x] Verify kitchen tests: 24 files, 374 tests, 0 failures
-- [x] Write ledger entry, archive Agent 48
-- [x] Commit changes
-
----
-
-## Agent 62 — 2026-03-05
-
-**Goal:** Fix `inspect_command` guard expression display so literals render as human-readable values instead of `[object Object]`, and add regression tests for `expressionToString`.
-
-### Classification
-
-**Issue Layer**:
-- [ ] Spec violation
-- [x] IR violation
-- [ ] Runtime violation
-- [ ] Projection mismatch
-- [ ] Integration bug
-
-**Governing Authority:** IR expression structure in `packages/manifest-ir/ir/kitchen/kitchen.ir.json` (nested literal nodes under `literal.value`).
-
-**Contract Impact:**
-- [ ] Language contract violation
-- [x] Missing conformance coverage
-- [ ] Runtime implementation bug
-- [ ] Projection artifact mismatch
-- [x] Pure integration issue
-
-### Plan
-- [ ] Update `expressionToString` literal handling in `packages/mcp-server/src/plugins/ir-introspection.ts` for nested IR literal objects.
-- [ ] Add regression tests for `expressionToString` (null, string, number, boolean, and nested binary expressions).
-- [ ] Run MCP package tests: `pnpm vitest run` from `packages/mcp-server/`.
-- [ ] Run repo typecheck: `pnpm tsc --noEmit`.
-- [ ] Append session ledger entry to `tasks/ledger.md`.
-
----
-
-## Agent 62 — 2026-03-05 (PrepTask.claim single-write migration)
-
-**Goal:** Migrate `apps/api/app/api/kitchen/tasks/[id]/claim/route.ts` from dual-write (runtime + direct Prisma transaction) to runtime/store-only writes.
-
-- [x] Read `tasks/ledger.md` and load required context standards
-- [x] Remove direct Prisma writes from claim route and keep response contract
-- [x] Ensure claim side effects are persisted via `PrepTaskPrismaStore.update`
-- [x] Run targeted claim/runtime conformance tests (18/18 passing)
-- [x] Run kitchen suite (`pnpm --filter api test __tests__/kitchen/ -- --run`) and capture failures
-- [x] Run `pnpm tsc --noEmit`
-- [x] Run `pnpm biome check apps/api/app/api/kitchen/tasks/[id]/claim/route.ts`
-- [x] Append session ledger entry to `tasks/ledger.md`
-
-### Review
-
-- Route now executes `claimPrepTask(...)` and returns persisted claim from DB readback; no direct post-command Prisma writes remain in route.
-- `PrepTaskPrismaStore.update` now persists claim-adjacent side effects for claim transitions: claim record (existing behavior), progress entry, and `kitchen.task.claimed` outbox event.
-- Targeted claim conformance/runtime tests pass (18/18).
-- Full kitchen suite still has pre-existing failures in `manifest-build-determinism.test.ts` and `manifest-runtime-node.invariant.test.ts`.
+# Task: EmailWorkflow governance migration (Task 8.3 — server action)
+
+Migrate `apps/app/app/(authenticated)/settings/email-workflows/actions.ts` (4 direct
+`database.emailWorkflow.*` writes) to route through the Manifest runtime, per constitution §9.
+EmailWorkflow is a top-level settings entity (no parent-from-child creation → no parent-context
+requirement). Fixes the source-command drift the migration depends on first (constitution §14).
+
+## Why
+- 4 governed-entity direct writes bypass Manifest (audit: `manifest:audit-direct-writes`).
+- The IR `update` command is **missing `triggerType`** (silent bug: update can't change trigger type).
+- Toggle (isActive only) has no partial-update command — the `update` command does full-field
+  overwrite, so a toggle through it would clobber name/config.
+- The action writes `emailTemplateTenantId` (composite FK tenant key for the template-name read
+  join); the IR doesn't model it → migrating would silently break the `emailTemplate` include.
+
+## Plan
+- [ ] Source `email-workflow-rules.manifest`:
+  - [ ] Add `property emailTemplateTenantId: string = ""`.
+  - [ ] `create`: add param + mutate `emailTemplateTenantId`.
+  - [ ] `update`: add params + mutates `triggerType`, `emailTemplateTenantId`.
+  - [ ] Add `command setActive(isActive: boolean)` (guard not-deleted; mutate isActive; emit Updated).
+- [ ] Recompile IR: `pnpm manifest:compile` (regenerates kitchen.ir.json + commands.registry.json).
+- [ ] Runtime governance test `email-workflow-governance.test.ts` (mirror venue-governance.test.ts):
+      create persists full field surface incl Json configs + emailTemplateTenantId; update changes
+      triggerType (regression guard); setActive toggles isActive only; softDelete sets deletedAt +
+      blocks update; registry carries create/update/setActive/softDelete.
+- [ ] Migrate `actions.ts`: requireCurrentUser → runManifestCommand for create/update/toggle/delete;
+      preserve return shapes via read-back. Keep all GET helpers as direct Prisma reads (allowed §10).
+- [ ] Verify: manifest-runtime test (new), `pnpm --filter app typecheck`,
+      `pnpm manifest:audit-direct-writes` (EmailWorkflow server-action violation gone).
+
+## Out of scope (documented for follow-up)
+- `packages/notifications/email-workflow-triggers.ts` `lastTriggeredAt` write (Task 8.4): needs a
+  `markTriggered()` command + threading the runtime into `triggerEmailWorkflows` (called by 3 cron
+  routes). Separate increment.
+
+## Notes / coercion facts (verified)
+- `emailTemplateId`/`emailTemplateTenantId` are nullable `@db.Uuid`; GenericPrismaStore coerces
+  optional strings via `asNullableString("") → null`, so "" is safe (no UUID reject).
+- `triggerConfig`/`recipientConfig` are `Json` columns modeled as `string`; `asJsonInput` passes the
+  value through (no parse) → pass **objects**, not JSON strings. Verified by the runtime test.
+- Migration enforces `EmailWorkflowDefaultAccess` policy (role in manager/admin) — intended
+  governance tightening for an admin settings surface.
+
+## Review (DONE 2026-06-05)
+- Source: added `emailTemplateTenantId` property + create/update params; added `triggerType` to
+  `update`; added `setActive` partial-toggle command. Recompiled IR (953 commands; registry carries
+  all 4 EmailWorkflow commands).
+- Server action: 4 writes → `runManifestCommand` (create/update/setActive/softDelete). `update`/
+  toggle load-merge existing row to keep partial-update semantics through the full-field command.
+  Read-backs `invariant`-guarded to preserve non-null return contract (fixed `new/page.tsx` consumer).
+- Test: `email-workflow-governance.test.ts` (7 tests) — all green; runtime suite 76/76.
+- Gates: app typecheck 0, route-drift 0, parent-context strict 0, governed direct-writes 56→55.
+- Deferred: notifications package `lastTriggeredAt` write → Task 8.4 (needs markTriggered + runtime
+  threading into the 3 cron callers). Documented pre-existing `"use server"` const-export lint.

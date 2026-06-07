@@ -683,7 +683,7 @@ var MetricsSchema = z4.object({
 });
 var SDKConfigSchema = z4.object({
   apiKey: z4.string().optional(),
-  baseUrl: z4.string().url().optional(),
+  baseUrl: z4.url().optional(),
   defaultTimeout: z4.number().min(1e3).max(3e5).optional(),
   defaultMaxRetries: z4.number().min(0).max(10).optional(),
   debug: z4.boolean().optional(),

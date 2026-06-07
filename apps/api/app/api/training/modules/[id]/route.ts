@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type { ContentType, TrainingModule } from "../../types";
 
 interface RouteParams {
@@ -23,46 +23,11 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const tenantId = await getTenantIdForOrg(orgId);
   const { id } = await params;
 
-  const modules = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      title: string;
-      description: string | null;
-      content_url: string | null;
-      content_type: string;
-      duration_minutes: number | null;
-      category: string | null;
-      is_required: boolean;
-      is_active: boolean;
-      created_by: string | null;
-      created_at: Date;
-      updated_at: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        tenant_id,
-        title,
-        description,
-        content_url,
-        content_type,
-        duration_minutes,
-        category,
-        is_required,
-        is_active,
-        created_by,
-        created_at,
-        updated_at
-      FROM tenant_staff.training_modules
-      WHERE tenant_id = ${tenantId}
-        AND id = ${id}
-        AND deleted_at IS NULL
-    `
-  );
+  const moduleRecord = await database.trainingModule.findFirst({
+    where: { tenantId, id, deletedAt: null },
+  });
 
-  if (modules.length === 0) {
+  if (!moduleRecord) {
     return NextResponse.json(
       { message: "Training module not found" },
       { status: 404 }
@@ -70,8 +35,19 @@ export async function GET(_request: Request, { params }: RouteParams) {
   }
 
   const typedModule: TrainingModule = {
-    ...modules[0],
-    content_type: modules[0].content_type as ContentType,
+    id: moduleRecord.id,
+    tenant_id: moduleRecord.tenantId,
+    title: moduleRecord.title,
+    description: moduleRecord.description,
+    content_url: moduleRecord.contentUrl,
+    content_type: moduleRecord.contentType as ContentType,
+    duration_minutes: moduleRecord.durationMinutes,
+    category: moduleRecord.category,
+    is_required: moduleRecord.isRequired,
+    is_active: moduleRecord.isActive,
+    created_by: moduleRecord.createdBy,
+    created_at: moduleRecord.createdAt,
+    updated_at: moduleRecord.updatedAt,
   };
 
   return NextResponse.json({ module: typedModule });
@@ -83,21 +59,25 @@ export async function GET(_request: Request, { params }: RouteParams) {
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "TrainingModule",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({
-      ...body,
-      title: body.title,
-      description: body.description,
-      contentUrl: body.contentUrl || body.content_url,
-      contentType: body.contentType || body.content_type,
-      durationMinutes: body.durationMinutes || body.duration_minutes,
-      category: body.category,
-      isRequired: body.isRequired ?? body.is_required,
-      isActive: body.isActive ?? body.is_active,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TrainingModule",
+    command: "update",
+    body: {
+      ...rawBody,
+      id,
+      title: rawBody.title,
+      description: rawBody.description,
+      contentUrl: rawBody.contentUrl || rawBody.content_url,
+      contentType: rawBody.contentType || rawBody.content_type,
+      durationMinutes: rawBody.durationMinutes || rawBody.duration_minutes,
+      category: rawBody.category,
+      isRequired: rawBody.isRequired ?? rawBody.is_required,
+      isActive: rawBody.isActive ?? rawBody.is_active,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -107,9 +87,12 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "TrainingModule",
-    commandName: "softDelete",
-    params: { id },
+  const user = await resolveCurrentUser(request);
+
+  return runManifestCommand({
+    entity: "TrainingModule",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

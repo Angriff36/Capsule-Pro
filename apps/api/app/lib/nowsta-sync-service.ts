@@ -5,7 +5,9 @@
  * Implements employee mapping and shift synchronization with duplicate prevention.
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createNowstaClient,
   type NowstaClient,
@@ -48,20 +50,17 @@ export async function findMatchingEmployee(
     return existingMapping.convoyEmployeeId;
   }
 
-  // Try to find by email
-  const matchingEmployee = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-        AND LOWER(email) = LOWER(${nowstaEmployee.email})
-      LIMIT 1
-    `
-  );
+  const matchingEmployee = await database.user.findFirst({
+    where: {
+      tenantId,
+      deletedAt: null,
+      isActive: true,
+      email: { equals: nowstaEmployee.email, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
 
-  return matchingEmployee.length > 0 ? matchingEmployee[0].id : null;
+  return matchingEmployee?.id ?? null;
 }
 
 /**
@@ -282,53 +281,53 @@ async function processShift(
   let scheduleId: string;
 
   if (!dryRun) {
-    const schedule = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        SELECT id
-        FROM tenant_staff.schedules
-        WHERE tenant_id = ${tenantId}
-          AND schedule_date = ${shiftDate}
-          AND deleted_at IS NULL
-        LIMIT 1
-      `
-    );
+    const schedule = await database.schedule.findFirst({
+      where: {
+        tenantId,
+        schedule_date: shiftDate,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
 
-    if (schedule.length > 0) {
-      scheduleId = schedule[0].id;
+    if (schedule) {
+      scheduleId = schedule.id;
     } else {
-      // Create schedule
-      const newSchedule = await database.$queryRaw<Array<{ id: string }>>(
-        Prisma.sql`
-          INSERT INTO tenant_staff.schedules (tenant_id, id, schedule_date, status, created_at, updated_at)
-          VALUES (
-            ${tenantId},
-            gen_random_uuid(),
-            ${shiftDate},
-            'draft',
-            NOW(),
-            NOW()
-          )
-          RETURNING id
-        `
+      // Create schedule via Manifest runtime
+      const result = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "Schedule",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            scheduleDate: shiftDate,
+            status: "draft",
+            locationId: "",
+          },
+        }
       );
-      scheduleId = newSchedule[0].id;
+      if (!result.ok) {
+        throw new Error(`Failed to create schedule: ${result.message}`);
+      }
+      scheduleId = (result.result as { id?: string }).id!;
     }
 
     // Get default location
-    const defaultLocation = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        SELECT id
-        FROM tenant.locations
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND is_active = true
-        ORDER BY is_primary DESC
-        LIMIT 1
-      `
-    );
+    const defaultLocation = await database.location.findFirst({
+      where: { tenantId, deletedAt: null, isActive: true },
+      orderBy: { isPrimary: "desc" },
+      select: { id: true },
+    });
 
-    const locationId =
-      defaultLocation.length > 0 ? defaultLocation[0].id : null;
+    const locationId = defaultLocation?.id ?? null;
 
     if (!locationId) {
       throw new Error("No active location found for shift");
@@ -336,43 +335,63 @@ async function processShift(
 
     // Create or update shift
     if (existingSync?.convoyShiftId) {
-      // Update existing shift
-      await database.$executeRaw`
-        UPDATE tenant_staff.schedule_shifts
-        SET
-          shift_start = ${new Date(nowstaShift.start_time)},
-          shift_end = ${new Date(nowstaShift.end_time)},
-          role_during_shift = ${nowstaShift.role ?? null},
-          notes = ${nowstaShift.notes ?? null},
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${existingSync.convoyShiftId}
-      `;
-    } else {
-      // Create new shift
-      const newShift = await database.$queryRaw<Array<{ id: string }>>(
-        Prisma.sql`
-          INSERT INTO tenant_staff.schedule_shifts (
-            tenant_id, id, schedule_id, employee_id, location_id,
-            shift_start, shift_end, role_during_shift, notes,
-            created_at, updated_at
-          )
-          VALUES (
-            ${tenantId},
-            gen_random_uuid(),
-            ${scheduleId},
-            ${mapping.convoyEmployeeId},
-            ${locationId},
-            ${new Date(nowstaShift.start_time)},
-            ${new Date(nowstaShift.end_time)},
-            ${nowstaShift.role ?? null},
-            ${nowstaShift.notes ?? null},
-            NOW(),
-            NOW()
-          )
-          RETURNING id
-        `
+      // Update existing shift via Manifest runtime
+      await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "ScheduleShift",
+          command: "update",
+          instanceId: existingSync.convoyShiftId,
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            id: existingSync.convoyShiftId,
+            tenantId,
+            scheduleId,
+            employeeId: mapping.convoyEmployeeId,
+            locationId,
+            shiftStart: new Date(nowstaShift.start_time),
+            shiftEnd: new Date(nowstaShift.end_time),
+            roleDuringShift: nowstaShift.role ?? "",
+            notes: nowstaShift.notes ?? "",
+          },
+        }
       );
+    } else {
+      // Create new shift via Manifest runtime
+      const shiftResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "ScheduleShift",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            scheduleId,
+            employeeId: mapping.convoyEmployeeId,
+            locationId,
+            shiftStart: new Date(nowstaShift.start_time),
+            shiftEnd: new Date(nowstaShift.end_time),
+            roleDuringShift: nowstaShift.role ?? "",
+            notes: nowstaShift.notes ?? "",
+          },
+        }
+      );
+      if (!shiftResult.ok) {
+        throw new Error(`Failed to create shift: ${shiftResult.message}`);
+      }
+      const newShiftId = (shiftResult.result as { id?: string }).id!;
 
       // Update sync record with convoy shift ID
       if (existingSync) {
@@ -384,7 +403,7 @@ async function processShift(
             },
           },
           data: {
-            convoyShiftId: newShift[0].id,
+            convoyShiftId: newShiftId,
             status: "synced",
             lastSyncedAt: new Date(),
             nowstaUpdatedAt,
@@ -395,7 +414,7 @@ async function processShift(
           data: {
             tenantId,
             nowstaShiftId: nowstaShift.id,
-            convoyShiftId: newShift[0].id,
+            convoyShiftId: newShiftId,
             nowstaEmployeeId: nowstaShift.employee_id,
             locationId,
             shiftStart: new Date(nowstaShift.start_time),

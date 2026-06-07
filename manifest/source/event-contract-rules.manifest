@@ -2,6 +2,7 @@
 // Manifest spec for event contract management and signature tracking
 
 entity EventContract {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
@@ -12,10 +13,14 @@ entity EventContract {
   property documentUrl: string = ""
   property documentType: string = ""
   property notes: string = ""
-  property expiresAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  // Bug fix: expiresAt is a lifecycle datetime — no default
+  property expiresAt: datetime
+  property sentAt: datetime
+  property viewedAt: datetime
+  property signedAt: datetime
+  timestamps
+  property canceledBy: string = ""
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent"
@@ -24,13 +29,21 @@ entity EventContract {
   computed isExpired: boolean = self.status == "expired"
   computed isCancelled: boolean = self.status == "cancelled"
   computed hasDocument: boolean = self.documentUrl != ""
-  computed hasExpiration: boolean = self.expiresAt > 0
+  computed hasExpiration: boolean = self.expiresAt != null
+
+  transition status from "draft" to ["sent"]
+  transition status from "sent" to ["viewed", "expired", "cancelled"]
+  transition status from "viewed" to ["signed", "expired", "cancelled"]
 
   constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
   constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
   constraint validStatus: self.status in ["draft", "sent", "viewed", "signed", "expired", "cancelled"] "Status must be valid"
 
-  command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+
+  default policy EventContractDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
+  command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard clientId != null and clientId != "" "Client ID is required"
 
@@ -43,13 +56,11 @@ entity EventContract {
     mutate notes = notes
     mutate expiresAt = expiresAt
     mutate status = "draft"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ContractCreated
   }
 
-  command update(title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+  command update(title: string, documentUrl: string, documentType: string, notes: string, expiresAt: datetime) {
     guard self.status != "signed" "Cannot modify a signed contract"
 
     mutate title = title
@@ -57,17 +68,17 @@ entity EventContract {
     mutate documentType = documentType
     mutate notes = notes
     mutate expiresAt = expiresAt
-    mutate updatedAt = now()
 
     emit ContractUpdated
   }
 
   command send(sentBy: string) {
-    guard self.status != "signed" "Cannot send a signed contract"
+    guard self.status == "draft" "Can only send a draft contract"
     guard sentBy != null and sentBy != "" "Sender is required"
+    guard self.documentUrl != "" "Cannot send a contract without an attached document"
 
     mutate status = "sent"
-    mutate updatedAt = now()
+    mutate sentAt = now()
 
     emit ContractSent
   }
@@ -76,7 +87,7 @@ entity EventContract {
     guard self.status == "sent" "Contract must be sent before it can be viewed"
 
     mutate status = "viewed"
-    mutate updatedAt = now()
+    mutate viewedAt = now()
 
     emit ContractViewed
   }
@@ -85,7 +96,7 @@ entity EventContract {
     guard self.status == "sent" or self.status == "viewed" "Contract must be sent or viewed to be signed"
 
     mutate status = "signed"
-    mutate updatedAt = now()
+    mutate signedAt = now()
 
     emit ContractSigned
   }
@@ -95,51 +106,61 @@ entity EventContract {
     guard self.status != "cancelled" "Cannot expire a cancelled contract"
 
     mutate status = "expired"
-    mutate updatedAt = now()
 
     emit ContractExpired
   }
 
   command cancel(reason: string, canceledBy: string) {
     guard self.status != "signed" "Cannot cancel a signed contract"
+    guard self.status != "cancelled" "Contract is already cancelled"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
+    mutate canceledBy = canceledBy
 
     emit ContractCancelled
   }
 
   command softDelete(reason: string, userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ContractDeleted
   }
 
-  store EventContract in memory
+  store EventContract in durable
 }
 
 entity ContractSignature {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required contractId: string
-  property signedAt: datetime = now()
+  // Bug fix: signedAt is a lifecycle datetime — no default
+  property signedAt: datetime
   property signatureData: string = ""
   property signerName: string = ""
   property signerEmail: string = ""
+  property signerRole: string = ""
   property ipAddress: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property verifiedAt: datetime
+  property invalidatedAt: datetime
+  property invalidationReason: string = ""
+  property isValid: boolean = true
+  timestamps
+  property deletedAt: datetime
 
   computed hasEmail: boolean = self.signerEmail != ""
   computed hasIpAddress: boolean = self.ipAddress != ""
+  computed isVerified: boolean = self.verifiedAt != null
+  computed isInvalidated: boolean = self.isValid == false
 
   constraint requireContract: self.contractId != null and self.contractId != "" "Contract ID is required"
   constraint requireSignatureData: self.signatureData != null and self.signatureData != "" "Signature data is required"
   constraint requireSignerName: self.signerName != null and self.signerName != "" "Signer name is required"
 
-  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, ipAddress: string) {
+  relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
+
+  default policy ContractSignatureDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
+  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, signerRole: string, ipAddress: string) {
     guard contractId != null and contractId != "" "Contract ID is required"
     guard signatureData != null and signatureData != "" "Signature data is required"
     guard signerName != null and signerName != "" "Signer name is required"
@@ -148,22 +169,41 @@ entity ContractSignature {
     mutate signatureData = signatureData
     mutate signerName = signerName
     mutate signerEmail = signerEmail
+    mutate signerRole = signerRole
     mutate ipAddress = ipAddress
+    mutate isValid = true
     mutate signedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit SignatureCreated
   }
 
+  command verify(verifiedBy: string) {
+    guard self.isValid "Cannot verify an invalidated signature"
+    guard self.verifiedAt == null "Signature is already verified"
+
+    mutate verifiedAt = now()
+
+    emit SignatureVerified
+  }
+
+  command invalidate(reason: string, userId: string) {
+    guard self.isValid "Signature is already invalidated"
+    guard reason != null and reason != "" "Invalidation reason is required"
+
+    mutate isValid = false
+    mutate invalidatedAt = now()
+    mutate invalidationReason = reason
+
+    emit SignatureInvalidated
+  }
+
   command softDelete(reason: string, userId: string) {
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit SignatureDeleted
   }
 
-  store ContractSignature in memory
+  store ContractSignature in durable
 }
 
 // Policy definitions
@@ -178,7 +218,7 @@ event ContractCreated: "events.contract.created" {
   clientId: string
   title: string
   status: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ContractUpdated: "events.contract.updated" {
@@ -186,7 +226,7 @@ event ContractUpdated: "events.contract.updated" {
   tenantId: string
   eventId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ContractSent: "events.contract.sent" {
@@ -195,7 +235,7 @@ event ContractSent: "events.contract.sent" {
   eventId: string
   clientId: string
   sentBy: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event ContractViewed: "events.contract.viewed" {
@@ -203,7 +243,7 @@ event ContractViewed: "events.contract.viewed" {
   tenantId: string
   eventId: string
   clientId: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event ContractSigned: "events.contract.signed" {
@@ -211,14 +251,14 @@ event ContractSigned: "events.contract.signed" {
   tenantId: string
   eventId: string
   clientId: string
-  signedAt: number
+  signedAt: datetime
 }
 
 event ContractExpired: "events.contract.expired" {
   contractId: string
   tenantId: string
   eventId: string
-  expiredAt: number
+  expiredAt: datetime
 }
 
 event ContractCancelled: "events.contract.cancelled" {
@@ -227,7 +267,7 @@ event ContractCancelled: "events.contract.cancelled" {
   eventId: string
   reason: string
   canceledBy: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event ContractDeleted: "events.contract.deleted" {
@@ -236,7 +276,7 @@ event ContractDeleted: "events.contract.deleted" {
   eventId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 // Signature events
@@ -246,7 +286,24 @@ event SignatureCreated: "events.contract.signature_created" {
   tenantId: string
   signerName: string
   signerEmail: string
-  signedAt: number
+  signedAt: datetime
+}
+
+event SignatureVerified: "events.contract.signature_verified" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  verifiedBy: string
+  verifiedAt: datetime
+}
+
+event SignatureInvalidated: "events.contract.signature_invalidated" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  reason: string
+  userId: string
+  invalidatedAt: datetime
 }
 
 event SignatureDeleted: "events.contract.signature_deleted" {
@@ -256,5 +313,5 @@ event SignatureDeleted: "events.contract.signature_deleted" {
   signerName: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

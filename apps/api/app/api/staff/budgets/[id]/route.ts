@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { getLaborBudgetById } from "@/lib/staff/labor-budget";
 
 /**
@@ -46,19 +46,21 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "LaborBudget",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "LaborBudget",
+    command: "update",
+    body: {
       id,
-      locationId: body.locationId || "",
-      periodStart: body.periodStart || "",
-      periodEnd: body.periodEnd || "",
-      budgetAmount: body.budgetAmount ?? body.amount ?? 0,
-      budgetType: body.budgetType || body.type || "weekly",
-      notes: body.notes || "",
-    }),
+      locationId: rawBody.locationId || "",
+      periodStart: rawBody.periodStart || "",
+      periodEnd: rawBody.periodEnd || "",
+      budgetAmount: rawBody.budgetAmount ?? rawBody.amount ?? 0,
+      budgetType: rawBody.budgetType || rawBody.type || "weekly",
+      notes: rawBody.notes || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -67,10 +69,11 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "LaborBudget",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: () => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "LaborBudget",
+    command: "softDelete",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

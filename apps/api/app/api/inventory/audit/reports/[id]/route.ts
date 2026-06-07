@@ -1,16 +1,16 @@
 /**
  * Inventory Audit Report by ID API Endpoint
  *
- * GET /api/inventory/audit/reports/[id] - Get a specific saved report
- * DELETE /api/inventory/audit/reports/[id] - Delete a saved report
+ * GET /api/inventory/audit/reports/[id] - Get a specific saved report (read — bypasses Manifest per §10)
+ * DELETE /api/inventory/audit/reports/[id] - Delete a saved report via Manifest runtime
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -208,21 +208,11 @@ function buildTrendData(
 
 /**
  * GET /api/inventory/audit/reports/[id] - Get a specific saved report
+ * Read — bypasses Manifest per §10
  */
 export async function GET(request: Request, context: RouteContext) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
+    const tenantId = await requireTenantId();
 
     const { id } = await context.params;
 
@@ -404,25 +394,16 @@ export async function GET(request: Request, context: RouteContext) {
 
 /**
  * DELETE /api/inventory/audit/reports/[id] - Delete a saved report
+ * Soft-delete via Manifest runtime (Report.remove command).
+ * Pre-validation read is §10-compliant.
  */
 export async function DELETE(request: Request, context: RouteContext) {
   try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
+    const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
     const { id } = await context.params;
 
-    // Check if report exists and belongs to tenant
+    // Pre-validation: check report exists (read per §10)
     const report = await database.report.findFirst({
       where: {
         tenantId,
@@ -446,25 +427,13 @@ export async function DELETE(request: Request, context: RouteContext) {
       );
     }
 
-    // Soft delete the report
-    await database.report.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      data: {
-        id,
-        deleted: true,
-        deleted_at: new Date().toISOString(),
-      },
+    // Delegate soft-delete to Manifest runtime (Report.remove)
+    return runManifestCommand({
+      entity: "Report",
+      command: "remove",
+      body: { userId: user.id },
+      user: { id: user.id, tenantId, role: user.role },
+      instanceId: id,
     });
   } catch (error) {
     captureException(error);

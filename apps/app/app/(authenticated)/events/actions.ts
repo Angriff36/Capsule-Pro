@@ -4,147 +4,150 @@ import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireTenantId } from "../../lib/tenant";
-import { type EventStatus, eventStatuses } from "./constants";
-import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { z } from "zod";
+import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { createEventSchema, updateEventSchema } from "./validation";
 
-const getString = (formData: FormData, key: string): string | undefined => {
-  const value = formData.get(key);
+type CreateEventData = z.infer<typeof createEventSchema>;
+type UpdateEventData = z.infer<typeof updateEventSchema>;
+type WritableEventData = CreateEventData | UpdateEventData;
 
-  if (typeof value !== "string") {
-    return;
-  }
+export type CreateEventState = { error?: string } | null;
+
+const NEEDS_TAG = "needs:";
+const IMPORT_FALLBACK_NAME = "event-import";
+
+const text = (formData: FormData, key: string): string | undefined => {
+  const value = formData.get(key);
+  if (typeof value !== "string") return;
 
   const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : undefined;
+  return trimmed || undefined;
 };
 
-const getOptionalString = (
+const nullableText = (
   formData: FormData,
   key: string
 ): string | null | undefined => {
   const value = formData.get(key);
-
-  if (typeof value !== "string") {
-    return;
-  }
+  if (typeof value !== "string") return;
 
   const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+  return trimmed || null;
 };
 
-const getNumber = (formData: FormData, key: string): number | undefined => {
-  const value = getString(formData, key);
+const csv = (formData: FormData, key: string): string[] =>
+  (text(formData, key) ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
 
-  if (!value) {
-    return;
-  }
-
-  const numberValue = Number(value);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
-};
-
-const getNumberOrNull = (
-  formData: FormData,
-  key: string
-): number | null | undefined => {
-  const value = formData.get(key);
-
-  if (typeof value !== "string") {
-    return;
-  }
-
-  const trimmed = value.trim();
+const required = (value: string | null | undefined, label: string): string => {
+  const trimmed = value?.trim();
 
   if (!trimmed) {
-    return null;
+    throw new Error(`${label} is required.`);
   }
 
-  const numberValue = Number(trimmed);
-  return Number.isFinite(numberValue) ? numberValue : undefined;
+  return trimmed;
 };
 
-const getDate = (formData: FormData, key: string): Date | undefined => {
-  const value = getString(formData, key);
+// Noon UTC keeps @db.Date values from drifting across day boundaries.
+const dateOnly = (yyyyMmDd: string): Date => new Date(`${yyyyMmDd}T12:00:00Z`);
 
-  if (!value) {
-    return;
-  }
+const validationError = (error: z.ZodError): string =>
+  `Validation failed: ${z.prettifyError(error)}`;
 
-  // Use noon UTC to avoid timezone shifts across midnight boundaries
-  // PostgreSQL @db.Date stores only the date portion, so the time doesn't matter
-  // but using noon ensures the date doesn't shift when converted between timezones
-  const dateValue = new Date(`${value}T12:00:00Z`);
-  return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
-};
+const readEventFields = (formData: FormData) => ({
+  title: text(formData, "title"),
+  eventType: text(formData, "eventType"),
+  eventDate: text(formData, "eventDate"),
+  guestCount: text(formData, "guestCount"),
+  status: text(formData, "status"),
+  venueName: nullableText(formData, "venueName"),
+  venueAddress: nullableText(formData, "venueAddress"),
+  notes: nullableText(formData, "notes"),
+  budget: text(formData, "budget"),
+  ticketPrice: text(formData, "ticketPrice"),
+  ticketTier: nullableText(formData, "ticketTier"),
+  eventFormat: nullableText(formData, "eventFormat"),
+  accessibilityOptions: csv(formData, "accessibilityOptions"),
+  featuredMediaUrl: nullableText(formData, "featuredMediaUrl"),
+  tags: csv(formData, "tags"),
+});
 
-const getStatus = (formData: FormData): EventStatus =>
-  (getString(formData, "status") as EventStatus) ?? "confirmed";
+const readCreateEvent = (formData: FormData) => ({
+  ...readEventFields(formData),
+  templateId: nullableText(formData, "templateId") ?? null,
+});
 
-const getTags = (formData: FormData): string[] =>
-  (getString(formData, "tags") ?? "")
-    .split(",")
-    .map((tag) => tag.trim())
-    .filter(Boolean);
+const readUpdateEvent = (formData: FormData) => ({
+  eventId: text(formData, "eventId"),
+  ...readEventFields(formData),
+  clientId: nullableText(formData, "clientId"),
+  eventNumber: nullableText(formData, "eventNumber"),
+});
 
-const getList = (formData: FormData, key: string): string[] =>
-  (getString(formData, key) ?? "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-const getTemplateId = (formData: FormData): string | null => {
-  const value = formData.get("templateId");
-  if (typeof value !== "string") {
-    return null;
-  }
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
-
-const MISSING_FIELD_TAG_PREFIX = "needs:";
-
-const buildMissingFieldTags = (fields: string[]) =>
-  fields.map((field) => `${MISSING_FIELD_TAG_PREFIX}${field}`);
-
-const computeMissingEventFields = async ({
-  tenantId,
-  eventId,
-  title,
-  eventType,
+const eventData = (data: WritableEventData, eventDate: Date) => ({
+  title: data.title,
+  eventType: data.eventType,
   eventDate,
-  guestCount,
-  venueName,
-}: {
-  tenantId: string;
-  eventId: string;
-  title: string;
-  eventType: string;
-  eventDate: Date;
-  guestCount: number;
-  venueName?: string | null;
-}): Promise<string[]> => {
-  const missing: string[] = [];
+  guestCount: data.guestCount,
+  status: data.status,
+  budget: data.budget ?? null,
+  ticketPrice: data.ticketPrice ?? null,
+  ticketTier: data.ticketTier,
+  eventFormat: data.eventFormat,
+  accessibilityOptions: data.accessibilityOptions,
+  featuredMediaUrl: data.featuredMediaUrl ?? null,
+  venueName: data.venueName,
+  venueAddress: data.venueAddress,
+  notes: data.notes,
+});
 
-  if (!title.trim()) {
-    missing.push("client");
-  }
-  if (!eventType.trim()) {
-    missing.push("eventType");
-  }
-  if (!eventDate) {
-    missing.push("eventDate");
-  }
-  if (!guestCount || guestCount <= 0) {
-    missing.push("headcount");
-  }
-  if (!venueName?.trim()) {
-    missing.push("venueName");
+const revalidateEvent = (eventId?: string, clientId?: string | null): void => {
+  revalidatePath("/events");
+
+  if (eventId) {
+    revalidatePath(`/events/${eventId}`);
   }
 
-  const [menuRow] = await database.$queryRaw<Array<{ count: number }>>(
+  if (clientId) {
+    revalidatePath(`/crm/clients/${clientId}`);
+  }
+};
+
+const nextEventNumber = async (
+  tx: Prisma.TransactionClient,
+  tenantId: string
+): Promise<string> => {
+  const year = new Date().getFullYear();
+  const prefix = `EVT-${year}`;
+  const lockKey = `${tenantId}:${prefix}`;
+
+  // Event numbers are human-facing; do not let two simultaneous creates race.
+  await tx.$queryRaw(
+    Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${lockKey})::bigint)`
+  );
+
+  const count = await tx.event.count({
+    where: {
+      tenantId,
+      eventNumber: { startsWith: prefix },
+      deletedAt: null,
+    },
+  });
+
+  return `${prefix}-${String(count + 1).padStart(4, "0")}`;
+};
+
+const hasMenuItems = async (
+  tenantId: string,
+  eventId: string
+): Promise<boolean> => {
+  const [row] = await database.$queryRaw<Array<{ count: number }>>(
     Prisma.sql`
       SELECT COUNT(*)::int AS count
       FROM tenant_events.event_dishes
@@ -154,237 +157,267 @@ const computeMissingEventFields = async ({
     `
   );
 
-  if (!menuRow?.count) {
-    missing.push("menuItems");
-  }
-
-  return missing;
+  return (row?.count ?? 0) > 0;
 };
 
-const mergeTags = (tags: string[], missingFields: string[]) => {
-  const tagSet = new Set(
-    tags.filter((tag) => !tag.startsWith(MISSING_FIELD_TAG_PREFIX))
-  );
-  for (const tag of buildMissingFieldTags(missingFields)) {
-    tagSet.add(tag);
-  }
-  return Array.from(tagSet);
+const missingEventFields = async ({
+  tenantId,
+  eventId,
+  clientId,
+  eventType,
+  eventDate,
+  guestCount,
+  venueName,
+}: {
+  tenantId: string;
+  eventId: string;
+  clientId?: string | null;
+  eventType: string;
+  eventDate: Date;
+  guestCount: number;
+  venueName?: string | null;
+}): Promise<string[]> => {
+  const missing = [
+    !clientId?.trim() && "client",
+    !eventType.trim() && "eventType",
+    Number.isNaN(eventDate.getTime()) && "eventDate",
+    (!guestCount || guestCount <= 0) && "headcount",
+    !venueName?.trim() && "venueName",
+    !(await hasMenuItems(tenantId, eventId)) && "menuItems",
+  ];
+
+  return missing.filter(Boolean) as string[];
 };
 
-export type CreateEventState = { error?: string } | null;
+const mergeNeedsTags = (tags: string[], missingFields: string[]): string[] => [
+  ...new Set([
+    ...tags.filter((tag) => !tag.startsWith(NEEDS_TAG)),
+    ...missingFields.map((field) => `${NEEDS_TAG}${field}`),
+  ]),
+];
+
+const getImportFile = (formData: FormData): File => {
+  const file = formData.get("file");
+
+  if (!(file instanceof File)) {
+    throw new Error("Import file is required.");
+  }
+
+  return file;
+};
+
+const isPdf = (file: File): boolean =>
+  file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
+const softDeleteEvent = async (
+  user: { id: string; tenantId: string; role: string },
+  eventId: string
+): Promise<void> => {
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "softDelete",
+    body: { id: eventId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete event");
+  }
+};
 
 /**
  * Create a new event.
  *
- * Uses useActionState-compatible signature so the form can display
- * validation errors returned by the server without a full page reload.
+ * useActionState-compatible: validation errors come back as state instead of
+ * crashing the route.
  */
 export const createEvent = async (
   _prevState: CreateEventState,
   formData: FormData
 ): Promise<CreateEventState> => {
-  const tenantId = await requireTenantId();
-
-  const rawData = {
-    title: getString(formData, "title"),
-    eventType: getString(formData, "eventType"),
-    eventDate: getString(formData, "eventDate"),
-    guestCount: getString(formData, "guestCount"),
-    status: getString(formData, "status"),
-    venueName: getOptionalString(formData, "venueName"),
-    venueAddress: getOptionalString(formData, "venueAddress"),
-    notes: getOptionalString(formData, "notes"),
-    budget: getString(formData, "budget"),
-    ticketPrice: getString(formData, "ticketPrice"),
-    ticketTier: getOptionalString(formData, "ticketTier"),
-    eventFormat: getOptionalString(formData, "eventFormat"),
-    accessibilityOptions: getList(formData, "accessibilityOptions"),
-    featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
-    tags: getTags(formData),
-    templateId: getTemplateId(formData),
-  };
-
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const rawData = readCreateEvent(formData);
   const parsed = createEventSchema.safeParse(rawData);
 
   if (!parsed.success) {
-    return { error: `Validation failed: ${z.prettifyError(parsed.error)}` };
+    return { error: validationError(parsed.error) };
   }
 
-  const data = parsed.data;
-
   let createdId: string;
-  try {
-    const created = await database.$transaction(async (tx) => {
-      // Generate sequential event number: EVT-{YEAR}-{NNNN}
-      const year = new Date().getFullYear();
-      const count = await tx.event.count({
-        where: {
-          AND: [
-            { tenantId },
-            { eventNumber: { startsWith: `EVT-${year}` } },
-            { deletedAt: null },
-          ],
-        },
-      });
-      const eventNumber = `EVT-${year}-${String(count + 1).padStart(4, "0")}`;
 
-      const event = await tx.event.create({
+  try {
+    // NOTE: the Event row is still written directly here (pre-existing §9
+    // direct-write; tracked in IMPLEMENTATION_PLAN.md as a follow-up to route
+    // through Event.create — it needs templateId added to the Event manifest
+    // source and the eventNumber advisory-lock numbering reworked).
+    const event = await database.$transaction(async (tx) => {
+      return tx.event.create({
         data: {
           tenantId,
-          eventNumber,
-          title: data.title,
-          eventType: data.eventType,
-          // Use noon UTC to avoid timezone shifts across midnight boundaries
-          eventDate: new Date(`${data.eventDate}T12:00:00Z`),
-          guestCount: data.guestCount,
-          status: data.status,
-          budget: data.budget ?? null,
-          ticketPrice: data.ticketPrice ?? null,
-          ticketTier: data.ticketTier,
-          eventFormat: data.eventFormat,
-          accessibilityOptions: data.accessibilityOptions,
-          featuredMediaUrl: data.featuredMediaUrl ?? null,
-          venueName: data.venueName,
-          venueAddress: data.venueAddress,
-          notes: data.notes,
-          tags: data.tags,
+          eventNumber: await nextEventNumber(tx, tenantId),
+          ...eventData(parsed.data, dateOnly(parsed.data.eventDate)),
+          tags: parsed.data.tags,
           templateId: rawData.templateId,
         },
       });
-
-      await tx.battleBoard.create({
-        data: {
-          tenantId,
-          eventId: event.id,
-          board_name: `${event.title} - Battle Board`,
-          board_type: "event-specific",
-          boardData: {},
-        },
-      });
-
-      return event;
     });
 
-    createdId = created.id;
-  } catch (err) {
-    console.error("[createEvent] Database error:", err);
+    createdId = event.id;
+  } catch (error) {
+    console.error("[createEvent] Database error:", error);
     return { error: "Failed to create event. Please try again." };
   }
 
-  revalidatePath("/events");
+  // Auto-create the event's battle board through the governed Manifest command
+  // (constitution §9 — no direct Prisma write). Parent-context propagation
+  // resolves the just-created Event and inherits its date/client/venue/guest
+  // context onto the board, so the board never re-collects event-owned data.
+  // Non-fatal: a board failure must not block event creation. See
+  // specs/parent-context-propagation.md.
+  try {
+    const boardResult = await runManifestCommand({
+      entity: "BattleBoard",
+      command: "create",
+      body: {
+        boardName: `${parsed.data.title} - Battle Board`,
+        boardType: "event-specific",
+        eventId: createdId,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+    if (!boardResult.ok) {
+      console.error("[createEvent] battle board create failed:", boardResult.message);
+    }
+  } catch (error) {
+    console.error("[createEvent] battle board create error:", error);
+  }
+
+  revalidateEvent(createdId);
   redirect(`/events/${createdId}`);
 };
 
 export const updateEvent = async (formData: FormData): Promise<void> => {
-  const tenantId = await requireTenantId();
-
-  const rawData = {
-    eventId: getString(formData, "eventId"),
-    title: getString(formData, "title"),
-    eventType: getString(formData, "eventType"),
-    eventDate: getString(formData, "eventDate"),
-    guestCount: getString(formData, "guestCount"),
-    status: getString(formData, "status"),
-    budget: getString(formData, "budget"),
-    ticketPrice: getString(formData, "ticketPrice"),
-    ticketTier: getOptionalString(formData, "ticketTier"),
-    eventFormat: getOptionalString(formData, "eventFormat"),
-    accessibilityOptions: getList(formData, "accessibilityOptions"),
-    featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
-    venueName: getOptionalString(formData, "venueName"),
-    venueAddress: getOptionalString(formData, "venueAddress"),
-    notes: getOptionalString(formData, "notes"),
-    clientId: getOptionalString(formData, "clientId"),
-    tags: getTags(formData),
-    eventNumber: getOptionalString(formData, "eventNumber"),
-  };
-
-  const parsed = updateEventSchema.safeParse(rawData);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const parsed = updateEventSchema.safeParse(readUpdateEvent(formData));
 
   if (!parsed.success) {
-    throw new Error(`Validation failed: ${z.prettifyError(parsed.error)}`);
+    throw new Error(validationError(parsed.error));
   }
 
   const data = parsed.data;
-  const eventId = data.eventId;
-
-  // Use noon UTC to avoid timezone shifts across midnight boundaries
-  const eventDate = new Date(`${data.eventDate}T12:00:00Z`);
-
-  const missingFields = await computeMissingEventFields({
-    tenantId,
-    eventId,
-    title: data.title,
-    eventType: data.eventType,
-    eventDate,
-    guestCount: data.guestCount,
-    venueName: data.venueName,
-  });
-  const tags = mergeTags(data.tags, missingFields);
-
-  await database.event.updateMany({
-    where: {
-      AND: [{ tenantId }, { id: eventId }],
-    },
-    data: {
-      ...(data.eventNumber !== undefined && { eventNumber: data.eventNumber }),
-      title: data.title,
+  const eventDate = dateOnly(data.eventDate);
+  const tags = mergeNeedsTags(
+    data.tags,
+    await missingEventFields({
+      tenantId,
+      eventId: data.eventId,
+      clientId: data.clientId,
       eventType: data.eventType,
       eventDate,
       guestCount: data.guestCount,
-      status: data.status,
-      budget: data.budget ?? null,
-      ticketPrice: data.ticketPrice ?? null,
-      ticketTier: data.ticketTier,
-      eventFormat: data.eventFormat,
-      accessibilityOptions: data.accessibilityOptions,
-      featuredMediaUrl: data.featuredMediaUrl ?? null,
       venueName: data.venueName,
-      venueAddress: data.venueAddress,
-      notes: data.notes,
-      clientId: data.clientId,
-      tags,
-    },
+    })
+  );
+
+  // Read existing event for eventNumber (IR update requires it)
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: data.eventId, deletedAt: null },
   });
 
-  revalidatePath("/events");
-  redirect(`/events/${eventId}`);
+  const ed = eventData(data, eventDate);
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "update",
+    body: {
+      id: data.eventId,
+      clientId: data.clientId ?? "",
+      eventNumber: data.eventNumber ?? existing?.eventNumber ?? "",
+      title: ed.title ?? "",
+      eventType: ed.eventType ?? "",
+      eventDate: ed.eventDate ?? "",
+      guestCount: ed.guestCount ?? 0,
+      venueName: ed.venueName ?? "",
+      venueAddress: ed.venueAddress ?? "",
+      notes: ed.notes ?? "",
+      tags: tags ?? [],
+      status: ed.status ?? "",
+      budget: ed.budget ?? 0,
+      ticketPrice: ed.ticketPrice ?? 0,
+      ticketTier: ed.ticketTier ?? "",
+      eventFormat: ed.eventFormat ?? "",
+      accessibilityOptions: ed.accessibilityOptions ?? [],
+      featuredMediaUrl: ed.featuredMediaUrl ?? "",
+    },
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update event");
+  }
+
+  revalidateEvent(data.eventId, data.clientId);
+  redirect(`/events/${data.eventId}`);
 };
 
 export const assignClientToEvent = async (
   eventId: string,
   clientId: string
 ): Promise<void> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const safeEventId = required(eventId, "Event id");
+  const safeClientId = required(clientId, "Client id");
 
-  await database.event.updateMany({
-    where: {
-      AND: [{ tenantId }, { id: eventId }],
-    },
-    data: { clientId },
+  // Read existing event to preserve required fields through the update command
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: safeEventId, deletedAt: null },
   });
 
-  revalidatePath("/events");
-  revalidatePath(`/events/${eventId}`);
-  revalidatePath(`/crm/clients/${clientId}`);
+  if (!existing) {
+    throw new Error("Event not found");
+  }
+
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "update",
+    body: {
+      id: safeEventId,
+      clientId: safeClientId,
+      eventNumber: existing.eventNumber ?? "",
+      title: existing.title ?? "",
+      eventType: existing.eventType ?? "",
+      eventDate: existing.eventDate ?? "",
+      guestCount: existing.guestCount ?? 0,
+      venueName: existing.venueName ?? "",
+      venueAddress: existing.venueAddress ?? "",
+      notes: existing.notes ?? "",
+      tags: (existing.tags as string[]) ?? [],
+      status: existing.status ?? "",
+      budget: existing.budget ? Number(existing.budget) : 0,
+      ticketPrice: existing.ticketPrice ? Number(existing.ticketPrice) : 0,
+      ticketTier: existing.ticketTier ?? "",
+      eventFormat: existing.eventFormat ?? "",
+      accessibilityOptions: (existing.accessibilityOptions as string[]) ?? [],
+      featuredMediaUrl: existing.featuredMediaUrl ?? "",
+    },
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to assign client to event");
+  }
+
+  revalidateEvent(safeEventId, safeClientId);
 };
 
 export const deleteEvent = async (formData: FormData): Promise<void> => {
-  const tenantId = await requireTenantId();
-  const eventId = getString(formData, "eventId");
-
-  if (!eventId) {
-    throw new Error("Event id is required.");
-  }
-
-  await database.event.updateMany({
-    where: {
-      AND: [{ tenantId }, { id: eventId }],
-    },
-    data: {
-      deletedAt: new Date(),
-    },
-  });
+  const user = await requireCurrentUser();
+  await softDeleteEvent(
+    user,
+    required(text(formData, "eventId"), "Event id")
+  );
 
   revalidatePath("/events");
   redirect("/events");
@@ -392,82 +425,50 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
 
 /** Soft-delete an event by id. Call from client with confirmation. */
 export async function deleteEventById(eventId: string): Promise<void> {
-  const tenantId = await requireTenantId();
-  if (!eventId?.trim()) {
-    throw new Error("Event id is required.");
-  }
-  await database.event.updateMany({
-    where: { tenantId, id: eventId },
-    data: { deletedAt: new Date() },
-  });
+  const user = await requireCurrentUser();
+  await softDeleteEvent(user, required(eventId, "Event id"));
+
   revalidatePath("/events");
   redirect("/events");
 }
 
 export const importEvent = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
-  const file = formData.get("file");
+  const file = getImportFile(formData);
+  const fileName = file.name || IMPORT_FALLBACK_NAME;
+  const content = Buffer.from(await file.arrayBuffer());
 
-  if (!(file instanceof File)) {
-    throw new Error("Import file is required.");
-  }
-
-  const fileName = file.name || "event-import";
-  const isPdf =
-    file.type === "application/pdf" || fileName.toLowerCase().endsWith(".pdf");
-
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-  const eventId = isPdf
-    ? await importEventFromPdf({ tenantId, fileName, content: fileBuffer })
+  const eventId = isPdf(file)
+    ? await importEventFromPdf({ tenantId, fileName, content })
     : await importEventFromCsvText({
         tenantId,
         fileName,
-        content: fileBuffer.toString("utf-8"),
+        content: content.toString("utf-8"),
       });
 
-  revalidatePath("/events");
+  revalidateEvent(eventId);
   redirect(`/events/${eventId}`);
 };
 
 export const attachEventImport = async (formData: FormData): Promise<void> => {
   const tenantId = await requireTenantId();
-  const eventId = getString(formData, "eventId");
-  const file = formData.get("file");
+  const eventId = required(text(formData, "eventId"), "Event id");
+  const file = getImportFile(formData);
+  const fileName = file.name || IMPORT_FALLBACK_NAME;
+  const content = Buffer.from(await file.arrayBuffer());
 
-  if (!eventId) {
-    throw new Error("Event id is required.");
-  }
+  await database.eventImport.create({
+    data: {
+      tenantId,
+      id: randomUUID(),
+      eventId,
+      fileName,
+      mimeType: file.type || "application/octet-stream",
+      fileSize: content.byteLength,
+      content,
+    },
+  });
 
-  if (!(file instanceof File)) {
-    throw new Error("Import file is required.");
-  }
-
-  const fileName = file.name || "event-import";
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_events.event_imports (
-        tenant_id,
-        id,
-        event_id,
-        file_name,
-        mime_type,
-        file_size,
-        content
-      )
-      VALUES (
-        ${tenantId},
-        ${randomUUID()},
-        ${eventId},
-        ${fileName},
-        ${file.type || "application/octet-stream"},
-        ${fileBuffer.byteLength},
-        ${fileBuffer}
-      )
-    `
-  );
-
-  revalidatePath(`/events/${eventId}`);
+  revalidateEvent(eventId);
   redirect(`/events/${eventId}`);
 };

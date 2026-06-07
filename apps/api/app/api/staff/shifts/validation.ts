@@ -1,4 +1,4 @@
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import type { ShiftOverlap } from "./types";
 
@@ -41,19 +41,12 @@ export async function verifyEmployee(
   employee: { id: string; role: string; is_active: boolean } | null;
   error: NextResponse | null;
 }> {
-  const employee = await database.$queryRaw<
-    Array<{ id: string; role: string; is_active: boolean }>
-  >(
-    Prisma.sql`
-      SELECT id, role, is_active
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${employeeId}
-        AND deleted_at IS NULL
-    `
-  );
+  const employee = await database.user.findFirst({
+    where: { tenantId, id: employeeId, deletedAt: null },
+    select: { id: true, role: true, isActive: true },
+  });
 
-  if (!employee[0]) {
+  if (!employee) {
     return {
       employee: null,
       error: NextResponse.json(
@@ -63,7 +56,7 @@ export async function verifyEmployee(
     };
   }
 
-  if (!employee[0].is_active) {
+  if (!employee.isActive) {
     return {
       employee: null,
       error: NextResponse.json(
@@ -73,7 +66,14 @@ export async function verifyEmployee(
     };
   }
 
-  return { employee: employee[0], error: null };
+  return {
+    employee: {
+      id: employee.id,
+      role: employee.role,
+      is_active: employee.isActive,
+    },
+    error: null,
+  };
 }
 
 /**
@@ -105,21 +105,17 @@ export async function checkOverlappingShifts(
   shiftEnd: Date,
   excludeShiftId?: string
 ): Promise<{ overlaps: ShiftOverlap[]; error: NextResponse | null }> {
-  const overlappingShifts = await database.$queryRaw<
-    Array<{ id: string; shift_start: Date; shift_end: Date }>
-  >(
-    Prisma.sql`
-      SELECT id, shift_start, shift_end
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        ${excludeShiftId ? Prisma.sql`AND id != ${excludeShiftId}` : Prisma.empty}
-        AND deleted_at IS NULL
-        AND (
-          (shift_start < ${shiftEnd}) AND (shift_end > ${shiftStart})
-        )
-    `
-  );
+  const overlappingShifts = await database.scheduleShift.findMany({
+    where: {
+      tenantId,
+      employeeId,
+      ...(excludeShiftId ? { id: { not: excludeShiftId } } : {}),
+      deletedAt: null,
+      shift_start: { lt: shiftEnd },
+      shift_end: { gt: shiftStart },
+    },
+    select: { id: true, shift_start: true, shift_end: true },
+  });
 
   return {
     overlaps: overlappingShifts,
@@ -137,19 +133,12 @@ export async function verifySchedule(
   schedule: { id: string; status: string } | null;
   error: NextResponse | null;
 }> {
-  const schedule = await database.$queryRaw<
-    Array<{ id: string; status: string }>
-  >(
-    Prisma.sql`
-      SELECT id, status
-      FROM tenant_staff.schedules
-      WHERE tenant_id = ${tenantId}
-        AND id = ${scheduleId}
-        AND deleted_at IS NULL
-    `
-  );
+  const schedule = await database.schedule.findFirst({
+    where: { tenantId, id: scheduleId, deletedAt: null },
+    select: { id: true, status: true },
+  });
 
-  if (!schedule[0]) {
+  if (!schedule) {
     return {
       schedule: null,
       error: NextResponse.json(
@@ -159,7 +148,7 @@ export async function verifySchedule(
     };
   }
 
-  return { schedule: schedule[0], error: null };
+  return { schedule, error: null };
 }
 
 /**
@@ -167,6 +156,14 @@ export async function verifySchedule(
  */
 const OVERTIME_WARNING_THRESHOLD_HOURS = 40;
 const OVERTIME_BLOCK_THRESHOLD_HOURS = 60;
+
+function formatTime(value: Date): string {
+  return [
+    value.getUTCHours().toString().padStart(2, "0"),
+    value.getUTCMinutes().toString().padStart(2, "0"),
+    value.getUTCSeconds().toString().padStart(2, "0"),
+  ].join(":");
+}
 
 /**
  * Calculates weekly hours for an employee including the proposed shift
@@ -199,20 +196,17 @@ export async function checkOvertimeHours(
   const proposedHours = (shiftEnd.getTime() - shiftStart.getTime()) / 3_600_000;
 
   // Query existing shifts for the week
-  const existingShifts = await database.$queryRaw<
-    Array<{ id: string; shift_start: Date; shift_end: Date }>
-  >(
-    Prisma.sql`
-      SELECT id, shift_start, shift_end
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        AND deleted_at IS NULL
-        AND shift_start >= ${weekStart}
-        AND shift_end < ${weekEnd}
-        ${excludeShiftId ? Prisma.sql`AND id != ${excludeShiftId}` : Prisma.empty}
-    `
-  );
+  const existingShifts = await database.scheduleShift.findMany({
+    where: {
+      tenantId,
+      employeeId,
+      deletedAt: null,
+      shift_start: { gte: weekStart },
+      shift_end: { lt: weekEnd },
+      ...(excludeShiftId ? { id: { not: excludeShiftId } } : {}),
+    },
+    select: { id: true, shift_start: true, shift_end: true },
+  });
 
   // Calculate current week hours
   let currentWeekHours = 0;
@@ -315,22 +309,21 @@ export async function checkCertificationRequirements(
   }
 
   // Get employee's certifications
-  const certifications = await database.$queryRaw<
-    Array<{
-      id: string;
-      certification_type: string;
-      certification_name: string;
-      expiry_date: Date | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, certification_type, certification_name, expiry_date
-      FROM tenant_staff.employee_certifications
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        AND deleted_at IS NULL
-    `
-  );
+  const certificationRecords = await database.employeeCertification.findMany({
+    where: { tenantId, employeeId, deletedAt: null },
+    select: {
+      id: true,
+      certificationType: true,
+      certificationName: true,
+      expiryDate: true,
+    },
+  });
+  const certifications = certificationRecords.map((certification) => ({
+    id: certification.id,
+    certification_type: certification.certificationType,
+    certification_name: certification.certificationName,
+    expiry_date: certification.expiryDate,
+  }));
 
   const now = new Date();
   const missingCerts: string[] = [];
@@ -418,25 +411,26 @@ export async function checkShiftAgainstAvailability(
   // Get day of week for shift (0=Sunday, 1=Monday, etc.)
   const dayOfWeek = shiftStart.getUTCDay();
 
-  // Query employee's availability for that day
-  const availability = await database.$queryRaw<
-    Array<{
-      day_of_week: number;
-      start_time: string | null;
-      end_time: string | null;
-      is_available: boolean;
-      availability_type: string;
-    }>
-  >(
-    Prisma.sql`
-      SELECT day_of_week, start_time, end_time, is_available, availability_type
-      FROM tenant_staff.employee_availability
-      WHERE tenant_id = ${tenantId}
-        AND employee_id = ${employeeId}
-        AND day_of_week = ${dayOfWeek}
-        AND deleted_at IS NULL
-    `
-  );
+  const availabilityRecords = await database.employeeAvailability.findMany({
+    where: {
+      tenantId,
+      employeeId,
+      dayOfWeek,
+      deletedAt: null,
+    },
+    select: {
+      dayOfWeek: true,
+      startTime: true,
+      endTime: true,
+      isAvailable: true,
+    },
+  });
+  const availability = availabilityRecords.map((record) => ({
+    day_of_week: record.dayOfWeek,
+    start_time: formatTime(record.startTime),
+    end_time: formatTime(record.endTime),
+    is_available: record.isAvailable,
+  }));
 
   // If no availability records exist for this day, we can't warn
   if (availability.length === 0) {

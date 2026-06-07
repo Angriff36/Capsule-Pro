@@ -27,7 +27,7 @@ const mocks = vi.hoisted(() => ({
   eqCount: vi.fn(),
   woCreate: vi.fn(),
   captureException: vi.fn(),
-  executeManifestCommand: vi.fn(),
+  runManifestCommand: vi.fn(),
 }));
 
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
@@ -62,8 +62,8 @@ vi.mock("@repo/notifications", () => ({
 vi.mock("@/app/lib/webhook-dispatch", () => ({
   dispatchWebhooks: vi.fn(),
 }));
-vi.mock("@/lib/manifest-command-handler", () => ({
-  executeManifestCommand: mocks.executeManifestCommand,
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: mocks.runManifestCommand,
 }));
 
 function setAuth(tenantId: string | null = TENANT_A) {
@@ -206,8 +206,8 @@ describe("Equipment API", () => {
   // ── POST /create ───────────────────────────────────────────────────
 
   describe("POST /create", () => {
-    it("delegates to executeManifestCommand with entity Equipment and command create", async () => {
-      mocks.executeManifestCommand.mockResolvedValue(
+    it("delegates to runManifestCommand with entity Equipment and command create", async () => {
+      mocks.runManifestCommand.mockResolvedValue(
         new Response(
           JSON.stringify({
             success: true,
@@ -238,11 +238,10 @@ describe("Equipment API", () => {
       expect(json.success).toBe(true);
       expect(json.result.name).toBe("Oven A");
 
-      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(mocks.runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "Equipment",
-          commandName: "create",
+          entity: "Equipment",
+          command: "create",
         })
       );
     });
@@ -251,8 +250,8 @@ describe("Equipment API", () => {
   // ── POST /update-status ────────────────────────────────────────────
 
   describe("POST /update-status", () => {
-    it("delegates to executeManifestCommand with entity Equipment and command updateStatus", async () => {
-      mocks.executeManifestCommand.mockResolvedValue(
+    it("delegates to runManifestCommand with entity Equipment and command updateStatus", async () => {
+      mocks.runManifestCommand.mockResolvedValue(
         new Response(
           JSON.stringify({
             success: true,
@@ -274,11 +273,10 @@ describe("Equipment API", () => {
       });
       expect(res.status).toBe(200);
 
-      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(mocks.runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "Equipment",
-          commandName: "updateStatus",
+          entity: "Equipment",
+          command: "updateStatus",
         })
       );
     });
@@ -287,8 +285,8 @@ describe("Equipment API", () => {
   // ── POST /schedule-maintenance ─────────────────────────────────────
 
   describe("POST /schedule-maintenance", () => {
-    it("delegates to executeManifestCommand with entity Equipment and command scheduleMaintenance", async () => {
-      mocks.executeManifestCommand.mockResolvedValue(
+    it("delegates to runManifestCommand with entity Equipment and command scheduleMaintenance", async () => {
+      mocks.runManifestCommand.mockResolvedValue(
         new Response(
           JSON.stringify({
             success: true,
@@ -314,11 +312,10 @@ describe("Equipment API", () => {
       });
       expect(res.status).toBe(200);
 
-      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(mocks.runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "Equipment",
-          commandName: "scheduleMaintenance",
+          entity: "Equipment",
+          command: "scheduleMaintenance",
         })
       );
     });
@@ -327,8 +324,8 @@ describe("Equipment API", () => {
   // ── POST /record-usage ─────────────────────────────────────────────
 
   describe("POST /record-usage", () => {
-    it("delegates to executeManifestCommand with entity Equipment and command recordUsage", async () => {
-      mocks.executeManifestCommand.mockResolvedValue(
+    it("delegates to runManifestCommand with entity Equipment and command recordUsage", async () => {
+      mocks.runManifestCommand.mockResolvedValue(
         new Response(
           JSON.stringify({
             success: true,
@@ -362,11 +359,10 @@ describe("Equipment API", () => {
       expect(json.result.addedHours).toBe(50);
       expect(json.result.usageHours).toBe(150);
 
-      expect(mocks.executeManifestCommand).toHaveBeenCalledWith(
-        req,
+      expect(mocks.runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "Equipment",
-          commandName: "recordUsage",
+          entity: "Equipment",
+          command: "recordUsage",
         })
       );
     });

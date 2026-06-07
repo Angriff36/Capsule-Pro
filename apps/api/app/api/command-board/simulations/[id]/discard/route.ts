@@ -6,13 +6,11 @@
  * This marks the simulation as discarded (archived) without applying changes.
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { log } from "@repo/observability/log";
-import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -21,83 +19,48 @@ interface RouteContext {
 /**
  * POST /api/command-board/simulations/[id]/discard - Discard a simulation
  */
-export async function POST(_request: NextRequest, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+export async function POST(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await context.params;
-    if (!id) {
-      return NextResponse.json(
-        { message: "Simulation ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify it's a simulation board
-    const board = await database.commandBoard.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+  // Pre-validate: verify it's a simulation board and hasn't been applied/discarded
+  const board = await database.commandBoard.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId: user.tenantId,
+        id,
       },
-    });
+    },
+  });
 
-    if (!(board && board.tags.includes("simulation"))) {
-      return NextResponse.json(
-        { message: "Simulation not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check if already applied
-    if (board.tags.includes("applied")) {
-      return NextResponse.json(
-        { message: "Cannot discard an applied simulation" },
-        { status: 400 }
-      );
-    }
-
-    // Check if already discarded
-    if (board.status === "archived") {
-      return NextResponse.json(
-        { message: "Simulation already discarded" },
-        { status: 400 }
-      );
-    }
-
-    // Mark as discarded (archived)
-    await database.commandBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: { status: "archived" },
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: "Simulation discarded successfully",
-    });
-  } catch (error) {
-    captureException(error);
-    log.error("Failed to discard simulation:", error);
+  if (!(board && board.tags?.includes("simulation"))) {
     return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
+      { message: "Simulation not found" },
+      { status: 404 }
     );
   }
+
+  if (board.tags.includes("applied")) {
+    return NextResponse.json(
+      { message: "Cannot discard an applied simulation" },
+      { status: 400 }
+    );
+  }
+
+  if (board.status === "archived") {
+    return NextResponse.json(
+      { message: "Simulation already discarded" },
+      { status: 400 }
+    );
+  }
+
+  return runManifestCommand({
+    entity: "CommandBoard",
+    command: "deactivate",
+    body: {
+      id,
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

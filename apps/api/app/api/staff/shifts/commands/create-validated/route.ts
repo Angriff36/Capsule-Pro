@@ -60,9 +60,26 @@ export async function POST(request: NextRequest) {
     );
 
     if (!validation.valid) {
+      const errorBody = validation.error
+        ? await validation.error
+            .clone()
+            .json()
+            .catch(() => null)
+        : null;
       log.error("[schedule-shift/create-validated] Validation failed", {
-        code: (validation.error as any)?.code,
-        message: (validation.error as any)?.message,
+        status: validation.error?.status,
+        code:
+          errorBody && typeof errorBody === "object" && "code" in errorBody
+            ? errorBody.code
+            : undefined,
+        message:
+          errorBody && typeof errorBody === "object" && "message" in errorBody
+            ? errorBody.message
+            : undefined,
+        details:
+          errorBody && typeof errorBody === "object" && "details" in errorBody
+            ? errorBody.details
+            : undefined,
       });
       return (
         validation.error ?? manifestErrorResponse("Validation failed", 400)

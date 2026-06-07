@@ -10,8 +10,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -81,10 +81,7 @@ export async function POST(
   log.info("[BudgetLineItem/POST] Delegating to manifest create command", {
     budgetId: id,
   });
-  return executeManifestCommand(request, {
-    entityName: "BudgetLineItem",
-    commandName: "create",
-    params: { id },
-    transformBody: (body) => ({ ...body, budgetId: id }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "BudgetLineItem", command: "create", body: { ...rawBody, budgetId: id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

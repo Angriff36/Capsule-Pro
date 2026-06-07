@@ -1,8 +1,9 @@
 "use server";
 
-import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 import type {
   CreateTimeOffRequestInput,
   TimeOffRequest,
@@ -16,11 +17,100 @@ import {
   validateTimeOffDates,
   verifyEmployee,
 } from "@/app/lib/staff/time-off/validation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * Get time-off requests with optional filters
  */
+function buildTimeOffWhere(
+  tenantId: string,
+  params: {
+    employeeId?: string;
+    status?: TimeOffStatus;
+    startDate?: string;
+    endDate?: string;
+    requestType?: TimeOffType;
+  }
+): Prisma.TimeOffRequestWhereInput {
+  return {
+    tenantId,
+    deletedAt: null,
+    ...(params.employeeId ? { employeeId: params.employeeId } : {}),
+    ...(params.status ? { status: params.status } : {}),
+    ...(params.startDate ? { endDate: { gte: new Date(params.startDate) } } : {}),
+    ...(params.endDate ? { startDate: { lte: new Date(params.endDate) } } : {}),
+    ...(params.requestType ? { requestType: params.requestType } : {}),
+  };
+}
+
+async function mapTimeOffRequests(
+  tenantId: string,
+  records: Array<{
+    id: string;
+    tenantId: string;
+    employeeId: string;
+    startDate: Date;
+    endDate: Date;
+    reason: string | null;
+    status: string;
+    requestType: string;
+    createdAt: Date;
+    updatedAt: Date;
+    reviewedAt: Date | null;
+    reviewedBy: string | null;
+    rejectionReason: string | null;
+  }>
+): Promise<TimeOffRequest[]> {
+  const userIds = Array.from(
+    new Set(
+      records.flatMap((record) =>
+        record.reviewedBy ? [record.employeeId, record.reviewedBy] : [record.employeeId]
+      )
+    )
+  );
+  const users =
+    userIds.length > 0
+      ? await database.user.findMany({
+          where: { tenantId, id: { in: userIds }, deletedAt: null },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            role: true,
+          },
+        })
+      : [];
+  const usersById = new Map(users.map((user) => [user.id, user]));
+
+  return records.map((record) => {
+    const employee = usersById.get(record.employeeId);
+    const processor = record.reviewedBy
+      ? usersById.get(record.reviewedBy)
+      : undefined;
+    return {
+      id: record.id,
+      tenant_id: record.tenantId,
+      employeeId: record.employeeId,
+      employeeFirstName: employee?.firstName ?? null,
+      employeeLastName: employee?.lastName ?? null,
+      employeeEmail: employee?.email ?? "",
+      employeeRole: employee?.role ?? "staff",
+      start_date: record.startDate,
+      end_date: record.endDate,
+      reason: record.reason,
+      status: record.status as TimeOffStatus,
+      request_type: record.requestType as TimeOffType,
+      created_at: record.createdAt,
+      updated_at: record.updatedAt,
+      processed_at: record.reviewedAt,
+      processed_by: record.reviewedBy,
+      processed_by_first_name: processor?.firstName ?? null,
+      processed_by_last_name: processor?.lastName ?? null,
+      rejection_reason: record.rejectionReason,
+    };
+  });
+}
+
 export async function getTimeOffRequests(params: {
   employeeId?: string;
   status?: TimeOffStatus;
@@ -30,91 +120,33 @@ export async function getTimeOffRequests(params: {
   page?: number;
   limit?: number;
 }): Promise<TimeOffRequestsListResponse> {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const tenantId = await requireTenantId();
 
   const limit = params.limit ?? 50;
   const page = params.page ?? 1;
   const offset = (page - 1) * limit;
 
-  // Build filters
-  const hasEmployeeId = Boolean(params.employeeId);
-  const hasStatus = Boolean(params.status);
-  const hasStartDate = Boolean(params.startDate);
-  const hasEndDate = Boolean(params.endDate);
-  const hasRequestType = Boolean(params.requestType);
+  const where = buildTimeOffWhere(tenantId, params);
 
   // Fetch requests and count
-  const [requests, totalCount] = await Promise.all([
-    database.$queryRaw<TimeOffRequest[]>(
-      Prisma.sql`
-        SELECT
-          tor.id,
-          tor.tenant_id,
-          tor.employeeId,
-          e.first_name AS employee_first_name,
-          e.last_name AS employee_last_name,
-          e.email AS employee_email,
-          e.role AS employee_role,
-          tor.start_date,
-          tor.end_date,
-          tor.reason,
-          tor.status,
-          tor.request_type,
-          tor.created_at,
-          tor.updated_at,
-          tor.reviewed_at AS processed_at,
-          tor.reviewed_by AS processed_by,
-          processor.first_name AS processed_by_first_name,
-          processor.last_name AS processed_by_last_name,
-          tor.rejection_reason
-        FROM tenant_staff.employee_time_off_requests tor
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = tor.tenant_id
-         AND e.id = tor.employeeId
-        LEFT JOIN tenant_staff.employees processor
-          ON processor.tenant_id = tor.tenant_id
-         AND processor.id = tor.reviewed_by
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
-          ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasRequestType ? Prisma.sql`AND tor.request_type = ${params.requestType!}` : Prisma.empty}
-        ORDER BY tor.created_at DESC
-        LIMIT ${limit}
-        OFFSET ${offset}
-      `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.employee_time_off_requests tor
-        WHERE tor.tenant_id = ${tenantId}
-          AND tor.deleted_at IS NULL
-          ${hasEmployeeId ? Prisma.sql`AND tor.employeeId = ${params.employeeId!}` : Prisma.empty}
-          ${hasStatus ? Prisma.sql`AND tor.status = ${params.status!}` : Prisma.empty}
-          ${hasStartDate ? Prisma.sql`AND tor.end_date >= ${new Date(params.startDate!)}` : Prisma.empty}
-          ${hasEndDate ? Prisma.sql`AND tor.start_date <= ${new Date(params.endDate!)}` : Prisma.empty}
-          ${hasRequestType ? Prisma.sql`AND tor.request_type = ${params.requestType!}` : Prisma.empty}
-      `
-    ),
+  const [records, totalCount] = await Promise.all([
+    database.timeOffRequest.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
+    }),
+    database.timeOffRequest.count({ where }),
   ]);
+  const requests = await mapTimeOffRequests(tenantId, records);
 
   return {
     requests,
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   };
 }
@@ -125,54 +157,17 @@ export async function getTimeOffRequests(params: {
 export async function getTimeOffRequestById(
   requestId: string
 ): Promise<{ request: TimeOffRequest }> {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const tenantId = await requireTenantId();
 
-  const [request] = await database.$queryRaw<TimeOffRequest[]>(
-    Prisma.sql`
-      SELECT
-        tor.id,
-        tor.tenant_id,
-        tor.employeeId,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
-        tor.start_date,
-        tor.end_date,
-        tor.reason,
-        tor.status,
-        tor.request_type,
-        tor.created_at,
-        tor.updated_at,
-        tor.reviewed_at AS processed_at,
-        tor.reviewed_by AS processed_by,
-        processor.first_name AS processed_by_first_name,
-        processor.last_name AS processed_by_last_name,
-        tor.rejection_reason
-      FROM tenant_staff.employee_time_off_requests tor
-      JOIN tenant_staff.employees e
-        ON e.tenant_id = tor.tenant_id
-       AND e.id = tor.employeeId
-      LEFT JOIN tenant_staff.employees processor
-        ON processor.tenant_id = tor.tenant_id
-       AND processor.id = tor.reviewed_by
-      WHERE tor.tenant_id = ${tenantId}
-        AND tor.id = ${requestId}
-        AND tor.deleted_at IS NULL
-    `
-  );
+  const record = await database.timeOffRequest.findFirst({
+    where: { tenantId, id: requestId, deletedAt: null },
+  });
 
-  if (!request) {
+  if (!record) {
     throw new Error("Time-off request not found");
   }
 
+  const [request] = await mapTimeOffRequests(tenantId, [record]);
   return { request };
 }
 
@@ -182,14 +177,7 @@ export async function getTimeOffRequestById(
 export async function createTimeOffRequest(
   input: CreateTimeOffRequestInput
 ): Promise<{ request: TimeOffRequest }> {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const user = await requireCurrentUser();
 
   const startDate = new Date(input.startDate);
   const endDate = new Date(input.endDate);
@@ -210,14 +198,14 @@ export async function createTimeOffRequest(
   }
 
   // Verify employee exists and is active
-  const { error } = await verifyEmployee(tenantId, input.employeeId);
+  const { error } = await verifyEmployee(user.tenantId, input.employeeId);
   if (error) {
     throw new Error("Employee not found or inactive");
   }
 
   // Check for overlapping time-off requests
   const { hasOverlap } = await checkOverlappingTimeOffRequests(
-    tenantId,
+    user.tenantId,
     input.employeeId,
     startDate,
     endDate
@@ -227,53 +215,26 @@ export async function createTimeOffRequest(
     throw new Error("Employee has overlapping time-off requests");
   }
 
-  // Calculate hours from date range (business days × 8h)
-  const diffDays =
-    Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    ) + 1;
-  const hours = diffDays * 8;
+  // Create via governed Manifest command
+  const result = await runManifestCommand({
+    entity: "TimeOffRequest",
+    command: "create",
+    body: {
+      employeeId: input.employeeId,
+      startDate: input.startDate,
+      endDate: input.endDate,
+      reason: input.reason || "",
+      requestType: input.requestType,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 
-  // Create the time-off request
-  const result = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employeeId: string;
-      status: string;
-      start_date: Date;
-      end_date: Date;
-      reason: string | null;
-      request_type: string;
-    }>
-  >(
-    Prisma.sql`
-      INSERT INTO tenant_staff.employee_time_off_requests (
-        tenant_id,
-        employee_id,
-        start_date,
-        end_date,
-        reason,
-        request_type,
-        status,
-        hours
-      )
-      VALUES (
-        ${tenantId},
-        ${input.employeeId},
-        ${startDate},
-        ${endDate},
-        ${input.reason || null},
-        ${input.requestType},
-        'PENDING',
-        ${hours}
-      )
-      RETURNING id, tenant_id, employee_id, status, start_date, end_date, reason, request_type
-    `
-  );
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create time-off request");
+  }
 
   revalidatePath("/scheduling/time-off");
-  return { request: result[0] as TimeOffRequest };
+  return { request: result.result as TimeOffRequest };
 }
 
 /**
@@ -283,39 +244,23 @@ export async function updateTimeOffStatus(
   requestId: string,
   input: UpdateTimeOffStatusInput
 ): Promise<{ request: TimeOffRequest }> {
-  const { orgId, userId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const user = await requireCurrentUser();
 
-  // Get current request
-  const timeOffRequests = await database.$queryRaw<
-    Array<{
-      id: string;
-      status: string;
-      employeeId: string;
-      start_date: Date;
-      end_date: Date;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, status, employee_id, start_date, end_date
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-    `
-  );
+  // Get current request to validate transition
+  const timeOffRequest = await database.timeOffRequest.findFirst({
+    where: { tenantId: user.tenantId, id: requestId, deletedAt: null },
+    select: {
+      id: true,
+      status: true,
+      employeeId: true,
+      startDate: true,
+      endDate: true,
+    },
+  });
 
-  if (!timeOffRequests || timeOffRequests.length === 0) {
+  if (!timeOffRequest) {
     throw new Error("Time-off request not found");
   }
-
-  const timeOffRequest = timeOffRequests[0];
 
   // Validate status transition
   const statusTransitionError = await validateStatusTransition(
@@ -328,60 +273,44 @@ export async function updateTimeOffStatus(
     throw new Error(statusTransitionError.message);
   }
 
-  // Update the time-off request status
-  const result = await database.$queryRaw<
-    Array<{
-      id: string;
-      tenant_id: string;
-      employeeId: string;
-      employeeFirstName: string | null;
-      employeeLastName: string | null;
-      employeeEmail: string;
-      employeeRole: string;
-      start_date: Date;
-      end_date: Date;
-      reason: string | null;
-      status: string;
-      request_type: string;
-      created_at: Date;
-      updated_at: Date;
-      processed_at: Date | null;
-      processed_by: string | null;
-      processed_by_first_name: string | null;
-      processed_by_last_name: string | null;
-      rejection_reason: string | null;
-    }>
-  >(
-    Prisma.sql`
-      UPDATE tenant_staff.employee_time_off_requests
-      SET
-        status = ${input.status},
-        reviewed_at = now(),
-        reviewed_by = ${userId},
-        rejection_reason = ${input.status === "REJECTED" ? input.rejectionReason : null},
-        updated_at = now()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-      RETURNING
-        id,
-        tenant_id,
-        employee_id,
-        start_date,
-        end_date,
-        reason,
-        status,
-        request_type,
-        created_at,
-        updated_at,
-        reviewed_at AS processed_at,
-        reviewed_by AS processed_by,
-        rejection_reason
-    `
-  );
+  // Dispatch to the appropriate Manifest command based on target status
+  let commandName: string;
+  let commandBody: Record<string, string>;
+
+  switch (input.status) {
+    case "APPROVED":
+      commandName = "approve";
+      commandBody = { processedBy: user.id };
+      break;
+    case "REJECTED":
+      commandName = "reject";
+      commandBody = {
+        processedBy: user.id,
+        rejectionReason: input.rejectionReason || "",
+      };
+      break;
+    case "CANCELLED":
+      commandName = "cancel";
+      commandBody = {};
+      break;
+    default:
+      throw new Error(`Unsupported status transition: ${input.status}`);
+  }
+
+  const result = await runManifestCommand({
+    entity: "TimeOffRequest",
+    command: commandName,
+    instanceId: requestId,
+    body: commandBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update time-off request status");
+  }
 
   revalidatePath("/scheduling/time-off");
-  return { request: result[0] as TimeOffRequest };
+  return { request: result.result as TimeOffRequest };
 }
 
 /**
@@ -390,33 +319,17 @@ export async function updateTimeOffStatus(
 export async function deleteTimeOffRequest(
   requestId: string
 ): Promise<{ success: boolean }> {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const user = await requireCurrentUser();
 
-  // Get current request to check if it can be deleted
-  const timeOffRequests = await database.$queryRaw<
-    Array<{ id: string; status: string }>
-  >(
-    Prisma.sql`
-      SELECT id, status
-      FROM tenant_staff.employee_time_off_requests
-      WHERE tenant_id = ${tenantId}
-        AND id = ${requestId}
-        AND deleted_at IS NULL
-    `
-  );
+  // Get current request to verify it exists
+  const currentRequest = await database.timeOffRequest.findFirst({
+    where: { tenantId: user.tenantId, id: requestId, deletedAt: null },
+    select: { id: true, status: true },
+  });
 
-  if (!timeOffRequests || timeOffRequests.length === 0) {
+  if (!currentRequest) {
     throw new Error("Time-off request not found");
   }
-
-  const currentRequest = timeOffRequests[0];
 
   // Only allow deletion of PENDING or CANCELLED requests
   if (
@@ -428,13 +341,18 @@ export async function deleteTimeOffRequest(
     );
   }
 
-  // Soft delete the time-off request
-  await database.$queryRaw`
-    UPDATE tenant_staff.employee_time_off_requests
-    SET deleted_at = now()
-    WHERE tenant_id = ${tenantId}
-      AND id = ${requestId}
-  `;
+  // Soft delete via governed Manifest command
+  const result = await runManifestCommand({
+    entity: "TimeOffRequest",
+    command: "softDelete",
+    instanceId: requestId,
+    body: {},
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete time-off request");
+  }
 
   revalidatePath("/scheduling/time-off");
   return { success: true };
@@ -444,40 +362,32 @@ export async function deleteTimeOffRequest(
  * Get all employees for dropdown
  */
 export async function getEmployees() {
-  const { orgId } = await auth();
-  if (!orgId) {
-    throw new Error("Not authenticated");
-  }
-  const tenantId = await getTenantIdForOrg(orgId);
-  if (!tenantId) {
-    throw new Error("No tenant found");
-  }
+  const tenantId = await requireTenantId();
 
-  const employees = await database.$queryRaw<
-    Array<{
-      id: string;
-      email: string;
-      first_name: string | null;
-      last_name: string | null;
-      role: string;
-      is_active: boolean;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        id,
-        email,
-        first_name,
-        last_name,
-        role,
-        is_active
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY last_name ASC, first_name ASC
-    `
-  );
+  const employeeRecords = await database.user.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+      isActive: true,
+    },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+  const employees = employeeRecords.map((employee) => ({
+    id: employee.id,
+    email: employee.email,
+    first_name: employee.firstName,
+    last_name: employee.lastName,
+    role: employee.role,
+    is_active: employee.isActive,
+  }));
 
   return { employees };
 }

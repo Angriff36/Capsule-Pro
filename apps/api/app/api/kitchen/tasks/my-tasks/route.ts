@@ -66,7 +66,6 @@ export async function GET(request: Request) {
     where: {
       AND: [
         { tenantId },
-        { deletedAt: null },
         { id: { in: myClaimedTaskIds } },
         ...(status ? [{ status }] : []),
         ...(station ? [{ tags: { has: station } }] : []),

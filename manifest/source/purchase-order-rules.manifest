@@ -8,8 +8,8 @@ entity PurchaseOrder {
   property required vendorId: string
   property required locationId: string
   property required orderDate: datetime = now()
-  property expectedDeliveryDate: datetime = now()
-  property actualDeliveryDate: datetime = now()
+  property expectedDeliveryDate: datetime
+  property actualDeliveryDate: datetime
   property required status: string = "draft"
   property required subtotal: money = 0
   property required taxAmount: money = 0
@@ -17,12 +17,11 @@ entity PurchaseOrder {
   property required total: money = 0
   property notes: string = ""
   property submittedBy: string = ""
-  property submittedAt: datetime = now()
+  property submittedAt: datetime
   property receivedBy: string = ""
-  property receivedAt: datetime = now()
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property receivedAt: datetime
+  timestamps
+  property deletedAt: datetime
   property itemCount: int = 0
 
   key [tenantId, id]
@@ -40,14 +39,11 @@ entity PurchaseOrder {
 
   constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "ordered", "partially_received", "received", "cancelled"] "Invalid purchase order status"
 
-  constraint blockEditAfterSubmit:block self.status != "draft" {
-    messageTemplate: "Purchase order '{poNumber}' cannot be edited in status '{status}'"
-    details: {
-      poNumber: self.poNumber
-      status: self.status
-    }
-  }
+  // NOTE: "no header edits after submit" is expressed via the isEditable computed and
+  // enforced per-edit-command, NOT as an entity-level block invariant — the latter would
+  // (block-when-true semantics) reject every non-draft state and break submit/approve/receive.
 
+  default policy PurchaseOrderDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
   command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
     guard poNumber != null and poNumber != "" "PO number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
@@ -64,8 +60,6 @@ entity PurchaseOrder {
     mutate total = 0
     mutate itemCount = 0
     mutate orderDate = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderCreated
   }
@@ -83,7 +77,6 @@ entity PurchaseOrder {
     mutate status = "submitted"
     mutate submittedBy = userId
     mutate submittedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderSubmitted
   }
@@ -99,7 +92,6 @@ entity PurchaseOrder {
     }
 
     mutate status = "approved"
-    mutate updatedAt = now()
 
     emit PurchaseOrderApproved
   }
@@ -110,7 +102,6 @@ entity PurchaseOrder {
 
     mutate status = "rejected"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit PurchaseOrderRejected
   }
@@ -137,7 +128,6 @@ entity PurchaseOrder {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit PurchaseOrderCancelled
   }
@@ -146,7 +136,6 @@ entity PurchaseOrder {
     guard self.status == "approved" "Can only mark approved orders as ordered"
 
     mutate status = "ordered"
-    mutate updatedAt = now()
 
     emit PurchaseOrderOrdered
   }
@@ -158,10 +147,28 @@ entity PurchaseOrder {
     mutate receivedBy = userId
     mutate receivedAt = now()
     mutate actualDeliveryDate = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderReceived
   }
+
+  command updateTotals(subtotal: money, total: money, itemCount: int, expectedDeliveryDate: datetime) {
+    guard self.status == "draft" "Can only update totals on draft orders"
+
+    mutate subtotal = subtotal
+    mutate total = total
+    mutate itemCount = itemCount
+    mutate expectedDeliveryDate = expectedDeliveryDate
+
+    emit PurchaseOrderTotalsUpdated
+  }
+
+  // State transitions
+  transition status from "draft" to ["submitted", "cancelled"]
+  transition status from "submitted" to ["approved", "rejected", "cancelled"]
+  transition status from "approved" to ["ordered", "cancelled"]
+  transition status from "ordered" to ["partially_received", "received", "cancelled"]
+  transition status from "partially_received" to ["received", "cancelled"]
+  // "rejected", "cancelled", "received" are terminal states
 
   store PurchaseOrder in durable
 }
@@ -180,13 +187,12 @@ entity PurchaseOrderItem {
   property discrepancyType: string = ""
   property discrepancyAmount: money = 0
   property notes: string = ""
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   key [tenantId, id]
 
-  belongsTo purchaseOrder: PurchaseOrder fields [purchaseOrderId] references [id] onDelete cascade
+  belongsTo purchaseOrder: PurchaseOrder fields [tenantId, purchaseOrderId] references [tenantId, id] onDelete cascade
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityOrdered
   computed isPartiallyReceived: boolean = self.quantityReceived > 0 and self.quantityReceived < self.quantityOrdered
@@ -195,7 +201,8 @@ entity PurchaseOrderItem {
   constraint positiveQuantity: self.quantityOrdered > 0 "Quantity ordered must be positive"
   constraint positiveUnitCost: self.unitCost >= 0 "Unit cost cannot be negative"
 
-  command create(purchaseOrderId: string, itemId: string, quantityOrdered: number, unitId: number, unitCost: number, notes: string) {
+  default policy PurchaseOrderItemDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Purchase order management"
+  command create(purchaseOrderId: string, itemId: string, quantityOrdered: decimal, unitId: number, unitCost: money, notes: string) {
     guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
@@ -210,13 +217,11 @@ entity PurchaseOrderItem {
     mutate qualityStatus = "pending"
     mutate quantityReceived = 0
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemCreated
   }
 
-  command update(quantityOrdered: number, unitCost: number, notes: string) {
+  command update(quantityOrdered: decimal, unitCost: money, notes: string) {
     guard quantityOrdered != null and quantityOrdered > 0 "Quantity must be positive"
     guard unitCost != null and unitCost >= 0 "Unit cost cannot be negative"
 
@@ -224,7 +229,6 @@ entity PurchaseOrderItem {
     mutate unitCost = unitCost
     mutate totalCost = quantityOrdered * unitCost
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemUpdated
   }
@@ -233,7 +237,6 @@ entity PurchaseOrderItem {
     guard self.quantityReceived == 0 "Cannot remove item that has been partially received"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit PurchaseOrderItemRemoved
   }
@@ -253,7 +256,7 @@ event PurchaseOrderCreated: "purchasing.po.created" {
   poNumber: string
   vendorId: string
   locationId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseOrderSubmitted: "purchasing.po.submitted" {
@@ -263,7 +266,7 @@ event PurchaseOrderSubmitted: "purchasing.po.submitted" {
   submittedBy: string
   itemCount: number
   total: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event PurchaseOrderApproved: "purchasing.po.approved" {
@@ -272,7 +275,7 @@ event PurchaseOrderApproved: "purchasing.po.approved" {
   vendorId: string
   userId: string
   total: number
-  approvedAt: number
+  approvedAt: datetime
 }
 
 event PurchaseOrderRejected: "purchasing.po.rejected" {
@@ -281,7 +284,7 @@ event PurchaseOrderRejected: "purchasing.po.rejected" {
   vendorId: string
   userId: string
   reason: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event PurchaseOrderCancelled: "purchasing.po.cancelled" {
@@ -290,7 +293,7 @@ event PurchaseOrderCancelled: "purchasing.po.cancelled" {
   vendorId: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PurchaseOrderOrdered: "purchasing.po.ordered" {
@@ -298,7 +301,7 @@ event PurchaseOrderOrdered: "purchasing.po.ordered" {
   poNumber: string
   vendorId: string
   userId: string
-  orderedAt: number
+  orderedAt: datetime
 }
 
 event PurchaseOrderReceived: "purchasing.po.received" {
@@ -306,7 +309,18 @@ event PurchaseOrderReceived: "purchasing.po.received" {
   poNumber: string
   vendorId: string
   receivedBy: string
-  receivedAt: number
+  receivedAt: datetime
+}
+
+event PurchaseOrderTotalsUpdated: "purchasing.po.totals.updated" {
+  purchaseOrderId: string
+  tenantId: string
+  poNumber: string
+  subtotal: number
+  total: number
+  itemCount: number
+  expectedDeliveryDate: datetime
+  updatedAt: datetime
 }
 
 event PurchaseOrderItemCreated: "purchasing.po.item.created" {
@@ -316,7 +330,7 @@ event PurchaseOrderItemCreated: "purchasing.po.item.created" {
   quantityOrdered: number
   unitCost: number
   totalCost: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
@@ -325,12 +339,12 @@ event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
   quantityOrdered: number
   unitCost: number
   totalCost: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PurchaseOrderItemRemoved: "purchasing.po.item.removed" {
   purchaseOrderItemId: string
   purchaseOrderId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

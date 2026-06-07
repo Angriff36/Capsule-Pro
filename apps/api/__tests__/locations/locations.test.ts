@@ -1,34 +1,38 @@
 /**
  * Locations API Integration Tests
  *
- * Tests the GET /api/locations endpoint which uses $queryRaw
- * to query tenant.locations with optional isActive filter.
+ * Tests the GET /api/locations endpoint which uses
+ * Prisma ORM (database.location.findMany) to query tenant.locations
+ * with optional isActive filter.
  *
  * Covers: authentication, tenant resolution, query filtering,
  * empty results, database errors, and response shaping.
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
+vi.mock("server-only", () => ({}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
-vi.mock("@/lib/database", async () => {
-  const mod =
-    await vi.importActual<typeof import("@repo/database")>("@repo/database");
-  return mod;
-});
+vi.mock("@repo/database", () => ({
+  database: {
+    location: {
+      findMany: vi.fn(),
+    },
+  },
+}));
 
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { database } = await import("@repo/database");
 
 // --- Route import ---
 
@@ -54,17 +58,17 @@ function createMockLocation(overrides: Record<string, unknown> = {}) {
   return {
     id: "loc-001",
     name: "Main Kitchen",
-    address_line_1: "123 Main St",
-    address_line_2: null,
+    addressLine1: "123 Main St",
+    addressLine2: null,
     city: "Springfield",
-    state_province: "IL",
-    postal_code: "62701",
-    country_code: "US",
+    stateProvince: "IL",
+    postalCode: "62701",
+    countryCode: "US",
     timezone: "America/Chicago",
-    is_primary: true,
-    is_active: true,
-    created_at: new Date("2026-01-15"),
-    updated_at: new Date("2026-01-15"),
+    isPrimary: true,
+    isActive: true,
+    createdAt: new Date("2026-01-15"),
+    updatedAt: new Date("2026-01-15"),
     ...overrides,
   };
 }
@@ -117,11 +121,13 @@ describe("Locations API", () => {
         createMockLocation({
           id: "loc-2",
           name: "Warehouse",
-          is_primary: false,
+          isPrimary: false,
         }),
       ];
 
-      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations);
+      vi.mocked(database.location.findMany).mockResolvedValue(
+        mockLocations as never
+      );
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -135,7 +141,7 @@ describe("Locations API", () => {
 
     it("should return an empty array when no locations exist", async () => {
       mockAuth();
-      vi.mocked(database.$queryRaw).mockResolvedValue([]);
+      vi.mocked(database.location.findMany).mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -145,23 +151,32 @@ describe("Locations API", () => {
       expect(body.locations).toEqual([]);
     });
 
-    it("should call $queryRaw with a SQL query", async () => {
+    it("should call database.location.findMany with correct params", async () => {
       mockAuth();
-      vi.mocked(database.$queryRaw).mockResolvedValue([]);
+      vi.mocked(database.location.findMany).mockResolvedValue([]);
 
       const request = new NextRequest("http://localhost/api/locations");
       await GET(request);
 
-      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(database.location.findMany).toHaveBeenCalledTimes(1);
+      expect(database.location.findMany).toHaveBeenCalledWith({
+        where: {
+          tenantId: TEST_TENANT_ID,
+          deletedAt: null,
+        },
+        orderBy: { name: "asc" },
+      });
     });
 
     it("should filter by isActive=true when query param is set", async () => {
       mockAuth();
       const activeLocations = [
-        createMockLocation({ id: "loc-1", is_active: true }),
+        createMockLocation({ id: "loc-1", isActive: true }),
       ];
 
-      vi.mocked(database.$queryRaw).mockResolvedValue(activeLocations);
+      vi.mocked(database.location.findMany).mockResolvedValue(
+        activeLocations as never
+      );
 
       const request = new NextRequest(
         "http://localhost/api/locations?isActive=true"
@@ -171,13 +186,17 @@ describe("Locations API", () => {
       expect(response.status).toBe(200);
       const body = await response.json();
       expect(body.locations).toHaveLength(1);
-      // Verify $queryRaw was called (the SQL template will contain the active filter)
-      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
+      // Verify findMany was called with the active filter
+      expect(database.location.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isActive: true }),
+        })
+      );
     });
 
     it("should not filter by active status when isActive is not 'true'", async () => {
       mockAuth();
-      vi.mocked(database.$queryRaw).mockResolvedValue([]);
+      vi.mocked(database.location.findMany).mockResolvedValue([]);
 
       const request = new NextRequest(
         "http://localhost/api/locations?isActive=false"
@@ -185,17 +204,23 @@ describe("Locations API", () => {
       const response = await GET(request);
 
       expect(response.status).toBe(200);
-      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
+      expect(database.location.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.not.objectContaining({ isActive: expect.anything() }),
+        })
+      );
     });
 
     it("should return all locations when isActive param is absent", async () => {
       mockAuth();
       const allLocations = [
-        createMockLocation({ id: "loc-1", is_active: true }),
-        createMockLocation({ id: "loc-2", is_active: false }),
+        createMockLocation({ id: "loc-1", isActive: true }),
+        createMockLocation({ id: "loc-2", isActive: false }),
       ];
 
-      vi.mocked(database.$queryRaw).mockResolvedValue(allLocations);
+      vi.mocked(database.location.findMany).mockResolvedValue(
+        allLocations as never
+      );
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -210,18 +235,18 @@ describe("Locations API", () => {
       const location = createMockLocation({
         id: "loc-full",
         name: "Downtown Branch",
-        address_line_1: "456 Oak Ave",
-        address_line_2: "Suite 200",
+        addressLine1: "456 Oak Ave",
+        addressLine2: "Suite 200",
         city: "Chicago",
-        state_province: "IL",
-        postal_code: "60601",
-        country_code: "US",
+        stateProvince: "IL",
+        postalCode: "60601",
+        countryCode: "US",
         timezone: "America/Chicago",
-        is_primary: false,
-        is_active: true,
+        isPrimary: false,
+        isActive: true,
       });
 
-      vi.mocked(database.$queryRaw).mockResolvedValue([location]);
+      vi.mocked(database.location.findMany).mockResolvedValue([location] as never);
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -247,16 +272,16 @@ describe("Locations API", () => {
       const location = createMockLocation({
         id: "loc-minimal",
         name: "Minimal Location",
-        address_line_1: null,
-        address_line_2: null,
+        addressLine1: null,
+        addressLine2: null,
         city: null,
-        state_province: null,
-        postal_code: null,
-        country_code: null,
+        stateProvince: null,
+        postalCode: null,
+        countryCode: null,
         timezone: null,
       });
 
-      vi.mocked(database.$queryRaw).mockResolvedValue([location]);
+      vi.mocked(database.location.findMany).mockResolvedValue([location] as never);
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);
@@ -271,7 +296,7 @@ describe("Locations API", () => {
 
     it("should return 500 on database error", async () => {
       mockAuth();
-      vi.mocked(database.$queryRaw).mockRejectedValue(
+      vi.mocked(database.location.findMany).mockRejectedValue(
         new Error("Connection refused")
       );
 
@@ -286,7 +311,7 @@ describe("Locations API", () => {
     it("should capture exception on database error", async () => {
       mockAuth();
       const dbError = new Error("SQL timeout");
-      vi.mocked(database.$queryRaw).mockRejectedValue(dbError);
+      vi.mocked(database.location.findMany).mockRejectedValue(dbError);
 
       const { captureException } = await import("@sentry/nextjs");
       const request = new NextRequest("http://localhost/api/locations");
@@ -297,7 +322,7 @@ describe("Locations API", () => {
 
     it("should return 500 when database query throws a generic error", async () => {
       mockAuth();
-      vi.mocked(database.$queryRaw).mockRejectedValue(new Error("unknown"));
+      vi.mocked(database.location.findMany).mockRejectedValue(new Error("unknown"));
 
       const request = new NextRequest("http://localhost/api/locations");
       const response = await GET(request);

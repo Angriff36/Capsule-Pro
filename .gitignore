@@ -602,3 +602,5 @@ playwright-verify-suggestions.spec.ts
 # Claude Code guardrail per-session read-tracking state (machine-local)
 .claude/.guardrail/
 
+.fallow/
+manifest/generated/

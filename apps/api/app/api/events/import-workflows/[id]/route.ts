@@ -29,8 +29,7 @@ export async function GET(
     const eventImportWorkflow = await database.eventImport.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     });
 

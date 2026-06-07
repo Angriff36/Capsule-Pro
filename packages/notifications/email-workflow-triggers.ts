@@ -34,11 +34,28 @@ export interface WorkflowTriggerContext {
 }
 
 /**
- * Triggers email workflows for a given trigger type and context
+ * Governed update callback for setting `lastTriggeredAt`.
+ * Callers MUST provide a wrapper around `runManifestCommandCore` to route
+ * the timestamp update through the Manifest runtime (constitution §9).
+ */
+export type UpdateLastTriggeredFn = (params: {
+  tenantId: string;
+  workflowId: string;
+}) => Promise<void>;
+
+/**
+ * Triggers email workflows for a given trigger type and context.
+ *
+ * @param database - Prisma client for reads (finding active workflows).
+ * @param context - Trigger context (tenant, type, entity, recipients).
+ * @param updateLastTriggered - Governed write callback. Routes the
+ *   `lastTriggeredAt` update through the Manifest runtime (constitution §9).
+ *   Callers MUST pass a wrapper around `runManifestCommandCore`.
  */
 export async function triggerEmailWorkflows(
   database: PrismaClient,
-  context: WorkflowTriggerContext
+  context: WorkflowTriggerContext,
+  updateLastTriggered: UpdateLastTriggeredFn
 ): Promise<{
   triggered: number;
   results: Array<{ workflowId: string; success: boolean; error?: string }>;
@@ -104,17 +121,11 @@ export async function triggerEmailWorkflows(
         continue;
       }
 
-      // Update last triggered timestamp
-      await database.emailWorkflow.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: workflow.id,
-          },
-        },
-        data: {
-          lastTriggeredAt: new Date(),
-        },
+      // Update last triggered timestamp via governed Manifest command
+      // (constitution §9 — all domain mutations go through runtime).
+      await updateLastTriggered({
+        tenantId,
+        workflowId: workflow.id,
       });
 
       results.push({

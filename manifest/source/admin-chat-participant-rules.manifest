@@ -2,47 +2,61 @@
 // Manifest spec for admin chat participant operations
 
 entity AdminChatParticipant {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property threadId: string = ""
   property userId: string = ""
-  property archivedAt: datetime = now()
-  property clearedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property archivedAt: datetime
+  property clearedAt: datetime
+  timestamps
+  property deletedAt: datetime
 
-  computed isArchived: boolean = self.archivedAt > 0
+  computed isArchived: boolean = self.archivedAt != null
+
+  default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadId: string, userId: string) {
+    guard threadId != null and threadId != "" "Thread ID is required"
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate threadId = threadId
+    mutate userId = userId
+
+    emit AdminChatParticipantCreated
+  }
 
   command archive() {
     mutate archivedAt = now()
-    mutate updatedAt = now()
 
     emit ChatParticipantArchived
   }
 
   command unarchive() {
-    mutate archivedAt = 0
-    mutate updatedAt = now()
+    mutate archivedAt = null
 
     emit ChatParticipantUnarchived
   }
 
   command clearHistory() {
     mutate clearedAt = now()
-    mutate updatedAt = now()
 
     emit ChatHistoryCleared
   }
 
-  store AdminChatParticipant in memory
+  store AdminChatParticipant in durable
 }
 
 policy AdminChatManagement execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can manage their chat participation"
 
+event AdminChatParticipantCreated: "admin.chat-participant.created" {
+  participantId: string
+  threadId: string
+  userId: string
+}
+
 event ChatParticipantArchived: "admin.chat-participant.archived" {
   participantId: string
-  archivedAt: number
+  archivedAt: datetime
 }
 
 event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
@@ -51,5 +65,5 @@ event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
 
 event ChatHistoryCleared: "admin.chat-participant.history-cleared" {
   participantId: string
-  clearedAt: number
+  clearedAt: datetime
 }

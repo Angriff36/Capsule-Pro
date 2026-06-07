@@ -2,6 +2,7 @@
 // Manifest spec for battle board dish competition and voting management
 
 entity BattleBoard {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""
@@ -17,10 +18,21 @@ entity BattleBoard {
   property description: string = ""
   property notes: string = ""
   property tags: string = ""
-  property createdAt: datetime = now()
+  timestamps
   property dishCount: int = 0
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
+
+  // Parent-context snapshot (inherited from the linked Event at create time).
+  // These are NOT create-command parameters: they can only be populated by
+  // parent-context propagation, so the board never asks the user to re-enter
+  // event-owned data. See specs/parent-context-propagation.md.
+  property eventDate: datetime
+  property clientId: string = ""
+  property guestCount: int = 0
+  property venueName: string = ""
+  property venueAddress: string = ""
+  property locationId: string = ""
+  property inheritedContext: string = "{}"
 
   computed isOpen: boolean = self.status == "open"
   computed isVoting: boolean = self.status == "voting"
@@ -28,6 +40,8 @@ entity BattleBoard {
   computed isDraft: boolean = self.status == "draft"
   computed hasData: boolean = self.boardData != "{}" and self.boardData != ""
   computed hasDocument: boolean = self.documentUrl != "" and self.documentUrl != null
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint validBoardName: self.boardName != null and self.boardName != "" "Board name is required"
   constraint validStatus: self.status in ["draft", "open", "voting", "finalized"] "Status must be valid"
@@ -47,6 +61,12 @@ entity BattleBoard {
     }
   }
 
+  // State transitions
+  transition status from "draft" to ["open"]
+  transition status from "open" to ["voting"]
+  transition status from "voting" to ["finalized"]
+
+  default policy BattleBoardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Battle board"
   command create(boardName: string, boardType: string, eventId: string, description: string, isTemplate: boolean, notes: string, tags: string) {
     guard boardName != null and boardName != "" "Board name is required"
 
@@ -59,8 +79,6 @@ entity BattleBoard {
     mutate tags = tags
     mutate status = "draft"
     mutate boardData = "{}"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BattleBoardCreated
   }
@@ -77,7 +95,6 @@ entity BattleBoard {
     }
 
     mutate status = "open"
-    mutate updatedAt = now()
 
     emit BattleBoardOpened
   }
@@ -86,7 +103,6 @@ entity BattleBoard {
     guard self.status == "open" "Can only start voting on open battle boards"
 
     mutate status = "voting"
-    mutate updatedAt = now()
 
     emit BattleBoardVotingStarted
   }
@@ -96,7 +112,6 @@ entity BattleBoard {
     guard dishData != null and dishData != "" "Dish data is required"
 
     mutate boardData = dishData
-    mutate updatedAt = now()
 
     emit BattleBoardDishAdded
   }
@@ -106,7 +121,6 @@ entity BattleBoard {
     guard self.status != "voting" "Cannot remove dishes during voting"
     guard dishId != null and dishId != "" "Dish ID is required"
 
-    mutate updatedAt = now()
 
     emit BattleBoardDishRemoved
   }
@@ -117,7 +131,6 @@ entity BattleBoard {
     guard voteData != null and voteData != "" "Vote data is required"
 
     mutate boardData = voteData
-    mutate updatedAt = now()
 
     emit BattleBoardVoteCast
   }
@@ -127,12 +140,26 @@ entity BattleBoard {
     guard self.boardData != "{}" and self.boardData != "" "Cannot finalize board with no data"
 
     mutate status = "finalized"
-    mutate updatedAt = now()
 
     emit BattleBoardFinalized
   }
 
-  store BattleBoard in memory
+  command update(boardName: string, status: string, notes: string, boardData: string) {
+    mutate boardName = boardName
+    mutate status = status
+    mutate notes = notes
+    mutate boardData = boardData
+
+    emit BattleBoardUpdated
+  }
+
+  command recordImport(boardData: string) {
+    mutate boardData = boardData
+
+    emit BattleBoardImportRecorded
+  }
+
+  store BattleBoard in durable
 }
 
 // Policy definitions
@@ -148,7 +175,7 @@ event BattleBoardCreated: "events.battle_board.created" {
   boardType: string
   eventId: string
   isTemplate: boolean
-  createdAt: number
+  createdAt: datetime
 }
 
 event BattleBoardDishAdded: "events.battle_board.dish_added" {
@@ -157,7 +184,7 @@ event BattleBoardDishAdded: "events.battle_board.dish_added" {
   boardName: string
   dishData: string
   userId: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event BattleBoardDishRemoved: "events.battle_board.dish_removed" {
@@ -166,7 +193,7 @@ event BattleBoardDishRemoved: "events.battle_board.dish_removed" {
   boardName: string
   dishId: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event BattleBoardVoteCast: "events.battle_board.vote_cast" {
@@ -175,7 +202,7 @@ event BattleBoardVoteCast: "events.battle_board.vote_cast" {
   boardName: string
   userId: string
   voteData: string
-  votedAt: number
+  votedAt: datetime
 }
 
 event BattleBoardOpened: "kitchen.battleboard.opened" {
@@ -184,7 +211,7 @@ event BattleBoardOpened: "kitchen.battleboard.opened" {
   boardName: string
   dishCount: number
   userId: string
-  openedAt: number
+  openedAt: datetime
 }
 
 event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
@@ -192,7 +219,7 @@ event BattleBoardVotingStarted: "kitchen.battleboard.voting_started" {
   tenantId: string
   boardName: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event BattleBoardFinalized: "events.battle_board.finalized" {
@@ -200,5 +227,21 @@ event BattleBoardFinalized: "events.battle_board.finalized" {
   tenantId: string
   boardName: string
   userId: string
-  finalizedAt: number
+  finalizedAt: datetime
+}
+
+event BattleBoardUpdated: "events.battle_board.updated" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  updatedAt: datetime
+}
+
+event BattleBoardImportRecorded: "events.battle_board.import_recorded" {
+  boardId: string
+  tenantId: string
+  boardName: string
+  userId: string
+  recordedAt: datetime
 }

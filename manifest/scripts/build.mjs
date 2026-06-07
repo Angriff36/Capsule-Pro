@@ -4,138 +4,34 @@
  * Manifest Build Script - Compile + Generate
  *
  * The Manifest CLI's --glob flag has a "last file wins" bug. This script:
- * 1. Compiles all manifests using programmatic API (proper merge)
- * 2. Generates code from the merged IR using the CLI
+ * 1. Compiles all manifests by delegating to compile.mjs (proper merge)
+ * 2. Generates code from the merged IR using generate.mjs
+ * 3. Generates canonical route surface via generate-route-manifest.ts
+ * 4. Audits route boundaries
  *
- * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
+ * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import {
-  compileToIR,
-  validateCommandIntentRegistry,
-} from "@angriff36/manifest/ir-compiler";
-import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
 
-const MANIFESTS_DIR = join(
-  process.cwd(),
-  "manifest/source"
-);
-const OUTPUT_DIR = join(process.cwd(), "manifest/ir");
-const IR_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
-const PROVENANCE_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.provenance.json");
-const MERGE_REPORT_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
-const COMMANDS_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
-const CODE_OUTPUT_DIR = join(process.cwd(), "apps/api/app/api/kitchen");
-
-function enforceNoDuplicateCommandIntent(compiledEntries) {
-  const diagnostics = validateCommandIntentRegistry(
-    compiledEntries.flatMap(({ source, ir }) =>
-      (ir.commands ?? []).map((command) => ({
-        entity: command.entity,
-        command: command.name,
-        sourcePath: source,
-      }))
-    )
-  );
-
-  if (diagnostics.length > 0) {
-    console.error("[manifest/build] Duplicate command intent detected:");
-    for (const diagnostic of diagnostics) {
-      console.error(`  - ${diagnostic.message}`);
-    }
-    process.exit(1);
-  }
-}
-
-async function compileMergedManifests() {
+/**
+ * Step 1: Delegate compilation to compile.mjs (canonical compile pipeline).
+ * compile.mjs handles: read manifests -> compileToIR -> enforceCommandOwnership ->
+ * mergeIrs -> write kitchen.ir.json + kitchen.commands.json + commands.registry.json +
+ * kitchen.provenance.json + kitchen.merge-report.json.
+ */
+function compileMergedManifests() {
   console.log("[manifest/build] Step 1: Compiling manifests...");
-
-  // Ensure output directory exists
-  mkdirSync(OUTPUT_DIR, { recursive: true });
-
-  // Read all .manifest files
-  const manifestFiles = readdirSync(MANIFESTS_DIR)
-    .filter((f) => f.endsWith(".manifest"))
-    .sort();
-
-  // Compile each manifest to IR
-  const compiledEntries = [];
-  for (const manifestFile of manifestFiles) {
-    const manifestPath = join(MANIFESTS_DIR, manifestFile);
-    const manifestSource = readFileSync(manifestPath, "utf-8");
-
-    const { ir, diagnostics } = await compileToIR(manifestSource);
-
-    if (!ir) {
-      console.error(`[manifest/build] Failed to compile ${manifestFile}:`);
-      for (const d of diagnostics) {
-        console.error(`  - ${d.message}`);
-      }
-      process.exit(1);
-    }
-
-    const manifestName = manifestFile.replace(/\.manifest$/, "");
-    compiledEntries.push({
-      source: manifestFile,
-      ir: enforceCommandOwnership(ir, manifestName),
-    });
-  }
-
-  enforceNoDuplicateCommandIntent(compiledEntries);
-
-  const {
-    ir: mergedIR,
-    duplicateWarnings,
-    mergeReport,
-  } = mergeIrs(compiledEntries, {
-    contentHash: "",
-    irHash: "",
-    compilerVersion: "0.3.8",
-    schemaVersion: "1.0",
-    compiledAt: new Date().toISOString(),
-    sources: manifestFiles,
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const result = spawnSync(bin, ["run", "manifest:compile"], {
+    stdio: "inherit",
+    shell: process.platform === "win32",
   });
 
-  if (duplicateWarnings.length > 0) {
-    console.warn(
-      `[manifest/build] Merge dropped ${duplicateWarnings.length} duplicate definitions`
-    );
+  if (result.status !== 0) {
+    console.error("[manifest/build] Compilation failed.");
+    process.exit(1);
   }
-
-  // Write merged IR
-  writeFileSync(IR_OUTPUT_FILE, JSON.stringify(mergedIR, null, 2));
-  writeFileSync(
-    PROVENANCE_OUTPUT_FILE,
-    JSON.stringify(mergedIR.provenance, null, 2)
-  );
-  writeFileSync(MERGE_REPORT_OUTPUT_FILE, JSON.stringify(mergeReport, null, 2));
-
-  // Derive and emit kitchen.commands.json — projection-agnostic command manifest.
-  // Must stay in sync with the IR; the determinism test asserts they match.
-  const commandsManifest = (mergedIR.commands ?? [])
-    .map((cmd) => ({
-      entity: cmd.entity,
-      command: cmd.name,
-      commandId: `${cmd.entity}.${cmd.name}`,
-    }))
-    .sort((a, b) => {
-      const entityCmp = a.entity.localeCompare(b.entity);
-      if (entityCmp !== 0) return entityCmp;
-      return a.command.localeCompare(b.command);
-    });
-  writeFileSync(
-    COMMANDS_OUTPUT_FILE,
-    JSON.stringify(commandsManifest, null, 2)
-  );
-
-  console.log(
-    `[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`
-  );
-
-  return mergedIR;
 }
 
 function generateFromIR() {
@@ -167,7 +63,7 @@ function generateRouteSurface() {
     [
       "exec",
       "tsx",
-      "scripts/manifest/generate-route-manifest.ts",
+      "manifest/scripts/generate-route-manifest.ts",
       "--format",
       "summary",
     ],
@@ -234,15 +130,12 @@ function auditRouteBoundaries() {
   }
 }
 
-async function main() {
-  await compileMergedManifests();
+function main() {
+  compileMergedManifests();
   generateFromIR();
   generateRouteSurface();
   auditRouteBoundaries();
   console.log("[manifest/build] Build complete!");
 }
 
-main().catch((err) => {
-  console.error("[manifest/build] Fatal error:", err);
-  process.exit(1);
-});
+main();

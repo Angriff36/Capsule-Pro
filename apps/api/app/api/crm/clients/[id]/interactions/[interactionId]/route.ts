@@ -6,7 +6,8 @@
  */
 
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string; interactionId: string }>;
@@ -18,11 +19,13 @@ interface RouteContext {
  */
 export async function PUT(request: NextRequest, context: RouteContext) {
   const { id, interactionId } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "ClientInteraction",
-    commandName: "update",
-    params: { id, interactionId },
-    transformBody: (body) => ({ ...body, id: interactionId, clientId: id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "ClientInteraction",
+    command: "update",
+    body: { ...rawBody, id: interactionId, clientId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -32,10 +35,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   const { id, interactionId } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "ClientInteraction",
-    commandName: "complete",
-    params: { id, interactionId },
-    transformBody: (_body) => ({ id: interactionId, clientId: id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "ClientInteraction",
+    command: "complete",
+    body: { id: interactionId, clientId: id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

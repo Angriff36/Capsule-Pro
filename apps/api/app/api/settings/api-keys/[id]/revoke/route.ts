@@ -1,7 +1,7 @@
 /**
  * API Key Revoke Endpoint
  *
- * POST /api/settings/api-keys/:id/revoke - Revoke an API key
+ * POST /api/settings/api-keys/:id/revoke - Revoke an API key (Manifest runtime)
  */
 
 import { auth } from "@repo/auth/server";
@@ -10,6 +10,7 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { API_SCOPES } from "@/lib/api-scopes";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { requireDualAuth } from "@/middleware/dual-auth";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
@@ -17,7 +18,7 @@ export const runtime = "nodejs";
 
 /**
  * POST /api/settings/api-keys/:id/revoke
- * Revoke an API key (sets revokedAt timestamp)
+ * Revoke an API key (sets revokedAt timestamp) — delegated to Manifest runtime
  *
  * Unlike soft delete, revocation is for security purposes (compromised key).
  * A revoked key cannot be used for authentication.
@@ -114,32 +115,20 @@ export const POST = withRateLimit(
         );
       }
 
-      // Revoke the key
-      const revoked = await database.apiKey.update({
-        where: {
-          tenantId_id: {
-            tenantId: authResult.tenantId!,
-            id,
-          },
+      // Delegate revocation to Manifest runtime
+      return runManifestCommand({
+        entity: "ApiKey",
+        command: "revoke",
+        body: {
+          id,
+          tenantId: authResult.tenantId!,
         },
-        data: {
-          revokedAt: new Date(),
-        },
-        select: {
-          id: true,
-          name: true,
-          keyPrefix: true,
-          revokedAt: true,
+        user: {
+          id: authResult.userId!,
+          tenantId: authResult.tenantId!,
+          role: "admin",
         },
       });
-
-      log.info("[ApiKeys/revoke] Revoked API key", {
-        tenantId: authResult.tenantId,
-        keyId: id,
-        userId: authResult.userId,
-      });
-
-      return NextResponse.json(revoked);
     } catch (error) {
       captureException(error);
       log.error("[ApiKeys/revoke] Error:", error);

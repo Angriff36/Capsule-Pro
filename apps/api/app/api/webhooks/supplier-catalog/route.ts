@@ -47,6 +47,7 @@ import { connectorRegistry } from "@repo/supplier-connectors";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -186,7 +187,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
   }
 
-  // Upsert products into VendorCatalog
+  // Build synthetic system-user context for Manifest commands (webhook has no Clerk auth)
+  const adminUser = await database.user.findFirst({
+    where: { tenantId: supplier.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    select: { id: true, role: true },
+  });
+  const systemUser = {
+    id: adminUser?.id ?? "system",
+    tenantId: supplier.tenantId,
+    role: adminUser?.role ?? "admin",
+  };
+
+  // Upsert products into VendorCatalog via Manifest governance
   let upserted = 0;
   let errors = 0;
 
@@ -215,7 +227,8 @@ export async function POST(request: Request) {
         tags: product.tags,
       };
 
-      await database.vendorCatalog.upsert({
+      // Check if catalog entry already exists (read bypasses Manifest per §10)
+      const existing = await database.vendorCatalog.findUnique({
         where: {
           tenantId_supplierId_itemNumber: {
             tenantId: supplier.tenantId,
@@ -223,44 +236,61 @@ export async function POST(request: Request) {
             itemNumber: catalogProduct.sku,
           },
         },
-        create: {
-          tenantId: supplier.tenantId,
-          supplierId: payload.supplierId,
-          itemNumber: catalogProduct.sku,
-          itemName: catalogProduct.name,
-          description: catalogProduct.description,
-          category: catalogProduct.category,
-          baseUnitCost: catalogProduct.unitCost,
-          currency: catalogProduct.currency,
-          unitOfMeasure: catalogProduct.unitOfMeasure,
-          leadTimeDays: catalogProduct.leadTimeDays,
-          minimumOrderQuantity: catalogProduct.minimumOrderQuantity,
-          orderMultiple: catalogProduct.orderMultiple,
-          isActive: catalogProduct.available,
-          effectiveFrom: catalogProduct.effectiveFrom,
-          effectiveTo: catalogProduct.effectiveTo,
-          supplierSku: catalogProduct.externalId,
-          lastCostUpdate: new Date(),
-          tags: catalogProduct.tags ?? [],
-        },
-        update: {
-          itemName: catalogProduct.name,
-          description: catalogProduct.description,
-          category: catalogProduct.category,
-          baseUnitCost: catalogProduct.unitCost,
-          currency: catalogProduct.currency,
-          unitOfMeasure: catalogProduct.unitOfMeasure,
-          leadTimeDays: catalogProduct.leadTimeDays,
-          minimumOrderQuantity: catalogProduct.minimumOrderQuantity,
-          orderMultiple: catalogProduct.orderMultiple,
-          isActive: catalogProduct.available,
-          effectiveFrom: catalogProduct.effectiveFrom,
-          effectiveTo: catalogProduct.effectiveTo,
-          supplierSku: catalogProduct.externalId,
-          lastCostUpdate: new Date(),
-          tags: catalogProduct.tags ?? [],
-        },
+        select: { id: true },
       });
+
+      const baseBody = {
+        tenantId: supplier.tenantId,
+        supplierId: payload.supplierId,
+        itemNumber: catalogProduct.sku,
+        itemName: catalogProduct.name,
+        description: catalogProduct.description ?? "",
+        category: catalogProduct.category ?? "",
+        baseUnitCost: catalogProduct.unitCost ?? 0,
+        currency: catalogProduct.currency ?? "USD",
+        unitOfMeasure: catalogProduct.unitOfMeasure ?? "",
+        leadTimeDays: catalogProduct.leadTimeDays ?? 0,
+        leadTimeMinDays: 0,
+        leadTimeMaxDays: 0,
+        minimumOrderQuantity: catalogProduct.minimumOrderQuantity ?? 0,
+        orderMultiple: catalogProduct.orderMultiple ?? 0,
+        effectiveFrom: catalogProduct.effectiveFrom?.getTime() ?? 0,
+        effectiveTo: catalogProduct.effectiveTo?.getTime() ?? 0,
+        supplierSku: catalogProduct.externalId ?? "",
+        notes: "",
+        tags: catalogProduct.tags ?? [],
+      };
+
+      if (existing) {
+        // Update existing catalog entry via Manifest
+        const result = await runManifestCommand({
+          entity: "VendorCatalog",
+          command: "update",
+          body: {
+            id: existing.id,
+            ...baseBody,
+            isActive: catalogProduct.available ?? true,
+            lastCostUpdate: Date.now(),
+          },
+          user: systemUser,
+        });
+        if (!result.ok) {
+          const errorText = await result.text();
+          throw new Error(`Manifest update failed: ${errorText}`);
+        }
+      } else {
+        // Create new catalog entry via Manifest
+        const result = await runManifestCommand({
+          entity: "VendorCatalog",
+          command: "create",
+          body: baseBody,
+          user: systemUser,
+        });
+        if (!result.ok) {
+          const errorText = await result.text();
+          throw new Error(`Manifest create failed: ${errorText}`);
+        }
+      }
 
       upserted++;
     } catch (err) {

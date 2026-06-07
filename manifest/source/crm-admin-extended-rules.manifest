@@ -1,0 +1,758 @@
+// CRM + Admin Extended Rules
+// Manifest spec for ProposalTemplate, InteractionAttachment, CrmScoringRule,
+// Report, Document, AdminChatThread, and AdminChatMessage
+
+// ---------------------------------------------------------------------------
+// ProposalTemplate — reusable catering-proposal template
+// ---------------------------------------------------------------------------
+
+entity ProposalTemplate {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property description: string = ""
+  property eventType: string = ""
+  property defaultTerms: string = ""
+  property defaultTaxRate: decimal = 0
+  property defaultNotes: string = ""
+  property defaultLineItems: string = "[]"
+  property isActive: boolean = true
+  property isDefault: boolean = false
+  // Branding fields
+  property logoUrl: string = ""
+  property primaryColor: string = ""
+  property secondaryColor: string = ""
+  property accentColor: string = ""
+  property fontFamily: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  constraint requireName: self.name != null and self.name != "" "Template name is required"
+
+  constraint warnInactiveTemplate:warn self.isActive == false {
+    messageTemplate: "Proposal template '{name}' is inactive and will not appear for new proposals"
+    details: {
+      name: self.name
+    }
+  }
+
+  default policy ProposalTemplateDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
+  command create(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
+    guard name != null and name != "" "Template name is required"
+
+    mutate name = name
+    mutate description = description
+    mutate eventType = eventType
+    mutate defaultTerms = defaultTerms
+    mutate defaultTaxRate = defaultTaxRate
+    mutate defaultNotes = defaultNotes
+    mutate defaultLineItems = defaultLineItems
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate logoUrl = logoUrl
+    mutate primaryColor = primaryColor
+    mutate secondaryColor = secondaryColor
+    mutate accentColor = accentColor
+    mutate fontFamily = fontFamily
+
+    emit ProposalTemplateCreated
+  }
+
+  command update(name: string, description: string, eventType: string, defaultTerms: string, defaultTaxRate: number, defaultNotes: string, defaultLineItems: string, isActive: boolean, isDefault: boolean, logoUrl: string, primaryColor: string, secondaryColor: string, accentColor: string, fontFamily: string) {
+    guard self.deletedAt == null "Cannot update a deleted template"
+    guard name != null and name != "" "Template name is required"
+
+    mutate name = name
+    mutate description = description
+    mutate eventType = eventType
+    mutate defaultTerms = defaultTerms
+    mutate defaultTaxRate = defaultTaxRate
+    mutate defaultNotes = defaultNotes
+    mutate defaultLineItems = defaultLineItems
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate logoUrl = logoUrl
+    mutate primaryColor = primaryColor
+    mutate secondaryColor = secondaryColor
+    mutate accentColor = accentColor
+    mutate fontFamily = fontFamily
+
+    emit ProposalTemplateUpdated
+  }
+
+  command activate() {
+    guard self.deletedAt == null "Cannot activate a deleted template"
+    guard self.isActive == false "Template is already active"
+
+    mutate isActive = true
+
+    emit ProposalTemplateActivated
+  }
+
+  command deactivate() {
+    guard self.deletedAt == null "Cannot deactivate a deleted template"
+    guard self.isActive == true "Template is already inactive"
+
+    mutate isActive = false
+
+    emit ProposalTemplateDeactivated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Template is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ProposalTemplateSoftDeleted
+  }
+
+  store ProposalTemplate in durable
+}
+
+// ---------------------------------------------------------------------------
+// InteractionAttachment — file attached to a CRM client interaction
+// ---------------------------------------------------------------------------
+
+entity InteractionAttachment {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property clientInteractionId: string = ""
+  property fileName: string = ""
+  property fileUrl: string = ""
+  property fileType: string = ""
+  property fileSizeBytes: int = 0
+  property uploadedBy: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isRemoved: boolean = self.deletedAt != null
+
+  constraint requireInteractionId: self.clientInteractionId != null and self.clientInteractionId != "" "Client interaction ID is required"
+  constraint requireFileName: self.fileName != null and self.fileName != "" "File name is required"
+  constraint requireFileUrl: self.fileUrl != null and self.fileUrl != "" "File URL is required"
+  constraint positiveFileSize: self.fileSizeBytes >= 0 "File size must be non-negative"
+
+  constraint warnLargeFile:warn self.fileSizeBytes > 10485760 {
+    messageTemplate: "Attachment '{fileName}' exceeds 10 MB ({fileSizeBytes} bytes)"
+    details: {
+      fileName: self.fileName
+      fileSizeBytes: self.fileSizeBytes
+      fileType: self.fileType
+    }
+  }
+
+  default policy InteractionAttachmentDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
+  command create(clientInteractionId: string, fileName: string, fileUrl: string, fileType: string, fileSizeBytes: int, uploadedBy: string) {
+    guard clientInteractionId != null and clientInteractionId != "" "Client interaction ID is required"
+    guard fileName != null and fileName != "" "File name is required"
+    guard fileUrl != null and fileUrl != "" "File URL is required"
+    guard fileSizeBytes >= 0 "File size must be non-negative"
+
+    mutate clientInteractionId = clientInteractionId
+    mutate fileName = fileName
+    mutate fileUrl = fileUrl
+    mutate fileType = fileType
+    mutate fileSizeBytes = fileSizeBytes
+    mutate uploadedBy = uploadedBy
+
+    emit InteractionAttachmentCreated
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == null "Attachment is already removed"
+
+    mutate deletedAt = now()
+
+    emit InteractionAttachmentRemoved
+  }
+
+  store InteractionAttachment in durable
+}
+
+// ---------------------------------------------------------------------------
+// CrmScoringRule — lead-scoring rule
+// ---------------------------------------------------------------------------
+
+entity CrmScoringRule {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property ruleName: string = ""
+  property field: string = ""
+  property condition: string = ""
+  property value: string = ""
+  property points: int = 0
+  property isActive: boolean = true
+  property priority: int = 0
+  timestamps
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+
+  constraint requireRuleName: self.ruleName != null and self.ruleName != "" "Rule name is required"
+  constraint requireField: self.field != null and self.field != "" "Field is required"
+  constraint requireCondition: self.condition != null and self.condition != "" "Condition is required"
+
+  constraint warnExtremePoints:warn self.points > 100 or self.points < -100 {
+    messageTemplate: "Scoring rule '{ruleName}' has extreme point value ({points}); verify this is intentional"
+    details: {
+      ruleName: self.ruleName
+      field: self.field
+      points: self.points
+    }
+  }
+
+  default policy CrmScoringRuleDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
+  command create(ruleName: string, field: string, condition: string, value: string, points: int, isActive: boolean, priority: int) {
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard field != null and field != "" "Field is required"
+    guard condition != null and condition != "" "Condition is required"
+
+    mutate ruleName = ruleName
+    mutate field = field
+    mutate condition = condition
+    mutate value = value
+    mutate points = points
+    mutate isActive = isActive
+    mutate priority = priority
+
+    emit CrmScoringRuleCreated
+  }
+
+  command update(ruleName: string, field: string, condition: string, value: string, points: int, isActive: boolean, priority: int) {
+    guard self.deletedAt == null "Cannot update a deleted scoring rule"
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard field != null and field != "" "Field is required"
+    guard condition != null and condition != "" "Condition is required"
+
+    mutate ruleName = ruleName
+    mutate field = field
+    mutate condition = condition
+    mutate value = value
+    mutate points = points
+    mutate isActive = isActive
+    mutate priority = priority
+
+    emit CrmScoringRuleUpdated
+  }
+
+  command activate() {
+    guard self.deletedAt == null "Cannot activate a deleted scoring rule"
+    guard self.isActive == false "Scoring rule is already active"
+
+    mutate isActive = true
+
+    emit CrmScoringRuleActivated
+  }
+
+  command deactivate() {
+    guard self.deletedAt == null "Cannot deactivate a deleted scoring rule"
+    guard self.isActive == true "Scoring rule is already inactive"
+
+    mutate isActive = false
+
+    emit CrmScoringRuleDeactivated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Scoring rule is already deleted"
+
+    mutate deletedAt = now()
+
+    emit CrmScoringRuleSoftDeleted
+  }
+
+  store CrmScoringRule in durable
+}
+
+// ---------------------------------------------------------------------------
+// Report — saved report definition
+// ---------------------------------------------------------------------------
+
+entity Report {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property reportType: string = ""
+  property queryConfig: string = "{}"
+  property displayConfig: string = "{}"
+  property isShared: boolean = false
+  property createdBy: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isPrivate: boolean = self.isShared == false
+
+  constraint requireName: self.name != null and self.name != "" "Report name is required"
+  constraint requireReportType: self.reportType != null and self.reportType != "" "Report type is required"
+
+  default policy ReportDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
+  command create(name: string, reportType: string, queryConfig: string, displayConfig: string, isShared: boolean, createdBy: string) {
+    guard name != null and name != "" "Report name is required"
+    guard reportType != null and reportType != "" "Report type is required"
+
+    mutate name = name
+    mutate reportType = reportType
+    mutate queryConfig = queryConfig
+    mutate displayConfig = displayConfig
+    mutate isShared = isShared
+    mutate createdBy = createdBy
+
+    emit ReportCreated
+  }
+
+  command update(name: string, reportType: string, queryConfig: string, displayConfig: string) {
+    guard self.deletedAt == null "Cannot update a deleted report"
+    guard name != null and name != "" "Report name is required"
+    guard reportType != null and reportType != "" "Report type is required"
+
+    mutate name = name
+    mutate reportType = reportType
+    mutate queryConfig = queryConfig
+    mutate displayConfig = displayConfig
+
+    emit ReportUpdated
+  }
+
+  command share(userId: string) {
+    guard self.deletedAt == null "Cannot share a deleted report"
+    guard self.isShared == false "Report is already shared"
+
+    mutate isShared = true
+
+    emit ReportShared
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == null "Report is already removed"
+
+    mutate deletedAt = now()
+
+    emit ReportRemoved
+  }
+
+  store Report in durable
+}
+
+// ---------------------------------------------------------------------------
+// Document — generic uploaded/parsed document
+// ---------------------------------------------------------------------------
+
+entity Document {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property documentType: string = ""
+  property fileUrl: string = ""
+  property fileSizeBytes: int = 0
+  property status: string = "uploaded"
+  property entityType: string = ""
+  property entityId: string = ""
+  property uploadedBy: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isParsed: boolean = self.status == "parsed"
+  computed isFailed: boolean = self.status == "failed"
+  computed isParsing: boolean = self.status == "parsing"
+
+  constraint requireName: self.name != null and self.name != "" "Document name is required"
+  constraint requireFileUrl: self.fileUrl != null and self.fileUrl != "" "File URL is required"
+  constraint validStatus: self.status in ["uploaded", "parsing", "parsed", "failed"] "Invalid document status"
+  constraint positiveFileSize: self.fileSizeBytes >= 0 "File size must be non-negative"
+
+  constraint warnUnlinkedDocument:warn self.entityType == "" or self.entityId == "" {
+    messageTemplate: "Document '{name}' is not linked to any entity"
+    details: {
+      name: self.name
+      documentType: self.documentType
+      entityType: self.entityType
+    }
+  }
+
+  // State transitions
+  transition status from "uploaded" to ["parsing"]
+  transition status from "parsing" to ["parsed", "failed"]
+
+  default policy DocumentDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "CRM admin"
+  command create(name: string, documentType: string, fileUrl: string, fileSizeBytes: int, entityType: string, entityId: string, uploadedBy: string) {
+    guard name != null and name != "" "Document name is required"
+    guard fileUrl != null and fileUrl != "" "File URL is required"
+    guard fileSizeBytes >= 0 "File size must be non-negative"
+
+    mutate name = name
+    mutate documentType = documentType
+    mutate fileUrl = fileUrl
+    mutate fileSizeBytes = fileSizeBytes
+    mutate status = "uploaded"
+    mutate entityType = entityType
+    mutate entityId = entityId
+    mutate uploadedBy = uploadedBy
+
+    emit DocumentCreated
+  }
+
+  command markParsed(extractedText: string) {
+    guard self.deletedAt == null "Cannot update a deleted document"
+    guard self.status == "parsing" "Document must be in parsing status to mark as parsed"
+
+    mutate status = "parsed"
+
+    emit DocumentParsed
+  }
+
+  command markFailed(reason: string) {
+    guard self.deletedAt == null "Cannot update a deleted document"
+    guard self.status == "parsing" "Document must be in parsing status to mark as failed"
+
+    mutate status = "failed"
+
+    emit DocumentFailed
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == null "Document is already removed"
+
+    mutate deletedAt = now()
+
+    emit DocumentRemoved
+  }
+
+  store Document in durable
+}
+
+// ---------------------------------------------------------------------------
+// AdminChatThread — internal messaging thread
+// ---------------------------------------------------------------------------
+
+entity AdminChatThread {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property threadType: string = "direct"
+  property slug: string = ""
+  property directKey: string = ""
+  property status: string = "open"
+  property createdBy: string = ""
+  property lastMessageAt: datetime
+  timestamps
+  property deletedAt: datetime
+
+  computed isOpen: boolean = self.status == "open"
+  computed isArchived: boolean = self.status == "archived"
+
+  constraint validStatus: self.status in ["open", "archived"] "Thread status must be open or archived"
+
+  // State transitions
+  transition status from "open" to ["archived"]
+  transition status from "archived" to ["open"]
+
+  default policy AdminChatThreadDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadType: string, slug: string, directKey: string, createdBy: string) {
+    guard threadType != null and threadType != "" "Thread type is required"
+    guard createdBy != null and createdBy != "" "Created by is required"
+
+    mutate threadType = threadType
+    mutate slug = slug
+    mutate directKey = directKey
+    mutate status = "open"
+    mutate createdBy = createdBy
+
+    emit AdminChatThreadCreated
+  }
+
+  command archive(userId: string) {
+    guard self.status == "open" "Thread is already archived"
+
+    mutate status = "archived"
+
+    emit AdminChatThreadArchived
+  }
+
+  command reopen(userId: string) {
+    guard self.status == "archived" "Thread is already open"
+
+    mutate status = "open"
+
+    emit AdminChatThreadReopened
+  }
+
+  store AdminChatThread in durable
+}
+
+// ---------------------------------------------------------------------------
+// AdminChatMessage — a message within an AdminChatThread
+// ---------------------------------------------------------------------------
+
+entity AdminChatMessage {
+  key [tenantId, id]
+  property required id: string
+  property required tenantId: string
+  property threadId: string = ""
+  property authorId: string = ""
+  property authorName: string = ""
+  property text: string = ""
+  timestamps
+  property deletedAt: datetime
+
+  computed isRemoved: boolean = self.deletedAt != null
+
+  constraint requireThreadId: self.threadId != null and self.threadId != "" "Chat thread ID is required"
+  constraint requireAuthor: self.authorId != null and self.authorId != "" "Author ID is required"
+  constraint requireText: self.text != null and self.text != "" "Message text is required"
+
+  default policy AdminChatMessageDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadId: string, authorId: string, authorName: string, text: string) {
+    guard threadId != null and threadId != "" "Chat thread ID is required"
+    guard authorId != null and authorId != "" "Author ID is required"
+    guard text != null and text != "" "Message text is required"
+
+    mutate threadId = threadId
+    mutate authorId = authorId
+    mutate authorName = authorName
+    mutate text = text
+
+    emit AdminChatMessageSent
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == null "Message is already removed"
+
+    mutate deletedAt = now()
+
+    emit AdminChatMessageRemoved
+  }
+
+  store AdminChatMessage in durable
+}
+
+// ---------------------------------------------------------------------------
+// Policies
+// ---------------------------------------------------------------------------
+
+policy SalesCanManageProposalTemplates execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage proposal templates"
+policy ManagerCanActivateProposalTemplates execute: user.role in ["manager", "admin"] "Only managers can activate or deactivate proposal templates"
+policy SalesCanManageInteractionAttachments execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage interaction attachments"
+policy ManagerCanManageScoringRules execute: user.role in ["manager", "admin"] "Only managers can manage CRM scoring rules"
+policy ManagerCanManageReports execute: user.role in ["manager", "admin", "analyst"] "Managers and analysts can manage reports"
+policy StaffCanViewSharedReports execute: user.role in ["sales", "manager", "admin", "analyst", "staff"] "Staff can view shared reports"
+policy ManagerCanManageDocuments execute: user.role in ["manager", "admin"] "Managers can manage documents"
+policy StaffCanUploadDocuments execute: user.role in ["sales", "manager", "admin", "staff"] "Staff can upload documents"
+policy StaffCanManageChatThreads execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can manage admin chat threads"
+policy StaffCanSendChatMessages execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can send chat messages"
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+event ProposalTemplateCreated: "crm.proposal_template.created" {
+  templateId: string
+  tenantId: string
+  name: string
+  createdAt: datetime
+}
+
+event ProposalTemplateUpdated: "crm.proposal_template.updated" {
+  templateId: string
+  tenantId: string
+  name: string
+  updatedAt: datetime
+}
+
+event ProposalTemplateActivated: "crm.proposal_template.activated" {
+  templateId: string
+  tenantId: string
+  name: string
+  activatedAt: datetime
+}
+
+event ProposalTemplateDeactivated: "crm.proposal_template.deactivated" {
+  templateId: string
+  tenantId: string
+  name: string
+  deactivatedAt: datetime
+}
+
+event ProposalTemplateSoftDeleted: "crm.proposal_template.soft_deleted" {
+  templateId: string
+  tenantId: string
+  name: string
+  deletedAt: datetime
+}
+
+event InteractionAttachmentCreated: "crm.interaction_attachment.created" {
+  attachmentId: string
+  tenantId: string
+  clientInteractionId: string
+  fileName: string
+  fileType: string
+  fileSizeBytes: number
+  uploadedBy: string
+  createdAt: datetime
+}
+
+event InteractionAttachmentRemoved: "crm.interaction_attachment.removed" {
+  attachmentId: string
+  tenantId: string
+  clientInteractionId: string
+  fileName: string
+  userId: string
+  removedAt: datetime
+}
+
+event CrmScoringRuleCreated: "crm.scoring_rule.created" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  field: string
+  condition: string
+  points: number
+  createdAt: datetime
+}
+
+event CrmScoringRuleUpdated: "crm.scoring_rule.updated" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  field: string
+  condition: string
+  points: number
+  updatedAt: datetime
+}
+
+event CrmScoringRuleActivated: "crm.scoring_rule.activated" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  activatedAt: datetime
+}
+
+event CrmScoringRuleDeactivated: "crm.scoring_rule.deactivated" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  deactivatedAt: datetime
+}
+
+event CrmScoringRuleSoftDeleted: "crm.scoring_rule.soft_deleted" {
+  ruleId: string
+  tenantId: string
+  ruleName: string
+  deletedAt: datetime
+}
+
+event ReportCreated: "admin.report.created" {
+  reportId: string
+  tenantId: string
+  name: string
+  reportType: string
+  isShared: boolean
+  createdBy: string
+  createdAt: datetime
+}
+
+event ReportUpdated: "admin.report.updated" {
+  reportId: string
+  tenantId: string
+  name: string
+  reportType: string
+  updatedAt: datetime
+}
+
+event ReportShared: "admin.report.shared" {
+  reportId: string
+  tenantId: string
+  name: string
+  userId: string
+  sharedAt: datetime
+}
+
+event ReportRemoved: "admin.report.removed" {
+  reportId: string
+  tenantId: string
+  name: string
+  userId: string
+  removedAt: datetime
+}
+
+event DocumentCreated: "admin.document.created" {
+  documentId: string
+  tenantId: string
+  name: string
+  documentType: string
+  entityType: string
+  entityId: string
+  uploadedBy: string
+  createdAt: datetime
+}
+
+event DocumentParsed: "admin.document.parsed" {
+  documentId: string
+  tenantId: string
+  name: string
+  parsedAt: datetime
+}
+
+event DocumentFailed: "admin.document.failed" {
+  documentId: string
+  tenantId: string
+  name: string
+  reason: string
+  failedAt: datetime
+}
+
+event DocumentRemoved: "admin.document.removed" {
+  documentId: string
+  tenantId: string
+  name: string
+  userId: string
+  removedAt: datetime
+}
+
+event AdminChatThreadCreated: "admin.chat_thread.created" {
+  threadId: string
+  tenantId: string
+  subject: string
+  createdBy: string
+  createdAt: datetime
+}
+
+event AdminChatThreadArchived: "admin.chat_thread.archived" {
+  threadId: string
+  tenantId: string
+  subject: string
+  userId: string
+  archivedAt: datetime
+}
+
+event AdminChatThreadReopened: "admin.chat_thread.reopened" {
+  threadId: string
+  tenantId: string
+  subject: string
+  userId: string
+  reopenedAt: datetime
+}
+
+event AdminChatMessageSent: "admin.chat_message.sent" {
+  messageId: string
+  tenantId: string
+  adminChatThreadId: string
+  senderId: string
+  sentAt: datetime
+}
+
+event AdminChatMessageRemoved: "admin.chat_message.removed" {
+  messageId: string
+  tenantId: string
+  adminChatThreadId: string
+  userId: string
+  removedAt: datetime
+}

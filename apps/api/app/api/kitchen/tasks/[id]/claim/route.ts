@@ -1,24 +1,8 @@
-import { auth } from "@repo/auth/server";
-import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
-import { claimPrepTask } from "@repo/manifest-runtime";
-import {
-  createNextResponse,
-  hasBlockingConstraints,
-} from "@repo/manifest-runtime/api-response";
 import { triggerTaskAssignedSms } from "@repo/notifications";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { dispatchWebhooks } from "@/app/lib/webhook-dispatch";
-import {
-  type ApiSuccessResponse,
-  checkExistingClaim,
-  createErrorResponse,
-  createManifestRuntime,
-  fetchTask,
-  loadTaskIntoManifest,
-  mapManifestStatusToPrisma,
-} from "../../shared-task-helpers";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -27,206 +11,50 @@ interface RouteContext {
 }
 
 /**
- * Claim a prep task using Manifest runtime
+ * Claim a kitchen task via Manifest runtime.
  *
  * POST /api/kitchen/tasks/:id/claim
  *
- * This endpoint uses the Manifest runtime for:
- * - Constraint checking (task availability, status validation)
- * - Event emission (PrepTaskClaimed)
- * - Audit logging
- *
- * The runtime is backed by Prisma for persistence.
- *
- * Response format (standardized):
- * - Success: { success: true, data: { claim, ... }, emittedEvents: [...] }
- * - Error: { success: false, message: "...", constraintOutcomes: [...] }
+ * Delegates to runManifestCommand which handles:
+ * - Auth resolution, guard/policy enforcement
+ * - Status transition (pending/in_progress -> in_progress)
+ * - Event emission (KitchenTaskClaimed)
+ * - Outbox event creation and webhook dispatch
  */
 export async function POST(request: Request, context: RouteContext) {
-  // Step 1: Authenticate and extract context
-  const { orgId, userId: clerkId } = await auth();
-  if (!(orgId && clerkId)) {
-    return NextResponse.json(
-      { success: false, message: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  // Get current user by Clerk ID
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: clerkId }],
-    },
-  });
-
-  if (!currentUser) {
-    return NextResponse.json(
-      { success: false, message: "User not found in database" },
-      { status: 400 }
-    );
-  }
-
-  const userId = currentUser.id;
-
-  // Step 2: Extract request parameters
+  const user = await resolveCurrentUser(request);
   const { id } = await context.params;
-  const body = await request.json();
-  const stationId = body.stationId || "";
-
-  // Step 3: Check for existing active claim
-  const claimCheck = await checkExistingClaim(tenantId, id);
-  if (claimCheck.hasExistingClaim && claimCheck.error) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: claimCheck.error.message,
-        errorCode: "TASK_ALREADY_CLAIMED",
-      },
-      { status: claimCheck.error.status }
-    );
-  }
-
-  // Step 4: Fetch task
-  const taskFetch = await fetchTask(tenantId, id);
-  if (!(taskFetch.success && taskFetch.task)) {
-    return createErrorResponse(
-      taskFetch.error?.message ?? "Unknown error",
-      taskFetch.error?.status ?? 500
-    );
-  }
-
-  const task = taskFetch.task;
-
-  // Step 5: Create Manifest runtime
-  const runtimeResult = await createManifestRuntime({
-    tenantId,
-    userId,
-    userRole: currentUser.role,
-  });
-  if (!(runtimeResult.success && runtimeResult.runtime)) {
-    return createErrorResponse(
-      runtimeResult.error?.message ?? "Unknown error",
-      runtimeResult.error?.status ?? 500
-    );
-  }
-
-  const runtime = runtimeResult.runtime;
-
-  // Step 6: Load task into Manifest
-  await loadTaskIntoManifest(runtime, task);
-
-  // Step 7: Execute claim command
-  const result = await claimPrepTask(runtime, id, userId, stationId);
-
-  // Step 8: Check for blocking constraints
-  if (hasBlockingConstraints(result)) {
-    return createNextResponse(
-      NextResponse,
-      result,
-      { taskId: id },
-      { errorMessagePrefix: "Cannot claim task" }
-    );
-  }
-
-  // Step 9: Sync updated state back to Prisma
-  const instance = await runtime.getInstance("PrepTask", id);
-  if (!instance) {
-    return createErrorResponse("Failed to claim task", 500);
-  }
-
-  // Steps 10-13: Atomically update status + create claim + progress + outbox
-  const prismaStatus = mapManifestStatusToPrisma(instance.status as string);
-  const { claim } = await database.$transaction(async (tx) => {
-    // Update task status
-    await tx.prepTask.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: { status: prismaStatus },
-    });
-
-    // Create claim record
-    const claim = await tx.kitchenTaskClaim.create({
-      data: { tenantId, taskId: id, employeeId: userId },
-    });
-
-    // Create progress entry if status changed
-    if (task.status !== "in_progress") {
-      const fullName =
-        `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
-      await tx.kitchenTaskProgress.create({
-        data: {
-          tenantId,
-          taskId: id,
-          employeeId: userId,
-          progressType: "status_change",
-          oldStatus: task.status,
-          newStatus: "in_progress",
-          notes: `Task claimed by ${fullName}`,
-        },
-      });
-    }
-
-    // Create outbox event for real-time updates
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "KitchenTask",
-        aggregateId: id,
-        eventType: "kitchen.task.claimed",
-        payload: {
-          taskId: id,
-          claimId: claim.id,
-          employeeId: userId,
-          status: "in_progress",
-          constraintOutcomes: result.constraintOutcomes,
-        } as Prisma.InputJsonValue,
-        status: "pending" as const,
-      },
-    });
-
-    return { claim };
-  });
+  const body = (await request.json().catch(() => ({}))) as Record<
+    string,
+    unknown
+  >;
 
   // Fire-and-forget SMS trigger for task assignment
-  triggerTaskAssignedSms({
-    tenantId,
-    taskId: id,
-    taskName: task.name,
-    employeeId: userId,
-    employeeName:
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
-    dueDate: task.dueByDate?.toISOString(),
-  }).catch(() => {});
-
-  // Step 14: Return success response (after transaction commits)
-  const successResponse: ApiSuccessResponse<{
-    claim: typeof claim;
-    taskId: string;
-    status: string;
-  }> = {
-    success: true,
-    data: {
-      claim,
+  // Resolve task name for SMS before delegating to runtime
+  const task = await database.kitchenTask.findFirst({
+    where: { AND: [{ tenantId: user.tenantId }, { id }, { deletedAt: null }] },
+    select: { title: true, dueDate: true },
+  });
+  if (task) {
+    triggerTaskAssignedSms({
+      tenantId: user.tenantId,
       taskId: id,
-      status: "in_progress",
-    },
-    emittedEvents: result.emittedEvents,
-  };
+      taskName: task.title,
+      employeeId: user.id,
+      employeeName:
+        `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      dueDate: task.dueDate?.toISOString(),
+    }).catch(() => {});
+  }
 
-  // Fire-and-forget webhook dispatch for task claim
-  dispatchWebhooks({
-    tenantId,
-    entityType: "KitchenTask",
-    entityId: id,
-    action: "updated",
-    data: {
-      taskId: id,
-      status: "in_progress",
-      claimId: claim.id,
-      employeeId: userId,
+  return runManifestCommand({
+    entity: "KitchenTask",
+    command: "claim",
+    body: {
+      ...body,
+      id,
+      userId: user.id,
     },
-  }).catch(() => {});
-
-  return NextResponse.json(successResponse, { status: 201 });
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

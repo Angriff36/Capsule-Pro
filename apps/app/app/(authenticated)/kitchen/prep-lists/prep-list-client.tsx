@@ -53,14 +53,14 @@ import { PrepListSaveButton } from "./components/prep-list-form-with-constraints
 import { getEventMenuDishesHref } from "./navigation";
 
 interface PrepListClientProps {
-  eventId: string;
-  initialPrepList: PrepListGenerationResult | null;
   availableEvents: Array<{
     id: string;
     title: string;
     eventDate: Date;
     guestCount: number;
   }>;
+  eventId: string;
+  initialPrepList: PrepListGenerationResult | null;
 }
 
 const STATION_ICONS = {
@@ -70,6 +70,17 @@ const STATION_ICONS = {
   "prep-station": UtensilsCrossed,
   garnish: Leaf,
 };
+
+function getIngredientReviewTitle(
+  hasSavedPrepList: boolean,
+  isReviewed: boolean
+) {
+  if (!hasSavedPrepList) {
+    return "Save prep list first";
+  }
+
+  return isReviewed ? "Reviewed" : "Mark reviewed";
+}
 
 function StationCard({
   station,
@@ -140,81 +151,76 @@ function StationCard({
             </div>
           ) : (
             <div className="space-y-4">
-              {station.ingredients.map(
-                (ingredient: IngredientItem, index: number) => (
-                  <div
-                    className="flex flex-col gap-1 rounded-lg border p-3"
-                    key={`${ingredient.ingredientId}-${index}`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">
-                            {ingredient.ingredientName}
-                          </span>
-                          {ingredient.isOptional && (
-                            <Badge className="text-xs" variant="secondary">
-                              Optional
-                            </Badge>
-                          )}
-                          {ingredient.allergens.length > 0 && (
-                            <Badge className="text-xs" variant="outline">
-                              {ingredient.allergens.join(", ")}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                          <span>
-                            {ingredient.scaledQuantity} {ingredient.scaledUnit}
-                          </span>
-                          {ingredient.preparationNotes && (
-                            <span className="italic">
-                              {ingredient.preparationNotes}
-                            </span>
-                          )}
-                        </div>
-                        {ingredient.dietarySubstitutions.length > 0 && (
-                          <div className="mt-2 rounded-md bg-muted/50 p-2 text-foreground text-xs">
-                            <strong>Substitution:</strong>{" "}
-                            {ingredient.dietarySubstitutions.join("; ")}
-                          </div>
+              {station.ingredients.map((ingredient: IngredientItem) => (
+                <div
+                  className="flex flex-col gap-1 rounded-lg border p-3"
+                  key={ingredient.ingredientId}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {ingredient.ingredientName}
+                        </span>
+                        {ingredient.isOptional && (
+                          <Badge className="text-xs" variant="secondary">
+                            Optional
+                          </Badge>
+                        )}
+                        {ingredient.allergens.length > 0 && (
+                          <Badge className="text-xs" variant="outline">
+                            {ingredient.allergens.join(", ")}
+                          </Badge>
                         )}
                       </div>
-                      <Button
-                        aria-label={
-                          reviewedIngredients.has(ingredient.ingredientId)
-                            ? "Mark as unreviewed"
-                            : "Mark ingredient reviewed"
-                        }
-                        className={`h-8 w-8 shrink-0 ${reviewedIngredients.has(ingredient.ingredientId) ? "bg-primary/10 text-primary" : ""}`}
-                        disabled={!savedPrepListId}
-                        onClick={() =>
-                          onReviewIngredient(ingredient.ingredientId)
-                        }
-                        size="icon"
-                        title={
-                          savedPrepListId
-                            ? reviewedIngredients.has(ingredient.ingredientId)
-                              ? "Reviewed"
-                              : "Mark reviewed"
-                            : "Save prep list first"
-                        }
-                        type="button"
-                        variant="ghost"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                        <span>
+                          {ingredient.scaledQuantity} {ingredient.scaledUnit}
+                        </span>
+                        {ingredient.preparationNotes && (
+                          <span className="italic">
+                            {ingredient.preparationNotes}
+                          </span>
+                        )}
+                      </div>
+                      {ingredient.dietarySubstitutions.length > 0 && (
+                        <div className="mt-2 rounded-md bg-muted/50 p-2 text-foreground text-xs">
+                          <strong>Substitution:</strong>{" "}
+                          {ingredient.dietarySubstitutions.join("; ")}
+                        </div>
+                      )}
                     </div>
+                    <Button
+                      aria-label={
+                        reviewedIngredients.has(ingredient.ingredientId)
+                          ? "Mark as unreviewed"
+                          : "Mark ingredient reviewed"
+                      }
+                      className={`h-8 w-8 shrink-0 ${reviewedIngredients.has(ingredient.ingredientId) ? "bg-primary/10 text-primary" : ""}`}
+                      disabled={!savedPrepListId}
+                      onClick={() =>
+                        onReviewIngredient(ingredient.ingredientId)
+                      }
+                      size="icon"
+                      title={getIngredientReviewTitle(
+                        Boolean(savedPrepListId),
+                        reviewedIngredients.has(ingredient.ingredientId)
+                      )}
+                      type="button"
+                      variant="ghost"
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
                   </div>
-                )
-              )}
+                </div>
+              ))}
             </div>
           )}
 
           {station.tasks.length > 0 && (
             <div className="mt-6 space-y-4">
               <Separator />
-              <h4 className="font-medium text-sm text-muted-foreground">
+              <h4 className="font-medium text-muted-foreground text-sm">
                 Production Tasks
               </h4>
               <div className="space-y-2">
@@ -374,6 +380,8 @@ export function PrepListClient({
 
       const result = await response.json();
       setPrepList(result);
+      setSavedPrepListId(null);
+      setReviewedIngredients(new Set());
       setExpandedStations(
         new Set(result.stationLists.map((s: StationPrepList) => s.stationId))
       );
@@ -467,13 +475,200 @@ export function PrepListClient({
 
   if (!prepList) {
     return (
-      <div className="space-y-6">
-        <EmptyState
-          onGoToEvents={() => router.push(getEventMenuDishesHref(eventId))}
-        />
+      <div className="flex min-h-0 flex-1 flex-col bg-canvas">
+        <header className="sticky top-0 z-10 border-hairline border-b bg-background/80 backdrop-blur-md">
+          <div className="flex flex-col gap-4 px-6 py-4">
+            <div>
+              <h1 className="font-bold text-2xl text-foreground">Prep Lists</h1>
+              <p className="text-muted-foreground text-sm">
+                Choose an event and generate a prep list from its linked menu
+                dishes.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label
+                    className="font-medium text-foreground text-sm"
+                    htmlFor="event-select-empty"
+                  >
+                    Event:
+                  </label>
+                  <Select
+                    onValueChange={(value) => setSelectedEventId(value)}
+                    value={selectedEventId}
+                  >
+                    <SelectTrigger
+                      className="w-[240px]"
+                      id="event-select-empty"
+                    >
+                      <SelectValue placeholder="Select an event" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableEvents.map((event) => (
+                        <SelectItem key={event.id} value={event.id}>
+                          {event.title} (
+                          {format(new Date(event.eventDate), "MMM d")})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label
+                    className="font-medium text-foreground text-sm"
+                    htmlFor="batch-size-empty"
+                  >
+                    Batch Size:
+                  </label>
+                  <Input
+                    className="w-24"
+                    id="batch-size-empty"
+                    min="0.1"
+                    onChange={(e) => setBatchMultiplier(Number(e.target.value))}
+                    step="0.1"
+                    type="number"
+                    value={batchMultiplier}
+                  />
+                  <span className="text-muted-foreground text-sm">×</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <label
+                    className="font-medium text-foreground text-sm"
+                    htmlFor="dietary-restrictions-empty"
+                  >
+                    Dietary:
+                  </label>
+                  <Select
+                    onValueChange={(value) =>
+                      setDietaryRestrictions(
+                        value && value !== "__none__"
+                          ? value.split(",").map((s) => s.trim())
+                          : []
+                      )
+                    }
+                    value={dietaryRestrictions.join(",") || "__none__"}
+                  >
+                    <SelectTrigger
+                      className="w-[180px]"
+                      id="dietary-restrictions-empty"
+                    >
+                      <SelectValue placeholder="None" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">None</SelectItem>
+                      <SelectItem value="gluten-free">Gluten Free</SelectItem>
+                      <SelectItem value="dairy-free">Dairy Free</SelectItem>
+                      <SelectItem value="vegan">Vegan</SelectItem>
+                      <SelectItem value="nut-free">Nut Free</SelectItem>
+                      <SelectItem value="vegetarian">Vegetarian</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Button
+                className="gap-2"
+                disabled={isGenerating || !selectedEventId}
+                onClick={handleGenerate}
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4" />
+                    Generate Prep List
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 p-6">
+          {isGenerating ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
+                <StationSkeleton key={i} />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              onGoToEvents={() =>
+                router.push(getEventMenuDishesHref(selectedEventId || eventId))
+              }
+            />
+          )}
+        </main>
       </div>
     );
   }
+
+  const renderPrepListContent = () => {
+    if (isGenerating) {
+      return (
+        <div className="grid gap-6 md:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <StationSkeleton key={i} />
+          ))}
+        </div>
+      );
+    }
+
+    if (prepList.totalIngredients === 0) {
+      return (
+        <EmptyState
+          onGoToEvents={() =>
+            router.push(getEventMenuDishesHref(selectedEventId || eventId))
+          }
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-8">
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Review before saving</AlertTitle>
+          <AlertDescription>
+            Review the ingredient quantities and substitutions before saving to
+            the Production Board. Adjust batch size or dietary restrictions as
+            needed.
+          </AlertDescription>
+        </Alert>
+
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium text-muted-foreground text-sm">
+              Station Prep Lists
+            </h2>
+            <Badge variant="secondary">
+              {prepList.stationLists.length} stations
+            </Badge>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {prepList.stationLists.map((station: StationPrepList) => (
+              <StationCard
+                isExpanded={expandedStations.has(station.stationId)}
+                key={station.stationId}
+                onReviewIngredient={handleReviewIngredient}
+                onToggle={() => toggleStation(station.stationId)}
+                reviewedIngredients={reviewedIngredients}
+                savedPrepListId={savedPrepListId}
+                station={station}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  };
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-canvas">
@@ -521,6 +716,7 @@ export function PrepListClient({
               </Button>
               <PrepListSaveButton
                 disabled={prepList.totalIngredients === 0}
+                onSaved={setSavedPrepListId}
                 prepList={prepList}
               />
             </div>
@@ -627,55 +823,7 @@ export function PrepListClient({
 
       <Separator />
 
-      <main className="flex-1 p-6">
-        {isGenerating ? (
-          <div className="grid gap-6 md:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
-              <StationSkeleton key={i} />
-            ))}
-          </div>
-        ) : prepList.totalIngredients === 0 ? (
-          <EmptyState
-            onGoToEvents={() => router.push(getEventMenuDishesHref(eventId))}
-          />
-        ) : (
-          <div className="space-y-8">
-            <Alert>
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Review before saving</AlertTitle>
-              <AlertDescription>
-                Review the ingredient quantities and substitutions before saving
-                to the Production Board. Adjust batch size or dietary
-                restrictions as needed.
-              </AlertDescription>
-            </Alert>
-
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-medium text-sm text-muted-foreground">
-                  Station Prep Lists
-                </h2>
-                <Badge variant="secondary">
-                  {prepList.stationLists.length} stations
-                </Badge>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {prepList.stationLists.map((station: StationPrepList) => (
-                  <StationCard
-                    isExpanded={expandedStations.has(station.stationId)}
-                    key={station.stationId}
-                    onReviewIngredient={handleReviewIngredient}
-                    onToggle={() => toggleStation(station.stationId)}
-                    reviewedIngredients={reviewedIngredients}
-                    savedPrepListId={savedPrepListId}
-                    station={station}
-                  />
-                ))}
-              </div>
-            </section>
-          </div>
-        )}
-      </main>
+      <main className="flex-1 p-6">{renderPrepListContent()}</main>
     </div>
   );
 }

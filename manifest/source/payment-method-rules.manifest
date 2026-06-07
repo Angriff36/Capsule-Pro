@@ -2,6 +2,7 @@
 // Defines payment method storage and tokenization rules
 
 entity PaymentMethod {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -42,7 +43,7 @@ entity PaymentMethod {
   property metadata: string = "{}"
 
   // Timestamps
-  property required createdAt: datetime = now()
+  timestamps
   property expiresAt: datetime
 
   // Computed properties
@@ -52,10 +53,39 @@ entity PaymentMethod {
   // Constraints
   constraint default_for_active_only: self.isDefault == false or self.status == "ACTIVE" "Only active payment methods can be default"
 
+  // State transitions
+  transition status from "ACTIVE" to ["EXPIRED", "INVALID", "FRAUDULENT", "REMOVED"]
+  transition status from "EXPIRED" to ["ACTIVE"]
+
   // Commands
+  default policy PaymentMethodDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Payment method management"
+  command create(clientId: string, type: string, externalMethodId: string, cardLastFour: string, cardNetwork: string, cardExpiryMonth: number, cardExpiryYear: number, cardHolderName: string, bankAccountLastFour: string, bankAccountType: string, bankRoutingNumber: string, walletProvider: string, walletEmail: string, nickname: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard type in ["CREDIT_CARD", "DEBIT_CARD", "ACH", "WIRE", "DIGITAL_WALLET", "CHECK"] "Invalid payment method type"
+
+    mutate clientId = clientId
+    mutate type = type
+    mutate externalMethodId = externalMethodId
+    mutate cardLastFour = cardLastFour
+    mutate cardNetwork = cardNetwork
+    mutate cardExpiryMonth = cardExpiryMonth
+    mutate cardExpiryYear = cardExpiryYear
+    mutate cardHolderName = cardHolderName
+    mutate bankAccountLastFour = bankAccountLastFour
+    mutate bankAccountType = bankAccountType
+    mutate bankRoutingNumber = bankRoutingNumber
+    mutate walletProvider = walletProvider
+    mutate walletEmail = walletEmail
+    mutate nickname = nickname
+    mutate status = "ACTIVE"
+    mutate isDefault = false
+    mutate fraudFlagged = false
+
+    emit PaymentMethodCreated
+  }
+
   command markAsDefault() {
     guard self.isUsable "Payment method must be usable to be set as default"
-    guard self.isExpired == false "Cannot set expired card as default"
     mutate isDefault = true
     emit PaymentMethodSetDefault
   }
@@ -67,12 +97,14 @@ entity PaymentMethod {
 
   command markExpired() {
     guard self.type in ["CREDIT_CARD", "DEBIT_CARD"] "Only cards can expire"
+    guard self.status == "ACTIVE" "Can only expire an active payment method"
     mutate status = "EXPIRED"
     mutate expiresAt = now()
     emit PaymentMethodExpired
   }
 
   command markInvalid(reason: string) {
+    guard self.status != "FRAUDULENT" "Cannot invalidate a fraudulent payment method"
     mutate status = "INVALID"
     emit PaymentMethodInvalidated
   }
@@ -81,26 +113,57 @@ entity PaymentMethod {
     guard self.fraudFlagged == false "Already flagged for fraud"
     mutate fraudFlagged = true
     mutate status = "FRAUDULENT"
+    mutate isDefault = false
     emit PaymentMethodFraudFlagged
   }
 
   command verify(method: string) {
     guard self.status == "ACTIVE" "Can only verify active payment methods"
+    guard self.fraudFlagged == false "Cannot verify a fraud-flagged payment method"
     mutate verifiedAt = now()
     mutate verificationMethod = method
     emit PaymentMethodVerified
   }
 
+  command markVerificationFailed(reason: string) {
+    guard self.status == "ACTIVE" "Can only fail verification on an active payment method"
+    mutate status = "INVALID"
+    emit PaymentMethodVerificationFailed
+  }
+
   command updateToken(newToken: string) {
     guard self.status == "ACTIVE" "Can only update active payment methods"
+    guard newToken != null and newToken != "" "New token is required"
     mutate externalMethodId = newToken
     emit PaymentMethodTokenUpdated
+  }
+
+  command update(cardLastFour: string, cardNetwork: string, isDefault: boolean) {
+    guard self.status != "FRAUDULENT" "Cannot update a fraudulent payment method"
+    mutate cardLastFour = cardLastFour
+    mutate cardNetwork = cardNetwork
+    mutate isDefault = isDefault
+    emit PaymentMethodUpdated
+  }
+
+  command remove() {
+    guard self.status != "FRAUDULENT" "Cannot remove a fraudulent payment method"
+    mutate status = "REMOVED"
+    mutate isDefault = false
+    emit PaymentMethodRemoved
   }
 }
 
 store PaymentMethod in durable
 
 // Events
+event PaymentMethodCreated: "payment-method.created" {
+  paymentMethodId: string
+  clientId: string
+  type: string
+  createdAt: datetime
+}
+
 event PaymentMethodSetDefault: "payment-method.set-default" {
   paymentMethodId: string
   clientId: string
@@ -135,6 +198,22 @@ event PaymentMethodVerified: "payment-method.verified" {
 }
 
 event PaymentMethodTokenUpdated: "payment-method.token-updated" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodVerificationFailed: "payment-method.verification-failed" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodUpdated: "payment-method.updated" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodRemoved: "payment-method.removed" {
   paymentMethodId: string
   clientId: string
 }

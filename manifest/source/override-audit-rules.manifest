@@ -2,6 +2,7 @@
 // Manifest spec for recording and authorizing constraint overrides
 
 entity OverrideAudit {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property entityType: string = ""
@@ -11,8 +12,8 @@ entity OverrideAudit {
   property overriddenBy: string = ""
   property overrideReason: string = ""
   property authorizedBy: string = ""
-  property authorizedAt: datetime = now()
-  property createdAt: datetime = now()
+  property authorizedAt: datetime
+  timestamps
 
   computed isAuthorized: boolean = self.authorizedBy != ""
   computed isPendingAuthorization: boolean = self.authorizedBy == ""
@@ -26,6 +27,7 @@ entity OverrideAudit {
 
   constraint cannotAuthorizeTwice:warn self.authorizedBy != "" "Override already authorized"
 
+  default policy OverrideAuditDefaultAccess execute: user.role in ["manager", "admin"] "Override audit"
   command create(entityType: string, entityId: string, constraintId: string, guardExpression: string, overriddenBy: string, overrideReason: string) {
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"
@@ -39,7 +41,6 @@ entity OverrideAudit {
     mutate guardExpression = guardExpression
     mutate overriddenBy = overriddenBy
     mutate overrideReason = overrideReason
-    mutate createdAt = now()
 
     emit OverrideAuditCreated
   }
@@ -54,7 +55,7 @@ entity OverrideAudit {
     emit OverrideAuditAuthorized
   }
 
-  store OverrideAudit in memory
+  store OverrideAudit in durable
 }
 
 policy AuditManagersCanOverride execute: user.role in ["manager", "admin"] "Managers and admins can create override audit entries"
@@ -69,7 +70,7 @@ event OverrideAuditCreated: "audit.override.created" {
   guardExpression: string
   overriddenBy: string
   overrideReason: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event OverrideAuditAuthorized: "audit.override.authorized" {
@@ -79,5 +80,5 @@ event OverrideAuditAuthorized: "audit.override.authorized" {
   entityId: string
   constraintId: string
   authorizedBy: string
-  authorizedAt: number
+  authorizedAt: datetime
 }

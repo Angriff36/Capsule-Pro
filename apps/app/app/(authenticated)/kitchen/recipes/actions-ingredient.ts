@@ -1,18 +1,17 @@
 /**
  * @module actions-ingredient
- * @intent Server action for creating ingredients directly in the database
- * @responsibility Parse form data, validate, insert into tenant_kitchen.ingredients, emit outbox event
+ * @intent Server action for creating ingredients via Manifest runtime
+ * @responsibility Parse form data, validate, create via governed command
  * @domain Kitchen
- * @tags ingredients, server-action, create
+ * @tags ingredients, server-action, create, governed
  * @canonical true
  */
 
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 export interface IngredientActionResult {
   success: boolean;
@@ -40,48 +39,40 @@ const parseNumber = (value: FormDataEntryValue | null): number | null => {
 export const createIngredient = async (
   formData: FormData
 ): Promise<IngredientActionResult> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   const name = String(formData.get("name") || "").trim();
   if (!name) {
     return { success: false, error: "Ingredient name is required." };
   }
 
-  const category = String(formData.get("category") || "").trim() || null;
-  const defaultUnitId = parseNumber(formData.get("defaultUnitId"));
-  const shelfLifeDays = parseNumber(formData.get("shelfLifeDays"));
+  const category = String(formData.get("category") || "").trim() || "";
+  const defaultUnitId = parseNumber(formData.get("defaultUnitId")) ?? 1;
+  const shelfLifeDays = parseNumber(formData.get("shelfLifeDays")) ?? 0;
   const storageInstructions =
-    String(formData.get("storageInstructions") || "").trim() || null;
-  const allergens = parseList(formData.get("allergens"));
+    String(formData.get("storageInstructions") || "").trim() || "";
+  const allergens = parseList(formData.get("allergens")).join(",");
 
-  const ingredientId = randomUUID();
+  const result = await runManifestCommand({
+    entity: "Ingredient",
+    command: "create",
+    body: {
+      name,
+      category,
+      defaultUnitId,
+      densityGPerMl: 0,
+      shelfLifeDays,
+      storageInstructions,
+      allergens,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.ingredients (
-        tenant_id,
-        id,
-        name,
-        category,
-        default_unit_id,
-        shelf_life_days,
-        storage_instructions,
-        allergens,
-        is_active
-      )
-      VALUES (
-        ${tenantId},
-        ${ingredientId},
-        ${name},
-        ${category},
-        ${defaultUnitId ?? 1},
-        ${shelfLifeDays},
-        ${storageInstructions},
-        ${allergens.length > 0 ? allergens : []},
-        true
-      )
-    `
-  );
+  if (!result.ok) {
+    return { success: false, error: result.message || "Failed to create ingredient." };
+  }
+
+  const ingredientId = (result.result as { id?: string } | null)?.id;
 
   revalidatePath("/kitchen/recipes");
 

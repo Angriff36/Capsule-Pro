@@ -2,6 +2,7 @@
 // Manifest spec for proposal lifecycle and line item management
 
 entity Proposal {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property proposalNumber: string = ""
@@ -9,35 +10,35 @@ entity Proposal {
   property leadId: string = ""
   property eventId: string = ""
   property title: string = ""
-  property eventDate: datetime = now()
+  property eventDate: datetime
   property eventType: string = ""
   property guestCount: int = 0
   property venueName: string = ""
   property venueAddress: string = ""
-  property subtotal: number = 0
-  property taxRate: number = 0
-  property taxAmount: number = 0
-  property discountAmount: number = 0
-  property total: number = 0
+  property subtotal: money = 0
+  property taxRate: decimal = 0
+  property taxAmount: money = 0
+  property discountAmount: money = 0
+  property total: money = 0
   property status: string = "draft"
-  property validUntil: number = 0
-  property sentAt: datetime = now()
-  property viewedAt: datetime = now()
-  property acceptedAt: datetime = now()
-  property rejectedAt: datetime = now()
+  property validUntil: datetime
+  property sentAt: datetime
+  property viewedAt: datetime
+  property acceptedAt: datetime
+  property rejectedAt: datetime
   property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property publicToken: string = ""
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isSent: boolean = self.status == "sent" or self.status == "viewed"
   computed isAccepted: boolean = self.status == "accepted"
   computed isRejected: boolean = self.status == "rejected"
   computed isWithdrawn: boolean = self.status == "withdrawn"
-  computed isExpired: boolean = self.validUntil > 0 and self.validUntil < now()
+  computed isExpired: boolean = self.validUntil != null and self.validUntil < now()
   computed isFinalized: boolean = self.status in ["accepted", "rejected", "withdrawn", "expired"]
   computed hasLineItems: boolean = self.lineItemCount > 0
   computed hasDiscount: boolean = self.discountAmount > 0
@@ -45,11 +46,18 @@ entity Proposal {
   constraint validStatus: self.status in ["draft", "sent", "viewed", "accepted", "rejected", "withdrawn", "expired"] "Invalid proposal status"
   constraint validTitle: self.title != null and self.title != "" "Proposal title is required"
   constraint validProposalNumber: self.proposalNumber != null and self.proposalNumber != "" "Proposal number is required"
+
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"
 
-  constraint warnExpiringSoon:warn self.validUntil > 0 and self.validUntil > now() and self.status == "sent" {
+  transition status from "draft" to ["sent", "withdrawn"]
+  transition status from "sent" to ["viewed", "accepted", "rejected", "withdrawn", "expired"]
+  transition status from "viewed" to ["accepted", "rejected", "withdrawn", "expired"]
+
+  constraint warnExpiringSoon:warn self.validUntil != null and self.validUntil > now() and self.status == "sent" {
     messageTemplate: "Proposal '{proposalNumber}' is sent and approaching expiration"
     details: {
       proposalNumber: self.proposalNumber
@@ -69,11 +77,18 @@ entity Proposal {
     }
   }
 
-  command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
+  default policy ProposalDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
+  // clientId/eventDate/eventType/venueName/venueAddress are NOT create params:
+  // when a proposal is created from its linked Event (eventId), these are
+  // inherited server-side from the parent Event via parent-context propagation
+  // (manifest/runtime/src/parent-context-resolver.ts). The caller supplies only
+  // the eventId link + proposal-specific input, so the UI never re-asks for data
+  // the Event already owns. See specs/parent-context-propagation.md.
+  command create(proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
     guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
 
-    constraint warnNoClient:warn (clientId == null or clientId == "") and (leadId == null or leadId == "") {
+    constraint warnNoClient:warn (self.clientId == null or self.clientId == "") and (leadId == null or leadId == "") {
       messageTemplate: "Creating proposal '{proposalNumber}' with no client or lead attached"
       details: {
         proposalNumber: proposalNumber
@@ -82,15 +97,10 @@ entity Proposal {
     }
 
     mutate proposalNumber = proposalNumber
-    mutate clientId = clientId
     mutate leadId = leadId
     mutate eventId = eventId
     mutate title = title
-    mutate eventDate = eventDate
-    mutate eventType = eventType
     mutate guestCount = guestCount
-    mutate venueName = venueName
-    mutate venueAddress = venueAddress
     mutate taxRate = taxRate
     mutate validUntil = validUntil
     mutate notes = notes
@@ -101,14 +111,12 @@ entity Proposal {
     mutate total = 0
     mutate status = "draft"
     mutate lineItemCount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProposalCreated
   }
 
-  command update(title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted proposal"
+  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
+    guard self.deletedAt == null "Cannot update a deleted proposal"
     guard self.isDraft "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
 
@@ -126,13 +134,12 @@ entity Proposal {
     mutate validUntil = validUntil
     mutate notes = notes
     mutate termsAndConditions = termsAndConditions
-    mutate updatedAt = now()
 
     emit ProposalUpdated
   }
 
   command send(userId: string) {
-    guard self.deletedAt == 0 "Cannot send a deleted proposal"
+    guard self.deletedAt == null "Cannot send a deleted proposal"
     guard self.isDraft "Can only send proposals in draft status"
 
     constraint blockNoLineItems:block self.hasLineItems == false {
@@ -143,7 +150,7 @@ entity Proposal {
       }
     }
 
-    constraint warnNoValidUntil:warn self.validUntil == 0 {
+    constraint warnNoValidUntil:warn self.validUntil == null {
       messageTemplate: "Sending proposal '{proposalNumber}' with no expiration date"
       details: {
         proposalNumber: self.proposalNumber
@@ -162,7 +169,6 @@ entity Proposal {
 
     mutate status = "sent"
     mutate sentAt = now()
-    mutate updatedAt = now()
 
     emit ProposalSent
   }
@@ -172,13 +178,12 @@ entity Proposal {
 
     mutate status = "viewed"
     mutate viewedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalViewed
   }
 
   command accept(userId: string) {
-    guard self.deletedAt == 0 "Cannot accept a deleted proposal"
+    guard self.deletedAt == null "Cannot accept a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only accept sent or viewed proposals"
 
     constraint blockExpired:block self.isExpired {
@@ -192,24 +197,22 @@ entity Proposal {
 
     mutate status = "accepted"
     mutate acceptedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalAccepted
   }
 
   command reject(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot reject a deleted proposal"
+    guard self.deletedAt == null "Cannot reject a deleted proposal"
     guard self.status in ["sent", "viewed"] "Can only reject sent or viewed proposals"
 
     mutate status = "rejected"
     mutate rejectedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalRejected
   }
 
   command withdraw(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot withdraw a deleted proposal"
+    guard self.deletedAt == null "Cannot withdraw a deleted proposal"
 
     constraint blockAlreadyAccepted:block self.isAccepted {
       messageTemplate: "Cannot withdraw accepted proposal '{proposalNumber}'"
@@ -228,36 +231,54 @@ entity Proposal {
     }
 
     mutate status = "withdrawn"
-    mutate updatedAt = now()
 
     emit ProposalWithdrawn
   }
 
-  store Proposal in memory
+  command remove(userId: string) {
+    guard self.deletedAt == null "Proposal is already removed"
+
+    mutate deletedAt = now()
+
+    emit ProposalRemoved
+  }
+
+  command generatePublicLink(userId: string) {
+    guard self.deletedAt == null "Cannot generate link for a deleted proposal"
+    guard self.publicToken == "" "Public link already generated"
+
+    mutate publicToken = "placeholder"
+
+    emit ProposalPublicLinkGenerated
+  }
+
+  store Proposal in durable
 }
 
 entity ProposalLineItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required proposalId: string
   property itemType: string = ""
   property category: string = ""
   property description: string = ""
-  property quantity: number = 0
+  property quantity: int = 0
   property unitOfMeasure: string = ""
-  property unitPrice: number = 0
-  property total: number = 0
-  property totalPrice: number = 0
+  property unitPrice: money = 0
+  property total: money = 0
+  property totalPrice: money = 0
   property sortOrder: int = 0
   property notes: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed calculatedTotal: number = self.quantity * self.unitPrice
 
   constraint validProposalId: self.proposalId != null and self.proposalId != "" "Proposal ID is required"
   constraint validDescription: self.description != null and self.description != "" "Description is required"
+
+  relationship belongsTo proposal: Proposal fields [tenantId, proposalId] references [tenantId, id]
   constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
   constraint positiveUnitPrice: self.unitPrice >= 0 "Unit price must be non-negative"
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
@@ -271,6 +292,7 @@ entity ProposalLineItem {
     }
   }
 
+  default policy ProposalLineItemDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
   command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
     guard proposalId != null and proposalId != "" "Proposal ID is required"
     guard description != null and description != "" "Description is required"
@@ -288,14 +310,12 @@ entity ProposalLineItem {
     mutate totalPrice = quantity * unitPrice
     mutate sortOrder = sortOrder
     mutate notes = notes
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit ProposalLineItemCreated
   }
 
   command update(itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
-    guard self.deletedAt == 0 "Cannot update a removed line item"
+    guard self.deletedAt == null "Cannot update a removed line item"
     guard description != null and description != "" "Description is required"
     guard quantity > 0 "Quantity must be positive"
     guard unitPrice >= 0 "Unit price must be non-negative"
@@ -310,21 +330,19 @@ entity ProposalLineItem {
     mutate totalPrice = quantity * unitPrice
     mutate sortOrder = sortOrder
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit ProposalLineItemUpdated
   }
 
   command remove(userId: string) {
-    guard self.deletedAt == 0 "Line item is already removed"
+    guard self.deletedAt == null "Line item is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit ProposalLineItemRemoved
   }
 
-  store ProposalLineItem in memory
+  store ProposalLineItem in durable
 }
 
 // Policy definitions
@@ -341,7 +359,7 @@ event ProposalCreated: "crm.proposal.created" {
   clientId: string
   leadId: string
   title: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProposalUpdated: "crm.proposal.updated" {
@@ -350,7 +368,7 @@ event ProposalUpdated: "crm.proposal.updated" {
   proposalNumber: string
   title: string
   total: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProposalSent: "crm.proposal.sent" {
@@ -362,7 +380,7 @@ event ProposalSent: "crm.proposal.sent" {
   total: number
   validUntil: number
   userId: string
-  sentAt: number
+  sentAt: datetime
 }
 
 event ProposalViewed: "crm.proposal.viewed" {
@@ -371,7 +389,7 @@ event ProposalViewed: "crm.proposal.viewed" {
   proposalNumber: string
   title: string
   viewedByInfo: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event ProposalAccepted: "crm.proposal.accepted" {
@@ -382,7 +400,7 @@ event ProposalAccepted: "crm.proposal.accepted" {
   title: string
   total: number
   userId: string
-  acceptedAt: number
+  acceptedAt: datetime
 }
 
 event ProposalRejected: "crm.proposal.rejected" {
@@ -394,7 +412,7 @@ event ProposalRejected: "crm.proposal.rejected" {
   total: number
   reason: string
   userId: string
-  rejectedAt: number
+  rejectedAt: datetime
 }
 
 event ProposalWithdrawn: "crm.proposal.withdrawn" {
@@ -404,7 +422,25 @@ event ProposalWithdrawn: "crm.proposal.withdrawn" {
   title: string
   reason: string
   userId: string
-  withdrawnAt: number
+  withdrawnAt: datetime
+}
+
+event ProposalRemoved: "crm.proposal.removed" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  userId: string
+  removedAt: datetime
+}
+
+event ProposalPublicLinkGenerated: "crm.proposal.public_link.generated" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  publicToken: string
+  generatedAt: datetime
 }
 
 // ProposalLineItem events
@@ -417,7 +453,7 @@ event ProposalLineItemCreated: "crm.proposal_line_item.created" {
   quantity: number
   unitPrice: number
   totalPrice: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
@@ -428,7 +464,7 @@ event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
   quantity: number
   unitPrice: number
   totalPrice: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
@@ -437,5 +473,5 @@ event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
   proposalId: string
   description: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }

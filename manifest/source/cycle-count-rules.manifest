@@ -2,38 +2,47 @@
 // Manifest spec for cycle count sessions, records, and variance reporting
 
 entity CycleCountSession {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required locationId: string
   property required sessionId: string
   property required sessionName: string
   property countType: string = "ad_hoc"
-  property scheduledDate: datetime = now()
-  property startedAt: datetime = now()
-  property completedAt: datetime = now()
-  property finalizedAt: datetime = now()
+  property scheduledDate: datetime
+  property startedAt: datetime
+  property completedAt: datetime
+  property finalizedAt: datetime
   property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
-  property totalVariance: number = 0
-  property variancePercentage: number = 0
+  property totalVariance: decimal = 0
+  property variancePercentage: decimal = 0
   property notes: string = ""
   property createdById: string = ""
   property approvedById: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
-  computed countProgress: number = self.totalItems > 0 ? (self.countedItems / self.totalItems) * 100 : 0
+  computed countProgress: number = percent(self.countedItems, self.totalItems)
   computed hasVariance: boolean = self.totalVariance != 0
+
+  relationship hasMany records: CycleCountRecord
+  relationship hasMany varianceReports: VarianceReport
 
   constraint validStatus: self.status in ["draft", "in_progress", "completed", "cancelled", "finalized"] "Invalid cycle count session status"
 
-  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: number, notes: string, userId: string) {
+  transition status from "draft" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["completed", "cancelled"]
+  transition status from "completed" to ["finalized"]
+  transition status from "cancelled" to ["draft"]
+
+  default policy CycleCountSessionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
+  command create(locationId: string, sessionId: string, sessionName: string, countType: string, scheduledDate: datetime, notes: string, userId: string) {
     guard sessionName != null and sessionName != "" "Session name is required"
     guard locationId != null and locationId != "" "Location is required"
 
@@ -49,10 +58,17 @@ entity CycleCountSession {
     mutate countedItems = 0
     mutate totalVariance = 0
     mutate variancePercentage = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionCreated
+  }
+
+  command update(sessionName: string, notes: string, userId: string) {
+    guard self.status in ["draft", "in_progress"] "Can only edit draft or in-progress sessions"
+
+    mutate sessionName = sessionName
+    mutate notes = notes
+
+    emit CycleCountSessionUpdated
   }
 
   command start(userId: string) {
@@ -60,7 +76,6 @@ entity CycleCountSession {
 
     mutate status = "in_progress"
     mutate startedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionStarted
   }
@@ -80,16 +95,21 @@ entity CycleCountSession {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountSessionCompleted
   }
 
-  command finalize(userId: string) {
+  command finalize(userId: string, notes: string, totalVariance: decimal, variancePercentage: decimal, countedItems: int, totalItems: int) {
     guard self.status == "completed" "Can only finalize completed sessions"
 
     mutate status = "finalized"
-    mutate updatedAt = now()
+    mutate finalizedAt = now()
+    mutate approvedById = userId
+    mutate notes = notes
+    mutate totalVariance = totalVariance
+    mutate variancePercentage = variancePercentage
+    mutate countedItems = countedItems
+    mutate totalItems = totalItems
 
     emit CycleCountSessionFinalized
   }
@@ -110,15 +130,24 @@ entity CycleCountSession {
 
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
 
     emit CycleCountSessionCancelled
   }
 
-  store CycleCountSession in memory
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Session is already deleted"
+    guard self.status != "finalized" "Cannot delete a finalized session"
+
+    mutate deletedAt = now()
+
+    emit CycleCountSessionDeleted
+  }
+
+  store CycleCountSession in durable
 }
 
 entity CycleCountRecord {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required sessionId: string
@@ -126,28 +155,31 @@ entity CycleCountRecord {
   property required itemNumber: string
   property required itemName: string
   property required storageLocationId: string
-  property expectedQuantity: number = 0
-  property countedQuantity: number = 0
-  property variance: number = 0
-  property variancePct: number = 0
-  property countDate: datetime = now()
+  property expectedQuantity: int = 0
+  property countedQuantity: int = 0
+  property variance: decimal = 0
+  property variancePct: decimal = 0
+  property countDate: datetime
   property countedById: string = ""
   property barcode: string = ""
   property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
-  property verifiedAt: datetime = now()
+  property verifiedAt: datetime
   property syncStatus: string = "synced"
   property offlineId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed hasVariance: boolean = self.variance != 0
   computed isOvercount: boolean = self.variance > 0
   computed isUndercount: boolean = self.variance < 0
   computed isLargeVariance: boolean = self.variancePct > 10 or self.variancePct < -10
 
+  relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+
+  default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -161,15 +193,13 @@ entity CycleCountRecord {
     mutate expectedQuantity = expectedQuantity
     mutate countedQuantity = countedQuantity
     mutate variance = countedQuantity - expectedQuantity
-    mutate variancePct = expectedQuantity > 0 ? ((countedQuantity - expectedQuantity) / expectedQuantity) * 100 : 0
+    mutate variancePct = percent(countedQuantity - expectedQuantity, expectedQuantity)
     mutate countDate = now()
     mutate countedById = userId
     mutate barcode = barcode
     mutate notes = notes
     mutate isVerified = false
     mutate syncStatus = "synced"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordCreated
   }
@@ -180,11 +210,10 @@ entity CycleCountRecord {
 
     mutate countedQuantity = countedQuantity
     mutate variance = countedQuantity - self.expectedQuantity
-    mutate variancePct = self.expectedQuantity > 0 ? ((countedQuantity - self.expectedQuantity) / self.expectedQuantity) * 100 : 0
+    mutate variancePct = percent(countedQuantity - self.expectedQuantity, self.expectedQuantity)
     mutate notes = notes
     mutate countedById = userId
     mutate countDate = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordUpdated
   }
@@ -206,25 +235,24 @@ entity CycleCountRecord {
     mutate isVerified = true
     mutate verifiedById = userId
     mutate verifiedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordVerified
   }
 
   command remove(userId: string) {
     guard not self.isVerified "Cannot remove verified records"
-    guard self.deletedAt == 0 "Record is already removed"
+    guard self.deletedAt == null "Record is already removed"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit CycleCountRecordRemoved
   }
 
-  store CycleCountRecord in memory
+  store CycleCountRecord in durable
 }
 
 entity VarianceReport {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required sessionId: string
@@ -232,20 +260,26 @@ entity VarianceReport {
   property required itemId: string
   property required itemNumber: string
   property required itemName: string
-  property expectedQuantity: number = 0
-  property countedQuantity: number = 0
-  property variance: number = 0
-  property variancePct: number = 0
-  property accuracyScore: number = 0
+  property expectedQuantity: int = 0
+  property countedQuantity: int = 0
+  property variance: decimal = 0
+  property variancePct: decimal = 0
+  property accuracyScore: decimal = 0
   property status: string = "pending"
   property adjustmentType: string = ""
-  property adjustmentAmount: number = 0
-  property adjustmentDate: datetime = now()
+  property adjustmentAmount: money = 0
+  property adjustmentDate: datetime
+  property rejectedAt: datetime
+  property rejectedBy: string = ""
+  property rejectionReason: string = ""
   property notes: string = ""
-  property generatedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property rootCause: string = ""
+  property resolutionNotes: string = ""
+  property resolvedById: string = ""
+  property resolvedAt: datetime
+  property generatedAt: datetime
+  timestamps
+  property deletedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isReviewed: boolean = self.status == "reviewed"
@@ -253,8 +287,16 @@ entity VarianceReport {
   computed hasAdjustment: boolean = self.adjustmentType != ""
   computed isHighVariance: boolean = self.variancePct > 10 or self.variancePct < -10
 
-  constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted"] "Invalid variance report status"
+  relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
+  constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted", "rejected"] "Invalid variance report status"
+
+  // State transitions
+  transition status from "pending" to ["reviewed", "rejected"]
+  transition status from "reviewed" to ["approved", "rejected"]
+
+  default policy VarianceReportDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
@@ -272,10 +314,20 @@ entity VarianceReport {
     mutate status = "pending"
     mutate notes = notes
     mutate generatedAt = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit VarianceReportCreated
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status in ["pending", "reviewed"] "Can only reject pending or reviewed reports"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectedBy = userId
+    mutate rejectionReason = reason
+    mutate rejectedAt = now()
+
+    emit VarianceReportRejected
   }
 
   command review(userId: string, notes: string) {
@@ -283,7 +335,6 @@ entity VarianceReport {
 
     mutate status = "reviewed"
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit VarianceReportReviewed
   }
@@ -306,12 +357,24 @@ entity VarianceReport {
     mutate adjustmentType = adjustmentType
     mutate adjustmentAmount = adjustmentAmount
     mutate adjustmentDate = now()
-    mutate updatedAt = now()
+    mutate resolvedById = userId
+    mutate resolvedAt = now()
 
     emit VarianceReportApproved
   }
 
-  store VarianceReport in memory
+  // Partial update for discrepancy resolution — notes, rootCause, resolutionNotes
+  command updateDiscrepancy(notes: string, rootCause: string, resolutionNotes: string) {
+    guard self.status in ["pending", "reviewed"] "Cannot update discrepancy with status outside pending/reviewed"
+
+    mutate notes = notes
+    mutate rootCause = rootCause
+    mutate resolutionNotes = resolutionNotes
+
+    emit VarianceReportDiscrepancyUpdated
+  }
+
+  store VarianceReport in durable
 }
 
 policy StaffCanCount execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can perform cycle counts"
@@ -326,14 +389,22 @@ event CycleCountSessionCreated: "inventory.cyclecount.session.created" {
   sessionName: string
   countType: string
   createdById: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event CycleCountSessionUpdated: "inventory.cyclecount.session.updated" {
+  sessionId: string
+  sessionName: string
+  notes: string
+  userId: string
+  updatedAt: datetime
 }
 
 event CycleCountSessionStarted: "inventory.cyclecount.session.started" {
   sessionId: string
   sessionName: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
@@ -343,7 +414,7 @@ event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
   countedItems: number
   totalVariance: number
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
@@ -351,7 +422,7 @@ event CycleCountSessionCancelled: "inventory.cyclecount.session.cancelled" {
   sessionName: string
   userId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
@@ -359,7 +430,14 @@ event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
   tenantId: string
   locationId: string
   userId: string
-  finalizedAt: number
+  finalizedAt: datetime
+}
+
+event CycleCountSessionDeleted: "inventory.cyclecount.session.deleted" {
+  sessionId: string
+  sessionName: string
+  userId: string
+  deletedAt: datetime
 }
 
 event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
@@ -371,7 +449,7 @@ event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
   countedQuantity: number
   variance: number
   countedById: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
@@ -382,7 +460,7 @@ event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
   countedQuantity: number
   variance: number
   userId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
@@ -393,7 +471,7 @@ event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
   variance: number
   variancePct: number
   verifiedById: string
-  verifiedAt: number
+  verifiedAt: datetime
 }
 
 event CycleCountRecordRemoved: "inventory.cyclecount.record.removed" {
@@ -402,7 +480,7 @@ event CycleCountRecordRemoved: "inventory.cyclecount.record.removed" {
   itemId: string
   itemName: string
   userId: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event VarianceReportCreated: "inventory.variance.report.created" {
@@ -413,7 +491,7 @@ event VarianceReportCreated: "inventory.variance.report.created" {
   variance: number
   variancePct: number
   accuracyScore: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event VarianceReportReviewed: "inventory.variance.report.reviewed" {
@@ -421,7 +499,7 @@ event VarianceReportReviewed: "inventory.variance.report.reviewed" {
   sessionId: string
   itemName: string
   userId: string
-  reviewedAt: number
+  reviewedAt: datetime
 }
 
 event VarianceReportApproved: "inventory.variance.report.approved" {
@@ -431,5 +509,24 @@ event VarianceReportApproved: "inventory.variance.report.approved" {
   adjustmentType: string
   adjustmentAmount: number
   userId: string
-  approvedAt: number
+  approvedAt: datetime
+}
+
+event VarianceReportRejected: "inventory.variance.report.rejected" {
+  reportId: string
+  sessionId: string
+  itemName: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: datetime
+}
+
+event VarianceReportDiscrepancyUpdated: "inventory.variance.report.discrepancy_updated" {
+  reportId: string
+  sessionId: string
+  itemId: string
+  notes: string
+  rootCause: string
+  resolutionNotes: string
+  updatedAt: datetime
 }

@@ -8,6 +8,9 @@ import { stripe } from "@repo/payments";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { env } from "@/env";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+export const runtime = "nodejs";
 
 const getUserFromCustomerId = async (customerId: string) => {
   const clerk = await clerkClient();
@@ -82,6 +85,7 @@ const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
   }
 
   try {
+    // Read bypasses Manifest per constitution §10
     const payment = await database.payment.findFirst({
       where: { tenantId, id: paymentId, deletedAt: null },
     });
@@ -90,40 +94,66 @@ const handlePaymentIntentSucceeded = async (data: Stripe.PaymentIntent) => {
       return;
     }
 
-    await database.payment.update({
-      where: { tenantId_id: { tenantId, id: paymentId } },
-      data: {
-        status: "COMPLETED",
-        processedAt: new Date(),
-        completedAt: new Date(),
-        gatewayTransactionId: data.id,
-      },
+    // Synthetic system-user context for webhook (no Clerk auth)
+    const systemUser = { id: "system", tenantId, role: "admin" };
+
+    // Governed write: Payment.process
+    const processResult = await runManifestCommand({
+      entity: "Payment",
+      command: "process",
+      body: { id: paymentId, tenantId, gatewayTransactionId: data.id },
+      user: systemUser,
     });
 
+    if (!processResult.ok) {
+      const errorText = await processResult.text();
+      log.error("Manifest Payment.process failed", { errorText, paymentId, tenantId });
+      return;
+    }
+
     if (payment.invoiceId) {
+      // Read bypasses Manifest per constitution §10
       const invoice = await database.invoice.findFirst({
         where: { tenantId, id: payment.invoiceId, deletedAt: null },
       });
 
       if (invoice) {
         const paymentAmount = Number(payment.amount);
-        const currentAmountPaid = Number(invoice.amountPaid);
         const currentAmountDue = Number(invoice.amountDue);
 
-        await database.invoice.update({
-          where: { tenantId_id: { tenantId, id: payment.invoiceId } },
-          data: {
-            amountPaid: currentAmountPaid + paymentAmount,
-            amountDue: currentAmountDue - paymentAmount,
-            status:
-              Math.abs(currentAmountDue - paymentAmount) < 0.01
-                ? "PAID"
-                : "PARTIALLY_PAID",
-            ...(Math.abs(currentAmountDue - paymentAmount) < 0.01
-              ? { paidAt: new Date() }
-              : {}),
+        // Governed write: Invoice.applyPayment
+        const applyResult = await runManifestCommand({
+          entity: "Invoice",
+          command: "applyPayment",
+          body: {
+            id: payment.invoiceId,
+            tenantId,
+            paymentAmount,
+            paymentId,
           },
+          user: systemUser,
         });
+
+        if (!applyResult.ok) {
+          const errorText = await applyResult.text();
+          log.error("Manifest Invoice.applyPayment failed", { errorText, invoiceId: payment.invoiceId, tenantId });
+          return;
+        }
+
+        // If the invoice is now fully paid, transition to PAID status
+        if (Math.abs(currentAmountDue - paymentAmount) < 0.01) {
+          const markPaidResult = await runManifestCommand({
+            entity: "Invoice",
+            command: "markAsPaid",
+            body: { id: payment.invoiceId, tenantId },
+            user: systemUser,
+          });
+
+          if (!markPaidResult.ok) {
+            const errorText = await markPaidResult.text();
+            log.error("Manifest Invoice.markAsPaid failed", { errorText, invoiceId: payment.invoiceId, tenantId });
+          }
+        }
       }
     }
   } catch (error) {
@@ -140,6 +170,7 @@ const handlePaymentIntentFailed = async (data: Stripe.PaymentIntent) => {
   }
 
   try {
+    // Read bypasses Manifest per constitution §10
     const payment = await database.payment.findFirst({
       where: { tenantId, id: paymentId, deletedAt: null },
     });
@@ -148,14 +179,21 @@ const handlePaymentIntentFailed = async (data: Stripe.PaymentIntent) => {
       return;
     }
 
-    await database.payment.update({
-      where: { tenantId_id: { tenantId, id: paymentId } },
-      data: {
-        status: "FAILED",
-        processedAt: new Date(),
-        gatewayTransactionId: data.id,
-      },
+    // Synthetic system-user context for webhook (no Clerk auth)
+    const systemUser = { id: "system", tenantId, role: "admin" };
+
+    // Governed write: Payment.processFailed
+    const result = await runManifestCommand({
+      entity: "Payment",
+      command: "processFailed",
+      body: { id: paymentId, tenantId },
+      user: systemUser,
     });
+
+    if (!result.ok) {
+      const errorText = await result.text();
+      log.error("Manifest Payment.processFailed failed", { errorText, paymentId, tenantId });
+    }
   } catch (error) {
     log.error("Failed to reconcile payment_intent.payment_failed", { error });
   }

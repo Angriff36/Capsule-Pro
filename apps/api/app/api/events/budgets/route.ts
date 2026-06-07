@@ -10,15 +10,10 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import { NextResponse } from "next/server";
-import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  type CreateBudgetLineItemInput,
-  type CreateEventBudgetInput,
-  parseEventBudgetListFilters,
-  validateCreateEventBudget,
-} from "./validation";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { parseEventBudgetListFilters } from "./validation";
 
 /**
  * GET /api/events/budgets
@@ -99,174 +94,12 @@ export async function GET(request: Request) {
   }
 }
 
-// Helper function to validate event exists
-async function validateEventExists(tenantId: string, eventId: string) {
-  const event = await database.event.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: eventId,
-      },
-    },
-  });
-
-  if (!event) {
-    throw new Error("Event not found");
-  }
-
-  return event;
-}
-
-// Helper function to check if budget already exists
-async function checkBudgetExists(tenantId: string, eventId: string) {
-  const existingBudget = await database.eventBudget.findFirst({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-  });
-
-  if (existingBudget) {
-    throw new Error("A budget already exists for this event");
-  }
-}
-
-// Helper function to calculate total budget amount
-function calculateTotalBudgetAmount(
-  totalBudgetAmount: number,
-  lineItems?: { budgetedAmount: number }[]
-) {
-  if (lineItems && lineItems.length > 0) {
-    const lineItemsTotal = lineItems.reduce(
-      (sum, item) => sum + item.budgetedAmount,
-      0
-    );
-    // If totalBudgetAmount was not explicitly set or is 0, use line items total
-    if (totalBudgetAmount === 0) {
-      return lineItemsTotal;
-    }
-  }
-  return totalBudgetAmount;
-}
-
-// Helper function to create budget with line items
-async function createBudgetWithLineItems(
-  tenantId: string,
-  validatedData: CreateEventBudgetInput
-) {
-  return await database.$transaction(async (tx) => {
-    // Create the budget
-    const newBudget = await tx.eventBudget.create({
-      data: {
-        tenantId,
-        eventId: validatedData.eventId,
-        status: validatedData.status || "draft",
-        totalBudgetAmount: validatedData.totalBudgetAmount,
-        totalActualAmount: 0,
-        varianceAmount: validatedData.totalBudgetAmount, // Initially variance is the full budget
-        variancePercentage: 0,
-        notes: validatedData.notes || null,
-      },
-    });
-
-    // Create line items if provided
-    if (validatedData.lineItems && validatedData.lineItems.length > 0) {
-      await tx.budgetLineItem.createMany({
-        data: validatedData.lineItems.map(
-          (item: CreateBudgetLineItemInput) => ({
-            tenantId,
-            budgetId: newBudget.id,
-            category: item.category,
-            name: item.name,
-            description: item.description || null,
-            budgetedAmount: item.budgetedAmount,
-            actualAmount: 0,
-            varianceAmount: item.budgetedAmount,
-            sortOrder: item.sortOrder || 0,
-            notes: item.notes || null,
-          })
-        ),
-      });
-    }
-
-    return newBudget;
-  });
-}
-
-// Helper function to fetch created budget with line items
-async function fetchCreatedBudget(tenantId: string, budgetId: string) {
-  return await database.eventBudget.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: budgetId,
-      },
-    },
-    include: {
-      lineItems: {
-        where: { deletedAt: null },
-        orderBy: { sortOrder: "asc" },
-      },
-    },
-  });
-}
-
 /**
  * POST /api/events/budgets
- * Create a new event budget
+ * Create a new event budget via manifest runtime
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    // Validate request body
-    const validatedData = validateCreateEventBudget(body);
-    invariant(validatedData.eventId, "Event ID is required");
-
-    // Validate event exists
-    await validateEventExists(tenantId, validatedData.eventId);
-
-    // Check if a budget already exists for this event
-    await checkBudgetExists(tenantId, validatedData.eventId);
-
-    // Calculate total budget amount
-    const totalBudgetAmount = calculateTotalBudgetAmount(
-      validatedData.totalBudgetAmount,
-      validatedData.lineItems
-    );
-
-    // Update validated data with calculated total
-    validatedData.totalBudgetAmount = totalBudgetAmount;
-
-    // Create budget with line items in a transaction
-    const budget = await createBudgetWithLineItems(tenantId, validatedData);
-
-    // Fetch the created budget with line items
-    const budgetWithLineItems = await fetchCreatedBudget(tenantId, budget.id);
-
-    return NextResponse.json(budgetWithLineItems, { status: 201 });
-  } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { message: "Validation error", errors: error.issues },
-        { status: 400 }
-      );
-    }
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    captureException(error);
-    log.error("Error creating event budget:", error);
-    return NextResponse.json(
-      { message: "Failed to create event budget" },
-      { status: 500 }
-    );
-  }
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "EventBudget", command: "create", body: { ...rawBody, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

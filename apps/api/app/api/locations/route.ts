@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
@@ -19,46 +19,29 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const isActive = searchParams.get("isActive");
 
-    // Fetch locations using SQL query
-    const locationsList = await database.$queryRaw<
-      Array<{
-        id: string;
-        name: string;
-        address_line_1: string | null;
-        address_line_2: string | null;
-        city: string | null;
-        state_province: string | null;
-        postal_code: string | null;
-        country_code: string | null;
-        timezone: string | null;
-        is_primary: boolean;
-        is_active: boolean;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          id,
-          name,
-          address_line_1,
-          address_line_2,
-          city,
-          state_province,
-          postal_code,
-          country_code,
-          timezone,
-          is_primary,
-          is_active,
-          created_at,
-          updated_at
-        FROM tenant.locations
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          ${isActive === "true" ? Prisma.sql`AND is_active = true` : Prisma.empty}
-        ORDER BY name ASC
-      `
-    );
+    const locations = await database.location.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(isActive === "true" ? { isActive: true } : {}),
+      },
+      orderBy: { name: "asc" },
+    });
+    const locationsList = locations.map((location) => ({
+      id: location.id,
+      name: location.name,
+      address_line_1: location.addressLine1,
+      address_line_2: location.addressLine2,
+      city: location.city,
+      state_province: location.stateProvince,
+      postal_code: location.postalCode,
+      country_code: location.countryCode,
+      timezone: location.timezone,
+      is_primary: location.isPrimary,
+      is_active: location.isActive,
+      created_at: location.createdAt,
+      updated_at: location.updatedAt,
+    }));
 
     return NextResponse.json({ locations: locationsList });
   } catch (error) {

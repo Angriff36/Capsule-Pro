@@ -22,8 +22,7 @@ export async function GET(request: NextRequest) {
 
 const menus = await database.menu.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenantId
       },
     orderBy: {
       createdAt: "desc",

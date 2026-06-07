@@ -7,7 +7,7 @@
  * last manifest is included in the IR. This script uses the programmatic
  * compileToIR API to properly merge all manifests into a single IR.
  *
- * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
+ * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
 
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -95,7 +95,7 @@ async function compileMergedManifests() {
   } = mergeIrs(compiledEntries, {
     contentHash: "",
     irHash: "",
-    compilerVersion: "0.3.8",
+    compilerVersion: "2.2.0",
     schemaVersion: "1.0",
     compiledAt: new Date().toISOString(),
   });

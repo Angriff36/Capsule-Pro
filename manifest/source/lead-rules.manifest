@@ -2,35 +2,40 @@
 // Manifest spec for lead tracking, qualification, and conversion
 
 entity Lead {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property source: string = ""
-  property companyName: string = ""
-  property contactName: string = ""
+  searchable property companyName: string = ""
+  searchable property contactName: string = ""
   property contactEmail: string = ""
   property contactPhone: string = ""
   property eventType: string = ""
-  property eventDate: datetime = now()
-  property estimatedGuests: number = 0
-  property estimatedValue: number = 0
+  property eventDate: datetime
+  property estimatedGuests: int = 0
+  property estimatedValue: decimal = 0
   property status: string = "new"
   property assignedTo: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property convertedToClientId: string = ""
-  property convertedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property convertedAt: datetime
+  timestamps
+  property deletedAt: datetime
 
-  computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt > 0
+  computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt != null
   computed isHighValue: boolean = self.estimatedValue >= 10000
   computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
-  computed isArchived: boolean = self.deletedAt > 0
+  computed isArchived: boolean = self.deletedAt != null
 
   constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
   constraint validSource: self.source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
   constraint validContactName: self.contactName != null and self.contactName != "" "Contact name is required"
   constraint positiveEstimatedValue: self.estimatedValue >= 0 "Estimated value must be non-negative"
+
+  transition status from "new" to ["contacted", "disqualified"]
+  transition status from "contacted" to ["qualified", "disqualified", "lost"]
+  transition status from "qualified" to ["proposal", "disqualified", "lost"]
+  transition status from "proposal" to ["won", "lost", "disqualified"]
 
   constraint warnHighValueUnassigned:warn self.isHighValue and self.assignedTo == "" {
     messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"
@@ -41,7 +46,7 @@ entity Lead {
     }
   }
 
-  constraint warnStaleNewLead:warn self.status == "new" and self.updatedAt > 0 {
+  constraint warnStaleNewLead:warn self.status == "new" {
     messageTemplate: "Lead '{contactName}' is still in 'new' status"
     details: {
       contactName: self.contactName
@@ -50,7 +55,8 @@ entity Lead {
     }
   }
 
-  command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, assignedTo: string, notes: string) {
+  default policy LeadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Lead management"
+  command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: number, assignedTo: string, notes: string) {
     guard contactName != null and contactName != "" "Contact name is required"
     guard source in ["website", "manual", "import"] "Lead source must be one of: website, manual, import"
 
@@ -73,14 +79,12 @@ entity Lead {
     mutate assignedTo = assignedTo
     mutate notes = notes
     mutate status = "new"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit LeadCreated
   }
 
-  command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, status: string, assignedTo: string, notes: string) {
-    guard self.deletedAt == 0 "Cannot update an archived lead"
+  command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: number, status: string, assignedTo: string, notes: string) {
+    guard self.deletedAt == null "Cannot update an archived lead"
     guard self.isConverted == false "Cannot update a converted lead"
     guard contactName != null and contactName != "" "Contact name is required"
 
@@ -103,13 +107,12 @@ entity Lead {
     mutate status = status
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate updatedAt = now()
 
     emit LeadUpdated
   }
 
   command convertToClient(clientId: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot convert an archived lead"
+    guard self.deletedAt == null "Cannot convert an archived lead"
     guard clientId != null and clientId != "" "Client ID is required"
 
     constraint blockAlreadyConverted:block self.isConverted {
@@ -132,13 +135,12 @@ entity Lead {
     mutate convertedToClientId = clientId
     mutate convertedAt = now()
     mutate status = "won"
-    mutate updatedAt = now()
 
     emit LeadConvertedToClient
   }
 
   command disqualify(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Cannot disqualify an archived lead"
+    guard self.deletedAt == null "Cannot disqualify an archived lead"
     guard self.isConverted == false "Cannot disqualify a converted lead"
 
     constraint warnHighValueDisqualify:warn self.isHighValue {
@@ -152,13 +154,12 @@ entity Lead {
     }
 
     mutate status = "disqualified"
-    mutate updatedAt = now()
 
     emit LeadDisqualified
   }
 
   command archive(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Lead is already archived"
+    guard self.deletedAt == null "Lead is already archived"
 
     constraint warnArchiveOpenLead:warn self.isOpen {
       messageTemplate: "Archiving open lead '{contactName}' with status '{status}'"
@@ -171,12 +172,11 @@ entity Lead {
     }
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit LeadArchived
   }
 
-  store Lead in memory
+  store Lead in durable
 }
 
 // Policy definitions
@@ -194,7 +194,7 @@ event LeadCreated: "crm.lead.created" {
   source: string
   estimatedValue: number
   assignedTo: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event LeadUpdated: "crm.lead.updated" {
@@ -204,7 +204,7 @@ event LeadUpdated: "crm.lead.updated" {
   oldStatus: string
   newStatus: string
   estimatedValue: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event LeadConvertedToClient: "crm.lead.converted" {
@@ -215,7 +215,7 @@ event LeadConvertedToClient: "crm.lead.converted" {
   clientId: string
   estimatedValue: number
   userId: string
-  convertedAt: number
+  convertedAt: datetime
 }
 
 event LeadDisqualified: "crm.lead.disqualified" {
@@ -226,7 +226,7 @@ event LeadDisqualified: "crm.lead.disqualified" {
   reason: string
   estimatedValue: number
   userId: string
-  disqualifiedAt: number
+  disqualifiedAt: datetime
 }
 
 event LeadArchived: "crm.lead.archived" {
@@ -235,5 +235,5 @@ event LeadArchived: "crm.lead.archived" {
   contactName: string
   reason: string
   userId: string
-  archivedAt: number
+  archivedAt: datetime
 }

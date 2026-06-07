@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-05-30T19:54:18.940Z",
+  "generatedAt": "2026-06-07T07:59:28.584Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -20,6 +20,7 @@
     "collections-rules.manifest",
     "command-board-rules.manifest",
     "container-rules.manifest",
+    "crm-admin-extended-rules.manifest",
     "cycle-count-rules.manifest",
     "deal-rules.manifest",
     "dish-rules.manifest",
@@ -38,13 +39,16 @@
     "event-report-rules.manifest",
     "event-rules.manifest",
     "event-staff-rules.manifest",
+    "events-extended-rules.manifest",
     "facilities-all-rules.manifest",
     "ingredient-rules.manifest",
+    "inventory-extended-rules.manifest",
     "inventory-rules.manifest",
     "inventory-supplier-rules.manifest",
     "inventory-transaction-rules.manifest",
     "inventory-transfer-rules.manifest",
     "invoice-rules.manifest",
+    "kitchen-extended-rules.manifest",
     "kitchen-task-rules.manifest",
     "knowledge-base-rules.manifest",
     "labor-budget-rules.manifest",
@@ -67,6 +71,7 @@
     "purchase-order-rules.manifest",
     "qa-rules.manifest",
     "rate-limit-rules.manifest",
+    "reactions.manifest",
     "recipe-rules.manifest",
     "revenue-recognition-rules.manifest",
     "role-policy-rules.manifest",
@@ -74,6 +79,7 @@
     "schedule-rules.manifest",
     "shipment-rules.manifest",
     "sms-automation-rules.manifest",
+    "staff-logistics-extended-rules.manifest",
     "staff-member-rules.manifest",
     "staff-performance-rules.manifest",
     "station-rules.manifest",
@@ -81,6 +87,7 @@
     "time-off-request-rules.manifest",
     "training-assignment-rules.manifest",
     "training-module-rules.manifest",
+    "training-module-sel-rules.manifest",
     "user-rules.manifest",
     "vendor-catalog-rules.manifest",
     "vendor-contract-rules.manifest",
@@ -93,13 +100,15 @@
   ],
   "totals": {
     "modules": 0,
-    "entities": 132,
-    "stores": 100,
-    "events": 579,
-    "commands": 593,
-    "policies": 186,
+    "entities": 202,
+    "stores": 202,
+    "events": 978,
+    "commands": 998,
+    "policies": 443,
     "enums": 0,
-    "values": 0
+    "values": 0,
+    "sagas": 2,
+    "reactions": 18
   },
   "droppedDuplicates": [
     {
@@ -165,6 +174,97 @@
       "sources": [
         "ingredient-rules.manifest",
         "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "procurement.budget.created",
+      "allowlistKey": "event-channel:procurement.budget.created",
+      "keptFrom": "budget-rules.manifest",
+      "droppedFrom": [
+        "inventory-extended-rules.manifest"
+      ],
+      "sources": [
+        "budget-rules.manifest",
+        "inventory-extended-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "procurement.budget.updated",
+      "allowlistKey": "event-channel:procurement.budget.updated",
+      "keptFrom": "budget-rules.manifest",
+      "droppedFrom": [
+        "inventory-extended-rules.manifest"
+      ],
+      "sources": [
+        "budget-rules.manifest",
+        "inventory-extended-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "staff.training-assignment.completed",
+      "allowlistKey": "event-channel:staff.training-assignment.completed",
+      "keptFrom": "training-assignment-rules.manifest",
+      "droppedFrom": [
+        "training-module-rules.manifest"
+      ],
+      "sources": [
+        "training-assignment-rules.manifest",
+        "training-module-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "staff.training-assignment.created",
+      "allowlistKey": "event-channel:staff.training-assignment.created",
+      "keptFrom": "training-assignment-rules.manifest",
+      "droppedFrom": [
+        "training-module-rules.manifest"
+      ],
+      "sources": [
+        "training-assignment-rules.manifest",
+        "training-module-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "staff.training-assignment.started",
+      "allowlistKey": "event-channel:staff.training-assignment.started",
+      "keptFrom": "training-assignment-rules.manifest",
+      "droppedFrom": [
+        "training-module-rules.manifest"
+      ],
+      "sources": [
+        "training-assignment-rules.manifest",
+        "training-module-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "staff.training-assignment.waived",
+      "allowlistKey": "event-channel:staff.training-assignment.waived",
+      "keptFrom": "training-assignment-rules.manifest",
+      "droppedFrom": [
+        "training-module-rules.manifest"
+      ],
+      "sources": [
+        "training-assignment-rules.manifest",
+        "training-module-rules.manifest"
+      ]
+    },
+    {
+      "type": "policy",
+      "key": "FinanceCanManageBudgets",
+      "allowlistKey": "policy:FinanceCanManageBudgets",
+      "keptFrom": "budget-rules.manifest",
+      "droppedFrom": [
+        "inventory-extended-rules.manifest"
+      ],
+      "sources": [
+        "budget-rules.manifest",
+        "inventory-extended-rules.manifest"
       ]
     },
     {

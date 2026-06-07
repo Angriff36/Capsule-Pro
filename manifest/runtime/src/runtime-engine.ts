@@ -2,6 +2,14 @@ import type { CommandResult } from "@angriff36/manifest";
 import { RuntimeEngine } from "@angriff36/manifest";
 import type { IRCommand, OverrideRequest } from "@angriff36/manifest/ir";
 
+// Re-export the canonical deterministic expression builtins
+// (percent/daysBetween/containsAny/…) from this DB-free module so test runtimes
+// can wire the SAME builtins the production factory injects, WITHOUT importing
+// the package index (which pulls in prisma-store/DATABASE_URL side effects).
+// Single source of truth — see manifest-builtins.ts. The factory still imports
+// createCustomBuiltins directly from manifest-builtins.ts.
+export { createCustomBuiltins } from "./manifest-builtins";
+
 // ---------------------------------------------------------------------------
 // Telemetry hook shape (mirrors ManifestTelemetryHooks from the factory,
 // kept minimal to avoid importing from manifest-runtime-factory and creating

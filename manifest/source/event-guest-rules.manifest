@@ -1,7 +1,9 @@
 // Kitchen Ops - Event Guest Rules
-// Manifest spec for event guest management, dietary tracking, and meal preferences
+// Manifest spec for event guest management, dietary tracking, RSVP, and day-of check-in.
+// RSVP drives the final headcount the kitchen cooks for; check-in tracks actual attendance.
 
 entity EventGuest {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property eventId: string = ""
@@ -12,23 +14,33 @@ entity EventGuest {
   property dietaryRestrictions: string = ""
   property allergenRestrictions: string = ""
   property notes: string = ""
+  property declineReason: string = ""
   property specialMealRequired: boolean = false
   property specialMealNotes: string = ""
   property tableAssignment: string = ""
   property mealPreference: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property rsvpStatus: string = "pending"
+  property rsvpAt: datetime
+  property checkedInAt: datetime
+  timestamps
+  property deletedAt: datetime
 
   computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
   computed hasAllergenRestrictions: boolean = self.allergenRestrictions != ""
   computed needsSpecialMeal: boolean = self.specialMealRequired == true
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
   computed hasTableAssignment: boolean = self.tableAssignment != ""
+  computed rsvpConfirmed: boolean = self.rsvpStatus == "confirmed"
+  computed rsvpDeclined: boolean = self.rsvpStatus == "declined"
+  computed hasCheckedIn: boolean = self.checkedInAt != null
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireGuestName: self.guestName != "" "Guest name is required"
+  constraint validRsvpStatus: self.rsvpStatus in ["pending", "confirmed", "declined"] "RSVP status must be valid"
 
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+
+  default policy EventGuestDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard guestName != null and guestName != "" "Guest name is required"
@@ -45,15 +57,14 @@ entity EventGuest {
     mutate specialMealNotes = specialMealNotes
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
-    mutate createdAt = now()
-    mutate updatedAt = now()
+    mutate rsvpStatus = "pending"
 
     emit EventGuestCreated
   }
 
   command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
     guard guestName != null and guestName != "" "Guest name is required"
-    guard self.deletedAt == 0 "Cannot update a deleted guest"
+    guard self.deletedAt == null "Cannot update a deleted guest"
 
     mutate guestName = guestName
     mutate guestEmail = guestEmail
@@ -66,21 +77,59 @@ entity EventGuest {
     mutate specialMealNotes = specialMealNotes
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
-    mutate updatedAt = now()
 
     emit EventGuestUpdated
   }
 
+  command rsvpConfirm() {
+    guard self.deletedAt == null "Cannot RSVP for a deleted guest"
+    guard self.rsvpStatus != "declined" "Guest has already declined; re-invite before confirming"
+
+    mutate rsvpStatus = "confirmed"
+    mutate rsvpAt = now()
+
+    emit EventGuestRsvpConfirmed
+  }
+
+  command rsvpDecline(reason: string) {
+    guard self.deletedAt == null "Cannot RSVP for a deleted guest"
+    guard self.checkedInAt == null "Cannot decline after the guest has checked in"
+
+    mutate rsvpStatus = "declined"
+    mutate rsvpAt = now()
+    mutate declineReason = reason
+
+    emit EventGuestRsvpDeclined
+  }
+
+  command checkIn() {
+    guard self.deletedAt == null "Cannot check in a deleted guest"
+    guard self.rsvpStatus != "declined" "Guest declined and is not expected to attend"
+    guard self.checkedInAt == null "Guest has already checked in"
+
+    mutate checkedInAt = now()
+
+    emit EventGuestCheckedIn
+  }
+
+  command assignTable(tableAssignment: string) {
+    guard self.deletedAt == null "Cannot assign a table to a deleted guest"
+    guard tableAssignment != "" "Table assignment is required"
+
+    mutate tableAssignment = tableAssignment
+
+    emit EventGuestTableAssigned
+  }
+
   command softDelete(reason: string, userId: string) {
-    guard self.deletedAt == 0 "Guest is already deleted"
+    guard self.deletedAt == null "Guest is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit EventGuestDeleted
   }
 
-  store EventGuest in memory
+  store EventGuest in durable
 }
 
 policy EventStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Event staff can manage guests"
@@ -97,7 +146,7 @@ event EventGuestCreated: "kitchen.event-guest.created" {
   allergenRestrictions: string
   specialMealRequired: boolean
   mealPreference: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventGuestUpdated: "kitchen.event-guest.updated" {
@@ -110,7 +159,40 @@ event EventGuestUpdated: "kitchen.event-guest.updated" {
   specialMealRequired: boolean
   mealPreference: string
   tableAssignment: string
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event EventGuestRsvpConfirmed: "kitchen.event-guest.rsvp-confirmed" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  rsvpAt: datetime
+}
+
+event EventGuestRsvpDeclined: "kitchen.event-guest.rsvp-declined" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  reason: string
+  rsvpAt: datetime
+}
+
+event EventGuestCheckedIn: "kitchen.event-guest.checked-in" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  checkedInAt: datetime
+}
+
+event EventGuestTableAssigned: "kitchen.event-guest.table-assigned" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  tableAssignment: string
+  updatedAt: datetime
 }
 
 event EventGuestDeleted: "kitchen.event-guest.deleted" {
@@ -119,5 +201,5 @@ event EventGuestDeleted: "kitchen.event-guest.deleted" {
   eventId: string
   reason: string
   userId: string
-  deletedAt: number
+  deletedAt: datetime
 }

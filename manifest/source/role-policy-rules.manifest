@@ -3,58 +3,76 @@
 // SECURITY: All commands require admin/owner role (adminOnly policy)
 
 entity RolePolicy {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required roleId: string
   property roleName: string = ""
-  property permissions: string = "[]"
+  property permissions: array<string> = []
   property description: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
-  computed hasPermissions: boolean = self.permissions != "[]" and self.permissions != ""
+  computed isDeleted: boolean = self.deletedAt != null
+  computed hasPermissions: boolean = length(self.permissions) > 0
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 
-  command update(roleName: string, permissions: string, description: string, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted role policy"
+  default policy RolePolicyDefaultAccess execute: user.role in ["admin", "owner"] "Role policy management"
+  command create(roleId: string, roleName: string, permissions: array<string>, description: string) {
+    guard roleId != null and roleId != "" "Role ID is required"
+
+    mutate roleId = roleId
+    mutate roleName = roleName
+    mutate permissions = permissions
+    mutate description = description
+    mutate isActive = true
+
+    emit RolePolicyCreated
+  }
+
+  command update(roleName: string, permissions: array<string>, description: string, isActive: boolean) {
+    guard self.deletedAt == null "Cannot update a deleted role policy"
 
     mutate roleName = roleName
     mutate permissions = permissions
     mutate description = description
     mutate isActive = isActive
-    mutate updatedAt = now()
 
     emit RolePolicyUpdated
   }
 
   command grant(permission: string, grantedBy: string) {
-    guard self.deletedAt == 0 "Cannot grant permissions on a deleted role policy"
+    guard self.deletedAt == null "Cannot grant permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
-    mutate updatedAt = now()
 
     emit RolePolicyPermissionGranted
   }
 
   command revoke(permission: string, revokedBy: string) {
-    guard self.deletedAt == 0 "Cannot revoke permissions on a deleted role policy"
+    guard self.deletedAt == null "Cannot revoke permissions on a deleted role policy"
     guard permission != null and permission != "" "Permission is required"
 
-    mutate updatedAt = now()
 
     emit RolePolicyPermissionRevoked
   }
 
-  store RolePolicy in memory
+  store RolePolicy in durable
 }
 
 // SECURITY REQUIREMENT: Every RolePolicy command MUST be admin/owner only.
 // This policy applies to ALL commands in this manifest.
 policy adminOnly execute: user.role in ["admin", "owner"] "Only admins and owners can manage role policies"
+
+event RolePolicyCreated: "admin.role-policy.created" {
+  rolePolicyId: string
+  tenantId: string
+  roleId: string
+  roleName: string
+  createdAt: datetime
+}
 
 event RolePolicyUpdated: "admin.role-policy.updated" {
   rolePolicyId: string
@@ -62,7 +80,7 @@ event RolePolicyUpdated: "admin.role-policy.updated" {
   roleId: string
   roleName: string
   isActive: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RolePolicyPermissionGranted: "admin.role-policy.permission_granted" {
@@ -71,7 +89,7 @@ event RolePolicyPermissionGranted: "admin.role-policy.permission_granted" {
   roleId: string
   permission: string
   grantedBy: string
-  grantedAt: number
+  grantedAt: datetime
 }
 
 event RolePolicyPermissionRevoked: "admin.role-policy.permission_revoked" {
@@ -80,5 +98,5 @@ event RolePolicyPermissionRevoked: "admin.role-policy.permission_revoked" {
   roleId: string
   permission: string
   revokedBy: string
-  revokedAt: number
+  revokedAt: datetime
 }

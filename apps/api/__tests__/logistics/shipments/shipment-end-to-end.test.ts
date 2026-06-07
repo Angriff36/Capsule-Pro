@@ -297,30 +297,33 @@ describe("Shipment Persistence (write → read alignment)", () => {
       } as any);
     });
 
+    // Instance-scoped verbs go through the canonical dispatcher (the concrete
+    // per-command routes were pruned by commit 12c1a4f9b — constitution §6).
+    // The dispatcher derives `instanceId` from `body.id`.
     const instanceScopedVerbs = [
-      { verb: "update", file: "update" },
-      { verb: "cancel", file: "cancel" },
-      { verb: "schedule", file: "schedule" },
-      { verb: "ship", file: "ship" },
-      { verb: "startPreparing", file: "start-preparing" },
-      { verb: "markDelivered", file: "mark-delivered" },
+      "update",
+      "cancel",
+      "schedule",
+      "ship",
+      "startPreparing",
+      "markDelivered",
     ];
 
-    for (const { verb, file } of instanceScopedVerbs) {
-      it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(
-          `@/app/api/shipments/shipment/commands/${file}/route`
+    for (const verb of instanceScopedVerbs) {
+      it(`${verb} command forwards instanceId from body.id to runCommand`, async () => {
+        const { POST } = await import(
+          "@/app/api/manifest/[entity]/commands/[command]/route"
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/shipments/shipment/commands/${file}`,
+          `http://localhost:3000/api/manifest/Shipment/commands/${verb}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "ship-003" }),
           }
         );
 
-        await mod.POST(request, {
-          params: Promise.resolve({ entity: "Shipment", command: "create" }),
+        await POST(request, {
+          params: Promise.resolve({ entity: "Shipment", command: verb }),
         });
 
         expect(mockRunCommand).toHaveBeenCalledWith(

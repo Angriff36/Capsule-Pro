@@ -15,6 +15,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
 async function getTestRuntime() {
   const manifestPath = join(
@@ -30,10 +31,14 @@ async function getTestRuntime() {
     );
   }
 
-  return new ManifestRuntimeEngine(enforceCommandOwnership(ir), {
-    userId: "test-user-123",
-    tenantId: "test-tenant-456",
-  });
+  return new ManifestRuntimeEngine(
+    enforceCommandOwnership(ir),
+    {
+      userId: "test-user-123",
+      tenantId: "test-tenant-456",
+    },
+    { storeProvider: inMemoryStoreProvider() }
+  );
 }
 
 describe("Manifest Runtime - Constraint Severity Enforcement", () => {

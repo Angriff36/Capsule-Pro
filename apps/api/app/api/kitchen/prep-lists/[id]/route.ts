@@ -3,8 +3,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export interface StationGroup {
   stationId: string;
@@ -185,11 +185,14 @@ export async function PATCH(
     prepListId: id,
   });
 
-  return executeManifestCommand(request, {
-    entityName: "PrepList",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "PrepList",
+    command: "update",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -211,14 +214,13 @@ export async function DELETE(
     prepListId: id,
   });
 
-  return executeManifestCommand(request, {
-    entityName: "PrepList",
-    commandName: "cancel",
-    params: { id },
-    transformBody: (_body, ctx) => ({
-      id,
-      reason: "Deleted via API",
-      canceledBy: ctx.userId,
-    }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "PrepList",
+    command: "cancel",
+    body: { ...rawBody, id, reason: "Deleted via API", canceledBy: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

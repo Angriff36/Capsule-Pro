@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   TimeOffRequest,
   TimeOffRequestsListResponse,
@@ -146,16 +146,20 @@ export async function GET(request: Request) {
  * POST /api/staff/time-off/requests
  * Create a new time-off request via manifest command
  */
-export function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
-    entityName: "TimeOffRequest",
-    commandName: "create",
-    transformBody: (body) => ({
-      employeeId: body.employeeId || body.employee_id,
-      startDate: body.startDate || body.start_date,
-      endDate: body.endDate || body.end_date,
-      requestType: body.requestType || body.request_type,
-      reason: body.reason || "",
-    }),
+export async function POST(request: NextRequest) {
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TimeOffRequest",
+    command: "create",
+    body: {
+      employeeId: rawBody.employeeId || rawBody.employee_id,
+      startDate: rawBody.startDate || rawBody.start_date,
+      endDate: rawBody.endDate || rawBody.end_date,
+      requestType: rawBody.requestType || rawBody.request_type,
+      reason: rawBody.reason || "",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

@@ -1,29 +1,218 @@
-// Staff Domain - Training Module Rules
-// Manifest spec for training module CRUD operations
+tenant tenantId : string from context.tenantId
+
+event TrainingModuleCreated: "staff.training-module.created" {
+  id: string
+  title: string
+  category: string
+  requiredRole: string
+}
+
+event TrainingModuleUpdated: "staff.training-module.updated" {
+  id: string
+  title: string
+}
+
+event TrainingModulePublished: "staff.training-module.published" {
+  id: string
+  title: string
+  version: number
+}
+
+event TrainingModuleVersioned: "staff.training-module.versioned" {
+  id: string
+  version: number
+  changeNotes: string
+}
+
+event TrainingModuleArchived: "staff.training-module.archived" {
+  id: string
+  title: string
+  reason: string
+}
+
+event TrainingModuleUnarchived: "staff.training-module.unarchived" {
+  id: string
+  title: string
+}
+
+event TrainingModuleDeleted: "staff.training-module.deleted" {
+  id: string
+}
+
+event TrainingQuestionCreated: "staff.training-question.created" {
+  id: string
+  moduleId: string
+  code: string
+}
+
+event TrainingAssignmentCreated: "staff.training-assignment.created" {
+  id: string
+  moduleId: string
+  moduleCode: string
+  staffMemberId: string
+  dueDateReviewNeeded: boolean
+}
+
+event TrainingAssignmentStarted: "staff.training-assignment.started" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+}
+
+event TrainingAttemptSubmitted: "staff.training-attempt.submitted" {
+  assignmentId: string
+  attemptId: string
+  moduleId: string
+  staffMemberId: string
+  attemptNumber: number
+  scorePercent: number
+  passThresholdPercent: number
+  passed: boolean
+  managerReviewRequired: boolean
+}
+
+event TrainingAttemptPassed: "staff.training-attempt.passed" {
+  assignmentId: string
+  moduleId: string
+  staffMemberId: string
+  attemptNumber: number
+  scorePercent: number
+}
+
+event TrainingAttemptFailed: "staff.training-attempt.failed" {
+  assignmentId: string
+  moduleId: string
+  staffMemberId: string
+  attemptNumber: number
+  scorePercent: number
+  attemptsRemaining: number
+  managerReviewRequired: boolean
+}
+
+event TrainingAttemptRecorded: "staff.training-attempt.recorded" {
+  id: string
+  assignmentId: string
+  moduleId: string
+  staffMemberId: string
+  attemptNumber: number
+  passed: boolean
+}
+
+event TrainingAssignmentCompleted: "staff.training-assignment.completed" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+}
+
+event TrainingAssignmentWaived: "staff.training-assignment.waived" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+  reason: string
+}
+
+event TrainingAssignmentDueDateSet: "staff.training-assignment.due-date-set" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+  firstShiftAt: datetime
+  dueAt: datetime
+}
+
+event TrainingAssignmentMarkedOverdue: "staff.training-assignment.marked-overdue" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+  dueAt: datetime
+  referenceTime: datetime
+}
+
+event TrainingAssignmentManagerReviewRequested: "staff.training-assignment.manager-review-requested" {
+  id: string
+  moduleId: string
+  staffMemberId: string
+  attemptNumber: number
+  scorePercent: number
+}
+
+event TrainingReminderRequested: "staff.training-reminder.requested" {
+  assignmentId: string
+  moduleId: string
+  staffMemberId: string
+  reminderType: string
+}
+
+event StaffTrainingSchedulingEligibilityGranted: "staff.training.scheduling-eligibility-granted" {
+  id: string
+  staffMemberId: string
+  moduleId: string
+  assignmentId: string
+  reason: string
+}
+
+event StaffTrainingWaiverLogged: "staff.training.waiver-logged" {
+  id: string
+  staffMemberId: string
+  moduleId: string
+  assignmentId: string
+  reason: string
+}
 
 entity TrainingModule {
-  property required id: string
+  key [tenantId, id]
+
   property required tenantId: string
+  property required id: string
+  property code: string = ""
   property title: string = ""
   property description: string = ""
   property contentUrl: string = ""
   property contentType: string = "document"
-  property durationMinutes: number = 0
+  property durationMinutes: int = 0
   property category: string = ""
   property isRequired: boolean = false
+  property passThresholdPercent: int = 80
+  property maxAttempts: int = 3
+  property requiredRole: string = "staff"
   property isActive: boolean = true
+  property status: string = "draft"
+  property version: int = 1
+  property publishedAt: datetime
+  property archivedAt: datetime
+  property notes: string = ""
   property createdBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  timestamps
+
+  relationship hasMany questions: TrainingQuestion
+  relationship hasMany assignments: TrainingAssignment
+  relationship hasMany attempts: TrainingAttempt
+
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isArchived: boolean = self.status == "archived"
+  computed isAssignable: boolean = self.status == "published" and self.deletedAt == null and self.isActive == true
+
+  transition status from "draft" to ["published", "archived"]
+  transition status from "published" to ["archived", "draft"]
+  transition status from "archived" to ["draft"]
 
   constraint requireTitle: self.title != "" "Title is required"
+  constraint validStatus: self.status in ["draft", "published", "archived"] "Invalid module status"
+  constraint validContentType: self.contentType in ["document", "video", "quiz", "interactive", "checklist", "mixed"] "Invalid content type"
+  constraint validCategory: self.category in ["", "onboarding", "compliance", "refresher", "operational"] "Invalid training category"
+  constraint validThreshold: self.passThresholdPercent >= 0 and self.passThresholdPercent <= 100 "Pass threshold must be between 0 and 100"
+  constraint validAttempts: self.maxAttempts >= 1 and self.maxAttempts <= 10 "Max attempts must be between 1 and 10"
 
-  command create(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, createdBy: string) {
-    guard title != null and title != "" "Title is required"
+  default policy TrainingModuleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
 
+  command create(id: string, code: string, title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, passThresholdPercent: number, maxAttempts: number, requiredRole: string, createdBy: string, publishImmediately: boolean) {
+    guard title != ""
+    guard contentType in ["document", "video", "quiz", "interactive", "checklist", "mixed"]
+
+    mutate code = code
     mutate title = title
     mutate description = description
     mutate contentUrl = contentUrl
@@ -31,16 +220,23 @@ entity TrainingModule {
     mutate durationMinutes = durationMinutes
     mutate category = category
     mutate isRequired = isRequired
+    mutate passThresholdPercent = passThresholdPercent
+    mutate maxAttempts = maxAttempts
+    mutate requiredRole = requiredRole
     mutate isActive = true
+    mutate status = publishImmediately ? "published" : "draft"
+    mutate version = 1
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
+    mutate publishedAt = publishImmediately ? now() : null
 
     emit TrainingModuleCreated
   }
 
-  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, isActive: boolean) {
-    guard self.deletedAt == 0 "Cannot update a deleted training module"
+  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, passThresholdPercent: number, maxAttempts: number, requiredRole: string) {
+    guard self.deletedAt == null
+    guard self.status == "draft"
+    guard title != ""
+    guard contentType in ["document", "video", "quiz", "interactive", "checklist", "mixed"]
 
     mutate title = title
     mutate description = description
@@ -49,42 +245,467 @@ entity TrainingModule {
     mutate durationMinutes = durationMinutes
     mutate category = category
     mutate isRequired = isRequired
-    mutate isActive = isActive
-    mutate updatedAt = now()
+    mutate passThresholdPercent = passThresholdPercent
+    mutate maxAttempts = maxAttempts
+    mutate requiredRole = requiredRole
 
     emit TrainingModuleUpdated
   }
 
+  command markPublished() {
+    guard self.deletedAt == null
+    guard self.status == "draft"
+    guard self.title != ""
+    guard self.contentUrl != ""
+
+    mutate status = "published"
+    mutate isActive = true
+    mutate publishedAt = now()
+
+    emit TrainingModulePublished
+  }
+
+  command createVersion(changeNotes: string) {
+    guard self.deletedAt == null
+    guard self.status == "published"
+    guard changeNotes != ""
+
+    mutate version = self.version + 1
+    mutate status = "draft"
+    mutate notes = changeNotes
+
+    emit TrainingModuleVersioned
+  }
+
+  command archive(reason: string) {
+    guard self.deletedAt == null
+    guard self.status in ["draft", "published"]
+    guard reason != ""
+
+    mutate status = "archived"
+    mutate isActive = false
+    mutate archivedAt = now()
+
+    emit TrainingModuleArchived
+  }
+
+  command unarchive() {
+    guard self.deletedAt == null
+    guard self.status == "archived"
+
+    mutate status = "draft"
+    mutate isActive = true
+
+    emit TrainingModuleUnarchived
+  }
+
   command softDelete() {
-    guard self.deletedAt == 0 "Training module is already deleted"
+    guard self.deletedAt == null
+    guard self.status != "published"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
+    mutate isActive = false
 
     emit TrainingModuleDeleted
   }
 
-  store TrainingModule in memory
+  store TrainingModule in durable
 }
 
-policy TrainingModuleManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training modules"
+entity TrainingQuestion {
+  key [tenantId, id]
 
-event TrainingModuleCreated: "staff.training-module.created" {
-  moduleId: string
-  tenantId: string
-  title: string
-  category: string
-  createdBy: string
-  createdAt: number
+  property required tenantId: string
+  property required id: string
+  property required moduleId: string
+  property code: string = ""
+  property sectionTitle: string = ""
+  property displayOrder: int = 0
+  property prompt: string = ""
+  property optionA: string = ""
+  property optionB: string = ""
+  property optionC: string = ""
+  property optionD: string = ""
+  property correctOptionKey: string = "A"
+  property explanation: string = ""
+  property whyItMatters: string = ""
+  property isActive: boolean = true
+
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+
+  timestamps
+
+  constraint validPrompt: self.prompt != "" "Training questions require a prompt"
+  constraint validOptions: self.optionA != "" and self.optionB != "" "Training questions require at least two options"
+  constraint validAnswerKey: self.correctOptionKey in ["A", "B", "C", "D"] "Correct option key must be A, B, C, or D"
+
+  default policy TrainingQuestionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
+
+  command create(id: string, moduleId: string, code: string, sectionTitle: string, displayOrder: number, prompt: string, optionA: string, optionB: string, optionC: string, optionD: string, correctOptionKey: string, explanation: string, whyItMatters: string) {
+    guard moduleId != ""
+    guard code != ""
+    guard prompt != ""
+    guard correctOptionKey in ["A", "B", "C", "D"]
+
+    mutate moduleId = moduleId
+    mutate code = code
+    mutate sectionTitle = sectionTitle
+    mutate displayOrder = displayOrder
+    mutate prompt = prompt
+    mutate optionA = optionA
+    mutate optionB = optionB
+    mutate optionC = optionC
+    mutate optionD = optionD
+    mutate correctOptionKey = correctOptionKey
+    mutate explanation = explanation
+    mutate whyItMatters = whyItMatters
+    mutate isActive = true
+
+    emit TrainingQuestionCreated
+  }
+
+  command deactivate() {
+    guard self.isActive == true
+
+    mutate isActive = false
+  }
+
+  store TrainingQuestion in durable
 }
 
-event TrainingModuleUpdated: "staff.training-module.updated" {
-  moduleId: string
-  title: string
-  updatedAt: number
+entity TrainingAssignment {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property required moduleId: string
+  property moduleCode: string = ""
+  property moduleTitle: string = ""
+  property required staffMemberId: string
+  property staffRole: string = "staff"
+  property status: string = "assigned"
+  property dueAt: datetime
+  property dueDateReviewNeeded: boolean = false
+  property firstShiftAt: datetime
+  property startedAt: datetime
+  property completedAt: datetime
+  property waivedAt: datetime
+  property waiverReason: string = ""
+  property waiverApprovedBy: string = ""
+  property attemptCount: int = 0
+  property lastAttemptId: string = ""
+  property lastScorePercent: int = 0
+  property passThresholdPercent: int = 80
+  property maxAttempts: int = 3
+  property managerReviewRequired: boolean = false
+  property reminderSentAt: datetime
+
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship hasMany attempts: TrainingAttempt
+
+  timestamps
+
+  computed isComplete: boolean = self.status == "completed"
+  computed isWaived: boolean = self.status == "waived"
+  computed isOpen: boolean = self.status in ["assigned", "in_progress", "overdue", "manager_review"]
+  computed attemptsRemaining: number = self.maxAttempts - self.attemptCount
+  computed isSchedulableSatisfied: boolean = self.status in ["completed", "waived"]
+
+  transition status from "assigned" to ["in_progress", "completed", "waived", "overdue", "manager_review"]
+  transition status from "in_progress" to ["completed", "waived", "overdue", "manager_review"]
+  transition status from "overdue" to ["in_progress", "completed", "waived", "manager_review"]
+  transition status from "manager_review" to ["completed", "waived", "in_progress"]
+
+  constraint validStatus: self.status in ["assigned", "in_progress", "completed", "waived", "overdue", "manager_review"] "Invalid training assignment status"
+  constraint validAttemptCount: self.attemptCount >= 0 and self.attemptCount <= self.maxAttempts "Attempt count is invalid"
+  constraint validThreshold: self.passThresholdPercent >= 0 and self.passThresholdPercent <= 100 "Pass threshold must be between 0 and 100"
+  constraint validMaxAttempts: self.maxAttempts >= 1 and self.maxAttempts <= 10 "Max attempts must be between 1 and 10"
+
+  default policy TrainingAssignmentDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
+
+  command create(id: string, moduleId: string, moduleCode: string, moduleTitle: string, staffMemberId: string, staffRole: string, passThresholdPercent: number, maxAttempts: number, firstShiftAt: datetime, dueAt: datetime, dueDateReviewNeeded: boolean) {
+    guard moduleId != ""
+    guard staffMemberId != ""
+    guard staffRole == "staff"
+    guard passThresholdPercent >= 0 and passThresholdPercent <= 100
+    guard maxAttempts >= 1
+
+    mutate moduleId = moduleId
+    mutate moduleCode = moduleCode
+    mutate moduleTitle = moduleTitle
+    mutate staffMemberId = staffMemberId
+    mutate staffRole = staffRole
+    mutate passThresholdPercent = passThresholdPercent
+    mutate maxAttempts = maxAttempts
+    mutate firstShiftAt = firstShiftAt
+    mutate dueAt = dueAt
+    mutate dueDateReviewNeeded = dueDateReviewNeeded
+    mutate status = "assigned"
+    mutate attemptCount = 0
+    mutate managerReviewRequired = false
+
+    emit TrainingAssignmentCreated
+  }
+
+  command start(assignmentId: string, moduleId: string, staffMemberId: string) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "overdue"]
+
+    mutate status = "in_progress"
+    mutate startedAt = now()
+
+    emit TrainingAssignmentStarted
+  }
+
+  command submitPassingAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress", "overdue", "manager_review"]
+    guard scorePercent >= self.passThresholdPercent
+    guard scorePercent <= 100
+    guard self.attemptCount < self.maxAttempts
+
+    mutate attemptCount = self.attemptCount + 1
+    mutate lastAttemptId = attemptId
+    mutate lastScorePercent = scorePercent
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate managerReviewRequired = false
+
+    emit TrainingAttemptSubmitted
+    emit TrainingAttemptPassed
+    emit TrainingAssignmentCompleted
+  }
+
+  command submitFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress", "overdue"]
+    guard scorePercent < self.passThresholdPercent
+    guard scorePercent >= 0
+    guard self.attemptCount + 1 < self.maxAttempts
+
+    mutate attemptCount = self.attemptCount + 1
+    mutate lastAttemptId = attemptId
+    mutate lastScorePercent = scorePercent
+    mutate status = "in_progress"
+    mutate managerReviewRequired = false
+
+    emit TrainingAttemptSubmitted
+    emit TrainingAttemptFailed
+  }
+
+  command submitFinalFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress", "overdue"]
+    guard scorePercent < self.passThresholdPercent
+    guard scorePercent >= 0
+    guard self.attemptCount + 1 >= self.maxAttempts
+
+    mutate attemptCount = self.attemptCount + 1
+    mutate lastAttemptId = attemptId
+    mutate lastScorePercent = scorePercent
+    mutate status = "manager_review"
+    mutate managerReviewRequired = true
+
+    emit TrainingAttemptSubmitted
+    emit TrainingAttemptFailed
+    emit TrainingAssignmentManagerReviewRequested
+  }
+
+  command applyFirstShiftDueDate(assignmentId: string, moduleId: string, staffMemberId: string, firstShiftAt: datetime, dueAt: datetime) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress", "overdue"]
+    guard dueAt != null
+
+    mutate firstShiftAt = firstShiftAt
+    mutate dueAt = dueAt
+    mutate dueDateReviewNeeded = false
+
+    emit TrainingAssignmentDueDateSet
+  }
+
+  command markOverdue(assignmentId: string, moduleId: string, staffMemberId: string, referenceTime: datetime) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress"]
+    guard self.dueAt != null
+    guard self.dueAt < referenceTime
+
+    mutate status = "overdue"
+    mutate reminderSentAt = now()
+
+    emit TrainingAssignmentMarkedOverdue
+    emit TrainingReminderRequested
+  }
+
+  command waive(assignmentId: string, moduleId: string, staffMemberId: string, reason: string, approvedBy: string) {
+    guard assignmentId == self.id
+    guard moduleId == self.moduleId
+    guard staffMemberId == self.staffMemberId
+    guard self.status in ["assigned", "in_progress", "overdue", "manager_review"]
+    guard reason != ""
+    guard approvedBy != ""
+
+    mutate status = "waived"
+    mutate waivedAt = now()
+    mutate waiverReason = reason
+    mutate waiverApprovedBy = approvedBy
+    mutate managerReviewRequired = false
+
+    emit TrainingAssignmentWaived
+  }
+
+  store TrainingAssignment in durable
 }
 
-event TrainingModuleDeleted: "staff.training-module.deleted" {
-  moduleId: string
-  deletedAt: number
+entity TrainingAttempt {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property required assignmentId: string
+  property required moduleId: string
+  property required staffMemberId: string
+  property attemptNumber: int = 1
+  property scorePercent: int = 0
+  property passThresholdPercent: int = 80
+  property passed: boolean = false
+  property managerReviewRequired: boolean = false
+  property answersJson: string = ""
+
+  relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
+  relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+
+  timestamps
+
+  constraint validAttemptNumber: self.attemptNumber >= 1 "Attempt number must be positive"
+  constraint validScore: self.scorePercent >= 0 and self.scorePercent <= 100 "Score must be between 0 and 100"
+
+  default policy TrainingAttemptDefaultAccess execute: user.role in ["staff", "hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
+
+  command create(id: string, assignmentId: string, moduleId: string, staffMemberId: string, attemptNumber: number, scorePercent: number, passThresholdPercent: number, passed: boolean, managerReviewRequired: boolean, answersJson: string) {
+    guard assignmentId != ""
+    guard moduleId != ""
+    guard staffMemberId != ""
+    guard attemptNumber >= 1
+    guard scorePercent >= 0 and scorePercent <= 100
+
+    mutate assignmentId = assignmentId
+    mutate moduleId = moduleId
+    mutate staffMemberId = staffMemberId
+    mutate attemptNumber = attemptNumber
+    mutate scorePercent = scorePercent
+    mutate passThresholdPercent = passThresholdPercent
+    mutate passed = passed
+    mutate managerReviewRequired = managerReviewRequired
+    mutate answersJson = answersJson
+
+    emit TrainingAttemptRecorded
+  }
+
+  store TrainingAttempt in durable
 }
+
+entity StaffTrainingSignal {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property required staffMemberId: string
+  property required moduleId: string
+  property required assignmentId: string
+  property signalType: string = ""
+  property reason: string = ""
+
+  timestamps
+
+  constraint validSignalType: self.signalType in ["schedulability_granted", "waiver_logged"] "Invalid staff training signal type"
+
+  default policy StaffTrainingSignalDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin", "kitchen_manager", "system"]
+
+  command recordSchedulabilityGranted(id: string, staffMemberId: string, moduleId: string, assignmentId: string, reason: string) {
+    guard staffMemberId != ""
+    guard moduleId != ""
+    guard assignmentId != ""
+
+    mutate staffMemberId = staffMemberId
+    mutate moduleId = moduleId
+    mutate assignmentId = assignmentId
+    mutate signalType = "schedulability_granted"
+    mutate reason = reason
+
+    emit StaffTrainingSchedulingEligibilityGranted
+  }
+
+  command recordWaiverLogged(id: string, staffMemberId: string, moduleId: string, assignmentId: string, reason: string) {
+    guard staffMemberId != ""
+    guard moduleId != ""
+    guard assignmentId != ""
+    guard reason != ""
+
+    mutate staffMemberId = staffMemberId
+    mutate moduleId = moduleId
+    mutate assignmentId = assignmentId
+    mutate signalType = "waiver_logged"
+    mutate reason = reason
+
+    emit StaffTrainingWaiverLogged
+  }
+
+  store StaffTrainingSignal in durable
+}
+
+on TrainingAttemptSubmitted run TrainingAttempt.create
+  resolve payload.attemptId
+  params {
+    id: payload.attemptId
+    assignmentId: payload.assignmentId
+    moduleId: payload.moduleId
+    staffMemberId: payload.staffMemberId
+    attemptNumber: payload.result.attemptCount
+    scorePercent: payload.scorePercent
+    passThresholdPercent: payload.result.passThresholdPercent
+    passed: payload.scorePercent >= payload.result.passThresholdPercent
+    managerReviewRequired: payload.result.managerReviewRequired
+    answersJson: payload.answersJson
+  }
+
+on TrainingAssignmentCompleted run StaffTrainingSignal.recordSchedulabilityGranted
+  resolve uuid()
+  params {
+    id: uuid()
+    staffMemberId: payload.staffMemberId
+    moduleId: payload.moduleId
+    assignmentId: payload.assignmentId
+    reason: "training_completed"
+  }
+
+on TrainingAssignmentWaived run StaffTrainingSignal.recordSchedulabilityGranted
+  resolve uuid()
+  params {
+    id: uuid()
+    staffMemberId: payload.staffMemberId
+    moduleId: payload.moduleId
+    assignmentId: payload.assignmentId
+    reason: "training_waived"
+  }
+
+on TrainingAssignmentWaived run StaffTrainingSignal.recordWaiverLogged
+  resolve uuid()
+  params {
+    id: uuid()
+    staffMemberId: payload.staffMemberId
+    moduleId: payload.moduleId
+    assignmentId: payload.assignmentId
+    reason: payload.reason
+  }

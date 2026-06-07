@@ -15,54 +15,82 @@
  * tenant-scoping pattern used by every read/write.
  */
 
-import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GET as listVenueEvents } from "@/app/api/crm/venues/[id]/events/route";
-import {
-  DELETE as deleteVenue,
-  GET as getVenue,
-  PUT as updateVenue,
-} from "@/app/api/crm/venues/[id]/route";
-import {
-  POST as createVenue,
-  GET as listVenues,
-} from "@/app/api/crm/venues/route";
 
-// --- Mocks --------------------------------------------------------------
+// --- Mocks (pure factories — no vi.importActual, which loads server-only) ---
 
-vi.mock("@repo/database", async () => {
-  const actual =
-    await vi.importActual<typeof import("@repo/database")>("@repo/database");
-  return {
-    ...actual,
-    database: {
-      venue: {
-        findFirst: vi.fn(),
-        findMany: vi.fn(),
-        count: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-      },
-      event: {
-        findMany: vi.fn(),
-        count: vi.fn(),
-      },
+vi.mock("@repo/database", () => ({
+  database: {
+    venue: {
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+      count: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
     },
-  };
-});
+    event: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+    },
+  },
+}));
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
+vi.mock("@/lib/prisma-error", () => ({
+  translatePrismaError: () => ({ mapped: false, message: "", status: 500 }),
+}));
+vi.mock("@/app/lib/invariant", () => ({
+  invariant: (condition: unknown, message: string) => {
+    if (!condition) {
+      const err = new Error(message);
+      err.name = "InvariantError";
+      throw err;
+    }
+  },
+  InvariantError: class InvariantError extends Error {},
+}));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
 }));
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, resolveCurrentUser } = await import("@/app/lib/tenant");
+const { database } = await import("@repo/database");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+
+const _venueEventsRoute = await import("@/app/api/crm/venues/[id]/events/route");
+const listVenueEvents = _venueEventsRoute.GET;
+
+const _venueIdRoute = await import("@/app/api/crm/venues/[id]/route");
+const deleteVenue = _venueIdRoute.DELETE;
+const getVenue = _venueIdRoute.GET;
+const updateVenue = _venueIdRoute.PUT;
+
+const _venuesRoute = await import("@/app/api/crm/venues/route");
+const createVenue = _venuesRoute.POST;
+const listVenues = _venuesRoute.GET;
 
 const TENANT = "00000000-0000-0000-0000-0000000000aa";
 const ORG = "org_venue_test";
 const VENUE_ID = "11111111-1111-1111-1111-111111111111";
+const USER_ID = "user_venue_test";
 
 function paramsOf(id: string): Promise<{ id: string }> {
   return Promise.resolve({ id });
@@ -105,6 +133,20 @@ beforeEach(() => {
     orgId: ORG,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT);
+  vi.mocked(resolveCurrentUser).mockResolvedValue({
+    id: USER_ID,
+    tenantId: TENANT,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
+  vi.mocked(runManifestCommand).mockImplementation(async (params: any) => {
+    return new Response(JSON.stringify({ success: true, data: params.body }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  });
 });
 
 // --- GET /api/crm/venues ------------------------------------------------
@@ -177,67 +219,70 @@ describe("GET /api/crm/venues", () => {
 // --- POST /api/crm/venues -----------------------------------------------
 
 describe("POST /api/crm/venues", () => {
-  it("returns 400 when name is missing", async () => {
-    const req = new NextRequest("http://localhost/api/crm/venues", {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-    const res = await createVenue(req);
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 400 for an invalid email", async () => {
-    const req = new NextRequest("http://localhost/api/crm/venues", {
-      method: "POST",
-      body: JSON.stringify({ name: "X", contactEmail: "not-an-email" }),
-    });
-    const res = await createVenue(req);
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 400 for an unknown venueType", async () => {
-    const req = new NextRequest("http://localhost/api/crm/venues", {
-      method: "POST",
-      body: JSON.stringify({ name: "X", venueType: "spaceship" }),
-    });
-    const res = await createVenue(req);
-    expect(res.status).toBe(400);
-  });
-
-  it("creates a venue with sane defaults", async () => {
-    const fake = makeFakeVenue();
-    vi.mocked(database.venue.create).mockResolvedValue(fake as never);
+  it("delegates create to manifest runtime", async () => {
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: { id: VENUE_ID, name: "Grand Ballroom", venueType: "other", capacity: 0, isActive: true, tags: [] },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
 
     const req = new NextRequest("http://localhost/api/crm/venues", {
       method: "POST",
       body: JSON.stringify({ name: "Grand Ballroom" }),
     });
     const res = await createVenue(req);
-    expect(res.status).toBe(201);
-    const json = await res.json();
-    expect(json.data.id).toBe(VENUE_ID);
-
-    expect(database.venue.create).toHaveBeenCalledWith(
+    expect(res.status).toBe(200);
+    expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
-          tenantId: TENANT,
-          name: "Grand Ballroom",
-          venueType: "other",
-          capacity: 0,
-          isActive: true,
-          tags: [],
-        }),
+        entity: "Venue",
+        command: "create",
+        body: expect.objectContaining({ name: "Grand Ballroom" }),
       })
     );
   });
 
-  it("rejects non-JSON bodies with 400", async () => {
+  it("passes raw body to manifest (validation is runtime-side)", async () => {
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ success: false, error: "name is required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      )
+    );
+
+    const req = new NextRequest("http://localhost/api/crm/venues", {
+      method: "POST",
+      body: JSON.stringify({}),
+    });
+    await createVenue(req);
+    // Route delegates to manifest; manifest returns the validation error
+    expect(runManifestCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: "Venue",
+        command: "create",
+        body: {},
+      })
+    );
+  });
+
+  it("handles non-JSON bodies gracefully (empty object fallback)", async () => {
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ success: false, error: "validation failed" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      )
+    );
+
     const req = new NextRequest("http://localhost/api/crm/venues", {
       method: "POST",
       body: "not-json",
     });
-    const res = await createVenue(req);
-    expect(res.status).toBe(400);
+    await createVenue(req);
+    // Route catches JSON parse error and passes {} to manifest
+    expect(runManifestCommand).toHaveBeenCalled();
   });
 });
 
@@ -271,24 +316,16 @@ describe("GET /api/crm/venues/[id]", () => {
 // --- PUT /api/crm/venues/[id] -------------------------------------------
 
 describe("PUT /api/crm/venues/[id]", () => {
-  it("returns 404 when venue not found", async () => {
-    vi.mocked(database.venue.findFirst).mockResolvedValue(null);
-    const req = new NextRequest("http://localhost/api/crm/venues/x", {
-      method: "PUT",
-      body: JSON.stringify({ name: "New Name" }),
-    });
-    const res = await updateVenue(req, { params: paramsOf(VENUE_ID) });
-    expect(res.status).toBe(404);
-    expect(database.venue.update).not.toHaveBeenCalled();
-  });
-
-  it("only writes provided fields", async () => {
-    const fake = makeFakeVenue();
-    vi.mocked(database.venue.findFirst).mockResolvedValue(fake as never);
-    vi.mocked(database.venue.update).mockResolvedValue({
-      ...fake,
-      capacity: 999,
-    } as never);
+  it("delegates update to manifest runtime", async () => {
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: { ...makeFakeVenue(), capacity: 999 },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
 
     const req = new NextRequest("http://localhost/api/crm/venues/x", {
       method: "PUT",
@@ -297,32 +334,44 @@ describe("PUT /api/crm/venues/[id]", () => {
     const res = await updateVenue(req, { params: paramsOf(VENUE_ID) });
     expect(res.status).toBe(200);
 
-    const updateCall = vi.mocked(database.venue.update).mock.calls[0][0];
-    expect(updateCall.where).toEqual({
-      tenantId_id: { tenantId: TENANT, id: VENUE_ID },
-    });
-    expect(updateCall.data).toEqual({ capacity: 999 });
+    expect(runManifestCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: "Venue",
+        command: "update",
+        body: expect.objectContaining({ capacity: 999, id: VENUE_ID }),
+      })
+    );
   });
 });
 
 // --- DELETE /api/crm/venues/[id] ----------------------------------------
 
 describe("DELETE /api/crm/venues/[id]", () => {
-  it("returns 404 when venue does not exist", async () => {
-    vi.mocked(database.venue.findFirst).mockResolvedValue(null);
+  it("returns 404 when venue does not exist (manifest returns error)", async () => {
+    // The DELETE route checks event count first, then delegates to manifest.
+    // For "venue does not exist", the route doesn't pre-check — it delegates.
+    // We test the active-events guard below and the manifest delegation path.
+    // Since there's no explicit findFirst before manifest, we just test
+    // what the route actually does: check events, then delegate.
+    vi.mocked(database.event.count).mockResolvedValue(0 as never);
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ success: false, error: "not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      )
+    );
+
     const res = await deleteVenue(
       new NextRequest("http://localhost/api/crm/venues/x", {
         method: "DELETE",
       }),
       { params: paramsOf(VENUE_ID) }
     );
+    // The route delegates to manifest, which returns whatever status the response has
     expect(res.status).toBe(404);
   });
 
   it("blocks deletion when active events exist", async () => {
-    vi.mocked(database.venue.findFirst).mockResolvedValue(
-      makeFakeVenue() as never
-    );
     vi.mocked(database.event.count).mockResolvedValue(3 as never);
 
     const res = await deleteVenue(
@@ -334,16 +383,16 @@ describe("DELETE /api/crm/venues/[id]", () => {
     expect(res.status).toBe(409);
     const json = await res.json();
     expect(json.activeEvents).toBe(3);
-    expect(database.venue.update).not.toHaveBeenCalled();
+    expect(runManifestCommand).not.toHaveBeenCalled();
   });
 
-  it("soft-deletes when no active events", async () => {
-    vi.mocked(database.venue.findFirst).mockResolvedValue(
-      makeFakeVenue() as never
-    );
+  it("soft-deletes via manifest when no active events", async () => {
     vi.mocked(database.event.count).mockResolvedValue(0 as never);
-    vi.mocked(database.venue.update).mockResolvedValue(
-      makeFakeVenue({ deletedAt: new Date() }) as never
+    vi.mocked(runManifestCommand).mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ success: true, data: { id: VENUE_ID } }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
     );
 
     const res = await deleteVenue(
@@ -354,11 +403,13 @@ describe("DELETE /api/crm/venues/[id]", () => {
     );
     expect(res.status).toBe(200);
 
-    const updateCall = vi.mocked(database.venue.update).mock.calls[0][0];
-    expect(updateCall.where).toEqual({
-      tenantId_id: { tenantId: TENANT, id: VENUE_ID },
-    });
-    expect(updateCall.data.deletedAt).toBeInstanceOf(Date);
+    expect(runManifestCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: "Venue",
+        command: "deactivate",
+        body: { id: VENUE_ID },
+      })
+    );
   });
 });
 

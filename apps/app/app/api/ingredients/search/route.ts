@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
@@ -22,21 +22,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const searchTerm = `%${query.trim().toLowerCase()}%`;
-
-    // Search for ingredients matching the query
-    const ingredients = await database.$queryRaw<{ name: string }[]>(
-      Prisma.sql`
-        SELECT name
-        FROM tenant_kitchen.ingredients
-        WHERE tenant_id = ${tenantId}
-          AND LOWER(name) LIKE ${searchTerm}
-          AND deleted_at IS NULL
-          AND is_active = true
-        ORDER BY name ASC
-        LIMIT 20
-      `
-    );
+    const ingredients = await database.ingredient.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        isActive: true,
+        name: { contains: query.trim(), mode: "insensitive" },
+      },
+      select: { name: true },
+      orderBy: { name: "asc" },
+      take: 20,
+    });
 
     return NextResponse.json({
       ingredients: ingredients.map((ing) => ing.name),

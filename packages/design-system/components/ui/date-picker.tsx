@@ -15,6 +15,7 @@ import { cn } from "@repo/design-system/lib/utils";
 
 interface DatePickerProps {
   value?: string;
+  defaultValue?: string;
   onChange?: React.ChangeEventHandler<HTMLInputElement>;
   onBlur?: React.FocusEventHandler<HTMLInputElement>;
   placeholder?: string;
@@ -58,6 +59,7 @@ function synthEvent(value: string): React.ChangeEvent<HTMLInputElement> {
  */
 export function DatePicker({
   value,
+  defaultValue,
   onChange,
   onBlur,
   placeholder = "Pick a date",
@@ -72,36 +74,48 @@ export function DatePicker({
 }: DatePickerProps &
   Omit<
     React.ComponentProps<"input">,
-    "value" | "onChange" | "type" | "min" | "max"
+    "value" | "defaultValue" | "onChange" | "type" | "min" | "max" | "name"
   >) {
   const [open, setOpen] = React.useState(false);
+  const isControlled = value !== undefined;
+  const [uncontrolledValue, setUncontrolledValue] = React.useState(
+    defaultValue ?? ""
+  );
+  const selectedValue = isControlled ? value : uncontrolledValue;
   const [inputValue, setInputValue] = React.useState(
-    formatDisplay(toDate(value))
+    formatDisplay(toDate(selectedValue))
   );
   const [isTyping, setIsTyping] = React.useState(false);
-  const date = toDate(value);
+  const date = toDate(selectedValue);
 
   // Sync input display when external value changes (calendar selection, form reset)
   React.useEffect(() => {
     if (!isTyping) {
-      setInputValue(formatDisplay(toDate(value)));
+      setInputValue(formatDisplay(toDate(selectedValue)));
     }
-  }, [value, isTyping]);
+  }, [selectedValue, isTyping]);
+
+  const commitValue = (nextValue: string) => {
+    if (!isControlled) {
+      setUncontrolledValue(nextValue);
+    }
+    onChange?.(synthEvent(nextValue));
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsTyping(true);
     setInputValue(e.target.value);
 
     // Try to parse what the user typed
-    const parsed = new Date(e.target.value);
+    const parsed = parseISO(e.target.value);
     if (isValid(parsed)) {
-      onChange?.(synthEvent(format(parsed, "yyyy-MM-dd")));
+      commitValue(format(parsed, "yyyy-MM-dd"));
     }
   };
 
   const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setIsTyping(false);
-    const d = toDate(value);
+    const d = toDate(selectedValue);
     setInputValue(formatDisplay(d));
     onBlur?.(e);
   };
@@ -111,7 +125,7 @@ export function DatePicker({
     if (selected) {
       const iso = format(selected, "yyyy-MM-dd");
       setInputValue(formatDisplay(selected));
-      onChange?.(synthEvent(iso));
+      commitValue(iso);
     }
     setOpen(false);
   };
@@ -121,9 +135,9 @@ export function DatePicker({
 
   return (
     <div className={cn("relative", className)}>
+      {name ? <input name={name} type="hidden" value={selectedValue} /> : null}
       <Input
         id={id}
-        name={name}
         type="text"
         value={inputValue}
         placeholder={placeholder}

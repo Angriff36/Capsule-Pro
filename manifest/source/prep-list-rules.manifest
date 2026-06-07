@@ -2,25 +2,30 @@
 // Manifest spec for prep list operations with constraints, guards, and events
 
 entity PrepList {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
   property required name: string
-  property batchMultiplier: number = 1
+  property batchMultiplier: decimal = 1
   property dietaryRestrictions: string = ""
   property status: string = "draft"
   property totalItems: int = 0
-  property totalEstimatedTime: number = 0
+  property totalEstimatedTime: decimal = 0
   property notes: string = ""
-  property generatedAt: datetime = now()
-  property finalizedAt: datetime = now()
+  property generatedAt: datetime
+  property finalizedAt: datetime
   property isActive: boolean = true
 
+  timestamps
   computed isDraft: boolean = self.status == "draft"
   computed isFinalized: boolean = self.status == "finalized"
   computed isCompleted: boolean = self.status == "completed"
   computed hasItems: boolean = self.totalItems > 0
   computed avgTimePerItem: number = self.totalItems > 0 ? (self.totalEstimatedTime / self.totalItems) : 0
+
+  relationship hasMany items: PrepListItem
+  relationship hasMany tasks: PrepTask
 
   constraint validName: self.name != null and self.name != "" "Prep list name is required"
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
@@ -58,6 +63,13 @@ entity PrepList {
     }
   }
 
+  // State transitions
+  // draft→draft allowed: createFromSeed re-initializes a draft prep list in place
+  transition status from "draft" to ["draft", "finalized", "cancelled"]
+  transition status from "finalized" to ["completed", "cancelled", "draft"]
+  transition status from "completed" to ["draft", "cancelled"]
+
+  default policy PrepListDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command update(newName: string, newDietaryRestrictions: string, newNotes: string) {
     guard self.status == "draft" "Can only update draft prep lists"
 
@@ -175,7 +187,7 @@ entity PrepList {
     mutate totalItems = validInstructionLines
     mutate status = "draft"
     mutate generatedAt = now()
-    mutate finalizedAt = 0
+    mutate finalizedAt = null
     mutate isActive = true
 
     emit PrepListSeedImported
@@ -185,16 +197,17 @@ entity PrepList {
     guard self.status == "finalized" or self.status == "completed" "Can only reopen finalized or completed prep lists"
 
     mutate status = "draft"
-    mutate finalizedAt = 0
+    mutate finalizedAt = null
     mutate notes = reason
 
     emit PrepListReopened
   }
 
-  store PrepList in memory
+  store PrepList in durable
 }
 
 entity PrepListItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required prepListId: string
@@ -203,9 +216,9 @@ entity PrepListItem {
   property required ingredientId: string
   property required ingredientName: string
   property category: string = ""
-  property baseQuantity: number = 0
+  property baseQuantity: int = 0
   property baseUnit: string = ""
-  property scaledQuantity: number = 0
+  property scaledQuantity: int = 0
   property scaledUnit: string = ""
   property isOptional: boolean = false
   property preparationNotes: string = ""
@@ -216,12 +229,19 @@ entity PrepListItem {
   property recipeVersionId: string = ""
   property sortOrder: int = 0
   property isCompleted: boolean = false
-  property completedAt: datetime = now()
+  property completedAt: datetime
   property completedBy: string = ""
 
+  timestamps
   computed hasAllergens: boolean = self.allergens != null and self.allergens != ""
   computed hasDietarySubstitutions: boolean = self.dietarySubstitutions != null and self.dietarySubstitutions != ""
   computed isRequired: boolean = self.isOptional == false
+
+  relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
+  relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
+  relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
+  relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
 
   constraint validPrepListId: self.prepListId != null and self.prepListId != "" "Prep list ID is required"
   constraint validStationName: self.stationName != null and self.stationName != "" "Station name is required"
@@ -230,7 +250,7 @@ entity PrepListItem {
   constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
   constraint positiveScaledQuantity: self.scaledQuantity >= 0 "Scaled quantity must be non-negative"
 
-  constraint warnMajorAllergen:warn self.allergens != null and (self.allergens contains "nuts" or self.allergens contains "dairy" or self.allergens contains "gluten" or self.allergens contains "shellfish" or self.allergens contains "eggs") {
+  constraint warnMajorAllergen:warn self.allergens != null and containsAny(self.allergens, ["nuts", "dairy", "gluten", "shellfish", "eggs"]) {
     messageTemplate: "Item contains major allergen: {allergens}"
     details: {
       allergens: self.allergens
@@ -246,6 +266,7 @@ entity PrepListItem {
     }
   }
 
+  default policy PrepListItemDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep list management"
   command updateQuantity(newBaseQuantity: number, newScaledQuantity: number, newBaseUnit: string, newScaledUnit: string) {
     guard newBaseQuantity != null and newBaseQuantity >= 0 "Base quantity must be non-negative"
     guard newScaledQuantity != null and newScaledQuantity >= 0 "Scaled quantity must be non-negative"
@@ -307,7 +328,7 @@ entity PrepListItem {
     guard self.isCompleted == true "Item is not completed"
 
     mutate isCompleted = false
-    mutate completedAt = 0
+    mutate completedAt = null
     mutate completedBy = ""
 
     emit PrepListItemUncompleted
@@ -337,13 +358,13 @@ entity PrepListItem {
     mutate recipeVersionId = recipeVersionId
     mutate sortOrder = sortOrder
     mutate isCompleted = false
-    mutate completedAt = 0
+    mutate completedAt = null
     mutate completedBy = ""
 
     emit PrepListItemCreated
   }
 
-  store PrepListItem in memory
+  store PrepListItem in durable
 }
 
 // Policy definitions
@@ -360,7 +381,7 @@ event PrepListCreated: "kitchen.preplist.created" {
   name: string
   totalItems: number
   batchMultiplier: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepListSeedImported: "kitchen.preplist.seed_imported" {
@@ -369,7 +390,7 @@ event PrepListSeedImported: "kitchen.preplist.seed_imported" {
   eventId: string
   name: string
   totalItems: number
-  importedAt: number
+  importedAt: datetime
 }
 
 event PrepListUpdated: "kitchen.preplist.updated" {
@@ -377,7 +398,7 @@ event PrepListUpdated: "kitchen.preplist.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepListBatchMultiplierUpdated: "kitchen.preplist.batch_multiplier_updated" {
@@ -385,7 +406,7 @@ event PrepListBatchMultiplierUpdated: "kitchen.preplist.batch_multiplier_updated
   tenantId: string
   oldMultiplier: number
   newMultiplier: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepListFinalized: "kitchen.preplist.finalized" {
@@ -394,28 +415,28 @@ event PrepListFinalized: "kitchen.preplist.finalized" {
   eventId: string
   totalItems: number
   totalEstimatedTime: number
-  finalizedAt: number
+  finalizedAt: datetime
 }
 
 event PrepListActivated: "kitchen.preplist.activated" {
   prepListId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event PrepListDeactivated: "kitchen.preplist.deactivated" {
   prepListId: string
   tenantId: string
   name: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event PrepListCompleted: "kitchen.preplist.completed" {
   prepListId: string
   tenantId: string
   eventId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event PrepListReopened: "kitchen.preplist.reopened" {
@@ -423,14 +444,14 @@ event PrepListReopened: "kitchen.preplist.reopened" {
   tenantId: string
   eventId: string
   reason: string
-  reopenedAt: number
+  reopenedAt: datetime
 }
 
 event PrepListCancelled: "kitchen.preplist.cancelled" {
   prepListId: string
   tenantId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event PrepListItemCreated: "kitchen.preplist.item_created" {
@@ -440,7 +461,7 @@ event PrepListItemCreated: "kitchen.preplist.item_created" {
   ingredientName: string
   stationName: string
   scaledQuantity: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepListItemUpdated: "kitchen.preplist.item_updated" {
@@ -450,7 +471,7 @@ event PrepListItemUpdated: "kitchen.preplist.item_updated" {
   ingredientName: string
   oldScaledQuantity: number
   newScaledQuantity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepListItemStationChanged: "kitchen.preplist.item_station_changed" {
@@ -460,7 +481,7 @@ event PrepListItemStationChanged: "kitchen.preplist.item_station_changed" {
   ingredientName: string
   oldStationName: string
   newStationName: string
-  changedAt: number
+  changedAt: datetime
 }
 
 event PrepListItemNotesUpdated: "kitchen.preplist.item_notes_updated" {
@@ -468,7 +489,7 @@ event PrepListItemNotesUpdated: "kitchen.preplist.item_notes_updated" {
   prepListId: string
   tenantId: string
   ingredientName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepListItemCompleted: "kitchen.preplist.item_completed" {
@@ -477,7 +498,7 @@ event PrepListItemCompleted: "kitchen.preplist.item_completed" {
   tenantId: string
   ingredientName: string
   completedBy: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event PrepListItemUncompleted: "kitchen.preplist.item_uncompleted" {
@@ -485,5 +506,5 @@ event PrepListItemUncompleted: "kitchen.preplist.item_uncompleted" {
   prepListId: string
   tenantId: string
   ingredientName: string
-  uncompletedAt: number
+  uncompletedAt: datetime
 }

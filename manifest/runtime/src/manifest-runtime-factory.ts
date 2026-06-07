@@ -17,11 +17,23 @@
 import type {
   CommandResult,
   EmittedEvent,
+  Middleware,
   RuntimeEngine,
   RuntimeOptions,
 } from "@angriff36/manifest";
+import { randomUUID } from "node:crypto";
+import { PostgresApprovalStore } from "@angriff36/manifest/approval/postgres";
+import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
-import { createPermissionGuard, loadRolePolicies } from "./permission-guard";
+import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
+import { createCustomBuiltins } from "./manifest-builtins";
+import {
+  createIdentityMiddleware,
+  createPrepInventoryDemandMiddleware,
+  createRbacMiddleware,
+} from "./middleware";
+import { loadRolePolicies } from "./permission-guard";
+import { ensureManifestSchema, getPool } from "./pg-pool";
 import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
@@ -34,32 +46,65 @@ import { ManifestRuntimeEngine } from "./runtime-engine";
 // ---------------------------------------------------------------------------
 
 /**
- * Base Prisma interface for operations used by the manifest runtime.
- * Works with both full PrismaClient and transaction clients.
+ * Minimal structural type for the full Prisma client.
+ *
+ * Includes only the delegates that the factory accesses directly:
+ * - `user` for identity resolution (identity-middleware)
+ * - `$transaction` for outbox writes when no override is provided
+ *
+ * Store constructors (PrismaStore, PrismaJsonStore, PrismaIdempotencyStore)
+ * and loadRolePolicies() expect PrismaClient-specific types in their signatures.
+ * The factory intentionally avoids importing `@repo/database`, so it cannot
+ * reference `PrismaClient` directly.  Instead, `asStoreClient()` provides a
+ * centralized structural cast for all PrismaClient-shaped parameters.
  */
-interface PrismaBase {
+export interface PrismaLike {
   user: {
     findFirst: (args: {
       where: { id: string; tenantId: string; deletedAt: null };
       select: { role: true };
     }) => Promise<{ role: string | null } | null>;
   };
-}
-
-/**
- * Minimal structural type for the full Prisma client.
- * Includes $transaction for outbox writes when no override is provided.
- */
-export interface PrismaLike extends PrismaBase {
   // biome-ignore lint/suspicious/noExplicitAny: Prisma has overloaded $transaction signatures.
   $transaction: (fn: (tx: any) => Promise<any>) => Promise<any>;
 }
 
 /**
- * Type for transaction client passed as prismaOverride.
- * Transaction clients omit $transaction since nesting is not allowed.
+ * Structural type for the Prisma transaction client passed as prismaOverride.
+ *
+ * Transaction clients are produced by `prisma.$transaction(fn => ...)` and
+ * expose the same model delegates as PrismaClient but without `$transaction`
+ * (nesting is not allowed).  At runtime, the transaction client is a full
+ * PrismaClient delegate, but we only declare the model-accessor pattern
+ * needed for duck-typed store writes.
+ *
+ * Uses an index signature so callers can pass the raw Prisma transaction
+ * client without explicit casting at the call site.
  */
-export type PrismaTransactionClient = PrismaBase;
+export type PrismaTransactionClient = {
+  [model: string]: unknown;
+};
+
+/**
+ * Centralized structural cast from PrismaLike to the prisma type expected by
+ * store constructors.
+ *
+ * Store constructors declare `prisma: PrismaClient` in their config types.
+ * This factory intentionally avoids importing `@repo/database`, so it cannot
+ * reference `PrismaClient` directly.  At runtime, PrismaLike is a structural
+ * superset of what the stores need — they use duck-typed model-delegate access
+ * (`prisma[entityName].findMany()` etc.) which works on both the full
+ * PrismaClient and the transaction client produced by `$transaction`.
+ *
+ * This function is the single place where the structural mismatch is bridged.
+ * The generic parameter `TPrisma` is inferred from each call site, keeping
+ * the assertion narrow and auditable.
+ */
+function asStoreClient<TPrisma>(
+  prisma: PrismaLike | PrismaTransactionClient,
+): TPrisma {
+  return prisma as TPrisma;
+}
 
 /** Minimal structured logger the factory needs. */
 export interface ManifestRuntimeLogger {
@@ -107,12 +152,29 @@ export interface CreateManifestRuntimeDeps {
   /** Structured logger. */
   log: ManifestRuntimeLogger;
   /** Error capture function (e.g. Sentry.captureException). Returns event id. */
-  // biome-ignore lint/suspicious/noExplicitAny: Must accept Sentry's captureException signature which uses a specific hint type, not `unknown`.
-  captureException: (err: unknown, context?: any) => unknown;
+  // The second parameter uses `never` so that Sentry's
+  // `(err: unknown, hint?: ExclusiveEventHintOrCaptureContext) => string`
+  // is assignable under strictFunctionTypes contravariance rules.
+  // `never` is the bottom type — every concrete type satisfies it.
+  captureException: (err: unknown, context?: never) => unknown;
   /** Telemetry hooks for observability. */
   telemetry?: ManifestTelemetryHooks;
   /** Idempotency configuration (Phase 2: failureTtlMs plumbing). */
   idempotency?: { failureTtlMs?: number };
+
+  // -- Forwarded RuntimeOptions (Task 7.6) --
+  // These are passthrough fields that the engine supports but the factory
+  // does not otherwise provide defaults for. Callers may set them to
+  // override engine behavior without modifying the factory itself.
+
+  /** Throw on effect boundaries (useful in testing). */
+  deterministicMode?: boolean;
+  /** Limit expression evaluation depth/steps (guard against pathological expressions). */
+  evaluationLimits?: { maxExpressionDepth?: number; maxEvaluationSteps?: number };
+  /** Feature-flag resolver for the `flag()` builtin. Without it, `flag()` returns false. */
+  flagProvider?: (name: string) => unknown;
+  /** Per-command profiling toggle + callback. */
+  profiling?: { enabled?: boolean; onProfileComplete?: (profile: unknown) => void; detailed?: boolean };
 }
 
 /** Context passed by the caller describing the acting user. */
@@ -137,102 +199,20 @@ export interface ManifestRuntimeContext {
 const loggedJsonStoreEntities = new Set<string>();
 
 const ENTITIES_WITH_SPECIFIC_STORES = new Set([
+  // ── Custom stores with genuine business logic ──────────────────────────
+  // These entities have cross-table queries, custom delete semantics, or
+  // other logic that GenericPrismaStore cannot express.
   "PrepTask",
-  "Recipe",
-  "RecipeVersion",
-  "Ingredient",
-  "RecipeIngredient",
-  "RecipeStep",
-  "Dish",
-  "Menu",
-  "MenuDish",
-  "PrepList",
-  "PrepListItem",
-  "Station",
-  "InventoryItem",
   "KitchenTask",
-  "Event",
-  "EmailTemplate",
   "PrepTaskPlanWorkflow",
-  "AlertsConfig",
-  "PrepMethod",
-  "Container",
-  "WasteEntry",
-  "Workflow",
-  "AdminChatParticipant",
-  "AdminTask",
-  "ApiKey",
-  "BattleBoard",
-  "BudgetAlert",
-  "BudgetLineItem",
-  "BulkOrderRule",
-  "CateringOrder",
-  "ChartOfAccount",
-  "Client",
-  "ClientContact",
-  "ClientInteraction",
-  "ClientPreference",
-  "CommandBoard",
-  "CommandBoardCard",
-  "CommandBoardConnection",
-  "CommandBoardGroup",
-  "CommandBoardLayout",
-  "ContractSignature",
-  "CycleCountRecord",
-  "CycleCountSession",
-  "EmailWorkflow",
-  "EmployeeAvailability",
-  "EmployeeCertification",
-  "EmployeeDeduction",
-  "EventBudget",
-  "EventContract",
-  "EventDish",
-  "EventGuest",
-  "EventImportWorkflow",
-  "EventProfitability",
-  "EventReport",
-  "EventStaff",
-  "StaffMember",
-  "EventSummary",
-  "InventorySupplier",
-  "AllergenWarning",
-  "InventoryTransaction",
-  "LaborBudget",
-  "Lead",
-  "OverrideAudit",
-  "PayrollApprovalHistory",
-  "PayrollPeriod",
-  "PayrollRun",
-  "PrepComment",
-  "PricingTier",
-  "TimeEntry",
-  "TimecardEditRequest",
-  "TrainingAssignment",
-  "TrainingModule",
-  "User",
-  "VarianceReport",
-  "VendorCatalog",
-  "VendorContract",
-  "PurchaseOrder",
-  "PurchaseOrderItem",
-  "Proposal",
-  "ProposalLineItem",
-  "Schedule",
-  "ScheduleShift",
-  "ShipmentItem",
-  "Shipment",
-  "Notification",
-  "VendorContract",
-  "PurchaseRequisition",
-  "Invoice",
-  "PaymentMethod",
-  "Payment",
-  "CollectionCase",
-  "CollectionAction",
-  "CollectionPaymentPlan",
-  "RolePolicy",
-  "TimeOffRequest",
+  "Station",
   "InventoryTransfer",
+
+  // ── Recently reconciled entities (Driver/Vehicle governance migration) ──
+  // Added to route through GenericPrismaStore → real Prisma tables instead
+  // of PrismaJsonStore (JSON blob). Manifest source + Prisma schema aligned.
+  "Driver",
+  "Vehicle",
 ]);
 
 // ---------------------------------------------------------------------------
@@ -250,70 +230,8 @@ function getManifestIR(irPath?: string): IR {
   return loadMergedPrecompiledIR().ir;
 }
 
-/**
- * Resolve the user's role from the database when the caller didn't provide it.
- *
- * Generated routes that were created before the template included the user
- * DB lookup pass only { id, tenantId }. Without role, every policy that
- * checks `user.role in [...]` evaluates to false → 403 for all users.
- */
-async function resolveUserRole(
-  prisma: PrismaBase,
-  user: ManifestRuntimeContext["user"]
-): Promise<ManifestRuntimeContext["user"]> {
-  if (user.role) {
-    return user;
-  }
-
-  // Clerk user IDs (e.g. user_...) are not UUIDs. Detect non-UUID format
-  // and skip the UUID-based lookup to avoid poisoning Neon transactions.
-  const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      user.id
-    );
-
-  if (isUuid) {
-    try {
-      const record = await prisma.user.findFirst({
-        where: {
-          id: user.id,
-          tenantId: user.tenantId,
-          deletedAt: null,
-        },
-        select: { role: true },
-      });
-
-      if (record?.role) {
-        return { ...user, role: record.role };
-      }
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      if (!msg.includes("invalid input syntax for type uuid")) {
-        throw error;
-      }
-    }
-  }
-
-  // Lookup by authUserId for Clerk-style IDs (or as fallback for UUID lookup).
-  const byAuthUser = await (
-    prisma.user.findFirst as unknown as (
-      args: unknown
-    ) => Promise<{ role: string | null } | null>
-  )({
-    where: {
-      authUserId: user.id,
-      tenantId: user.tenantId,
-      deletedAt: null,
-    },
-    select: { role: true },
-  });
-
-  if (byAuthUser?.role) {
-    return { ...user, role: byAuthUser.role };
-  }
-
-  return user;
-}
+// Role resolution moved to identity-middleware.ts (before-policy lifecycle hook).
+// See manifest/runtime/src/middleware/identity-middleware.ts.
 
 // ---------------------------------------------------------------------------
 // Factory (the ONE implementation)
@@ -360,9 +278,12 @@ export async function createManifestRuntime(
   // Use override client for writes when provided (for atomic multi-entity writes)
   const prismaForWrites = deps.prismaOverride ?? deps.prisma;
 
-  // 1. Resolve role from DB when not provided by the caller.
-  // ALWAYS use main client for lookups to avoid transaction poisoning.
-  const resolvedUser = await resolveUserRole(prismaForLookups, ctx.user);
+  // 1. Identity enrichment runs inside the Manifest lifecycle via middleware.
+  //    The createIdentityMiddleware (before-policy hook) resolves the user's
+  //    role from the database and injects it into both runtimeContext.user.role
+  //    and context.userRole for policy/guard expression evaluation.
+  //    See: manifest/runtime/src/middleware/identity-middleware.ts
+  const user = ctx.user;
 
   // 2. Load precompiled IR.
   const ir = getManifestIR();
@@ -378,19 +299,18 @@ export async function createManifestRuntime(
     if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
       const outboxWriter = createPrismaOutboxWriter(
         entityName,
-        resolvedUser.tenantId
+        user.tenantId
       );
 
-      // biome-ignore lint/suspicious/noExplicitAny: PrismaStoreConfig expects the full PrismaClient; callers inject a structurally-compatible superset.
       const config: PrismaStoreConfig = {
-        prisma: prismaForWrites as any,
+        prisma: asStoreClient<PrismaStoreConfig["prisma"]>(prismaForWrites),
         entityName,
-        tenantId: resolvedUser.tenantId,
+        tenantId: user.tenantId,
         outboxWriter,
         eventCollector,
         // userId — surfaced for entity stores that audit-derive caller
         // identity (e.g. InventoryTransfer.requestedBy). Most stores ignore.
-        userId: resolvedUser.id,
+        userId: user.id,
       };
 
       return new PrismaStore(config);
@@ -403,16 +323,18 @@ export async function createManifestRuntime(
         `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
       );
     }
-    // biome-ignore lint/suspicious/noExplicitAny: PrismaJsonStore expects the full PrismaClient; callers inject a structurally-compatible superset.
     return new PrismaJsonStore({
-      prisma: prismaForWrites as any,
-      tenantId: resolvedUser.tenantId,
+      prisma: asStoreClient<ConstructorParameters<typeof PrismaJsonStore>[0]["prisma"]>(prismaForWrites),
+      tenantId: user.tenantId,
       entityType: entityName,
     });
   };
 
-  // 5. Build telemetry hooks — combine caller-provided telemetry with
-  //    outbox event persistence (preserving existing behavior exactly).
+  // 5. Build telemetry hooks — pass through caller-provided telemetry only.
+  //    Outbox event persistence is now handled by the audit middleware (step 8),
+  //    which runs inside the engine lifecycle at the after-emit hook instead of
+  //    via post-hoc telemetry hooks. This separates observability (telemetry)
+  //    from durability (outbox writes).
   const telemetry: ManifestTelemetryHooks = {
     onConstraintEvaluated: deps.telemetry?.onConstraintEvaluated,
     onOverrideApplied: deps.telemetry?.onOverrideApplied,
@@ -423,57 +345,6 @@ export async function createManifestRuntime(
     ) => {
       // Fire caller-provided telemetry (e.g. Sentry metrics).
       deps.telemetry?.onCommandExecuted?.(command, result, entityName);
-
-      // Write emitted events to outbox for reliable delivery.
-      if (
-        result.success &&
-        result.emittedEvents &&
-        result.emittedEvents.length > 0
-      ) {
-        const outboxWriter = createPrismaOutboxWriter(
-          entityName || "unknown",
-          resolvedUser.tenantId
-        );
-
-        // Prefer the runtime's canonical subject metadata (@angriff36/manifest
-        // >= 1.6.0): subject.id is resolved deterministically
-        // (instanceId → created-id → payload.id), and subject.entity names the
-        // originating entity. Fall back to the command result id / the command's
-        // entityName for older events that carry no subject.
-        const eventsToWrite = result.emittedEvents.map((event) => ({
-          eventType: event.name || "unknown",
-          payload: event.payload,
-          aggregateType: event.subject?.entity || entityName || "unknown",
-          aggregateId:
-            event.subject?.id ||
-            (result.result as { id?: string })?.id ||
-            "unknown",
-        }));
-
-        try {
-          // When prismaOverride is provided (composite route transaction),
-          // write directly to the override client - it's already in a transaction.
-          // Otherwise, create a new transaction for atomic outbox writes.
-          if (deps.prismaOverride) {
-            // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; prismaOverride is structurally compatible.
-            await outboxWriter(deps.prismaOverride as any, eventsToWrite);
-          } else {
-            await deps.prisma.$transaction(async (tx) => {
-              // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; tx is structurally compatible.
-              await outboxWriter(tx as any, eventsToWrite);
-            });
-          }
-        } catch (error) {
-          deps.log.error(
-            "[manifest-runtime] Failed to write events to outbox",
-            {
-              error,
-            }
-          );
-          deps.captureException(error);
-          throw error;
-        }
-      }
     },
   };
 
@@ -485,29 +356,99 @@ export async function createManifestRuntime(
   //
   //    Phase 2: When generated routes are updated to pass idempotencyKey,
   //    re-enable the default store creation.
-  // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
   const idempotencyStore = deps.idempotency
     ? new PrismaIdempotencyStore({
-        prisma: prismaForWrites as any,
-        tenantId: resolvedUser.tenantId,
+        prisma: asStoreClient<ConstructorParameters<typeof PrismaIdempotencyStore>[0]["prisma"]>(prismaForWrites),
+        tenantId: user.tenantId,
       })
     : undefined;
 
-  // 7. Assemble the runtime engine.
-  const engine = new ManifestRuntimeEngine(
-    ir,
-    { user: resolvedUser, eventCollector, telemetry },
-    { storeProvider, idempotencyStore }
+  // 7. Load role policies for RBAC middleware.
+  //    Always load policies for the tenant — the identity middleware resolves
+  //    the user's role inside the engine lifecycle (before-policy hook), so
+  //    the role may not be known at factory construction time. The RBAC
+  //    middleware (before-guard) uses these policies against the resolved role.
+  const rolePolicies = await loadRolePolicies(
+    asStoreClient<Parameters<typeof loadRolePolicies>[0]>(prismaForLookups),
+    user.tenantId
   );
 
-  // 8. Wrap with RBAC permission guard.
-  //    Loads custom role policies for the tenant and intercepts runCommand
-  //    calls to verify the user's role has the required permission.
-  //    Commands without a mapping in COMMAND_PERMISSION_MAP are allowed through.
-  const rolePolicies = resolvedUser.role
-    ? await loadRolePolicies(prismaForLookups as any, resolvedUser.tenantId)
-    : [];
-  return createPermissionGuard(engine, { rolePolicies });
+  // 8. Build middleware pipeline.
+  //    Middleware runs INSIDE the Manifest engine lifecycle, replacing both
+  //    the external Proxy wrapper (RBAC) and pre-engine role resolution.
+  //    Pipeline order:
+  //    - before-policy: Identity enrichment (resolve user role from DB)
+  //    - before-guard:  RBAC permission check (command-level authorization)
+  //    Note: after-emit audit/outbox persistence is now handled by the engine
+  //    natively via auditSink + outboxStore RuntimeOptions (step 9).
+  let engine: ManifestRuntimeEngine;
+  const middleware: Middleware[] = [
+    createIdentityMiddleware({
+      prisma: prismaForLookups,
+      captureException: deps.captureException,
+    }),
+    createRbacMiddleware({ rolePolicies }),
+    createPrepInventoryDemandMiddleware({
+      storeProvider,
+      dispatchCommand: (commandName, input, options) =>
+        engine.runCommand(commandName, input, options),
+    }),
+  ];
+
+  // 9. Bootstrap upstream Manifest Postgres adapters.
+  //    PostgresAuditSink provides durable audit records for every governed
+  //    command (constitution §12). PostgresOutboxStore provides production-
+  //    grade transactional event persistence with FOR UPDATE SKIP LOCKED
+  //    dispatch. Both share the singleton pg.Pool from pg-pool.ts.
+  //    Schema bootstrap (CREATE TABLE IF NOT EXISTS) is idempotent.
+  //    GRACEFUL: adapters are skipped when DATABASE_URL is absent (test envs,
+  //    CI without DB). The engine still works — just without persistent audit
+  //    or outbox delivery.
+  const dbUrl = process.env.DIRECT_URL ?? process.env.DATABASE_URL;
+  let auditSink: PostgresAuditSink | undefined;
+  let outboxStore: PostgresOutboxStore | undefined;
+  let approvalStore: PostgresApprovalStore | undefined;
+  if (dbUrl) {
+    await ensureManifestSchema();
+    const pool = getPool();
+    auditSink = new PostgresAuditSink({ pool });
+    outboxStore = new PostgresOutboxStore({
+      pool,
+      projectSubject: true,
+    });
+    approvalStore = new PostgresApprovalStore({ pool });
+  }
+
+  // 10. Assemble the runtime engine.
+  //    customBuiltins injects the project's deterministic expression helpers
+  //    (daysBetween/percent/containsAny/…) so guards and computed properties
+  //    can call them. The middleware pipeline is passed directly to the engine
+  //    via RuntimeOptions — no Proxy wrapping needed.
+  //    auditSink and outboxStore are the official upstream Postgres adapters,
+  //    replacing the previous custom outbox writer middleware.
+  //    When undefined (no DB), the engine skips audit/outbox silently.
+  engine = new ManifestRuntimeEngine(
+    ir,
+    { user, tenantId: user.tenantId, eventCollector, telemetry },
+    {
+      storeProvider,
+      idempotencyStore,
+      customBuiltins: createCustomBuiltins(),
+      middleware,
+      requireTenantContext: true,
+      generateId: () => randomUUID(),
+      now: () => Date.now(),
+      ...(auditSink ? { auditSink } : {}),
+      ...(outboxStore ? { outboxStore } : {}),
+      ...(approvalStore ? { approvalStore } : {}),
+      ...(deps.deterministicMode !== undefined && { deterministicMode: deps.deterministicMode }),
+      ...(deps.evaluationLimits && { evaluationLimits: deps.evaluationLimits }),
+      ...(deps.profiling && { profiling: deps.profiling }),
+      ...(deps.flagProvider && { flagProvider: deps.flagProvider }),
+    }
+  );
+
+  return engine;
 }
 
 // Re-export types that consumers may need.

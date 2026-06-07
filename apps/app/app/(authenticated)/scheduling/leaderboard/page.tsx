@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -33,6 +33,18 @@ function formatName(first: string | null, last: string | null) {
   return [first, last].filter(Boolean).join(" ") || "Unknown";
 }
 
+function getCurrentWeekRange() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const day = start.getDay();
+  const daysSinceMonday = (day + 6) % 7;
+  start.setDate(start.getDate() - daysSinceMonday);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 7);
+  return { start, end };
+}
+
 export default async function LeaderboardPage() {
   const { userId, orgId } = await auth();
   if (!(userId && orgId)) redirect("/sign-in");
@@ -40,26 +52,42 @@ export default async function LeaderboardPage() {
   const tenantId = await getTenantIdForOrg(orgId);
   if (!tenantId) redirect("/");
 
-  const leaderboard = await database.$queryRaw<LeaderboardRow[]>(
-    Prisma.sql`
-    SELECT
-      s.employeeId,
-      e.first_name,
-      e.last_name,
-      e.role,
-      COUNT(*)::int AS shift_count
-    FROM tenant_staff.schedule_shifts s
-    JOIN tenant_staff.employees e
-      ON e.tenant_id = s.tenant_id
-      AND e.id = s.employeeId
-    WHERE s.tenant_id = ${tenantId}
-      AND s.deleted_at IS NULL
-      AND s.shift_start >= date_trunc('week', CURRENT_DATE)
-      AND s.shift_start < date_trunc('week', CURRENT_DATE) + interval '1 week'
-    GROUP BY s.employeeId, e.first_name, e.last_name, e.role
-    ORDER BY shift_count DESC, e.last_name ASC
-    `
-  );
+  const { start, end } = getCurrentWeekRange();
+  const shiftCounts = await database.scheduleShift.groupBy({
+    by: ["employeeId"],
+    where: {
+      tenantId,
+      deletedAt: null,
+      shift_start: { gte: start, lt: end },
+    },
+    _count: { _all: true },
+    orderBy: { _count: { employeeId: "desc" } },
+  });
+  const employees = await database.user.findMany({
+    where: {
+      tenantId,
+      id: { in: shiftCounts.map((row) => row.employeeId) },
+      deletedAt: null,
+    },
+    select: { id: true, firstName: true, lastName: true, role: true },
+  });
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const leaderboard: LeaderboardRow[] = shiftCounts
+    .map((row) => {
+      const employee = employeesById.get(row.employeeId);
+      return {
+        employeeId: row.employeeId,
+        first_name: employee?.firstName ?? null,
+        last_name: employee?.lastName ?? null,
+        role: employee?.role ?? null,
+        shift_count: row._count._all,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.shift_count - a.shift_count ||
+        (a.last_name ?? "").localeCompare(b.last_name ?? "")
+    );
 
   return (
     <PageCanvas>

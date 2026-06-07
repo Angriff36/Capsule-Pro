@@ -11,8 +11,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string; lineItemId: string }>;
@@ -72,12 +72,9 @@ export async function PUT(
     id,
     lineItemId,
   });
-  return executeManifestCommand(request, {
-    entityName: "BudgetLineItem",
-    commandName: "update",
-    params: { id, lineItemId },
-    transformBody: (body) => ({ ...body, id: lineItemId, budgetId: id }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "BudgetLineItem", command: "update", body: { ...rawBody, id: lineItemId, budgetId: id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }
 
 /**
@@ -93,10 +90,6 @@ export async function DELETE(
     id,
     lineItemId,
   });
-  return executeManifestCommand(request, {
-    entityName: "BudgetLineItem",
-    commandName: "remove",
-    params: { id, lineItemId },
-    transformBody: (_body) => ({ id: lineItemId, budgetId: id }),
-  });
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({ entity: "BudgetLineItem", command: "remove", body: { id: lineItemId, budgetId: id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

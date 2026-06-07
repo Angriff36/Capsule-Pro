@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   CommandBand,
   CommandBandHeader,
@@ -106,25 +106,43 @@ const CrmCommunicationsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const interactions = await database.$queryRaw<InteractionRow[]>(
-    Prisma.sql`
-      SELECT 
-        ci.id,
-        c.company_name as client_name,
-        ci.interaction_type,
-        ci.subject,
-        ci.description,
-        ci.interaction_date,
-        ci.follow_up_date,
-        ci.follow_up_completed
-      FROM tenant_crm.client_interactions ci
-      LEFT JOIN tenant_crm.clients c ON ci.client_id = c.id AND ci.tenant_id = c.tenant_id
-      WHERE ci.tenant_id = ${tenantId}
-        AND ci.deleted_at IS NULL
-      ORDER BY ci.interaction_date DESC
-      LIMIT 50
-    `
-  );
+  const interactionRecords = await database.clientInteraction.findMany({
+    where: { tenantId, deletedAt: null },
+    orderBy: { interactionDate: "desc" },
+    take: 50,
+  });
+  const clients = await database.client.findMany({
+    where: {
+      tenantId,
+      id: {
+        in: interactionRecords
+          .map((interaction) => interaction.clientId)
+          .filter((clientId): clientId is string => Boolean(clientId)),
+      },
+      deletedAt: null,
+    },
+    select: { id: true, company_name: true, first_name: true, last_name: true },
+  });
+  const clientsById = new Map(clients.map((client) => [client.id, client]));
+  const interactions: InteractionRow[] = interactionRecords.map((interaction) => {
+    const client = interaction.clientId
+      ? clientsById.get(interaction.clientId)
+      : undefined;
+    const clientName =
+      client?.company_name ||
+      [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
+      null;
+    return {
+      id: interaction.id,
+      client_name: clientName,
+      interaction_type: interaction.interactionType,
+      subject: interaction.subject,
+      description: interaction.description,
+      interaction_date: interaction.interactionDate,
+      follow_up_date: interaction.followUpDate,
+      follow_up_completed: interaction.followUpCompleted,
+    };
+  });
 
   return (
     <PageCanvas>

@@ -7,13 +7,14 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Prisma, Proposal } from "@repo/database";
+import type { Proposal } from "@repo/database";
 import { database } from "@repo/database";
 import { ProposalTemplate, resend } from "@repo/email";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 
 const DEFAULT_APP_URL = "https://app.capsule.pro";
 const DEFAULT_FROM_ADDRESS = "noreply@capsule.pro";
@@ -73,9 +74,6 @@ export interface SendProposalInput {
   recipientEmail?: string;
   message?: string;
 }
-
-// Type for proposal update data - matches Prisma.ProposalUpdateInput
-type ProposalUpdateData = Prisma.ProposalUncheckedUpdateInput;
 
 /**
  * Get list of proposals with filters and pagination
@@ -309,50 +307,83 @@ export async function createProposal(input: CreateProposalInput) {
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
 
-  const proposal = await database.proposal.create({
-    data: {
-      tenantId,
+  // Governed write: Proposal.create via Manifest runtime (constitution §9).
+  // createInstance seeds all body fields, so fields not in explicit command
+  // params (clientId, templateId, subtotal, etc.) are carried through.
+  const user = await requireCurrentUser();
+
+  const createResult = await runManifestCommand({
+    entity: "Proposal",
+    command: "create",
+    body: {
       proposalNumber,
-      templateId: input.templateId,
-      clientId: input.clientId,
-      leadId: input.leadId,
-      eventId: input.eventId,
+      leadId: input.leadId ?? "",
+      eventId: input.eventId ?? "",
       title: input.title.trim(),
-      eventDate: input.eventDate ? new Date(input.eventDate) : null,
-      eventType: input.eventType?.trim() || null,
-      guestCount: input.guestCount ?? null,
-      venueName: input.venueName?.trim() || null,
-      venueAddress: input.venueAddress?.trim() || null,
-      subtotal: calculatedSubtotal,
+      guestCount: input.guestCount ?? 0,
       taxRate: effectiveTaxRate,
+      validUntil: input.validUntil ? new Date(input.validUntil).getTime() : 0,
+      notes: effectiveNotes?.trim() || "",
+      termsAndConditions: effectiveTerms?.trim() || "",
+      // Extra fields seeded via createInstance (not explicit create params):
+      clientId: input.clientId ?? "",
+      templateId: input.templateId ?? "",
+      eventDate: input.eventDate ? new Date(input.eventDate).getTime() : 0,
+      eventType: input.eventType?.trim() || "",
+      venueName: input.venueName?.trim() || "",
+      venueAddress: input.venueAddress?.trim() || "",
+      subtotal: calculatedSubtotal,
       taxAmount: calculatedTax,
       discountAmount: input.discountAmount ?? 0,
       total: calculatedTotal,
       status: input.status ?? "draft",
-      validUntil: input.validUntil ? new Date(input.validUntil) : null,
-      notes: effectiveNotes?.trim() || null,
-      termsAndConditions: effectiveTerms?.trim() || null,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 
-  // Create line items if provided
-  if (effectiveLineItems && effectiveLineItems.length > 0) {
-    await database.proposalLineItem.createMany({
-      data: effectiveLineItems.map((item, index) => ({
-        tenantId,
-        proposalId: proposal.id,
-        itemType: item.itemType,
-        category: "general",
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: item.unitPrice,
-        total: item.quantity * item.unitPrice,
-        totalPrice: item.quantity * item.unitPrice,
-        sortOrder: item.sortOrder ?? index,
-        notes: item.notes,
-      })),
-    });
+  if (!createResult.ok) {
+    throw new Error(createResult.message || "Failed to create proposal");
   }
+
+  const proposalId = (createResult.result as { id?: string } | null)?.id;
+  invariant(proposalId, "Proposal.create did not return an id");
+
+  // Governed writes: create line items individually via ProposalLineItem.create.
+  // Manifest does not support cross-entity transactions; errors are non-fatal.
+  if (effectiveLineItems && effectiveLineItems.length > 0) {
+    for (let index = 0; index < effectiveLineItems.length; index++) {
+      const item = effectiveLineItems[index];
+      try {
+        await runManifestCommand({
+          entity: "ProposalLineItem",
+          command: "create",
+          body: {
+            proposalId,
+            itemType: item.itemType,
+            category: "general",
+            description: item.description,
+            quantity: item.quantity,
+            unitOfMeasure: "",
+            unitPrice: item.unitPrice,
+            sortOrder: item.sortOrder ?? index,
+            notes: item.notes ?? "",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+      } catch (lineItemError) {
+        console.error(
+          `Failed to create line item ${index} for proposal ${proposalId}:`,
+          lineItemError
+        );
+      }
+    }
+  }
+
+  // Read back the persisted proposal to return the full row shape.
+  const proposal = await database.proposal.findFirst({
+    where: { tenantId, id: proposalId },
+  });
+  invariant(proposal, "Created proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
 
@@ -406,76 +437,68 @@ export async function updateProposal(
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
 
-  const data: ProposalUpdateData = {};
+  // Governed write: Proposal.update via Manifest runtime (constitution §9).
+  // The Manifest update command mutates the full field set, so we merge partial
+  // input over existing values (undefined → keep current, same as Venue pattern).
+  const user = await requireCurrentUser();
 
-  if (input.title !== undefined) {
-    data.title = input.title?.trim();
-  }
-  if (input.clientId !== undefined && input.clientId !== null) {
-    data.clientId = input.clientId;
-  }
-  if (input.leadId !== undefined && input.leadId !== null) {
-    data.leadId = input.leadId;
-  }
-  if (input.eventId !== undefined && input.eventId !== null) {
-    data.eventId = input.eventId;
-  }
-  if (input.eventDate !== undefined) {
-    data.eventDate = input.eventDate ? new Date(input.eventDate) : null;
-  }
-  if (input.eventType !== undefined) {
-    data.eventType = input.eventType?.trim() || null;
-  }
-  if (input.guestCount !== undefined) {
-    data.guestCount = input.guestCount ?? null;
-  }
-  if (input.venueName !== undefined) {
-    data.venueName = input.venueName?.trim() || null;
-  }
-  if (input.venueAddress !== undefined) {
-    data.venueAddress = input.venueAddress?.trim() || null;
-  }
-  if (input.subtotal !== undefined) {
-    data.subtotal =
-      typeof calculatedSubtotal === "number"
+  const updateResult = await runManifestCommand({
+    entity: "Proposal",
+    command: "update",
+    body: {
+      id,
+      title: (input.title !== undefined ? input.title?.trim() : existingProposal.title) ?? "",
+      eventDate: input.eventDate !== undefined
+        ? (input.eventDate ? new Date(input.eventDate).getTime() : 0)
+        : (existingProposal.eventDate ? existingProposal.eventDate.getTime() : 0),
+      eventType: input.eventType !== undefined
+        ? (input.eventType?.trim() || "")
+        : (existingProposal.eventType ?? ""),
+      guestCount: input.guestCount ?? existingProposal.guestCount ?? 0,
+      venueName: input.venueName !== undefined
+        ? (input.venueName?.trim() || "")
+        : (existingProposal.venueName ?? ""),
+      venueAddress: input.venueAddress !== undefined
+        ? (input.venueAddress?.trim() || "")
+        : (existingProposal.venueAddress ?? ""),
+      subtotal: typeof calculatedSubtotal === "number"
         ? calculatedSubtotal
-        : calculatedSubtotal.toNumber();
-  }
-  if (input.taxRate !== undefined) {
-    data.taxRate = input.taxRate ?? 0;
-  }
-  if (input.taxAmount !== undefined) {
-    data.taxAmount =
-      typeof calculatedTax === "number"
+        : calculatedSubtotal.toNumber(),
+      taxRate: input.taxRate ?? (typeof existingProposal.taxRate === "number"
+        ? existingProposal.taxRate
+        : existingProposal.taxRate?.toNumber() ?? 0),
+      taxAmount: typeof calculatedTax === "number"
         ? calculatedTax
-        : calculatedTax.toNumber();
-  }
-  if (input.discountAmount !== undefined) {
-    data.discountAmount = input.discountAmount ?? 0;
-  }
-  if (input.total !== undefined) {
-    data.total =
-      typeof calculatedTotal === "number"
+        : calculatedTax.toNumber(),
+      discountAmount: (() => {
+        const d = input.discountAmount ?? existingProposal.discountAmount;
+        return typeof d === "number" ? d : (d as { toNumber(): number }).toNumber() ?? 0;
+      })(),
+      total: typeof calculatedTotal === "number"
         ? calculatedTotal
-        : calculatedTotal.toNumber();
-  }
-  if (input.status !== undefined && input.status !== null) {
-    data.status = input.status;
-  }
-  if (input.validUntil !== undefined) {
-    data.validUntil = input.validUntil ? new Date(input.validUntil) : null;
-  }
-  if (input.notes !== undefined) {
-    data.notes = input.notes?.trim() || null;
-  }
-  if (input.termsAndConditions !== undefined) {
-    data.termsAndConditions = input.termsAndConditions?.trim() || null;
+        : (calculatedTotal as { toNumber(): number }).toNumber(),
+      validUntil: input.validUntil !== undefined
+        ? (input.validUntil ? new Date(input.validUntil).getTime() : 0)
+        : (existingProposal.validUntil ? existingProposal.validUntil.getTime() : 0),
+      notes: input.notes !== undefined
+        ? (input.notes?.trim() || "")
+        : (existingProposal.notes ?? ""),
+      termsAndConditions: input.termsAndConditions !== undefined
+        ? (input.termsAndConditions?.trim() || "")
+        : (existingProposal.termsAndConditions ?? ""),
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!updateResult.ok) {
+    throw new Error(updateResult.message || "Failed to update proposal");
   }
 
-  const proposal = await database.proposal.update({
-    where: { tenantId_id: { tenantId, id } },
-    data,
+  // Read back the persisted proposal to preserve the return shape.
+  const proposal = await database.proposal.findFirst({
+    where: { tenantId, id },
   });
+  invariant(proposal, "Updated proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
   revalidatePath(`/crm/proposals/${id}`);
@@ -501,12 +524,19 @@ export async function deleteProposal(id: string) {
 
   invariant(existingProposal, "Proposal not found");
 
-  await database.proposal.update({
-    where: {
-      tenantId_id: { tenantId, id },
-    },
-    data: { deletedAt: new Date() },
+  // Governed write: Proposal.remove via Manifest runtime (constitution §9).
+  const user = await requireCurrentUser();
+
+  const result = await runManifestCommand({
+    entity: "Proposal",
+    command: "remove",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete proposal");
+  }
 
   revalidatePath("/crm/proposals");
 
@@ -535,18 +565,40 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
 
   invariant(recipientEmail, "Recipient email is required");
 
-  // Generate a public token for the proposal (for public viewing)
-  const publicToken = crypto.randomUUID();
+  // Governed writes: Proposal.send transitions status to "sent" + sets sentAt,
+  // then Proposal.generatePublicLink creates the publicToken for sharing.
+  const user = await requireCurrentUser();
 
-  // Update proposal status and set public token
-  const proposal = await database.proposal.update({
-    where: { tenantId_id: { tenantId, id } },
-    data: {
-      status: "sent",
-      sentAt: new Date(),
-      publicToken,
-    },
+  const sendResult = await runManifestCommand({
+    entity: "Proposal",
+    command: "send",
+    body: { id, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!sendResult.ok) {
+    throw new Error(sendResult.message || "Failed to send proposal");
+  }
+
+  // Generate public link after sending
+  let publicToken = "";
+  const linkResult = await runManifestCommand({
+    entity: "Proposal",
+    command: "generatePublicLink",
+    body: { id, userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (linkResult.ok && linkResult.result) {
+    publicToken =
+      (linkResult.result as { publicToken?: string } | null)?.publicToken ?? "";
+  }
+
+  // Read back the persisted proposal to preserve return shape.
+  const proposal = await database.proposal.findFirst({
+    where: { tenantId, id },
+  });
+  invariant(proposal, "Sent proposal could not be loaded");
 
   revalidatePath("/crm/proposals");
   revalidatePath(`/crm/proposals/${id}`);
@@ -640,13 +692,31 @@ export async function getProposalPublicLink(id: string) {
 
   let publicToken = existingProposal.publicToken;
 
-  // Generate a new token if one doesn't exist
+  // Governed write: generate a new token via Manifest if one doesn't exist.
   if (!publicToken) {
-    publicToken = crypto.randomUUID();
-    await database.proposal.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: { publicToken },
+    const user = await requireCurrentUser();
+    const linkResult = await runManifestCommand({
+      entity: "Proposal",
+      command: "generatePublicLink",
+      body: { id, userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!linkResult.ok) {
+      throw new Error(linkResult.message || "Failed to generate public link");
+    }
+
+    publicToken =
+      (linkResult.result as { publicToken?: string } | null)?.publicToken ?? "";
+
+    // Re-read to get the persisted token if the result didn't include it.
+    if (!publicToken) {
+      const refreshed = await database.proposal.findFirst({
+        where: { tenantId, id },
+        select: { publicToken: true },
+      });
+      publicToken = refreshed?.publicToken ?? "";
+    }
   }
 
   const publicUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL}/view/proposal/${publicToken}`;

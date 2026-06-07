@@ -58,7 +58,7 @@ export interface RecipeCostBreakdown {
   totalCost: number;
   costPerYield: number;
   costPerPortion: number | null;
-  lastCalculated: Date | null;
+  lastCalculated: Date | string | null;
   ingredients: IngredientCostBreakdown[];
   recipe: {
     id: string;
@@ -123,6 +123,25 @@ export interface UpdateWasteFactorRequest {
   wasteFactor: number;
 }
 
+interface ManifestResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+}
+
+function unwrapManifestResponse<T>(payload: T | ManifestResponse<T>): T {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "success" in payload &&
+    "data" in payload
+  ) {
+    return (payload as ManifestResponse<T>).data as T;
+  }
+
+  return payload as T;
+}
+
 // ============================================================================
 // Recipes API
 // ============================================================================
@@ -182,7 +201,7 @@ export async function getRecipeCost(
     throw new Error(error.message || "Failed to fetch recipe cost");
   }
 
-  return response.json();
+  return unwrapManifestResponse<RecipeCostBreakdown>(await response.json());
 }
 
 /**
@@ -203,7 +222,7 @@ export async function recalculateRecipeCost(
     throw new Error(error.message || "Failed to recalculate recipe cost");
   }
 
-  return response.json();
+  return unwrapManifestResponse<RecipeCostBreakdown>(await response.json());
 }
 
 /**
@@ -229,7 +248,7 @@ export async function scaleRecipe(
     throw new Error(error.message || "Failed to scale recipe");
   }
 
-  return response.json();
+  return unwrapManifestResponse<ScaledRecipeCost>(await response.json());
 }
 
 /**
@@ -255,7 +274,9 @@ export async function updateWasteFactor(
     throw new Error(error.message || "Failed to update waste factor");
   }
 
-  return response.json();
+  return unwrapManifestResponse<{ success: boolean; message: string }>(
+    await response.json()
+  );
 }
 
 /**

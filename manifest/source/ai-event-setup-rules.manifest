@@ -2,6 +2,7 @@
 // Manifest spec for AI-driven natural language event creation
 
 entity AiEventSetupSession {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required userId: string
@@ -19,9 +20,8 @@ entity AiEventSetupSession {
   property missingFields: string = "[]"
   property suggestions: string = "[]"
   property createdEventId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property completedAt: datetime = now()
+  timestamps
+  property completedAt: datetime
 
   computed isPending: boolean = self.status == "pending"
   computed isParsed: boolean = self.status == "parsed"
@@ -33,17 +33,22 @@ entity AiEventSetupSession {
   constraint validStatus: self.status in ["pending", "parsed", "confirmed", "created", "cancelled"] "Status must be valid"
   constraint validConfidence: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
 
+  // State transitions
+  transition status from "pending" to ["parsed", "cancelled"]
+  transition status from "parsed" to ["confirmed", "cancelled"]
+  transition status from "confirmed" to ["created"]
+
+  default policy AiEventSetupSessionDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI event setup"
   command parse(originalInput: string) {
     guard originalInput != null and originalInput != "" "Original input is required"
     
     mutate originalInput = originalInput
     mutate status = "parsed"
-    mutate updatedAt = now()
     
     emit AiEventSetupSessionParsed
   }
 
-  command confirm(title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
+  command confirm(title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
     guard self.status == "parsed" "Can only confirm parsed sessions"
     
     mutate parsedTitle = title
@@ -55,7 +60,6 @@ entity AiEventSetupSession {
     mutate parsedNotes = notes
     mutate parsedTags = tags
     mutate status = "confirmed"
-    mutate updatedAt = now()
     
     emit AiEventSetupSessionConfirmed
   }
@@ -67,7 +71,6 @@ entity AiEventSetupSession {
     mutate createdEventId = eventId
     mutate status = "created"
     mutate completedAt = now()
-    mutate updatedAt = now()
     
     emit AiEventSetupSessionCreated
   }
@@ -77,7 +80,6 @@ entity AiEventSetupSession {
     
     mutate status = "cancelled"
     mutate notes = reason
-    mutate updatedAt = now()
     
     emit AiEventSetupSessionCancelled
   }
@@ -86,12 +88,11 @@ entity AiEventSetupSession {
     mutate confidence = confidence
     mutate missingFields = missingFields
     mutate suggestions = suggestions
-    mutate updatedAt = now()
     
     emit AiEventSetupSessionUpdated
   }
 
-  store AiEventSetupSession in memory
+  store AiEventSetupSession in durable
 }
 
 policy AiEventSetupExecute execute: user.role in ["event_coordinator", "manager", "admin", "staff"] "Staff and above can use AI event setup"
@@ -99,32 +100,32 @@ policy AiEventSetupExecute execute: user.role in ["event_coordinator", "manager"
 event AiEventSetupSessionParsed: "ai-event-setup.session.parsed" {
   sessionId: string
   originalInput: string
-  parsedAt: number
+  parsedAt: datetime
 }
 
 event AiEventSetupSessionConfirmed: "ai-event-setup.session.confirmed" {
   sessionId: string
   title: string
-  eventDate: number
+  eventDate: datetime
   guestCount: number
-  confirmedAt: number
+  confirmedAt: datetime
 }
 
 event AiEventSetupSessionCreated: "ai-event-setup.session.created" {
   sessionId: string
   eventId: string
   title: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AiEventSetupSessionCancelled: "ai-event-setup.session.cancelled" {
   sessionId: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event AiEventSetupSessionUpdated: "ai-event-setup.session.updated" {
   sessionId: string
   confidence: number
-  updatedAt: number
+  updatedAt: datetime
 }

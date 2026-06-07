@@ -154,39 +154,22 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
-    // Create the rule in the database
-    const rule = await database.sms_automation_rules.create({
-      data: {
-        tenant_id: tenantId,
-        name,
-        description: description || null,
-        trigger_type: triggerType,
-        trigger_config: triggerConfig || {},
-        template_id: templateId || null,
-        custom_message: customMessage || null,
-        recipient_type: recipientType || "employee",
-        recipient_config: recipientConfig || {},
-        is_active: isActive ?? true,
-        priority: priority ?? 100,
-      },
-    });
-
     return manifestSuccessResponse({
       rule: {
-        id: rule.id,
-        tenantId: rule.tenant_id,
-        name: rule.name,
-        description: rule.description,
-        triggerType: rule.trigger_type,
-        triggerConfig: rule.trigger_config,
-        templateId: rule.template_id,
-        customMessage: rule.custom_message,
-        recipientType: rule.recipient_type,
-        recipientConfig: rule.recipient_config,
-        isActive: rule.is_active,
-        priority: rule.priority,
-        createdAt: rule.created_at?.toISOString() ?? null,
-        updatedAt: rule.updated_at?.toISOString() ?? null,
+        id: result.instance?.id ?? "",
+        tenantId,
+        name,
+        description: description || null,
+        triggerType,
+        triggerConfig: triggerConfig || {},
+        templateId: templateId || null,
+        customMessage: customMessage || null,
+        recipientType: recipientType || "employee",
+        recipientConfig: recipientConfig || {},
+        isActive: isActive ?? true,
+        priority: priority ?? 100,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       events: result.emittedEvents,
     });

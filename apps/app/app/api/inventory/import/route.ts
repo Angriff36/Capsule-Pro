@@ -1,7 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import * as XLSX from "xlsx";
 
 interface ImportRow {
@@ -136,6 +137,8 @@ export async function POST(request: NextRequest) {
     let updated = 0;
     let errors = 0;
 
+    const user = await requireCurrentUser();
+
     for (const item of items) {
       try {
         // Check if item with this item_number exists
@@ -149,43 +152,49 @@ export async function POST(request: NextRequest) {
           LIMIT 1
         `;
 
+        const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
+
         if (existing.length > 0) {
-          // Update
-          await database.$executeRaw`
-            UPDATE tenant_inventory.inventory_items
-            SET name = ${item.name},
-                category = ${item.category},
-                unit_of_measure = ${item.unitOfMeasure},
-                unit_cost = ${item.unitCost},
-                quantity_on_hand = ${item.quantityOnHand},
-                tags = ${Prisma.join(item.tags)},
-                updated_at = ${item.updatedAt}
-            WHERE tenant_id = ${item.tenantId}
-              AND item_number = ${item.item_number}
-              AND deleted_at IS NULL
-          `;
-          updated++;
+          const result = await runManifestCommand({
+            entity: "InventoryItem",
+            command: "update",
+            instanceId: existing[0].id,
+            body: {
+              name: item.name,
+              category: item.category,
+              unitOfMeasure: item.unitOfMeasure,
+              unitCost: item.unitCost,
+              quantityOnHand: item.quantityOnHand,
+              tags: item.tags,
+            },
+            user: userCtx,
+          });
+          if (result.ok) {
+            updated++;
+          } else {
+            errors++;
+          }
         } else {
-          // Create
-          await database.$executeRaw`
-            INSERT INTO tenant_inventory.inventory_items
-              (tenant_id, id, item_number, name, category, unit_of_measure,
-               unit_cost, quantity_on_hand, tags, created_at, updated_at)
-            VALUES (
-              ${item.tenantId},
-              gen_random_uuid(),
-              ${item.item_number},
-              ${item.name},
-              ${item.category},
-              ${item.unitOfMeasure},
-              ${item.unitCost},
-              ${item.quantityOnHand},
-              ${Prisma.join(item.tags)},
-              ${item.createdAt},
-              ${item.updatedAt}
-            )
-          `;
-          created++;
+          const result = await runManifestCommand({
+            entity: "InventoryItem",
+            command: "create",
+            body: {
+              tenantId: item.tenantId,
+              item_number: item.item_number,
+              name: item.name,
+              category: item.category,
+              unitOfMeasure: item.unitOfMeasure,
+              unitCost: item.unitCost,
+              quantityOnHand: item.quantityOnHand,
+              tags: item.tags,
+            },
+            user: userCtx,
+          });
+          if (result.ok) {
+            created++;
+          } else {
+            errors++;
+          }
         }
       } catch {
         errors++;

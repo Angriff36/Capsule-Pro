@@ -2,6 +2,15 @@
  * Update Purchase Order Item Quantity Received
  *
  * PUT    /api/inventory/purchase-orders/[id]/items/[itemId]/quantity      - Update quantity received for an item
+ *
+ * TODO(manifest-migration): This route updates `quantityReceived` on a PurchaseOrderItem and
+ * performs inventory side effects (create inventory transactions, update quantityOnHand, emit
+ * outbox events). The available PurchaseOrderItem.update command only handles quantityOrdered,
+ * unitCost, and notes -- NOT quantityReceived. Migrating this route requires either:
+ *   1. A new "updateQuantityReceived" command that handles the quantity received mutation plus
+ *      inventory side effects, or
+ *   2. Event handlers on PurchaseOrderItemUpdated that trigger inventory adjustments.
+ * Until then, this route remains hybrid (direct Prisma writes + manual outbox events).
  */
 
 import { auth } from "@repo/auth/server";

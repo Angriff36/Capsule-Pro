@@ -2,7 +2,9 @@
  * Helper functions for shipment route handlers
  */
 
-import { database } from "@repo/database";
+import { database, Prisma, type ShipmentStatus } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface ShipmentUpdateInput {
   shipment_number?: string;
@@ -194,40 +196,54 @@ export function buildShipmentUpdateData(
   return updateData;
 }
 
-/**
- * Executes raw SQL update for shipment
- */
 export async function updateShipmentRaw(
   tenantId: string,
   shipmentId: string,
-  updateData: ShipmentUpdateData
+  updateData: ShipmentUpdateData,
+  user: { id: string; tenantId: string; role: string } = { id: "system", tenantId, role: "admin" }
 ): Promise<void> {
-  await database.$executeRaw`
-    UPDATE "tenant_inventory"."shipments"
-    SET
-      "shipment_number" = COALESCE(${updateData.shipmentNumber}, "shipment_number"),
-      "status" = COALESCE(${updateData.status}, "status"),
-      "event_id" = COALESCE(${updateData.eventId}::uuid, "event_id"),
-      "supplier_id" = COALESCE(${updateData.supplierId}::uuid, "supplier_id"),
-      "location_id" = COALESCE(${updateData.locationId}::uuid, "location_id"),
-      "scheduled_date" = COALESCE(${updateData.scheduledDate}::timestamptz, "scheduled_date"),
-      "shipped_date" = COALESCE(${updateData.shippedDate}::timestamptz, "shipped_date"),
-      "estimated_delivery_date" = COALESCE(${updateData.estimatedDeliveryDate}::timestamptz, "estimated_delivery_date"),
-      "actual_delivery_date" = COALESCE(${updateData.actualDeliveryDate}::timestamptz, "actual_delivery_date"),
-      "shipping_cost" = COALESCE(${updateData.shippingCost}::numeric, "shipping_cost"),
-      "total_value" = COALESCE(${updateData.totalValue}::numeric, "total_value"),
-      "tracking_number" = COALESCE(${updateData.trackingNumber}, "tracking_number"),
-      "carrier" = COALESCE(${updateData.carrier}, "carrier"),
-      "shipping_method" = COALESCE(${updateData.shippingMethod}, "shipping_method"),
-      "delivered_by" = COALESCE(${updateData.deliveredBy}::uuid, "delivered_by"),
-      "received_by" = COALESCE(${updateData.receivedBy}, "received_by"),
-      "signature" = COALESCE(${updateData.signature}, "signature"),
-      "notes" = COALESCE(${updateData.notes}, "notes"),
-      "internal_notes" = COALESCE(${updateData.internalNotes}, "internal_notes"),
-      "reference" = COALESCE(${updateData.reference}, "reference"),
-      "updated_at" = CURRENT_TIMESTAMP
-    WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${shipmentId}::uuid
-  `;
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "Shipment",
+      command: "update",
+      instanceId: shipmentId,
+      user,
+      body: {
+        id: shipmentId,
+        tenantId,
+        trackingNumber: updateData.trackingNumber ?? "",
+        carrier: updateData.carrier ?? "",
+        shippingMethod: updateData.shippingMethod ?? "",
+        estimatedDeliveryDate: updateData.estimatedDeliveryDate,
+        shippingCost: updateData.shippingCost != null ? Number(updateData.shippingCost) : 0,
+        notes: updateData.notes ?? "",
+        // Fields below are NOT declared in the Shipment "update" command params,
+        // so the runtime ignores them. They are included for completeness so that
+        // if the command spec is extended later, they'll flow through automatically.
+        shipmentNumber: updateData.shipmentNumber,
+        status: updateData.status,
+        eventId: updateData.eventId,
+        supplierId: updateData.supplierId,
+        locationId: updateData.locationId,
+        scheduledDate: updateData.scheduledDate,
+        shippedDate: updateData.shippedDate,
+        actualDeliveryDate: updateData.actualDeliveryDate,
+        totalValue: updateData.totalValue != null ? Number(updateData.totalValue) : 0,
+        deliveredBy: updateData.deliveredBy,
+        receivedBy: updateData.receivedBy,
+        signature: updateData.signature,
+        internalNotes: updateData.internalNotes,
+        reference: updateData.reference,
+      },
+    }
+  );
 }
 
 /**

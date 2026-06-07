@@ -2,6 +2,7 @@
 // Manifest spec for inventory operations with constraints, guards, and events
 
 entity InventoryItem {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required item_number: string
@@ -9,24 +10,36 @@ entity InventoryItem {
   property description: string = ""
   property required category: string
   property unitOfMeasure: string = "each"
-  property unitCost: number = 0
-  property quantityOnHand: number = 0
-  property parLevel: number = 0
-  property reorder_level: number = 0
+  property unitCost: money = 0
+  property quantityOnHand: int = 0
+  property quantityReserved: int = 0
+  property parLevel: decimal = 0
+  property reorder_level: decimal = 0
   property supplierId: string = ""
   property tags: string = ""
   property fsa_status: string = "unknown"
   property fsa_temp_logged: boolean = false
   property fsa_allergen_info: boolean = false
   property fsa_traceable: boolean = false
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isBelowPar: boolean = self.parLevel > 0 and self.quantityOnHand < self.parLevel
   computed isBelowReorderPoint: boolean = self.reorder_level > 0 and self.quantityOnHand < self.reorder_level
-  computed totalValue: number = self.quantityOnHand * self.unitCost
+  computed totalValue: money = self.quantityOnHand * self.unitCost
   computed needsReorder: boolean = self.isBelowReorderPoint
+  // Stock not already promised to an event/reservation.
+  computed quantityAvailable: int = self.quantityOnHand - self.quantityReserved
+
+  relationship hasMany transactions: InventoryTransaction
+  relationship hasMany wasteEntries: WasteEntry
+  relationship hasMany stockLevels: InventoryStock
+  relationship hasMany alerts: InventoryAlert
+  relationship hasMany forecasts: InventoryForecast
+  relationship hasMany forecastInputs: ForecastInput
+  relationship hasMany reorderSuggestions: ReorderSuggestion
+  relationship hasMany transferItems: InventoryTransferItem
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
 
   constraint warnBelowPar:warn self.isBelowPar {
     messageTemplate: "Item '{itemName}' is below par level ({onHand} < {parLevel})"
@@ -38,6 +51,7 @@ entity InventoryItem {
     }
   }
 
+  default policy InventoryItemDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command reserve(quantity: number, eventId: string, userId: string) {
     guard quantity != null and quantity > 0
     guard eventId != null and eventId != ""
@@ -49,7 +63,7 @@ entity InventoryItem {
         requested: quantity
         available: self.quantityAvailable
         shortfall: quantity - self.quantityAvailable
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -64,7 +78,6 @@ entity InventoryItem {
     }
 
     mutate quantityReserved = self.quantityReserved + quantity
-    mutate updatedAt = now()
 
     emit InventoryReserved
   }
@@ -72,14 +85,20 @@ entity InventoryItem {
   command consume(quantity: number, lotId: string, userId: string) {
     guard quantity != null and quantity > 0
 
-    constraint blockInsufficientStock:block self.quantityOnHand < quantity {
+    // A `block` constraint PASSES when its expression is TRUE and HALTS when FALSE
+    // (semantics.md §"Constraint Severity": block "halt[s] execution on failure",
+    // passed = expression result). So the expression must state the REQUIRED
+    // (sufficient-stock) condition, NOT the failure condition. `< quantity` was
+    // inverted: it blocked every consume that HAD enough stock and allowed
+    // over-consumption. The `:ok infoConsumed` twin below already uses `>= quantity`.
+    constraint blockInsufficientStock:block self.quantityOnHand >= quantity {
       messageTemplate: "Cannot consume {quantity} {unit} - only {onHand} on hand"
       details: {
         itemName: self.name
         requested: quantity
         onHand: self.quantityOnHand
         shortfall: quantity - self.quantityOnHand
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -98,14 +117,13 @@ entity InventoryItem {
       details: {
         itemName: self.name
         quantity: quantity
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
         lotId: lotId
       }
     }
 
     mutate quantityOnHand = self.quantityOnHand - quantity
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryConsumed
   }
@@ -114,14 +132,18 @@ entity InventoryItem {
     guard quantity != null and quantity > 0
     guard reason != null and reason != ""
 
-    constraint blockInsufficientForWaste:block self.quantityOnHand < quantity {
+    // Inverted block (same bug as blockInsufficientStock above): a `block`
+    // constraint passes when its expression is TRUE, so it must state the
+    // required sufficient-stock condition (`>= quantity`), not the failure
+    // condition. `< quantity` blocked every waste entry that had enough stock.
+    constraint blockInsufficientForWaste:block self.quantityOnHand >= quantity {
       messageTemplate: "Cannot record waste of {quantity} {unit} - only {onHand} on hand"
       details: {
         itemName: self.name
         requested: quantity
         onHand: self.quantityOnHand
         shortfall: quantity - self.quantityOnHand
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
       }
     }
 
@@ -138,7 +160,6 @@ entity InventoryItem {
 
     mutate quantityOnHand = self.quantityOnHand - quantity
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryWasted
   }
@@ -158,7 +179,6 @@ entity InventoryItem {
     }
 
     mutate quantityOnHand = self.quantityOnHand + quantity
-    mutate updatedAt = now()
 
     emit InventoryAdjusted
   }
@@ -172,15 +192,14 @@ entity InventoryItem {
       details: {
         itemName: self.name
         quantity: quantity
-        unit: self.baseUnit
+        unit: self.unitOfMeasure
         unitCost: costPerUnit
         totalCost: quantity * costPerUnit
       }
     }
 
     mutate quantityOnHand = self.quantityOnHand + quantity
-    mutate costPerUnit = costPerUnit
-    mutate updatedAt = now()
+    mutate unitCost = costPerUnit
 
     emit InventoryRestocked
   }
@@ -200,7 +219,6 @@ entity InventoryItem {
     }
 
     mutate quantityReserved = self.quantityReserved > quantity ? self.quantityReserved - quantity : 0
-    mutate updatedAt = now()
 
     emit InventoryReservationReleased
   }
@@ -229,13 +247,40 @@ entity InventoryItem {
     mutate fsa_temp_logged = fsa_temp_logged
     mutate fsa_allergen_info = fsa_allergen_info
     mutate fsa_traceable = fsa_traceable
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit InventoryItemCreated
   }
 
-  store InventoryItem in memory
+  command update(name: string, description: string, category: string, unitOfMeasure: string, unitCost: money, quantityOnHand: decimal, parLevel: decimal, reorder_level: decimal, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: string, fsa_allergen_info: string, fsa_traceable: string) {
+    guard self.deletedAt == null "Cannot update a deleted inventory item"
+
+    mutate name = name
+    mutate description = description
+    mutate category = category
+    mutate unitOfMeasure = unitOfMeasure
+    mutate unitCost = unitCost
+    mutate quantityOnHand = quantityOnHand
+    mutate parLevel = parLevel
+    mutate reorder_level = reorder_level
+    mutate supplierId = supplierId
+    mutate tags = tags
+    mutate fsa_status = fsa_status
+    mutate fsa_temp_logged = fsa_temp_logged
+    mutate fsa_allergen_info = fsa_allergen_info
+    mutate fsa_traceable = fsa_traceable
+
+    emit InventoryItemUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == null "Inventory item is already deleted"
+
+    mutate deletedAt = now()
+
+    emit InventoryItemDeleted
+  }
+
+  store InventoryItem in durable
 }
 
 policy InventoryStaffCanReserve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can reserve inventory"
@@ -243,6 +288,8 @@ policy InventoryStaffCanConsume execute: user.role in ["kitchen_staff", "kitchen
 policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
 policy ManagersCanRestock execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can restock inventory"
 policy ManagersCanCreate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can create inventory items"
+policy ManagersCanUpdate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can update inventory items"
+policy ManagersCanSoftDelete execute: user.role in ["manager", "admin"] "Only managers/admins can delete inventory items"
 
 event InventoryReserved: "kitchen.inventory.reserved" {
   itemId: string
@@ -250,7 +297,7 @@ event InventoryReserved: "kitchen.inventory.reserved" {
   quantity: number
   eventId: string
   userId: string
-  reservedAt: number
+  reservedAt: datetime
 }
 
 event InventoryConsumed: "kitchen.inventory.consumed" {
@@ -259,7 +306,7 @@ event InventoryConsumed: "kitchen.inventory.consumed" {
   quantity: number
   lotId: string
   userId: string
-  consumedAt: number
+  consumedAt: datetime
 }
 
 event InventoryWasted: "kitchen.inventory.wasted" {
@@ -269,7 +316,7 @@ event InventoryWasted: "kitchen.inventory.wasted" {
   reason: string
   lotId: string
   userId: string
-  wastedAt: number
+  wastedAt: datetime
 }
 
 event InventoryAdjusted: "kitchen.inventory.adjusted" {
@@ -278,7 +325,7 @@ event InventoryAdjusted: "kitchen.inventory.adjusted" {
   quantity: number
   reason: string
   userId: string
-  adjustedAt: number
+  adjustedAt: datetime
 }
 
 event InventoryRestocked: "kitchen.inventory.restocked" {
@@ -287,7 +334,7 @@ event InventoryRestocked: "kitchen.inventory.restocked" {
   quantity: number
   costPerUnit: number
   userId: string
-  restockedAt: number
+  restockedAt: datetime
 }
 
 event InventoryItemCreated: "kitchen.inventory.created" {
@@ -297,7 +344,7 @@ event InventoryItemCreated: "kitchen.inventory.created" {
   name: string
   itemType: string
   category: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
@@ -306,5 +353,20 @@ event InventoryReservationReleased: "kitchen.inventory.reservation.released" {
   quantity: number
   eventId: string
   userId: string
-  releasedAt: number
+  releasedAt: datetime
+}
+
+event InventoryItemUpdated: "kitchen.inventory.updated" {
+  itemId: string
+  tenantId: string
+  itemName: string
+  category: string
+  updatedAt: datetime
+}
+
+event InventoryItemDeleted: "kitchen.inventory.deleted" {
+  itemId: string
+  tenantId: string
+  itemName: string
+  deletedAt: datetime
 }

@@ -2,6 +2,7 @@
 // Manifest spec for catering order lifecycle and delivery management
 
 entity CateringOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required orderNumber: string
@@ -9,17 +10,20 @@ entity CateringOrder {
   property eventId: string = ""
   property orderStatus: string = "draft"
   property orderDate: datetime = now()
-  property optional deliveryDate: datetime
+  property deliveryDate: datetime
   property deliveryTime: string = ""
   property subtotalAmount: money = 0
   property taxAmount: money = 0
   property discountAmount: money = 0
   property serviceChargeAmount: money = 0
-  property totalAmount: number = 0
+  property totalAmount: money = 0
   property depositRequired: boolean = false
   property depositAmount: money = 0
   property depositPaid: boolean = false
-  property depositPaidAt: datetime = now()
+  // Bug fix: depositPaidAt is a lifecycle datetime — no default
+  property depositPaidAt: datetime
+  property deliveredAt: datetime
+  property prepStartedAt: datetime
   property venueName: string = ""
   property venueAddress: string = ""
   property venueCity: string = ""
@@ -32,13 +36,13 @@ entity CateringOrder {
   property dietaryRestrictions: string = ""
   property staffRequired: int = 0
   property staffAssigned: int = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.orderStatus == "draft"
   computed isConfirmed: boolean = self.orderStatus == "confirmed"
   computed isInProgress: boolean = self.orderStatus == "in_progress"
+  computed isDelivered: boolean = self.orderStatus == "delivered"
   computed isCompleted: boolean = self.orderStatus == "completed"
   computed isCancelled: boolean = self.orderStatus == "cancelled"
   computed isActive: boolean = self.orderStatus == "draft" or self.orderStatus == "confirmed" or self.orderStatus == "in_progress"
@@ -46,10 +50,27 @@ entity CateringOrder {
   computed isFullyStaffed: boolean = self.staffAssigned >= self.staffRequired
   computed hasDeposit: boolean = self.depositRequired and self.depositPaid
 
+  // State machine governs the `orderStatus` property (NOT a phantom `status`
+  // property, which does not exist on this entity). `delivered -> cancelled` is
+  // included to match the `cancel` command's guard, which permits cancelling any
+  // non-completed, non-cancelled order. See
+  // apps/api/__tests__/events/catering-order-lifecycle.test.ts.
+  transition orderStatus from "draft" to ["confirmed", "cancelled"]
+  transition orderStatus from "confirmed" to ["in_progress", "cancelled"]
+  transition orderStatus from "in_progress" to ["delivered", "cancelled"]
+  transition orderStatus from "delivered" to ["completed", "cancelled"]
+
   constraint validOrderNumber: self.orderNumber != null and self.orderNumber != "" "Order number is required"
-  constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "completed", "cancelled"] "Status must be valid"
+  constraint validStatus: self.orderStatus in ["draft", "confirmed", "in_progress", "delivered", "completed", "cancelled"] "Status must be valid"
   constraint positiveGuestCount: self.guestCount >= 0 "Guest count must be non-negative"
   constraint positiveTotalAmount: self.totalAmount >= 0 "Total amount must be non-negative"
+
+  // venueName/venueAddress are NOT create params — they are inherited server-side
+  // from the linked Event via parent-context propagation (specs/parent-context-propagation.md,
+  // manifest/runtime/src/parent-context-resolver.ts). A catering order created from an
+  // event must not re-ask for the venue the event already owns. The broken-out
+  // venueCity/State/Zip/Contact fields remain caller-supplied because Event does not own them.
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint warnUnstaffed:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired {
     messageTemplate: "Order {orderNumber} needs {needed} more staff ({assigned}/{required})"
@@ -69,14 +90,15 @@ entity CateringOrder {
     }
   }
 
-  constraint blockCancelIfCompleted:block self.orderStatus == "completed" {
-    messageTemplate: "Cannot cancel order {orderNumber} - order is already completed"
-    details: {
-      orderNumber: self.orderNumber
-    }
-  }
+  // NOTE: entity-level `blockCancelIfCompleted:block self.orderStatus == "completed"` was
+  // removed here. As an entity-level block constraint it fired on ALL commands (including
+  // confirm, startPrep, deliver, etc.) rather than only `cancel`, because entity-level
+  // :block constraints run before every command mutation. The `cancel` command already
+  // prevents cancelling a completed order via `guard self.orderStatus != "completed"`, so
+  // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
-  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: number, deliveryTime: string, guestCount: number, venueName: string, venueAddress: string, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  default policy CateringOrderDefaultAccess execute: user.role in ["event_coordinator", "catering_manager", "manager", "admin"] "Catering order management"
+  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: number, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
     guard orderNumber != null and orderNumber != "" "Order number is required"
     guard customerId != null and customerId != "" "Customer ID is required"
 
@@ -86,8 +108,6 @@ entity CateringOrder {
     mutate deliveryDate = deliveryDate
     mutate deliveryTime = deliveryTime
     mutate guestCount = guestCount
-    mutate venueName = venueName
-    mutate venueAddress = venueAddress
     mutate venueCity = venueCity
     mutate venueState = venueState
     mutate venueZip = venueZip
@@ -98,8 +118,6 @@ entity CateringOrder {
     mutate staffRequired = staffRequired
     mutate orderStatus = "draft"
     mutate orderDate = now()
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit CateringOrderCreated
   }
@@ -128,7 +146,6 @@ entity CateringOrder {
     mutate specialInstructions = specialInstructions
     mutate dietaryRestrictions = dietaryRestrictions
     mutate staffRequired = staffRequired
-    mutate updatedAt = now()
 
     emit CateringOrderUpdated
   }
@@ -146,9 +163,30 @@ entity CateringOrder {
     }
 
     mutate orderStatus = "confirmed"
-    mutate updatedAt = now()
 
     emit CateringOrderConfirmed
+  }
+
+  command recordDeposit(paymentReference: string) {
+    guard self.orderStatus in ["draft", "confirmed"] "Can only record deposit on draft or confirmed orders"
+    guard self.depositRequired "Order does not require a deposit"
+    guard self.depositPaid == false "Deposit has already been recorded"
+    guard paymentReference != null and paymentReference != "" "Payment reference is required"
+
+    mutate depositPaid = true
+    mutate depositPaidAt = now()
+
+    emit CateringOrderDepositRecorded
+  }
+
+  command scheduleDelivery(deliveryDate: datetime, deliveryTime: string) {
+    guard self.orderStatus in ["draft", "confirmed"] "Can only schedule delivery for draft or confirmed orders"
+    guard deliveryDate != null "Delivery date is required"
+
+    mutate deliveryDate = deliveryDate
+    mutate deliveryTime = deliveryTime
+
+    emit CateringOrderDeliveryScheduled
   }
 
   command cancel(reason: string) {
@@ -165,7 +203,6 @@ entity CateringOrder {
     }
 
     mutate orderStatus = "cancelled"
-    mutate updatedAt = now()
 
     emit CateringOrderCancelled
   }
@@ -174,29 +211,37 @@ entity CateringOrder {
     guard self.orderStatus == "confirmed" "Can only start prep on confirmed orders"
 
     mutate orderStatus = "in_progress"
-    mutate updatedAt = now()
+    mutate prepStartedAt = now()
 
     emit CateringOrderPrepStarted
   }
 
-  command markComplete(userId: string) {
-    guard self.orderStatus == "in_progress" "Can only complete orders that are in progress"
+  command deliver(userId: string) {
+    guard self.orderStatus == "in_progress" "Can only deliver orders that are in progress"
 
-    constraint warnIncompleteItems:warn true {
-      messageTemplate: "Completing catering order '{orderId}' — verify all items are prepared"
+    constraint warnNoDeposit:warn self.depositRequired and not self.depositPaid {
+      messageTemplate: "Delivering order {orderNumber} with outstanding deposit"
       details: {
-        orderId: self.id
-        eventId: self.eventId
+        orderNumber: self.orderNumber
+        depositAmount: self.depositAmount
       }
     }
 
+    mutate orderStatus = "delivered"
+    mutate deliveredAt = now()
+
+    emit CateringOrderDelivered
+  }
+
+  command markComplete(userId: string) {
+    guard self.orderStatus == "delivered" "Can only complete orders that have been delivered"
+
     mutate orderStatus = "completed"
-    mutate updatedAt = now()
 
     emit CateringOrderCompleted
   }
 
-  store CateringOrder in memory
+  store CateringOrder in durable
 }
 
 // Policy definitions
@@ -212,8 +257,8 @@ event CateringOrderCreated: "events.catering_order.created" {
   customerId: string
   eventId: string
   guestCount: number
-  deliveryDate: number
-  createdAt: number
+  deliveryDate: datetime
+  createdAt: datetime
 }
 
 event CateringOrderUpdated: "events.catering_order.updated" {
@@ -222,7 +267,7 @@ event CateringOrderUpdated: "events.catering_order.updated" {
   orderNumber: string
   totalAmount: number
   guestCount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event CateringOrderConfirmed: "events.catering_order.confirmed" {
@@ -232,7 +277,25 @@ event CateringOrderConfirmed: "events.catering_order.confirmed" {
   totalAmount: number
   depositPaid: boolean
   userId: string
-  confirmedAt: number
+  confirmedAt: datetime
+}
+
+event CateringOrderDepositRecorded: "events.catering_order.deposit_recorded" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  depositAmount: number
+  paymentReference: string
+  recordedAt: datetime
+}
+
+event CateringOrderDeliveryScheduled: "events.catering_order.delivery_scheduled" {
+  orderId: string
+  tenantId: string
+  orderNumber: string
+  deliveryDate: datetime
+  deliveryTime: string
+  scheduledAt: datetime
 }
 
 event CateringOrderCancelled: "events.catering_order.cancelled" {
@@ -240,7 +303,7 @@ event CateringOrderCancelled: "events.catering_order.cancelled" {
   tenantId: string
   orderNumber: string
   reason: string
-  cancelledAt: number
+  cancelledAt: datetime
 }
 
 event CateringOrderPrepStarted: "catering.order.prep_started" {
@@ -248,7 +311,16 @@ event CateringOrderPrepStarted: "catering.order.prep_started" {
   tenantId: string
   eventId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
+}
+
+event CateringOrderDelivered: "catering.order.delivered" {
+  orderId: string
+  tenantId: string
+  eventId: string
+  orderNumber: string
+  userId: string
+  deliveredAt: datetime
 }
 
 event CateringOrderCompleted: "catering.order.completed" {
@@ -256,5 +328,5 @@ event CateringOrderCompleted: "catering.order.completed" {
   tenantId: string
   eventId: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }

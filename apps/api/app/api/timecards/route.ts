@@ -3,8 +3,8 @@ import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 function getStatusFilter(status: string | null): string {
   if (status === "approved") {
@@ -193,10 +193,15 @@ export async function GET(request: Request) {
   });
 }
 
-export function POST(request: NextRequest) {
+export async function POST(request: NextRequest) {
   log.info("[TimeEntry/POST] Delegating to manifest clockIn command");
-  return executeManifestCommand(request, {
-    entityName: "TimeEntry",
-    commandName: "clockIn",
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "TimeEntry",
+    command: "clockIn",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

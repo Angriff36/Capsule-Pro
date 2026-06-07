@@ -196,44 +196,43 @@ export async function GET(
     });
 
     // Fetch staff assignments
-    const staffAssignments = await database.eventStaffAssignment.findMany({
+    const staffAssignments = await database.eventStaff.findMany({
       where: { eventId, tenantId, deletedAt: null },
       select: {
         id: true,
-        employeeId: true,
+        staffMemberId: true,
         role: true,
-        startTime: true,
-        endTime: true,
+        shiftStart: true,
+        shiftEnd: true,
         notes: true,
       },
     });
 
-    // Fetch employee details (User model = employees table)
-    const employeeIds = staffAssignments.map((sa) => sa.employeeId);
-    const employees =
-      employeeIds.length > 0
-        ? await database.user.findMany({
-            where: { id: { in: employeeIds }, tenantId, deletedAt: null },
-            select: { id: true, firstName: true, lastName: true, role: true },
+    // Fetch staff member details
+    const staffMemberIds = staffAssignments.map((sa) => sa.staffMemberId);
+    const staffMembers =
+      staffMemberIds.length > 0
+        ? await database.staffMember.findMany({
+            where: { id: { in: staffMemberIds }, tenantId, deletedAt: null },
+            select: { id: true, displayName: true, role: true },
           })
         : [];
-    const employeeById = new Map(
-      employees.map(
+    const staffMemberById = new Map(
+      staffMembers.map(
         (e: {
           id: string;
-          firstName: string;
-          lastName: string;
-          role: string;
+          displayName: string;
+          role: string | null;
         }) => [e.id, e]
       )
     );
 
     const staff = staffAssignments.map((sa) => {
-      const emp = employeeById.get(sa.employeeId);
+      const member = staffMemberById.get(sa.staffMemberId);
       return {
-        id: sa.employeeId,
-        name: emp ? `${emp.firstName} ${emp.lastName}` : "Unknown",
-        role: emp?.role ?? null,
+        id: sa.staffMemberId,
+        name: member?.displayName ?? "Unknown",
+        role: member?.role ?? null,
         assignmentRole: sa.role,
       };
     });

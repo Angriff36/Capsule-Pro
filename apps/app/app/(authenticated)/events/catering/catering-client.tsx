@@ -33,6 +33,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
 
 interface CateringOrder {
   id: string;
@@ -104,8 +105,8 @@ const STATUS_CONFIG: Record<
 
 const NEXT_ACTION: Record<string, { label: string; command: string }> = {
   draft: { label: "Confirm", command: "confirm" },
-  confirmed: { label: "Start Prep", command: "start-prep" },
-  in_progress: { label: "Mark Complete", command: "mark-complete" },
+  confirmed: { label: "Start Prep", command: "startPrep" },
+  in_progress: { label: "Mark Complete", command: "markComplete" },
 };
 
 function formatDate(iso: string): string {
@@ -191,15 +192,8 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     if (!action) return;
     setActioning(order.id);
     try {
-      const res = await apiFetch(`/api/cateringorder/${action.command}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: order.id }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Action failed");
-      }
+      // Typed command client → canonical dispatcher (/api/manifest/CateringOrder/commands/{command}).
+      await executeCommand("CateringOrder", action.command, { id: order.id });
       toast.success(`Order ${action.label.toLowerCase()}ed successfully`);
       await loadOrders();
     } catch (err) {
@@ -213,18 +207,10 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     if (!cancelTarget) return;
     setActioning(cancelTarget.id);
     try {
-      const res = await apiFetch("/api/cateringorder/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: cancelTarget.id,
-          reason: "Cancelled by user",
-        }),
+      await executeCommand("CateringOrder", "cancel", {
+        id: cancelTarget.id,
+        reason: "Cancelled by user",
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Cancel failed");
-      }
       toast.success("Order cancelled");
       setCancelTarget(null);
       await loadOrders();
@@ -237,32 +223,24 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
 
   const handleCreate = async () => {
     try {
-      const res = await apiFetch("/api/cateringorder/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerId: form.customerId,
-          deliveryDate: form.deliveryDate,
-          deliveryTime: form.deliveryTime,
-          venueName: form.venueName,
-          venueAddress: form.venueAddress,
-          venueCity: form.venueCity,
-          venueState: form.venueState,
-          venueZip: form.venueZip,
-          venueContactName: form.venueContactName,
-          venueContactPhone: form.venueContactPhone,
-          guestCount: Number(form.guestCount),
-          specialInstructions: form.specialInstructions,
-          dietaryRestrictions: form.dietaryRestrictions,
-          subtotal: form.subtotal,
-          tax: form.tax,
-          serviceCharge: form.serviceCharge,
-        }),
+      await executeCommand("CateringOrder", "create", {
+        customerId: form.customerId,
+        deliveryDate: form.deliveryDate,
+        deliveryTime: form.deliveryTime,
+        venueName: form.venueName,
+        venueAddress: form.venueAddress,
+        venueCity: form.venueCity,
+        venueState: form.venueState,
+        venueZip: form.venueZip,
+        venueContactName: form.venueContactName,
+        venueContactPhone: form.venueContactPhone,
+        guestCount: Number(form.guestCount),
+        specialInstructions: form.specialInstructions,
+        dietaryRestrictions: form.dietaryRestrictions,
+        subtotal: form.subtotal,
+        tax: form.tax,
+        serviceCharge: form.serviceCharge,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Create failed");
-      }
       toast.success("Catering order created");
       setCreateOpen(false);
       setForm({

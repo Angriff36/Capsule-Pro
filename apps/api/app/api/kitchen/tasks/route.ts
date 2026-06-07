@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export async function GET(request: Request) {
   const { orgId } = await auth();
@@ -22,7 +22,6 @@ export async function GET(request: Request) {
     where: {
       AND: [
         { tenantId },
-        { deletedAt: null },
         ...(status ? [{ status }] : []),
         ...(minPriority
           ? [{ priority: { lte: Number.parseInt(minPriority, 10) } }]
@@ -82,22 +81,26 @@ export async function GET(request: Request) {
 /**
  * Create a new KitchenTask via manifest runtime.
  *
- * Delegates to executeManifestCommand which handles auth, tenant resolution,
+ * Delegates to runManifestCommand which handles auth, tenant resolution,
  * user lookup, guard/policy enforcement, and event emission.
  *
  * POST /api/kitchen/tasks
  */
 export async function POST(request: NextRequest) {
-  return await executeManifestCommand(request, {
-    entityName: "KitchenTask",
-    commandName: "create",
-    transformBody: (body, _ctx) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return await runManifestCommand({
+    entity: "KitchenTask",
+    command: "create",
+    body: {
+      ...rawBody,
       // Provide defaults matching the old direct-Prisma behavior
-      summary: body.summary || body.title,
-      priority: body.priority ?? 5,
-      complexity: body.complexity ?? 5,
-      tags: body.tags || [],
-    }),
+      summary: rawBody.summary || rawBody.title,
+      priority: rawBody.priority ?? 5,
+      complexity: rawBody.complexity ?? 5,
+      tags: rawBody.tags || [],
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

@@ -2,10 +2,14 @@ import { z } from "zod";
 
 // ============ Constants ============
 
+// Authoritative AdminTask states — the operational Kanban's four columns
+// (backlog/in_progress/review/done) plus the `cancelled` side-state. Mirrors
+// the state machine in manifest/source/admin-task-rules.manifest. (`todo` was
+// removed; no product surface used it.)
 export const ADMIN_TASK_STATUSES = [
   "backlog",
-  "todo",
   "in_progress",
+  "review",
   "done",
   "cancelled",
 ] as const;

@@ -71,10 +71,10 @@ async function fetchEventsWithStaff(
         e.venue_name,
         COALESCE(
           (SELECT COUNT(*)
-           FROM tenant_events.event_staff_assignments esa
-           WHERE esa.event_id = e.id
-             AND esa.tenant_id = e.tenant_id
-             AND esa.deleted_at IS NULL
+           FROM tenant_events.event_staff esa
+           WHERE esa.eventId = e.id
+             AND esa.tenantId = e.tenant_id
+             AND esa.deletedAt IS NULL
           ), 0
         ) as staff_count
       FROM tenant_events.events e

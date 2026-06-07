@@ -58,6 +58,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
 import { SignaturePad } from "../components/signature-pad";
 
 interface ContractDetailClientProps {
@@ -360,25 +361,18 @@ export function ContractDetailClient({
   const handleSignatureSave = useCallback(
     async (signatureData: string, signerName: string, signerEmail?: string) => {
       try {
-        const response = await apiFetch(
-          `/api/events/contracts/${contract.id}/signatures`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              signatureData,
-              signerName,
-              signerEmail,
-            }),
-          }
+        // Typed command client: canonical { success, result, events } contract.
+        // No raw fetch URL / response-shape guessing in the component.
+        const response = await executeCommand<ContractSignature>(
+          "ContractSignature",
+          "create",
+          { signatureData, signerName, signerEmail },
+          { path: `/api/events/contracts/${contract.id}/signatures` }
         );
-
-        if (!response.ok) {
-          throw new Error("Failed to save signature");
+        const createdSignature = response.result;
+        if (createdSignature) {
+          setSignatures((prev) => [createdSignature, ...prev]);
         }
-
-        const result = await response.json();
-        setSignatures((prev) => [result.signature, ...prev]);
         toast.success("Signature captured successfully");
         setShowSignatureDialog(false);
 
@@ -416,10 +410,22 @@ export function ContractDetailClient({
   const statusInfo =
     statusConfig[contract.status as ContractStatus] || statusConfig.draft;
 
-  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  // Guarded formatters: null/invalid dates render "—" instead of throwing
+  // "Invalid time value" (which crashes the whole authenticated error boundary).
+  const _dateTimeFmt = new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
   });
+  const _dateOnlyFmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
+  const safeFmt = (
+    fmt: Intl.DateTimeFormat,
+    value: Date | string | number | null | undefined
+  ): string => {
+    if (value == null) return "—";
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.getTime()) ? "—" : fmt.format(d);
+  };
+  const dateFormatter = { format: (v: Date | string | number | null | undefined) => safeFmt(_dateTimeFmt, v) };
 
   const isExpired =
     contract.expiresAt && new Date(contract.expiresAt) < new Date();
@@ -564,9 +570,11 @@ export function ContractDetailClient({
                     <p className="font-medium">{event.title}</p>
                     <p className="text-muted-foreground text-sm">
                       <CalendarIcon className="mr-1 inline size-3" />
-                      {new Intl.DateTimeFormat("en-US", {
-                        dateStyle: "medium",
-                      }).format(event.eventDate)}
+                      {event.eventDate
+                        ? new Intl.DateTimeFormat("en-US", {
+                            dateStyle: "medium",
+                          }).format(new Date(event.eventDate))
+                        : "TBD"}
                     </p>
                   </div>
                 </>

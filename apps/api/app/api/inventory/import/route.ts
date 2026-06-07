@@ -18,7 +18,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 
@@ -285,32 +286,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insert all valid rows
+    // Insert all valid rows via governed Manifest runtime
+    const user = await resolveCurrentUser(request);
     let inserted = 0;
     for (const row of validRows) {
       try {
-        await database.$executeRaw`
-          INSERT INTO "tenant_inventory".inventory_items (
-            id, tenant_id, item_number, name, category,
-            unit_cost, quantity_on_hand, reorder_level,
-            tags, fsa_status, fsa_temp_logged, fsa_allergen_info, fsa_traceable,
-            created_at, updated_at
-          ) VALUES (
-            gen_random_uuid(),
-            ${tenantId},
-            ${row.item_number},
-            ${row.name},
-            ${row.category ?? "other"}::text,
-            ${row.unit_cost ?? null}::decimal(10,2),
-            ${row.quantity_on_hand ?? 0}::decimal(12,3),
-            ${row.reorder_level ?? 0}::decimal(12,3),
-            ${row.tags ? JSON.stringify(row.tags) : null}::jsonb,
-            ${row.fsa_status ?? null}::text,
-            false, false, false,
-            NOW(), NOW()
-          )
-        `;
-        inserted++;
+        const response = await runManifestCommand({
+          entity: "InventoryItem",
+          command: "create",
+          body: {
+            tenantId,
+            item_number: row.item_number,
+            name: row.name,
+            category: row.category ?? "other",
+            unitCost: row.unit_cost ?? 0,
+            quantityOnHand: row.quantity_on_hand ?? 0,
+            reorder_level: row.reorder_level ?? 0,
+            tags: row.tags ?? [],
+            fsa_status: row.fsa_status ?? null,
+            fsa_temp_logged: false,
+            fsa_allergen_info: false,
+            fsa_traceable: false,
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+        if (response.ok) {
+          inserted++;
+        } else {
+          const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+          const message = typeof body.message === "string" ? body.message : `HTTP ${response.status}`;
+          log.error(`[InventoryImport] Manifest create failed for row ${row.row}: ${message}`);
+          errors.push({ row: row.row, message: `Insert failed: ${message}` });
+        }
       } catch (err) {
         log.error(`[InventoryImport] Failed to insert row ${row.row}:`, err);
         errors.push({

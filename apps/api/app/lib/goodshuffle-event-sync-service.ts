@@ -5,7 +5,9 @@
  * Implements conflict detection and resolution with configurable strategies.
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
@@ -246,44 +248,57 @@ async function createConvoyEventFromGoodshuffle(
     return "dry-run-id";
   }
 
-  // Get default location
-  const defaultLocation = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id
-      FROM tenant.locations
-      WHERE tenant_id = ${tenantId}
-        AND deleted_at IS NULL
-        AND is_active = true
-      ORDER BY is_primary DESC
-      LIMIT 1
-    `
+  const defaultLocation = await database.location.findFirst({
+    where: { tenantId, deletedAt: null, isActive: true },
+    orderBy: { isPrimary: "desc" },
+    select: { id: true },
+  });
+
+  const locationId = defaultLocation?.id ?? "";
+
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "Event",
+      command: "create",
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        tenantId,
+        title: gsEvent.name,
+        eventDate: gsEvent.event_date
+          ? new Date(gsEvent.event_date)
+          : new Date(),
+        guestCount: gsEvent.guest_count ?? 1,
+        locationId,
+        status: "draft",
+        eventType: "catering",
+        clientId: "",
+        eventNumber: "",
+        venueName: "",
+        venueAddress: "",
+        notes: "",
+        tags: [],
+        budget: 0,
+        ticketPrice: 0,
+        ticketTier: "",
+        eventFormat: "",
+        accessibilityOptions: [],
+        featuredMediaUrl: "",
+      },
+    }
   );
 
-  const locationId = defaultLocation.length > 0 ? defaultLocation[0].id : null;
+  if (!result.ok) {
+    throw new Error(`Failed to create event via Manifest: ${result.message}`);
+  }
 
-  // Create event
-  const newEvent = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      INSERT INTO tenant.events (
-        tenant_id, id, title, event_date, guest_count,
-        location_id, status, created_at, updated_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${gsEvent.name},
-        ${gsEvent.event_date ? new Date(gsEvent.event_date) : null},
-        ${gsEvent.guest_count ?? null},
-        ${locationId},
-        'draft',
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `
-  );
-
-  return newEvent[0].id;
+  return (result.result as { id?: string }).id!;
 }
 
 /**
@@ -299,16 +314,71 @@ async function updateConvoyEventFromGoodshuffle(
     return;
   }
 
-  await database.$executeRaw`
-    UPDATE tenant.events
-    SET
-      title = ${gsEvent.name},
-      event_date = ${gsEvent.event_date ? new Date(gsEvent.event_date) : null},
-      guest_count = ${gsEvent.guest_count ?? null},
-      updated_at = NOW()
-    WHERE tenant_id = ${tenantId}
-      AND id = ${convoyEventId}
-  `;
+  // Load existing event to pass all required fields to the generic update command
+  const existing = await database.event.findUnique({
+    where: { id: convoyEventId },
+    select: {
+      clientId: true,
+      eventNumber: true,
+      eventType: true,
+      venueName: true,
+      venueAddress: true,
+      notes: true,
+      tags: true,
+      status: true,
+      budget: true,
+      ticketPrice: true,
+      ticketTier: true,
+      eventFormat: true,
+      accessibilityOptions: true,
+      featuredMediaUrl: true,
+      locationId: true,
+    },
+  });
+
+  if (!existing) {
+    return;
+  }
+
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "Event",
+      command: "update",
+      instanceId: convoyEventId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: convoyEventId,
+        tenantId,
+        clientId: existing.clientId ?? "",
+        eventNumber: existing.eventNumber ?? "",
+        title: gsEvent.name,
+        eventType: existing.eventType ?? "general",
+        eventDate: gsEvent.event_date
+          ? new Date(gsEvent.event_date)
+          : new Date(),
+        guestCount: gsEvent.guest_count ?? 1,
+        venueName: existing.venueName ?? "",
+        venueAddress: existing.venueAddress ?? "",
+        notes: existing.notes ?? "",
+        tags: existing.tags ?? [],
+        status: existing.status ?? "draft",
+        budget: existing.budget ? Number(existing.budget) : 0,
+        ticketPrice: existing.ticketPrice ? Number(existing.ticketPrice) : 0,
+        ticketTier: existing.ticketTier ?? "",
+        eventFormat: existing.eventFormat ?? "",
+        accessibilityOptions: existing.accessibilityOptions ?? [],
+        featuredMediaUrl: existing.featuredMediaUrl ?? "",
+        locationId: existing.locationId ?? "",
+      },
+    }
+  );
 }
 
 /**

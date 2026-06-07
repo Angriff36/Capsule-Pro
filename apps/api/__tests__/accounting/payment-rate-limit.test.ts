@@ -55,6 +55,13 @@ const mocks = vi.hoisted(() => ({
   checkRateLimitMock: vi.fn(),
 }));
 
+// Mock manifest runtime to avoid DATABASE_URL env validation at import time
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn().mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: true, result: {}, emittedEvents: [] }),
+  }),
+}));
+
 vi.mock("@repo/database", () => ({
   database: {
     payment: {
@@ -65,11 +72,19 @@ vi.mock("@repo/database", () => ({
       findFirst: mocks.invoiceFindFirstMock,
       update: mocks.invoiceUpdateMock,
     },
+    paymentRefundAttempt: {
+      create: vi.fn().mockResolvedValue({}),
+    },
   },
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
+  resolveCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-test",
+    tenantId: "00000000-0000-0000-0000-000000000001",
+    role: "finance_manager",
+  }),
 }));
 
 // P1.AM: PUT/POST on /payments/[id] now gate on manager-tier role. Stub

@@ -1,7 +1,9 @@
 // Kitchen Domain - Work Order Rules
 // Manifest spec for equipment maintenance work orders
+// Lifecycle: open -> assigned -> in_progress -> completed (or cancelled from any non-terminal state)
 
 entity WorkOrder {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required equipmentId: string
@@ -11,24 +13,28 @@ entity WorkOrder {
   property priority: string = "medium"
   property status: string = "open"
   property description: string = ""
-  property scheduledDate: datetime = now()
+  // scheduledDate: nullable — no default; set when known
+  property scheduledDate: datetime
   property assignedTo: string = ""
-  property completedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  // completedAt: nullable — only set when work finishes
+  property completedAt: datetime
+  timestamps
 
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
-  computed isScheduled: boolean = self.scheduledDate != 0
-  computed isOverdue: boolean = self.scheduledDate != 0 and now() > self.scheduledDate and self.status not in ["completed", "cancelled"]
+  computed isAssigned: boolean = self.assignedTo != ""
+  // null-safe datetime checks (fixes original != 0 bug on datetime)
+  computed isScheduled: boolean = self.scheduledDate != null
+  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])
   computed isCritical: boolean = self.priority == "critical"
 
-  transition status from "open" to ["in_progress", "cancelled"]
+  transition status from "open" to ["assigned", "in_progress", "cancelled"]
+  transition status from "assigned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
 
-  constraint validStatus: self.status in ["open", "in_progress", "completed", "cancelled"] "Invalid work order status"
+  constraint validStatus: self.status in ["open", "assigned", "in_progress", "completed", "cancelled"] "Invalid work order status"
   constraint validPriority: self.priority in ["critical", "high", "medium", "low"] "Invalid priority level"
-  constraint validType: self.type in ["repair", "inspection", "replacement"] "Invalid work order type"
+  constraint validType: self.type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
   constraint requireTitle: self.title != "" "Title is required"
 
   constraint warnOverdue:warn self.isOverdue {
@@ -39,10 +45,19 @@ entity WorkOrder {
     }
   }
 
-  command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, scheduledDate: number) {
+  constraint warnCriticalUnassigned:warn self.isCritical and self.status == "open" {
+    messageTemplate: "Critical work order '{title}' has not been assigned"
+    details: {
+      title: self.title
+      priority: self.priority
+    }
+  }
+
+  default policy WorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Work order management"
+  command create(equipmentId: string, equipmentName: string, title: string, type: string, priority: string, description: string, scheduledDate: datetime) {
     guard title != null and title != "" "Title is required"
     guard equipmentId != null and equipmentId != "" "Equipment ID is required"
-    guard type in ["repair", "inspection", "replacement"] "Invalid work order type"
+    guard type in ["repair", "inspection", "replacement", "installation"] "Invalid work order type"
     guard priority in ["critical", "high", "medium", "low"] "Invalid priority level"
 
     mutate equipmentId = equipmentId
@@ -53,62 +68,70 @@ entity WorkOrder {
     mutate description = description
     mutate scheduledDate = scheduledDate
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit WorkOrderCreated
   }
 
+  // Assign the work order to a technician before work begins
+  command assign(userId: string, scheduledDate: datetime) {
+    guard userId != null and userId != "" "Assignee is required"
+    guard self.status == "open" "Work order must be open to assign"
+
+    mutate assignedTo = userId
+    mutate scheduledDate = scheduledDate
+    mutate status = "assigned"
+
+    emit WorkOrderAssigned
+  }
+
   command start(userId: string) {
-    guard userId != null and userId != ""
-    guard self.status == "open" "Work order must be open to start"
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status in ["open", "assigned"] "Work order must be open or assigned to start"
 
     mutate status = "in_progress"
     mutate assignedTo = userId
-    mutate updatedAt = now()
 
     emit WorkOrderStarted
   }
 
-  command complete(userId: string) {
-    guard userId != null and userId != ""
+  command complete(userId: string, notes: string) {
+    guard userId != null and userId != "" "User ID is required"
     guard self.status == "in_progress" "Work order must be in progress to complete"
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit WorkOrderCompleted
   }
 
   command cancel(reason: string, canceledBy: string) {
-    guard self.status != "completed" and self.status != "cancelled" "Cannot cancel a completed or already cancelled work order"
+    guard not (self.status in ["completed", "cancelled"]) "Cannot cancel a completed or already cancelled work order"
+    guard reason != null and reason != "" "Cancellation reason is required"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit WorkOrderCancelled
   }
 
   command updatePriority(priority: string) {
     guard priority in ["critical", "high", "medium", "low"] "Invalid priority level"
+    guard not (self.status in ["completed", "cancelled"]) "Cannot reprioritize a closed work order"
 
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit WorkOrderPriorityUpdated
   }
 
-  command reschedule(scheduledDate: number, reason: string) {
-    guard scheduledDate > 0 "Scheduled date must be in the future"
+  command reschedule(scheduledDate: datetime, reason: string) {
+    guard scheduledDate > 0 "Scheduled date must be valid"
+    guard not (self.status in ["completed", "cancelled"]) "Cannot reschedule a closed work order"
 
     mutate scheduledDate = scheduledDate
-    mutate updatedAt = now()
 
     emit WorkOrderRescheduled
   }
 
-  store WorkOrder in memory
+  store WorkOrder in durable
 }
 
 policy KitchenStaffCanManageWorkOrders execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage work orders"
@@ -121,39 +144,48 @@ event WorkOrderCreated: "kitchen.workorder.created" {
   title: string
   type: string
   priority: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event WorkOrderAssigned: "kitchen.workorder.assigned" {
+  workOrderId: string
+  tenantId: string
+  equipmentId: string
+  assignedTo: string
+  scheduledDate: datetime
+  assignedAt: datetime
 }
 
 event WorkOrderStarted: "kitchen.workorder.started" {
   workOrderId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event WorkOrderCompleted: "kitchen.workorder.completed" {
   workOrderId: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event WorkOrderCancelled: "kitchen.workorder.cancelled" {
   workOrderId: string
   reason: string
   canceledBy: string
-  canceledAt: number
+  canceledAt: datetime
 }
 
 event WorkOrderPriorityUpdated: "kitchen.workorder.priority.updated" {
   workOrderId: string
   oldPriority: string
   newPriority: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event WorkOrderRescheduled: "kitchen.workorder.rescheduled" {
   workOrderId: string
-  oldDate: number
-  newDate: number
+  oldDate: datetime
+  newDate: datetime
   reason: string
-  updatedAt: number
+  updatedAt: datetime
 }

@@ -1,14 +1,10 @@
-// Approve or reject a purchase order
-import { auth } from "@repo/auth/server";
+// Approve or reject a purchase order via Manifest runtime
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { type NextRequest, NextResponse } from "next/server";
+import { resolveCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface ActionRequest {
   orderId: string;
@@ -16,69 +12,81 @@ interface ActionRequest {
   notes?: string;
 }
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) return manifestErrorResponse("Unauthorized", 401);
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+    const user = await resolveCurrentUser(request);
 
     const body: ActionRequest = await request.json();
     const { orderId, action, notes } = body;
 
     if (!(orderId && action)) {
-      return manifestErrorResponse("Missing orderId or action", 400);
+      return NextResponse.json({ error: "Missing orderId or action" }, { status: 400 });
     }
 
     if (!["approved", "rejected"].includes(action)) {
-      return manifestErrorResponse(
-        "Invalid action. Must be 'approved' or 'rejected'",
-        400
+      return NextResponse.json(
+        { error: "Invalid action. Must be 'approved' or 'rejected'" },
+        { status: 400 }
       );
     }
 
-    // Get current PO to validate state transition
+    // Pre-validation: get current PO to check state and fetch context
+    // (reads bypass Manifest runtime per constitution §10)
     const currentPO = await database.purchaseOrder.findFirst({
-      where: { id: orderId, tenantId, deletedAt: null },
+      where: { id: orderId, tenantId: user.tenantId, deletedAt: null },
       select: { id: true, status: true, poNumber: true },
     });
 
     if (!currentPO) {
-      return manifestErrorResponse("Purchase order not found", 404);
+      return NextResponse.json({ error: "Purchase order not found" }, { status: 404 });
     }
 
-    // Validate state transition: only "submitted" can transition to "approved" or "rejected"
+    // Validate state transition: only "submitted" can transition
     if (currentPO.status !== "submitted") {
-      return manifestErrorResponse(
-        `Cannot ${action} a purchase order with status '${currentPO.status}'. Only 'submitted' orders can be approved or rejected.`,
-        400
+      return NextResponse.json(
+        { error: `Cannot ${action} a purchase order with status '${currentPO.status}'. Only 'submitted' orders can be approved or rejected.` },
+        { status: 400 }
       );
     }
 
-    // Update PO status
-    await database.purchaseOrder.update({
-      where: { tenantId_id: { tenantId, id: orderId } },
-      data: { status: action },
+    // Delegate governed mutation to Manifest runtime
+    const command = action === "approved" ? "approve" : "reject";
+    const commandBody: Record<string, unknown> = { id: orderId, userId: user.id };
+    if (action === "rejected" && notes) {
+      commandBody.reason = notes;
+    }
+
+    const result = await runManifestCommand({
+      entity: "PurchaseOrder",
+      command,
+      body: commandBody,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
 
-    // Insert approval history record
+    // If the command failed, return the error from runtime
+    if (result.status >= 400) {
+      return result;
+    }
+
+    // Side effect: insert approval history record (infrastructure audit, not governed domain state)
     await database.approvalHistory.create({
       data: {
         entityType: "purchase_order",
         entityId: orderId,
         action,
-        performedBy: userId,
+        performedBy: user.id,
         previousStatus: "submitted",
         newStatus: action,
         notes: notes || null,
-        tenantId,
+        tenantId: user.tenantId,
       },
     });
 
-    // Return updated PO with vendor info
+    // Fetch updated PO + vendor info for response (reads bypass runtime)
     const updatedPO = await database.purchaseOrder.findFirst({
-      where: { id: orderId, tenantId },
+      where: { id: orderId, tenantId: user.tenantId },
       select: {
         id: true,
         poNumber: true,
@@ -91,17 +99,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Fetch vendor name separately (no Prisma relation between PurchaseOrder and InventorySupplier)
     let vendorName: string | null = null;
     if (updatedPO?.vendorId) {
       const vendor = await database.inventorySupplier.findFirst({
-        where: { id: updatedPO.vendorId, tenantId },
+        where: { id: updatedPO.vendorId, tenantId: user.tenantId },
         select: { name: true },
       });
       vendorName = vendor?.name ?? null;
     }
 
-    return manifestSuccessResponse({
+    return NextResponse.json({
       order: updatedPO
         ? {
             id: updatedPO.id,
@@ -119,6 +126,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     captureException(error);
     log.error("Error processing approval action:", error);
-    return manifestErrorResponse("Internal server error", 500);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

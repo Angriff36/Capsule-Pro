@@ -3,7 +3,7 @@
 // Returns structured ConstraintOutcome results per spec
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -49,19 +49,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the existing shift to get scheduleId if not provided
-    const existingShift = await database.$queryRaw<
-      Array<{ schedule_id: string }>
-    >(
-      Prisma.sql`
-        SELECT schedule_id
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND id = ${shiftId}
-          AND deleted_at IS NULL
-      `
-    );
+    const existingShift = await database.scheduleShift.findFirst({
+      where: {
+        tenantId,
+        id: shiftId,
+        deletedAt: null,
+      },
+      select: {
+        scheduleId: true,
+      },
+    });
 
-    if (!existingShift[0]) {
+    if (!existingShift) {
       return manifestErrorResponse("Shift not found", 404);
     }
 
@@ -69,7 +68,7 @@ export async function POST(request: NextRequest) {
     const validation = await validateShift(
       tenantId,
       {
-        scheduleId: body.scheduleId || existingShift[0].schedule_id,
+        scheduleId: body.scheduleId || existingShift.scheduleId,
         employeeId: body.employeeId,
         shiftStart: body.shiftStart,
         shiftEnd: body.shiftEnd,
@@ -83,9 +82,23 @@ export async function POST(request: NextRequest) {
     );
 
     if (!validation.valid) {
+      const errorBody = validation.error
+        ? await validation.error.clone().json().catch(() => null)
+        : null;
       log.error("[schedule-shift/update-validated] Validation failed", {
-        code: (validation.error as any)?.code,
-        message: (validation.error as any)?.message,
+        status: validation.error?.status,
+        code:
+          errorBody && typeof errorBody === "object" && "code" in errorBody
+            ? errorBody.code
+            : undefined,
+        message:
+          errorBody && typeof errorBody === "object" && "message" in errorBody
+            ? errorBody.message
+            : undefined,
+        details:
+          errorBody && typeof errorBody === "object" && "details" in errorBody
+            ? errorBody.details
+            : undefined,
       });
       return (
         validation.error ?? manifestErrorResponse("Validation failed", 400)

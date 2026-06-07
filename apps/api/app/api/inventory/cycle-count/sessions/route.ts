@@ -11,7 +11,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type CycleCountSessionType =
   | "ad_hoc"
@@ -147,8 +148,12 @@ export async function GET(request: Request) {
  */
 export async function POST(request: NextRequest) {
   log.info("[CycleCountSession/POST] Delegating to manifest create command");
-  return await executeManifestCommand(request, {
-    entityName: "CycleCountSession",
-    commandName: "create",
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "CycleCountSession",
+    command: "create",
+    body: rawBody,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

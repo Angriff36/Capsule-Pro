@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { getBudgetAlerts } from "@/lib/staff/labor-budget";
 
 /**
@@ -54,16 +54,18 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.clone().json();
-  const action = body.action || "acknowledge";
-  const commandName = action === "resolve" ? "resolve" : "acknowledge";
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.clone().json();
+  const action = rawBody.action || "acknowledge";
+  const command = action === "resolve" ? "resolve" : "acknowledge";
 
-  return executeManifestCommand(request, {
-    entityName: "BudgetAlert",
-    commandName,
-    transformBody: (body, ctx) => ({
-      id: body.alertId || body.id || "",
-      acknowledgedBy: ctx.userId,
-    }),
+  return runManifestCommand({
+    entity: "BudgetAlert",
+    command,
+    body: {
+      id: rawBody.alertId || rawBody.id || "",
+      acknowledgedBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

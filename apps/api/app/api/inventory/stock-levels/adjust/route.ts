@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { triggerInventoryLowSms } from "@repo/notifications";
 import { log } from "@repo/observability/log";
 import { createOutboxEvent } from "@repo/realtime";
@@ -74,46 +74,34 @@ async function executeStockAdjustmentTransaction(
   previousQuantity: number
 ) {
   return await database.$transaction(async (tx) => {
-    await tx.$executeRaw`
-      UPDATE tenant_inventory.inventory_items
-      SET quantity_on_hand = ${newQuantity},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${inventoryItemId}
-        AND deleted_at IS NULL
-    `;
+    await tx.inventoryItem.updateMany({
+      where: {
+        tenantId,
+        id: inventoryItemId,
+        deletedAt: null,
+      },
+      data: {
+        quantityOnHand: new Prisma.Decimal(newQuantity),
+      },
+    });
 
-    const transactionResult = await tx.$queryRaw<Array<{ id: string }>>`
-      INSERT INTO tenant_inventory.inventory_transactions (
-        tenant_id,
-        id,
-        item_id,
-        transaction_type,
-        quantity,
-        unit_cost,
-        storage_location_id,
+    const transaction = await tx.inventoryTransaction.create({
+      data: {
+        tenantId,
+        itemId: inventoryItemId,
+        transactionType: "adjustment",
+        quantity: new Prisma.Decimal(adjustmentAmount),
+        unit_cost: new Prisma.Decimal(itemUnitCost),
+        storage_location_id: storageLocationId ?? null,
         reason,
-        notes,
-        reference,
-        employee_id,
-        created_at
-      )
-      VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${inventoryItemId},
-        'adjustment',
-        ${adjustmentAmount},
-        ${itemUnitCost},
-        ${storageLocationId ?? null},
-        ${reason},
-        ${notes ?? null},
-        ${referenceId ?? null},
-        ${userId},
-        NOW()
-      )
-      RETURNING id
-    `;
+        notes: notes ?? null,
+        reference: referenceId ?? null,
+        employee_id: userId,
+      },
+      select: {
+        id: true,
+      },
+    });
 
     // Create outbox event for real-time updates
     await createOutboxEvent(tx, {
@@ -133,7 +121,7 @@ async function executeStockAdjustmentTransaction(
     });
 
     return {
-      transactionId: transactionResult[0]?.id,
+      transactionId: transaction.id,
       previousQuantity,
       newQuantity,
       adjustmentAmount: Math.abs(adjustmentAmount),

@@ -41,6 +41,13 @@ const mocks = vi.hoisted(() => ({
   resendSendMock: vi.fn(),
 }));
 
+// Mock manifest runtime to avoid DATABASE_URL env validation at import time
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn().mockResolvedValue({
+    runCommand: vi.fn().mockResolvedValue({ success: true, result: {}, emittedEvents: [] }),
+  }),
+}));
+
 vi.mock("@repo/database", () => ({
   database: {
     invoice: {
@@ -61,6 +68,11 @@ vi.mock("@repo/email", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
+  resolveCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-test",
+    tenantId: "00000000-0000-0000-0000-000000000010",
+    role: "finance_manager",
+  }),
 }));
 
 vi.mock("@/app/lib/auth-roles", () => ({

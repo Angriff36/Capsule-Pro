@@ -12,8 +12,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { translatePrismaError } from "@/lib/prisma-error";
 
 /**
@@ -129,11 +129,13 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "Client",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "Client",
+    command: "update",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -146,10 +148,11 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  return executeManifestCommand(request, {
-    entityName: "Client",
-    commandName: "archive",
-    params: { id },
-    transformBody: (_body) => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "Client",
+    command: "archive",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

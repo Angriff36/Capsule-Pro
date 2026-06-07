@@ -2,37 +2,49 @@
 // Manifest spec for pre-event review checklists and report lifecycle
 
 entity EventReport {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required eventId: string
   property required name: string
   property version: string = "2025-01-01"
   property status: string = "draft"
-  property completion: number = 0
+  property completion: decimal = 0
   property checklistData: string = "{}"
   property parsedEventData: string = ""
   property reportConfig: string = ""
-  property autoFillScore: number = 0
+  property autoFillScore: decimal = 0
   property reviewNotes: string = ""
   property reviewedBy: string = ""
-  property reviewedAt: datetime = now()
-  property completedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  // Bug fix: lifecycle datetimes — no default
+  property reviewedAt: datetime
+  property completedAt: datetime
+  property rejectedAt: datetime
+  property rejectedBy: string = ""
+  property rejectionReason: string = ""
+  timestamps
+  property deletedAt: datetime
 
   computed isDraft: boolean = self.status == "draft"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isCompleted: boolean = self.status == "completed"
   computed isApproved: boolean = self.status == "approved"
+  computed isRejected: boolean = self.status == "rejected"
   computed hasContent: boolean = self.checklistData != "{}" and self.checklistData != ""
   computed isFullyComplete: boolean = self.completion == 100
   computed isReviewed: boolean = self.reviewedBy != "" and self.reviewedBy != null
 
+  transition status from "draft" to ["in_progress", "completed"]
+  transition status from "in_progress" to ["completed"]
+  transition status from "completed" to ["approved", "rejected"]
+  transition status from "rejected" to ["draft", "in_progress"]
+
   constraint validName: self.name != null and self.name != "" "Report name is required"
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"
-  constraint validStatus: self.status in ["draft", "in_progress", "completed", "approved"] "Status must be valid"
+  constraint validStatus: self.status in ["draft", "in_progress", "completed", "approved", "rejected"] "Status must be valid"
   constraint validCompletion: self.completion >= 0 and self.completion <= 100 "Completion must be between 0 and 100"
+
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint warnLowCompletion:warn self.completion < 50 and self.status == "in_progress" {
     messageTemplate: "Report '{reportName}' is less than 50% complete"
@@ -57,6 +69,7 @@ entity EventReport {
     }
   }
 
+  default policy EventReportDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
   command create(eventId: string, name: string, version: string, checklistData: string, reportConfig: string, notes: string) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard name != null and name != "" "Report name is required"
@@ -69,8 +82,6 @@ entity EventReport {
     mutate reviewNotes = notes
     mutate status = "draft"
     mutate completion = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EventReportCreated
   }
@@ -89,7 +100,6 @@ entity EventReport {
 
     mutate status = "completed"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit EventReportSubmitted
   }
@@ -102,9 +112,23 @@ entity EventReport {
     mutate reviewedBy = userId
     mutate reviewedAt = now()
     mutate reviewNotes = reviewNotes
-    mutate updatedAt = now()
 
     emit EventReportApproved
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status == "completed" "Can only reject completed reports"
+    guard userId != null and userId != "" "Reviewer user ID is required"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectedBy = userId
+    mutate rejectedAt = now()
+    mutate rejectionReason = reason
+    mutate reviewedBy = userId
+    mutate reviewedAt = now()
+
+    emit EventReportRejected
   }
 
   command complete(userId: string) {
@@ -114,12 +138,22 @@ entity EventReport {
     mutate status = "completed"
     mutate completion = 100
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit EventReportCompleted
   }
 
-  store EventReport in memory
+  command updateProgress(completion: decimal, checklistData: string) {
+    guard self.status == "draft" or self.status == "in_progress" "Can only update progress on draft or in-progress reports"
+    guard completion >= 0 and completion <= 100 "Completion must be between 0 and 100"
+
+    mutate status = "in_progress"
+    mutate completion = completion
+    mutate checklistData = checklistData
+
+    emit EventReportProgressUpdated
+  }
+
+  store EventReport in durable
 }
 
 // Policy definitions
@@ -133,7 +167,7 @@ event EventReportCreated: "events.report.created" {
   eventId: string
   name: string
   version: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event EventReportSubmitted: "events.report.submitted" {
@@ -142,7 +176,7 @@ event EventReportSubmitted: "events.report.submitted" {
   eventId: string
   name: string
   completion: number
-  submittedAt: number
+  submittedAt: datetime
 }
 
 event EventReportApproved: "events.report.approved" {
@@ -152,7 +186,17 @@ event EventReportApproved: "events.report.approved" {
   name: string
   reviewedBy: string
   reviewNotes: string
-  approvedAt: number
+  approvedAt: datetime
+}
+
+event EventReportRejected: "events.report.rejected" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  name: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: datetime
 }
 
 event EventReportCompleted: "events.report.completed" {
@@ -160,5 +204,13 @@ event EventReportCompleted: "events.report.completed" {
   tenantId: string
   eventId: string
   name: string
-  completedAt: number
+  completedAt: datetime
+}
+
+event EventReportProgressUpdated: "events.report.progress_updated" {
+  reportId: string
+  tenantId: string
+  eventId: string
+  completion: number
+  updatedAt: datetime
 }

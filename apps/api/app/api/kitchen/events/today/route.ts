@@ -83,7 +83,6 @@ export async function GET() {
     where: {
       AND: [
         { tenantId },
-        { deletedAt: null },
         { status: { notIn: ["done", "canceled", "cancelled"] } },
       ],
     },

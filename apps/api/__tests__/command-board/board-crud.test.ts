@@ -145,6 +145,12 @@ describe("Command Board CRUD Tests", () => {
 
         // Setup manifest runtime mock
         const mockRuntime = {
+          // The canonical runManifestCommand create path seeds the instance via
+          // runtime.createInstance(...) (execute-command.ts) before
+          // runCommand. The mock runtime must expose it (and getInstance, used as a
+          // success-path fallback) or the create throws "createInstance is not a function".
+          createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
+          getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
             success: true,
             result: {
@@ -208,6 +214,12 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // The canonical runManifestCommand create path seeds the instance via
+          // runtime.createInstance(...) (execute-command.ts) before
+          // runCommand. The mock runtime must expose it (and getInstance, used as a
+          // success-path fallback) or the create throws "createInstance is not a function".
+          createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
+          getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
             success: true,
             result: { id: TEST_BOARD_ID, name: "Cloned Board" },
@@ -242,6 +254,12 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // The canonical runManifestCommand create path seeds the instance via
+          // runtime.createInstance(...) (execute-command.ts) before
+          // runCommand. The mock runtime must expose it (and getInstance, used as a
+          // success-path fallback) or the create throws "createInstance is not a function".
+          createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
+          getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
             success: true,
             result: {
@@ -291,6 +309,12 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // The canonical runManifestCommand create path seeds the instance via
+          // runtime.createInstance(...) (execute-command.ts) before
+          // runCommand. The mock runtime must expose it (and getInstance, used as a
+          // success-path fallback) or the create throws "createInstance is not a function".
+          createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
+          getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
             success: true,
             result: { id: TEST_BOARD_ID, name: "Board", status: "draft" },
@@ -327,6 +351,12 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // The canonical runManifestCommand create path seeds the instance via
+          // runtime.createInstance(...) (execute-command.ts) before
+          // runCommand. The mock runtime must expose it (and getInstance, used as a
+          // success-path fallback) or the create throws "createInstance is not a function".
+          createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
+          getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
             success: true,
             result: { id: TEST_BOARD_ID, eventId: "event_123" },

@@ -2,26 +2,33 @@
 // Manifest spec for departmental and project budgets
 
 entity Budget {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
   property description: string = ""
-  property fiscalYear: number = 0
-  property totalAmount: number = 0
-  property allocatedAmount: number = 0
-  property spentAmount: number = 0
+  property fiscalYear: int = 0
+  property totalAmount: money = 0
+  property allocatedAmount: money = 0
+  property spentAmount: money = 0
   property status: string = "draft"
   property category: string = "general"
   property departmentId: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property approvedBy: string = ""
+  property approvedAt: datetime
+  property lockedAt: datetime
+  timestamps
 
-  computed remainingAmount: number = self.allocatedAmount - self.spentAmount
-  computed percentUsed: number = self.allocatedAmount > 0 ? (self.spentAmount / self.allocatedAmount) * 100 : 0
+  computed remainingAmount: money = self.allocatedAmount - self.spentAmount
+  computed percentUsed: number = percent(self.spentAmount, self.allocatedAmount)
   computed isOverBudget: boolean = self.spentAmount > self.allocatedAmount
 
   constraint validStatus: self.status in ["draft", "active", "closed", "archived"] "Invalid budget status"
   constraint positiveAllocation: self.allocatedAmount >= 0 "Allocated amount cannot be negative"
+
+  transition status from "draft" to ["active", "archived"]
+  transition status from "active" to ["closed"]
+  transition status from "closed" to ["archived"]
 
   constraint warnOverBudget:block self.isOverBudget and self.status == "active" {
     messageTemplate: "Budget '{budgetName}' is over by {overAmount}"
@@ -33,7 +40,8 @@ entity Budget {
     }
   }
 
-  command create(name: string, description: string, fiscalYear: number, totalAmount: number, category: string, departmentId: string) {
+  default policy BudgetDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Budget management"
+  command create(name: string, description: string, fiscalYear: number, totalAmount: money, category: string, departmentId: string) {
     guard name != null and name != "" "Budget name is required"
     guard totalAmount > 0 "Total amount must be positive"
 
@@ -46,8 +54,6 @@ entity Budget {
     mutate status = "draft"
     mutate allocatedAmount = totalAmount
     mutate spentAmount = 0
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit BudgetCreated
   }
@@ -56,12 +62,11 @@ entity Budget {
     guard self.status != "active" "Cannot delete an active budget"
 
     mutate status = "archived"
-    mutate updatedAt = now()
 
     emit BudgetDeleted
   }
 
-  command update(name: string, description: string, fiscalYear: number, allocatedAmount: number, category: string, departmentId: string) {
+  command update(name: string, description: string, fiscalYear: number, allocatedAmount: money, category: string, departmentId: string) {
     guard name != null and name != "" "Budget name is required"
     guard allocatedAmount >= self.spentAmount "Cannot reduce allocation below spent amount"
 
@@ -71,18 +76,84 @@ entity Budget {
     mutate allocatedAmount = allocatedAmount
     mutate category = category
     mutate departmentId = departmentId
-    mutate updatedAt = now()
 
     emit BudgetUpdated
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status == "draft" "Only draft budgets can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+
+    constraint blockApproveZero:block self.allocatedAmount == 0 {
+      messageTemplate: "Cannot approve budget '{budgetName}' with zero allocated amount"
+      details: {
+        budgetName: self.name
+        fiscalYear: self.fiscalYear
+      }
+    }
+
+    mutate status = "active"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+
+    emit BudgetApproved
+  }
+
+  command lock(lockedBy: string) {
+    guard self.status == "active" "Only active budgets can be locked"
+    guard lockedBy != null and lockedBy != "" "Locker ID is required"
+
+    mutate status = "closed"
+    mutate lockedAt = now()
+
+    emit BudgetLocked
+  }
+
+  command addLineItem(lineItemName: string, amount: money, category: string) {
+    guard self.status in ["draft", "active"] "Cannot add line items to a closed or archived budget"
+    guard lineItemName != null and lineItemName != "" "Line item name is required"
+    guard amount >= 0 "Line item amount must be non-negative"
+
+    constraint warnExceedsTotal:warn self.allocatedAmount > 0 and (self.spentAmount + amount) > self.allocatedAmount {
+      messageTemplate: "Adding '{lineItemName}' would push spend past allocated amount"
+      details: {
+        budgetName: self.name
+        allocatedAmount: self.allocatedAmount
+        currentSpent: self.spentAmount
+        addedAmount: amount
+      }
+    }
+
+    mutate spentAmount = self.spentAmount + amount
+
+    emit BudgetLineItemAdded
+  }
+
+  command recordVariance(actualSpent: money, note: string) {
+    guard self.status in ["active", "closed"] "Can only record variance on active or closed budgets"
+    guard actualSpent >= 0 "Actual spent must be non-negative"
+
+    constraint warnLargeVariance:warn actualSpent > self.allocatedAmount * 1.1 {
+      messageTemplate: "Variance alert: actual spend ({actualSpent}) exceeds budget by more than 10%"
+      details: {
+        budgetName: self.name
+        allocatedAmount: self.allocatedAmount
+        actualSpent: actualSpent
+      }
+    }
+
+    mutate spentAmount = actualSpent
+
+    emit BudgetVarianceRecorded
   }
 
   command refresh() {
     guard self.status == "active" "Only active budgets can be refreshed"
 
-    mutate updatedAt = now()
 
     emit BudgetRefreshed
   }
+  store Budget in durable
 }
 
 policy FinanceCanManageBudgets execute: user.role in ["finance_manager", "manager", "admin"] "Only finance managers can manage budgets"
@@ -93,22 +164,56 @@ event BudgetCreated: "procurement.budget.created" {
   name: string
   totalAmount: number
   fiscalYear: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event BudgetDeleted: "procurement.budget.deleted" {
   budgetId: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event BudgetUpdated: "procurement.budget.updated" {
   budgetId: string
   name: string
   allocatedAmount: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event BudgetRefreshed: "procurement.budget.refreshed" {
   budgetId: string
-  refreshedAt: number
+  refreshedAt: datetime
+}
+
+event BudgetApproved: "procurement.budget.approved" {
+  budgetId: string
+  tenantId: string
+  name: string
+  allocatedAmount: number
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event BudgetLocked: "procurement.budget.locked" {
+  budgetId: string
+  tenantId: string
+  name: string
+  lockedBy: string
+  lockedAt: datetime
+}
+
+event BudgetLineItemAdded: "procurement.budget.line_item_added" {
+  budgetId: string
+  tenantId: string
+  lineItemName: string
+  amount: number
+  category: string
+  addedAt: datetime
+}
+
+event BudgetVarianceRecorded: "procurement.budget.variance_recorded" {
+  budgetId: string
+  tenantId: string
+  allocatedAmount: number
+  actualSpent: number
+  recordedAt: datetime
 }

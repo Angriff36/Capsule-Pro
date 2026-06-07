@@ -1,0 +1,462 @@
+use "./training-module-rules.manifest"
+
+event StaffMemberCreated: "staff.member.created" {
+  staffMemberId: string
+  role: string
+  firstShiftAt: datetime
+  dueAt: datetime
+}
+
+event StaffMemberFirstShiftScheduled: "staff.member.first-shift-scheduled" {
+  staffMemberId: string
+  firstShiftAt: datetime
+  dueAt: datetime
+}
+
+event SelOnboardingTrainingDefinitionCreated: "training.sel-onboarding.definition-created" {
+  id: string
+}
+
+event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.question-definition-created" {
+  id: string
+}
+
+entity SelOnboardingTrainingModuleDefinition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "sel_event_staff_onboarding"
+  property title: string = "SEL Event Staff — Onboarding Training"
+  property description: string = "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
+  property contentType: string = "interactive"
+  property contentUrl: string = "TBD"
+  property durationMinutes: int = 20
+  property category: string = "onboarding"
+  property isRequired: boolean = true
+  property passThresholdPercent: int = 80
+  property maxAttempts: int = 3
+  property requiredRole: string = "staff"
+
+  timestamps
+
+  default policy SelOnboardingTrainingModuleDefinitionAccess execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion01Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q1"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q1"
+  property sectionTitle: string = "Context"
+  property displayOrder: int = 1
+  property prompt: string = "Mangia is SEL's only catering vendor on Friday Lunch events."
+  property optionA: string = "True"
+  property optionB: string = "False"
+  property optionC: string = ""
+  property optionD: string = ""
+  property correctOptionKey: string = "B"
+  property explanation: string = "False. Mangia is not SEL's only Friday Lunch vendor."
+  property whyItMatters: string = "Staff need to understand we earn our spot."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion01Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion02Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q2"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q2"
+  property sectionTitle: string = "Context"
+  property displayOrder: int = 2
+  property prompt: string = "What is SEL's primary reason for choosing Mangia over other vendors?"
+  property optionA: string = "We are the cheapest option"
+  property optionB: string = "We are the closest to campus"
+  property optionC: string = "Professionalism, quality, and consistency"
+  property optionD: string = "We have the most staff available"
+  property correctOptionKey: string = "C"
+  property explanation: string = "SEL chooses Mangia for professionalism, quality, and consistency."
+  property whyItMatters: string = "This is the service standard every SEL shift must reinforce."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion02Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion03Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q3"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q3"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 3
+  property prompt: string = "Your WA State Food Worker Card must be current..."
+  property optionA: string = "Within 30 days of your first shift"
+  property optionB: string = "Before your first shift"
+  property optionC: string = "Within your first week"
+  property optionD: string = "By the end of your first month"
+  property correctOptionKey: string = "B"
+  property explanation: string = "Your WA State Food Worker Card must be current before your first shift."
+  property whyItMatters: string = "No current card means you are not shift-ready."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion03Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion04Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q4"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q4"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 4
+  property prompt: string = "Where do you pick up your SEL visitor badge?"
+  property optionA: string = "At your assigned building"
+  property optionB: string = "At the Mangia vehicle"
+  property optionC: string = "At Building One security desk"
+  property optionD: string = "The BOH Lead brings it to you"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Pick up the badge at Building One security desk."
+  property whyItMatters: string = "Arriving at the right check-in point prevents delays."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion04Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion05Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q5"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q5"
+  property sectionTitle: string = "Compliance"
+  property displayOrder: int = 5
+  property prompt: string = "Where must your visitor badge be worn at all times on SEL campus?"
+  property optionA: string = "In your pocket for safekeeping"
+  property optionB: string = "Clipped to your bag"
+  property optionC: string = "Above the waistline, visible at all times"
+  property optionD: string = "Anywhere comfortable"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Wear the badge above the waistline and keep it visible."
+  property whyItMatters: string = "Campus badge rules are mandatory, not optional."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion05Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion06Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q6"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q6"
+  property sectionTitle: string = "Pre-Event Workflow"
+  property displayOrder: int = 6
+  property prompt: string = "Put the pre-event steps in the correct order:"
+  property optionA: string = "Badge → Clock in → Arrive → Meet crew"
+  property optionB: string = "Arrive → Clock in → Badge → Meet crew"
+  property optionC: string = "Arrive → Badge → Clock in → Meet crew"
+  property optionD: string = "Clock in → Arrive → Badge → Meet crew"
+  property correctOptionKey: string = "B"
+  property explanation: string = "The correct order is Arrive → Clock in → Badge → Meet crew."
+  property whyItMatters: string = "The sequence matters for timekeeping, access, and crew readiness."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion06Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion07Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q7"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q7"
+  property sectionTitle: string = "Pre-Event Workflow"
+  property displayOrder: int = 7
+  property prompt: string = "When do you clock in on Nowsta?"
+  property optionA: string = "After you pick up your badge"
+  property optionB: string = "When the BOH Lead arrives"
+  property optionC: string = "At your scheduled start time when you arrive on site"
+  property optionD: string = "When service begins"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Clock in at your scheduled start time when you arrive on site."
+  property whyItMatters: string = "Nowsta timekeeping starts when you are on site and ready to work."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion07Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion08Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q8"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q8"
+  property sectionTitle: string = "Buffet Service"
+  property displayOrder: int = 8
+  property prompt: string = "During buffet service, which portion do Mangia staff always serve?"
+  property optionA: string = "Side dishes only"
+  property optionB: string = "Everything equally"
+  property optionC: string = "The protein"
+  property optionD: string = "Whatever the BOH Lead decides on the day"
+  property correctOptionKey: string = "C"
+  property explanation: string = "Mangia staff always serve the protein during buffet service."
+  property whyItMatters: string = "Serving responsibilities need to stay consistent across lines."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion08Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion09Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q9"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q9"
+  property sectionTitle: string = "Buffet Service"
+  property displayOrder: int = 9
+  property prompt: string = "What is the typical staffing configuration per buffet line?"
+  property optionA: string = "1 Server + 1 Runner"
+  property optionB: string = "3 Servers"
+  property optionC: string = "2 Servers + 1 Runner"
+  property optionD: string = "2 Runners + 1 Server"
+  property correctOptionKey: string = "C"
+  property explanation: string = "A typical line uses 2 Servers and 1 Runner."
+  property whyItMatters: string = "Knowing the standard line build helps staff slot in quickly."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion09Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+entity SelOnboardingTrainingQuestion10Definition {
+  key [tenantId, id]
+
+  property required tenantId: string
+  property required id: string
+  property questionId: string = "sel-event-staff-onboarding-q10"
+  property moduleId: string = "training-module-sel-event-staff-onboarding"
+  property code: string = "Q10"
+  property sectionTitle: string = "Wrap-Up"
+  property displayOrder: int = 10
+  property prompt: string = "Which of the following is the correct final checkout sequence?"
+  property optionA: string = "Clock out → Return badge → Sign out → Check in with BOH Lead"
+  property optionB: string = "Check in with BOH Lead → Sign out of staff sheet → Return SEL badge → Clock out of Nowsta"
+  property optionC: string = "Return badge → Clock out → Sign out → Check in with BOH Lead"
+  property optionD: string = "Sign out → Return badge → Check in with BOH Lead → Clock out"
+  property correctOptionKey: string = "B"
+  property explanation: string = "The correct sequence is Check in with BOH Lead → Sign out → Return badge → Clock out."
+  property whyItMatters: string = "The checkout order closes accountability and campus access correctly."
+
+  timestamps
+
+  default policy SelOnboardingTrainingQuestion10Access execute: user.role in ["admin", "manager", "system"]
+
+  command create() {
+    emit SelOnboardingTrainingQuestionDefinitionCreated
+  }
+
+  store in memory
+}
+
+saga InstallSelOnboardingTraining {
+  step moduleDefinition {
+    command: SelOnboardingTrainingModuleDefinition.create
+  }
+
+  step question01 {
+    command: SelOnboardingTrainingQuestion01Definition.create
+  }
+
+  step question02 {
+    command: SelOnboardingTrainingQuestion02Definition.create
+  }
+
+  step question03 {
+    command: SelOnboardingTrainingQuestion03Definition.create
+  }
+
+  step question04 {
+    command: SelOnboardingTrainingQuestion04Definition.create
+  }
+
+  step question05 {
+    command: SelOnboardingTrainingQuestion05Definition.create
+  }
+
+  step question06 {
+    command: SelOnboardingTrainingQuestion06Definition.create
+  }
+
+  step question07 {
+    command: SelOnboardingTrainingQuestion07Definition.create
+  }
+
+  step question08 {
+    command: SelOnboardingTrainingQuestion08Definition.create
+  }
+
+  step question09 {
+    command: SelOnboardingTrainingQuestion09Definition.create
+  }
+
+  step question10 {
+    command: SelOnboardingTrainingQuestion10Definition.create
+  }
+
+  on_failure: "abort"
+}
+
+on SelOnboardingTrainingDefinitionCreated run TrainingModule.create
+  resolve payload.result.moduleId
+  params {
+    id: payload.result.moduleId
+    code: payload.result.code
+    title: payload.result.title
+    description: payload.result.description
+    contentUrl: payload.result.contentUrl
+    contentType: payload.result.contentType
+    durationMinutes: payload.result.durationMinutes
+    category: payload.result.category
+    isRequired: payload.result.isRequired
+    passThresholdPercent: payload.result.passThresholdPercent
+    maxAttempts: payload.result.maxAttempts
+    requiredRole: payload.result.requiredRole
+    createdBy: "system"
+    publishImmediately: true
+  }
+
+on SelOnboardingTrainingQuestionDefinitionCreated run TrainingQuestion.create
+  resolve payload.result.questionId
+  params {
+    id: payload.result.questionId
+    moduleId: payload.result.moduleId
+    code: payload.result.code
+    sectionTitle: payload.result.sectionTitle
+    displayOrder: payload.result.displayOrder
+    prompt: payload.result.prompt
+    optionA: payload.result.optionA
+    optionB: payload.result.optionB
+    optionC: payload.result.optionC
+    optionD: payload.result.optionD
+    correctOptionKey: payload.result.correctOptionKey
+    explanation: payload.result.explanation
+    whyItMatters: payload.result.whyItMatters
+  }
+
+on StaffMemberCreated run TrainingAssignment.create
+  resolve uuid()
+  params {
+    id: uuid()
+    moduleId: "training-module-sel-event-staff-onboarding"
+    moduleCode: "sel_event_staff_onboarding"
+    moduleTitle: "SEL Event Staff — Onboarding Training"
+    staffMemberId: payload.staffMemberId
+    staffRole: payload.role
+    passThresholdPercent: 80
+    maxAttempts: 3
+    firstShiftAt: payload.firstShiftAt
+    dueAt: payload.dueAt
+    dueDateReviewNeeded: true
+  }
+
+on StaffMemberFirstShiftScheduled run TrainingAssignment.applyFirstShiftDueDate
+  resolve payload.staffMemberId
+  params {
+    assignmentId: payload.assignmentId
+    moduleId: "training-module-sel-event-staff-onboarding"
+    staffMemberId: payload.staffMemberId
+    firstShiftAt: payload.firstShiftAt
+    dueAt: payload.dueAt
+  }

@@ -363,7 +363,6 @@ export async function GET(request: NextRequest) {
                   database.kitchenTask.findMany({
                     where: {
                       tenantId,
-                      deletedAt: null,
                       title: { contains: q, mode: "insensitive" },
                     },
                     select: {
@@ -381,7 +380,6 @@ export async function GET(request: NextRequest) {
                   database.kitchenTask.count({
                     where: {
                       tenantId,
-                      deletedAt: null,
                       title: { contains: q, mode: "insensitive" },
                     },
                   }),

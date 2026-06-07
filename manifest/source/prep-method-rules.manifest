@@ -1,7 +1,9 @@
 // Kitchen Ops - Prep Method Rules
 // Manifest spec for preparation method catalog, duration estimates, and certification requirements
+// PrepMethod is a simple config catalog — enriched with reactivate command.
 
 entity PrepMethod {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
@@ -10,13 +12,14 @@ entity PrepMethod {
   property estimatedDurationMinutes: decimal = 0
   property requiresCertification: string = ""
   property isActive: boolean = true
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
   computed hasDuration: boolean = self.estimatedDurationMinutes > 0
   computed hasCertification: boolean = self.requiresCertification != ""
   computed isDeactivated: boolean = self.isActive == false
+
+  relationship hasMany videos: MethodVideo
 
   constraint requireName: self.name != "" "Prep method name is required"
   constraint positiveDuration: self.estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
@@ -29,6 +32,7 @@ entity PrepMethod {
     }
   }
 
+  default policy PrepMethodDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Prep method management"
   command create(name: string, category: string, description: string, estimatedDurationMinutes: number, requiresCertification: string) {
     guard name != null and name != "" "Prep method name is required"
     guard estimatedDurationMinutes >= 0 "Estimated duration cannot be negative"
@@ -39,8 +43,6 @@ entity PrepMethod {
     mutate estimatedDurationMinutes = estimatedDurationMinutes
     mutate requiresCertification = requiresCertification
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PrepMethodCreated
   }
@@ -55,7 +57,6 @@ entity PrepMethod {
     mutate description = description
     mutate estimatedDurationMinutes = estimatedDurationMinutes
     mutate requiresCertification = requiresCertification
-    mutate updatedAt = now()
 
     emit PrepMethodUpdated
   }
@@ -63,10 +64,27 @@ entity PrepMethod {
   command deactivate(reason: string, userId: string) {
     guard self.isActive "Prep method is already deactivated"
 
+    constraint warnInUse:warn true {
+      messageTemplate: "Deactivating prep method '{methodName}' — verify it is not referenced in active recipe versions"
+      details: {
+        methodName: self.name
+        methodId: self.id
+        reason: reason
+      }
+    }
+
     mutate isActive = false
-    mutate updatedAt = now()
 
     emit PrepMethodDeactivated
+  }
+
+  // Reactivate a previously deactivated prep method — makes it available again for recipe authoring.
+  command reactivate(userId: string) {
+    guard self.isActive == false "Prep method is already active"
+
+    mutate isActive = true
+
+    emit PrepMethodReactivated
   }
 
   store PrepMethod in durable
@@ -82,7 +100,7 @@ event PrepMethodCreated: "kitchen.prepmethod.created" {
   category: string
   estimatedDurationMinutes: number
   requiresCertification: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event PrepMethodUpdated: "kitchen.prepmethod.updated" {
@@ -91,7 +109,7 @@ event PrepMethodUpdated: "kitchen.prepmethod.updated" {
   category: string
   estimatedDurationMinutes: number
   requiresCertification: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
@@ -99,5 +117,13 @@ event PrepMethodDeactivated: "kitchen.prepmethod.deactivated" {
   name: string
   reason: string
   userId: string
-  deactivatedAt: number
+  deactivatedAt: datetime
+}
+
+event PrepMethodReactivated: "kitchen.prepmethod.reactivated" {
+  prepMethodId: string
+  tenantId: string
+  name: string
+  userId: string
+  reactivatedAt: datetime
 }

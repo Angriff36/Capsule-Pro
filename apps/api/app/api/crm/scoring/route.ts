@@ -136,31 +136,50 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Invalid field" }, { status: 400 });
     }
 
-    const rule = await database.$queryRaw<
-      Array<{
-        id: string;
-        tenant_id: string;
-        rule_name: string;
-        field: string;
-        condition: string;
-        value: string;
-        points: number;
-        is_active: boolean;
-        priority: number;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_crm.crm_scoring_rules
-          (tenant_id, rule_name, field, condition, value, points, is_active, priority)
-        VALUES
-          (${tenantId}::uuid, ${rule_name}, ${field}, ${condition}, ${String(value)}, ${Number(points)}, ${Boolean(is_active)}, ${Number(priority)})
-        RETURNING id, tenant_id, rule_name, field, condition, value, points, is_active, priority, created_at, updated_at
-      `
-    );
+    const rule = await database.crmScoringRule.create({
+      data: {
+        tenantId,
+        ruleName: rule_name,
+        field,
+        condition,
+        value: String(value),
+        points: Number(points),
+        isActive: Boolean(is_active),
+        priority: Number(priority),
+      },
+      select: {
+        id: true,
+        tenantId: true,
+        ruleName: true,
+        field: true,
+        condition: true,
+        value: true,
+        points: true,
+        isActive: true,
+        priority: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-    return NextResponse.json({ data: rule[0] }, { status: 201 });
+    return NextResponse.json(
+      {
+        data: {
+          id: rule.id,
+          tenant_id: rule.tenantId,
+          rule_name: rule.ruleName,
+          field: rule.field,
+          condition: rule.condition,
+          value: rule.value,
+          points: rule.points,
+          is_active: rule.isActive,
+          priority: rule.priority,
+          created_at: rule.createdAt,
+          updated_at: rule.updatedAt,
+        },
+      },
+      { status: 201 }
+    );
   } catch (error) {
     captureException(error);
     log.error("Error creating scoring rule:", error);

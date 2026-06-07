@@ -3,7 +3,8 @@ import { database, Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * POST /api/payroll/timecards/generate
@@ -32,7 +33,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -208,34 +209,46 @@ export async function POST(request: NextRequest) {
     }> = [];
 
     if (!dryRun && needsEntry.length > 0) {
-      // Create time entries for shifts that don't have them
+      // Resolve user context for Manifest commands
+      const currentUser = await resolveCurrentUser(request);
+
+      // Create time entries for shifts via Manifest runtime (TimeEntry.addEntry)
       for (const shift of needsEntry) {
         try {
-          const result = await database.$queryRaw<
-            Array<{
-              id: string;
-              shift_id: string;
-              employee_id: string;
-              clock_in: Date;
-            }>
-          >(
-            Prisma.sql`
-              INSERT INTO tenant_staff.time_entries (tenant_id, employee_id, location_id, shift_id, clock_in, clock_out, break_minutes, notes)
-              VALUES (
-                ${tenantId},
-                ${shift.employee_id},
-                ${shift.location_id},
-                ${shift.shift_id},
-                ${shift.shift_start},
-                ${shift.shift_end},
-                0,
-                ${"Auto-generated from schedule"}
-              )
-              RETURNING id, shift_id, employee_id, clock_in
-            `
-          );
-          if (result.length > 0) {
-            createdEntries.push(result[0]);
+          const result = await runManifestCommand({
+            entity: "TimeEntry",
+            command: "addEntry",
+            body: {
+              employeeId: shift.employee_id,
+              locationId: shift.location_id || "",
+              shiftId: shift.shift_id,
+              clockIn: new Date(shift.shift_start).getTime(),
+              clockOut: new Date(shift.shift_end).getTime(),
+              breakMinutes: 0,
+              notes: "Auto-generated from schedule",
+            },
+            user: {
+              id: currentUser.id,
+              tenantId: currentUser.tenantId,
+              role: currentUser.role,
+            },
+          });
+
+          if (result.status < 400) {
+            const resultData = await result.json().catch(() => null);
+            const id = (resultData as Record<string, unknown> | null)?.result
+              ? String(((resultData as Record<string, unknown>).result as Record<string, unknown>)?.id ?? crypto.randomUUID())
+              : crypto.randomUUID();
+            createdEntries.push({
+              id,
+              shift_id: shift.shift_id,
+              employee_id: shift.employee_id,
+              clock_in: shift.shift_start,
+            });
+          } else {
+            log.error(`Manifest TimeEntry.addEntry failed for shift ${shift.shift_id}`, {
+              status: result.status,
+            });
           }
         } catch (err) {
           log.error(

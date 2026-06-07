@@ -1,26 +1,18 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireTenantId } from "../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
 
 export type CreateBoardResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-/**
- * Create a Command Board and redirect to its detail page.
- *
- * Why direct Prisma write: the manifest runtime in `apps/api` enforces guards
- * for command-board commands, but the apps/app side already does direct
- * Prisma writes for other server actions (events/clients) — the runtime is
- * an apps/api concern. RLS is enabled on `tenant_events.command_boards` and
- * `tenantId` scoping prevents cross-tenant writes.
- */
+/** Create a Command Board and redirect to its detail page. Governed via CommandBoard.create. */
 export const createCommandBoard = async (formData: FormData) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
   const name = (formData.get("name") ?? "").toString().trim();
   const description = (formData.get("description") ?? "").toString().trim();
@@ -29,40 +21,68 @@ export const createCommandBoard = async (formData: FormData) => {
     throw new Error("Board name is required");
   }
 
-  const id = randomUUID();
-
-  await database.commandBoard.create({
-    data: {
-      tenantId,
-      id,
+  const result = await runManifestCommand({
+    entity: "CommandBoard",
+    command: "create",
+    body: {
       name,
-      description: description || null,
-      status: "draft",
+      description: description || "",
+      eventId: "",
       isTemplate: false,
       tags: [],
       autoPopulate: false,
+      scope: "{}",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create board");
+  }
+
+  const id = (result.result as { id?: string } | null)?.id;
+  if (!id) {
+    throw new Error("CommandBoard.create did not return an id");
+  }
 
   revalidatePath("/command-board");
   redirect(`/command-board/${id}`);
 };
 
-/** Move a card to new canvas coordinates. */
+/** Move a card to new canvas coordinates. Governed via CommandBoardCard.move. */
 export const moveCardAction = async (
   cardId: string,
   positionX: number,
   positionY: number
 ) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
-  await database.commandBoardCard.update({
-    where: { tenantId_id: { tenantId, id: cardId } },
-    data: { positionX, positionY },
+  const result = await runManifestCommand({
+    entity: "CommandBoardCard",
+    command: "move",
+    instanceId: cardId,
+    body: {
+      newPositionX: positionX,
+      newPositionY: positionY,
+      newZIndex: 0,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to move card");
+  }
 };
 
-/** Bulk-update properties on multiple cards (status, color, cardType). */
+/**
+ * Bulk-update properties on multiple cards (status, color, cardType).
+ *
+ * TODO: No bulk governed command exists — CommandBoardCard.update operates on a
+ * single instance. Migrating to per-card commands would change this from one
+ * UPDATE … WHERE id IN (…) to N individual governed commands, which changes
+ * the atomicity guarantee. Keep as direct Prisma until a bulk command is added
+ * to the IR.
+ */
 export const bulkUpdateCardsAction = async (
   cardIds: string[],
   updates: { status?: string; color?: string; cardType?: string }
@@ -77,7 +97,13 @@ export const bulkUpdateCardsAction = async (
   });
 };
 
-/** Restore cards to previous state (undo support). */
+/**
+ * Restore cards to previous state (undo support).
+ *
+ * TODO: Multi-entity $transaction spanning N cards. No bulk governed command
+ * exists. Keep as direct Prisma — migrating would require N sequential
+ * CommandBoardCard.update calls without transactional guarantees.
+ */
 export const bulkRestoreCardsAction = async (
   cards: Array<{
     id: string;
@@ -115,28 +141,38 @@ export const createGroupAction = async (
   width: number,
   height: number
 ) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
-  const groupId = randomUUID();
-
-  await database.commandBoardGroup.create({
-    data: {
-      tenantId,
-      id: groupId,
+  // Governed write: CommandBoardGroup.create
+  const result = await runManifestCommand({
+    entity: "CommandBoardGroup",
+    command: "create",
+    body: {
       boardId,
       name,
-      color: color || null,
-      collapsed: false,
+      color: color || "",
       positionX,
       positionY,
       width,
       height,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create group");
+  }
+
+  const groupId = (result.result as { id?: string } | null)?.id;
+  if (!groupId) {
+    throw new Error("CommandBoardGroup.create did not return an id");
+  }
+
+  // TODO: Card group assignment is a bulk updateMany with no governed equivalent.
+  // Keep as direct Prisma until a bulk assign-to-group command is added.
   if (cardIds.length > 0) {
     await database.commandBoardCard.updateMany({
-      where: { tenantId, id: { in: cardIds }, deletedAt: null },
+      where: { tenantId: user.tenantId, id: { in: cardIds }, deletedAt: null },
       data: { groupId },
     });
   }
@@ -144,7 +180,11 @@ export const createGroupAction = async (
   return { id: groupId };
 };
 
-/** Remove cards from their group (set groupId to null). */
+/**
+ * Remove cards from their group (set groupId to null).
+ *
+ * TODO: Bulk updateMany with no governed equivalent. Keep as direct Prisma.
+ */
 export const ungroupCardsAction = async (cardIds: string[]) => {
   if (cardIds.length === 0) return;
 
@@ -156,7 +196,11 @@ export const ungroupCardsAction = async (cardIds: string[]) => {
   });
 };
 
-/** Assign cards to an existing group. */
+/**
+ * Assign cards to an existing group.
+ *
+ * TODO: Bulk updateMany with no governed equivalent. Keep as direct Prisma.
+ */
 export const assignToGroupAction = async (
   cardIds: string[],
   groupId: string
@@ -171,31 +215,56 @@ export const assignToGroupAction = async (
   });
 };
 
-/** Toggle group collapsed state. */
+/** Toggle group collapsed state. Governed via CommandBoardGroup.update. */
 export const toggleGroupCollapseAction = async (
   groupId: string,
   collapsed: boolean
 ) => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
-  await database.commandBoardGroup.update({
-    where: { tenantId_id: { tenantId, id: groupId } },
-    data: { collapsed },
+  const result = await runManifestCommand({
+    entity: "CommandBoardGroup",
+    command: "update",
+    instanceId: groupId,
+    body: {
+      newName: "", // unchanged — IR requires all params; store ignores empty
+      newColor: "",
+      newCollapsed: collapsed,
+      newPositionX: 0,
+      newPositionY: 0,
+      newWidth: 0,
+      newHeight: 0,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to toggle group collapse");
+  }
 };
 
 /** Delete a group (soft delete) and unassign its cards. */
 export const deleteGroupAction = async (groupId: string) => {
-  const tenantId = await requireTenantId();
-  const now = new Date();
+  const user = await requireCurrentUser();
 
+  // TODO: Card unassignment is bulk updateMany with no governed equivalent.
   await database.commandBoardCard.updateMany({
-    where: { tenantId, groupId, deletedAt: null },
+    where: { tenantId: user.tenantId, groupId, deletedAt: null },
     data: { groupId: null },
   });
 
-  await database.commandBoardGroup.update({
-    where: { tenantId_id: { tenantId, id: groupId } },
-    data: { deletedAt: now },
+  // Governed write: CommandBoardGroup.remove performs soft delete
+  const result = await runManifestCommand({
+    entity: "CommandBoardGroup",
+    command: "remove",
+    instanceId: groupId,
+    body: {
+      userId: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete group");
+  }
 };

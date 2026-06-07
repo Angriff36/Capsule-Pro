@@ -3,6 +3,8 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import type { MenuItem, ParsedEvent } from "@repo/event-parser";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { createEventSchema } from "./validation";
 
 type EventParserModule = typeof import("@repo/event-parser");
@@ -13,6 +15,8 @@ const getEventParser = () => {
   eventParserPromise ??= import("@repo/event-parser");
   return eventParserPromise;
 };
+
+type ManifestUser = { id: string; tenantId: string; role: string };
 
 type CsvRow = Record<string, string>;
 
@@ -794,7 +798,8 @@ const deriveMenuQuantity = (item: MenuItem, fallbackHeadcount: number) => {
 const importMenuToEvent = async (
   tenantId: string,
   eventId: string,
-  event: ParsedEvent
+  event: ParsedEvent,
+  user: ManifestUser
 ): Promise<MenuImportSummary> => {
   const summary: MenuImportSummary = {
     missingQuantities: [],
@@ -890,32 +895,50 @@ const importMenuToEvent = async (
       if (existingRecipe) {
         recipeId = existingRecipe.id;
       } else {
-        const createdRecipe = await database.recipe.create({
-          data: {
-            tenantId,
+        const recipeResult = await runManifestCommand({
+          entity: "Recipe",
+          command: "create",
+          body: {
             name: entry.name,
-            category: entry.category ?? undefined,
+            category: entry.category ?? "",
+            cuisineType: "",
+            description: "",
             tags: ["imported"],
-            isActive: true,
           },
+          user,
         });
-        recipeId = createdRecipe.id;
+        if (!recipeResult.ok) {
+          throw new Error(recipeResult.message || "Failed to create recipe");
+        }
+        recipeId = (recipeResult.result as { id?: string } | null)?.id;
         summary.createdRecipes += 1;
       }
 
-      const createdDish = await database.dish.create({
-        data: {
-          tenantId,
-          recipeId,
+      const dishResult = await runManifestCommand({
+        entity: "Dish",
+        command: "create",
+        body: {
+          recipeId: recipeId ?? "",
           name: entry.name,
-          category: entry.category ?? undefined,
-          serviceStyle: event.serviceStyle?.trim() || undefined,
-          dietaryTags: Array.from(entry.dietaryTags),
-          allergens: Array.from(entry.allergens),
-          isActive: true,
+          description: "",
+          category: entry.category ?? "",
+          serviceStyle: event.serviceStyle?.trim() || "",
+          defaultContainerId: "",
+          presentationImageUrl: "",
+          minPrepLeadDays: 0,
+          maxPrepLeadDays: 0,
+          portionSizeDescription: "",
+          dietaryTags: Array.from(entry.dietaryTags).join(","),
+          allergens: Array.from(entry.allergens).join(","),
+          pricePerPerson: 0,
+          costPerPerson: 0,
         },
+        user,
       });
-      dishId = createdDish.id;
+      if (!dishResult.ok) {
+        throw new Error(dishResult.message || "Failed to create dish");
+      }
+      dishId = (dishResult.result as { id?: string } | null)?.id;
       summary.createdDishes += 1;
     }
 
@@ -1320,6 +1343,13 @@ export const importEventFromPdf = async ({
   fileName: string;
   content: Buffer;
 }) => {
+  const currentUser = await requireCurrentUser();
+  const user: ManifestUser = {
+    id: currentUser.id,
+    tenantId: currentUser.tenantId,
+    role: currentUser.role,
+  };
+
   const { processMultipleDocuments } = await getEventParser();
   const result = await processMultipleDocuments([{ content, fileName }]);
 
@@ -1339,30 +1369,46 @@ export const importEventFromPdf = async ({
     .filter((value) => value.length > 0)
     .join("\n");
 
-  const event = await database.event.create({
-    data: {
-      tenantId,
+  const eventResult = await runManifestCommand({
+    entity: "Event",
+    command: "create",
+    body: {
+      clientId: "",
+      eventNumber: mergedEvent.number || "",
       title,
       eventType: mergedEvent.serviceStyle?.trim() || "catering",
-      eventDate,
-      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 0,
-      status: missingFields.length > 0 ? "draft" : "confirmed",
-      eventNumber: mergedEvent.number || undefined,
-      venueName: mergedEvent.venue?.name || undefined,
-      venueAddress: mergedEvent.venue?.address || undefined,
-      notes: notes.length > 0 ? notes : undefined,
+      eventDate: eventDate.toISOString(),
+      guestCount: mergedEvent.headcount > 0 ? mergedEvent.headcount : 1,
+      venueName: mergedEvent.venue?.name || "",
+      venueAddress: mergedEvent.venue?.address || "",
+      notes: notes.length > 0 ? notes : "",
       tags: buildEventTags(["imported"], missingFields),
+      status: missingFields.length > 0 ? "draft" : "confirmed",
+      budget: 0,
+      ticketPrice: 0,
+      ticketTier: "",
+      eventFormat: "",
+      accessibilityOptions: [],
+      featuredMediaUrl: "",
     },
+    user,
   });
+  if (!eventResult.ok) {
+    throw new Error(eventResult.message || "Failed to create event from PDF import");
+  }
+  const eventId = (eventResult.result as { id?: string } | null)?.id;
+  if (!eventId) {
+    throw new Error("Event create succeeded but returned no ID");
+  }
 
-  await importMenuToEvent(tenantId, event.id, mergedEvent);
+  await importMenuToEvent(tenantId, eventId, mergedEvent, user);
 
   const doc = result.documents[0];
 
   await database.eventImport.create({
     data: {
       tenantId,
-      eventId: event.id,
+      eventId,
       fileName,
       mimeType: "application/pdf",
       fileSize: content.byteLength,
@@ -1381,5 +1427,5 @@ export const importEventFromPdf = async ({
     },
   });
 
-  return event.id;
+  return eventId;
 };

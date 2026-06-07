@@ -8,7 +8,9 @@
  */
 
 import { database } from "@repo/database";
+import { log } from "@repo/observability/log";
 import { notFound } from "next/navigation";
+import { runManifestCommand } from "@/lib/manifest-command";
 import { ProposalViewClient } from "./proposal-view-client";
 
 interface PublicProposalViewPageProps {
@@ -199,23 +201,32 @@ const PublicProposalViewPage = async ({
   const isExpired =
     proposal.validUntil && new Date(proposal.validUntil) < new Date();
 
-  // Update viewedAt timestamp if this is the first view
-  if (!proposal.viewedAt) {
+  // Mark proposal as viewed via governed Manifest command (first view only)
+  if (!proposal.viewedAt && proposal.status === "sent") {
     try {
-      await database.proposal.update({
-        where: {
-          tenantId_id: {
-            tenantId: proposal.tenantId,
-            id: proposal.id,
-          },
-        },
-        data: {
-          viewedAt: new Date(),
-          status: proposal.status === "sent" ? "viewed" : proposal.status,
-        },
+      // Synthetic system-user context for public route (no Clerk auth)
+      const adminUser = await database.user.findFirst({
+        where: { tenantId: proposal.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+        select: { id: true, role: true },
       });
-    } catch {
-      // Non-critical: viewedAt tracking failure shouldn't block page render
+      const systemUser = {
+        id: adminUser?.id ?? "system",
+        tenantId: proposal.tenantId,
+        role: adminUser?.role ?? "admin",
+      };
+      await runManifestCommand({
+        entity: "Proposal",
+        command: "markViewed",
+        body: {
+          id: proposal.id,
+          tenantId: proposal.tenantId,
+          viewedByInfo: "public-link",
+        },
+        user: systemUser,
+      });
+    } catch (err) {
+      // Non-critical: markViewed failure must not block page render
+      log.error("Failed to mark proposal as viewed via Manifest:", err);
     }
   }
 

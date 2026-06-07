@@ -2,7 +2,7 @@
  * API Keys Management Endpoint
  *
  * GET /api/settings/api-keys - List all API keys for the tenant
- * POST /api/settings/api-keys - Create a new API key
+ * POST /api/settings/api-keys - Create a new API key (Manifest runtime)
  */
 
 import { database } from "@repo/database";
@@ -11,6 +11,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { API_SCOPES, VALID_SCOPES } from "@/lib/api-scopes";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { requireDualAuth } from "@/middleware/dual-auth";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
@@ -64,7 +65,7 @@ export const GET = withRateLimit(
 
 /**
  * POST /api/settings/api-keys
- * Create a new API key
+ * Create a new API key (delegated to Manifest runtime)
  *
  * Body: { name: string, scopes?: string[], expiresAt?: string }
  */
@@ -123,45 +124,40 @@ export const POST = withRateLimit(
         );
       }
 
-      // Generate the API key
+      // Generate the API key (crypto — must happen outside Manifest)
       const { plainKey, hashedKey, keyPrefix } = generateApiKey();
 
-      // Create the API key record
-      const apiKey = await database.apiKey.create({
-        data: {
-          tenantId: authResult.tenantId,
+      // Delegate creation to Manifest runtime
+      const result = await runManifestCommand({
+        entity: "ApiKey",
+        command: "create",
+        body: {
           name,
           keyPrefix,
           hashedKey,
           scopes: requestedScopes,
           expiresAt: expiresAt ? new Date(expiresAt as string) : null,
           createdByUserId: authResult.userId!,
+          tenantId: authResult.tenantId,
         },
-        select: {
-          id: true,
-          name: true,
-          keyPrefix: true,
-          scopes: true,
-          expiresAt: true,
-          createdAt: true,
+        user: {
+          id: authResult.userId!,
+          tenantId: authResult.tenantId!,
+          role: "admin",
         },
       });
 
-      log.info("[ApiKeys/create] Created API key", {
-        tenantId: authResult.tenantId,
-        keyId: apiKey.id,
-        name: apiKey.name,
-        userId: authResult.userId,
-      });
+      // Merge plainKey into the response so the caller sees it once
+      if (result.status === 200 || result.status === 201) {
+        const responseData = (await result.json()) as Record<string, unknown>;
+        const record = (responseData.result ?? responseData) as Record<
+          string,
+          unknown
+        >;
+        return NextResponse.json({ ...record, plainKey }, { status: 201 });
+      }
 
-      // Return the key WITH the plain key (only time it's shown)
-      return NextResponse.json(
-        {
-          ...apiKey,
-          plainKey, // Only returned on creation
-        },
-        { status: 201 }
-      );
+      return result;
     } catch (error) {
       captureException(error);
       log.error("[ApiKeys/create] Error:", error);

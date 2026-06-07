@@ -42,9 +42,9 @@ interface EventSummaryData {
     dietaryTags: string[];
   }>;
   staffAssignments: Array<{
-    role: string;
-    startTime: Date | null;
-    endTime: Date | null;
+    role: string | null;
+    shiftStart: number | null;
+    shiftEnd: number | null;
   }>;
   allergenWarnings: Array<{
     severity: string;
@@ -137,7 +137,7 @@ async function getEventDataForSummary(
     .filter((d): d is NonNullable<typeof d> => d !== null);
 
   // Fetch staff assignments
-  const staffAssignments = await database.eventStaffAssignment.findMany({
+  const staffAssignments = await database.eventStaff.findMany({
     where: {
       tenantId,
       eventId,
@@ -145,10 +145,10 @@ async function getEventDataForSummary(
     },
     select: {
       role: true,
-      startTime: true,
-      endTime: true,
+      shiftStart: true,
+      shiftEnd: true,
     },
-    orderBy: { startTime: "asc" },
+    orderBy: { shiftStart: "asc" },
   });
 
   // Fetch allergen warnings for this event
@@ -189,8 +189,8 @@ async function getEventDataForSummary(
     dishes: dishesWithDetails,
     staffAssignments: staffAssignments.map((s) => ({
       role: s.role,
-      startTime: s.startTime,
-      endTime: s.endTime,
+      shiftStart: s.shiftStart,
+      shiftEnd: s.shiftEnd,
     })),
     allergenWarnings: allergenWarnings.map((w) => ({
       severity: w.severity,

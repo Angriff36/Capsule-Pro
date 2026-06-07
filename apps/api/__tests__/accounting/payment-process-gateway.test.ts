@@ -22,8 +22,9 @@
  *   - The route handler MUST NOT call `request.json()`.
  *   - The persisted `gatewayTransactionId` MUST be the value returned by
  *     `processPaymentGateway`, not anything from the body.
- *   - When `processPaymentGateway` returns `success: false`, the payment
- *     is marked FAILED and the invoice is NOT mutated.
+ *   - When `processPaymentGateway` returns `success: false`, the manifest
+ *     runtime receives "processFailed" (not "process") and the invoice is
+ *     NOT mutated by this handler directly.
  *   - The gateway call receives server-side payment metadata
  *     (`payment.amount`, `payment.currency`, `payment.id`, `tenantId`)
  *     never values from the body.
@@ -39,30 +40,36 @@ const INVOICE_ID = "22222222-2222-2222-2222-222222222222";
 
 const mocks = vi.hoisted(() => ({
   paymentFindFirstMock: vi.fn(),
-  paymentUpdateMock: vi.fn(),
-  invoiceFindFirstMock: vi.fn(),
-  invoiceUpdateMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   processPaymentGatewayMock: vi.fn(),
   checkRateLimitMock: vi.fn(),
+  manifestRunCommandMock: vi.fn(),
+}));
+
+// Mock manifest runtime to avoid DATABASE_URL env validation at import time.
+// The route now uses manifestRuntime.runCommand() for mutations.
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn().mockResolvedValue({
+    runCommand: mocks.manifestRunCommandMock,
+  }),
 }));
 
 vi.mock("@repo/database", () => ({
   database: {
     payment: {
       findFirst: mocks.paymentFindFirstMock,
-      update: mocks.paymentUpdateMock,
-    },
-    invoice: {
-      findFirst: mocks.invoiceFindFirstMock,
-      update: mocks.invoiceUpdateMock,
     },
   },
 }));
 
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
+  resolveCurrentUser: vi.fn().mockResolvedValue({
+    id: "user-test",
+    tenantId: "00000000-0000-0000-0000-000000000001",
+    role: "finance_manager",
+  }),
 }));
 
 // P1.AM: PUT /payments/[id] now gates on manager-tier role. Stub auth-roles
@@ -99,6 +106,10 @@ vi.mock("@/middleware/rate-limiter", () => ({
   checkRateLimit: mocks.checkRateLimitMock,
 }));
 
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
 import { NextRequest } from "next/server";
 import { PUT } from "@/app/api/accounting/payments/[id]/route";
 
@@ -112,7 +123,7 @@ const pendingPayment = {
   invoiceId: INVOICE_ID,
   eventId: "33333333-3333-3333-3333-333333333333",
   clientId: null,
-  gatewayTransactionId: null,
+  gatewayTransactionId: null as string | null,
   gatewayPaymentMethodId: null,
   processor: "stripe",
   processedAt: null,
@@ -125,18 +136,6 @@ const pendingPayment = {
 
 function makePayment(overrides: Partial<typeof pendingPayment> = {}) {
   return { ...pendingPayment, ...overrides };
-}
-
-function makeInvoice(amountPaid: number, amountDue: number, status: string) {
-  return {
-    tenantId: TENANT_ID,
-    id: INVOICE_ID,
-    amountPaid,
-    amountDue,
-    status,
-    paidAt: null,
-    deletedAt: null,
-  };
 }
 
 function buildRequest(body?: unknown) {
@@ -152,32 +151,25 @@ function buildRequest(body?: unknown) {
 
 beforeEach(() => {
   mocks.paymentFindFirstMock.mockReset();
-  mocks.paymentUpdateMock.mockReset();
-  mocks.invoiceFindFirstMock.mockReset();
-  mocks.invoiceUpdateMock.mockReset();
   mocks.requireTenantIdMock.mockReset();
   mocks.captureExceptionMock.mockReset();
   mocks.processPaymentGatewayMock.mockReset();
   mocks.checkRateLimitMock.mockReset();
+  mocks.manifestRunCommandMock.mockReset();
 
   mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
-  // Default: allow all requests through. The rate-limit-specific test
-  // suite (payment-rate-limit.test.ts) overrides this to assert the 429
-  // throttle path.
   mocks.checkRateLimitMock.mockResolvedValue({
     success: true,
     limit: 20,
     remaining: 19,
     reset: new Date(Date.now() + 60_000),
   });
-  mocks.paymentUpdateMock.mockImplementation(({ data }) =>
-    Promise.resolve({
-      ...pendingPayment,
-      ...data,
-      amount: { toString: () => "100.00" },
-    })
-  );
-  mocks.invoiceUpdateMock.mockResolvedValue(undefined);
+  // Default: manifest runtime succeeds. Tests override per-case.
+  mocks.manifestRunCommandMock.mockResolvedValue({
+    success: true,
+    result: { id: PAYMENT_ID },
+    emittedEvents: [],
+  });
 });
 
 afterEach(() => {
@@ -186,9 +178,12 @@ afterEach(() => {
 
 describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary", () => {
   describe("server-side outcome", () => {
-    it("flips PENDING to COMPLETED only when the server-side gateway returns success", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+    it("delegates to manifest runtime 'process' command when gateway returns success", async () => {
+      // First findFirst returns the PENDING payment; second findFirst returns
+      // the updated payment for the response body.
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment())
+        .mockResolvedValueOnce(makePayment({ status: "COMPLETED", gatewayTransactionId: "txn_server_generated_abc" }));
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_server_generated_abc",
@@ -199,17 +194,19 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
 
       expect(res.status).toBe(200);
-      const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
-      expect(paymentUpdateArgs.data.status).toBe("COMPLETED");
-      expect(paymentUpdateArgs.data.gatewayTransactionId).toBe(
-        "txn_server_generated_abc"
+      // The route calls manifestRuntime.runCommand("process", ...) on success
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledTimes(1);
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
+        "process",
+        { gatewayTransactionId: "txn_server_generated_abc" },
+        { entityName: "Payment", instanceId: PAYMENT_ID }
       );
-      expect(paymentUpdateArgs.data.completedAt).toBeInstanceOf(Date);
     });
 
-    it("marks payment FAILED and does NOT credit invoice when gateway returns success=false", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+    it("delegates to manifest runtime 'processFailed' command when gateway returns failure", async () => {
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment())
+        .mockResolvedValueOnce(makePayment({ status: "FAILED" }));
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: false,
         transactionId: "txn_failure_attempt",
@@ -221,19 +218,20 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
 
       expect(res.status).toBe(200);
-      const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
-      expect(paymentUpdateArgs.data.status).toBe("FAILED");
-      expect(paymentUpdateArgs.data.completedAt).toBeNull();
-      // Invoice MUST NOT be touched on a failed charge — no phantom credit.
-      expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();
-      expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+      // On gateway failure, the route calls "processFailed" not "process"
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
+        "processFailed",
+        { gatewayTransactionId: "txn_failure_attempt" },
+        { entityName: "Payment", instanceId: PAYMENT_ID }
+      );
     });
   });
 
   describe("body trust boundary", () => {
-    it("ignores body.gatewayResponse.code='200' when gateway says failure", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+    it("ignores body.gatewayResponse.code='200' — gateway result is authoritative", async () => {
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment())
+        .mockResolvedValueOnce(makePayment({ status: "FAILED" }));
       // Attacker sends a forged success body...
       const attackerBody = {
         gatewayResponse: {
@@ -254,23 +252,18 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
 
       expect(res.status).toBe(200);
-      const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
-      // The body's "200" code is ignored; the persisted status reflects
-      // the server-side gateway result.
-      expect(paymentUpdateArgs.data.status).toBe("FAILED");
-      expect(paymentUpdateArgs.data.gatewayTransactionId).toBe(
-        "txn_real_outcome"
+      // The body's "200" code is ignored; the manifest receives "processFailed"
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
+        "processFailed",
+        { gatewayTransactionId: "txn_real_outcome" },
+        { entityName: "Payment", instanceId: PAYMENT_ID }
       );
-      expect(paymentUpdateArgs.data.gatewayTransactionId).not.toBe(
-        "txn_attacker_supplied"
-      );
-      // No phantom invoice credit — this is the whole point of the fix.
-      expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
     });
 
     it("ignores body.gatewayResponse.transactionId — server-generated ID is authoritative", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment())
+        .mockResolvedValueOnce(makePayment({ status: "COMPLETED", gatewayTransactionId: "txn_server_authoritative" }));
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_server_authoritative",
@@ -286,18 +279,18 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
         { params: Promise.resolve({ id: PAYMENT_ID }) }
       );
 
-      const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
-      expect(paymentUpdateArgs.data.gatewayTransactionId).toBe(
-        "txn_server_authoritative"
-      );
-      expect(paymentUpdateArgs.data.gatewayTransactionId).not.toBe(
-        "txn_attacker_forged_id"
+      // The gateway result ID is what gets passed to manifest, not the body's
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
+        "process",
+        { gatewayTransactionId: "txn_server_authoritative" },
+        { entityName: "Payment", instanceId: PAYMENT_ID }
       );
     });
 
     it("succeeds with no request body at all (handler must not depend on body)", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment())
+        .mockResolvedValueOnce(makePayment({ status: "COMPLETED" }));
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_no_body",
@@ -308,17 +301,19 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
 
       expect(res.status).toBe(200);
-      const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
-      expect(paymentUpdateArgs.data.status).toBe("COMPLETED");
+      expect(mocks.manifestRunCommandMock).toHaveBeenCalledWith(
+        "process",
+        { gatewayTransactionId: "txn_no_body" },
+        { entityName: "Payment", instanceId: PAYMENT_ID }
+      );
     });
   });
 
   describe("gateway invocation contract", () => {
     it("calls gateway with server-side payment metadata, never values from body", async () => {
-      mocks.paymentFindFirstMock.mockResolvedValue(
-        makePayment({ currency: "USD" })
-      );
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
+      mocks.paymentFindFirstMock
+        .mockResolvedValueOnce(makePayment({ currency: "USD" }))
+        .mockResolvedValueOnce(makePayment({ currency: "USD", status: "COMPLETED" }));
       mocks.processPaymentGatewayMock.mockResolvedValue({
         success: true,
         transactionId: "txn_ok",
@@ -346,9 +341,8 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
     });
 
-    it("calls gateway BEFORE mutating payment or invoice (no DB write on gateway throw)", async () => {
+    it("calls gateway BEFORE manifest runtime (no manifest write on gateway throw)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(0, 100, "SENT"));
       mocks.processPaymentGatewayMock.mockRejectedValue(
         new Error("network timeout")
       );
@@ -358,11 +352,9 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
       });
 
       // Handler converts the throw to 500; the contract being pinned is
-      // that no payment.update / invoice.update happens on a thrown
-      // gateway call.
+      // that no manifest mutation happens on a thrown gateway call.
       expect(res.status).toBe(500);
-      expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
-      expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+      expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
     });
   });
 
@@ -376,7 +368,7 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
 
       expect(res.status).toBe(404);
       expect(mocks.processPaymentGatewayMock).not.toHaveBeenCalled();
-      expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+      expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
     });
 
     it("rejects already-COMPLETED payment — gateway not called", async () => {
@@ -390,7 +382,7 @@ describe("PUT /api/accounting/payments/[id] (process) — gateway trust boundary
 
       expect(res.status).toBe(500);
       expect(mocks.processPaymentGatewayMock).not.toHaveBeenCalled();
-      expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+      expect(mocks.manifestRunCommandMock).not.toHaveBeenCalled();
     });
   });
 });

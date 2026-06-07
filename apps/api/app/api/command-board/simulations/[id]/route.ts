@@ -9,8 +9,10 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   BoardAnnotation,
   BoardGroup,
@@ -154,62 +156,32 @@ export async function GET(_request: Request, context: RouteContext) {
 /**
  * DELETE /api/command-board/simulations/[id] - Delete a simulation
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const { id } = await context.params;
+  const user = await resolveCurrentUser(request);
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
+  // Pre-validate: verify it's a simulation board
+  const board = await database.commandBoard.findFirst({
+    where: {
+      tenantId: user.tenantId,
+      id,
+    },
+  });
 
-    const { id } = await context.params;
-    if (!id) {
-      return NextResponse.json(
-        { message: "Simulation ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify it's a simulation board
-    const board = await database.commandBoard.findFirst({
-      where: {
-        tenantId,
-        id,
-      },
-    });
-
-    if (!(board && board.tags.includes("simulation"))) {
-      return NextResponse.json(
-        { message: "Simulation not found" },
-        { status: 404 }
-      );
-    }
-
-    // Soft delete the simulation board
-    await database.commandBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    captureException(error);
-    log.error("Failed to delete simulation:", error);
+  if (!(board && board.tags?.includes("simulation"))) {
     return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
+      { message: "Simulation not found" },
+      { status: 404 }
     );
   }
+
+  return runManifestCommand({
+    entity: "CommandBoard",
+    command: "deactivate",
+    body: {
+      id,
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

@@ -5,6 +5,8 @@ import { database } from '@repo/database';
 import { notFound } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getTenantIdForOrg } from '../../../lib/tenant';
+import { requireCurrentUser } from '@/app/lib/tenant';
+import { runManifestCommand } from '@/lib/manifest-command';
 import type { BattleBoardFull, BattleBoardImport } from '@/lib/battle-boards/types';
 
 // ── Shape stored in boardData JSON ───────────────────────────────────────────
@@ -87,19 +89,26 @@ export async function getBoardFull(boardId: string): Promise<BattleBoardFull> {
 }
 
 export async function saveBoardFull(boardId: string, full: BattleBoardFull): Promise<void> {
-  const { orgId } = await auth();
-  if (!orgId) throw new Error('Unauthorized');
-  const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
 
-  await database.battleBoard.updateMany({
-    where: { id: boardId, tenantId, deletedAt: null },
-    data: {
-      board_name: full.event_name || 'Untitled',
+  // Governed write: BattleBoard.update runs through Manifest runtime.
+  // boardData is stored as a JSON string in Manifest (property type is string).
+  const result = await runManifestCommand({
+    entity: 'BattleBoard',
+    command: 'update',
+    instanceId: boardId,
+    body: {
+      boardName: full.event_name || 'Untitled',
       status: full.status,
       notes: full.notes,
-      boardData: fullToBoardData(full) as never,
+      boardData: JSON.stringify(fullToBoardData(full)),
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || 'Failed to save battle board');
+  }
 
   revalidatePath(`/events/battle-boards/${boardId}`);
 }
@@ -108,12 +117,11 @@ export async function recordImportAction(
   boardId: string,
   entry: Omit<BattleBoardImport, 'id' | 'board_id' | 'tenant_id' | 'imported_at'>
 ): Promise<void> {
-  const { orgId } = await auth();
-  if (!orgId) throw new Error('Unauthorized');
-  const tenantId = await getTenantIdForOrg(orgId);
+  const user = await requireCurrentUser();
 
+  // Read current boardData to append the import entry (constitution §10: reads bypass runtime).
   const board = await database.battleBoard.findFirst({
-    where: { id: boardId, tenantId, deletedAt: null },
+    where: { id: boardId, tenantId: user.tenantId, deletedAt: null },
     select: { boardData: true },
   });
   if (!board) return;
@@ -123,13 +131,23 @@ export async function recordImportAction(
   const newImport: BattleBoardImport = {
     id: crypto.randomUUID(),
     board_id: boardId,
-    tenant_id: tenantId,
+    tenant_id: user.tenantId,
     imported_at: new Date().toISOString(),
     ...entry,
   };
 
-  await database.battleBoard.updateMany({
-    where: { id: boardId, tenantId, deletedAt: null },
-    data: { boardData: { ...data, imports: [...existingImports, newImport] } as never },
+  // Governed write: BattleBoard.recordImport mutates boardData via Manifest runtime.
+  const result = await runManifestCommand({
+    entity: 'BattleBoard',
+    command: 'recordImport',
+    instanceId: boardId,
+    body: {
+      boardData: JSON.stringify({ ...data, imports: [...existingImports, newImport] }),
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || 'Failed to record import');
+  }
 }

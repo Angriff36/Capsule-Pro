@@ -3,7 +3,9 @@
 /**
  * Client CRUD Server Actions
  *
- * Server actions for client management operations
+ * Server actions for client management operations.
+ * Governed writes go through runManifestCommand (constitution §3/§9).
+ * Reads remain direct Prisma (constitution §10).
  */
 
 import { auth } from "@repo/auth/server";
@@ -12,7 +14,8 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
-import { getTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser } from "@/app/lib/tenant";
 
 // Types matching the API
 export interface ClientFilters {
@@ -76,7 +79,7 @@ export async function getClients(
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
 
   const whereClause: Record<string, unknown> = {
     AND: [{ tenantId }, { deletedAt: null }],
@@ -154,7 +157,7 @@ export async function getClientCount() {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
 
   const count = await database.client.count({
     where: {
@@ -174,7 +177,7 @@ export async function getAvailableTags(): Promise<
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
 
   // Get all clients with tags
   const clients = await database.client.findMany({
@@ -201,25 +204,83 @@ export async function getAvailableTags(): Promise<
 }
 
 /**
- * Delete a tag from all clients globally
+ * Delete a tag from all clients globally.
+ *
  */
 export async function deleteTagGlobally(tag: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(tag?.trim(), "Tag name is required");
 
   const trimmedTag = tag.trim();
 
-  await database.$executeRaw`
-    UPDATE tenant_crm.clients
-    SET tags = array_remove(tags, ${trimmedTag}),
-        updated_at = now()
-    WHERE tenant_id = ${tenantId}
-      AND deleted_at IS NULL
-      AND ${trimmedTag} = ANY(tags)
-  `;
+  const clients = await database.client.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      tags: {
+        has: trimmedTag,
+      },
+    },
+    select: {
+      id: true,
+      tags: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+      email: true,
+      phone: true,
+      website: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      stateProvince: true,
+      postalCode: true,
+      countryCode: true,
+      defaultPaymentTerms: true,
+      taxExempt: true,
+      taxId: true,
+      notes: true,
+      source: true,
+      assignedTo: true,
+    },
+  });
+
+  // Govern each client's tag update through the Client.update command.
+  // Client.update has full-replace semantics, so we merge existing values.
+  for (const client of clients) {
+    const result = await runManifestCommand({
+      entity: "Client",
+      command: "update",
+      instanceId: client.id,
+      body: {
+        companyName: client.company_name || "",
+        firstName: client.first_name || "",
+        lastName: client.last_name || "",
+        email: client.email || "",
+        phone: client.phone || "",
+        website: client.website || "",
+        addressLine1: client.addressLine1 || "",
+        addressLine2: client.addressLine2 || "",
+        city: client.city || "",
+        stateProvince: client.stateProvince || "",
+        postalCode: client.postalCode || "",
+        countryCode: client.countryCode || "",
+        defaultPaymentTerms: client.defaultPaymentTerms ?? 30,
+        taxExempt: client.taxExempt ?? false,
+        taxId: client.taxId || "",
+        notes: client.notes || "",
+        tags: client.tags.filter((value) => value !== trimmedTag),
+        source: client.source || "",
+        assignedTo: client.assignedTo || "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message || `Failed to remove tag from client ${client.id}`);
+    }
+  }
 
   revalidatePath("/crm/clients");
   revalidatePath("/crm/segmentation");
@@ -234,7 +295,7 @@ export async function getClientById(id: string) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(id, "Client ID is required");
 
   const client = await database.client.findFirst({
@@ -312,16 +373,14 @@ export async function createClient(_input: CreateClientInput): Promise<never> {
 }
 
 /**
- * Update a client
+ * Update a client via governed Client.update command.
  */
 export async function updateClient(
   id: string,
   input: Partial<CreateClientInput>
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Client ID is required");
 
   // Check if client exists
@@ -349,57 +408,85 @@ export async function updateClient(
     invariant(!duplicateClient, "A client with this email already exists");
   }
 
-  const updatedClient = await database.client.update({
-    where: {
-      tenantId_id: { tenantId, id },
-    },
-    data: {
-      ...(input.company_name !== undefined && {
-        company_name: input.company_name?.trim() || null,
-      }),
-      ...(input.first_name !== undefined && {
-        first_name: input.first_name?.trim() || null,
-      }),
-      ...(input.last_name !== undefined && {
-        last_name: input.last_name?.trim() || null,
-      }),
-      ...(input.email !== undefined && { email: input.email?.trim() || null }),
-      ...(input.phone !== undefined && { phone: input.phone?.trim() || null }),
-      ...(input.website !== undefined && {
-        website: input.website?.trim() || null,
-      }),
-      ...(input.addressLine1 !== undefined && {
-        addressLine1: input.addressLine1?.trim() || null,
-      }),
-      ...(input.addressLine2 !== undefined && {
-        addressLine2: input.addressLine2?.trim() || null,
-      }),
-      ...(input.city !== undefined && { city: input.city?.trim() || null }),
-      ...(input.stateProvince !== undefined && {
-        stateProvince: input.stateProvince?.trim() || null,
-      }),
-      ...(input.postalCode !== undefined && {
-        postalCode: input.postalCode?.trim() || null,
-      }),
-      ...(input.countryCode !== undefined && {
-        countryCode: input.countryCode?.trim() || null,
-      }),
-      ...(input.defaultPaymentTerms !== undefined && {
-        defaultPaymentTerms: input.defaultPaymentTerms,
-      }),
-      ...(input.taxExempt !== undefined && { taxExempt: input.taxExempt }),
-      ...(input.taxId !== undefined && { taxId: input.taxId?.trim() || null }),
-      ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
-      ...(input.tags !== undefined && { tags: input.tags }),
-      ...(input.source !== undefined && {
-        source: input.source?.trim() || null,
-      }),
-      ...(input.assignedTo !== undefined && {
-        assignedTo: input.assignedTo || null,
-      }),
-      ...(input.clientType !== undefined && { clientType: input.clientType }),
-    },
+  // Client.update requires all params (full replace semantics).
+  // Merge existing values with provided input to build the full body.
+  const body = {
+    companyName: input.company_name !== undefined
+      ? (input.company_name?.trim() || "")
+      : (existingClient.company_name || ""),
+    firstName: input.first_name !== undefined
+      ? (input.first_name?.trim() || "")
+      : (existingClient.first_name || ""),
+    lastName: input.last_name !== undefined
+      ? (input.last_name?.trim() || "")
+      : (existingClient.last_name || ""),
+    email: input.email !== undefined
+      ? (input.email?.trim() || "")
+      : (existingClient.email || ""),
+    phone: input.phone !== undefined
+      ? (input.phone?.trim() || "")
+      : (existingClient.phone || ""),
+    website: input.website !== undefined
+      ? (input.website?.trim() || "")
+      : (existingClient.website || ""),
+    addressLine1: input.addressLine1 !== undefined
+      ? (input.addressLine1?.trim() || "")
+      : (existingClient.addressLine1 || ""),
+    addressLine2: input.addressLine2 !== undefined
+      ? (input.addressLine2?.trim() || "")
+      : (existingClient.addressLine2 || ""),
+    city: input.city !== undefined
+      ? (input.city?.trim() || "")
+      : (existingClient.city || ""),
+    stateProvince: input.stateProvince !== undefined
+      ? (input.stateProvince?.trim() || "")
+      : (existingClient.stateProvince || ""),
+    postalCode: input.postalCode !== undefined
+      ? (input.postalCode?.trim() || "")
+      : (existingClient.postalCode || ""),
+    countryCode: input.countryCode !== undefined
+      ? (input.countryCode?.trim() || "")
+      : (existingClient.countryCode || ""),
+    defaultPaymentTerms: input.defaultPaymentTerms !== undefined
+      ? input.defaultPaymentTerms
+      : (existingClient.defaultPaymentTerms ?? 30),
+    taxExempt: input.taxExempt !== undefined
+      ? input.taxExempt
+      : (existingClient.taxExempt ?? false),
+    taxId: input.taxId !== undefined
+      ? (input.taxId?.trim() || "")
+      : (existingClient.taxId || ""),
+    notes: input.notes !== undefined
+      ? (input.notes?.trim() || "")
+      : (existingClient.notes || ""),
+    tags: input.tags !== undefined
+      ? input.tags
+      : (existingClient.tags || []),
+    source: input.source !== undefined
+      ? (input.source?.trim() || "")
+      : (existingClient.source || ""),
+    assignedTo: input.assignedTo !== undefined
+      ? (input.assignedTo || "")
+      : (existingClient.assignedTo || ""),
+  };
+
+  const result = await runManifestCommand({
+    entity: "Client",
+    command: "update",
+    instanceId: id,
+    body,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update client");
+  }
+
+  // Read back the updated row to preserve return shape.
+  const updatedClient = await database.client.findFirst({
+    where: { AND: [{ tenantId }, { id }, { deletedAt: null }] },
+  });
+  invariant(updatedClient, "Updated client could not be loaded");
 
   revalidatePath("/crm/clients");
   revalidatePath(`/crm/clients/${id}`);
@@ -408,13 +495,11 @@ export async function updateClient(
 }
 
 /**
- * Delete a client (soft delete)
+ * Delete a client (soft delete) via governed Client.archive command.
  */
 export async function deleteClient(id: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(id, "Client ID is required");
 
   const existingClient = await database.client.findFirst({
@@ -425,12 +510,20 @@ export async function deleteClient(id: string) {
 
   invariant(existingClient, "Client not found");
 
-  await database.client.update({
-    where: {
-      tenantId_id: { tenantId, id },
+  const result = await runManifestCommand({
+    entity: "Client",
+    command: "archive",
+    instanceId: id,
+    body: {
+      reason: "Deleted via CRM client actions",
+      userId: user.id,
     },
-    data: { deletedAt: new Date() },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete client");
+  }
 
   revalidatePath("/crm/clients");
 
@@ -444,7 +537,7 @@ export async function getClientContacts(clientId: string) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(clientId, "Client ID is required");
 
   const contacts = await database.clientContact.findMany({
@@ -458,16 +551,14 @@ export async function getClientContacts(clientId: string) {
 }
 
 /**
- * Create a client contact
+ * Create a client contact via governed ClientContact.create command.
  */
 export async function createClientContact(
   clientId: string,
   input: CreateClientContactInput
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
 
   // Verify client exists
@@ -479,51 +570,36 @@ export async function createClientContact(
 
   invariant(client, "Client not found");
 
-  // If setting as primary, unset existing primary
-  if (input.isPrimary) {
-    await database.clientContact.updateMany({
-      where: {
-        AND: [
-          { tenantId },
-          { clientId },
-          { isPrimary: true },
-          { deletedAt: null },
-        ],
-      },
-      data: { isPrimary: false },
-    });
-  }
-
-  // If setting as billing contact, unset existing
-  if (input.isBillingContact) {
-    await database.clientContact.updateMany({
-      where: {
-        AND: [
-          { tenantId },
-          { clientId },
-          { isBillingContact: true },
-          { deletedAt: null },
-        ],
-      },
-      data: { isBillingContact: false },
-    });
-  }
-
-  const contact = await database.clientContact.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "ClientContact",
+    command: "create",
+    body: {
       clientId,
-      first_name: input.first_name.trim(),
-      last_name: input.last_name.trim(),
-      title: input.title?.trim() || null,
-      email: input.email?.trim() || null,
-      phone: input.phone?.trim() || null,
-      phoneMobile: input.phoneMobile?.trim() || null,
+      firstName: input.first_name.trim(),
+      lastName: input.last_name.trim(),
+      title: input.title?.trim() || "",
+      email: input.email?.trim() || "",
+      phone: input.phone?.trim() || "",
+      phoneMobile: input.phoneMobile?.trim() || "",
       isPrimary: input.isPrimary ?? false,
       isBillingContact: input.isBillingContact ?? false,
-      notes: input.notes?.trim() || null,
+      notes: input.notes?.trim() || "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create client contact");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "ClientContact.create did not return an id");
+
+  // Read back to preserve return shape.
+  const contact = await database.clientContact.findFirst({
+    where: { AND: [{ tenantId }, { id: createdId }] },
+  });
+  invariant(contact, "Created contact could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
 
@@ -531,17 +607,16 @@ export async function createClientContact(
 }
 
 /**
- * Update a client contact
+ * Update a client contact via governed ClientContact.update command.
+ * For isPrimary changes, uses the separate ClientContact.setPrimary command.
  */
 export async function updateClientContact(
   clientId: string,
   contactId: string,
   input: Partial<CreateClientContactInput>
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(contactId, "Contact ID is required");
 
@@ -552,65 +627,90 @@ export async function updateClientContact(
   });
   invariant(existing, "Contact not found");
 
+  // Handle isPrimary via the dedicated setPrimary command
   if (input.isPrimary) {
-    await database.clientContact.updateMany({
-      where: {
-        AND: [
-          { tenantId },
-          { clientId },
-          { isPrimary: true },
-          { deletedAt: null },
-        ],
-      },
-      data: { isPrimary: false },
+    const primaryResult = await runManifestCommand({
+      entity: "ClientContact",
+      command: "setPrimary",
+      instanceId: contactId,
+      body: { userId: user.id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!primaryResult.ok) {
+      throw new Error(primaryResult.message || "Failed to set primary contact");
+    }
   }
 
-  if (input.isBillingContact) {
-    await database.clientContact.updateMany({
-      where: {
-        AND: [
-          { tenantId },
-          { clientId },
-          { isBillingContact: true },
-          { deletedAt: null },
-        ],
-      },
-      data: { isBillingContact: false },
+  // Build update body: ClientContact.update requires all its params.
+  // Merge existing values with provided input.
+  const hasOtherChanges =
+    input.first_name !== undefined ||
+    input.last_name !== undefined ||
+    input.title !== undefined ||
+    input.email !== undefined ||
+    input.phone !== undefined ||
+    input.phoneMobile !== undefined ||
+    input.isBillingContact !== undefined ||
+    input.notes !== undefined;
+
+  if (hasOtherChanges) {
+    const body = {
+      firstName: input.first_name !== undefined
+        ? input.first_name.trim()
+        : (existing.first_name || ""),
+      lastName: input.last_name !== undefined
+        ? input.last_name.trim()
+        : (existing.last_name || ""),
+      title: input.title !== undefined
+        ? (input.title?.trim() || "")
+        : (existing.title || ""),
+      email: input.email !== undefined
+        ? (input.email?.trim() || "")
+        : (existing.email || ""),
+      phone: input.phone !== undefined
+        ? (input.phone?.trim() || "")
+        : (existing.phone || ""),
+      phoneMobile: input.phoneMobile !== undefined
+        ? (input.phoneMobile?.trim() || "")
+        : (existing.phoneMobile || ""),
+      isBillingContact: input.isBillingContact !== undefined
+        ? input.isBillingContact
+        : (existing.isBillingContact ?? false),
+      notes: input.notes !== undefined
+        ? (input.notes?.trim() || "")
+        : (existing.notes || ""),
+    };
+
+    const result = await runManifestCommand({
+      entity: "ClientContact",
+      command: "update",
+      instanceId: contactId,
+      body,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to update client contact");
+    }
   }
 
-  const contact = await database.clientContact.update({
-    where: { tenantId_id: { tenantId, id: contactId } },
-    data: {
-      ...(input.first_name !== undefined && {
-        first_name: input.first_name.trim(),
-      }),
-      ...(input.last_name !== undefined && {
-        last_name: input.last_name.trim(),
-      }),
-      ...(input.title !== undefined && { title: input.title?.trim() || null }),
-      ...(input.email !== undefined && { email: input.email?.trim() || null }),
-      ...(input.phone !== undefined && { phone: input.phone?.trim() || null }),
-      ...(input.isPrimary !== undefined && { isPrimary: input.isPrimary }),
-      ...(input.isBillingContact !== undefined && {
-        isBillingContact: input.isBillingContact,
-      }),
-    },
+  // Read back to preserve return shape.
+  const contact = await database.clientContact.findFirst({
+    where: { AND: [{ tenantId }, { id: contactId }, { clientId }] },
   });
+  invariant(contact, "Updated contact could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
   return contact;
 }
 
 /**
- * Delete a client contact (soft delete)
+ * Delete a client contact (soft delete) via governed ClientContact.remove command.
  */
 export async function deleteClientContact(clientId: string, contactId: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(contactId, "Contact ID is required");
 
@@ -621,10 +721,20 @@ export async function deleteClientContact(clientId: string, contactId: string) {
   });
   invariant(existing, "Contact not found");
 
-  await database.clientContact.update({
-    where: { tenantId_id: { tenantId, id: contactId } },
-    data: { deletedAt: new Date() },
+  const result = await runManifestCommand({
+    entity: "ClientContact",
+    command: "remove",
+    instanceId: contactId,
+    body: {
+      reason: "Deleted via CRM client actions",
+      userId: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete client contact");
+  }
 
   revalidatePath(`/crm/clients/${clientId}`);
   return { success: true };
@@ -647,7 +757,7 @@ export async function getClientInteractions(
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(clientId, "Client ID is required");
 
   const andConditions: Record<string, unknown>[] = [
@@ -692,16 +802,14 @@ export async function getClientInteractions(
 }
 
 /**
- * Create a client interaction
+ * Create a client interaction via governed ClientInteraction.create command.
  */
 export async function createClientInteraction(
   clientId: string,
   input: CreateClientInteractionInput
 ) {
-  const { orgId, userId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
 
   // Verify client exists
@@ -719,19 +827,38 @@ export async function createClientInteraction(
   // externally — there is no central Employee table to look up userId → employeeId.
   // Needed: an Employee model with a userId field linking Clerk users to employee records.
   // Until then, userId is used directly as the employeeId stand-in.
-  invariant(userId, "User ID not found");
 
-  const interaction = await database.clientInteraction.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "ClientInteraction",
+    command: "create",
+    body: {
       clientId,
-      employeeId: userId,
+      leadId: "",
+      employeeId: user.id,
       interactionType: input.interactionType.trim(),
-      subject: input.subject?.trim() || null,
-      description: input.description?.trim() || null,
-      followUpDate: input.followUpDate ? new Date(input.followUpDate) : null,
+      interactionDate: Date.now(),
+      subject: input.subject?.trim() || "",
+      description: input.description?.trim() || "",
+      followUpDate: input.followUpDate
+        ? new Date(input.followUpDate).getTime()
+        : null,
+      correlationId: "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create client interaction");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "ClientInteraction.create did not return an id");
+
+  // Read back to preserve return shape.
+  const interaction = await database.clientInteraction.findFirst({
+    where: { AND: [{ tenantId }, { id: createdId }] },
+  });
+  invariant(interaction, "Created interaction could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
 
@@ -747,17 +874,21 @@ export interface UpdateClientInteractionInput {
 }
 
 /**
- * Update a client interaction
+ * Update a client interaction.
+ *
+ * Governed via ClientInteraction.update for the fields it covers
+ * (interactionType, subject, description, followUpDate). The
+ * followUpCompleted field is NOT in the ClientInteraction.update
+ * command's mutates, so that field falls through to direct Prisma
+ * when provided.
  */
 export async function updateClientInteraction(
   clientId: string,
   interactionId: string,
   input: UpdateClientInteractionInput
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(interactionId, "Interaction ID is required");
 
@@ -784,33 +915,76 @@ export async function updateClientInteraction(
 
   invariant(existingInteraction, "Interaction not found");
 
-  // Build update data with only provided fields
-  const updateData: Record<string, unknown> = {};
+  // Determine if any fields are covered by the governed update command
+  const governedFields = [
+    "interactionType",
+    "subject",
+    "description",
+    "followUpDate",
+  ] as const;
+  const hasGovernedChanges = governedFields.some(
+    (f) => (input as Record<string, unknown>)[f] !== undefined
+  );
 
-  if (input.interactionType !== undefined) {
-    updateData.interactionType = input.interactionType.trim();
-  }
-  if (input.subject !== undefined) {
-    updateData.subject = input.subject?.trim() || null;
-  }
-  if (input.description !== undefined) {
-    updateData.description = input.description?.trim() || null;
-  }
-  if (input.followUpDate !== undefined) {
-    updateData.followUpDate = input.followUpDate
-      ? new Date(input.followUpDate)
-      : null;
-  }
-  if (input.followUpCompleted !== undefined) {
-    updateData.followUpCompleted = input.followUpCompleted;
+  if (hasGovernedChanges) {
+    // ClientInteraction.update requires all its params.
+    // Merge existing values with provided input.
+    const body = {
+      interactionType:
+        input.interactionType !== undefined
+          ? input.interactionType.trim()
+          : existingInteraction.interactionType || "",
+      subject:
+        input.subject !== undefined
+          ? (input.subject?.trim() || "")
+          : (existingInteraction.subject || ""),
+      description:
+        input.description !== undefined
+          ? (input.description?.trim() || "")
+          : (existingInteraction.description || ""),
+      followUpDate:
+        input.followUpDate !== undefined
+          ? (input.followUpDate ? new Date(input.followUpDate).getTime() : null)
+          : (existingInteraction.followUpDate
+            ? new Date(existingInteraction.followUpDate).getTime()
+            : null),
+      correlationId: "",
+    };
+
+    const result = await runManifestCommand({
+      entity: "ClientInteraction",
+      command: "update",
+      instanceId: interactionId,
+      body,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message || "Failed to update client interaction");
+    }
   }
 
-  const updatedInteraction = await database.clientInteraction.update({
-    where: {
-      tenantId_id: { tenantId, id: interactionId },
-    },
-    data: updateData,
+  // followUpCompleted is managed by the dedicated `complete` command.
+  // Use the governed command when setting to true; no-op when false
+  // (uncompleting is a niche case not covered by the lifecycle).
+  if (input.followUpCompleted === true) {
+    await runManifestCommand({
+      entity: "ClientInteraction",
+      command: "complete",
+      body: {
+        id: interactionId,
+        completionNotes: "Marked complete via interaction update",
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+  }
+
+  // Read back to preserve return shape.
+  const updatedInteraction = await database.clientInteraction.findFirst({
+    where: { AND: [{ tenantId }, { id: interactionId }] },
   });
+  invariant(updatedInteraction, "Updated interaction could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
 
@@ -818,7 +992,7 @@ export async function updateClientInteraction(
 }
 
 /**
- * Delete a client interaction (soft delete)
+ * Delete a client interaction (soft delete via Manifest runtime).
  */
 export async function deleteClientInteraction(
   clientId: string,
@@ -827,11 +1001,12 @@ export async function deleteClientInteraction(
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(interactionId, "Interaction ID is required");
 
-  // Verify client exists
+  // Verify client exists (read path — constitution §10)
   const client = await database.client.findFirst({
     where: {
       AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
@@ -840,7 +1015,7 @@ export async function deleteClientInteraction(
 
   invariant(client, "Client not found");
 
-  // Verify interaction exists and belongs to this client
+  // Verify interaction exists and belongs to this client (read path — constitution §10)
   const existingInteraction = await database.clientInteraction.findFirst({
     where: {
       AND: [
@@ -854,11 +1029,12 @@ export async function deleteClientInteraction(
 
   invariant(existingInteraction, "Interaction not found");
 
-  await database.clientInteraction.update({
-    where: {
-      tenantId_id: { tenantId, id: interactionId },
-    },
-    data: { deletedAt: new Date() },
+  await runManifestCommand({
+    entity: "ClientInteraction",
+    command: "softDelete",
+    instanceId: interactionId,
+    body: { userId: user.id },
+    user: { id: user.id, tenantId, role: user.role },
   });
 
   revalidatePath(`/crm/clients/${clientId}`);
@@ -877,7 +1053,7 @@ export async function getClientEventHistory(
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
-  const tenantId = await getTenantId();
+  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
   invariant(clientId, "Client ID is required");
 
   const events = await database.cateringOrder.findMany({
@@ -934,16 +1110,14 @@ export interface UpdateClientPreferenceInput {
 }
 
 /**
- * Create a client preference
+ * Create a client preference via governed ClientPreference.create command.
  */
 export async function createClientPreference(
   clientId: string,
   input: CreateClientPreferenceInput
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
 
   const client = await database.client.findFirst({
@@ -951,33 +1125,46 @@ export async function createClientPreference(
   });
   invariant(client, "Client not found");
 
-  const preference = await database.clientPreference.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "ClientPreference",
+    command: "create",
+    body: {
       clientId,
       preferenceType: input.preferenceType.trim(),
       preferenceKey: input.preferenceKey.trim(),
       preferenceValue: input.preferenceValue as string,
-      notes: input.notes?.trim() || null,
+      notes: input.notes?.trim() || "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create client preference");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "ClientPreference.create did not return an id");
+
+  // Read back to preserve return shape.
+  const preference = await database.clientPreference.findFirst({
+    where: { AND: [{ tenantId }, { id: createdId }] },
+  });
+  invariant(preference, "Created preference could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
   return preference;
 }
 
 /**
- * Update a client preference
+ * Update a client preference via governed ClientPreference.update command.
  */
 export async function updateClientPreference(
   clientId: string,
   preferenceId: string,
   input: UpdateClientPreferenceInput
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(preferenceId, "Preference ID is required");
 
@@ -993,37 +1180,50 @@ export async function updateClientPreference(
   });
   invariant(existing, "Preference not found");
 
-  const preference = await database.clientPreference.update({
-    where: { tenantId_id: { tenantId, id: preferenceId } },
-    data: {
-      ...(input.preferenceType !== undefined && {
-        preferenceType: input.preferenceType.trim(),
-      }),
-      ...(input.preferenceKey !== undefined && {
-        preferenceKey: input.preferenceKey.trim(),
-      }),
-      ...(input.preferenceValue !== undefined && {
-        preferenceValue: input.preferenceValue as string,
-      }),
-      ...(input.notes !== undefined && { notes: input.notes?.trim() || null }),
-    },
+  // ClientPreference.update only mutates preferenceValue and notes.
+  // Build body merging existing values with provided input.
+  const body = {
+    preferenceValue:
+      input.preferenceValue !== undefined
+        ? (input.preferenceValue as string)
+        : existing.preferenceValue,
+    notes:
+      input.notes !== undefined
+        ? (input.notes?.trim() || "")
+        : (existing.notes || ""),
+  };
+
+  const result = await runManifestCommand({
+    entity: "ClientPreference",
+    command: "update",
+    instanceId: preferenceId,
+    body,
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update client preference");
+  }
+
+  // Read back to preserve return shape.
+  const preference = await database.clientPreference.findFirst({
+    where: { AND: [{ tenantId }, { id: preferenceId }] },
+  });
+  invariant(preference, "Updated preference could not be loaded");
 
   revalidatePath(`/crm/clients/${clientId}`);
   return preference;
 }
 
 /**
- * Delete a client preference (soft delete)
+ * Delete a client preference (soft delete) via governed ClientPreference.remove command.
  */
 export async function deleteClientPreference(
   clientId: string,
   preferenceId: string
 ) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(clientId, "Client ID is required");
   invariant(preferenceId, "Preference ID is required");
 
@@ -1039,10 +1239,17 @@ export async function deleteClientPreference(
   });
   invariant(existing, "Preference not found");
 
-  await database.clientPreference.update({
-    where: { tenantId_id: { tenantId, id: preferenceId } },
-    data: { deletedAt: new Date() },
+  const result = await runManifestCommand({
+    entity: "ClientPreference",
+    command: "remove",
+    instanceId: preferenceId,
+    body: { userId: user.id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete client preference");
+  }
 
   revalidatePath(`/crm/clients/${clientId}`);
   return { success: true };

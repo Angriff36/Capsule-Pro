@@ -2,14 +2,17 @@
 // Manifest spec for alert configuration channels and destinations
 
 entity AlertsConfig {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property channel: string = ""
   property destination: string = ""
 
+  timestamps
   constraint requireChannel: self.channel != "" "Alert channel is required"
   constraint requireDestination: self.destination != "" "Alert destination is required"
 
+  default policy AlertsConfigDefaultAccess execute: user.role in ["manager", "admin"] "Alerts configuration"
   command create(channel: string, destination: string) {
     guard channel != null and channel != "" "Alert channel is required"
     guard destination != null and destination != "" "Alert destination is required"

@@ -7,11 +7,17 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+// Uses createManifestRuntime — requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 import type {
   CreateSimulationRequest,
   SimulationListItem,
@@ -183,18 +189,45 @@ export async function POST(request: NextRequest) {
     // Create simulation ID
     const simulationId = crypto.randomUUID();
 
-    // Create simulation board with metadata
-    const simulationBoard = await database.commandBoard.create({
-      data: {
-        id: simulationId,
-        tenantId,
-        name: `[Simulation] ${simulation_name}`,
-        description: `Forked from board ${source_board_id}`,
-        status: "draft",
-        isTemplate: false,
-        tags: ["simulation", `source:${source_board_id}`],
+    // Create simulation board with metadata via governed Manifest command
+    const user = await resolveCurrentUser(request);
+    const cbResult = await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
       },
-    });
+      {
+        entity: "CommandBoard",
+        command: "create",
+        body: {
+          id: simulationId,
+          tenantId,
+          name: `[Simulation] ${simulation_name}`,
+          description: `Forked from board ${source_board_id}`,
+          status: "draft",
+          isTemplate: false,
+          tags: ["simulation", `source:${source_board_id}`],
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+      }
+    );
+
+    if (!cbResult.ok) {
+      captureException(new Error(cbResult.message));
+      return NextResponse.json(
+        { message: cbResult.message },
+        { status: cbResult.httpStatus }
+      );
+    }
+
+    const simulationBoard = cbResult.result as {
+      id: string;
+      createdAt: Date;
+      [key: string]: unknown;
+    };
 
     // Deep copy projections with new IDs
     const projectionIdMap = new Map<string, string>();
@@ -274,11 +307,27 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Batch insert groups
+    // Batch insert groups via governed Manifest commands
     if (groupCopies.length > 0) {
-      await database.commandBoardGroup.createMany({
-        data: groupCopies,
-      });
+      await Promise.all(
+        groupCopies.map((group) =>
+          runManifestCommandCore(
+            {
+              createRuntime: ({ user: u, entityName }) =>
+                createManifestRuntime({
+                  user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                  entityName,
+                }),
+            },
+            {
+              entity: "CommandBoardGroup",
+              command: "create",
+              body: group,
+              user: { id: user.id, tenantId: user.tenantId, role: user.role },
+            }
+          )
+        )
+      );
     }
 
     // Batch insert annotations

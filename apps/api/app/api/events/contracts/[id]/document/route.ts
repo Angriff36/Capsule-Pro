@@ -7,13 +7,13 @@
  * @canonical true
  */
 
-import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { deleteFile, uploadFile } from "@repo/storage";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface ContractDocumentAPIContext {
   params: Promise<{
@@ -30,15 +30,15 @@ export async function POST(
   context: ContractDocumentAPIContext
 ) {
   const { id: contractId } = await context.params;
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
 
   try {
+    const user = await resolveCurrentUser(request);
+    const manifestUser = {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
+    };
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -69,10 +69,11 @@ export async function POST(
       );
     }
 
+    // Read — bypasses Manifest per constitution §10
     const contract = await database.eventContract.findUnique({
       where: {
         tenantId_id: {
-          tenantId,
+          tenantId: user.tenantId,
           id: contractId,
         },
       },
@@ -94,7 +95,7 @@ export async function POST(
     const storagePath = `contracts/${contractId}/document.${ext}`;
 
     const result = await uploadFile({
-      tenantId,
+      tenantId: user.tenantId,
       path: storagePath,
       body: file,
       contentType: file.type,
@@ -108,17 +109,20 @@ export async function POST(
       }
     }
 
-    await database.eventContract.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
-      },
-      data: {
+    // Governed write — update document fields via Manifest runtime
+    await runManifestCommand({
+      entity: "EventContract",
+      command: "update",
+      body: {
+        id: contractId,
+        tenantId: user.tenantId,
+        title: contract.title ?? "",
         documentUrl: result.url,
         documentType,
+        notes: contract.notes ?? "",
+        expiresAt: contract.expiresAt ?? "",
       },
+      user: manifestUser,
     });
 
     return NextResponse.json({

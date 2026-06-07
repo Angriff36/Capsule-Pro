@@ -8,17 +8,16 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { database, Prisma } from "@repo/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
-  getBlockingConstraints,
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/manifest-runtime/route-helpers";
+} from "@/lib/manifest-response";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
 
@@ -31,12 +30,23 @@ export interface UnitConversion {
 export interface RecipeCostBreakdown {
   totalCost: number;
   costPerYield: number;
-  costPerPortion?: number;
+  costPerPortion: number | null;
+  lastCalculated: Date | null;
   ingredients: IngredientCostBreakdown[];
+  recipe: {
+    id: string;
+    name: string;
+    description: string | null;
+    yieldQuantity: number | null;
+    yieldUnit: string | null;
+    portionSize: number | null;
+    portionUnit: string | null;
+  };
 }
 
 export interface IngredientCostBreakdown {
   id: string;
+  recipeIngredientId: string;
   name: string;
   quantity: number;
   unit: string;
@@ -45,6 +55,26 @@ export interface IngredientCostBreakdown {
   unitCost: number;
   cost: number;
   hasInventoryItem: boolean;
+  inventoryItemId: string | null;
+}
+
+interface RecipeVersionCostRow {
+  id: string;
+  name: string;
+  description: string | null;
+  yieldQuantity: Prisma.Decimal | number | string | null;
+  yieldUnit: string | null;
+  lastCalculated: Date | null;
+}
+
+interface RecipeIngredientCostRow {
+  id: string;
+  name: string;
+  quantity: Prisma.Decimal | number | string;
+  unit: string | null;
+  wasteFactor: Prisma.Decimal | number | string;
+  ingredientCost: Prisma.Decimal | number | string | null;
+  inventoryItemId: string | null;
 }
 
 /**
@@ -59,39 +89,64 @@ const calculateRecipeCostData = async (
   totalCost: number;
   costPerYield: number;
 } | null> => {
-  const recipeVersion = await database.recipeVersion.findFirst({
-    where: { tenantId, id: recipeVersionId, deletedAt: null },
-    select: { id: true, yieldQuantity: true },
-  });
+  const recipeVersions = await database.$queryRaw<RecipeVersionCostRow[]>(
+    Prisma.sql`
+      SELECT
+        rv.id,
+        COALESCE(NULLIF(rv.name, ''), r.name) AS "name",
+        COALESCE(rv.description, r.description) AS "description",
+        rv.yield_quantity AS "yieldQuantity",
+        u.code AS "yieldUnit",
+        rv.cost_calculated_at AS "lastCalculated"
+      FROM tenant_kitchen.recipe_versions rv
+      LEFT JOIN tenant_kitchen.recipes r
+        ON r.tenant_id = rv.tenant_id
+        AND r.id = rv.recipe_id
+        AND r.deleted_at IS NULL
+      LEFT JOIN core.units u ON u.id = rv.yield_unit_id
+      WHERE rv.tenant_id = ${tenantId}
+        AND rv.id = ${recipeVersionId}
+        AND rv.deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+  const recipeVersion = recipeVersions[0];
 
   if (!recipeVersion) {
     return null;
   }
 
-  const recipeIngredients = await database.recipeIngredient.findMany({
-    where: {
-      tenantId,
-      recipeVersionId,
-      deletedAt: null,
-    },
-    orderBy: { sortOrder: "asc" },
-    select: {
-      id: true,
-      ingredientId: true,
-      quantity: true,
-      unitId: true,
-      wasteFactor: true,
-      ingredientCost: true,
-    },
-  });
-
-  // Fetch ingredient names in a single query to avoid N+1
-  const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
-  const ingredients = await database.ingredient.findMany({
-    where: { tenantId, id: { in: ingredientIds }, deletedAt: null },
-    select: { id: true, name: true },
-  });
-  const ingredientNameMap = new Map(ingredients.map((i) => [i.id, i.name]));
+  const recipeIngredients = await database.$queryRaw<RecipeIngredientCostRow[]>(
+    Prisma.sql`
+      SELECT
+        ri.id,
+        i.name,
+        ri.quantity,
+        COALESCE(u.code, ri.unit_id::text) AS "unit",
+        COALESCE(ri.waste_factor, 1.0) AS "wasteFactor",
+        ri.ingredient_cost AS "ingredientCost",
+        ii.id AS "inventoryItemId"
+      FROM tenant_kitchen.recipe_ingredients ri
+      JOIN tenant_kitchen.ingredients i
+        ON i.tenant_id = ri.tenant_id
+        AND i.id = ri.ingredient_id
+        AND i.deleted_at IS NULL
+      LEFT JOIN core.units u ON u.id = ri.unit_id
+      LEFT JOIN LATERAL (
+        SELECT id
+        FROM tenant_inventory.inventory_items ii
+        WHERE ii.tenant_id = ri.tenant_id
+          AND ii.name = i.name
+          AND ii.deleted_at IS NULL
+        ORDER BY ii.updated_at DESC
+        LIMIT 1
+      ) ii ON true
+      WHERE ri.tenant_id = ${tenantId}
+        AND ri.recipe_version_id = ${recipeVersionId}
+        AND ri.deleted_at IS NULL
+      ORDER BY ri.sort_order ASC
+    `
+  );
 
   let totalCost = 0;
   const costBreakdowns: IngredientCostBreakdown[] = [];
@@ -106,14 +161,16 @@ const calculateRecipeCostData = async (
 
     costBreakdowns.push({
       id: ri.id,
-      name: ingredientNameMap.get(ri.ingredientId) ?? "Unknown",
+      recipeIngredientId: ri.id,
+      name: ri.name,
       quantity,
-      unit: ri.unitId.toString(),
+      unit: ri.unit ?? "units",
       wasteFactor,
       adjustedQuantity,
       unitCost: adjustedQuantity > 0 ? cost / adjustedQuantity : 0,
       cost,
-      hasInventoryItem: ri.ingredientCost !== null,
+      hasInventoryItem: ri.inventoryItemId !== null,
+      inventoryItemId: ri.inventoryItemId,
     });
   }
 
@@ -124,7 +181,18 @@ const calculateRecipeCostData = async (
     breakdown: {
       totalCost,
       costPerYield,
+      costPerPortion: null,
+      lastCalculated: recipeVersion.lastCalculated,
       ingredients: costBreakdowns,
+      recipe: {
+        id: recipeVersion.id,
+        name: recipeVersion.name,
+        description: recipeVersion.description,
+        yieldQuantity,
+        yieldUnit: recipeVersion.yieldUnit,
+        portionSize: null,
+        portionUnit: null,
+      },
     },
     totalCost,
     costPerYield,
@@ -169,33 +237,35 @@ export async function GET(
 }
 
 /**
- * POST - Recalculate and persist recipe costs via manifest runtime
+ * POST - Recalculate and persist recipe costs via manifest runtime.
+ *
+ * Reads (cost calculation from ingredients) bypass Manifest (constitution S10).
+ * Only the final RecipeVersion cost update goes through governed runtime.
+ * Ancillary ingredient timestamp update is not a governed domain mutation.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: recipeVersionId } = await params;
-    const { orgId, userId } = await auth();
+    const user = await resolveCurrentUser(request);
 
-    if (!(userId && orgId)) {
+    if (!user) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+    const { tenantId } = user;
 
-    // Calculate costs first
+    // Calculate costs first (read path, constitution S10)
     const costData = await calculateRecipeCostData(tenantId, recipeVersionId);
 
     if (!costData) {
       return manifestErrorResponse("Recipe version not found", 404);
     }
 
-    // Update ingredient cost timestamps (batch update, no manifest needed)
+    // GOVERNED BYPASS: RecipeIngredient.updateMany — documented in manifest/governance/bypasses.json
+    // Batch timestamps costCalculatedAt on all ingredients; not a domain mutation.
     await database.recipeIngredient.updateMany({
       where: {
         tenantId,
@@ -205,61 +275,19 @@ export async function POST(
       data: { costCalculatedAt: new Date() },
     });
 
-    // Update RecipeVersion costs via manifest runtime
-    const result = await database.$transaction(async (tx) => {
-      const runtime = await createManifestRuntime({
-        user: { id: userId, tenantId },
-        prismaOverride: tx,
-      });
-
-      const updateResult = await runtime.runCommand(
-        "updateCosts",
-        {
-          id: recipeVersionId,
-          newTotalCost: costData.totalCost,
-          newCostPerYield: costData.costPerYield,
-        },
-        { entityName: "RecipeVersion" }
-      );
-
-      // Check for blocking constraints
-      const blocking = getBlockingConstraints(updateResult);
-      if (blocking) {
-        throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
-          constraintOutcomes: updateResult.constraintOutcomes || [],
-        });
-      }
-
-      if (!updateResult.success) {
-        throw new Error(
-          updateResult.guardFailure?.formatted ||
-            updateResult.policyDenial?.policyName ||
-            updateResult.error ||
-            "Failed to update costs"
-        );
-      }
-
-      return updateResult;
-    });
-
-    return manifestSuccessResponse({
-      ...costData.breakdown,
-      events: result.emittedEvents || [],
-      constraintOutcomes: result.constraintOutcomes || [],
+    // Update RecipeVersion costs via governed Manifest command
+    return runManifestCommand({
+      entity: "RecipeVersion",
+      command: "updateCosts",
+      body: {
+        id: recipeVersionId,
+        tenantId,
+        newTotalCost: costData.totalCost,
+        newCostPerYield: costData.costPerYield,
+      },
+      user,
     });
   } catch (error) {
-    // Check if this is a constraint-blocked error
-    if (
-      error instanceof Error &&
-      error.message === "CONSTRAINT_BLOCKED" &&
-      "constraintOutcomes" in error
-    ) {
-      return manifestErrorResponse("Cost update blocked by constraints", 400, {
-        constraintOutcomes: (error as { constraintOutcomes: unknown[] })
-          .constraintOutcomes,
-      });
-    }
-
     log.error("[recipes/cost] Error:", error);
     captureException(error);
 

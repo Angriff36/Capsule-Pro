@@ -1,7 +1,7 @@
 /**
  * API Key Rotate Endpoint
  *
- * POST /api/settings/api-keys/:id/rotate - Rotate (regenerate) an API key
+ * POST /api/settings/api-keys/:id/rotate - Rotate (regenerate) an API key (Manifest runtime)
  */
 
 import { database } from "@repo/database";
@@ -10,13 +10,14 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
 export const runtime = "nodejs";
 
 /**
  * POST /api/settings/api-keys/:id/rotate
- * Rotate (regenerate) an API key
+ * Rotate (regenerate) an API key — delegated to Manifest runtime
  *
  * Generates a new key and updates the hashed key and prefix.
  * Returns the new plain key (only time it's shown).
@@ -59,46 +60,37 @@ export const POST = withRateLimit(
         );
       }
 
-      // Generate a new API key
+      // Generate a new API key (crypto — must happen outside Manifest)
       const { plainKey, hashedKey, keyPrefix } = generateApiKey();
 
-      // Update the key with new hashed key and prefix
-      const updated = await database.apiKey.update({
-        where: {
-          tenantId_id: {
-            tenantId: currentUser.tenantId,
-            id,
-          },
-        },
-        data: {
+      // Delegate rotation to Manifest runtime
+      const result = await runManifestCommand({
+        entity: "ApiKey",
+        command: "rotate",
+        body: {
+          id,
           hashedKey,
           keyPrefix,
-          // Clear revokedAt if it was set (shouldn't be, but just in case)
+          tenantId: currentUser.tenantId,
         },
-        select: {
-          id: true,
-          name: true,
-          keyPrefix: true,
-          scopes: true,
-          lastUsedAt: true,
-          expiresAt: true,
-          revokedAt: true,
-          createdAt: true,
-          updatedAt: true,
+        user: {
+          id: currentUser.id,
+          tenantId: currentUser.tenantId,
+          role: currentUser.role,
         },
       });
 
-      log.info("[ApiKeys/rotate] Rotated API key", {
-        tenantId: currentUser.tenantId,
-        keyId: id,
-        userId: currentUser.id,
-      });
+      // Merge plainKey into the response so the caller sees it once
+      if (result.status === 200) {
+        const responseData = (await result.json()) as Record<string, unknown>;
+        const record = (responseData.result ?? responseData) as Record<
+          string,
+          unknown
+        >;
+        return NextResponse.json({ ...record, plainKey });
+      }
 
-      // Return the key WITH the new plain key (only time it's shown)
-      return NextResponse.json({
-        ...updated,
-        plainKey, // Only returned on rotation
-      });
+      return result;
     } catch (error) {
       captureException(error);
       log.error("[ApiKeys/rotate] Error:", error);

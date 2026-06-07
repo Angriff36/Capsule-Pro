@@ -2,6 +2,7 @@
 // Manifest spec for managing administrative tasks with status state machine
 
 entity AdminTask {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property title: string = ""
@@ -10,35 +11,39 @@ entity AdminTask {
   property priority: string = "medium"
   property category: string = ""
   property assignedTo: string = ""
-  property dueDate: string = ""
+  property dueDate: datetime
   property createdBy: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
 
   constraint requireTitle: self.title != "" "Title is required"
 
-  command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: string, createdBy: string) {
+  default policy AdminTaskDefaultAccess execute: user.role in ["manager", "admin"] "Admin task management"
+  // create() seeds `status` directly from the command body via createInstance
+  // (the bootstrap full-body seed pattern). `status` is intentionally NOT mutated
+  // below: the runtime evaluates state transitions on every status mutation and
+  // does NOT exempt no-op self-transitions, so `mutate status = status` makes
+  // create fail for any status that owns a transition rule (e.g. backlog->backlog
+  // is rejected because backlog's `to` list is [todo, cancelled]). The command
+  // body is authoritative for the initial state.
+  command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: datetime, createdBy: string) {
     guard title != null and title != "" "Title is required"
 
     mutate title = title
     mutate description = description
-    mutate status = status
     mutate priority = priority
     mutate category = category
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
     mutate createdBy = createdBy
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit AdminTaskCreated
   }
 
-  command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted task"
+  command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: datetime) {
+    guard self.deletedAt == null "Cannot update a deleted task"
 
     mutate title = title
     mutate description = description
@@ -46,71 +51,85 @@ entity AdminTask {
     mutate category = category
     mutate assignedTo = assignedTo
     mutate dueDate = dueDate
-    mutate updatedAt = now()
 
     emit AdminTaskUpdated
   }
 
-  command moveToTodo() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
-    guard self.status == "backlog" or self.status == "in_progress" "Can only move to todo from backlog or in_progress"
+  // ── Status state machine ────────────────────────────────────────────────
+  // Authoritative model = the operational Kanban board's four columns
+  // (backlog → in_progress → review → done) plus a `cancelled` side-state.
+  // The board is a free-movement <select> (any column → any column), so the
+  // four active columns are mutually reachable; `cancelled` is reachable from
+  // any active column and reopens to `backlog`. One command per TARGET column
+  // (so the API status→command map is 1:1) with a guard listing the legal
+  // source states. (The legacy `todo` state was never surfaced by any product
+  // surface — UI type, validation, overview-boards query, and the create test
+  // all use the four columns — so it is removed; constitution §14: Manifest is
+  // brought into conformance with the shipped workflow.)
 
-    mutate status = "todo"
-    mutate updatedAt = now()
+  command moveToBacklog() {
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status != "backlog" "Task is already in backlog"
+
+    mutate status = "backlog"
 
     emit AdminTaskStatusChanged
   }
 
   command startProgress() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
-    guard self.status == "todo" "Can only start progress from todo"
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status == "backlog" or self.status == "review" or self.status == "done" "Can only start progress from backlog, review, or done"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command submitForReview() {
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status == "backlog" or self.status == "in_progress" or self.status == "done" "Can only submit for review from backlog, in_progress, or done"
+
+    mutate status = "review"
 
     emit AdminTaskStatusChanged
   }
 
   command complete() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
-    guard self.status == "in_progress" "Can only complete from in_progress"
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status == "backlog" or self.status == "in_progress" or self.status == "review" "Can only complete from backlog, in_progress, or review"
 
     mutate status = "done"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
 
   command cancel() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
-    guard self.status != "done" "Cannot cancel a completed task"
+    guard self.deletedAt == null "Cannot transition a deleted task"
+    guard self.status != "done" and self.status != "cancelled" "Cannot cancel a completed or already-cancelled task"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit AdminTaskStatusChanged
   }
 
-  command reopen() {
-    guard self.deletedAt == 0 "Cannot transition a deleted task"
-    guard self.status == "cancelled" "Can only reopen a cancelled task"
-
-    mutate status = "backlog"
-    mutate updatedAt = now()
-
-    emit AdminTaskStatusChanged
-  }
+  // State transitions — free movement among the four active columns, plus the
+  // cancel edges (active → cancelled) and the reopen edge (cancelled → backlog,
+  // via moveToBacklog).
+  transition status from "backlog" to ["in_progress", "review", "done", "cancelled"]
+  transition status from "in_progress" to ["backlog", "review", "done", "cancelled"]
+  transition status from "review" to ["backlog", "in_progress", "done", "cancelled"]
+  transition status from "done" to ["backlog", "in_progress", "review"]
+  transition status from "cancelled" to ["backlog"]
 
   command softDelete() {
-    guard self.deletedAt == 0 "Task is already deleted"
+    guard self.deletedAt == null "Task is already deleted"
 
     mutate deletedAt = now()
-    mutate updatedAt = now()
 
     emit AdminTaskDeleted
   }
 
-  store AdminTask in memory
+  store AdminTask in durable
 }
 
 policy AdminTaskManagement execute: user.role in ["manager", "admin"] "Managers can manage admin tasks"
@@ -122,21 +141,21 @@ event AdminTaskCreated: "admin.task.created" {
   status: string
   priority: string
   createdBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event AdminTaskUpdated: "admin.task.updated" {
   taskId: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event AdminTaskStatusChanged: "admin.task.status-changed" {
   taskId: string
   status: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event AdminTaskDeleted: "admin.task.deleted" {
   taskId: string
-  deletedAt: number
+  deletedAt: datetime
 }

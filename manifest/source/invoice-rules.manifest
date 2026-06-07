@@ -2,6 +2,7 @@
 // Defines invoice creation, management, and payment tracking
 
 entity Invoice {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
 
@@ -13,12 +14,12 @@ entity Invoice {
   property required eventId: string = ""
 
   // Amounts
-  property required subtotal: number = 0
-  property required taxAmount: number = 0
-  property required discountAmount: number = 0
-  property required total: number = 0
-  property required amountPaid: number = 0
-  property required amountDue: number = 0
+  property required subtotal: money = 0
+  property required taxAmount: money = 0
+  property required discountAmount: money = 0
+  property required total: money = 0
+  property required amountPaid: money = 0
+  property required amountDue: money = 0
 
   // Payment terms
   property required paymentTerms: int = 30
@@ -27,8 +28,8 @@ entity Invoice {
 
   // Deposit specific
   property depositPercentage: decimal = 0
-  property depositRequired: number = 0
-  property depositPaid: number = 0
+  property depositRequired: decimal = 0
+  property depositPaid: money = 0
 
   // Timestamps
   property required issuedAt: datetime = now()
@@ -51,16 +52,31 @@ entity Invoice {
   property lineItems: string = "[]"
   property required metadata: string = "{}"
 
+  timestamps
   // Computed properties
   computed isPaidInFull: boolean = self.amountDue <= 0
   computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now()
 
-  relationship belongsTo linkedEvent: Event with eventId
+  relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   relationship hasMany payments: Payment
   // Constraints
   constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
 
   // Commands
+  default policy InvoiceDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Invoice management"
+  command update(subtotal: money, taxAmount: money, total: money, amountDue: money, notes: string, internalNotes: string, dueDate: datetime, paymentTerms: int, lineItems: string) {
+    guard self.status == "DRAFT" "Can only update draft invoices"
+    mutate subtotal = subtotal
+    mutate taxAmount = taxAmount
+    mutate total = total
+    mutate amountDue = amountDue
+    mutate notes = notes
+    mutate internalNotes = internalNotes
+    mutate dueDate = dueDate
+    mutate paymentTerms = paymentTerms
+    mutate lineItems = lineItems
+  }
+
   command send(clientContactId: string) {
     guard self.status == "DRAFT" "Can only send draft invoices"
     guard self.amountDue > 0 "Cannot send invoices with zero balance"
@@ -139,6 +155,14 @@ entity Invoice {
     mutate lineItems = lineItems
     emit InvoiceLineItemsUpdated
   }
+
+  // State transitions
+  transition status from "DRAFT" to ["SENT", "VOIDED"]
+  transition status from "SENT" to ["VIEWED", "OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
+  transition status from "VIEWED" to ["OVERDUE", "PARTIALLY_PAID", "PAID", "VOIDED"]
+  transition status from "OVERDUE" to ["PARTIALLY_PAID", "PAID", "WRITTEN_OFF", "VOIDED"]
+  transition status from "PARTIALLY_PAID" to ["PAID", "WRITTEN_OFF"]
+  // "PAID", "VOIDED", "WRITTEN_OFF" are terminal states
 }
 
 store Invoice in durable
@@ -150,14 +174,14 @@ event InvoiceSent: "invoice.sent" {
   clientId: string
   eventId: string
   amount: number
-  dueDate: number
+  dueDate: datetime
 }
 
 event InvoiceViewed: "invoice.viewed" {
   invoiceId: string
   invoiceNumber: string
   clientId: string
-  viewedAt: number
+  viewedAt: datetime
 }
 
 event PaymentApplied: "invoice.payment-applied" {

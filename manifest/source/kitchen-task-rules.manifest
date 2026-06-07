@@ -3,25 +3,30 @@
 // Note: This is for KitchenTask (general tasks), NOT PrepTask (event-driven prep work)
 
 entity KitchenTask {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required title: string
   property required summary: string
   property required status: string = "pending"
-  property priority: number = 5
-  property complexity: number = 5
+  property priority: int = 5
+  property complexity: decimal = 5
   property tags: string = ""
-  property dueDate: datetime = now()
-  property completedAt: datetime = now()
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
+  property assignedTo: string = ""
+  property dueDate: datetime
+  property completedAt: datetime
+  timestamps
 
-  computed isOverdue: boolean = self.dueDate != 0 and now() > self.dueDate and self.status != "done"
+  computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done"
   computed isCompleted: boolean = self.status == "done"
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"
   computed isUrgent: boolean = self.priority <= 2
   computed isHighPriority: boolean = self.priority <= 3
+  computed isAssigned: boolean = self.assignedTo != ""
+
+  relationship hasMany claims: KitchenTaskClaim
+  relationship hasMany progress: KitchenTaskProgress
 
   // State transitions
   transition status from "pending" to ["in_progress", "done", "cancelled"]
@@ -40,12 +45,13 @@ entity KitchenTask {
     }
   }
 
+  default policy KitchenTaskDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen task management"
   command claim(userId: string) {
     guard userId != null and userId != ""
     guard self.status == "pending" or self.status == "in_progress"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
+    mutate assignedTo = userId
 
     emit KitchenTaskClaimed
   }
@@ -55,7 +61,7 @@ entity KitchenTask {
     guard self.status == "pending"
 
     mutate status = "in_progress"
-    mutate updatedAt = now()
+    mutate assignedTo = userId
 
     emit KitchenTaskStarted
   }
@@ -66,7 +72,6 @@ entity KitchenTask {
 
     mutate status = "done"
     mutate completedAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskCompleted
   }
@@ -76,7 +81,7 @@ entity KitchenTask {
     guard self.status == "in_progress"
 
     mutate status = "pending"
-    mutate updatedAt = now()
+    mutate assignedTo = ""
 
     emit KitchenTaskReleased
   }
@@ -86,7 +91,7 @@ entity KitchenTask {
     guard requestedBy != null and requestedBy != ""
     guard self.status in ["pending", "in_progress"]
 
-    mutate updatedAt = now()
+    mutate assignedTo = newUserId
 
     emit KitchenTaskReassigned
   }
@@ -95,7 +100,6 @@ entity KitchenTask {
     guard priority >= 1 and priority <= 5
 
     mutate priority = priority
-    mutate updatedAt = now()
 
     emit KitchenTaskPriorityUpdated
   }
@@ -104,7 +108,6 @@ entity KitchenTask {
     guard complexity >= 1 and complexity <= 5
 
     mutate complexity = complexity
-    mutate updatedAt = now()
 
     emit KitchenTaskComplexityUpdated
   }
@@ -113,7 +116,6 @@ entity KitchenTask {
     guard title != null and title != "" "Task title is required"
 
     mutate title = title
-    mutate updatedAt = now()
 
     emit KitchenTaskTitleUpdated
   }
@@ -122,38 +124,36 @@ entity KitchenTask {
     guard summary != null "Task summary is required"
 
     mutate summary = summary
-    mutate updatedAt = now()
 
     emit KitchenTaskSummaryUpdated
   }
 
-  command updateDueDate(dueDate: number) {
+  command updateDueDate(dueDate: datetime) {
     mutate dueDate = dueDate
-    mutate updatedAt = now()
 
     emit KitchenTaskDueDateUpdated
   }
 
   command updateTags(tags: string) {
     mutate tags = tags
-    mutate updatedAt = now()
 
     emit KitchenTaskTagsUpdated
   }
 
   command addTag(tag: string) {
     guard tag != null and tag != ""
+    guard not (self.tags contains tag) "Tag already exists"
 
-    mutate tags = self.tags + "," + tag
-    mutate updatedAt = now()
+    mutate tags = self.tags == "" ? tag : self.tags + "," + tag
 
     emit KitchenTaskTagAdded
   }
 
   command removeTag(tag: string) {
     guard tag != null and tag != ""
+    guard self.tags contains tag "Tag not found"
 
-    mutate updatedAt = now()
+    mutate tags = removeTagFromString(self.tags, tag)
 
     emit KitchenTaskTagRemoved
   }
@@ -162,12 +162,11 @@ entity KitchenTask {
     guard self.status != "done" and self.status != "cancelled"
 
     mutate status = "cancelled"
-    mutate updatedAt = now()
 
     emit KitchenTaskCanceled
   }
 
-  command create(title: string, summary: string, priority: number, complexity: number, tags: string, dueDate: number) {
+  command create(title: string, summary: string, priority: number, complexity: number, tags: string, dueDate: datetime) {
     guard title != null and title != "" "Task title is required"
     guard summary != null and summary != "" "Task summary is required"
     guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
@@ -180,13 +179,11 @@ entity KitchenTask {
     mutate complexity = complexity
     mutate tags = tags
     mutate dueDate = dueDate
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit KitchenTaskCreated
   }
 
-  store KitchenTask in memory
+  store KitchenTask in durable
 }
 
 policy KitchenStaffCanClaim execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim kitchen tasks"
@@ -197,26 +194,26 @@ policy AnyoneCanView execute: true "Anyone can view kitchen tasks"
 event KitchenTaskClaimed: "kitchen.kitchentask.claimed" {
   taskId: string
   userId: string
-  claimedAt: number
+  claimedAt: datetime
 }
 
 event KitchenTaskStarted: "kitchen.kitchentask.started" {
   taskId: string
   userId: string
-  startedAt: number
+  startedAt: datetime
 }
 
 event KitchenTaskCompleted: "kitchen.kitchentask.completed" {
   taskId: string
   userId: string
-  completedAt: number
+  completedAt: datetime
 }
 
 event KitchenTaskReleased: "kitchen.kitchentask.released" {
   taskId: string
   previousUserId: string
   reason: string
-  releasedAt: number
+  releasedAt: datetime
 }
 
 event KitchenTaskReassigned: "kitchen.kitchentask.reassigned" {
@@ -224,64 +221,64 @@ event KitchenTaskReassigned: "kitchen.kitchentask.reassigned" {
   previousUserId: string
   newUserId: string
   reassignedBy: string
-  reassignedAt: number
+  reassignedAt: datetime
 }
 
 event KitchenTaskPriorityUpdated: "kitchen.kitchentask.priority.updated" {
   taskId: string
   oldPriority: number
   newPriority: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskComplexityUpdated: "kitchen.kitchentask.complexity.updated" {
   taskId: string
   oldComplexity: number
   newComplexity: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskTitleUpdated: "kitchen.kitchentask.title.updated" {
   taskId: string
   title: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskSummaryUpdated: "kitchen.kitchentask.summary.updated" {
   taskId: string
   summary: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskDueDateUpdated: "kitchen.kitchentask.duedate.updated" {
   taskId: string
-  dueDate: number
-  updatedAt: number
+  dueDate: datetime
+  updatedAt: datetime
 }
 
 event KitchenTaskTagsUpdated: "kitchen.kitchentask.tags.updated" {
   taskId: string
   tags: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event KitchenTaskTagAdded: "kitchen.kitchentask.tag.added" {
   taskId: string
   tag: string
-  addedAt: number
+  addedAt: datetime
 }
 
 event KitchenTaskTagRemoved: "kitchen.kitchentask.tag.removed" {
   taskId: string
   tag: string
-  removedAt: number
+  removedAt: datetime
 }
 
 event KitchenTaskCanceled: "kitchen.kitchentask.canceled" {
   taskId: string
   reason: string
   canceledBy: string
-  canceledAt: number
+  canceledAt: datetime
 }
 
 event KitchenTaskCreated: "kitchen.kitchentask.created" {
@@ -289,5 +286,5 @@ event KitchenTaskCreated: "kitchen.kitchentask.created" {
   tenantId: string
   title: string
   priority: number
-  createdAt: number
+  createdAt: datetime
 }

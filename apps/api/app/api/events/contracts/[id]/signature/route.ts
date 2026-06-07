@@ -5,7 +5,8 @@
  */
 
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * POST /api/events/contracts/[id]/signature
@@ -20,14 +21,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: contractId } = await params;
-  return executeManifestCommand(request, {
-    entityName: "ContractSignature",
-    commandName: "create",
-    params: { contractId },
-    transformBody: (body, ctx) => ({
-      ...body,
-      contractId,
-      tenantId: ctx.tenantId,
-    }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "ContractSignature", command: "create", body: { ...rawBody, contractId, tenantId: user.tenantId }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

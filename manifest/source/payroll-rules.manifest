@@ -1,18 +1,28 @@
 // Payroll Domain - Payroll Rules
-// Manifest spec for payroll periods, deductions, approvals, and runs
+// Manifest spec for payroll periods, deductions, approvals, and runs.
+// A PayrollRun moves pending -> processing -> approved -> paid (or rejected).
 
 entity PayrollPeriod {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property periodStart: string = ""
   property periodEnd: string = ""
   property status: string = "open"
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isOpen: boolean = self.status == "open"
+  computed isClosed: boolean = self.status == "closed"
+  computed isLocked: boolean = self.status == "locked"
 
+  transition status from "open" to ["closed"]
+  transition status from "closed" to ["open", "locked"]
+
+  constraint validStatus: self.status in ["open", "closed", "locked"] "Invalid payroll period status"
+
+  default policy PayrollPeriodDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(periodStart: string, periodEnd: string) {
     guard periodStart != null and periodStart != "" "Period start date is required"
     guard periodEnd != null and periodEnd != "" "Period end date is required"
@@ -20,41 +30,70 @@ entity PayrollPeriod {
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
     mutate status = "open"
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit PayrollPeriodCreated
   }
 
-  store PayrollPeriod in memory
+  // Close the period so no new time entries land in it; payroll can now run.
+  command close() {
+    guard self.status == "open" "Only an open period can be closed"
+
+    mutate status = "closed"
+
+    emit PayrollPeriodClosed
+  }
+
+  command reopen(reason: string) {
+    guard self.status == "closed" "Only a closed (not locked) period can be reopened"
+
+    mutate status = "open"
+
+    emit PayrollPeriodReopened
+  }
+
+  // Lock permanently once payroll has been paid — period becomes immutable.
+  command lock() {
+    guard self.status == "closed" "A period must be closed before locking"
+
+    mutate status = "locked"
+
+    emit PayrollPeriodLocked
+  }
+
+  store PayrollPeriod in durable
 }
 
 entity EmployeeDeduction {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property employeeId: string = ""
   property type: string = ""
   property name: string = ""
-  property amount: number = 0
-  property percentage: number = 0
+  property amount: money = 0
+  property percentage: decimal = 0
   property isPreTax: boolean = false
   property effectiveDate: string = ""
   property endDate: string = ""
-  property maxAnnualAmount: number = 0
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  property maxAnnualAmount: money = 0
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isActive: boolean = self.deletedAt == null
 
   constraint requireEmployee: self.employeeId != "" "Employee ID is required"
   constraint requireType: self.type != "" "Deduction type is required"
   constraint requireName: self.name != "" "Deduction name is required"
+  constraint nonNegativeAmount: self.amount >= 0 "Deduction amount cannot be negative"
+  constraint validPercentage: self.percentage >= 0 and self.percentage <= 100 "Percentage must be between 0 and 100"
 
+  default policy EmployeeDeductionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(employeeId: string, type: string, name: string, amount: number, percentage: number, isPreTax: boolean, effectiveDate: string, endDate: string, maxAnnualAmount: number) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard type != null and type != "" "Deduction type is required"
     guard name != null and name != "" "Deduction name is required"
+    guard amount >= 0 "Deduction amount cannot be negative"
 
     mutate employeeId = employeeId
     mutate type = type
@@ -65,16 +104,37 @@ entity EmployeeDeduction {
     mutate effectiveDate = effectiveDate
     mutate endDate = endDate
     mutate maxAnnualAmount = maxAnnualAmount
-    mutate createdAt = now()
-    mutate updatedAt = now()
 
     emit EmployeeDeductionCreated
   }
 
-  store EmployeeDeduction in memory
+  command update(amount: number, percentage: number, endDate: string, maxAnnualAmount: number) {
+    guard self.deletedAt == null "Cannot update a removed deduction"
+    guard amount >= 0 "Deduction amount cannot be negative"
+
+    mutate amount = amount
+    mutate percentage = percentage
+    mutate endDate = endDate
+    mutate maxAnnualAmount = maxAnnualAmount
+
+    emit EmployeeDeductionUpdated
+  }
+
+  // End a deduction so it stops applying to future payroll runs.
+  command deactivate(reason: string, endDate: string) {
+    guard self.deletedAt == null "Deduction is already removed"
+
+    mutate endDate = endDate
+    mutate deletedAt = now()
+
+    emit EmployeeDeductionDeactivated
+  }
+
+  store EmployeeDeduction in durable
 }
 
 entity PayrollApprovalHistory {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property payrollRunId: string = ""
@@ -84,8 +144,9 @@ entity PayrollApprovalHistory {
   property performedBy: string = ""
   property performedAt: datetime = now()
   property reason: string = ""
-  property createdAt: datetime = now()
+  timestamps
 
+  default policy PayrollApprovalHistoryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string, reason: string) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
 
@@ -96,55 +157,129 @@ entity PayrollApprovalHistory {
     mutate performedBy = performedBy
     mutate reason = reason
     mutate performedAt = now()
-    mutate createdAt = now()
 
     emit PayrollApprovalRequested
   }
 
-  store PayrollApprovalHistory in memory
+  store PayrollApprovalHistory in durable
 }
 
 entity PayrollRun {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property payrollPeriodId: string = ""
   property runDate: string = ""
   property status: string = "pending"
-  property totalGross: number = 0
-  property totalDeductions: number = 0
-  property totalNet: number = 0
-  property approvedBy: string = ""
-  property approvedAt: datetime = now()
-  property paidAt: datetime = now()
+  property totalGross: money = 0
+  property totalDeductions: money = 0
+  property totalNet: money = 0
+  readonly property approvedBy: string = ""
+  readonly property approvedAt: datetime
+  property rejectedBy: string = ""
+  readonly property paidAt: datetime
   property rejectReason: string = ""
-  property createdAt: datetime = now()
-  property updatedAt: datetime = now()
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
 
-  computed isDeleted: boolean = self.deletedAt > 0
+  computed isDeleted: boolean = self.deletedAt != null
+  computed isPending: boolean = self.status == "pending"
+  computed isProcessing: boolean = self.status == "processing"
+  computed isApproved: boolean = self.status == "approved"
+  computed isPaid: boolean = self.status == "paid"
+  computed isRejected: boolean = self.status == "rejected"
 
-  command updateStatus(status: string, approvedBy: string, rejectReason: string) {
-    guard self.deletedAt == 0 "Cannot update a deleted payroll run"
+  transition status from "pending" to ["processing", "rejected"]
+  transition status from "processing" to ["approved", "rejected"]
+  transition status from "approved" to ["paid"]
 
-    mutate status = status
-    mutate approvedBy = approvedBy
-    mutate rejectReason = rejectReason
-    mutate updatedAt = now()
+  constraint validStatus: self.status in ["pending", "processing", "approved", "paid", "rejected"] "Invalid payroll run status"
 
-    emit PayrollRunStatusChanged
+  default policy PayrollRunDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
+  command create(payrollPeriodId: string, runDate: string) {
+    guard payrollPeriodId != null and payrollPeriodId != "" "Payroll period ID is required"
+
+    mutate payrollPeriodId = payrollPeriodId
+    mutate runDate = runDate
+    mutate status = "pending"
+
+    emit PayrollRunCreated
   }
 
-  store PayrollRun in memory
+  // Calculate gross/deductions/net for the run and move it into review.
+  command process(totalGross: number, totalDeductions: number, totalNet: number) {
+    guard self.status == "pending" "Only a pending run can be processed"
+    guard self.deletedAt == null "Cannot process a deleted payroll run"
+
+    mutate totalGross = totalGross
+    mutate totalDeductions = totalDeductions
+    mutate totalNet = totalNet
+    mutate status = "processing"
+
+    emit PayrollRunProcessed
+  }
+
+  command approve(approvedBy: string) {
+    guard self.status == "processing" "Only a processed run can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver is required"
+
+    mutate status = "approved"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+
+    emit PayrollRunApproved
+  }
+
+  command reject(rejectedBy: string, rejectReason: string) {
+    guard self.status in ["pending", "processing"] "Only a pending or processing run can be rejected"
+    guard rejectReason != null and rejectReason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectedBy = rejectedBy
+    mutate rejectReason = rejectReason
+
+    emit PayrollRunRejected
+  }
+
+  command markPaid() {
+    guard self.status == "approved" "Only an approved run can be marked paid"
+
+    mutate status = "paid"
+    mutate paidAt = now()
+
+    emit PayrollRunPaid
+  }
+
+  store PayrollRun in durable
 }
 
 policy PayrollManagement execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll"
+policy PayrollApproval execute: user.role in ["admin", "payroll_admin"] "Only payroll admins can approve/pay payroll runs"
 
 event PayrollPeriodCreated: "payroll.period.created" {
   periodId: string
   tenantId: string
   periodStart: string
   periodEnd: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event PayrollPeriodClosed: "payroll.period.closed" {
+  periodId: string
+  tenantId: string
+  closedAt: datetime
+}
+
+event PayrollPeriodReopened: "payroll.period.reopened" {
+  periodId: string
+  tenantId: string
+  reopenedAt: datetime
+}
+
+event PayrollPeriodLocked: "payroll.period.locked" {
+  periodId: string
+  tenantId: string
+  lockedAt: datetime
 }
 
 event EmployeeDeductionCreated: "payroll.deduction.created" {
@@ -153,7 +288,23 @@ event EmployeeDeductionCreated: "payroll.deduction.created" {
   employeeId: string
   type: string
   name: string
-  createdAt: number
+  createdAt: datetime
+}
+
+event EmployeeDeductionUpdated: "payroll.deduction.updated" {
+  deductionId: string
+  tenantId: string
+  amount: number
+  percentage: number
+  updatedAt: datetime
+}
+
+event EmployeeDeductionDeactivated: "payroll.deduction.deactivated" {
+  deductionId: string
+  tenantId: string
+  employeeId: string
+  reason: string
+  deactivatedAt: datetime
 }
 
 event PayrollApprovalRequested: "payroll.approval.requested" {
@@ -161,11 +312,40 @@ event PayrollApprovalRequested: "payroll.approval.requested" {
   payrollRunId: string
   action: string
   performedBy: string
-  createdAt: number
+  createdAt: datetime
 }
 
-event PayrollRunStatusChanged: "payroll.run.status-changed" {
+event PayrollRunCreated: "payroll.run.created" {
   runId: string
-  status: string
-  updatedAt: number
+  tenantId: string
+  payrollPeriodId: string
+  runDate: string
+  createdAt: datetime
+}
+
+event PayrollRunProcessed: "payroll.run.processed" {
+  runId: string
+  totalGross: number
+  totalDeductions: number
+  totalNet: number
+  processedAt: datetime
+}
+
+event PayrollRunApproved: "payroll.run.approved" {
+  runId: string
+  approvedBy: string
+  approvedAt: datetime
+}
+
+event PayrollRunRejected: "payroll.run.rejected" {
+  runId: string
+  rejectedBy: string
+  rejectReason: string
+  rejectedAt: datetime
+}
+
+event PayrollRunPaid: "payroll.run.paid" {
+  runId: string
+  totalNet: number
+  paidAt: datetime
 }

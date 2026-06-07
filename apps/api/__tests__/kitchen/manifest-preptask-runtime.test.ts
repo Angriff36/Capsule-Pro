@@ -12,8 +12,12 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
-import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
+import {
+  createCustomBuiltins,
+  ManifestRuntimeEngine,
+} from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
 async function getTestRuntime() {
   const manifestPath = join(
@@ -29,13 +33,23 @@ async function getTestRuntime() {
     );
   }
 
-  return new ManifestRuntimeEngine(enforceCommandOwnership(ir), {
-    user: {
-      id: "test-user-123",
-      tenantId: "test-tenant-456",
-      role: "admin",
+  return new ManifestRuntimeEngine(
+    enforceCommandOwnership(ir),
+    {
+      user: {
+        id: "test-user-123",
+        tenantId: "test-tenant-456",
+        role: "admin",
+      },
     },
-  });
+    {
+      storeProvider: inMemoryStoreProvider(),
+      // Match production: wire the same deterministic builtins the factory
+      // injects, so computed properties like `percentComplete = percent(...)`
+      // resolve instead of evaluating to undefined.
+      customBuiltins: createCustomBuiltins(),
+    }
+  );
 }
 
 describe("Manifest Runtime - PrepTask Commands", () => {
@@ -230,7 +244,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const instance = await runtime.getInstance("PrepTask", "task-005");
     expect(instance?.status).toBe("open");
     expect(instance?.claimedBy).toBe("");
-    expect(instance?.claimedAt).toBe(0);
+    expect(instance?.claimedAt).toBeNull();
     expect(instance?.stationId).toBe("");
 
     // Verify event emission

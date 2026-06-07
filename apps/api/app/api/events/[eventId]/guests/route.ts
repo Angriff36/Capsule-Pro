@@ -4,8 +4,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/events/[eventId]/guests
@@ -100,14 +100,16 @@ export async function POST(
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   const { eventId } = await params;
-  return executeManifestCommand(request, {
-    entityName: "EventGuest",
-    commandName: "create",
-    params: { eventId },
-    transformBody: (body, ctx) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "EventGuest",
+    command: "create",
+    body: {
+      ...rawBody,
       eventId,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

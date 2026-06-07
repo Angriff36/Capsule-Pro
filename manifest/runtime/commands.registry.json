@@ -1,5 +1,30 @@
 [
   {
+    "entity": "ActionMilestone",
+    "command": "complete",
+    "commandId": "ActionMilestone.complete"
+  },
+  {
+    "entity": "ActionMilestone",
+    "command": "create",
+    "commandId": "ActionMilestone.create"
+  },
+  {
+    "entity": "ActionMilestone",
+    "command": "miss",
+    "commandId": "ActionMilestone.miss"
+  },
+  {
+    "entity": "AdminChatMessage",
+    "command": "create",
+    "commandId": "AdminChatMessage.create"
+  },
+  {
+    "entity": "AdminChatMessage",
+    "command": "remove",
+    "commandId": "AdminChatMessage.remove"
+  },
+  {
     "entity": "AdminChatParticipant",
     "command": "archive",
     "commandId": "AdminChatParticipant.archive"
@@ -11,8 +36,28 @@
   },
   {
     "entity": "AdminChatParticipant",
+    "command": "create",
+    "commandId": "AdminChatParticipant.create"
+  },
+  {
+    "entity": "AdminChatParticipant",
     "command": "unarchive",
     "commandId": "AdminChatParticipant.unarchive"
+  },
+  {
+    "entity": "AdminChatThread",
+    "command": "archive",
+    "commandId": "AdminChatThread.archive"
+  },
+  {
+    "entity": "AdminChatThread",
+    "command": "create",
+    "commandId": "AdminChatThread.create"
+  },
+  {
+    "entity": "AdminChatThread",
+    "command": "reopen",
+    "commandId": "AdminChatThread.reopen"
   },
   {
     "entity": "AdminTask",
@@ -31,13 +76,8 @@
   },
   {
     "entity": "AdminTask",
-    "command": "moveToTodo",
-    "commandId": "AdminTask.moveToTodo"
-  },
-  {
-    "entity": "AdminTask",
-    "command": "reopen",
-    "commandId": "AdminTask.reopen"
+    "command": "moveToBacklog",
+    "commandId": "AdminTask.moveToBacklog"
   },
   {
     "entity": "AdminTask",
@@ -48,6 +88,11 @@
     "entity": "AdminTask",
     "command": "startProgress",
     "commandId": "AdminTask.startProgress"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "submitForReview",
+    "commandId": "AdminTask.submitForReview"
   },
   {
     "entity": "AdminTask",
@@ -111,8 +156,13 @@
   },
   {
     "entity": "AllergenWarning",
-    "command": "resolve",
-    "commandId": "AllergenWarning.resolve"
+    "command": "escalate",
+    "commandId": "AllergenWarning.escalate"
+  },
+  {
+    "entity": "AllergenWarning",
+    "command": "markResolved",
+    "commandId": "AllergenWarning.markResolved"
   },
   {
     "entity": "AllergenWarning",
@@ -136,6 +186,11 @@
   },
   {
     "entity": "ApiKey",
+    "command": "rotate",
+    "commandId": "ApiKey.rotate"
+  },
+  {
+    "entity": "ApiKey",
     "command": "softDelete",
     "commandId": "ApiKey.softDelete"
   },
@@ -143,6 +198,31 @@
     "entity": "ApiKey",
     "command": "update",
     "commandId": "ApiKey.update"
+  },
+  {
+    "entity": "AuditSchedule",
+    "command": "activate",
+    "commandId": "AuditSchedule.activate"
+  },
+  {
+    "entity": "AuditSchedule",
+    "command": "create",
+    "commandId": "AuditSchedule.create"
+  },
+  {
+    "entity": "AuditSchedule",
+    "command": "deactivate",
+    "commandId": "AuditSchedule.deactivate"
+  },
+  {
+    "entity": "AuditSchedule",
+    "command": "recordRun",
+    "commandId": "AuditSchedule.recordRun"
+  },
+  {
+    "entity": "AuditSchedule",
+    "command": "update",
+    "commandId": "AuditSchedule.update"
   },
   {
     "entity": "AutomatedFollowup",
@@ -156,8 +236,18 @@
   },
   {
     "entity": "AutomatedFollowup",
+    "command": "fail",
+    "commandId": "AutomatedFollowup.fail"
+  },
+  {
+    "entity": "AutomatedFollowup",
     "command": "generate",
     "commandId": "AutomatedFollowup.generate"
+  },
+  {
+    "entity": "AutomatedFollowup",
+    "command": "retry",
+    "commandId": "AutomatedFollowup.retry"
   },
   {
     "entity": "AutomatedFollowup",
@@ -181,6 +271,11 @@
   },
   {
     "entity": "BankAccount",
+    "command": "retryVerification",
+    "commandId": "BankAccount.retryVerification"
+  },
+  {
+    "entity": "BankAccount",
     "command": "update",
     "commandId": "BankAccount.update"
   },
@@ -188,6 +283,11 @@
     "entity": "BankAccount",
     "command": "verify",
     "commandId": "BankAccount.verify"
+  },
+  {
+    "entity": "BankAccount",
+    "command": "verifyFailed",
+    "commandId": "BankAccount.verifyFailed"
   },
   {
     "entity": "BattleBoard",
@@ -211,6 +311,11 @@
   },
   {
     "entity": "BattleBoard",
+    "command": "recordImport",
+    "commandId": "BattleBoard.recordImport"
+  },
+  {
+    "entity": "BattleBoard",
     "command": "removeDish",
     "commandId": "BattleBoard.removeDish"
   },
@@ -221,13 +326,73 @@
   },
   {
     "entity": "BattleBoard",
+    "command": "update",
+    "commandId": "BattleBoard.update"
+  },
+  {
+    "entity": "BattleBoard",
     "command": "vote",
     "commandId": "BattleBoard.vote"
+  },
+  {
+    "entity": "BoardAnnotation",
+    "command": "create",
+    "commandId": "BoardAnnotation.create"
+  },
+  {
+    "entity": "BoardAnnotation",
+    "command": "remove",
+    "commandId": "BoardAnnotation.remove"
+  },
+  {
+    "entity": "BoardAnnotation",
+    "command": "update",
+    "commandId": "BoardAnnotation.update"
+  },
+  {
+    "entity": "BoardProjection",
+    "command": "create",
+    "commandId": "BoardProjection.create"
+  },
+  {
+    "entity": "BoardProjection",
+    "command": "move",
+    "commandId": "BoardProjection.move"
+  },
+  {
+    "entity": "BoardProjection",
+    "command": "remove",
+    "commandId": "BoardProjection.remove"
+  },
+  {
+    "entity": "BoardProjection",
+    "command": "resize",
+    "commandId": "BoardProjection.resize"
+  },
+  {
+    "entity": "Budget",
+    "command": "addLineItem",
+    "commandId": "Budget.addLineItem"
+  },
+  {
+    "entity": "Budget",
+    "command": "approve",
+    "commandId": "Budget.approve"
   },
   {
     "entity": "Budget",
     "command": "create",
     "commandId": "Budget.create"
+  },
+  {
+    "entity": "Budget",
+    "command": "lock",
+    "commandId": "Budget.lock"
+  },
+  {
+    "entity": "Budget",
+    "command": "recordVariance",
+    "commandId": "Budget.recordVariance"
   },
   {
     "entity": "Budget",
@@ -251,8 +416,13 @@
   },
   {
     "entity": "BudgetAlert",
-    "command": "resolve",
-    "commandId": "BudgetAlert.resolve"
+    "command": "create",
+    "commandId": "BudgetAlert.create"
+  },
+  {
+    "entity": "BudgetAlert",
+    "command": "markResolved",
+    "commandId": "BudgetAlert.markResolved"
   },
   {
     "entity": "BudgetLineItem",
@@ -270,9 +440,39 @@
     "commandId": "BudgetLineItem.update"
   },
   {
+    "entity": "BulkCombineRule",
+    "command": "create",
+    "commandId": "BulkCombineRule.create"
+  },
+  {
+    "entity": "BulkCombineRule",
+    "command": "deactivate",
+    "commandId": "BulkCombineRule.deactivate"
+  },
+  {
+    "entity": "BulkCombineRule",
+    "command": "update",
+    "commandId": "BulkCombineRule.update"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "activate",
+    "commandId": "BulkOrderRule.activate"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "adjustPriority",
+    "commandId": "BulkOrderRule.adjustPriority"
+  },
+  {
     "entity": "BulkOrderRule",
     "command": "create",
     "commandId": "BulkOrderRule.create"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "deactivate",
+    "commandId": "BulkOrderRule.deactivate"
   },
   {
     "entity": "BulkOrderRule",
@@ -301,8 +501,23 @@
   },
   {
     "entity": "CateringOrder",
+    "command": "deliver",
+    "commandId": "CateringOrder.deliver"
+  },
+  {
+    "entity": "CateringOrder",
     "command": "markComplete",
     "commandId": "CateringOrder.markComplete"
+  },
+  {
+    "entity": "CateringOrder",
+    "command": "recordDeposit",
+    "commandId": "CateringOrder.recordDeposit"
+  },
+  {
+    "entity": "CateringOrder",
+    "command": "scheduleDelivery",
+    "commandId": "CateringOrder.scheduleDelivery"
   },
   {
     "entity": "CateringOrder",
@@ -378,6 +593,26 @@
     "entity": "ClientInteraction",
     "command": "create",
     "commandId": "ClientInteraction.create"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "escalate",
+    "commandId": "ClientInteraction.escalate"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "markOverdue",
+    "commandId": "ClientInteraction.markOverdue"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "schedule",
+    "commandId": "ClientInteraction.schedule"
+  },
+  {
+    "entity": "ClientInteraction",
+    "command": "softDelete",
+    "commandId": "ClientInteraction.softDelete"
   },
   {
     "entity": "ClientInteraction",
@@ -471,11 +706,6 @@
   },
   {
     "entity": "CollectionCase",
-    "command": "resolve",
-    "commandId": "CollectionCase.resolve"
-  },
-  {
-    "entity": "CollectionCase",
     "command": "resolveDispute",
     "commandId": "CollectionCase.resolveDispute"
   },
@@ -488,6 +718,11 @@
     "entity": "CollectionCase",
     "command": "setPriority",
     "commandId": "CollectionCase.setPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "settle",
+    "commandId": "CollectionCase.settle"
   },
   {
     "entity": "CollectionCase",
@@ -631,6 +866,16 @@
   },
   {
     "entity": "Container",
+    "command": "reactivate",
+    "commandId": "Container.reactivate"
+  },
+  {
+    "entity": "Container",
+    "command": "relocate",
+    "commandId": "Container.relocate"
+  },
+  {
+    "entity": "Container",
     "command": "update",
     "commandId": "Container.update"
   },
@@ -641,8 +886,63 @@
   },
   {
     "entity": "ContractSignature",
+    "command": "invalidate",
+    "commandId": "ContractSignature.invalidate"
+  },
+  {
+    "entity": "ContractSignature",
     "command": "softDelete",
     "commandId": "ContractSignature.softDelete"
+  },
+  {
+    "entity": "ContractSignature",
+    "command": "verify",
+    "commandId": "ContractSignature.verify"
+  },
+  {
+    "entity": "CorrectiveAction",
+    "command": "assign",
+    "commandId": "CorrectiveAction.assign"
+  },
+  {
+    "entity": "CorrectiveAction",
+    "command": "close",
+    "commandId": "CorrectiveAction.close"
+  },
+  {
+    "entity": "CorrectiveAction",
+    "command": "create",
+    "commandId": "CorrectiveAction.create"
+  },
+  {
+    "entity": "CorrectiveAction",
+    "command": "startProgress",
+    "commandId": "CorrectiveAction.startProgress"
+  },
+  {
+    "entity": "CrmScoringRule",
+    "command": "activate",
+    "commandId": "CrmScoringRule.activate"
+  },
+  {
+    "entity": "CrmScoringRule",
+    "command": "create",
+    "commandId": "CrmScoringRule.create"
+  },
+  {
+    "entity": "CrmScoringRule",
+    "command": "deactivate",
+    "commandId": "CrmScoringRule.deactivate"
+  },
+  {
+    "entity": "CrmScoringRule",
+    "command": "softDelete",
+    "commandId": "CrmScoringRule.softDelete"
+  },
+  {
+    "entity": "CrmScoringRule",
+    "command": "update",
+    "commandId": "CrmScoringRule.update"
   },
   {
     "entity": "CycleCountRecord",
@@ -686,8 +986,28 @@
   },
   {
     "entity": "CycleCountSession",
+    "command": "softDelete",
+    "commandId": "CycleCountSession.softDelete"
+  },
+  {
+    "entity": "CycleCountSession",
     "command": "start",
     "commandId": "CycleCountSession.start"
+  },
+  {
+    "entity": "CycleCountSession",
+    "command": "update",
+    "commandId": "CycleCountSession.update"
+  },
+  {
+    "entity": "Deal",
+    "command": "abandon",
+    "commandId": "Deal.abandon"
+  },
+  {
+    "entity": "Deal",
+    "command": "assign",
+    "commandId": "Deal.assign"
   },
   {
     "entity": "Deal",
@@ -696,8 +1016,73 @@
   },
   {
     "entity": "Deal",
+    "command": "create",
+    "commandId": "Deal.create"
+  },
+  {
+    "entity": "Deal",
+    "command": "reopen",
+    "commandId": "Deal.reopen"
+  },
+  {
+    "entity": "Deal",
+    "command": "updateProbability",
+    "commandId": "Deal.updateProbability"
+  },
+  {
+    "entity": "Deal",
     "command": "updateStage",
     "commandId": "Deal.updateStage"
+  },
+  {
+    "entity": "Deal",
+    "command": "updateValue",
+    "commandId": "Deal.updateValue"
+  },
+  {
+    "entity": "DeliveryRoute",
+    "command": "assignDriver",
+    "commandId": "DeliveryRoute.assignDriver"
+  },
+  {
+    "entity": "DeliveryRoute",
+    "command": "complete",
+    "commandId": "DeliveryRoute.complete"
+  },
+  {
+    "entity": "DeliveryRoute",
+    "command": "create",
+    "commandId": "DeliveryRoute.create"
+  },
+  {
+    "entity": "DeliveryRoute",
+    "command": "start",
+    "commandId": "DeliveryRoute.start"
+  },
+  {
+    "entity": "DisciplinaryAction",
+    "command": "acknowledge",
+    "commandId": "DisciplinaryAction.acknowledge"
+  },
+  {
+    "entity": "DisciplinaryAction",
+    "command": "close",
+    "commandId": "DisciplinaryAction.close"
+  },
+  {
+    "entity": "DisciplinaryAction",
+    "command": "create",
+    "commandId": "DisciplinaryAction.create"
+  },
+  {
+    "entity": "DisciplinaryAction",
+    "command": "escalate",
+    "commandId": "DisciplinaryAction.escalate"
+  },
+  {
+    "entity": "Dish",
+    "command": "activate",
+    "commandId": "Dish.activate"
   },
   {
     "entity": "Dish",
@@ -708,6 +1093,26 @@
     "entity": "Dish",
     "command": "deactivate",
     "commandId": "Dish.deactivate"
+  },
+  {
+    "entity": "Dish",
+    "command": "eightySix",
+    "commandId": "Dish.eightySix"
+  },
+  {
+    "entity": "Dish",
+    "command": "markSeasonal",
+    "commandId": "Dish.markSeasonal"
+  },
+  {
+    "entity": "Dish",
+    "command": "reinstate",
+    "commandId": "Dish.reinstate"
+  },
+  {
+    "entity": "Dish",
+    "command": "unmarkSeasonal",
+    "commandId": "Dish.unmarkSeasonal"
   },
   {
     "entity": "Dish",
@@ -725,14 +1130,54 @@
     "commandId": "Dish.updatePricing"
   },
   {
+    "entity": "Document",
+    "command": "create",
+    "commandId": "Document.create"
+  },
+  {
+    "entity": "Document",
+    "command": "markFailed",
+    "commandId": "Document.markFailed"
+  },
+  {
+    "entity": "Document",
+    "command": "markParsed",
+    "commandId": "Document.markParsed"
+  },
+  {
+    "entity": "Document",
+    "command": "remove",
+    "commandId": "Document.remove"
+  },
+  {
+    "entity": "DocumentVersion",
+    "command": "approve",
+    "commandId": "DocumentVersion.approve"
+  },
+  {
     "entity": "DocumentVersion",
     "command": "create",
     "commandId": "DocumentVersion.create"
   },
   {
     "entity": "DocumentVersion",
+    "command": "markPublished",
+    "commandId": "DocumentVersion.markPublished"
+  },
+  {
+    "entity": "DocumentVersion",
     "command": "restore",
     "commandId": "DocumentVersion.restore"
+  },
+  {
+    "entity": "DocumentVersion",
+    "command": "supersede",
+    "commandId": "DocumentVersion.supersede"
+  },
+  {
+    "entity": "DocumentVersion",
+    "command": "updateContent",
+    "commandId": "DocumentVersion.updateContent"
   },
   {
     "entity": "Driver",
@@ -741,8 +1186,23 @@
   },
   {
     "entity": "Driver",
+    "command": "reactivate",
+    "commandId": "Driver.reactivate"
+  },
+  {
+    "entity": "Driver",
     "command": "remove",
     "commandId": "Driver.remove"
+  },
+  {
+    "entity": "Driver",
+    "command": "renewLicense",
+    "commandId": "Driver.renewLicense"
+  },
+  {
+    "entity": "Driver",
+    "command": "setOffDuty",
+    "commandId": "Driver.setOffDuty"
   },
   {
     "entity": "Driver",
@@ -771,6 +1231,16 @@
   },
   {
     "entity": "EmailWorkflow",
+    "command": "recordTriggered",
+    "commandId": "EmailWorkflow.recordTriggered"
+  },
+  {
+    "entity": "EmailWorkflow",
+    "command": "setActive",
+    "commandId": "EmailWorkflow.setActive"
+  },
+  {
+    "entity": "EmailWorkflow",
     "command": "softDelete",
     "commandId": "EmailWorkflow.softDelete"
   },
@@ -786,8 +1256,18 @@
   },
   {
     "entity": "EmployeeAvailability",
+    "command": "reinstate",
+    "commandId": "EmployeeAvailability.reinstate"
+  },
+  {
+    "entity": "EmployeeAvailability",
     "command": "softDelete",
     "commandId": "EmployeeAvailability.softDelete"
+  },
+  {
+    "entity": "EmployeeAvailability",
+    "command": "suspend",
+    "commandId": "EmployeeAvailability.suspend"
   },
   {
     "entity": "EmployeeAvailability",
@@ -798,6 +1278,21 @@
     "entity": "EmployeeCertification",
     "command": "create",
     "commandId": "EmployeeCertification.create"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "expire",
+    "commandId": "EmployeeCertification.expire"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "renew",
+    "commandId": "EmployeeCertification.renew"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "revoke",
+    "commandId": "EmployeeCertification.revoke"
   },
   {
     "entity": "EmployeeCertification",
@@ -813,6 +1308,16 @@
     "entity": "EmployeeDeduction",
     "command": "create",
     "commandId": "EmployeeDeduction.create"
+  },
+  {
+    "entity": "EmployeeDeduction",
+    "command": "deactivate",
+    "commandId": "EmployeeDeduction.deactivate"
+  },
+  {
+    "entity": "EmployeeDeduction",
+    "command": "update",
+    "commandId": "EmployeeDeduction.update"
   },
   {
     "entity": "EntityVersion",
@@ -896,6 +1401,11 @@
   },
   {
     "entity": "Event",
+    "command": "softDelete",
+    "commandId": "Event.softDelete"
+  },
+  {
+    "entity": "Event",
     "command": "unfinalize",
     "commandId": "Event.unfinalize"
   },
@@ -903,6 +1413,11 @@
     "entity": "Event",
     "command": "update",
     "commandId": "Event.update"
+  },
+  {
+    "entity": "Event",
+    "command": "updateBudget",
+    "commandId": "Event.updateBudget"
   },
   {
     "entity": "Event",
@@ -990,9 +1505,64 @@
     "commandId": "EventDish.remove"
   },
   {
+    "entity": "EventDish",
+    "command": "updateCourse",
+    "commandId": "EventDish.updateCourse"
+  },
+  {
+    "entity": "EventDish",
+    "command": "updateNotes",
+    "commandId": "EventDish.updateNotes"
+  },
+  {
+    "entity": "EventDish",
+    "command": "updateQuantity",
+    "commandId": "EventDish.updateQuantity"
+  },
+  {
+    "entity": "EventFollowup",
+    "command": "cancel",
+    "commandId": "EventFollowup.cancel"
+  },
+  {
+    "entity": "EventFollowup",
+    "command": "complete",
+    "commandId": "EventFollowup.complete"
+  },
+  {
+    "entity": "EventFollowup",
+    "command": "create",
+    "commandId": "EventFollowup.create"
+  },
+  {
+    "entity": "EventFollowup",
+    "command": "reschedule",
+    "commandId": "EventFollowup.reschedule"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "assignTable",
+    "commandId": "EventGuest.assignTable"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "checkIn",
+    "commandId": "EventGuest.checkIn"
+  },
+  {
     "entity": "EventGuest",
     "command": "create",
     "commandId": "EventGuest.create"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "rsvpConfirm",
+    "commandId": "EventGuest.rsvpConfirm"
+  },
+  {
+    "entity": "EventGuest",
+    "command": "rsvpDecline",
+    "commandId": "EventGuest.rsvpDecline"
   },
   {
     "entity": "EventGuest",
@@ -1003,6 +1573,31 @@
     "entity": "EventGuest",
     "command": "update",
     "commandId": "EventGuest.update"
+  },
+  {
+    "entity": "EventImport",
+    "command": "complete",
+    "commandId": "EventImport.complete"
+  },
+  {
+    "entity": "EventImport",
+    "command": "create",
+    "commandId": "EventImport.create"
+  },
+  {
+    "entity": "EventImport",
+    "command": "fail",
+    "commandId": "EventImport.fail"
+  },
+  {
+    "entity": "EventImport",
+    "command": "retry",
+    "commandId": "EventImport.retry"
+  },
+  {
+    "entity": "EventImport",
+    "command": "startProcessing",
+    "commandId": "EventImport.startProcessing"
   },
   {
     "entity": "EventImportWorkflow",
@@ -1126,8 +1721,18 @@
   },
   {
     "entity": "EventReport",
+    "command": "reject",
+    "commandId": "EventReport.reject"
+  },
+  {
+    "entity": "EventReport",
     "command": "submit",
     "commandId": "EventReport.submit"
+  },
+  {
+    "entity": "EventReport",
+    "command": "updateProgress",
+    "commandId": "EventReport.updateProgress"
   },
   {
     "entity": "EventStaff",
@@ -1136,8 +1741,38 @@
   },
   {
     "entity": "EventStaff",
+    "command": "checkIn",
+    "commandId": "EventStaff.checkIn"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "checkOut",
+    "commandId": "EventStaff.checkOut"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "confirm",
+    "commandId": "EventStaff.confirm"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "markNoShow",
+    "commandId": "EventStaff.markNoShow"
+  },
+  {
+    "entity": "EventStaff",
     "command": "unassign",
     "commandId": "EventStaff.unassign"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "updateRole",
+    "commandId": "EventStaff.updateRole"
+  },
+  {
+    "entity": "EventStaff",
+    "command": "updateShift",
+    "commandId": "EventStaff.updateShift"
   },
   {
     "entity": "EventSummary",
@@ -1153,6 +1788,31 @@
     "entity": "EventSummary",
     "command": "update",
     "commandId": "EventSummary.update"
+  },
+  {
+    "entity": "EventTimeline",
+    "command": "create",
+    "commandId": "EventTimeline.create"
+  },
+  {
+    "entity": "EventTimeline",
+    "command": "remove",
+    "commandId": "EventTimeline.remove"
+  },
+  {
+    "entity": "EventTimeline",
+    "command": "reorder",
+    "commandId": "EventTimeline.reorder"
+  },
+  {
+    "entity": "EventTimeline",
+    "command": "update",
+    "commandId": "EventTimeline.update"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "blockItem",
+    "commandId": "EventTimelineItem.blockItem"
   },
   {
     "entity": "EventTimelineItem",
@@ -1171,6 +1831,21 @@
   },
   {
     "entity": "EventTimelineItem",
+    "command": "reorderItem",
+    "commandId": "EventTimelineItem.reorderItem"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "startItem",
+    "commandId": "EventTimelineItem.startItem"
+  },
+  {
+    "entity": "EventTimelineItem",
+    "command": "unblockItem",
+    "commandId": "EventTimelineItem.unblockItem"
+  },
+  {
+    "entity": "EventTimelineItem",
     "command": "updateItem",
     "commandId": "EventTimelineItem.updateItem"
   },
@@ -1181,8 +1856,23 @@
   },
   {
     "entity": "EventWaitlistEntry",
+    "command": "cancel",
+    "commandId": "EventWaitlistEntry.cancel"
+  },
+  {
+    "entity": "EventWaitlistEntry",
+    "command": "notify",
+    "commandId": "EventWaitlistEntry.notify"
+  },
+  {
+    "entity": "EventWaitlistEntry",
     "command": "promote",
     "commandId": "EventWaitlistEntry.promote"
+  },
+  {
+    "entity": "EventWaitlistEntry",
+    "command": "seat",
+    "commandId": "EventWaitlistEntry.seat"
   },
   {
     "entity": "EventWaitlistEntry",
@@ -1205,6 +1895,21 @@
     "commandId": "Facility.remove"
   },
   {
+    "entity": "Facility",
+    "command": "restoreFromMaintenance",
+    "commandId": "Facility.restoreFromMaintenance"
+  },
+  {
+    "entity": "Facility",
+    "command": "sendToMaintenance",
+    "commandId": "Facility.sendToMaintenance"
+  },
+  {
+    "entity": "FacilityArea",
+    "command": "closeForMaintenance",
+    "commandId": "FacilityArea.closeForMaintenance"
+  },
+  {
     "entity": "FacilityArea",
     "command": "create",
     "commandId": "FacilityArea.create"
@@ -1220,6 +1925,11 @@
     "commandId": "FacilityArea.remove"
   },
   {
+    "entity": "FacilityArea",
+    "command": "reopen",
+    "commandId": "FacilityArea.reopen"
+  },
+  {
     "entity": "FacilityAsset",
     "command": "create",
     "commandId": "FacilityAsset.create"
@@ -1231,8 +1941,28 @@
   },
   {
     "entity": "FacilityAsset",
+    "command": "retire",
+    "commandId": "FacilityAsset.retire"
+  },
+  {
+    "entity": "FacilityAsset",
+    "command": "returnFromMaintenance",
+    "commandId": "FacilityAsset.returnFromMaintenance"
+  },
+  {
+    "entity": "FacilityAsset",
+    "command": "sendToMaintenance",
+    "commandId": "FacilityAsset.sendToMaintenance"
+  },
+  {
+    "entity": "FacilityAsset",
     "command": "update",
     "commandId": "FacilityAsset.update"
+  },
+  {
+    "entity": "FacilitySchedule",
+    "command": "cancel",
+    "commandId": "FacilitySchedule.cancel"
   },
   {
     "entity": "FacilitySchedule",
@@ -1255,14 +1985,44 @@
     "commandId": "FacilitySchedule.remove"
   },
   {
+    "entity": "FacilitySchedule",
+    "command": "start",
+    "commandId": "FacilitySchedule.start"
+  },
+  {
+    "entity": "FacilityWorkOrder",
+    "command": "assign",
+    "commandId": "FacilityWorkOrder.assign"
+  },
+  {
+    "entity": "FacilityWorkOrder",
+    "command": "cancel",
+    "commandId": "FacilityWorkOrder.cancel"
+  },
+  {
+    "entity": "FacilityWorkOrder",
+    "command": "complete",
+    "commandId": "FacilityWorkOrder.complete"
+  },
+  {
     "entity": "FacilityWorkOrder",
     "command": "create",
     "commandId": "FacilityWorkOrder.create"
   },
   {
     "entity": "FacilityWorkOrder",
-    "command": "updateStatus",
-    "commandId": "FacilityWorkOrder.updateStatus"
+    "command": "start",
+    "commandId": "FacilityWorkOrder.start"
+  },
+  {
+    "entity": "ForecastInput",
+    "command": "create",
+    "commandId": "ForecastInput.create"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "clearRecall",
+    "commandId": "Ingredient.clearRecall"
   },
   {
     "entity": "Ingredient",
@@ -1273,6 +2033,31 @@
     "entity": "Ingredient",
     "command": "deactivate",
     "commandId": "Ingredient.deactivate"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "flagRecall",
+    "commandId": "Ingredient.flagRecall"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "linkInventoryItem",
+    "commandId": "Ingredient.linkInventoryItem"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "reactivate",
+    "commandId": "Ingredient.reactivate"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "recordLot",
+    "commandId": "Ingredient.recordLot"
+  },
+  {
+    "entity": "Ingredient",
+    "command": "unlinkInventoryItem",
+    "commandId": "Ingredient.unlinkInventoryItem"
   },
   {
     "entity": "Ingredient",
@@ -1288,6 +2073,56 @@
     "entity": "Ingredient",
     "command": "updateShelfLife",
     "commandId": "Ingredient.updateShelfLife"
+  },
+  {
+    "entity": "InteractionAttachment",
+    "command": "create",
+    "commandId": "InteractionAttachment.create"
+  },
+  {
+    "entity": "InteractionAttachment",
+    "command": "remove",
+    "commandId": "InteractionAttachment.remove"
+  },
+  {
+    "entity": "InventoryAlert",
+    "command": "acknowledge",
+    "commandId": "InventoryAlert.acknowledge"
+  },
+  {
+    "entity": "InventoryAlert",
+    "command": "create",
+    "commandId": "InventoryAlert.create"
+  },
+  {
+    "entity": "InventoryAlert",
+    "command": "escalate",
+    "commandId": "InventoryAlert.escalate"
+  },
+  {
+    "entity": "InventoryAlert",
+    "command": "markResolved",
+    "commandId": "InventoryAlert.markResolved"
+  },
+  {
+    "entity": "InventoryForecast",
+    "command": "approve",
+    "commandId": "InventoryForecast.approve"
+  },
+  {
+    "entity": "InventoryForecast",
+    "command": "create",
+    "commandId": "InventoryForecast.create"
+  },
+  {
+    "entity": "InventoryForecast",
+    "command": "markPublished",
+    "commandId": "InventoryForecast.markPublished"
+  },
+  {
+    "entity": "InventoryForecast",
+    "command": "update",
+    "commandId": "InventoryForecast.update"
   },
   {
     "entity": "InventoryItem",
@@ -1321,8 +2156,43 @@
   },
   {
     "entity": "InventoryItem",
+    "command": "softDelete",
+    "commandId": "InventoryItem.softDelete"
+  },
+  {
+    "entity": "InventoryItem",
+    "command": "update",
+    "commandId": "InventoryItem.update"
+  },
+  {
+    "entity": "InventoryItem",
     "command": "waste",
     "commandId": "InventoryItem.waste"
+  },
+  {
+    "entity": "InventoryStock",
+    "command": "adjust",
+    "commandId": "InventoryStock.adjust"
+  },
+  {
+    "entity": "InventoryStock",
+    "command": "create",
+    "commandId": "InventoryStock.create"
+  },
+  {
+    "entity": "InventoryStock",
+    "command": "recount",
+    "commandId": "InventoryStock.recount"
+  },
+  {
+    "entity": "InventorySupplier",
+    "command": "approve",
+    "commandId": "InventorySupplier.approve"
+  },
+  {
+    "entity": "InventorySupplier",
+    "command": "blacklist",
+    "commandId": "InventorySupplier.blacklist"
   },
   {
     "entity": "InventorySupplier",
@@ -1336,13 +2206,33 @@
   },
   {
     "entity": "InventorySupplier",
+    "command": "reinstate",
+    "commandId": "InventorySupplier.reinstate"
+  },
+  {
+    "entity": "InventorySupplier",
+    "command": "suspend",
+    "commandId": "InventorySupplier.suspend"
+  },
+  {
+    "entity": "InventorySupplier",
     "command": "update",
     "commandId": "InventorySupplier.update"
   },
   {
     "entity": "InventoryTransaction",
+    "command": "adjustCost",
+    "commandId": "InventoryTransaction.adjustCost"
+  },
+  {
+    "entity": "InventoryTransaction",
     "command": "create",
     "commandId": "InventoryTransaction.create"
+  },
+  {
+    "entity": "InventoryTransaction",
+    "command": "reverse",
+    "commandId": "InventoryTransaction.reverse"
   },
   {
     "entity": "InventoryTransfer",
@@ -1361,6 +2251,16 @@
   },
   {
     "entity": "InventoryTransfer",
+    "command": "flagDiscrepancy",
+    "commandId": "InventoryTransfer.flagDiscrepancy"
+  },
+  {
+    "entity": "InventoryTransfer",
+    "command": "partialReceive",
+    "commandId": "InventoryTransfer.partialReceive"
+  },
+  {
+    "entity": "InventoryTransfer",
     "command": "receive",
     "commandId": "InventoryTransfer.receive"
   },
@@ -1368,6 +2268,21 @@
     "entity": "InventoryTransfer",
     "command": "ship",
     "commandId": "InventoryTransfer.ship"
+  },
+  {
+    "entity": "InventoryTransferItem",
+    "command": "addItem",
+    "commandId": "InventoryTransferItem.addItem"
+  },
+  {
+    "entity": "InventoryTransferItem",
+    "command": "removeItem",
+    "commandId": "InventoryTransferItem.removeItem"
+  },
+  {
+    "entity": "InventoryTransferItem",
+    "command": "updateQuantity",
+    "commandId": "InventoryTransferItem.updateQuantity"
   },
   {
     "entity": "Invoice",
@@ -1406,6 +2321,11 @@
   },
   {
     "entity": "Invoice",
+    "command": "update",
+    "commandId": "Invoice.update"
+  },
+  {
+    "entity": "Invoice",
     "command": "updateLineItems",
     "commandId": "Invoice.updateLineItems"
   },
@@ -1418,6 +2338,36 @@
     "entity": "Invoice",
     "command": "writeOff",
     "commandId": "Invoice.writeOff"
+  },
+  {
+    "entity": "IoTAlert",
+    "command": "acknowledge",
+    "commandId": "IoTAlert.acknowledge"
+  },
+  {
+    "entity": "IoTAlert",
+    "command": "create",
+    "commandId": "IoTAlert.create"
+  },
+  {
+    "entity": "IoTAlert",
+    "command": "markResolved",
+    "commandId": "IoTAlert.markResolved"
+  },
+  {
+    "entity": "IotAlertRule",
+    "command": "create",
+    "commandId": "IotAlertRule.create"
+  },
+  {
+    "entity": "IotAlertRule",
+    "command": "deactivate",
+    "commandId": "IotAlertRule.deactivate"
+  },
+  {
+    "entity": "IotAlertRule",
+    "command": "update",
+    "commandId": "IotAlertRule.update"
   },
   {
     "entity": "KitchenTask",
@@ -1495,6 +2445,21 @@
     "commandId": "KitchenTask.updateTitle"
   },
   {
+    "entity": "KitchenTaskClaim",
+    "command": "claim",
+    "commandId": "KitchenTaskClaim.claim"
+  },
+  {
+    "entity": "KitchenTaskClaim",
+    "command": "release",
+    "commandId": "KitchenTaskClaim.release"
+  },
+  {
+    "entity": "KitchenTaskProgress",
+    "command": "create",
+    "commandId": "KitchenTaskProgress.create"
+  },
+  {
     "entity": "KnowledgeBaseEntry",
     "command": "create",
     "commandId": "KnowledgeBaseEntry.create"
@@ -1506,8 +2471,18 @@
   },
   {
     "entity": "KnowledgeBaseEntry",
+    "command": "recordView",
+    "commandId": "KnowledgeBaseEntry.recordView"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
     "command": "remove",
     "commandId": "KnowledgeBaseEntry.remove"
+  },
+  {
+    "entity": "KnowledgeBaseEntry",
+    "command": "unpublish",
+    "commandId": "KnowledgeBaseEntry.unpublish"
   },
   {
     "entity": "KnowledgeBaseEntry",
@@ -1516,8 +2491,23 @@
   },
   {
     "entity": "LaborBudget",
+    "command": "approve",
+    "commandId": "LaborBudget.approve"
+  },
+  {
+    "entity": "LaborBudget",
+    "command": "close",
+    "commandId": "LaborBudget.close"
+  },
+  {
+    "entity": "LaborBudget",
     "command": "create",
     "commandId": "LaborBudget.create"
+  },
+  {
+    "entity": "LaborBudget",
+    "command": "recordActual",
+    "commandId": "LaborBudget.recordActual"
   },
   {
     "entity": "LaborBudget",
@@ -1560,6 +2550,41 @@
     "commandId": "LogisticsDispatch.assign"
   },
   {
+    "entity": "LogisticsDispatch",
+    "command": "deliver",
+    "commandId": "LogisticsDispatch.deliver"
+  },
+  {
+    "entity": "LogisticsDispatch",
+    "command": "depart",
+    "commandId": "LogisticsDispatch.depart"
+  },
+  {
+    "entity": "LogisticsDispatch",
+    "command": "fail",
+    "commandId": "LogisticsDispatch.fail"
+  },
+  {
+    "entity": "LogisticsDispatch",
+    "command": "reassign",
+    "commandId": "LogisticsDispatch.reassign"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "cancel",
+    "commandId": "LogisticsRoute.cancel"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "complete",
+    "commandId": "LogisticsRoute.complete"
+  },
+  {
+    "entity": "LogisticsRoute",
+    "command": "completeStop",
+    "commandId": "LogisticsRoute.completeStop"
+  },
+  {
     "entity": "LogisticsRoute",
     "command": "create",
     "commandId": "LogisticsRoute.create"
@@ -1571,18 +2596,23 @@
   },
   {
     "entity": "LogisticsRoute",
+    "command": "recordDelay",
+    "commandId": "LogisticsRoute.recordDelay"
+  },
+  {
+    "entity": "LogisticsRoute",
     "command": "remove",
     "commandId": "LogisticsRoute.remove"
   },
   {
     "entity": "LogisticsRoute",
-    "command": "update",
-    "commandId": "LogisticsRoute.update"
+    "command": "start",
+    "commandId": "LogisticsRoute.start"
   },
   {
     "entity": "LogisticsRoute",
-    "command": "updateStatus",
-    "commandId": "LogisticsRoute.updateStatus"
+    "command": "update",
+    "commandId": "LogisticsRoute.update"
   },
   {
     "entity": "MaintenanceWorkOrder",
@@ -1611,8 +2641,8 @@
   },
   {
     "entity": "Menu",
-    "command": "activate",
-    "commandId": "Menu.activate"
+    "command": "archive",
+    "commandId": "Menu.archive"
   },
   {
     "entity": "Menu",
@@ -1621,13 +2651,33 @@
   },
   {
     "entity": "Menu",
-    "command": "deactivate",
-    "commandId": "Menu.deactivate"
+    "command": "markPublished",
+    "commandId": "Menu.markPublished"
+  },
+  {
+    "entity": "Menu",
+    "command": "markSeasonal",
+    "commandId": "Menu.markSeasonal"
+  },
+  {
+    "entity": "Menu",
+    "command": "restore",
+    "commandId": "Menu.restore"
+  },
+  {
+    "entity": "Menu",
+    "command": "unpublish",
+    "commandId": "Menu.unpublish"
   },
   {
     "entity": "Menu",
     "command": "update",
     "commandId": "Menu.update"
+  },
+  {
+    "entity": "Menu",
+    "command": "updatePricing",
+    "commandId": "Menu.updatePricing"
   },
   {
     "entity": "MenuDish",
@@ -1641,8 +2691,43 @@
   },
   {
     "entity": "MenuDish",
+    "command": "setPriceOverride",
+    "commandId": "MenuDish.setPriceOverride"
+  },
+  {
+    "entity": "MenuDish",
     "command": "updateCourse",
     "commandId": "MenuDish.updateCourse"
+  },
+  {
+    "entity": "MethodVideo",
+    "command": "create",
+    "commandId": "MethodVideo.create"
+  },
+  {
+    "entity": "MethodVideo",
+    "command": "remove",
+    "commandId": "MethodVideo.remove"
+  },
+  {
+    "entity": "MethodVideo",
+    "command": "update",
+    "commandId": "MethodVideo.update"
+  },
+  {
+    "entity": "Note",
+    "command": "create",
+    "commandId": "Note.create"
+  },
+  {
+    "entity": "Note",
+    "command": "remove",
+    "commandId": "Note.remove"
+  },
+  {
+    "entity": "Note",
+    "command": "update",
+    "commandId": "Note.update"
   },
   {
     "entity": "Notification",
@@ -1665,6 +2750,46 @@
     "commandId": "Notification.remove"
   },
   {
+    "entity": "OnboardingCompletion",
+    "command": "complete",
+    "commandId": "OnboardingCompletion.complete"
+  },
+  {
+    "entity": "OnboardingCompletion",
+    "command": "create",
+    "commandId": "OnboardingCompletion.create"
+  },
+  {
+    "entity": "OnboardingTask",
+    "command": "create",
+    "commandId": "OnboardingTask.create"
+  },
+  {
+    "entity": "OnboardingTask",
+    "command": "remove",
+    "commandId": "OnboardingTask.remove"
+  },
+  {
+    "entity": "OnboardingTask",
+    "command": "update",
+    "commandId": "OnboardingTask.update"
+  },
+  {
+    "entity": "OpenShift",
+    "command": "cancel",
+    "commandId": "OpenShift.cancel"
+  },
+  {
+    "entity": "OpenShift",
+    "command": "claim",
+    "commandId": "OpenShift.claim"
+  },
+  {
+    "entity": "OpenShift",
+    "command": "create",
+    "commandId": "OpenShift.create"
+  },
+  {
     "entity": "OverrideAudit",
     "command": "authorize",
     "commandId": "OverrideAudit.authorize"
@@ -1673,6 +2798,11 @@
     "entity": "OverrideAudit",
     "command": "create",
     "commandId": "OverrideAudit.create"
+  },
+  {
+    "entity": "Payment",
+    "command": "markAcceptedNotApplied",
+    "commandId": "Payment.markAcceptedNotApplied"
   },
   {
     "entity": "Payment",
@@ -1721,6 +2851,11 @@
   },
   {
     "entity": "PaymentMethod",
+    "command": "create",
+    "commandId": "PaymentMethod.create"
+  },
+  {
+    "entity": "PaymentMethod",
     "command": "flagForFraud",
     "commandId": "PaymentMethod.flagForFraud"
   },
@@ -1746,6 +2881,21 @@
   },
   {
     "entity": "PaymentMethod",
+    "command": "markVerificationFailed",
+    "commandId": "PaymentMethod.markVerificationFailed"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "remove",
+    "commandId": "PaymentMethod.remove"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "update",
+    "commandId": "PaymentMethod.update"
+  },
+  {
+    "entity": "PaymentMethod",
     "command": "updateToken",
     "commandId": "PaymentMethod.updateToken"
   },
@@ -1755,9 +2905,39 @@
     "commandId": "PaymentMethod.verify"
   },
   {
+    "entity": "PaymentRefundAttempt",
+    "command": "create",
+    "commandId": "PaymentRefundAttempt.create"
+  },
+  {
+    "entity": "PaymentRefundAttempt",
+    "command": "markFailed",
+    "commandId": "PaymentRefundAttempt.markFailed"
+  },
+  {
+    "entity": "PaymentRefundAttempt",
+    "command": "markSucceeded",
+    "commandId": "PaymentRefundAttempt.markSucceeded"
+  },
+  {
     "entity": "PayrollApprovalHistory",
     "command": "create",
     "commandId": "PayrollApprovalHistory.create"
+  },
+  {
+    "entity": "PayrollLineItem",
+    "command": "create",
+    "commandId": "PayrollLineItem.create"
+  },
+  {
+    "entity": "PayrollLineItem",
+    "command": "update",
+    "commandId": "PayrollLineItem.update"
+  },
+  {
+    "entity": "PayrollPeriod",
+    "command": "close",
+    "commandId": "PayrollPeriod.close"
   },
   {
     "entity": "PayrollPeriod",
@@ -1765,14 +2945,64 @@
     "commandId": "PayrollPeriod.create"
   },
   {
+    "entity": "PayrollPeriod",
+    "command": "lock",
+    "commandId": "PayrollPeriod.lock"
+  },
+  {
+    "entity": "PayrollPeriod",
+    "command": "reopen",
+    "commandId": "PayrollPeriod.reopen"
+  },
+  {
     "entity": "PayrollRun",
-    "command": "updateStatus",
-    "commandId": "PayrollRun.updateStatus"
+    "command": "approve",
+    "commandId": "PayrollRun.approve"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "create",
+    "commandId": "PayrollRun.create"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "markPaid",
+    "commandId": "PayrollRun.markPaid"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "process",
+    "commandId": "PayrollRun.process"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "reject",
+    "commandId": "PayrollRun.reject"
   },
   {
     "entity": "PerformancePrediction",
     "command": "create",
     "commandId": "PerformancePrediction.create"
+  },
+  {
+    "entity": "PerformanceReview",
+    "command": "acknowledge",
+    "commandId": "PerformanceReview.acknowledge"
+  },
+  {
+    "entity": "PerformanceReview",
+    "command": "create",
+    "commandId": "PerformanceReview.create"
+  },
+  {
+    "entity": "PerformanceReview",
+    "command": "signOff",
+    "commandId": "PerformanceReview.signOff"
+  },
+  {
+    "entity": "PerformanceReview",
+    "command": "submit",
+    "commandId": "PerformanceReview.submit"
   },
   {
     "entity": "PrepComment",
@@ -1781,8 +3011,13 @@
   },
   {
     "entity": "PrepComment",
-    "command": "resolve",
-    "commandId": "PrepComment.resolve"
+    "command": "edit",
+    "commandId": "PrepComment.edit"
+  },
+  {
+    "entity": "PrepComment",
+    "command": "markResolved",
+    "commandId": "PrepComment.markResolved"
   },
   {
     "entity": "PrepComment",
@@ -1845,6 +3080,21 @@
     "commandId": "PrepList.updateBatchMultiplier"
   },
   {
+    "entity": "PrepListImport",
+    "command": "complete",
+    "commandId": "PrepListImport.complete"
+  },
+  {
+    "entity": "PrepListImport",
+    "command": "create",
+    "commandId": "PrepListImport.create"
+  },
+  {
+    "entity": "PrepListImport",
+    "command": "fail",
+    "commandId": "PrepListImport.fail"
+  },
+  {
     "entity": "PrepListItem",
     "command": "create",
     "commandId": "PrepListItem.create"
@@ -1883,6 +3133,11 @@
     "entity": "PrepMethod",
     "command": "deactivate",
     "commandId": "PrepMethod.deactivate"
+  },
+  {
+    "entity": "PrepMethod",
+    "command": "reactivate",
+    "commandId": "PrepMethod.reactivate"
   },
   {
     "entity": "PrepMethod",
@@ -1933,6 +3188,11 @@
     "entity": "PrepTask",
     "command": "updateAssignment",
     "commandId": "PrepTask.updateAssignment"
+  },
+  {
+    "entity": "PrepTask",
+    "command": "updateDetails",
+    "commandId": "PrepTask.updateDetails"
   },
   {
     "entity": "PrepTask",
@@ -2035,9 +3295,39 @@
     "commandId": "PrepTaskPlanWorkflow.startScheduling"
   },
   {
+    "entity": "PreventiveMaintenanceSchedule",
+    "command": "complete",
+    "commandId": "PreventiveMaintenanceSchedule.complete"
+  },
+  {
+    "entity": "PreventiveMaintenanceSchedule",
+    "command": "create",
+    "commandId": "PreventiveMaintenanceSchedule.create"
+  },
+  {
+    "entity": "PreventiveMaintenanceSchedule",
+    "command": "deactivate",
+    "commandId": "PreventiveMaintenanceSchedule.deactivate"
+  },
+  {
+    "entity": "PreventiveMaintenanceSchedule",
+    "command": "update",
+    "commandId": "PreventiveMaintenanceSchedule.update"
+  },
+  {
+    "entity": "PricingTier",
+    "command": "activate",
+    "commandId": "PricingTier.activate"
+  },
+  {
     "entity": "PricingTier",
     "command": "create",
     "commandId": "PricingTier.create"
+  },
+  {
+    "entity": "PricingTier",
+    "command": "deactivate",
+    "commandId": "PricingTier.deactivate"
   },
   {
     "entity": "PricingTier",
@@ -2048,6 +3338,36 @@
     "entity": "PricingTier",
     "command": "update",
     "commandId": "PricingTier.update"
+  },
+  {
+    "entity": "ProcurementBudget",
+    "command": "close",
+    "commandId": "ProcurementBudget.close"
+  },
+  {
+    "entity": "ProcurementBudget",
+    "command": "create",
+    "commandId": "ProcurementBudget.create"
+  },
+  {
+    "entity": "ProcurementBudget",
+    "command": "recordSpend",
+    "commandId": "ProcurementBudget.recordSpend"
+  },
+  {
+    "entity": "ProcurementBudget",
+    "command": "update",
+    "commandId": "ProcurementBudget.update"
+  },
+  {
+    "entity": "ProcurementBudgetAlert",
+    "command": "acknowledge",
+    "commandId": "ProcurementBudgetAlert.acknowledge"
+  },
+  {
+    "entity": "ProcurementBudgetAlert",
+    "command": "create",
+    "commandId": "ProcurementBudgetAlert.create"
   },
   {
     "entity": "Proposal",
@@ -2061,6 +3381,11 @@
   },
   {
     "entity": "Proposal",
+    "command": "generatePublicLink",
+    "commandId": "Proposal.generatePublicLink"
+  },
+  {
+    "entity": "Proposal",
     "command": "markViewed",
     "commandId": "Proposal.markViewed"
   },
@@ -2068,6 +3393,11 @@
     "entity": "Proposal",
     "command": "reject",
     "commandId": "Proposal.reject"
+  },
+  {
+    "entity": "Proposal",
+    "command": "remove",
+    "commandId": "Proposal.remove"
   },
   {
     "entity": "Proposal",
@@ -2098,6 +3428,31 @@
     "entity": "ProposalLineItem",
     "command": "update",
     "commandId": "ProposalLineItem.update"
+  },
+  {
+    "entity": "ProposalTemplate",
+    "command": "activate",
+    "commandId": "ProposalTemplate.activate"
+  },
+  {
+    "entity": "ProposalTemplate",
+    "command": "create",
+    "commandId": "ProposalTemplate.create"
+  },
+  {
+    "entity": "ProposalTemplate",
+    "command": "deactivate",
+    "commandId": "ProposalTemplate.deactivate"
+  },
+  {
+    "entity": "ProposalTemplate",
+    "command": "softDelete",
+    "commandId": "ProposalTemplate.softDelete"
+  },
+  {
+    "entity": "ProposalTemplate",
+    "command": "update",
+    "commandId": "ProposalTemplate.update"
   },
   {
     "entity": "PurchaseOrder",
@@ -2135,6 +3490,11 @@
     "commandId": "PurchaseOrder.submit"
   },
   {
+    "entity": "PurchaseOrder",
+    "command": "updateTotals",
+    "commandId": "PurchaseOrder.updateTotals"
+  },
+  {
     "entity": "PurchaseOrderItem",
     "command": "create",
     "commandId": "PurchaseOrderItem.create"
@@ -2163,6 +3523,11 @@
     "entity": "PurchaseRequisition",
     "command": "cancel",
     "commandId": "PurchaseRequisition.cancel"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "completeDraftFromPrepDemand",
+    "commandId": "PurchaseRequisition.completeDraftFromPrepDemand"
   },
   {
     "entity": "PurchaseRequisition",
@@ -2215,19 +3580,79 @@
     "commandId": "QACheck.create"
   },
   {
+    "entity": "QACheck",
+    "command": "fail",
+    "commandId": "QACheck.fail"
+  },
+  {
+    "entity": "QACheck",
+    "command": "reinspect",
+    "commandId": "QACheck.reinspect"
+  },
+  {
+    "entity": "QACheck",
+    "command": "requireReinspection",
+    "commandId": "QACheck.requireReinspection"
+  },
+  {
+    "entity": "QACorrectiveAction",
+    "command": "assign",
+    "commandId": "QACorrectiveAction.assign"
+  },
+  {
     "entity": "QACorrectiveAction",
     "command": "create",
     "commandId": "QACorrectiveAction.create"
   },
   {
     "entity": "QACorrectiveAction",
-    "command": "resolve",
-    "commandId": "QACorrectiveAction.resolve"
+    "command": "dismiss",
+    "commandId": "QACorrectiveAction.dismiss"
+  },
+  {
+    "entity": "QACorrectiveAction",
+    "command": "escalate",
+    "commandId": "QACorrectiveAction.escalate"
+  },
+  {
+    "entity": "QACorrectiveAction",
+    "command": "markResolved",
+    "commandId": "QACorrectiveAction.markResolved"
   },
   {
     "entity": "QATemperatureLog",
     "command": "log",
     "commandId": "QATemperatureLog.log"
+  },
+  {
+    "entity": "QualityCheck",
+    "command": "create",
+    "commandId": "QualityCheck.create"
+  },
+  {
+    "entity": "QualityCheck",
+    "command": "fail",
+    "commandId": "QualityCheck.fail"
+  },
+  {
+    "entity": "QualityCheck",
+    "command": "pass",
+    "commandId": "QualityCheck.pass"
+  },
+  {
+    "entity": "QualityCheck",
+    "command": "reinspect",
+    "commandId": "QualityCheck.reinspect"
+  },
+  {
+    "entity": "QualityCheckItem",
+    "command": "create",
+    "commandId": "QualityCheckItem.create"
+  },
+  {
+    "entity": "QualityCheckItem",
+    "command": "recordResult",
+    "commandId": "QualityCheckItem.recordResult"
   },
   {
     "entity": "RateLimitConfig",
@@ -2311,8 +3736,18 @@
   },
   {
     "entity": "RecipeVersion",
+    "command": "approve",
+    "commandId": "RecipeVersion.approve"
+  },
+  {
+    "entity": "RecipeVersion",
     "command": "create",
     "commandId": "RecipeVersion.create"
+  },
+  {
+    "entity": "RecipeVersion",
+    "command": "markPublished",
+    "commandId": "RecipeVersion.markPublished"
   },
   {
     "entity": "RecipeVersion",
@@ -2321,8 +3756,53 @@
   },
   {
     "entity": "RecipeVersion",
+    "command": "retract",
+    "commandId": "RecipeVersion.retract"
+  },
+  {
+    "entity": "RecipeVersion",
     "command": "updateCosts",
     "commandId": "RecipeVersion.updateCosts"
+  },
+  {
+    "entity": "ReorderSuggestion",
+    "command": "accept",
+    "commandId": "ReorderSuggestion.accept"
+  },
+  {
+    "entity": "ReorderSuggestion",
+    "command": "autoAccept",
+    "commandId": "ReorderSuggestion.autoAccept"
+  },
+  {
+    "entity": "ReorderSuggestion",
+    "command": "create",
+    "commandId": "ReorderSuggestion.create"
+  },
+  {
+    "entity": "ReorderSuggestion",
+    "command": "dismiss",
+    "commandId": "ReorderSuggestion.dismiss"
+  },
+  {
+    "entity": "Report",
+    "command": "create",
+    "commandId": "Report.create"
+  },
+  {
+    "entity": "Report",
+    "command": "remove",
+    "commandId": "Report.remove"
+  },
+  {
+    "entity": "Report",
+    "command": "share",
+    "commandId": "Report.share"
+  },
+  {
+    "entity": "Report",
+    "command": "update",
+    "commandId": "Report.update"
   },
   {
     "entity": "RevenueRecognitionLine",
@@ -2338,6 +3818,11 @@
     "entity": "RevenueRecognitionLine",
     "command": "recognize",
     "commandId": "RevenueRecognitionLine.recognize"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "reverse",
+    "commandId": "RevenueRecognitionLine.reverse"
   },
   {
     "entity": "RevenueRecognitionLine",
@@ -2401,8 +3886,18 @@
   },
   {
     "entity": "RevenueRecognitionSchedule",
+    "command": "reverseRecognition",
+    "commandId": "RevenueRecognitionSchedule.reverseRecognition"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
     "command": "startRecognition",
     "commandId": "RevenueRecognitionSchedule.startRecognition"
+  },
+  {
+    "entity": "RolePolicy",
+    "command": "create",
+    "commandId": "RolePolicy.create"
   },
   {
     "entity": "RolePolicy",
@@ -2418,6 +3913,26 @@
     "entity": "RolePolicy",
     "command": "update",
     "commandId": "RolePolicy.update"
+  },
+  {
+    "entity": "RouteStop",
+    "command": "complete",
+    "commandId": "RouteStop.complete"
+  },
+  {
+    "entity": "RouteStop",
+    "command": "create",
+    "commandId": "RouteStop.create"
+  },
+  {
+    "entity": "RouteStop",
+    "command": "markArrived",
+    "commandId": "RouteStop.markArrived"
+  },
+  {
+    "entity": "RouteStop",
+    "command": "reorder",
+    "commandId": "RouteStop.reorder"
   },
   {
     "entity": "SampleData",
@@ -2436,6 +3951,11 @@
   },
   {
     "entity": "Schedule",
+    "command": "approve",
+    "commandId": "Schedule.approve"
+  },
+  {
+    "entity": "Schedule",
     "command": "close",
     "commandId": "Schedule.close"
   },
@@ -2451,13 +3971,38 @@
   },
   {
     "entity": "Schedule",
+    "command": "reopen",
+    "commandId": "Schedule.reopen"
+  },
+  {
+    "entity": "Schedule",
     "command": "update",
     "commandId": "Schedule.update"
   },
   {
     "entity": "ScheduleShift",
+    "command": "acceptSwap",
+    "commandId": "ScheduleShift.acceptSwap"
+  },
+  {
+    "entity": "ScheduleShift",
+    "command": "cancelSwap",
+    "commandId": "ScheduleShift.cancelSwap"
+  },
+  {
+    "entity": "ScheduleShift",
     "command": "create",
     "commandId": "ScheduleShift.create"
+  },
+  {
+    "entity": "ScheduleShift",
+    "command": "declineSwap",
+    "commandId": "ScheduleShift.declineSwap"
+  },
+  {
+    "entity": "ScheduleShift",
+    "command": "offerSwap",
+    "commandId": "ScheduleShift.offerSwap"
   },
   {
     "entity": "ScheduleShift",
@@ -2468,6 +4013,61 @@
     "entity": "ScheduleShift",
     "command": "update",
     "commandId": "ScheduleShift.update"
+  },
+  {
+    "entity": "SelOnboardingTrainingModuleDefinition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingModuleDefinition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion01Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion01Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion02Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion02Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion03Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion03Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion04Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion04Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion05Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion05Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion06Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion06Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion07Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion07Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion08Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion08Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion09Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion09Definition.create"
+  },
+  {
+    "entity": "SelOnboardingTrainingQuestion10Definition",
+    "command": "create",
+    "commandId": "SelOnboardingTrainingQuestion10Definition.create"
   },
   {
     "entity": "Shipment",
@@ -2511,6 +4111,16 @@
   },
   {
     "entity": "ShipmentItem",
+    "command": "softDelete",
+    "commandId": "ShipmentItem.softDelete"
+  },
+  {
+    "entity": "ShipmentItem",
+    "command": "update",
+    "commandId": "ShipmentItem.update"
+  },
+  {
+    "entity": "ShipmentItem",
     "command": "updateReceived",
     "commandId": "ShipmentItem.updateReceived"
   },
@@ -2541,6 +4151,11 @@
   },
   {
     "entity": "StaffMember",
+    "command": "changeRole",
+    "commandId": "StaffMember.changeRole"
+  },
+  {
+    "entity": "StaffMember",
     "command": "create",
     "commandId": "StaffMember.create"
   },
@@ -2551,8 +4166,18 @@
   },
   {
     "entity": "StaffMember",
+    "command": "reactivate",
+    "commandId": "StaffMember.reactivate"
+  },
+  {
+    "entity": "StaffMember",
     "command": "updateProfile",
     "commandId": "StaffMember.updateProfile"
+  },
+  {
+    "entity": "StaffPerformance",
+    "command": "acknowledge",
+    "commandId": "StaffPerformance.acknowledge"
   },
   {
     "entity": "StaffPerformance",
@@ -2571,8 +4196,28 @@
   },
   {
     "entity": "StaffPerformance",
+    "command": "sendBackToDraft",
+    "commandId": "StaffPerformance.sendBackToDraft"
+  },
+  {
+    "entity": "StaffPerformance",
+    "command": "submitForReview",
+    "commandId": "StaffPerformance.submitForReview"
+  },
+  {
+    "entity": "StaffPerformance",
     "command": "update",
     "commandId": "StaffPerformance.update"
+  },
+  {
+    "entity": "StaffTrainingSignal",
+    "command": "recordSchedulabilityGranted",
+    "commandId": "StaffTrainingSignal.recordSchedulabilityGranted"
+  },
+  {
+    "entity": "StaffTrainingSignal",
+    "command": "recordWaiverLogged",
+    "commandId": "StaffTrainingSignal.recordWaiverLogged"
   },
   {
     "entity": "Station",
@@ -2596,8 +4241,18 @@
   },
   {
     "entity": "Station",
+    "command": "endMaintenance",
+    "commandId": "Station.endMaintenance"
+  },
+  {
+    "entity": "Station",
     "command": "removeTask",
     "commandId": "Station.removeTask"
+  },
+  {
+    "entity": "Station",
+    "command": "startMaintenance",
+    "commandId": "Station.startMaintenance"
   },
   {
     "entity": "Station",
@@ -2608,6 +4263,96 @@
     "entity": "Station",
     "command": "updateEquipment",
     "commandId": "Station.updateEquipment"
+  },
+  {
+    "entity": "StorageLocation",
+    "command": "create",
+    "commandId": "StorageLocation.create"
+  },
+  {
+    "entity": "StorageLocation",
+    "command": "deactivate",
+    "commandId": "StorageLocation.deactivate"
+  },
+  {
+    "entity": "StorageLocation",
+    "command": "update",
+    "commandId": "StorageLocation.update"
+  },
+  {
+    "entity": "TaskBundle",
+    "command": "archive",
+    "commandId": "TaskBundle.archive"
+  },
+  {
+    "entity": "TaskBundle",
+    "command": "create",
+    "commandId": "TaskBundle.create"
+  },
+  {
+    "entity": "TaskBundle",
+    "command": "update",
+    "commandId": "TaskBundle.update"
+  },
+  {
+    "entity": "TaskBundleItem",
+    "command": "addItem",
+    "commandId": "TaskBundleItem.addItem"
+  },
+  {
+    "entity": "TaskBundleItem",
+    "command": "removeItem",
+    "commandId": "TaskBundleItem.removeItem"
+  },
+  {
+    "entity": "TemperatureLog",
+    "command": "create",
+    "commandId": "TemperatureLog.create"
+  },
+  {
+    "entity": "TemperatureProbe",
+    "command": "calibrate",
+    "commandId": "TemperatureProbe.calibrate"
+  },
+  {
+    "entity": "TemperatureProbe",
+    "command": "create",
+    "commandId": "TemperatureProbe.create"
+  },
+  {
+    "entity": "TemperatureProbe",
+    "command": "deactivate",
+    "commandId": "TemperatureProbe.deactivate"
+  },
+  {
+    "entity": "TemperatureProbe",
+    "command": "updateThresholds",
+    "commandId": "TemperatureProbe.updateThresholds"
+  },
+  {
+    "entity": "TemperatureReading",
+    "command": "create",
+    "commandId": "TemperatureReading.create"
+  },
+  {
+    "entity": "TimecardApproval",
+    "command": "approve",
+    "commandId": "TimecardApproval.approve"
+  },
+  {
+    "entity": "TimecardApproval",
+    "command": "bulkApprove",
+    "commandId": "TimecardApproval.bulkApprove"
+  },
+  {
+    "entity": "TimecardApproval",
+    "command": "create",
+    "commandId": "TimecardApproval.create"
+  },
+  {
+    "entity": "TimecardApproval",
+    "command": "reject",
+    "commandId": "TimecardApproval.reject"
   },
   {
     "entity": "TimecardEditRequest",
@@ -2645,9 +4390,54 @@
     "commandId": "TimeEntry.softDelete"
   },
   {
+    "entity": "TimelineTask",
+    "command": "blockTask",
+    "commandId": "TimelineTask.blockTask"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "complete",
+    "commandId": "TimelineTask.complete"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "create",
+    "commandId": "TimelineTask.create"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "reassign",
+    "commandId": "TimelineTask.reassign"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "remove",
+    "commandId": "TimelineTask.remove"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "reorder",
+    "commandId": "TimelineTask.reorder"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "start",
+    "commandId": "TimelineTask.start"
+  },
+  {
+    "entity": "TimelineTask",
+    "command": "unblockTask",
+    "commandId": "TimelineTask.unblockTask"
+  },
+  {
     "entity": "TimeOffRequest",
     "command": "approve",
     "commandId": "TimeOffRequest.approve"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "attachBalance",
+    "commandId": "TimeOffRequest.attachBalance"
   },
   {
     "entity": "TimeOffRequest",
@@ -2661,6 +4451,11 @@
   },
   {
     "entity": "TimeOffRequest",
+    "command": "reconsider",
+    "commandId": "TimeOffRequest.reconsider"
+  },
+  {
+    "entity": "TimeOffRequest",
     "command": "reject",
     "commandId": "TimeOffRequest.reject"
   },
@@ -2670,14 +4465,84 @@
     "commandId": "TimeOffRequest.softDelete"
   },
   {
+    "entity": "TipPool",
+    "command": "allocate",
+    "commandId": "TipPool.allocate"
+  },
+  {
+    "entity": "TipPool",
+    "command": "close",
+    "commandId": "TipPool.close"
+  },
+  {
+    "entity": "TipPool",
+    "command": "create",
+    "commandId": "TipPool.create"
+  },
+  {
+    "entity": "TipPool",
+    "command": "distribute",
+    "commandId": "TipPool.distribute"
+  },
+  {
+    "entity": "TipPool",
+    "command": "finalizeDistribution",
+    "commandId": "TipPool.finalizeDistribution"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "applyFirstShiftDueDate",
+    "commandId": "TrainingAssignment.applyFirstShiftDueDate"
+  },
+  {
     "entity": "TrainingAssignment",
     "command": "create",
     "commandId": "TrainingAssignment.create"
   },
   {
     "entity": "TrainingAssignment",
-    "command": "softDelete",
-    "commandId": "TrainingAssignment.softDelete"
+    "command": "markOverdue",
+    "commandId": "TrainingAssignment.markOverdue"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "start",
+    "commandId": "TrainingAssignment.start"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "submitFailedAttempt",
+    "commandId": "TrainingAssignment.submitFailedAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "submitFinalFailedAttempt",
+    "commandId": "TrainingAssignment.submitFinalFailedAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "submitPassingAttempt",
+    "commandId": "TrainingAssignment.submitPassingAttempt"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "waive",
+    "commandId": "TrainingAssignment.waive"
+  },
+  {
+    "entity": "TrainingAttempt",
+    "command": "create",
+    "commandId": "TrainingAttempt.create"
+  },
+  {
+    "entity": "TrainingCompletion",
+    "command": "create",
+    "commandId": "TrainingCompletion.create"
+  },
+  {
+    "entity": "TrainingModule",
+    "command": "archive",
+    "commandId": "TrainingModule.archive"
   },
   {
     "entity": "TrainingModule",
@@ -2686,13 +4551,38 @@
   },
   {
     "entity": "TrainingModule",
+    "command": "createVersion",
+    "commandId": "TrainingModule.createVersion"
+  },
+  {
+    "entity": "TrainingModule",
+    "command": "markPublished",
+    "commandId": "TrainingModule.markPublished"
+  },
+  {
+    "entity": "TrainingModule",
     "command": "softDelete",
     "commandId": "TrainingModule.softDelete"
   },
   {
     "entity": "TrainingModule",
+    "command": "unarchive",
+    "commandId": "TrainingModule.unarchive"
+  },
+  {
+    "entity": "TrainingModule",
     "command": "update",
     "commandId": "TrainingModule.update"
+  },
+  {
+    "entity": "TrainingQuestion",
+    "command": "create",
+    "commandId": "TrainingQuestion.create"
+  },
+  {
+    "entity": "TrainingQuestion",
+    "command": "deactivate",
+    "commandId": "TrainingQuestion.deactivate"
   },
   {
     "entity": "User",
@@ -2703,6 +4593,16 @@
     "entity": "User",
     "command": "deactivate",
     "commandId": "User.deactivate"
+  },
+  {
+    "entity": "User",
+    "command": "reactivate",
+    "commandId": "User.reactivate"
+  },
+  {
+    "entity": "User",
+    "command": "softDelete",
+    "commandId": "User.softDelete"
   },
   {
     "entity": "User",
@@ -2731,8 +4631,18 @@
   },
   {
     "entity": "VarianceReport",
+    "command": "reject",
+    "commandId": "VarianceReport.reject"
+  },
+  {
+    "entity": "VarianceReport",
     "command": "review",
     "commandId": "VarianceReport.review"
+  },
+  {
+    "entity": "VarianceReport",
+    "command": "updateDiscrepancy",
+    "commandId": "VarianceReport.updateDiscrepancy"
   },
   {
     "entity": "Vehicle",
@@ -2741,8 +4651,23 @@
   },
   {
     "entity": "Vehicle",
+    "command": "decommission",
+    "commandId": "Vehicle.decommission"
+  },
+  {
+    "entity": "Vehicle",
     "command": "remove",
     "commandId": "Vehicle.remove"
+  },
+  {
+    "entity": "Vehicle",
+    "command": "returnFromMaintenance",
+    "commandId": "Vehicle.returnFromMaintenance"
+  },
+  {
+    "entity": "Vehicle",
+    "command": "sendToMaintenance",
+    "commandId": "Vehicle.sendToMaintenance"
   },
   {
     "entity": "Vehicle",
@@ -2753,6 +4678,16 @@
     "entity": "Vendor",
     "command": "addContact",
     "commandId": "Vendor.addContact"
+  },
+  {
+    "entity": "Vendor",
+    "command": "approve",
+    "commandId": "Vendor.approve"
+  },
+  {
+    "entity": "Vendor",
+    "command": "blacklist",
+    "commandId": "Vendor.blacklist"
   },
   {
     "entity": "Vendor",
@@ -2771,6 +4706,11 @@
   },
   {
     "entity": "Vendor",
+    "command": "suspend",
+    "commandId": "Vendor.suspend"
+  },
+  {
+    "entity": "Vendor",
     "command": "update",
     "commandId": "Vendor.update"
   },
@@ -2781,6 +4721,16 @@
   },
   {
     "entity": "VendorCatalog",
+    "command": "deactivate",
+    "commandId": "VendorCatalog.deactivate"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "reactivate",
+    "commandId": "VendorCatalog.reactivate"
+  },
+  {
+    "entity": "VendorCatalog",
     "command": "softDelete",
     "commandId": "VendorCatalog.softDelete"
   },
@@ -2788,6 +4738,26 @@
     "entity": "VendorCatalog",
     "command": "update",
     "commandId": "VendorCatalog.update"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "updatePrice",
+    "commandId": "VendorCatalog.updatePrice"
+  },
+  {
+    "entity": "VendorContact",
+    "command": "create",
+    "commandId": "VendorContact.create"
+  },
+  {
+    "entity": "VendorContact",
+    "command": "remove",
+    "commandId": "VendorContact.remove"
+  },
+  {
+    "entity": "VendorContact",
+    "command": "update",
+    "commandId": "VendorContact.update"
   },
   {
     "entity": "VendorContract",
@@ -2840,6 +4810,46 @@
     "commandId": "VendorContract.updateCompliance"
   },
   {
+    "entity": "VendorRating",
+    "command": "create",
+    "commandId": "VendorRating.create"
+  },
+  {
+    "entity": "VendorRating",
+    "command": "update",
+    "commandId": "VendorRating.update"
+  },
+  {
+    "entity": "Venue",
+    "command": "activate",
+    "commandId": "Venue.activate"
+  },
+  {
+    "entity": "Venue",
+    "command": "create",
+    "commandId": "Venue.create"
+  },
+  {
+    "entity": "Venue",
+    "command": "deactivate",
+    "commandId": "Venue.deactivate"
+  },
+  {
+    "entity": "Venue",
+    "command": "softDelete",
+    "commandId": "Venue.softDelete"
+  },
+  {
+    "entity": "Venue",
+    "command": "update",
+    "commandId": "Venue.update"
+  },
+  {
+    "entity": "Venue",
+    "command": "updateCapacity",
+    "commandId": "Venue.updateCapacity"
+  },
+  {
     "entity": "VersionApproval",
     "command": "approve",
     "commandId": "VersionApproval.approve"
@@ -2881,6 +4891,11 @@
   },
   {
     "entity": "WasteEntry",
+    "command": "approve",
+    "commandId": "WasteEntry.approve"
+  },
+  {
+    "entity": "WasteEntry",
     "command": "create",
     "commandId": "WasteEntry.create"
   },
@@ -2893,6 +4908,11 @@
     "entity": "WasteEntry",
     "command": "update",
     "commandId": "WasteEntry.update"
+  },
+  {
+    "entity": "WasteEntry",
+    "command": "voidEntry",
+    "commandId": "WasteEntry.voidEntry"
   },
   {
     "entity": "Workflow",
@@ -2933,6 +4953,11 @@
     "entity": "WorkforceOptimization",
     "command": "start",
     "commandId": "WorkforceOptimization.start"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "assign",
+    "commandId": "WorkOrder.assign"
   },
   {
     "entity": "WorkOrder",

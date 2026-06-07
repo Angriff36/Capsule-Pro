@@ -12,7 +12,8 @@ import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 type SyncStatus = "synced" | "pending" | "failed" | "conflict";
 
@@ -135,11 +136,13 @@ export async function PUT(
   log.info("[CycleCountRecord/PUT] Delegating to manifest update command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "CycleCountRecord",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({
+    entity: "CycleCountRecord",
+    command: "update",
+    body: { ...rawBody, id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -154,10 +157,11 @@ export async function DELETE(
   log.info("[CycleCountRecord/DELETE] Delegating to manifest remove command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "CycleCountRecord",
-    commandName: "remove",
-    params: { id },
-    transformBody: (_body) => ({ id }),
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({
+    entity: "CycleCountRecord",
+    command: "remove",
+    body: { id },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

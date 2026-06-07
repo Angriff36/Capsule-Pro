@@ -25,6 +25,10 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+// SupplierSyncLog is an infrastructure/audit entity — it exists in Prisma schema
+// but has no Manifest entity definition (no source manifest, no IR entry, no commands).
+// Direct Prisma writes are intentional per constitution §10 bypass for infra entities.
+
 export const runtime = "nodejs";
 
 // ============================================================================

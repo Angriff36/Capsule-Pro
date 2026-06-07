@@ -356,18 +356,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return approveError;
     }
 
-    // Update with resolution metadata
-    const now = new Date();
-    const updatedReport = await database.varianceReport.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: {
-        rootCause: body.rootCause,
-        resolutionNotes: body.resolutionNotes,
-        resolvedById: currentUser.id,
-        resolvedAt: now,
-        updatedAt: now,
+    // Record resolution metadata via Manifest governance
+    const resolveResult = await runtime.runCommand(
+      "updateDiscrepancy",
+      {
+        notes: body.reviewNotes ?? body.resolutionNotes ?? "",
+        rootCause: body.rootCause ?? "",
+        resolutionNotes: body.resolutionNotes ?? "",
       },
+      { entityName: "VarianceReport", instanceId: id }
+    );
+
+    if (!resolveResult.success) {
+      log.error("[discrepancies/resolve] updateDiscrepancy command failed:", {
+        error: resolveResult.error,
+        id,
+        tenantId,
+      });
+      return handleCommandError(resolveResult, currentUser.role, "UpdateDiscrepancy");
+    }
+
+    // Read back the updated report for the response (constitution §10 — reads bypass Manifest).
+    const updatedReport = await database.varianceReport.findFirst({
+      where: { tenantId, id },
     });
+
+    if (!updatedReport) {
+      return manifestErrorResponse("Discrepancy not found after update", 404);
+    }
 
     log.info("[discrepancies/resolve] Resolved discrepancy:", {
       id,

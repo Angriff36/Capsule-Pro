@@ -6,12 +6,15 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+export const runtime = "nodejs";
 
 interface DateRangeFilter {
   gte?: Date;
@@ -644,7 +647,6 @@ export async function POST(request: Request) {
     const body: CustomReportRequest = await request.json();
     const {
       name,
-      description,
       report_type,
       filters,
       group_by = "day",
@@ -761,27 +763,45 @@ export async function POST(request: Request) {
         break;
     }
 
-    // Save report if requested
+    // Save report if requested (governed write via Manifest runtime)
     let savedReportId: string | null = null;
     if (save_report) {
-      const savedReport = await database.report.create({
-        data: {
-          tenantId,
-          name,
-          description: description || null,
-          reportType: `inventory_audit_${report_type}`,
-          query_config: {
-            filters,
-            group_by,
-            include_items,
-            generated_at: new Date().toISOString(),
-          } as unknown as Prisma.InputJsonValue,
-          display_config: {} as unknown as Prisma.InputJsonValue,
-          is_system: false,
-          created_by: null,
+      const user = await resolveCurrentUser(request);
+      const manifestResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
-      savedReportId = savedReport.id;
+        {
+          entity: "Report",
+          command: "create",
+          body: {
+            name,
+            reportType: `inventory_audit_${report_type}`,
+            queryConfig: JSON.stringify({
+              filters,
+              group_by,
+              include_items,
+              generated_at: new Date().toISOString(),
+            }),
+            displayConfig: "{}",
+            isShared: false,
+            createdBy: user.id,
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        }
+      );
+
+      if (!manifestResult.ok) {
+        // Report save failed — log but don't fail the main response
+        log.error("[audit/reports] Failed to save report via Manifest:", manifestResult.message);
+      } else {
+        const resultData = manifestResult.result as Record<string, unknown> | undefined;
+        savedReportId = String(resultData?.id ?? "");
+      }
     }
 
     return NextResponse.json({

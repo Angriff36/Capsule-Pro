@@ -13,7 +13,6 @@
  * - Delete simulation
  */
 
-import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database before importing.
@@ -83,10 +82,38 @@ vi.mock("@repo/auth/server", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+  requireCurrentUser: vi.fn(),
+}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
+
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
+}));
+
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { POST as ApplySimulation } from "@/app/api/command-board/simulations/[id]/apply/route";
 import { GET as GetDelta } from "@/app/api/command-board/simulations/[id]/delta/route";
 import { POST as DiscardSimulation } from "@/app/api/command-board/simulations/[id]/discard/route";
@@ -95,10 +122,11 @@ import {
   GET as GetSimulation,
 } from "@/app/api/command-board/simulations/[id]/route";
 import { GET, POST } from "@/app/api/command-board/simulations/route";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 
 const mockAuth = vi.mocked(auth);
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
+const mockResolveCurrentUser = vi.mocked(resolveCurrentUser);
 const mockCommandBoard = vi.mocked(database.commandBoard);
 
 // Test constants
@@ -106,10 +134,11 @@ const TEST_TENANT_ID = "67a4af48-114e-4e45-89d7-6ae36da6ff71";
 const TEST_ORG_ID = "org_123";
 const TEST_BOARD_ID = "board_123";
 const TEST_SIMULATION_ID = "sim_123";
+const TEST_USER_ID = "user_test_001";
 
 // Helper to create mock NextRequest
-function createRequest(url: string, options?: RequestInit): NextRequest {
-  return new Request(url, options) as NextRequest;
+function createRequest(url: string, options?: RequestInit): Request {
+  return new Request(url, options);
 }
 
 describe("Command Board Simulations API", () => {
@@ -117,6 +146,14 @@ describe("Command Board Simulations API", () => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID } as any);
     mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
+    mockResolveCurrentUser.mockResolvedValue({
+      id: TEST_USER_ID,
+      tenantId: TEST_TENANT_ID,
+      role: "admin",
+      email: "test@example.com",
+      firstName: "Test",
+      lastName: "User",
+    });
   });
 
   describe("GET /api/command-board/simulations", () => {
@@ -197,7 +234,7 @@ describe("Command Board Simulations API", () => {
         createRequest("http://localhost/api/command-board/simulations", {
           method: "POST",
           body: JSON.stringify({ simulation_name: "Test" }),
-        })
+        }) as any
       );
       expect(response.status).toBe(400);
     });
@@ -212,7 +249,7 @@ describe("Command Board Simulations API", () => {
             source_board_id: TEST_BOARD_ID,
             simulation_name: "Test",
           }),
-        })
+        }) as any
       );
       expect(response.status).toBe(404);
     });
@@ -229,14 +266,19 @@ describe("Command Board Simulations API", () => {
         annotations: [],
       } as any);
 
-      mockCommandBoard.create.mockResolvedValueOnce({
-        id: TEST_SIMULATION_ID,
-        tenantId: TEST_TENANT_ID,
-        name: "[Simulation] Test Sim",
-        status: "draft",
-        tags: ["simulation", `source:${TEST_BOARD_ID}`],
-        createdAt: new Date(),
-      } as any);
+      vi.mocked(runManifestCommandCore).mockResolvedValueOnce({
+        ok: true,
+        entity: "CommandBoard",
+        command: "create",
+        result: {
+          id: TEST_SIMULATION_ID,
+          tenantId: TEST_TENANT_ID,
+          name: "[Simulation] Test Sim",
+          status: "draft",
+          tags: ["simulation", `source:${TEST_BOARD_ID}`],
+          createdAt: new Date(),
+        },
+      });
 
       const response = await POST(
         createRequest("http://localhost/api/command-board/simulations", {
@@ -245,7 +287,7 @@ describe("Command Board Simulations API", () => {
             source_board_id: TEST_BOARD_ID,
             simulation_name: "Test Sim",
           }),
-        })
+        }) as any
       );
 
       expect(response.status).toBe(200);
@@ -257,7 +299,7 @@ describe("Command Board Simulations API", () => {
 
   describe("GET /api/command-board/simulations/[id]", () => {
     it("should return 404 if simulation not found", async () => {
-      mockCommandBoard.findUnique.mockResolvedValueOnce(null);
+      mockCommandBoard.findFirst.mockResolvedValueOnce(null);
 
       const response = await GetSimulation(
         createRequest("http://localhost/api/command-board/simulations/123"),
@@ -267,7 +309,7 @@ describe("Command Board Simulations API", () => {
     });
 
     it("should return 404 if board is not a simulation", async () => {
-      mockCommandBoard.findUnique.mockResolvedValueOnce({
+      mockCommandBoard.findFirst.mockResolvedValueOnce({
         id: "123",
         tags: [],
       } as any);
@@ -280,7 +322,7 @@ describe("Command Board Simulations API", () => {
     });
 
     it("should return simulation context", async () => {
-      mockCommandBoard.findUnique.mockResolvedValueOnce({
+      mockCommandBoard.findFirst.mockResolvedValueOnce({
         id: TEST_SIMULATION_ID,
         tenantId: TEST_TENANT_ID,
         name: "[Simulation] Test",
@@ -320,7 +362,7 @@ describe("Command Board Simulations API", () => {
           {
             method: "POST",
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -335,7 +377,12 @@ describe("Command Board Simulations API", () => {
         status: "draft",
       } as any);
 
-      mockCommandBoard.update.mockResolvedValueOnce({} as any);
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      );
 
       const response = await DiscardSimulation(
         createRequest(
@@ -343,7 +390,7 @@ describe("Command Board Simulations API", () => {
           {
             method: "POST",
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -355,13 +402,18 @@ describe("Command Board Simulations API", () => {
 
   describe("DELETE /api/command-board/simulations/[id]", () => {
     it("should soft delete simulation", async () => {
-      mockCommandBoard.findUnique.mockResolvedValueOnce({
+      mockCommandBoard.findFirst.mockResolvedValueOnce({
         id: TEST_SIMULATION_ID,
         tenantId: TEST_TENANT_ID,
         tags: ["simulation"],
       } as any);
 
-      mockCommandBoard.update.mockResolvedValueOnce({} as any);
+      const { runManifestCommand } = await import(
+        "@/lib/manifest/execute-command"
+      );
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(JSON.stringify({ success: true }), { status: 200 })
+      );
 
       const response = await DeleteSimulation(
         createRequest(
@@ -369,7 +421,7 @@ describe("Command Board Simulations API", () => {
           {
             method: "DELETE",
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -388,10 +440,19 @@ describe("Command Board Simulations API", () => {
         projections: [
           {
             id: "p1",
-            entityId: "e1",
+            tenantId: TEST_TENANT_ID,
+            boardId: TEST_SIMULATION_ID,
             entityType: "EVENT",
+            entityId: "e1",
             positionX: 100,
             positionY: 200,
+            width: 80,
+            height: 60,
+            zIndex: 1,
+            colorOverride: null,
+            collapsed: false,
+            groupId: null,
+            pinned: false,
           } as any,
         ],
         groups: [],
@@ -404,10 +465,19 @@ describe("Command Board Simulations API", () => {
         projections: [
           {
             id: "p0",
-            entityId: "e1",
+            tenantId: TEST_TENANT_ID,
+            boardId: TEST_BOARD_ID,
             entityType: "EVENT",
+            entityId: "e1",
             positionX: 50,
             positionY: 100,
+            width: 80,
+            height: 60,
+            zIndex: 1,
+            colorOverride: null,
+            collapsed: false,
+            groupId: null,
+            pinned: false,
           } as any,
         ],
         groups: [],
@@ -445,7 +515,7 @@ describe("Command Board Simulations API", () => {
             method: "POST",
             body: JSON.stringify({}),
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -466,7 +536,7 @@ describe("Command Board Simulations API", () => {
             method: "POST",
             body: JSON.stringify({}),
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -498,7 +568,7 @@ describe("Command Board Simulations API", () => {
             method: "POST",
             body: JSON.stringify({}),
           }
-        ),
+        ) as any,
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 

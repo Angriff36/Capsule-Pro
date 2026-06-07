@@ -79,3 +79,46 @@ Both can be legitimate, but they must be reported separately. Never present B as
 **What happened:** Wrote 17 new validation tests using `command write(...)` as the test fixture name. 5 tests failed with `Reserved word 'write' cannot be used as an identifier` because `write` is in the lexer's KEYWORDS set (it's a policy action verb alongside `read`, `delete`, `execute`, `all`, `override`, `optional`). Renaming to `command save(...)` fixed all 5.
 **Root cause:** The Manifest DSL has its own keyword list distinct from JS/TS. `write` looks like a perfectly innocuous test command name from a JavaScript-author perspective.
 **Rule:** When authoring `*.manifest` content (including in test fixtures), avoid these reserved words as identifiers: `entity`, `command`, `event`, `query`, `state`, `field`, `relation`, `policy`, `constraint`, `guard`, `effect`, `read`, `write`, `delete`, `execute`, `all`, `override`, `optional`, `required`, `nullable`, `string`, `number`, `boolean`, `list`, `map`, `date`, `datetime`, `any`. Cross-reference `packages/manifest-runtime/src/manifest/lexer.ts` KEYWORDS Set before naming a test command. Safe alternatives for "write" semantics: `save`, `store`, `persist`, `record`.
+
+## Lesson 10: READ THE OFFICIAL DOCS before answering Manifest questions — repeated failure
+
+**Date:** 2026-06-01
+**Agent:** durable-migration / verification session
+**What happened:** The user asked how Manifest config/projections/CLI work and linked two specific
+official doc URLs (manifest-b1e8623f.mintlify.app/cli/configuration and /integration/prisma). I
+answered THREE times from codebase greps + context7 (the GitHub repo mirror) + reading
+`node_modules/@angriff36/manifest/dist/*.js` — WITHOUT fetching the linked pages. I was wrong twice:
+(a) claimed the singular dispatcher needed our custom wrapper — the projection emits it natively
+(`dispatcher` config block + `concreteCommandRoutes.enabled:false` default); (b) under-credited the
+Prisma schema projection, which is the OFFICIAL Prisma method and does full relation/column/table
+mapping. The user (rightly) escalated: "did you even actually read the docs i linked?"
+**Root cause:** Treating context7 (repo mirror) + dist source as equivalent to the official docs.
+Dist code tells you WHAT the code does; the docs tell you INTENDED usage + the full option surface +
+which official method to use. Greps find divergence but not the canonical path.
+**Rule:** Before answering ANY "how does Manifest do X" question or editing Manifest code:
+1. `WebFetch` the relevant https://manifest-b1e8623f.mintlify.app/ page FIRST. If the user links a
+   URL, fetch THAT EXACT URL before responding — every time, no exceptions.
+2. Never say "Manifest can't do X" until you've read the doc for X. Default assumption: the official
+   method EXISTS and we should be using it. If the repo doesn't, find WHY in the planning files.
+3. If reasoning from dist/*.js alone, STOP and fetch the doc.
+4. Repo divergence from the official method (hand-rolled wrappers, hand-authored schema vs the Prisma
+   projection) is SUSPECT/legacy until the planning files prove it's required.
+This is enforced at the top of manifest/AGENTS.md. It has wasted the user's time repeatedly. Stop it.
+
+## Lesson 11: "Commands exist in the IR" ≠ a clean migration target — verify field parity first
+
+**Date:** 2026-06-05
+**What happened:** An Explore agent rated `crm/venues` a "9/10 clean" server-action migration target
+because `Venue.create`/`Venue.update` existed in the IR. They did — but the Manifest `Venue` entity
+was a stripped-down model: it declared `address`/`notes` (NOT real `venues` columns) and was MISSING
+14 columns the UI actually writes (venueType, addressLine1/2, city, …, tags). Routing the action
+through the old command as-is would have SILENTLY DROPPED all of those fields.
+**Root cause:** "command exists" was treated as "entity matches reality." The Manifest entities in
+this repo are frequently simplified vs their rich Prisma tables (same root cause as the
+Driver/Vehicle/Facility/AdminTask drift blockers).
+**Rule:** Before migrating a governed write, verify field parity across THREE places: (a) the data the
+server action writes, (b) the Prisma model columns (`grep "model X" schema.prisma`), (c) the Manifest
+entity properties + command params. If they disagree, the target is drift-blocked — reconcile the
+Manifest entity to the schema FIRST (use `Client` as the template for rich CRM entities; property
+names must match Prisma field names so GenericPrismaStore maps 1:1), then migrate. Json columns the UI
+never sets stay OUT of the command surface (default NULL — lossless, no object/string double-encoding).

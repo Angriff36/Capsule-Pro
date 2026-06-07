@@ -2,10 +2,12 @@
 
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
+import { headers } from "next/headers";
+import { apiUrl } from "@/app/lib/api";
+import { kitchenPrepListsSaveDb } from "@/app/lib/routes";
 import {
   generatePrepList as kitchenGeneratePrepList,
   type PrepListGenerationResult,
-  savePrepListToDatabase,
 } from "../../kitchen/prep-lists/actions";
 
 export interface GenerateEventPrepListInput {
@@ -43,24 +45,38 @@ export async function generateEventPrepList(
       dietaryRestrictions: input.dietaryRestrictions,
     });
 
-    // Save to database for persistence
-    const saveResult = await savePrepListToDatabase(
-      input.eventId,
-      prepList,
-      `${prepList.eventTitle} - Prep List`
-    );
+    const requestHeaders = await headers();
+    const saveResponse = await fetch(apiUrl(kitchenPrepListsSaveDb()), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: requestHeaders.get("cookie") ?? "",
+      },
+      body: JSON.stringify({
+        eventId: input.eventId,
+        prepList,
+        name: `${prepList.eventTitle} - Prep List`,
+        finalize: true,
+      }),
+    });
 
-    if (!saveResult.success) {
+    const saveResult = (await saveResponse.json()) as {
+      success?: boolean;
+      message?: string;
+      data?: { prepListId?: string };
+    };
+
+    if (!saveResponse.ok || !saveResult.success) {
       return {
         success: false,
-        error: saveResult.error || "Failed to save prep list",
+        error: saveResult.message || "Failed to save prep list",
       };
     }
 
     return {
       success: true,
       prepList,
-      prepListId: saveResult.prepListId,
+      prepListId: saveResult.data?.prepListId,
     };
   } catch (error) {
     captureException(error);

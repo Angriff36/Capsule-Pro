@@ -125,7 +125,10 @@ describe("simulation plan alias resolution", () => {
 
     expect(pairEnum).toContain("Event.create");
     expect(pairEnum).toContain("EventBudget.create");
-    expect(pairEnum).not.toContain("Venue.create");
+    // Venue is now a governed entity with its own create command (Task 8.2 CRM
+    // migration), so Venue.create is a real canonical pair — not an alias.
+    expect(pairEnum).toContain("Venue.create");
+    // Bill / Staff.add_staff remain user-facing aliases with no backing command.
     expect(pairEnum).not.toContain("Bill.create");
     expect(pairEnum).not.toContain("Staff.add_staff");
   });
@@ -206,7 +209,8 @@ describe("simulation plan alias resolution", () => {
     expect(parsed?.commandSequence[0]).toMatchObject({
       entity: "CommandBoardCard",
       command: "create",
-      route: "/api/command-board/cards/commands/create",
+      // Canonical dispatcher route (constitution §6), not a per-domain path.
+      route: "/api/manifest/CommandBoardCard/commands/create",
     });
   });
 

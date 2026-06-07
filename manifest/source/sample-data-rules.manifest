@@ -13,28 +13,32 @@
 // - Policies ensure only authorized users can manage sample data
 
 entity SampleData {
+  key [tenantId, id]
+  property required id: string
   // The tenant this sample data belongs to
   property required tenantId: string
   
   // Timestamps for tracking
   property seededAt: datetime = now()
-  property clearedAt: datetime = now()
+  property clearedAt: datetime
   
   // Status tracking
   property isSeeded: boolean = false
   
   // Statistics (populated after seed/clear)
-  property eventsCreated: number = 0
-  property clientsCreated: number = 0
-  property usersCreated: number = 0
-  property recipesCreated: number = 0
+  property eventsCreated: int = 0
+  property clientsCreated: int = 0
+  property usersCreated: int = 0
+  property recipesCreated: int = 0
   
   computed hasSampleData: boolean = self.isSeeded == true
 
+  timestamps
   // ─────────────────────────────────────────────────────────────────────────
   // SEED COMMAND
   // Creates sample data for new organizations to explore the platform
   // ─────────────────────────────────────────────────────────────────────────
+  default policy SampleDataDefaultAccess execute: user.role in ["manager", "admin"] "Sample data generation"
   command seed(requestedBy: string) {
     guard requestedBy != null and requestedBy != "" "User ID is required"
     guard self.isSeeded == false "Sample data already exists for this tenant"
@@ -43,7 +47,7 @@ entity SampleData {
     // This command validates guards, emits events, and records the operation
     mutate isSeeded = true
     mutate seededAt = now()
-    mutate clearedAt = 0
+    mutate clearedAt = null
     
     // Statistics will be populated by the effect
     mutate eventsCreated = 2
@@ -84,7 +88,7 @@ entity SampleData {
     // Effect will handle the clear + seed sequence
     mutate isSeeded = true
     mutate seededAt = now()
-    mutate clearedAt = 0
+    mutate clearedAt = null
     
     mutate eventsCreated = 2
     mutate clientsCreated = 1
@@ -94,7 +98,7 @@ entity SampleData {
     emit SampleDataReseeded
   }
 
-  store SampleData in memory
+  store SampleData in durable
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -111,7 +115,7 @@ policy ManagersCanSeedSampleData execute: user.role in ["manager", "admin"] and 
 event SampleDataSeeded: "tenant.sampledata.seeded" {
   tenantId: string
   seededBy: string
-  seededAt: number
+  seededAt: datetime
   eventsCreated: number
   clientsCreated: number
   usersCreated: number
@@ -122,11 +126,11 @@ event SampleDataCleared: "tenant.sampledata.cleared" {
   tenantId: string
   clearedBy: string
   reason: string
-  clearedAt: number
+  clearedAt: datetime
 }
 
 event SampleDataReseeded: "tenant.sampledata.reseeded" {
   tenantId: string
   reseededBy: string
-  reseededAt: number
+  reseededAt: datetime
 }

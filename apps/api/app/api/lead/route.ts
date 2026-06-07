@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface WizardFormData {
   contactName: string;
@@ -46,32 +47,38 @@ interface PriceEstimate {
  * and creates a Lead entity through the CRM system.
  */
 export async function POST(request: NextRequest): Promise<Response> {
-  return executeManifestCommand(request, {
-    entityName: "Lead",
-    commandName: "create",
-    transformBody: (body) => {
-      const { formData, estimate } = body as {
-        formData: WizardFormData;
-        estimate: PriceEstimate;
-      };
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-      const eventDateMs = formData.eventDate
-        ? new Date(formData.eventDate).getTime()
-        : 0;
+  const { formData, estimate } = rawBody as {
+    formData: WizardFormData;
+    estimate: PriceEstimate;
+  };
 
-      return {
-        source: "website",
-        companyName: formData.company || "",
-        contactName: formData.contactName,
-        contactEmail: formData.email,
-        contactPhone: formData.phone,
-        eventType: formData.occasionType || formData.eventName,
-        eventDate: eventDateMs,
-        estimatedGuests: formData.guestCount || 0,
-        estimatedValue: estimate?.high || 0,
-        assignedTo: "",
-        notes: buildNotesField(formData),
-      };
+  const eventDateMs = formData.eventDate
+    ? new Date(formData.eventDate).getTime()
+    : 0;
+
+  return runManifestCommand({
+    entity: "Lead",
+    command: "create",
+    body: {
+      source: "website",
+      companyName: formData.company || "",
+      contactName: formData.contactName,
+      contactEmail: formData.email,
+      contactPhone: formData.phone,
+      eventType: formData.occasionType || formData.eventName,
+      eventDate: eventDateMs,
+      estimatedGuests: formData.guestCount || 0,
+      estimatedValue: estimate?.high || 0,
+      assignedTo: "",
+      notes: buildNotesField(formData),
+    },
+    user: {
+      id: user.id,
+      tenantId: user.tenantId,
+      role: user.role,
     },
   });
 }

@@ -13,6 +13,9 @@
  * to add those columns.
  */
 
+import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { invariant } from "@/app/lib/invariant";
 
 export const PAYMENT_METHOD_STATUSES = [
@@ -217,6 +220,57 @@ export function isPaymentMethodUsable(paymentMethod: {
   const unusableStatuses: ReadonlySet<string> = new Set(["EXPIRED", "FLAGGED"]);
 
   return !unusableStatuses.has(paymentMethod.status);
+}
+
+/**
+ * Clear all sibling default payment methods for a client by issuing governed
+ * `markNotDefault` commands via the Manifest runtime.
+ *
+ * Replaces the raw `database.paymentMethod.updateMany` bypass — each sibling
+ * now goes through constraints, guards, and audit trail.
+ *
+ * @param excludeId - ID of the payment method being set as default (excluded
+ *   from the clear). Pass empty string for create operations where no ID exists yet.
+ */
+export async function clearSiblingDefaults(
+  tenantId: string,
+  clientId: string,
+  excludeId: string,
+  user: { id: string; tenantId: string; role: string }
+): Promise<void> {
+  const where: Record<string, unknown> = {
+    tenantId,
+    clientId,
+    isDefault: true,
+    deletedAt: null,
+  };
+  if (excludeId) {
+    where.id = { not: excludeId };
+  }
+
+  const siblings = await database.paymentMethod.findMany({
+    where,
+    select: { id: true },
+  });
+
+  for (const sibling of siblings) {
+    await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "PaymentMethod",
+        command: "markNotDefault",
+        body: { id: sibling.id },
+        user,
+        instanceId: sibling.id,
+      }
+    );
+  }
 }
 
 // Type definitions for API responses

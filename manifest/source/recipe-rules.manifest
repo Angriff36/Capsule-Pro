@@ -1,23 +1,29 @@
 // Kitchen Ops - Recipe Rules
 // Manifest spec for recipe operations with constraints, guards, and events
+// Lifecycle: Recipe is a catalog header. RecipeVersion moves draft -> published (->approved).
+// RecipeIngredient and RecipeStep are line-item detail rows — simple CRUD.
 
 entity Recipe {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string
   property category: string = ""
   property cuisineType: string = ""
   property description: string = ""
-  property required tags: array<string>
+  property required tags: string[]
   property required isActive: boolean = true
+  timestamps
 
   computed hasVersion: boolean = true
-  computed tagCount: number = length(split(self.tags, ","))
+  computed tagCount: int = 0
+
+  relationship hasMany versions: RecipeVersion
 
   constraint validName: self.name != null and self.name != "" "Recipe name is required"
-  constraint validTags: self.tags == null or self.tags == "" or length(split(self.tags, ",")) <= 20 "Recipe cannot have more than 20 tags"
 
-  command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string) {
+  default policy RecipeDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
+  command update(newName: string, newCategory: string, newCuisineType: string, newDescription: string, newTags: string[]) {
     guard newName != null and newName != "" "Recipe name is required"
 
     constraint warnNameChange:warn self.name != newName {
@@ -53,7 +59,7 @@ entity Recipe {
     emit RecipeActivated
   }
 
-  command create(name: string, category: string, cuisineType: string, description: string, tags: string) {
+  command create(name: string, category: string, cuisineType: string, description: string, tags: string[]) {
     guard name != null and name != "" "Recipe name is required"
 
     mutate name = name
@@ -70,6 +76,7 @@ entity Recipe {
 }
 
 entity RecipeVersion {
+  key [tenantId, id]
   property required id: string
   property required recipeId: string
   property required tenantId: string
@@ -79,36 +86,53 @@ entity RecipeVersion {
   property cuisineType: string = ""
   property description: string = ""
   property required tags: string = ""
-  property yieldQuantity: number = 1
-  property yieldUnitId: number = 1
+  property yieldQuantity: int = 1
+  property yieldUnitId: int = 1
   property yieldDescription: string = ""
   property prepTimeMinutes: int = 0
   property cookTimeMinutes: int = 0
   property restTimeMinutes: int = 0
-  property difficultyLevel: number = 1
+  property difficultyLevel: int = 1
   property instructions: string = ""
   property notes: string = ""
   property ingredientCount: int = 0
   property stepCount: int = 0
-  property totalCost: number = 0
-  property costPerYield: number = 0
-  property createdAt: datetime = now()
+  property totalCost: money = 0
+  property costPerYield: money = 0
+  // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
+  property status: string = "draft"
+  property publishedAt: datetime
+  property approvedAt: datetime
+  property approvedBy: string = ""
+  timestamps
 
-  computed totalTimeMinutes: number = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
+  computed totalTimeMinutes: int = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
   computed isVersion1: boolean = self.versionNumber == 1
   computed isHighDifficulty: boolean = self.difficultyLevel >= 4
+  computed isDraft: boolean = self.status == "draft"
+  computed isPublished: boolean = self.status == "published"
+  computed isApproved: boolean = self.approvedAt != null
+
+  relationship belongsTo recipe: Recipe fields [tenantId, recipeId] references [tenantId, id]
+  relationship hasMany ingredients: RecipeIngredient
+  relationship hasMany steps: RecipeStep
+
+  transition status from "draft" to ["published"]
+  transition status from "published" to ["draft"]
 
   constraint validVersionNumber: self.versionNumber > 0 "Version number must be positive"
   constraint positiveYield: self.yieldQuantity > 0 "Yield quantity must be positive"
   constraint validDifficulty: self.difficultyLevel >= 1 and self.difficultyLevel <= 5 "Difficulty must be between 1 (easy) and 5 (expert)"
   constraint validTimes: self.prepTimeMinutes >= 0 and self.cookTimeMinutes >= 0 and self.restTimeMinutes >= 0 "Time values must be non-negative"
   constraint nonNegativeCost: self.totalCost >= 0 "Total cost cannot be negative"
+  constraint validStatus: self.status in ["draft", "published"] "Version status must be draft or published"
 
-  constraint warnLongRecipe:warn self.totalTimeMinutes > 480 {
-    messageTemplate: "Recipe takes {totalHours}+ hours to complete"
+  constraint warnLongRecipe:warn self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes > 480 {
+    messageTemplate: "Recipe takes 8+ hours to complete"
     details: {
-      totalTimeMinutes: self.totalTimeMinutes
-      totalHours: self.totalTimeMinutes / 60
+      prepTimeMinutes: self.prepTimeMinutes
+      cookTimeMinutes: self.cookTimeMinutes
+      restTimeMinutes: self.restTimeMinutes
     }
   }
 
@@ -119,6 +143,7 @@ entity RecipeVersion {
     }
   }
 
+  default policy RecipeVersionDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command create(yieldQty: number, yieldUnit: number, prepTime: number, cookTime: number, restTime: number, difficulty: number, instructionsText: string, notesText: string) {
     guard yieldQty != null and yieldQty > 0 "Yield quantity must be positive"
     guard yieldUnit != null and yieldUnit > 0 "Yield unit is required"
@@ -131,9 +156,52 @@ entity RecipeVersion {
     mutate difficultyLevel = difficulty
     mutate instructions = instructionsText
     mutate notes = notesText
-    mutate createdAt = now()
+    mutate status = "draft"
 
     emit RecipeVersionCreated
+  }
+
+  // Publish a version so it becomes the live recipe available for catering orders.
+  // Requires at least one ingredient to be present.
+  command markPublished(publishedBy: string) {
+    guard self.status == "draft" "Only a draft version can be published"
+    guard self.ingredientCount > 0 "Cannot publish a version with no ingredients"
+
+    mutate status = "published"
+    mutate publishedAt = now()
+
+    emit RecipeVersionPublished
+  }
+
+  // Retract a published version back to draft (e.g. for corrections before re-publishing).
+  command retract(reason: string) {
+    guard self.status == "published" "Only a published version can be retracted"
+
+    constraint warnRetract:warn true {
+      messageTemplate: "Retracting published recipe version — verify no active event orders reference this version"
+      details: {
+        versionId: self.id
+        recipeId: self.recipeId
+        reason: reason
+      }
+    }
+
+    mutate status = "draft"
+    mutate publishedAt = null
+
+    emit RecipeVersionRetracted
+  }
+
+  // Kitchen lead sign-off: stamps a published version as kitchen-approved for catering service.
+  command approve(approvedBy: string) {
+    guard self.status == "published" "Only a published version can be approved"
+    guard approvedBy != null and approvedBy != "" "Approver ID is required"
+    guard self.approvedAt == null "Version is already approved"
+
+    mutate approvedAt = now()
+    mutate approvedBy = approvedBy
+
+    emit RecipeVersionApproved
   }
 
   command restore(sourceId: string, newVersionNum: number) {
@@ -141,7 +209,10 @@ entity RecipeVersion {
     guard newVersionNum != null and newVersionNum > 0 "Version number must be positive"
 
     mutate versionNumber = newVersionNum
-    mutate createdAt = now()
+    mutate status = "draft"
+    mutate publishedAt = null
+    mutate approvedAt = null
+    mutate approvedBy = ""
 
     emit RecipeVersionRestored
   }
@@ -163,26 +234,32 @@ entity RecipeVersion {
     emit RecipeVersionCostUpdated
   }
 
-  store RecipeVersion in memory
+  store RecipeVersion in durable
 }
 
 entity RecipeIngredient {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipeVersionId: string
   property required ingredientId: string
-  property required quantity: number
-  property required unitId: number
-  property required sortOrder: number
+  property required quantity: int
+  property required unitId: int
+  property required sortOrder: int
   property preparationNotes: string = ""
   property isOptional: boolean = false
-  property wasteFactor: number = 1.0
-  property deletedAt: datetime = now()
+  property wasteFactor: decimal = 1.0
+  timestamps
+  property deletedAt: datetime
+
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
+  relationship belongsTo ingredient: Ingredient fields [tenantId, ingredientId] references [tenantId, id]
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
   constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
 
+  default policy RecipeIngredientDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command updateQuantity(newQuantity: number, newUnit: number) {
     guard newQuantity != null and newQuantity > 0 "Quantity must be positive"
 
@@ -240,27 +317,32 @@ entity RecipeIngredient {
     emit RecipeIngredientRemoved
   }
 
-  store RecipeIngredient in memory
+  store RecipeIngredient in durable
 }
 
 entity RecipeStep {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required recipeVersionId: string
-  property required stepNumber: number
+  property required stepNumber: int
   property required instruction: string
   property durationMinutes: decimal = 0
-  property temperatureValue: number = 0
+  property temperatureValue: decimal = 0
   property temperatureUnit: string = ""
   property equipmentNeeded: string = ""
   property tips: string = ""
   property videoUrl: string = ""
   property imageUrl: string = ""
-  property deletedAt: datetime = now()
+  timestamps
+  property deletedAt: datetime
+
+  relationship belongsTo recipeVersion: RecipeVersion fields [tenantId, recipeVersionId] references [tenantId, id]
 
   constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
   constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
 
+  default policy RecipeStepDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Recipe management"
   command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: number, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string, tips: string, videoUrl: string, imageUrl: string) {
     guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
     guard stepNumber > 0 "Step number must be positive"
@@ -296,7 +378,7 @@ entity RecipeStep {
     emit RecipeStepRemoved
   }
 
-  store RecipeStep in memory
+  store RecipeStep in durable
 }
 
 // Policy definitions
@@ -309,7 +391,7 @@ event RecipeCreated: "kitchen.recipe.created" {
   recipeId: string
   tenantId: string
   name: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeUpdated: "kitchen.recipe.updated" {
@@ -317,7 +399,7 @@ event RecipeUpdated: "kitchen.recipe.updated" {
   tenantId: string
   oldName: string
   newName: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeDeactivated: "kitchen.recipe.deactivated" {
@@ -325,14 +407,14 @@ event RecipeDeactivated: "kitchen.recipe.deactivated" {
   tenantId: string
   name: string
   reason: string
-  deactivatedAt: number
+  deactivatedAt: datetime
 }
 
 event RecipeActivated: "kitchen.recipe.activated" {
   recipeId: string
   tenantId: string
   name: string
-  activatedAt: number
+  activatedAt: datetime
 }
 
 event RecipeVersionCreated: "kitchen.recipe.version.created" {
@@ -341,7 +423,34 @@ event RecipeVersionCreated: "kitchen.recipe.version.created" {
   tenantId: string
   versionNumber: number
   yieldQuantity: number
-  createdAt: number
+  createdAt: datetime
+}
+
+event RecipeVersionPublished: "kitchen.recipe.version.published" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  publishedBy: string
+  publishedAt: datetime
+}
+
+event RecipeVersionRetracted: "kitchen.recipe.version.retracted" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  reason: string
+  retractedAt: datetime
+}
+
+event RecipeVersionApproved: "kitchen.recipe.version.approved" {
+  versionId: string
+  recipeId: string
+  tenantId: string
+  versionNumber: number
+  approvedBy: string
+  approvedAt: datetime
 }
 
 event RecipeVersionRestored: "kitchen.recipe.version.restored" {
@@ -350,7 +459,7 @@ event RecipeVersionRestored: "kitchen.recipe.version.restored" {
   recipeId: string
   tenantId: string
   versionNumber: number
-  restoredAt: number
+  restoredAt: datetime
 }
 
 event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
@@ -359,24 +468,7 @@ event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
   tenantId: string
   totalCost: number
   costPerYield: number
-  updatedAt: number
-}
-
-event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
-  ingredientId: string
-  tenantId: string
-  oldAllergens: string
-  newAllergens: string
-  updatedAt: number
-}
-
-event IngredientCreated: "kitchen.ingredient.created" {
-  ingredientId: string
-  tenantId: string
-  name: string
-  category: string
-  allergens: string
-  createdAt: number
+  updatedAt: datetime
 }
 
 event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
@@ -385,7 +477,7 @@ event RecipeIngredientCreated: "kitchen.recipe.ingredient.created" {
   ingredientId: string
   tenantId: string
   quantity: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
@@ -394,7 +486,25 @@ event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
   ingredientId: string
   oldQuantity: number
   newQuantity: number
-  updatedAt: number
+  updatedAt: datetime
+}
+
+event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  ingredientId: string
+  tenantId: string
+  userId: string
+  removedAt: datetime
+}
+
+event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  tenantId: string
+  oldWasteFactor: number
+  newWasteFactor: number
+  updatedAt: datetime
 }
 
 event RecipeStepCreated: "kitchen.recipe.step.created" {
@@ -403,7 +513,7 @@ event RecipeStepCreated: "kitchen.recipe.step.created" {
   tenantId: string
   stepNumber: number
   instruction: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event RecipeStepUpdated: "kitchen.recipe.step.updated" {
@@ -413,7 +523,7 @@ event RecipeStepUpdated: "kitchen.recipe.step.updated" {
   stepNumber: number
   oldInstruction: string
   newInstruction: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RecipeStepRemoved: "kitchen.recipe.step.removed" {
@@ -421,7 +531,24 @@ event RecipeStepRemoved: "kitchen.recipe.step.removed" {
   recipeVersionId: string
   tenantId: string
   stepNumber: number
-  removedAt: number
+  removedAt: datetime
+}
+
+event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
+  ingredientId: string
+  tenantId: string
+  oldAllergens: string
+  newAllergens: string
+  updatedAt: datetime
+}
+
+event IngredientCreated: "kitchen.ingredient.created" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  category: string
+  allergens: string
+  createdAt: datetime
 }
 
 event DishCreated: "kitchen.dish.created" {
@@ -429,7 +556,7 @@ event DishCreated: "kitchen.dish.created" {
   tenantId: string
   name: string
   recipeId: string
-  createdAt: number
+  createdAt: datetime
 }
 
 event DishPricingUpdated: "kitchen.dish.pricing.updated" {
@@ -439,25 +566,7 @@ event DishPricingUpdated: "kitchen.dish.pricing.updated" {
   newPrice: number
   oldCost: number
   newCost: number
-  updatedAt: number
-}
-
-event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
-  recipeIngredientId: string
-  recipeVersionId: string
-  ingredientId: string
-  tenantId: string
-  userId: string
-  removedAt: number
-}
-
-event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
-  recipeIngredientId: string
-  recipeVersionId: string
-  tenantId: string
-  oldWasteFactor: number
-  newWasteFactor: number
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
@@ -467,5 +576,5 @@ event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {
   newMinDays: number
   oldMaxDays: number
   newMaxDays: number
-  updatedAt: number
+  updatedAt: datetime
 }

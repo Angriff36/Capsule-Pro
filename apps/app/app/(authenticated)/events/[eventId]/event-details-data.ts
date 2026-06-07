@@ -79,7 +79,7 @@ interface EventDishRow {
  */
 export const getEventStaffCount = cache(
   async (tenantId: string, eventId: string) => {
-    return database.eventStaffAssignment.count({
+    return database.eventStaff.count({
       where: {
         tenantId,
         eventId,
@@ -181,8 +181,8 @@ interface PrepTaskRow {
   id: string;
   name: string;
   status: string;
-  quantityTotal: unknown;
-  servingsTotal: unknown;
+  quantityTotal: number;
+  servingsTotal: number | null;
   dueByDate: unknown;
   isEventFinish: unknown;
 }
@@ -193,7 +193,12 @@ interface PrepTaskRow {
  */
 export const getPrepTasksRaw = cache(
   async (tenantId: string, eventId: string): Promise<PrepTaskRow[]> => {
-    return database.$queryRaw<PrepTaskRow[]>(
+    const prepTasks = await database.$queryRaw<
+      (Omit<PrepTaskRow, "quantityTotal" | "servingsTotal"> & {
+        quantityTotal: Prisma.Decimal;
+        servingsTotal: number | null;
+      })[]
+    >(
       Prisma.sql`
         SELECT id,
                name,
@@ -209,6 +214,11 @@ export const getPrepTasksRaw = cache(
         ORDER BY due_by_date ASC, created_at ASC
       `
     );
+
+    return prepTasks.map((task) => ({
+      ...task,
+      quantityTotal: Number(task.quantityTotal),
+    }));
   }
 );
 
@@ -217,7 +227,7 @@ interface PrepListRow {
   name: string;
   status: string;
   totalItems: number;
-  batchMultiplier: number;
+  batchMultiplier: Prisma.Decimal;
   generatedAt: Date;
   finalizedAt: Date | null;
 }
@@ -247,6 +257,7 @@ export const getEventPrepLists = cache(
 
     return prepLists.map((prepList) => ({
       ...prepList,
+      batchMultiplier: Number(prepList.batchMultiplier),
       isActive: true,
     }));
   }

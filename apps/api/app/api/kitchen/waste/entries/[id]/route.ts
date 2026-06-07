@@ -2,8 +2,8 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface WasteEntryDetail {
   id: string;
@@ -85,15 +85,18 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "WasteEntry",
-    commandName: "update",
-    params: { id },
-    transformBody: (body, ctx) => ({
-      ...body,
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+
+  return runManifestCommand({
+    entity: "WasteEntry",
+    command: "update",
+    body: {
+      ...rawBody,
       id,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }
 
@@ -106,13 +109,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  return executeManifestCommand(request, {
-    entityName: "WasteEntry",
-    commandName: "softDelete",
-    params: { id },
-    transformBody: (_body, ctx) => ({
+  const user = await resolveCurrentUser(request);
+
+  return runManifestCommand({
+    entity: "WasteEntry",
+    command: "softDelete",
+    body: {
       id,
-      tenantId: ctx.tenantId,
-    }),
+      tenantId: user.tenantId,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
 }

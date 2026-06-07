@@ -4,10 +4,11 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 /**
  * GET /api/kitchen/iot/probes
- * List all IoT temperature probes
+ * List all IoT temperature probes (read — bypasses Manifest per §10).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -40,14 +41,14 @@ export async function GET(request: NextRequest) {
     log.error("List probes error:", error);
     return NextResponse.json(
       { error: "Failed to list probes" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 /**
  * POST /api/kitchen/iot/probes
- * Register a new IoT temperature probe
+ * Register a new IoT temperature probe via Manifest runtime.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -67,13 +68,15 @@ export async function POST(request: NextRequest) {
     if (!(name && probeId)) {
       return NextResponse.json(
         { error: "Name and probe ID are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const probe = await database.temperatureProbe.create({
-      data: {
-        tenantId,
+    // Delegate creation to Manifest runtime
+    return runManifestCommand({
+      entity: "TemperatureProbe",
+      command: "create",
+      body: {
         name,
         probeId,
         locationId: locationId || null,
@@ -81,20 +84,16 @@ export async function POST(request: NextRequest) {
         minTemp: minTemp || -40,
         maxTemp: maxTemp || 300,
         status: "active",
-        lastReading: null,
         batteryLevel: 100,
-        lastCalibration: null,
-        nextCalibration: null,
       },
+      user: { id: userId, tenantId, role: "" },
     });
-
-    return NextResponse.json({ probe });
   } catch (error) {
     captureException(error);
     log.error("Create probe error:", error);
     return NextResponse.json(
       { error: "Failed to create probe" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

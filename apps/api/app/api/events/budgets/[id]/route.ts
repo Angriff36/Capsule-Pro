@@ -11,8 +11,8 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -75,12 +75,9 @@ export async function PUT(
   log.info("[EventBudget/PUT] Delegating to manifest update command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "EventBudget",
-    commandName: "update",
-    params: { id },
-    transformBody: (body) => ({ ...body, id }),
-  });
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
+  return runManifestCommand({ entity: "EventBudget", command: "update", body: { ...rawBody, id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }
 
 /**
@@ -95,10 +92,6 @@ export async function DELETE(
   log.info("[EventBudget/DELETE] Delegating to manifest finalize command", {
     id,
   });
-  return executeManifestCommand(request, {
-    entityName: "EventBudget",
-    commandName: "finalize",
-    params: { id },
-    transformBody: (_body) => ({ id }),
-  });
+  const user = await resolveCurrentUser(request);
+  return runManifestCommand({ entity: "EventBudget", command: "finalize", body: { id }, user: { id: user.id, tenantId: user.tenantId, role: user.role } });
 }

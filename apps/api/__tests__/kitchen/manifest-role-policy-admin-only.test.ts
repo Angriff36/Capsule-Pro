@@ -14,6 +14,7 @@ import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-runtime/runtime-engine";
 import { describe, expect, it } from "vitest";
+import { inMemoryStoreProvider } from "../test-helpers";
 
 const MANIFEST_DIR = join(
   process.cwd(),
@@ -39,7 +40,8 @@ async function getRolePolicyRuntime(userRole: string) {
         tenantId: "test-tenant-456",
         role: userRole,
       },
-    }
+    },
+    { storeProvider: inMemoryStoreProvider() }
   );
 }
 

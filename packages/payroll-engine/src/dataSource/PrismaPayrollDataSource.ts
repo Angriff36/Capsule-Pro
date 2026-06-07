@@ -37,55 +37,75 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async getEmployees(tenantId: string): Promise<Employee[]> {
+    // User (IR-generated model) has no Prisma relations — fetch related data separately
     const users = await this.#prisma.user.findMany({
       where: {
         tenantId,
         deletedAt: null,
         isActive: true,
       },
-      include: {
-        payrollRole: true,
-        taxInfo: true,
-        payrollPrefs: true,
-        department: true,
-      },
     });
 
-    return users
-      .filter((user) => user.roleId !== null)
-      .map((user) => ({
+    const activeUsers = users.filter(
+      (user) => user.roleId !== null && user.roleId !== ""
+    );
+    if (activeUsers.length === 0) return [];
+
+    const employeeIds = activeUsers.map((u) => u.id);
+
+    // Fetch related records in parallel
+    const [taxInfoRows, payrollPrefsRows] = await Promise.all([
+      this.#prisma.employeeTaxInfo.findMany({
+        where: { tenantId, employeeId: { in: employeeIds }, deletedAt: null },
+      }),
+      this.#prisma.employeePayrollPrefs.findMany({
+        where: { tenantId, employeeId: { in: employeeIds }, deletedAt: null },
+      }),
+    ]);
+
+    const taxInfoByEmployee = new Map(
+      taxInfoRows.map((r) => [r.employeeId, r])
+    );
+    const payrollPrefsByEmployee = new Map(
+      payrollPrefsRows.map((r) => [r.employeeId, r])
+    );
+
+    return activeUsers.map((user) => {
+      const taxInfo = taxInfoByEmployee.get(user.id);
+      const payrollPrefs = payrollPrefsByEmployee.get(user.id);
+      return {
         id: user.id,
         tenantId: user.tenantId,
         name: `${user.firstName} ${user.lastName}`,
-        department: user.department?.name ?? undefined,
+        department: undefined, // no relation available on IR User model
         roleId: user.roleId!,
         currency: "USD",
         hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
-        taxInfo: user.taxInfo
+        taxInfo: taxInfo
           ? {
-              jurisdiction: user.taxInfo.jurisdiction,
-              status: user.taxInfo.filingStatus as
+              jurisdiction: taxInfo.jurisdiction,
+              status: taxInfo.filingStatus as
                 | "single"
                 | "married"
                 | "head_of_household",
               federalWithholdingAllowances:
-                user.taxInfo.federalWithholdingAllowances,
-              stateWithholdingAllowances:
-                user.taxInfo.stateWithholdingAllowances,
-              additionalWithholding: Number(user.taxInfo.additionalWithholding),
+                taxInfo.federalWithholdingAllowances,
+              stateWithholdingAllowances: taxInfo.stateWithholdingAllowances,
+              additionalWithholding: Number(taxInfo.additionalWithholding),
             }
           : undefined,
-        payrollPrefs: user.payrollPrefs
+        payrollPrefs: payrollPrefs
           ? {
-              payPeriodFrequency: user.payrollPrefs
-                .payPeriodFrequency as PayrollPrefs["payPeriodFrequency"],
-              roundingRule: user.payrollPrefs.roundingRule as
+              payPeriodFrequency:
+                payrollPrefs.payPeriodFrequency as PayrollPrefs["payPeriodFrequency"],
+              roundingRule: payrollPrefs.roundingRule as
                 | "nearest_quarter"
                 | "nearest_tenth"
                 | "none",
             }
           : undefined,
-      }));
+      };
+    });
   }
 
   async getRoles(tenantId: string): Promise<Role[]> {
@@ -161,13 +181,17 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
     return pools.map((pool) => ({
       id: pool.id,
       tenantId: pool.tenantId,
-      periodId: pool.periodId,
+      periodId: pool.periodId ?? "",
       totalTips: Number(pool.totalTips),
-      allocationRule: pool.allocationRule as
+      allocationRule: (pool.allocationRule ?? "by_hours") as
         | "by_hours"
         | "by_headcount"
         | "fixed_shares",
-      fixedShares: pool.fixedShares as Record<string, number> | undefined,
+      fixedShares: pool.fixedShares
+        ? ((typeof pool.fixedShares === "string"
+            ? JSON.parse(pool.fixedShares)
+            : pool.fixedShares) as Record<string, number>)
+        : undefined,
     }));
   }
 

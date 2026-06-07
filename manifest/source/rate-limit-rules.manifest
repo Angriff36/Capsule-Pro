@@ -2,6 +2,7 @@
 // Manifest spec for rate limit configuration management
 
 entity RateLimitConfig {
+  key [tenantId, id]
   property required id: string
   property required tenantId: string
   property required name: string = ""
@@ -11,13 +12,13 @@ entity RateLimitConfig {
   property burstAllowance: int = 0
   property required priority: int = 0
   property required isActive: boolean = true
-  property required createdAt: datetime = now()
-  property required updatedAt: datetime = now()
+  timestamps
   property deletedAt: datetime
 
   constraint requireName: self.name != "" "Rate limit name is required"
   constraint requireEndpointPattern: self.endpointPattern != "" "Endpoint pattern is required"
 
+  default policy RateLimitConfigDefaultAccess execute: user.role in ["admin"] "Rate limit configuration"
   command create(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0) {
     guard name != "" "Rate limit name is required"
     guard endpointPattern != "" "Endpoint pattern is required"
@@ -32,8 +33,6 @@ entity RateLimitConfig {
     mutate burstAllowance = burstAllowance
     mutate priority = priority
     mutate isActive = true
-    mutate createdAt = now()
-    mutate updatedAt = now()
     emit RateLimitConfigCreated
   }
 
@@ -46,28 +45,24 @@ entity RateLimitConfig {
     mutate burstAllowance = burstAllowance
     mutate priority = priority
     mutate isActive = isActive
-    mutate updatedAt = now()
     emit RateLimitConfigUpdated
   }
 
   command softDelete(reason: string = "") {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate deletedAt = now()
-    mutate updatedAt = now()
     emit RateLimitConfigDeleted
   }
 
   command turnOn() {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate isActive = true
-    mutate updatedAt = now()
     emit RateLimitConfigActivated
   }
 
   command turnOff() {
     guard self.deletedAt == null "Cannot modify deleted rate limit configuration"
     mutate isActive = false
-    mutate updatedAt = now()
     emit RateLimitConfigDeactivated
   }
 
@@ -85,7 +80,7 @@ event RateLimitConfigCreated: "admin.rate_limit.created" {
   maxRequests: number
   burstAllowance: number
   priority: number
-  createdAt: number
+  createdAt: datetime
 }
 
 event RateLimitConfigUpdated: "admin.rate_limit.updated" {
@@ -98,7 +93,7 @@ event RateLimitConfigUpdated: "admin.rate_limit.updated" {
   burstAllowance: number
   priority: number
   isActive: boolean
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
@@ -107,7 +102,7 @@ event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
   name: string
   endpointPattern: string
   reason: string
-  deletedAt: number
+  deletedAt: datetime
 }
 
 event RateLimitConfigActivated: "admin.rate_limit.activated" {
@@ -115,7 +110,7 @@ event RateLimitConfigActivated: "admin.rate_limit.activated" {
   tenantId: string
   name: string
   endpointPattern: string
-  updatedAt: number
+  updatedAt: datetime
 }
 
 event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
@@ -123,5 +118,5 @@ event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
   tenantId: string
   name: string
   endpointPattern: string
-  updatedAt: number
+  updatedAt: datetime
 }
