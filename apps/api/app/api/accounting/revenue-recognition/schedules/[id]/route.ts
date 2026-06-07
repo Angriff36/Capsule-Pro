@@ -23,7 +23,7 @@ type RouteContext = {
  * GET /api/accounting/revenue-recognition/schedules/[id]
  * Get a single revenue recognition schedule with its lines
  */
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
     const { id } = await context.params;
