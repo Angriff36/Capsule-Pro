@@ -6,6 +6,8 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Types for labor budget operations
 export interface LaborBudgetInput {
@@ -240,28 +242,33 @@ export async function createLaborBudget(input: LaborBudgetInput) {
     );
   }
 
-  return database.laborBudget.create({
-    data: {
-      tenantId,
-      locationId: locationId || null,
-      eventId: eventId || null,
-      name,
-      description: description || null,
-      budgetType,
-      periodStart: periodStart || null,
-      periodEnd: periodEnd || null,
-      budgetTarget: new Prisma.Decimal(budgetTarget),
-      budgetUnit,
-      threshold80Pct,
-      threshold90Pct,
-      threshold100Pct,
-      status: "active",
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+    {
+      entity: "LaborBudget",
+      command: "create",
+      instanceId: undefined,
+      user: { id: "", tenantId, role: "admin" },
+      body: {
+        locationId: locationId || "",
+        periodStart: periodStart ? periodStart.toISOString() : "",
+        periodEnd: periodEnd ? periodEnd.toISOString() : "",
+        budgetAmount: budgetTarget,
+        budgetType,
+        notes: description || "",
+        createdBy: "",
+      },
+    }
+  );
+
+  const created = result.ok ? (result.result as { id?: string } | null) : null;
+  return { id: created?.id ?? "", name };
 }
 
 /**
@@ -299,36 +306,54 @@ export async function updateLaborBudget(
     return null;
   }
 
-  const result = await database.laborBudget.updateManyAndReturn({
-    where: {
-      tenantId,
-      id: budgetId,
-      deletedAt: null,
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-    data,
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+    {
+      entity: "LaborBudget",
+      command: "update",
+      instanceId: budgetId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {
+        locationId: updates.locationId ?? "",
+        periodStart: updates.periodStart ? updates.periodStart.toISOString() : "",
+        periodEnd: updates.periodEnd ? updates.periodEnd.toISOString() : "",
+        budgetAmount: updates.budgetTarget ?? 0,
+        budgetType: updates.budgetType ?? "",
+        notes: updates.description ?? "",
+      },
+    }
+  );
 
-  return result[0] || null;
+  if (!result.ok) return null;
+  return { id: budgetId, name: updates.name ?? "" };
 }
 
 /**
  * Delete (soft delete) a labor budget
  */
 export async function deleteLaborBudget(tenantId: string, budgetId: string) {
-  await database.laborBudget.updateMany({
-    where: {
-      tenantId,
-      id: budgetId,
-      deletedAt: null,
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-    data: {
-      deletedAt: new Date(),
-    },
-  });
+    {
+      entity: "LaborBudget",
+      command: "softDelete",
+      instanceId: budgetId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {},
+    }
+  );
 
   return { success: true };
 }
@@ -651,15 +676,28 @@ async function getApplicableBudgets(
  * Create a budget alert
  */
 export async function createBudgetAlert(input: BudgetAlertInput) {
-  await database.budgetAlert.create({
-    data: {
-      tenantId: input.tenantId,
-      budgetId: input.budgetId,
-      alertType: input.alertType,
-      utilization: new Prisma.Decimal(input.utilization),
-      message: input.message,
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-  });
+    {
+      entity: "BudgetAlert",
+      command: "create",
+      instanceId: undefined,
+      user: { id: "", tenantId: input.tenantId, role: "admin" },
+      body: {
+        budgetId: input.budgetId,
+        alertType: input.alertType,
+        thresholdPct: input.utilization,
+        actualPct: input.utilization,
+        message: input.message,
+      },
+    }
+  );
 
   return { success: true };
 }
@@ -735,18 +773,24 @@ export async function acknowledgeBudgetAlert(
   alertId: string,
   acknowledgedBy: string
 ) {
-  await database.budgetAlert.updateMany({
-    where: {
-      tenantId,
-      id: alertId,
-      deletedAt: null,
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-    data: {
-      isAcknowledged: true,
-      acknowledgedBy,
-      acknowledgedAt: new Date(),
-    },
-  });
+    {
+      entity: "BudgetAlert",
+      command: "acknowledge",
+      instanceId: alertId,
+      user: { id: acknowledgedBy, tenantId, role: "admin" },
+      body: {
+        acknowledgedBy,
+      },
+    }
+  );
 
   return { success: true };
 }
@@ -755,17 +799,22 @@ export async function acknowledgeBudgetAlert(
  * Resolve a budget alert
  */
 export async function resolveBudgetAlert(tenantId: string, alertId: string) {
-  await database.budgetAlert.updateMany({
-    where: {
-      tenantId,
-      id: alertId,
-      deletedAt: null,
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user, entityName }) =>
+        createManifestRuntime({
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          entityName,
+        }),
     },
-    data: {
-      resolved: true,
-      resolvedAt: new Date(),
-    },
-  });
+    {
+      entity: "BudgetAlert",
+      command: "markResolved",
+      instanceId: alertId,
+      user: { id: "", tenantId, role: "admin" },
+      body: {},
+    }
+  );
 
   return { success: true };
 }

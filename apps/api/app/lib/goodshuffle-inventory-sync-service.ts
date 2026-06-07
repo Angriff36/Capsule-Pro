@@ -6,6 +6,8 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
@@ -244,27 +246,44 @@ async function createConvoyInventoryFromGoodshuffle(
 
   const supplierId = defaultSupplier?.id ?? null;
 
-  const newItem = await database.inventoryItem.create({
-    data: {
-      tenantId,
-      item_number: gsItem.sku ?? `GS-${gsItem.id.slice(0, 8)}`,
-      name: gsItem.name,
-      description: gsItem.description ?? null,
-      category: gsItem.category ?? "general",
-      unitOfMeasure: gsItem.unit_of_measure ?? "each",
-      unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0),
-      quantityOnHand: new Prisma.Decimal(gsItem.quantity_available ?? 0),
-      parLevel: new Prisma.Decimal(0),
-      reorder_level: new Prisma.Decimal(0),
-      supplierId,
-      tags: [],
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
     },
-    select: {
-      id: true,
-    },
-  });
+    {
+      entity: "InventoryItem",
+      command: "create",
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        tenantId,
+        item_number: gsItem.sku ?? `GS-${gsItem.id.slice(0, 8)}`,
+        name: gsItem.name,
+        description: gsItem.description ?? null,
+        category: gsItem.category ?? "general",
+        unitOfMeasure: gsItem.unit_of_measure ?? "each",
+        unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0).toFixed(2),
+        quantityOnHand: new Prisma.Decimal(
+          gsItem.quantity_available ?? 0
+        ).toFixed(2),
+        parLevel: new Prisma.Decimal(0).toFixed(2),
+        reorder_level: new Prisma.Decimal(0).toFixed(2),
+        supplierId,
+        tags: [],
+      },
+    }
+  );
 
-  return newItem.id;
+  if (!result.ok) {
+    throw new Error(
+      `Failed to create InventoryItem via Manifest: ${result.message}`
+    );
+  }
+
+  return (result.result as { id?: string }).id!;
 }
 
 /**
@@ -280,19 +299,38 @@ async function updateConvoyInventoryFromGoodshuffle(
     return;
   }
 
-  await database.inventoryItem.updateMany({
-    where: {
-      tenantId,
-      id: convoyInventoryItemId,
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
     },
-    data: {
-      name: gsItem.name,
-      description: gsItem.description ?? null,
-      category: gsItem.category ?? "general",
-      unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0),
-      quantityOnHand: new Prisma.Decimal(gsItem.quantity_available ?? 0),
-    },
-  });
+    {
+      entity: "InventoryItem",
+      command: "update",
+      instanceId: convoyInventoryItemId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: convoyInventoryItemId,
+        tenantId,
+        name: gsItem.name,
+        description: gsItem.description ?? null,
+        category: gsItem.category ?? "general",
+        unitCost: new Prisma.Decimal(gsItem.unit_cost ?? 0).toFixed(2),
+        quantityOnHand: new Prisma.Decimal(
+          gsItem.quantity_available ?? 0
+        ).toFixed(2),
+      },
+    }
+  );
+
+  if (!result.ok) {
+    throw new Error(
+      `Failed to update InventoryItem via Manifest: ${result.message}`
+    );
+  }
 }
 
 /**

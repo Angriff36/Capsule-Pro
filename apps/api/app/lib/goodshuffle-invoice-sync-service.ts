@@ -8,6 +8,8 @@
  */
 
 import { database, Prisma } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createGoodshuffleClient,
   type GoodshuffleClient,
@@ -252,36 +254,68 @@ async function createConvoyBudgetFromGoodshuffle(
     return budgetId;
   }
 
-  const newBudget = await database.eventBudget.create({
-    data: {
-      tenantId,
-      eventId,
-      totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount),
-      totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount),
+  const budgetResult = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
     },
-    select: {
-      id: true,
-    },
-  });
+    {
+      entity: "EventBudget",
+      command: "create",
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        tenantId,
+        eventId,
+        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+      },
+    }
+  );
 
-  const budgetId = newBudget.id;
+  if (!budgetResult.ok) {
+    throw new Error(
+      `Failed to create EventBudget via Manifest: ${budgetResult.message}`
+    );
+  }
+
+  const budgetId = (budgetResult.result as { id?: string }).id!;
 
   // Create budget line items from invoice line items
   if (gsInvoice.line_items && gsInvoice.line_items.length > 0) {
     for (const lineItem of gsInvoice.line_items) {
-      await database.budgetLineItem.create({
-        data: {
-          tenantId,
-          budgetId,
-          category: "invoice",
-          name: lineItem.description,
-          description: null,
-          budgetedAmount: new Prisma.Decimal(lineItem.total_price),
-          actualAmount: new Prisma.Decimal(lineItem.total_price),
-          varianceAmount: new Prisma.Decimal(0),
-          sortOrder: 0,
+      const liResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "BudgetLineItem",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            budgetId,
+            category: "invoice",
+            name: lineItem.description,
+            description: "",
+            budgetedAmount: new Prisma.Decimal(lineItem.total_price).toFixed(2),
+            actualAmount: new Prisma.Decimal(lineItem.total_price).toFixed(2),
+            varianceAmount: new Prisma.Decimal(0).toFixed(2),
+            sortOrder: 0,
+          },
+        }
+      );
+      if (!liResult.ok) {
+        throw new Error(
+          `Failed to create BudgetLineItem via Manifest: ${liResult.message}`
+        );
+      }
     }
   }
 
@@ -301,42 +335,105 @@ async function updateConvoyBudgetFromGoodshuffle(
     return;
   }
 
-  await database.eventBudget.updateMany({
-    where: {
-      tenantId,
-      id: convoyBudgetId,
+  const updateResult = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
     },
-    data: {
-      totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount),
-      totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount),
-    },
-  });
+    {
+      entity: "EventBudget",
+      command: "update",
+      instanceId: convoyBudgetId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: convoyBudgetId,
+        tenantId,
+        totalBudgetAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+        totalActualAmount: new Prisma.Decimal(gsInvoice.total_amount).toFixed(2),
+      },
+    }
+  );
+
+  if (!updateResult.ok) {
+    throw new Error(
+      `Failed to update EventBudget via Manifest: ${updateResult.message}`
+    );
+  }
 
   // Update or create line items
   if (gsInvoice.line_items && gsInvoice.line_items.length > 0) {
-    await database.budgetLineItem.deleteMany({
+    // Read existing invoice line items to remove them individually
+    const existingLineItems = await database.budgetLineItem.findMany({
       where: {
         tenantId,
         budgetId: convoyBudgetId,
         category: "invoice",
       },
+      select: { id: true },
     });
+
+    for (const existing of existingLineItems) {
+      const removeResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "BudgetLineItem",
+          command: "remove",
+          instanceId: existing.id,
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            id: existing.id,
+            tenantId,
+          },
+        }
+      );
+      if (!removeResult.ok) {
+        throw new Error(
+          `Failed to remove BudgetLineItem via Manifest: ${removeResult.message}`
+        );
+      }
+    }
 
     // Create new line items
     for (const lineItem of gsInvoice.line_items) {
-      await database.budgetLineItem.create({
-        data: {
-          tenantId,
-          budgetId: convoyBudgetId,
-          category: "invoice",
-          name: lineItem.description,
-          description: null,
-          budgetedAmount: new Prisma.Decimal(lineItem.total_price),
-          actualAmount: new Prisma.Decimal(lineItem.total_price),
-          varianceAmount: new Prisma.Decimal(0),
-          sortOrder: 0,
+      const liResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "BudgetLineItem",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            budgetId: convoyBudgetId,
+            category: "invoice",
+            name: lineItem.description,
+            description: "",
+            budgetedAmount: new Prisma.Decimal(lineItem.total_price).toFixed(2),
+            actualAmount: new Prisma.Decimal(lineItem.total_price).toFixed(2),
+            varianceAmount: new Prisma.Decimal(0).toFixed(2),
+            sortOrder: 0,
+          },
+        }
+      );
+      if (!liResult.ok) {
+        throw new Error(
+          `Failed to create BudgetLineItem via Manifest: ${liResult.message}`
+        );
+      }
     }
   }
 }

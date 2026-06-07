@@ -1,6 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface UnitConversion {
   fromUnitId: number;
@@ -149,6 +151,9 @@ const calculateRecipeIngredientCost = async (
     cost = convertedQuantity * Number(ing.inventory_unit_cost);
   }
 
+  // GOVERNED BYPASS: adjustedQuantity, ingredientCost, costCalculatedAt are not in
+  // RecipeIngredient IR entity. No command covers cost computation fields.
+  // A future "updateCosts" command should be added to RecipeIngredient IR.
   await database.recipeIngredient.updateMany({
     where: { tenantId, id: recipeIngredientId },
     data: {
@@ -244,13 +249,32 @@ const calculateRecipeCost = async (
   const yieldQuantity = Number(recipeVersion[0].yield_quantity);
   const costPerYield = yieldQuantity > 0 ? totalCost / yieldQuantity : 0;
 
+  // Governed write: RecipeVersion.updateCosts covers totalCost + costPerYield
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "RecipeVersion",
+      command: "updateCosts",
+      instanceId: recipeVersionId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: recipeVersionId,
+        tenantId,
+        newTotalCost: totalCost,
+        newCostPerYield: costPerYield,
+      },
+    }
+  );
+  // costCalculatedAt is not in IR entity — direct Prisma supplement
   await database.recipeVersion.updateMany({
     where: { tenantId, id: recipeVersionId },
-    data: {
-      totalCost,
-      costPerYield,
-      costCalculatedAt: new Date(),
-    },
+    data: { costCalculatedAt: new Date() },
   });
 
   return {
@@ -360,10 +384,27 @@ export const updateRecipeIngredientWasteFactor = async (
     throw new Error("Waste factor must be greater than 0");
   }
 
-  await database.recipeIngredient.updateMany({
-    where: { tenantId, id: recipeIngredientId },
-    data: { wasteFactor },
-  });
+  // Governed write: RecipeIngredient.updateWasteFactor
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: "RecipeIngredient",
+      command: "updateWasteFactor",
+      instanceId: recipeIngredientId,
+      user: { id: "system", tenantId, role: "admin" },
+      body: {
+        id: recipeIngredientId,
+        tenantId,
+        newWasteFactor: wasteFactor,
+      },
+    }
+  );
 };
 
 /**
@@ -465,13 +506,29 @@ export const updateEventBudgetsForRecipe = async (
   );
 
   for (const row of eventRecipeCosts) {
-    await database.event.updateMany({
-      where: { tenantId, id: row.event_id },
-      data: {
-        budget: new Prisma.Decimal(row.current_budget ?? 0).plus(
-          row.total_recipe_cost
-        ),
+    // Governed write: Event.updateBudget
+    const newBudget = new Prisma.Decimal(row.current_budget ?? 0).plus(
+      row.total_recipe_cost
+    );
+    await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
       },
-    });
+      {
+        entity: "Event",
+        command: "updateBudget",
+        instanceId: row.event_id,
+        user: { id: "system", tenantId, role: "admin" },
+        body: {
+          id: row.event_id,
+          tenantId,
+          newBudget: newBudget.toFixed(2),
+        },
+      }
+    );
   }
 };
