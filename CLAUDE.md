@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 94% context — saved before compacting]
+[proactive bridge @ 100% context — saved before compacting]
 Files (1):
-  packages/notifications/email-workflow-triggers.ts (edit)
+  manifest/source/logistics-all-rules.manifest (edit)
 
 # === END COGNILAYER ===
