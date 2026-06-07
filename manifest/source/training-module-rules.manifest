@@ -662,6 +662,10 @@ entity StaffTrainingSignal {
     emit StaffTrainingWaiverLogged
   }
 
+  relationship belongsTo staffMember: StaffMember with staffMemberId
+  relationship belongsTo module: TrainingModule with moduleId
+  relationship belongsTo assignment: TrainingAssignment with assignmentId
+
   store StaffTrainingSignal in durable
 }
 

@@ -88,6 +88,8 @@ entity EmployeeDeduction {
   constraint nonNegativeAmount: self.amount >= 0 "Deduction amount cannot be negative"
   constraint validPercentage: self.percentage >= 0 and self.percentage <= 100 "Percentage must be between 0 and 100"
 
+  relationship belongsTo employee: User with employeeId
+
   default policy EmployeeDeductionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(employeeId: string, type: string, name: string, amount: number, percentage: number, isPreTax: boolean, effectiveDate: string, endDate: string, maxAnnualAmount: number) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
@@ -146,6 +148,8 @@ entity PayrollApprovalHistory {
   property reason: string = ""
   timestamps
 
+  relationship belongsTo payrollRun: PayrollRun with payrollRunId
+
   default policy PayrollApprovalHistoryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string, reason: string) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
@@ -194,6 +198,8 @@ entity PayrollRun {
   transition status from "approved" to ["paid"]
 
   constraint validStatus: self.status in ["pending", "processing", "approved", "paid", "rejected"] "Invalid payroll run status"
+
+  relationship belongsTo period: PayrollPeriod with payrollPeriodId
 
   default policy PayrollRunDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
   command create(payrollPeriodId: string, runDate: string) {

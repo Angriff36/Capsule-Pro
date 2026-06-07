@@ -170,6 +170,8 @@ entity InteractionAttachment {
     emit InteractionAttachmentRemoved
   }
 
+  relationship belongsTo interaction: ClientInteraction fields [tenantId, clientInteractionId] references [tenantId, id]
+
   store InteractionAttachment in durable
 }
 
@@ -530,6 +532,9 @@ entity AdminChatMessage {
 
     emit AdminChatMessageRemoved
   }
+
+  relationship belongsTo thread: AdminChatThread fields [tenantId, threadId] references [tenantId, id]
+  relationship belongsTo author: User fields [tenantId, authorId] references [tenantId, id]
 
   store AdminChatMessage in durable
 }

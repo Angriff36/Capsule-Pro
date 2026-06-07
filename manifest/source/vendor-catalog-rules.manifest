@@ -168,6 +168,8 @@ entity VendorCatalog {
     emit VendorCatalogDeactivated
   }
 
+  relationship belongsTo supplier: InventorySupplier fields [supplierId, tenantId] references [id, tenantId]
+
   store VendorCatalog in durable
 }
 

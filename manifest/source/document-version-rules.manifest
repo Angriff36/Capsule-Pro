@@ -36,6 +36,8 @@ entity DocumentVersion {
   constraint validStatus: self.status in ["draft", "approved", "published", "superseded"] "Status must be draft, approved, published, or superseded"
   constraint positiveVersion: self.versionNumber > 0 "Version number must be positive"
 
+  relationship belongsTo document: Document with documentId
+
   default policy DocumentVersionDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Document versioning"
   command create(documentId: string, content: string, changeDescription: string, createdBy: string) {
     guard documentId != null and documentId != "" "Document ID is required"

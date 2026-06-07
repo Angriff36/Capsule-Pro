@@ -32,6 +32,8 @@ entity Deal {
   constraint positiveValue: self.value >= 0 "Deal value cannot be negative"
   constraint validProbability: self.probability >= 0 and self.probability <= 100 "Probability must be between 0 and 100"
 
+  relationship belongsTo lead: Lead with leadId
+
   default policy DealDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Deal management"
   command create(leadId: string, title: string, value: number, currency: string, stage: string, probability: number, expectedCloseDate: datetime, assignedTo: string, notes: string) {
     guard leadId != null and leadId != "" "Lead ID is required"

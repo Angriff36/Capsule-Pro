@@ -659,6 +659,9 @@ entity BoardProjection {
     mutate deletedAt = now()
     emit BoardProjectionRemoved
   }
+
+  relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+
   store BoardProjection in durable
 }
 

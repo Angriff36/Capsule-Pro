@@ -38,6 +38,9 @@ entity AiEventSetupSession {
   transition status from "parsed" to ["confirmed", "cancelled"]
   transition status from "confirmed" to ["created"]
 
+  relationship belongsTo user: User with userId
+  relationship belongsTo createdEvent: Event with createdEventId
+
   default policy AiEventSetupSessionDefaultAccess execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "AI event setup"
   command parse(originalInput: string) {
     guard originalInput != null and originalInput != "" "Original input is required"

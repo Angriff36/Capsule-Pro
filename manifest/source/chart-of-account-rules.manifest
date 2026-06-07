@@ -21,6 +21,8 @@ entity ChartOfAccount {
   constraint requireAccountType: self.accountType != "" "Account type is required"
   constraint validAccountType: self.accountType in ["asset", "liability", "equity", "revenue", "expense", "cogs", "other"] "Invalid account type"
 
+  relationship belongsTo parent: ChartOfAccount with parentId
+
   default policy ChartOfAccountDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Chart of accounts"
   command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
     guard accountNumber != null and accountNumber != "" "Account number is required"

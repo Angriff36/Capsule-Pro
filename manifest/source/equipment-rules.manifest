@@ -326,6 +326,11 @@ entity MaintenanceWorkOrder {
 
     emit MaintenanceWorkOrderCreated
   }
+
+  relationship belongsTo area: FacilityArea with areaId
+  relationship belongsTo equipment: Equipment with equipmentId
+  relationship belongsTo vendor: Vendor with vendorId
+
   store MaintenanceWorkOrder in durable
 }
 

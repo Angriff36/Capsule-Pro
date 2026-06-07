@@ -266,6 +266,8 @@ entity PrepTaskPlanWorkflow {
     emit PrepTaskPlanWorkflowQuickApproved
   }
 
+  relationship belongsTo event: Event with eventId
+
   store PrepTaskPlanWorkflow in durable
 }
 

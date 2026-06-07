@@ -43,6 +43,9 @@ entity AdminChatParticipant {
     emit ChatHistoryCleared
   }
 
+  relationship belongsTo thread: AdminChatThread fields [tenantId, threadId] references [tenantId, id]
+  relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
+
   store AdminChatParticipant in durable
 }
 

@@ -76,6 +76,9 @@ entity TimecardApproval {
     emit TimecardBulkApproved
   }
 
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo payrollRun: PayrollRun with payrollRunId
+
   store TimecardApproval in durable
 }
 
@@ -143,6 +146,9 @@ entity PayrollLineItem {
     emit PayrollLineItemUpdated
   }
 
+  relationship belongsTo payrollRun: PayrollRun with payrollRunId
+  relationship belongsTo employee: User with employeeId
+
   store PayrollLineItem in durable
 }
 
@@ -177,6 +183,8 @@ entity TipPool {
 
   constraint validStatus: self.status in ["open", "allocated", "distributed", "closed"] "Invalid tip pool status"
   constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
+
+  relationship belongsTo period: PayrollPeriod with periodId
 
   default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
@@ -272,6 +280,8 @@ entity DisciplinaryAction {
   constraint validStatus: self.status in ["open", "in_progress", "escalated", "closed"] "Invalid disciplinary action status"
   constraint requireActionType: self.actionType != "" "Action type is required"
   constraint requireReason: self.reason != "" "Reason is required"
+
+  relationship belongsTo employee: User with employeeId
 
   default policy DisciplinaryActionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, actionType: string, reason: string, severity: string, issuedBy: string) {
@@ -404,6 +414,9 @@ entity PerformanceReview {
 
   constraint validStatus: self.status in ["draft", "submitted", "acknowledged"] "Invalid performance review status"
   constraint validRating: self.overallRating >= 0 and self.overallRating <= 5 "Rating must be between 0 and 5"
+
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo reviewer: User with reviewerId
 
   default policy PerformanceReviewDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(employeeId: string, reviewerId: string, reviewPeriod: string) {
@@ -667,6 +680,8 @@ entity DeliveryRoute {
   transition status from "planned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed"]
 
+  relationship belongsTo driver: Driver with driverId
+
   default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
     guard name != null and name != "" "Route name is required"
@@ -804,6 +819,8 @@ entity PaymentRefundAttempt {
   // State transitions
   transition status from "pending" to ["succeeded", "failed"]
 
+  relationship belongsTo payment: Payment with paymentId
+
   default policy PaymentRefundAttemptDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(paymentId: string, amount: number, reason: string) {
     guard paymentId != null and paymentId != "" "Payment ID is required"
@@ -863,6 +880,9 @@ entity PreventiveMaintenanceSchedule {
 
   constraint requireTitle: self.title != "" "Schedule title is required"
   constraint requireFrequency: self.frequency != "" "Frequency is required"
+
+  relationship belongsTo area: FacilityArea with areaId
+  relationship belongsTo equipment: Equipment with equipmentId
 
   default policy PreventiveMaintenanceScheduleDefaultAccess execute: user.role in ["facilities_manager", "facility_manager", "manager", "admin"] "Facility management"
   command create(title: string, areaId: string, equipmentId: string, description: string, frequency: string, intervalDays: int, nextDueAt: datetime, assignedTo: string, estimatedHours: decimal, estimatedCost: money) {

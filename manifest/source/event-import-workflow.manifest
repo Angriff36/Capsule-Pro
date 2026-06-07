@@ -226,6 +226,8 @@ entity EventImportWorkflow {
     emit EventImportWorkflowRetried
   }
 
+  relationship belongsTo event: Event with eventId
+
   store EventImportWorkflow in durable
 }
 

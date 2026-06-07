@@ -61,6 +61,8 @@ entity VendorContract {
   // prevented by `command update`'s `guard self.status == "draft"`, so no
   // protection is lost. See apps/api/__tests__/procurement/vendor-contract-lifecycle.test.ts.
 
+  relationship belongsTo vendor: Vendor with vendorId
+
   default policy VendorContractDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor contract management"
   command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: datetime, endDate: datetime, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, currencyCode: string, contractUrl: string, notes: string) {
     guard contractNumber != null and contractNumber != "" "Contract number is required"

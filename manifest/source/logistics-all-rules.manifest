@@ -108,6 +108,8 @@ entity Driver {
     emit DriverReactivated
   }
 
+  relationship belongsTo vehicle: Vehicle with vehicleId
+
   store Driver in durable
 }
 
@@ -248,6 +250,9 @@ entity LogisticsRoute {
 
   transition status from "planned" to ["in_progress", "cancelled"]
   transition status from "in_progress" to ["completed", "cancelled"]
+
+  relationship belongsTo vehicle: Vehicle with vehicleId
+  relationship belongsTo driver: Driver with driverId
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
   command create(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: number, scheduledEnd: number, distance: number, estimatedDuration: number, stops: number, notes: string) {

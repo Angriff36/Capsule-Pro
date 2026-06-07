@@ -25,6 +25,8 @@ entity KnowledgeBaseEntry {
   transition status from "draft" to ["published", "archived"]
   transition status from "published" to ["draft", "archived"]
 
+  relationship belongsTo author: User with authorId
+
   default policy KnowledgeBaseEntryDefaultAccess execute: user.role in ["staff", "editor", "manager", "admin"] "Knowledge base"
   command create(title: string, category: string, content: string, tags: string, authorId: string) {
     guard title != null and title != "" "Title is required"

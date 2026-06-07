@@ -37,6 +37,9 @@ entity StaffPerformance {
   constraint validStatus: self.status in ["draft", "in_review", "completed", "acknowledged", "cancelled"] "Invalid review status"
   constraint validRating: self.rating >= 0 and self.rating <= 5 "Rating must be between 0 and 5"
 
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo reviewer: User with reviewerId
+
   default policy StaffPerformanceDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff performance"
   command create(employeeId: string, reviewType: string, reviewerId: string, periodStart: number, periodEnd: number, strengths: string, improvements: string, goals: string, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"

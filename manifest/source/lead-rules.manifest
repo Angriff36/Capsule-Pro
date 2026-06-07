@@ -55,6 +55,8 @@ entity Lead {
     }
   }
 
+  relationship belongsTo convertedToClient: Client with convertedToClientId
+
   default policy LeadDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Lead management"
   command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: datetime, estimatedGuests: number, estimatedValue: number, assignedTo: string, notes: string) {
     guard contactName != null and contactName != "" "Contact name is required"

@@ -152,6 +152,8 @@ entity PaymentMethod {
     mutate isDefault = false
     emit PaymentMethodRemoved
   }
+
+  relationship belongsTo client: Client with clientId
 }
 
 store PaymentMethod in durable

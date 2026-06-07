@@ -76,6 +76,8 @@ entity VersionedEntity {
 
     emit VersionedEntityRenamed
   }
+  relationship belongsTo currentVersion: EntityVersion with currentVersionId
+
   store VersionedEntity in durable
 }
 
@@ -154,6 +156,8 @@ entity EntityVersion {
 
     emit EntityVersionRestored
   }
+  relationship belongsTo versionedEntity: VersionedEntity with versionedEntityId
+
   store EntityVersion in durable
 }
 
@@ -185,6 +189,9 @@ entity VersionApproval {
       approverId: self.approverId
     }
   }
+
+  relationship belongsTo entityVersion: EntityVersion with entityVersionId
+  relationship belongsTo approver: User with approverId
 
   default policy VersionApprovalDefaultAccess execute: user.role in ["manager", "admin"] "Version control"
   command create(entityVersionId: string, approverId: string) {

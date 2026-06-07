@@ -131,6 +131,8 @@ entity WorkOrder {
     emit WorkOrderRescheduled
   }
 
+  relationship belongsTo equipment: Equipment fields [equipmentId, tenantId] references [id, tenantId]
+
   store WorkOrder in durable
 }
 
