@@ -292,7 +292,8 @@ export const createEvent = async (
 };
 
 export const updateEvent = async (formData: FormData): Promise<void> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const parsed = updateEventSchema.safeParse(readUpdateEvent(formData));
 
   if (!parsed.success) {
@@ -314,15 +315,41 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
     })
   );
 
-  await database.event.updateMany({
-    where: { tenantId, id: data.eventId },
-    data: {
-      ...(data.eventNumber !== undefined && { eventNumber: data.eventNumber }),
-      ...eventData(data, eventDate),
-      clientId: data.clientId,
-      tags,
-    },
+  // Read existing event for eventNumber (IR update requires it)
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: data.eventId, deletedAt: null },
   });
+
+  const ed = eventData(data, eventDate);
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "update",
+    body: {
+      id: data.eventId,
+      clientId: data.clientId ?? "",
+      eventNumber: data.eventNumber ?? existing?.eventNumber ?? "",
+      title: ed.title ?? "",
+      eventType: ed.eventType ?? "",
+      eventDate: ed.eventDate ?? "",
+      guestCount: ed.guestCount ?? 0,
+      venueName: ed.venueName ?? "",
+      venueAddress: ed.venueAddress ?? "",
+      notes: ed.notes ?? "",
+      tags: tags ?? [],
+      status: ed.status ?? "",
+      budget: ed.budget ?? 0,
+      ticketPrice: ed.ticketPrice ?? 0,
+      ticketTier: ed.ticketTier ?? "",
+      eventFormat: ed.eventFormat ?? "",
+      accessibilityOptions: ed.accessibilityOptions ?? [],
+      featuredMediaUrl: ed.featuredMediaUrl ?? "",
+    },
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update event");
+  }
 
   revalidateEvent(data.eventId, data.clientId);
   redirect(`/events/${data.eventId}`);
