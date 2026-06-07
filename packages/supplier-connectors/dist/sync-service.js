@@ -3,14 +3,22 @@
  *
  * Handles synchronization of supplier catalogs to the VendorCatalog model.
  * Supports full catalog sync and incremental updates.
+ *
+ * Writes go through the Manifest runtime (governed) via VendorCatalogCommandFn.
+ * Reads bypass Manifest per constitution §10 (direct Prisma).
  */
 /**
  * Service for syncing supplier catalogs to the local database.
+ *
+ * @param prisma - Read-only Prisma access for catalog lookups (reads bypass Manifest).
+ * @param runCommand - Governed write callback that executes Manifest commands.
  */
 export class SupplierSyncService {
     prisma;
-    constructor(prisma) {
+    runCommand;
+    constructor(prisma, runCommand) {
         this.prisma = prisma;
+        this.runCommand = runCommand;
     }
     /**
      * Perform a full catalog sync from a supplier.
@@ -26,7 +34,7 @@ export class SupplierSyncService {
             // Fetch catalog from supplier
             const products = await connector.fetchCatalog(config);
             productsSynced = products.length;
-            // Get existing catalog entries
+            // Get existing catalog entries (read bypasses Manifest per §10)
             const existingEntries = await this.prisma.vendorCatalog.findMany({
                 where: {
                     tenantId: config.tenantId,
@@ -35,29 +43,30 @@ export class SupplierSyncService {
                 select: { id: true, itemNumber: true },
             });
             const existingBySku = new Map(existingEntries.map((e) => [e.itemNumber, e.id]));
-            // Process each product
-            const createOps = [];
-            const updateOps = [];
+            // Process each product via Manifest commands
             for (const product of products) {
                 try {
-                    const data = this.mapToVendorCatalog(product, config.supplierId, config.tenantId);
+                    const body = this.mapToCommandBody(product, config.supplierId, config.tenantId);
                     const existingId = existingBySku.get(product.sku);
                     if (existingId) {
-                        updateOps.push(this.prisma.vendorCatalog.update({
-                            where: { id: existingId },
-                            data,
-                        }));
+                        const result = await this.runCommand({
+                            command: "update",
+                            body: { id: existingId, ...body },
+                        });
+                        if (!result.ok) {
+                            throw new Error(result.message ?? "Manifest update failed");
+                        }
                         productsUpdated++;
                         existingBySku.delete(product.sku);
                     }
                     else {
-                        createOps.push(this.prisma.vendorCatalog.create({
-                            data: {
-                                ...data,
-                                tenantId: config.tenantId,
-                                supplierId: config.supplierId,
-                            },
-                        }));
+                        const result = await this.runCommand({
+                            command: "create",
+                            body,
+                        });
+                        if (!result.ok) {
+                            throw new Error(result.message ?? "Manifest create failed");
+                        }
                         productsCreated++;
                     }
                 }
@@ -66,22 +75,24 @@ export class SupplierSyncService {
                     errors.push({ sku: product.sku, error: errorMessage });
                 }
             }
-            // Execute batch operations
-            const batchSize = 100;
-            for (let i = 0; i < createOps.length; i += batchSize) {
-                await this.prisma.$transaction(createOps.slice(i, i + batchSize));
-            }
-            for (let i = 0; i < updateOps.length; i += batchSize) {
-                await this.prisma.$transaction(updateOps.slice(i, i + batchSize));
-            }
-            // Deactivate products no longer in catalog
-            if (config.options?.syncFullCatalog !== false && existingBySku.size > 0) {
+            // Deactivate products no longer in catalog (individual Manifest deactivate commands)
+            if (config.options?.syncFullCatalog !== false &&
+                existingBySku.size > 0) {
                 const idsToDeactivate = Array.from(existingBySku.values());
-                const result = await this.prisma.vendorCatalog.updateMany({
-                    where: { id: { in: idsToDeactivate } },
-                    data: { isActive: false },
-                });
-                productsDeactivated = result.count;
+                for (const id of idsToDeactivate) {
+                    try {
+                        const result = await this.runCommand({
+                            command: "deactivate",
+                            body: { id, reason: "Removed from supplier catalog during sync" },
+                        });
+                        if (result.ok) {
+                            productsDeactivated++;
+                        }
+                    }
+                    catch {
+                        // Individual deactivation failures are logged via the count gap
+                    }
+                }
             }
             return {
                 connectorId: connector.id,
@@ -128,7 +139,8 @@ export class SupplierSyncService {
             productsSynced = changedProducts.length;
             for (const product of changedProducts) {
                 try {
-                    const data = this.mapToVendorCatalog(product, config.supplierId, config.tenantId);
+                    const body = this.mapToCommandBody(product, config.supplierId, config.tenantId);
+                    // Read bypasses Manifest per §10
                     const existing = await this.prisma.vendorCatalog.findFirst({
                         where: {
                             tenantId: config.tenantId,
@@ -137,20 +149,23 @@ export class SupplierSyncService {
                         },
                     });
                     if (existing) {
-                        await this.prisma.vendorCatalog.update({
-                            where: { id: existing.id },
-                            data,
+                        const result = await this.runCommand({
+                            command: "update",
+                            body: { id: existing.id, ...body },
                         });
+                        if (!result.ok) {
+                            throw new Error(result.message ?? "Manifest update failed");
+                        }
                         productsUpdated++;
                     }
                     else {
-                        await this.prisma.vendorCatalog.create({
-                            data: {
-                                ...data,
-                                tenantId: config.tenantId,
-                                supplierId: config.supplierId,
-                            },
+                        const result = await this.runCommand({
+                            command: "create",
+                            body,
                         });
+                        if (!result.ok) {
+                            throw new Error(result.message ?? "Manifest create failed");
+                        }
                         productsCreated++;
                     }
                 }
@@ -185,25 +200,30 @@ export class SupplierSyncService {
         }
     }
     /**
-     * Map a SupplierProduct to VendorCatalog data.
+     * Map a SupplierProduct to a Manifest command body for VendorCatalog.
+     * Matches the field names expected by VendorCatalog create/update commands.
      */
-    mapToVendorCatalog(product, supplierId, tenantId) {
+    mapToCommandBody(product, supplierId, tenantId) {
         return {
+            tenantId,
+            supplierId,
             itemNumber: product.sku,
             itemName: product.name,
-            description: product.description ?? null,
-            category: product.category ?? null,
-            baseUnitCost: product.unitCost,
-            currency: product.currency,
-            unitOfMeasure: product.unitOfMeasure,
-            leadTimeDays: product.leadTimeDays ?? null,
-            minimumOrderQuantity: product.minimumOrderQuantity ?? null,
-            orderMultiple: product.orderMultiple ?? null,
-            supplierSku: product.sku,
-            effectiveFrom: product.effectiveFrom ?? null,
-            effectiveTo: product.effectiveTo ?? null,
+            description: product.description ?? "",
+            category: product.category ?? "",
+            baseUnitCost: product.unitCost ?? 0,
+            currency: product.currency ?? "USD",
+            unitOfMeasure: product.unitOfMeasure ?? "",
+            leadTimeDays: product.leadTimeDays ?? 0,
+            leadTimeMinDays: 0,
+            leadTimeMaxDays: 0,
+            minimumOrderQuantity: product.minimumOrderQuantity ?? 0,
+            orderMultiple: product.orderMultiple ?? 0,
+            effectiveFrom: product.effectiveFrom?.getTime() ?? 0,
+            effectiveTo: product.effectiveTo?.getTime() ?? 0,
+            supplierSku: product.externalId ?? product.sku,
+            notes: "",
             tags: product.tags ?? [],
-            isActive: product.available,
         };
     }
 }

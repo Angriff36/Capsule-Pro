@@ -7,7 +7,7 @@
     "method"
   ],
   "note": "Baseline of Capsule-local direct-write audit findings. Each entry is a (file, governedEntity, method) triple currently in the 'reported, governed, no alias, no bypass' bucket. New triples are blocked by scripts/manifest/audit-direct-writes-baseline.mjs. Regenerate ONLY after intentionally migrating or bypassing a finding.",
-  "count": 141,
+  "count": 136,
   "violations": [
     {
       "file": "apps/api/app/api/accounting/collections/cases/[id]/route.ts",
@@ -350,11 +350,6 @@
       "method": "update"
     },
     {
-      "file": "apps/api/app/api/webhooks/supplier-catalog/route.ts",
-      "entity": "VendorCatalog",
-      "method": "upsert"
-    },
-    {
       "file": "apps/api/app/lib/recipe-version-helpers.ts",
       "entity": "Recipe",
       "method": "update"
@@ -655,16 +650,6 @@
       "method": "updateMany"
     },
     {
-      "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
-      "entity": "EmailWorkflow",
-      "method": "create"
-    },
-    {
-      "file": "apps/app/app/(authenticated)/settings/email-workflows/actions.ts",
-      "entity": "EmailWorkflow",
-      "method": "update"
-    },
-    {
       "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
       "entity": "User",
       "method": "create"
@@ -690,24 +675,25 @@
       "method": "update"
     },
     {
-      "file": "packages/notifications/email-workflow-triggers.ts",
-      "entity": "EmailWorkflow",
-      "method": "update"
+      "file": "packages/supplier-connectors/src/sync-service.ts",
+      "entity": "VendorCatalog",
+      "method": "create",
+      "status": "migrated",
+      "note": "Uses VendorCatalogCommandFn callback; writes go through Manifest runtime via supplier-sync route"
     },
     {
       "file": "packages/supplier-connectors/src/sync-service.ts",
       "entity": "VendorCatalog",
-      "method": "create"
+      "method": "update",
+      "status": "migrated",
+      "note": "Uses VendorCatalogCommandFn callback; writes go through Manifest runtime via supplier-sync route"
     },
     {
       "file": "packages/supplier-connectors/src/sync-service.ts",
       "entity": "VendorCatalog",
-      "method": "update"
-    },
-    {
-      "file": "packages/supplier-connectors/src/sync-service.ts",
-      "entity": "VendorCatalog",
-      "method": "updateMany"
+      "method": "updateMany",
+      "status": "migrated",
+      "note": "Uses VendorCatalogCommandFn callback; writes go through Manifest runtime via supplier-sync route"
     }
   ]
 }

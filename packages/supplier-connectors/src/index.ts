@@ -10,7 +10,7 @@ export { charliesProduceConnector } from "./connectors/charlies-produce.js";
 export { usFoodsConnector } from "./connectors/us-foods.js";
 // Registry
 export { ConnectorRegistry, connectorRegistry } from "./registry.js";
-export type { SupplierSyncDb } from "./sync-service.js";
+export type { SupplierSyncDb, VendorCatalogCommandFn } from "./sync-service.js";
 // Sync Service
 export { SupplierSyncService } from "./sync-service.js";
 // Types

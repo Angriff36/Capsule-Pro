@@ -20,6 +20,7 @@ import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
@@ -128,8 +129,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Run the sync
-    const syncService = new SupplierSyncService(database as any);
+    // Build governed write callback for VendorCatalog Manifest commands
+    const userId = clerkId;
+    const tid = tenantId;
+    const runVendorCatalogCommand = async (params: {
+      command: "create" | "update" | "deactivate";
+      body: Record<string, unknown>;
+    }) => {
+      const result = await runManifestCommand({
+        entity: "VendorCatalog",
+        command: params.command,
+        body: params.body,
+        user: { id: userId as string, tenantId: tid as string, role: "admin" },
+      });
+      if (!result.ok) {
+        const errorText = await result.text();
+        return { ok: false as const, message: errorText };
+      }
+      return { ok: true as const };
+    };
+
+    // Run the sync — reads use Prisma (bypasses Manifest per §10), writes use Manifest
+    const syncService = new SupplierSyncService(
+      database as unknown as ConstructorParameters<typeof SupplierSyncService>[0],
+      runVendorCatalogCommand,
+    );
     const result = await syncService.syncCatalog(connector, config);
 
     // Determine sync status from result
