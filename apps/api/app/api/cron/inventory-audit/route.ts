@@ -17,11 +17,13 @@
  */
 
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
-// Force dynamic rendering
+// Force dynamic rendering; runs on Node.js (needs createManifestRuntime)
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
@@ -126,6 +128,37 @@ async function getSystemUserId(tenantId: string): Promise<string> {
   throw new Error(`No active users found for tenant ${tenantId}`);
 }
 
+/**
+ * Create a CycleCountSession via governed Manifest runtime.
+ * Returns ok=true/false and an optional message.
+ */
+async function createCycleCountSession(params: {
+  entity: string;
+  command: string;
+  body: Record<string, unknown>;
+  user: { id: string; tenantId: string; role: string };
+}): Promise<{ ok: boolean; message?: string }> {
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    {
+      entity: params.entity,
+      command: params.command,
+      body: params.body,
+      user: params.user,
+    }
+  );
+  return {
+    ok: result.ok,
+    message: !result.ok ? result.message : undefined,
+  };
+}
+
 export async function GET(request: Request): Promise<NextResponse> {
   const cronSecret = process.env.CRON_SECRET;
 
@@ -219,22 +252,30 @@ export async function GET(request: Request): Promise<NextResponse> {
           const scheduledDate = new Date();
           scheduledDate.setHours(0, 0, 0, 0);
 
-          await database.cycleCountSession.create({
-            data: {
-              tenantId,
+          const result = await createCycleCountSession({
+            entity: "CycleCountSession",
+            command: "create",
+            body: {
               locationId: location.id,
               sessionId,
               sessionName: `${schedule.name} - ${scheduledDate.toISOString().split("T")[0]}`,
               countType: "scheduled",
-              scheduledDate,
-              status: "pending",
-              totalItems: 0,
-              countedItems: 0,
-              totalVariance: 0,
-              variancePercentage: 0,
-              createdById: systemUserId,
+              scheduledDate: scheduledDate.getTime(),
+              notes: "",
+              userId: systemUserId,
+            },
+            user: {
+              id: systemUserId,
+              tenantId,
+              role: "system",
             },
           });
+
+          if (!result.ok) {
+            throw new Error(
+              `Manifest create failed: ${result.message ?? "unknown error"}`
+            );
+          }
 
           sessionsCreated++;
         }
@@ -341,22 +382,30 @@ async function createDefaultDailySessions(): Promise<NextResponse> {
         // Create session
         const sessionId = generateSessionId();
 
-        await database.cycleCountSession.create({
-          data: {
-            tenantId,
+        const result = await createCycleCountSession({
+          entity: "CycleCountSession",
+          command: "create",
+          body: {
             locationId: location.id,
             sessionId,
             sessionName: `Daily Cycle Count - ${today.toISOString().split("T")[0]}`,
             countType: "scheduled",
-            scheduledDate: today,
-            status: "pending",
-            totalItems: 0,
-            countedItems: 0,
-            totalVariance: 0,
-            variancePercentage: 0,
-            createdById: systemUserId,
+            scheduledDate: today.getTime(),
+            notes: "",
+            userId: systemUserId,
+          },
+          user: {
+            id: systemUserId,
+            tenantId,
+            role: "system",
           },
         });
+
+        if (!result.ok) {
+          throw new Error(
+            `Manifest create failed: ${result.message ?? "unknown error"}`
+          );
+        }
 
         sessionsCreated++;
         tenantsProcessed.push(tenantId);
