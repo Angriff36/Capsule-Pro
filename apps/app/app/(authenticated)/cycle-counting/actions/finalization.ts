@@ -148,14 +148,18 @@ export async function finalizeCycleCountSession(input: {
 
     // Governed write: CycleCountSession.finalize (constitution §3/§9).
     // The finalize command transitions status -> "finalized" and sets
-    // finalizedAt/approvedById. It does NOT mutate totalVariance,
-    // variancePercentage, countedItems, totalItems, or notes, so those
-    // fields are updated via a supplementary direct Prisma write below.
+    // finalizedAt/approvedById/notes/totalVariance/variancePercentage/
+    // countedItems/totalItems in a single governed mutation.
     const finalizeResult = await runManifestCommand({
       entity: "CycleCountSession",
       command: "finalize",
       body: {
         userId: user.id,
+        notes: input.notes || session.notes || "",
+        totalVariance,
+        variancePercentage,
+        countedItems: records.length,
+        totalItems: records.length,
       },
       user: { id: user.id, tenantId: user.tenantId, role: user.role },
       instanceId: input.sessionId,
@@ -167,24 +171,6 @@ export async function finalizeCycleCountSession(input: {
         error: finalizeResult.message || "Failed to finalize session",
       };
     }
-
-    // Supplementary write: fields the finalize command does not cover.
-    // The governed command already set status/finalizedAt/approvedById.
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: input.sessionId,
-        },
-      },
-      data: {
-        notes: input.notes || session.notes,
-        totalVariance,
-        variancePercentage,
-        countedItems: records.length,
-        totalItems: records.length,
-      },
-    });
 
     for (const record of records) {
       const expectedQuantity = toNumber(record.expectedQuantity);

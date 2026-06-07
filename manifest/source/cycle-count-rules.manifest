@@ -99,12 +99,17 @@ entity CycleCountSession {
     emit CycleCountSessionCompleted
   }
 
-  command finalize(userId: string) {
+  command finalize(userId: string, notes: string, totalVariance: decimal, variancePercentage: decimal, countedItems: int, totalItems: int) {
     guard self.status == "completed" "Can only finalize completed sessions"
 
     mutate status = "finalized"
     mutate finalizedAt = now()
     mutate approvedById = userId
+    mutate notes = notes
+    mutate totalVariance = totalVariance
+    mutate variancePercentage = variancePercentage
+    mutate countedItems = countedItems
+    mutate totalItems = totalItems
 
     emit CycleCountSessionFinalized
   }
