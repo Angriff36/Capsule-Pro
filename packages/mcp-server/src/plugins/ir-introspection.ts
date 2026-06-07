@@ -1,10 +1,18 @@
 /**
  * IR introspection — tenant-facing tools.
  *
- * Heavy formatting delegates to upstream @angriff36/manifest explain tooling.
+ * Uses @angriff36/manifest/agent-sdk for structured introspection, with
+ * upstream explain tooling retained for human-readable prose output.
  * Policies are admin-only (see ir-admin plugin).
  */
 
+import {
+  describeCommand,
+  describeEntity,
+  findMatchingCommands,
+  listEntities,
+} from "../lib/agent-sdk.js";
+import type { EntitySummary } from "@angriff36/manifest/agent-sdk";
 import { z } from "zod";
 import { getAllowedCommands, getCommandAccess } from "../lib/command-policy.js";
 import {
@@ -21,11 +29,14 @@ import type { McpPlugin, PluginContext } from "../types.js";
 
 export const irIntrospectionPlugin: McpPlugin = {
   name: "ir-introspection",
-  version: "2.0.0",
+  version: "3.0.0",
 
   register(ctx: PluginContext) {
     const { server } = ctx;
 
+    // -----------------------------------------------------------------------
+    // query_ir_summary (ENHANCED) — agent-sdk listEntities() enrichment
+    // -----------------------------------------------------------------------
     server.registerTool(
       "query_ir_summary",
       {
@@ -44,12 +55,12 @@ export const irIntrospectionPlugin: McpPlugin = {
       (args: { filter?: { entities?: string[] } }) => {
         const ir = getIR();
         const entityFilter = args.filter?.entities;
-        let entities = ir.entities ?? [];
-        if (entityFilter?.length) {
-          entities = entities.filter((entity) =>
-            entityFilter.includes(entity.name)
-          );
-        }
+
+        // Agent-sdk provides richer summaries (module, computed props, relationships)
+        const allSummaries = listEntities(ir);
+        const summaries: EntitySummary[] = entityFilter?.length
+          ? allSummaries.filter((s) => entityFilter.includes(s.name))
+          : allSummaries;
 
         const result = {
           irSources: listIrSources(),
@@ -57,14 +68,18 @@ export const irIntrospectionPlugin: McpPlugin = {
           entityCount: ir.entities?.length ?? 0,
           commandCount: ir.commands?.length ?? 0,
           eventCount: ir.events?.length ?? 0,
-          entities: entities.map((entity) => ({
-            name: entity.name,
-            propertyCount: (entity.properties ?? []).length,
-            commands: getCommandsForEntity(entity.name).map((command) => ({
+          entities: summaries.map((summary) => ({
+            name: summary.name,
+            module: summary.module,
+            propertyCount: summary.propertyCount,
+            computedPropertyCount: summary.computedPropertyCount,
+            relationshipCount: summary.relationshipCount,
+            commandCount: summary.commandCount,
+            constraintCount: summary.constraintCount,
+            commands: getCommandsForEntity(summary.name).map((command) => ({
               name: command.name,
-              mcpAccess: getCommandAccess(entity.name, command.name),
+              mcpAccess: getCommandAccess(summary.name, command.name),
             })),
-            constraintCount: (entity.constraints ?? []).length,
           })),
           events: getEvents().map((event) => ({
             name: event.name,
@@ -84,12 +99,17 @@ export const irIntrospectionPlugin: McpPlugin = {
       }
     );
 
+    // -----------------------------------------------------------------------
+    // explain_entity (ENHANCED) — agent-sdk describeEntity() enrichment
+    // -----------------------------------------------------------------------
     server.registerTool(
       "explain_entity",
       {
         title: "Explain Entity",
         description:
-          "Human-readable entity definition via official @angriff36/manifest explain tooling.",
+          "Rich entity definition with structured properties, relationships, " +
+          "constraints, and policies from agent-sdk, plus human-readable prose " +
+          "from upstream explain tooling.",
         inputSchema: z.object({
           entity: z
             .string()
@@ -109,23 +129,39 @@ export const irIntrospectionPlugin: McpPlugin = {
           };
         }
 
-        const explanation = await explainManifestTarget(getIR(), {
+        const ir = getIR();
+
+        // Agent-sdk structured details (properties with types, relationships, constraints)
+        const details = describeEntity(ir, args.entity);
+
+        // Upstream human-readable prose explanation
+        const explanation = await explainManifestTarget(ir, {
           target: "entity",
           name: args.entity,
         });
 
+        const result = {
+          explanation,
+          structured: details,
+        };
+
         return {
-          content: [{ type: "text" as const, text: explanation }],
+          content: [{ type: "text" as const, text: JSON.stringify(result, null, 2) }],
         };
       }
     );
 
+    // -----------------------------------------------------------------------
+    // explain_command (ENHANCED) — agent-sdk describeCommand() enrichment
+    // -----------------------------------------------------------------------
     server.registerTool(
       "explain_command",
       {
         title: "Explain Command",
         description:
-          "Human-readable command definition via official @angriff36/manifest explain tooling.",
+          "Rich command definition with typed parameters, guards, constraints, " +
+          "and emitted events from agent-sdk, plus human-readable prose " +
+          "from upstream explain tooling.",
         inputSchema: z.object({
           entity: z.string(),
           command: z.string(),
@@ -151,25 +187,94 @@ export const irIntrospectionPlugin: McpPlugin = {
           };
         }
 
-        const explanation = await explainManifestTarget(getIR(), {
+        const ir = getIR();
+        const access = getCommandAccess(args.entity, args.command);
+
+        // Agent-sdk structured details (typed params, guards, constraints, emits)
+        const details = describeCommand(ir, args.command, {
+          includeGuardExpressions: true,
+          includeActionExpressions: true,
+        });
+
+        // Upstream human-readable prose explanation
+        const explanation = await explainManifestTarget(ir, {
           target: "command",
           name: args.command,
           entityName: args.entity,
         });
 
-        const access = getCommandAccess(args.entity, args.command);
+        const result = {
+          explanation,
+          mcpAccess: access,
+          structured: details,
+        };
 
         return {
           content: [
             {
               type: "text" as const,
-              text: `${explanation}\n\nMCP access: ${access}`,
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };
       }
     );
 
+    // -----------------------------------------------------------------------
+    // find_commands (NEW) — natural language command discovery
+    // -----------------------------------------------------------------------
+    server.registerTool(
+      "find_commands",
+      {
+        title: "Find Commands",
+        description:
+          "Find manifest commands matching a natural language intent. " +
+          "Returns scored matches with entity/command names and matched tokens. " +
+          "Examples: 'cancel an order', 'complete a task', 'create a new lead'.",
+        inputSchema: z.object({
+          intent: z
+            .string()
+            .describe(
+              "Natural language description of what you want to do. " +
+                "Examples: 'cancel order', 'mark task complete', 'approve request'"
+            ),
+          minScore: z
+            .number()
+            .min(0)
+            .max(1)
+            .optional()
+            .describe("Minimum match score (0-1). Default: 0.1"),
+        }),
+      },
+      (args: { intent: string; minScore?: number }) => {
+        const ir = getIR();
+
+        const matches = findMatchingCommands(ir, args.intent, {
+          minScore: args.minScore ?? 0.1,
+        });
+
+        // Enrich matches with MCP access level
+        const result = matches.map((match) => ({
+          ...match,
+          mcpAccess: match.entity
+            ? getCommandAccess(match.entity, match.command)
+            : "DENY",
+        }));
+
+        return {
+          content: [
+            {
+              type: "text" as const,
+              text: JSON.stringify(result, null, 2),
+            },
+          ],
+        };
+      }
+    );
+
+    // -----------------------------------------------------------------------
+    // ir-entities resource (unchanged)
+    // -----------------------------------------------------------------------
     server.registerResource(
       "ir-entities",
       "ir://entities",
@@ -178,21 +283,18 @@ export const irIntrospectionPlugin: McpPlugin = {
         mimeType: "application/json",
       },
       (uri: URL) => {
-        const entities = getEntityNames().map((name) => {
-          const entity = getEntity(name);
-          return {
-            name,
-            propertyCount: (entity?.properties ?? []).length,
-            commandCount: getCommandsForEntity(name).length,
-            constraintCount: (entity?.constraints ?? []).length,
-          };
-        });
+        const ir = getIR();
+        const summaries = listEntities(ir);
 
         return {
           contents: [
             {
               uri: uri.href,
-              text: JSON.stringify({ irSources: listIrSources(), entities }, null, 2),
+              text: JSON.stringify(
+                { irSources: listIrSources(), entities: summaries },
+                null,
+                2
+              ),
               mimeType: "application/json",
             },
           ],
@@ -202,8 +304,8 @@ export const irIntrospectionPlugin: McpPlugin = {
   },
 };
 
-/** @deprecated Use upstream explain tooling — kept for existing tests only. */
-export function expressionToString(expr: unknown): string {
+/** Internal (non-deprecated) implementation. */
+function _expressionToString(expr: unknown): string {
   if (!expr || typeof expr !== "object") {
     return JSON.stringify(expr);
   }
@@ -224,10 +326,13 @@ export function expressionToString(expr: unknown): string {
     return String(node.name ?? "");
   }
   if (node.kind === "binary") {
-    return `${expressionToString(node.left)} ${String(node.operator)} ${expressionToString(node.right)}`;
+    return `${_expressionToString(node.left)} ${String(node.operator)} ${_expressionToString(node.right)}`;
   }
   if (node.kind === "member") {
-    return `${expressionToString(node.object)}.${String(node.property)}`;
+    return `${_expressionToString(node.object)}.${String(node.property)}`;
   }
   return JSON.stringify(expr);
 }
+
+/** @deprecated Use upstream explain tooling — kept for existing tests only. */
+export const expressionToString = _expressionToString;
