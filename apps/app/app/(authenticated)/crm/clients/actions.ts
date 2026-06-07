@@ -208,10 +208,8 @@ export async function getAvailableTags(): Promise<
  *
  */
 export async function deleteTagGlobally(tag: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await requireCurrentUser().then((u) => u.tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   invariant(tag?.trim(), "Tag name is required");
 
   const trimmedTag = tag.trim();
@@ -227,24 +225,62 @@ export async function deleteTagGlobally(tag: string) {
     select: {
       id: true,
       tags: true,
+      company_name: true,
+      first_name: true,
+      last_name: true,
+      email: true,
+      phone: true,
+      website: true,
+      addressLine1: true,
+      addressLine2: true,
+      city: true,
+      stateProvince: true,
+      postalCode: true,
+      countryCode: true,
+      defaultPaymentTerms: true,
+      taxExempt: true,
+      taxId: true,
+      notes: true,
+      source: true,
+      assignedTo: true,
     },
   });
 
-  await database.$transaction(
-    clients.map((client) =>
-      database.client.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: client.id,
-          },
-        },
-        data: {
-          tags: client.tags.filter((value) => value !== trimmedTag),
-        },
-      })
-    )
-  );
+  // Govern each client's tag update through the Client.update command.
+  // Client.update has full-replace semantics, so we merge existing values.
+  for (const client of clients) {
+    const result = await runManifestCommand({
+      entity: "Client",
+      command: "update",
+      instanceId: client.id,
+      body: {
+        companyName: client.company_name || "",
+        firstName: client.first_name || "",
+        lastName: client.last_name || "",
+        email: client.email || "",
+        phone: client.phone || "",
+        website: client.website || "",
+        addressLine1: client.addressLine1 || "",
+        addressLine2: client.addressLine2 || "",
+        city: client.city || "",
+        stateProvince: client.stateProvince || "",
+        postalCode: client.postalCode || "",
+        countryCode: client.countryCode || "",
+        defaultPaymentTerms: client.defaultPaymentTerms ?? 30,
+        taxExempt: client.taxExempt ?? false,
+        taxId: client.taxId || "",
+        notes: client.notes || "",
+        tags: client.tags.filter((value) => value !== trimmedTag),
+        source: client.source || "",
+        assignedTo: client.assignedTo || "",
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    if (!result.ok) {
+      throw new Error(result.message || `Failed to remove tag from client ${client.id}`);
+    }
+  }
 
   revalidatePath("/crm/clients");
   revalidatePath("/crm/segmentation");

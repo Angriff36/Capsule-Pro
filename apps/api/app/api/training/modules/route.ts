@@ -1,9 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
-import { log } from "@repo/observability/log";
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type {
   ContentType,
   TrainingModule,
@@ -113,129 +112,25 @@ export async function GET(request: Request) {
 /**
  * POST /api/training/modules
  * Create a new training module via manifest runtime.
- *
- * Uses runCommand for guard/policy validation then createInstance for
- * actual DB persistence. executeManifestCommand only runs the command
- * in-memory — it does NOT persist entities (same bug as email-templates).
  */
 export async function POST(request: NextRequest) {
-  try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+  const user = await resolveCurrentUser(request);
+  const rawBody = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 400 }
-      );
-    }
-
-    const currentUser = await database.user.findFirst({
-      where: { AND: [{ tenantId }, { authUserId: clerkId }] },
-    });
-    if (!currentUser) {
-      return NextResponse.json(
-        { message: "User not found in database" },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-
-    const commandPayload = {
-      ...body,
-      createdBy: currentUser.id,
-      contentType: body.contentType || body.content_type || "document",
-      isRequired: body.isRequired ?? body.is_required ?? false,
-      durationMinutes: body.durationMinutes ?? body.duration_minutes ?? 0,
-      contentUrl: body.contentUrl ?? body.content_url ?? "",
-    };
-
-    const { createManifestRuntime } = await import("@/lib/manifest-runtime");
-
-    const runtime = await createManifestRuntime({
-      user: {
-        id: currentUser.id,
-        tenantId,
-        role: currentUser.role,
-      },
-      entityName: "TrainingModule",
-    });
-
-    // Step 1: Validate via manifest runtime (guards, policies)
-    const result = await runtime.runCommand("create", commandPayload, {
-      entityName: "TrainingModule",
-    });
-
-    if (!result.success) {
-      if (result.policyDenial) {
-        return NextResponse.json(
-          {
-            message: `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
-          },
-          { status: 403 }
-        );
-      }
-      if (result.guardFailure) {
-        return NextResponse.json(
-          {
-            message: `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`,
-          },
-          { status: 422 }
-        );
-      }
-      return NextResponse.json(
-        { message: result.error ?? "Command failed" },
-        { status: 400 }
-      );
-    }
-
-    // Step 2: Persist directly to tenant_staff.training_modules.
-    // createInstance() writes to the generic PrismaJsonStore (JSON blob),
-    // but the GET handler queries tenant_staff.training_modules directly.
-    const moduleId = crypto.randomUUID();
-
-    const createdModule = await database.trainingModule.create({
-      data: {
-        id: moduleId,
-        tenantId,
-        title: commandPayload.title || "",
-        description: commandPayload.description || null,
-        contentType: commandPayload.contentType || "document",
-        durationMinutes: commandPayload.durationMinutes
-          ? Number(commandPayload.durationMinutes)
-          : null,
-        category: commandPayload.category || null,
-        isRequired: commandPayload.isRequired === true,
-        isActive: commandPayload.isActive !== false,
-        contentUrl: commandPayload.contentUrl || null,
-        createdBy: currentUser.id,
-      },
-    });
-
-    return NextResponse.json({
-      result: createdModule,
-      events: result.emittedEvents,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    log.error("[training-module/create] Error:", error);
-    return NextResponse.json(
-      {
-        message:
-          message.includes("Invalid") || message.includes("required")
-            ? message
-            : "Internal server error",
-      },
-      {
-        status:
-          message.includes("Invalid") || message.includes("required")
-            ? 400
-            : 500,
-      }
-    );
-  }
+  return runManifestCommand({
+    entity: "TrainingModule",
+    command: "create",
+    body: {
+      title: rawBody.title || "",
+      description: rawBody.description || null,
+      contentType: rawBody.contentType || rawBody.content_type || "document",
+      durationMinutes: rawBody.durationMinutes ?? rawBody.duration_minutes ?? 0,
+      category: rawBody.category || null,
+      isRequired: rawBody.isRequired ?? rawBody.is_required ?? false,
+      isActive: rawBody.isActive ?? rawBody.is_active ?? true,
+      contentUrl: rawBody.contentUrl ?? rawBody.content_url ?? null,
+      createdBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
 }

@@ -7,6 +7,8 @@
 
 import { database, Prisma } from "@repo/database";
 import { checkBudgetForShift } from "./labor-budget";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface ShiftRequirement {
   shiftId: string;
@@ -595,9 +597,15 @@ export async function autoAssignShift(
         tenant_id: string;
         id: string;
         schedule_id: string;
+        location_id: string;
+        shift_start: Date;
+        shift_end: Date;
+        role_during_shift: string;
+        notes: string;
       }>
     >(Prisma.sql`
-      SELECT tenant_id, id, schedule_id
+      SELECT tenant_id, id, schedule_id, location_id, shift_start, shift_end,
+             role_during_shift, notes
       FROM tenant_staff.schedule_shifts
       WHERE tenant_id = ${tenantId}
         AND id = ${shiftId}
@@ -637,16 +645,48 @@ export async function autoAssignShift(
       };
     }
 
-    await database.scheduleShift.updateMany({
-      where: {
-        tenantId,
-        id: shiftId,
-        deletedAt: null,
-      },
-      data: {
-        employeeId,
-      },
+    // Resolve a system user identity for the Manifest command context
+    const systemUser = await database.user.findFirst({
+      where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+      select: { id: true, role: true },
     });
+    const userId = systemUser?.id ?? "";
+    const userRole = systemUser?.role ?? "admin";
+
+    const shiftRow = shift[0];
+
+    const result = await runManifestCommandCore(
+      {
+        createRuntime: ({ user, entityName }) =>
+          createManifestRuntime({
+            user: { id: user.id, tenantId: user.tenantId, role: user.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "ScheduleShift",
+        command: "update",
+        instanceId: shiftId,
+        user: { id: userId, tenantId, role: userRole },
+        body: {
+          employeeId,
+          locationId: shiftRow.location_id,
+          shiftStart: shiftRow.shift_start.getTime(),
+          shiftEnd: shiftRow.shift_end.getTime(),
+          roleDuringShift: shiftRow.role_during_shift ?? "",
+          notes: shiftRow.notes ?? "",
+        },
+      }
+    );
+
+    if (!result.ok) {
+      return {
+        success: false,
+        message: result.message ?? "Manifest command failed",
+        shiftId,
+        employeeId,
+      };
+    }
 
     return {
       success: true,

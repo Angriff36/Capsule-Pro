@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requireTenantId } from "../../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";
 
 const parseNumber = (value: FormDataEntryValue | null) => {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -805,21 +806,35 @@ export const createDishInline = async (
     throw new Error("Recipe not found.");
   }
 
-  const dishId = randomUUID();
+  const user = await requireCurrentUser();
 
-  await database.dish.create({
-    data: {
-      tenantId,
-      id: dishId,
+  const result = await runManifestCommand({
+    entity: "Dish",
+    command: "create",
+    body: {
       recipeId,
       name: name.trim(),
-      description: description?.trim() || null,
-      category: category?.trim() || null,
+      description: description?.trim() || "",
+      category: category?.trim() || "",
+      serviceStyle: "",
+      defaultContainerId: "",
+      presentationImageUrl: "",
+      minPrepLeadDays: 0,
+      maxPrepLeadDays: 0,
+      portionSizeDescription: "",
       dietaryTags: [],
       allergens: [],
-      isActive: true,
+      pricePerPerson: 0,
+      costPerPerson: 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create dish");
+  }
+
+  const dishId = (result.result as { id: string }).id;
 
   revalidatePath("/kitchen/recipes");
   revalidatePath("/kitchen/recipes/menus");
@@ -1150,12 +1165,42 @@ export const updateDishCourse = async (
   dishId: string,
   course: string | null
 ): Promise<void> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
 
-  await database.menuDish.updateMany({
-    where: { tenantId, menuId, dishId, deletedAt: null },
-    data: { course },
+  // Look up the MenuDish record (need ID as instanceId + current values to preserve)
+  const [menuDish] = await database.$queryRaw<
+    { id: string; sort_order: number; is_optional: boolean }[]
+  >(
+    Prisma.sql`
+      SELECT id, sort_order, is_optional
+      FROM tenant_kitchen.menu_dishes
+      WHERE menu_id = ${menuId}
+        AND dish_id = ${dishId}
+        AND tenant_id = ${user.tenantId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!menuDish) {
+    throw new Error("Menu dish not found.");
+  }
+
+  const result = await runManifestCommand({
+    entity: "MenuDish",
+    command: "updateCourse",
+    instanceId: menuDish.id,
+    body: {
+      newCourse: course || "",
+      newSortOrder: menuDish.sort_order,
+      newIsOptional: menuDish.is_optional,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update dish course");
+  }
 
   revalidatePath(`/kitchen/recipes/menus/${menuId}`);
 };

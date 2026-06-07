@@ -1,9 +1,9 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import type { CreateBatchAvailabilityInput } from "../types";
 import {
@@ -124,58 +124,82 @@ export const POST = withRateLimit(
     }
 
     try {
-      // Create all availability records in a transaction
-      const results = await database.$transaction(
-        body.patterns.map((pattern) => {
-          const [startHour, startMinute] = pattern.startTime
-            .split(":")
-            .map(Number);
-          const [endHour, endMinute] = pattern.endTime.split(":").map(Number);
+      // Create all availability records via Manifest runtime
+      const user = await resolveCurrentUser(request);
+      let created = 0;
 
-          const startTime = new Date();
-          startTime.setHours(startHour, startMinute, 0, 0);
+      for (const pattern of body.patterns) {
+        const [startHour, startMinute] = pattern.startTime
+          .split(":")
+          .map(Number);
+        const [endHour, endMinute] = pattern.endTime.split(":").map(Number);
 
-          const endTime = new Date();
-          endTime.setHours(endHour, endMinute, 0, 0);
+        // Build ISO datetime strings for @db.Time columns (GenericPrismaStore needs ISO, not bare HH:MM)
+        const startTime = new Date(
+          1970,
+          0,
+          1,
+          startHour,
+          startMinute,
+          0,
+          0
+        ).toISOString();
+        const endTime = new Date(
+          1970,
+          0,
+          1,
+          endHour,
+          endMinute,
+          0,
+          0
+        ).toISOString();
 
-          return database.employeeAvailability.create({
-            data: {
-              tenantId,
-              employeeId: body.employeeId,
+        const response = await runManifestCommand({
+          entity: "EmployeeAvailability",
+          command: "create",
+          body: {
+            employeeId: body.employeeId,
+            dayOfWeek: pattern.dayOfWeek,
+            startTime,
+            endTime,
+            isAvailable: pattern.isAvailable ?? true,
+            effectiveFrom: effectiveFrom.toISOString().split("T")[0],
+            effectiveUntil: effectiveUntil
+              ? effectiveUntil.toISOString().split("T")[0]
+              : "",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        });
+        if (response.ok) {
+          created++;
+        } else {
+          const errorBody = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+          const message = typeof errorBody.message === "string" ? errorBody.message : `HTTP ${response.status}`;
+          log.error(`[BatchAvailability] Manifest create failed for day ${pattern.dayOfWeek}: ${message}`);
+          errors.push({
+            pattern: {
               dayOfWeek: pattern.dayOfWeek,
-              startTime,
-              endTime,
-              isAvailable: pattern.isAvailable ?? true,
-              effectiveFrom,
-              effectiveUntil,
+              startTime: pattern.startTime,
+              endTime: pattern.endTime,
             },
-            select: {
-              id: true,
-              employeeId: true,
-              dayOfWeek: true,
-              startTime: true,
-              endTime: true,
-              effectiveFrom: true,
-            },
+            error: `Create failed: ${message}`,
           });
-        })
-      );
+        }
+      }
 
-      const createdRecords = results.map((record) => ({
-        id: record.id,
-        employee_id: record.employeeId,
-        day_of_week: record.dayOfWeek,
-        start_time: record.startTime,
-        end_time: record.endTime,
-        effective_from: record.effectiveFrom,
-      }));
+      if (created === 0) {
+        return NextResponse.json(
+          { message: "Failed to create any availability records", errors },
+          { status: 500 }
+        );
+      }
 
       return NextResponse.json(
         {
-          message: `Created ${createdRecords.length} availability records`,
-          availability: createdRecords,
+          message: `Created ${created} availability records${errors.length > 0 ? ` (${errors.length} failed)` : ""}`,
+          errors: errors.length > 0 ? errors : undefined,
         },
-        { status: 201 }
+        { status: errors.length > 0 ? 207 : 201 }
       );
     } catch (error) {
       captureException(error);

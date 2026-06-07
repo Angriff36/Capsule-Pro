@@ -1,7 +1,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import * as XLSX from "xlsx";
 
 interface ImportRow {
@@ -136,6 +137,8 @@ export async function POST(request: NextRequest) {
     let updated = 0;
     let errors = 0;
 
+    const user = await requireCurrentUser();
+
     for (const item of items) {
       try {
         // Check if item with this item_number exists
@@ -149,27 +152,33 @@ export async function POST(request: NextRequest) {
           LIMIT 1
         `;
 
+        const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
+
         if (existing.length > 0) {
-          await database.inventoryItem.updateMany({
-            where: {
-              tenantId: item.tenantId,
-              item_number: item.item_number,
-              deletedAt: null,
-            },
-            data: {
+          const result = await runManifestCommand({
+            entity: "InventoryItem",
+            command: "update",
+            instanceId: existing[0].id,
+            body: {
               name: item.name,
               category: item.category,
               unitOfMeasure: item.unitOfMeasure,
               unitCost: item.unitCost,
               quantityOnHand: item.quantityOnHand,
               tags: item.tags,
-              updatedAt: item.updatedAt,
             },
+            user: userCtx,
           });
-          updated++;
+          if (result.ok) {
+            updated++;
+          } else {
+            errors++;
+          }
         } else {
-          await database.inventoryItem.create({
-            data: {
+          const result = await runManifestCommand({
+            entity: "InventoryItem",
+            command: "create",
+            body: {
               tenantId: item.tenantId,
               item_number: item.item_number,
               name: item.name,
@@ -178,11 +187,14 @@ export async function POST(request: NextRequest) {
               unitCost: item.unitCost,
               quantityOnHand: item.quantityOnHand,
               tags: item.tags,
-              createdAt: item.createdAt,
-              updatedAt: item.updatedAt,
             },
+            user: userCtx,
           });
-          created++;
+          if (result.ok) {
+            created++;
+          } else {
+            errors++;
+          }
         }
       } catch {
         errors++;
