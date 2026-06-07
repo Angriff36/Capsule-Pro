@@ -986,6 +986,11 @@
   },
   {
     "entity": "CycleCountSession",
+    "command": "softDelete",
+    "commandId": "CycleCountSession.softDelete"
+  },
+  {
+    "entity": "CycleCountSession",
     "command": "start",
     "commandId": "CycleCountSession.start"
   },
@@ -1226,6 +1231,11 @@
   },
   {
     "entity": "EmailWorkflow",
+    "command": "recordTriggered",
+    "commandId": "EmailWorkflow.recordTriggered"
+  },
+  {
+    "entity": "EmailWorkflow",
     "command": "setActive",
     "commandId": "EmailWorkflow.setActive"
   },
@@ -1388,6 +1398,11 @@
     "entity": "Event",
     "command": "finalize",
     "commandId": "Event.finalize"
+  },
+  {
+    "entity": "Event",
+    "command": "softDelete",
+    "commandId": "Event.softDelete"
   },
   {
     "entity": "Event",

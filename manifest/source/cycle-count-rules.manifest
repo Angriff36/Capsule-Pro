@@ -129,6 +129,15 @@ entity CycleCountSession {
     emit CycleCountSessionCancelled
   }
 
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "Session is already deleted"
+    guard self.status != "finalized" "Cannot delete a finalized session"
+
+    mutate deletedAt = now()
+
+    emit CycleCountSessionDeleted
+  }
+
   store CycleCountSession in durable
 }
 
@@ -415,6 +424,13 @@ event CycleCountSessionFinalized: "inventory.cyclecount.session.finalized" {
   locationId: string
   userId: string
   finalizedAt: datetime
+}
+
+event CycleCountSessionDeleted: "inventory.cyclecount.session.deleted" {
+  sessionId: string
+  sessionName: string
+  userId: string
+  deletedAt: datetime
 }
 
 event CycleCountRecordCreated: "inventory.cyclecount.record.created" {

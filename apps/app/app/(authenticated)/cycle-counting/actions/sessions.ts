@@ -319,19 +319,20 @@ export async function updateCycleCountSession(
 /**
  * Soft-delete a cycle count session.
  *
- * No governed `remove`/`softDelete` command exists in the IR for
- * CycleCountSession, so this remains a direct Prisma write. The business
- * guard (no deleting finalized sessions) is enforced locally.
+ * Governed via Manifest runtime (CycleCountSession.softDelete).
+ * Pre-validation read (existence + finalized check) kept as direct Prisma
+ * for user-friendly error messages (constitution §10).
  */
 export async function deleteCycleCountSession(
   sessionId: string
 ): Promise<SessionResult> {
   try {
-    const tenantId = await requireTenantId();
+    const user = await requireCurrentUser();
 
+    // Pre-validation read — constitution §10 allows reads to bypass runtime
     const session = await database.cycleCountSession.findUnique({
       where: {
-        tenantId_id: { tenantId, id: sessionId },
+        tenantId_id: { tenantId: user.tenantId, id: sessionId },
       },
       select: { status: true, id: true },
     });
@@ -348,17 +349,19 @@ export async function deleteCycleCountSession(
       };
     }
 
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: sessionId,
-        },
+    const result = await runManifestCommand({
+      entity: "CycleCountSession",
+      command: "softDelete",
+      instanceId: sessionId,
+      body: {
+        userId: user.id,
       },
-      data: {
-        deletedAt: new Date(),
-      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      return { success: false, error: result.message || "Failed to delete session" };
+    }
 
     return { success: true };
   } catch (error) {
