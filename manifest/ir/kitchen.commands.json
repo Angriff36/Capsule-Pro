@@ -611,6 +611,11 @@
   },
   {
     "entity": "ClientInteraction",
+    "command": "softDelete",
+    "commandId": "ClientInteraction.softDelete"
+  },
+  {
+    "entity": "ClientInteraction",
     "command": "update",
     "commandId": "ClientInteraction.update"
   },

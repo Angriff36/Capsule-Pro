@@ -170,6 +170,14 @@ entity ClientInteraction {
     emit ClientInteractionEscalated
   }
 
+  command softDelete() {
+    guard self.deletedAt == null "Interaction is already deleted"
+
+    mutate deletedAt = now()
+
+    emit ClientInteractionSoftDeleted
+  }
+
   store ClientInteraction in durable
 }
 
@@ -244,4 +252,13 @@ event ClientInteractionEscalated: "crm.interaction.escalated" {
   escalatedTo: string
   reason: string
   escalatedAt: datetime
+}
+
+event ClientInteractionSoftDeleted: "crm.interaction.soft_deleted" {
+  interactionId: string
+  tenantId: string
+  clientId: string
+  leadId: string
+  subject: string
+  deletedAt: datetime
 }

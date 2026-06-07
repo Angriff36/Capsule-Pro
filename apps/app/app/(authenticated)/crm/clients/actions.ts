@@ -911,12 +911,19 @@ export async function updateClientInteraction(
     }
   }
 
-  // followUpCompleted is NOT in the governed update command's mutates,
-  // so apply it via direct Prisma when provided.
-  if (input.followUpCompleted !== undefined) {
-    await database.clientInteraction.update({
-      where: { tenantId_id: { tenantId, id: interactionId } },
-      data: { followUpCompleted: input.followUpCompleted },
+  // followUpCompleted is managed by the dedicated `complete` command.
+  // Use the governed command when setting to true; no-op when false
+  // (uncompleting is a niche case not covered by the lifecycle).
+  if (input.followUpCompleted === true) {
+    await runManifestCommand({
+      entity: "ClientInteraction",
+      command: "complete",
+      body: {
+        id: interactionId,
+        completionNotes: "Marked complete via interaction update",
+        userId: user.id,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
   }
 
