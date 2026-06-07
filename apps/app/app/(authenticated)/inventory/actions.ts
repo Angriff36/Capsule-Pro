@@ -1,8 +1,10 @@
 "use server";
 
-import { type InventoryItem, tenantDatabase } from "@repo/database";
+import { type InventoryItem, database } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -62,7 +64,7 @@ const getBoolean = (formData: FormData, key: string): boolean | undefined => {
 };
 
 // ============================================================================
-// Query Operations
+// Query Operations (direct Prisma reads — constitution §10)
 // ============================================================================
 
 /**
@@ -73,10 +75,11 @@ export const getInventoryItems = async (filters?: {
   search?: string;
 }): Promise<InventoryItem[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.inventoryItem.findMany({
+  return database.inventoryItem.findMany({
     where: {
+      tenantId,
+      deletedAt: null,
       ...(filters?.category && { category: filters.category }),
       ...(filters?.search && {
         OR: [
@@ -96,15 +99,14 @@ export const getInventoryItemById = async (
   itemId: string
 ): Promise<InventoryItem | null> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.inventoryItem.findFirst({
-    where: { id: itemId },
+  return database.inventoryItem.findFirst({
+    where: { tenantId, id: itemId, deletedAt: null },
   });
 };
 
 // ============================================================================
-// Create Operation
+// Create Operation (governed via Manifest runtime)
 // ============================================================================
 
 /**
@@ -113,8 +115,8 @@ export const getInventoryItemById = async (
 export const createInventoryItem = async (
   formData: FormData
 ): Promise<InventoryItem> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const item_number = getString(formData, "item_number");
   if (!item_number) {
@@ -144,46 +146,40 @@ export const createInventoryItem = async (
   const fsa_allergen_info = getBoolean(formData, "fsa_allergen_info") ?? false;
   const fsa_traceable = getBoolean(formData, "fsa_traceable") ?? false;
 
-  const item = await client.$transaction(async (tx) => {
-    const created = await tx.inventoryItem.create({
-      data: {
-        tenantId,
-        item_number,
-        name,
-        description,
-        category,
-        unitOfMeasure,
-        unitCost,
-        quantityOnHand,
-        parLevel,
-        reorder_level,
-        supplierId,
-        tags,
-        fsa_status,
-        fsa_temp_logged,
-        fsa_allergen_info,
-        fsa_traceable,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "inventory.item",
-        aggregateId: created.id,
-        eventType: "inventory.item.created",
-        payload: {
-          itemId: created.id,
-          item_number: created.item_number,
-          name: created.name,
-          category: created.category,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return created;
+  const result = await runManifestCommand({
+    entity: "InventoryItem",
+    command: "create",
+    body: {
+      item_number,
+      name,
+      category,
+      description: description ?? "",
+      unitOfMeasure,
+      unitCost,
+      quantityOnHand,
+      parLevel,
+      reorder_level,
+      supplierId: supplierId ?? "",
+      tags: tags.join(","),
+      fsa_status,
+      fsa_temp_logged,
+      fsa_allergen_info,
+      fsa_traceable,
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create inventory item");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "InventoryItem.create did not return an id");
+
+  const item = await database.inventoryItem.findFirst({
+    where: { tenantId, id: createdId },
+  });
+  invariant(item, "Created inventory item could not be loaded");
 
   revalidatePath("/inventory");
 
@@ -191,7 +187,7 @@ export const createInventoryItem = async (
 };
 
 // ============================================================================
-// Update Operation
+// Update Operation (governed via Manifest runtime)
 // ============================================================================
 
 /**
@@ -200,15 +196,20 @@ export const createInventoryItem = async (
 export const updateInventoryItem = async (
   formData: FormData
 ): Promise<InventoryItem> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const itemId = getString(formData, "itemId");
   if (!itemId) {
     throw new Error("Item ID is required.");
   }
 
-  const item_number = getString(formData, "item_number");
+  // Read existing for merge (update command is full-field mutation)
+  const existing = await database.inventoryItem.findFirst({
+    where: { tenantId, id: itemId, deletedAt: null },
+  });
+  invariant(existing, "Inventory item not found");
+
   const name = getString(formData, "name");
   const description = getOptionalString(formData, "description");
   const category = getString(formData, "category");
@@ -221,42 +222,37 @@ export const updateInventoryItem = async (
   const tags = getTags(formData, "tags");
   const fsa_status = getOptionalString(formData, "fsa_status");
 
-  const item = await client.$transaction(async (tx) => {
-    const updated = await tx.inventoryItem.update({
-      where: { tenantId_id: { tenantId, id: itemId } },
-      data: {
-        ...(item_number !== undefined && { item_number }),
-        ...(name !== undefined && { name }),
-        ...(description !== undefined && { description: description || null }),
-        ...(category !== undefined && { category }),
-        ...(unitOfMeasure !== undefined && { unitOfMeasure }),
-        ...(unitCost !== undefined && { unitCost }),
-        ...(quantityOnHand !== undefined && { quantityOnHand }),
-        ...(parLevel !== undefined && { parLevel }),
-        ...(reorder_level !== undefined && { reorder_level }),
-        ...(supplierId !== undefined && { supplierId: supplierId || null }),
-        ...(tags !== undefined && { tags }),
-        ...(fsa_status !== undefined && { fsa_status: fsa_status || null }),
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "inventory.item",
-        aggregateId: updated.id,
-        eventType: "inventory.item.updated",
-        payload: {
-          itemId: updated.id,
-          item_number: updated.item_number,
-          name: updated.name,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return updated;
+  const result = await runManifestCommand({
+    entity: "InventoryItem",
+    command: "update",
+    body: {
+      id: itemId,
+      name: name ?? existing.name,
+      description: description !== undefined ? (description ?? "") : (existing.description ?? ""),
+      category: category ?? existing.category,
+      unitOfMeasure: unitOfMeasure ?? existing.unitOfMeasure,
+      unitCost: unitCost ?? Number(existing.unitCost),
+      quantityOnHand: quantityOnHand ?? Number(existing.quantityOnHand),
+      parLevel: parLevel ?? Number(existing.parLevel),
+      reorder_level: reorder_level ?? Number(existing.reorder_level),
+      supplierId: supplierId !== undefined ? (supplierId ?? "") : (existing.supplierId ?? ""),
+      tags: tags.length > 0 ? tags.join(",") : (existing.tags as unknown as string ?? ""),
+      fsa_status: fsa_status !== undefined ? (fsa_status ?? "") : (existing.fsa_status ?? ""),
+      fsa_temp_logged: existing.fsa_temp_logged,
+      fsa_allergen_info: existing.fsa_allergen_info,
+      fsa_traceable: existing.fsa_traceable,
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to update inventory item");
+  }
+
+  const item = await database.inventoryItem.findFirst({
+    where: { tenantId, id: itemId },
+  });
+  invariant(item, "Updated inventory item could not be loaded");
 
   revalidatePath("/inventory");
 
@@ -264,38 +260,29 @@ export const updateInventoryItem = async (
 };
 
 // ============================================================================
-// Delete Operation
+// Delete Operation (governed via Manifest runtime — soft delete)
 // ============================================================================
 
 /**
- * Delete an inventory item (soft delete)
+ * Soft delete an inventory item
  */
 export const deleteInventoryItem = async (itemId: string): Promise<void> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
 
   if (!itemId) {
     throw new Error("Item ID is required.");
   }
 
-  await client.$transaction(async (tx) => {
-    await tx.inventoryItem.delete({
-      where: { tenantId_id: { tenantId, id: itemId } },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "inventory.item",
-        aggregateId: itemId,
-        eventType: "inventory.item.deleted",
-        payload: {
-          itemId,
-        },
-        status: "pending" as const,
-      },
-    });
+  const result = await runManifestCommand({
+    entity: "InventoryItem",
+    command: "softDelete",
+    body: { id: itemId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete inventory item");
+  }
 
   revalidatePath("/inventory");
 };
