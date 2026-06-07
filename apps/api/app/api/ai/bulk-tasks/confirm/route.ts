@@ -166,19 +166,38 @@ export async function POST(request: Request) {
       if (createdId) {
         createdIds.push(createdId);
 
-        // Supplementary update for fields outside the manifest create command:
-        // dishId, locationId, estimatedMinutes, dueByTime are Prisma-level but not governed params.
-        await database.prepTask.update({
-          where: { tenantId_id: { tenantId, id: createdId } },
-          data: {
-            dishId: task.dishId ?? null,
-            locationId: event.locationId!,
-            estimatedMinutes: task.estimatedMinutes ?? null,
-            dueByTime: task.dueByTime
-              ? new Date(`1970-01-01T${task.dueByTime}:00`)
-              : null,
+        // Governed write: set supplementary details via PrepTask.updateDetails
+        const detailResult = await runManifestCommandCore(
+          {
+            createRuntime: ({ user: u, entityName }) =>
+              createManifestRuntime({
+                user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                entityName,
+              }),
           },
-        });
+          {
+            entity: "PrepTask",
+            command: "updateDetails",
+            body: {
+              id: createdId,
+              dishId: task.dishId ?? "",
+              locationId: event.locationId!,
+              estimatedMinutes: task.estimatedMinutes ?? 0,
+              dueByTime: task.dueByTime
+                ? new Date(`1970-01-01T${task.dueByTime}:00`)
+                : "",
+            },
+            user: { id: user.id, tenantId, role: user.role },
+          }
+        );
+
+        if (!detailResult.ok) {
+          captureException(
+            new Error(
+              `Bulk-task PrepTask.updateDetails failed for "${task.name}": ${detailResult.message}`
+            )
+          );
+        }
       }
     }
 

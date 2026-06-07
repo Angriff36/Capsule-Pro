@@ -20,6 +20,10 @@ entity PrepTask {
   property startByDate: datetime = now()
   property dueByDate: datetime
   property priority: int = 5
+  property dishId: string = ""
+  property locationId: string = ""
+  property estimatedMinutes: int = 0
+  property dueByTime: datetime
   property notes: string = ""
   property ingredients: string = ""
   timestamps
@@ -248,6 +252,15 @@ entity PrepTask {
     emit PrepTaskDueDateUpdated
   }
 
+  command updateDetails(dishId: string, locationId: string, estimatedMinutes: int, dueByTime: datetime) {
+    mutate dishId = dishId
+    mutate locationId = locationId
+    mutate estimatedMinutes = estimatedMinutes
+    mutate dueByTime = dueByTime
+
+    emit PrepTaskDetailsUpdated
+  }
+
   store PrepTask in durable
 }
 
@@ -348,5 +361,14 @@ event PrepTaskDueDateUpdated: "kitchen.preptask.duedate.updated" {
   taskId: string
   oldDueByDate: datetime
   newDueByDate: datetime
+  updatedAt: datetime
+}
+
+event PrepTaskDetailsUpdated: "kitchen.preptask.details.updated" {
+  taskId: string
+  dishId: string
+  locationId: string
+  estimatedMinutes: number
+  dueByTime: datetime
   updatedAt: datetime
 }

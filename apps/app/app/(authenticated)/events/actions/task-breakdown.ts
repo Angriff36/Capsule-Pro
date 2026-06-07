@@ -634,21 +634,32 @@ export async function saveTaskBreakdown(
       );
     }
 
-    // Supplementary update for fields outside the manifest create command:
-    // locationId and estimatedMinutes are Prisma-level but not governed params.
+    // Governed write: set supplementary details via PrepTask.updateDetails
     const createdId =
       typeof result.result === "object" && result.result !== null
         ? (result.result as { id?: string }).id
         : undefined;
 
     if (createdId) {
-      await database.prepTask.update({
-        where: { tenantId_id: { tenantId, id: createdId } },
-        data: {
+      // Governed write: set supplementary details via PrepTask.updateDetails
+      const detailResult = await runManifestCommand({
+        entity: "PrepTask",
+        command: "updateDetails",
+        body: {
+          id: createdId,
+          dishId: "",
           locationId,
           estimatedMinutes: task.durationMinutes,
+          dueByTime: "",
         },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
       });
+
+      if (!detailResult.ok) {
+        throw new Error(
+          `Failed to update details for prep task "${task.name}": ${detailResult.message}`
+        );
+      }
     }
   }
 }
