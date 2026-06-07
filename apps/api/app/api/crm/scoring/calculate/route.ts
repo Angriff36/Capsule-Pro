@@ -13,7 +13,8 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 export const runtime = "nodejs";
 
@@ -85,7 +86,7 @@ function leadMatchesRule(
 }
 
 // POST /api/crm/scoring/calculate — Recalculate all lead scores
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -99,6 +100,9 @@ export async function POST(_request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Resolve user context for Manifest runtime
+    const user = await resolveCurrentUser(request);
 
     // Fetch all active rules ordered by priority
     const rules = await database.$queryRaw<
@@ -121,16 +125,25 @@ export async function POST(_request: NextRequest) {
     );
 
     if (rules.length === 0) {
-      await database.lead.updateMany({
-        where: {
-          tenantId,
-          deletedAt: null,
-        },
-        data: {
-          score: 0,
-          scoreBreakdown: {},
-        },
+      // Reset all lead scores to 0 via governed Manifest runtime + direct Prisma
+      // for score/scoreBreakdown (non-IR derived fields)
+      const zeroLeads = await database.lead.findMany({
+        where: { tenantId, deletedAt: null },
+        select: { id: true },
       });
+      for (const lead of zeroLeads) {
+        await runManifestCommand({
+          entity: "Lead",
+          command: "update",
+          body: { id: lead.id, tenantId },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          instanceId: lead.id,
+        });
+        await database.lead.updateMany({
+          where: { tenantId, id: lead.id, deletedAt: null },
+          data: { score: 0, scoreBreakdown: {} },
+        });
+      }
       return NextResponse.json({
         data: {
           updated: 0,
@@ -171,6 +184,15 @@ export async function POST(_request: NextRequest) {
         }
       }
 
+      // Governed update via Manifest runtime + direct Prisma for score/scoreBreakdown
+      // (non-IR derived fields not modeled in Lead manifest entity)
+      await runManifestCommand({
+        entity: "Lead",
+        command: "update",
+        body: { id: lead.id, tenantId },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        instanceId: lead.id,
+      });
       await database.lead.updateMany({
         where: {
           tenantId,

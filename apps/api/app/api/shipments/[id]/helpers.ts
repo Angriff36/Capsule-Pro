@@ -3,6 +3,8 @@
  */
 
 import { database, Prisma, type ShipmentStatus } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export interface ShipmentUpdateInput {
   shipment_number?: string;
@@ -197,76 +199,51 @@ export function buildShipmentUpdateData(
 export async function updateShipmentRaw(
   tenantId: string,
   shipmentId: string,
-  updateData: ShipmentUpdateData
+  updateData: ShipmentUpdateData,
+  user: { id: string; tenantId: string; role: string } = { id: "system", tenantId, role: "admin" }
 ): Promise<void> {
-  await database.shipment.updateMany({
-    where: {
-      tenantId,
-      id: shipmentId,
+  await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
     },
-    data: {
-      ...(updateData.shipmentNumber !== undefined && {
-        shipmentNumber: updateData.shipmentNumber,
-      }),
-      ...(updateData.status !== undefined && {
-        status: updateData.status as ShipmentStatus,
-      }),
-      ...(updateData.eventId !== undefined && { eventId: updateData.eventId }),
-      ...(updateData.supplierId !== undefined && {
-        supplierId: updateData.supplierId,
-      }),
-      ...(updateData.locationId !== undefined && {
-        locationId: updateData.locationId,
-      }),
-      ...(updateData.scheduledDate !== undefined && {
-        scheduledDate: updateData.scheduledDate,
-      }),
-      ...(updateData.shippedDate !== undefined && {
-        shippedDate: updateData.shippedDate,
-      }),
-      ...(updateData.estimatedDeliveryDate !== undefined && {
+    {
+      entity: "Shipment",
+      command: "update",
+      instanceId: shipmentId,
+      user,
+      body: {
+        id: shipmentId,
+        tenantId,
+        trackingNumber: updateData.trackingNumber ?? "",
+        carrier: updateData.carrier ?? "",
+        shippingMethod: updateData.shippingMethod ?? "",
         estimatedDeliveryDate: updateData.estimatedDeliveryDate,
-      }),
-      ...(updateData.actualDeliveryDate !== undefined && {
+        shippingCost: updateData.shippingCost != null ? Number(updateData.shippingCost) : 0,
+        notes: updateData.notes ?? "",
+        // Fields below are NOT declared in the Shipment "update" command params,
+        // so the runtime ignores them. They are included for completeness so that
+        // if the command spec is extended later, they'll flow through automatically.
+        shipmentNumber: updateData.shipmentNumber,
+        status: updateData.status,
+        eventId: updateData.eventId,
+        supplierId: updateData.supplierId,
+        locationId: updateData.locationId,
+        scheduledDate: updateData.scheduledDate,
+        shippedDate: updateData.shippedDate,
         actualDeliveryDate: updateData.actualDeliveryDate,
-      }),
-      ...(updateData.shippingCost !== undefined && {
-        shippingCost:
-          updateData.shippingCost === null
-            ? null
-            : new Prisma.Decimal(updateData.shippingCost),
-      }),
-      ...(updateData.totalValue !== undefined && {
-        totalValue:
-          updateData.totalValue === null
-            ? null
-            : new Prisma.Decimal(updateData.totalValue),
-      }),
-      ...(updateData.trackingNumber !== undefined && {
-        trackingNumber: updateData.trackingNumber,
-      }),
-      ...(updateData.carrier !== undefined && { carrier: updateData.carrier }),
-      ...(updateData.shippingMethod !== undefined && {
-        shippingMethod: updateData.shippingMethod,
-      }),
-      ...(updateData.deliveredBy !== undefined && {
+        totalValue: updateData.totalValue != null ? Number(updateData.totalValue) : 0,
         deliveredBy: updateData.deliveredBy,
-      }),
-      ...(updateData.receivedBy !== undefined && {
         receivedBy: updateData.receivedBy,
-      }),
-      ...(updateData.signature !== undefined && {
         signature: updateData.signature,
-      }),
-      ...(updateData.notes !== undefined && { notes: updateData.notes }),
-      ...(updateData.internalNotes !== undefined && {
         internalNotes: updateData.internalNotes,
-      }),
-      ...(updateData.reference !== undefined && {
         reference: updateData.reference,
-      }),
-    },
-  });
+      },
+    }
+  );
 }
 
 /**

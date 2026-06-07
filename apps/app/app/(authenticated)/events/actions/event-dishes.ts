@@ -126,15 +126,24 @@ export async function createDishAndAddToEvent(
       return { success: false, error: "Dish.create did not return an id" };
     }
 
-    await database.eventDish.create({
-      data: {
-        tenantId,
+    // Governed write: EventDish.create via Manifest runtime (constitution §9)
+    const eventDishResult = await runManifestCommand({
+      entity: "EventDish",
+      command: "create",
+      body: {
         eventId,
         dishId: createdId,
-        course: course ?? null,
-        quantityServings: 1,
+        quantity: 1,
+        notes: "",
+        courseLabel: course ?? "",
+        sortOrder: 0,
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!eventDishResult.ok) {
+      return { success: false, error: eventDishResult.message || "Failed to add dish to event" };
+    }
 
     revalidatePath(`/events/${eventId}`);
     revalidatePath("/kitchen/recipes");
@@ -306,15 +315,25 @@ export async function addDishToEvent(
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
-    await database.eventDish.create({
-      data: {
-        tenantId,
+    // Governed write: EventDish.create via Manifest runtime (constitution §9)
+    const user = await requireCurrentUser();
+    const result = await runManifestCommand({
+      entity: "EventDish",
+      command: "create",
+      body: {
         eventId,
         dishId,
-        course: course ?? null,
-        quantityServings: quantityServings ?? 1,
+        quantity: quantityServings ?? 1,
+        notes: "",
+        courseLabel: course ?? "",
+        sortOrder: 0,
       },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      return { success: false, error: result.message || "Failed to add dish" };
+    }
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };
@@ -333,16 +352,22 @@ export async function removeDishFromEvent(eventId: string, linkId: string) {
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
-    await database.eventDish.updateMany({
-      where: {
-        tenantId,
-        id: linkId,
-        eventId,
+    // Governed write: EventDish.remove via Manifest runtime (constitution §9)
+    const user = await requireCurrentUser();
+    const result = await runManifestCommand({
+      entity: "EventDish",
+      command: "remove",
+      instanceId: linkId,
+      body: {
+        reason: "",
+        userId: user.id,
       },
-      data: {
-        deletedAt: new Date(),
-      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!result.ok) {
+      return { success: false, error: result.message || "Failed to remove dish" };
+    }
 
     revalidatePath(`/events/${eventId}`);
     return { success: true };

@@ -6,6 +6,8 @@
  */
 
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   createNowstaClient,
   type NowstaClient,
@@ -291,18 +293,31 @@ async function processShift(
     if (schedule) {
       scheduleId = schedule.id;
     } else {
-      // Create schedule
-      const newSchedule = await database.schedule.create({
-        data: {
-          tenantId,
-          schedule_date: shiftDate,
-          status: "draft",
+      // Create schedule via Manifest runtime
+      const result = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-        select: {
-          id: true,
-        },
-      });
-      scheduleId = newSchedule.id;
+        {
+          entity: "Schedule",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            scheduleDate: shiftDate,
+            status: "draft",
+            locationId: "",
+          },
+        }
+      );
+      if (!result.ok) {
+        throw new Error(`Failed to create schedule: ${result.message}`);
+      }
+      scheduleId = (result.result as { id?: string }).id!;
     }
 
     // Get default location
@@ -320,36 +335,63 @@ async function processShift(
 
     // Create or update shift
     if (existingSync?.convoyShiftId) {
-      // Update existing shift
-      await database.scheduleShift.updateMany({
-        where: {
-          tenantId,
-          id: existingSync.convoyShiftId,
+      // Update existing shift via Manifest runtime
+      await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-        data: {
-          shift_start: new Date(nowstaShift.start_time),
-          shift_end: new Date(nowstaShift.end_time),
-          role_during_shift: nowstaShift.role ?? null,
-          notes: nowstaShift.notes ?? null,
-        },
-      });
+        {
+          entity: "ScheduleShift",
+          command: "update",
+          instanceId: existingSync.convoyShiftId,
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            id: existingSync.convoyShiftId,
+            tenantId,
+            scheduleId,
+            employeeId: mapping.convoyEmployeeId,
+            locationId,
+            shiftStart: new Date(nowstaShift.start_time),
+            shiftEnd: new Date(nowstaShift.end_time),
+            roleDuringShift: nowstaShift.role ?? "",
+            notes: nowstaShift.notes ?? "",
+          },
+        }
+      );
     } else {
-      // Create new shift
-      const newShift = await database.scheduleShift.create({
-        data: {
-          tenantId,
-          scheduleId,
-          employeeId: mapping.convoyEmployeeId,
-          locationId,
-          shift_start: new Date(nowstaShift.start_time),
-          shift_end: new Date(nowstaShift.end_time),
-          role_during_shift: nowstaShift.role ?? null,
-          notes: nowstaShift.notes ?? null,
+      // Create new shift via Manifest runtime
+      const shiftResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-        select: {
-          id: true,
-        },
-      });
+        {
+          entity: "ScheduleShift",
+          command: "create",
+          user: { id: "system", tenantId, role: "admin" },
+          body: {
+            tenantId,
+            scheduleId,
+            employeeId: mapping.convoyEmployeeId,
+            locationId,
+            shiftStart: new Date(nowstaShift.start_time),
+            shiftEnd: new Date(nowstaShift.end_time),
+            roleDuringShift: nowstaShift.role ?? "",
+            notes: nowstaShift.notes ?? "",
+          },
+        }
+      );
+      if (!shiftResult.ok) {
+        throw new Error(`Failed to create shift: ${shiftResult.message}`);
+      }
+      const newShiftId = (shiftResult.result as { id?: string }).id!;
 
       // Update sync record with convoy shift ID
       if (existingSync) {
@@ -361,7 +403,7 @@ async function processShift(
             },
           },
           data: {
-            convoyShiftId: newShift.id,
+            convoyShiftId: newShiftId,
             status: "synced",
             lastSyncedAt: new Date(),
             nowstaUpdatedAt,
@@ -372,7 +414,7 @@ async function processShift(
           data: {
             tenantId,
             nowstaShiftId: nowstaShift.id,
-            convoyShiftId: newShift.id,
+            convoyShiftId: newShiftId,
             nowstaEmployeeId: nowstaShift.employee_id,
             locationId,
             shiftStart: new Date(nowstaShift.start_time),
