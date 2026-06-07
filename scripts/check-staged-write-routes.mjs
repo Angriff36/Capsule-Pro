@@ -19,7 +19,7 @@ const ROUTE_FILE_RE = /^apps\/api\/app\/api\/.+\/route\.(ts|tsx|js|jsx)$/;
 const WRITE_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
 const ROUTE_MANIFEST_PATH = "manifest/runtime/routes.manifest.json";
 const INFRA_ALLOWLIST_PATH =
-  "scripts/manifest/write-route-infra-allowlist.json";
+  "manifest/governance/write-route-infra-allowlist.json";
 
 function runGit(args) {
   const result = spawnSync("git", args, { encoding: "utf8" });
