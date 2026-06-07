@@ -421,7 +421,7 @@
 
 ### Governance
 
-- **31 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 65 in 49 route files + server actions.
+- **29 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 65 in 49 route files + server actions.
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes (currently 56 governed-entity files). Removing one of two writes in a file does NOT decrement this count until ALL direct writes in that file are migrated. `updateAdminTaskStatus` still uses a direct write in `apps/app/app/(authenticated)/administrative/kanban/actions.ts`, so that file remains in the audit count despite `createAdminTask` being migrated.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
 - Invoice entity: ~~zero policies~~ **RESOLVED 2026-06-05 (Task 8.6)** — now has `default policy InvoiceDefaultAccess` bound to all commands
@@ -541,6 +541,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.2 batch 15: Admin chat threads + inventory items governance migration (v0.12.140)** | Admin chat: `POST/GET /api/administrative/chat/threads` — `database.adminChatThread.upsert` + `database.adminChatParticipant.upsert` → read-check + Manifest AdminChatThread.create / AdminChatParticipant.create. 3 route files (threads, [threadId], [threadId]/messages). Inventory items: `PUT /api/inventory/items/[id]` — `$executeRaw` COALESCE update → read-merge-write + Manifest InventoryItem.update (13 mutable fields). `DELETE /api/inventory/items/[id]` — `$executeRaw` soft-delete → Manifest InventoryItem.softDelete. All 7 dependency checks kept as pre-validation reads. New manifest source: `admin-chat-participant-rules.manifest` with `create` command + AdminChatParticipantCreated event. IR: 990 commands (+1), 970 events (+1). API+App typecheck 0, 2689 tests pass. Total: 64 mutate handlers in 48 route files migrated. |
 | 2026-06-07 | **ClientInteraction governance migration** | ClientInteraction followUpCompleted → governed complete command + softDelete command added. client-interaction-rules.manifest: added softDelete command + ClientInteractionSoftDeleted event. clients/actions.ts: followUpCompleted direct Prisma → runManifestCommand(ClientInteraction.complete). IR: 990 commands, 970 events. API typecheck 0, 2689 tests pass. |
 | 2026-06-07 | **FacilityAsset + ir-drift CI drift detection** | FacilityAsset.create governed + semantic IR drift detection script (Task 8.3 batch + Task 5.13). facilities/actions.ts: createFacilityAsset → runManifestCommand(FacilityAsset.create). NEW manifest/scripts/audit-ir-drift.mjs: uses upstream diffIR + classifyBreakingChanges for semantic IR diff with --strict CI gate. Reports to manifest/reports/ir-drift/. pnpm scripts: manifest:audit-ir-drift, manifest:audit-ir-drift:strict. API typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Task 8.3 batch 11: InventoryItem server actions governance migration** | `apps/app/app/(authenticated)/inventory/actions.ts` — 3 writes migrated (create/update/delete). Hard delete changed to `InventoryItem.softDelete`. Read functions switched from `tenantDatabase` to `database` with explicit `tenantId`. Outbox events replaced by Manifest runtime events. API+App typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Task 8.3 batch 12: WasteEntry server actions governance migration** | `apps/app/app/(authenticated)/kitchen/actions.ts` — 3 writes migrated (create/update/delete). `locationId` NOT in create params (parent-context inheritance from Event). `totalCost` auto-computed. `status` never set explicitly (self-transition bug avoidance). Hard delete changed to `WasteEntry.softDelete`. API+App typecheck 0, 2689 tests pass. |
 
 ---
 
@@ -1344,7 +1346,18 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - Manual outbox event persistence eliminated (runtime handles automatically)
     - Net: -245 LOC (128 insertions, 373 deletions)
     - app+api typecheck 0, 2689 tests pass
-  - **Total migrated across Task 8.3 batches:** 1 file with 6 handler migrations (menu server actions, batch 10), plus prior batches (events/BattleBoard create, Lead.create, AdminTask create/updateStatus, EmployeeAvailability create/batch/softDelete/update, EmailWorkflow CRUD, Facility create, FacilityArea create).
+  - **Progress 2026-06-07 (batch 11 — InventoryItem server actions):** `apps/app/app/(authenticated)/inventory/actions.ts` — 3 direct Prisma writes migrated to governed `runManifestCommand`:
+    - `createInventoryItem` → `InventoryItem.create`
+    - `updateInventoryItem` → `InventoryItem.update`
+    - `deleteInventoryItem` → `InventoryItem.softDelete` (hard delete changed to soft delete with reason/userId params)
+    - Read functions switched from `tenantDatabase` to `database` with explicit `tenantId`
+    - Manual outbox event persistence eliminated (Manifest runtime handles events automatically)
+  - **Progress 2026-06-07 (batch 12 — WasteEntry server actions):** `apps/app/app/(authenticated)/kitchen/actions.ts` — 3 direct Prisma writes migrated to governed `runManifestCommand`:
+    - `createWasteEntry` → `WasteEntry.create` (`locationId` NOT in create params — inherited from parent Event via parent-context propagation, Task 8.10)
+    - `updateWasteEntry` → `WasteEntry.update`
+    - `deleteWasteEntry` → `WasteEntry.softDelete` (hard delete changed to soft delete with reason/userId params)
+    - `totalCost` auto-computed from items (not passed as explicit param); `status` never set explicitly on create (self-transition bug avoidance per AdminTask.create pattern)
+  - **Total migrated across Task 8.3 batches:** 3 files with 12 handler migrations in recent batches (menu server actions batch 10: 6, InventoryItem batch 11: 3, WasteEntry batch 12: 3), plus prior batches (events/BattleBoard create, Lead.create, AdminTask create/updateStatus, EmployeeAvailability create/batch/softDelete/update, EmailWorkflow CRUD, Facility create, FacilityArea create, FacilityAsset create).
     - **⚠ `@db.Time` / `@db.Date` column coercion gotcha (reusable for any entity with time/date-only columns):** `GenericPrismaStore.buildPatch()` coerces string command params via `asNullableDate(v)` → `new Date(value)`. A bare `"HH:MM"` string produces an invalid Date → NULL → NOT-NULL constraint violation at write time. **Fix:** pass ISO strings built from `Date` objects: `new Date(1970,0,1,h,m).toISOString()` for time-only columns. `softDelete` is safe because `buildPatch` only writes the mutated `deletedAt` field, leaving existing Time/Date columns untouched. This applies to any entity whose Prisma model has `@db.Time(n)`, `@db.Date`, or `@db.Timetz` columns.
     - **Resolution path:** Task 0.4 IR/schema reconciliation + a dedicated schema-alignment pass per entity. Lead was the safe pick — full field alignment + working API-route precedent at `apps/api/app/api/lead/route.ts`. Venue is the proven template for CRM entities with full address fields + array tags.
 
