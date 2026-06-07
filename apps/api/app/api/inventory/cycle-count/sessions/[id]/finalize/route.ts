@@ -3,9 +3,14 @@
  *
  * POST /api/inventory/cycle-count/sessions/[sessionId]/finalize - Finalize a session
  *
- * Delegates session status mutation to manifest runtime (CycleCountSession.finalize).
- * Side effects (variance reports, inventory adjustments, audit log) remain in-route
- * pending migration to event handlers.
+ * All mutations run through governed Manifest runtime (constitution §3/§9):
+ * - VarianceReport.create (per record)
+ * - InventoryTransaction.create (for variance adjustments)
+ * - InventoryItem.adjust (quantity correction)
+ * - VarianceReport.review + approve (state machine: pending→reviewed→approved)
+ * - CycleCountSession.finalize (expanded command with summary fields)
+ * Reads (session/record/item lookups) bypass Manifest per constitution §10.
+ * CycleCountAuditLog.create remains direct Prisma — no Manifest entity exists.
  */
 
 import { auth } from "@repo/auth/server";
@@ -13,9 +18,10 @@ import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { InvariantError } from "@/app/lib/invariant";
-import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
-import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 
 function toNumber(value: { toNumber: () => number }): number {
   return value.toNumber();
@@ -31,132 +37,6 @@ function getAdjustmentType(variance: number): "increase" | "decrease" | "none" {
   return "none";
 }
 
-interface VarianceRecord {
-  id: string;
-  itemId: string;
-  itemNumber: string | null;
-  itemName: string | null;
-  expectedQuantity: { toNumber: () => number };
-  countedQuantity: { toNumber: () => number };
-  variance: { toNumber: () => number };
-  storageLocationId: string | null;
-}
-
-interface SessionInfo {
-  id: string;
-  sessionId: string;
-  status: string;
-  totalVariance: { toNumber: () => number };
-}
-
-function generateVarianceReport(
-  record: VarianceRecord,
-  tenantId: string,
-  session: SessionInfo
-) {
-  const expectedQuantity = toNumber(record.expectedQuantity);
-  const countedQuantity = toNumber(record.countedQuantity);
-  const variance = countedQuantity - expectedQuantity;
-  const variancePct =
-    expectedQuantity > 0 ? Math.abs((variance / expectedQuantity) * 100) : 0;
-  const accuracyScore =
-    expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
-
-  return {
-    tenantId,
-    sessionId: session.id,
-    reportType: "item_variance" as const,
-    itemId: record.itemId,
-    itemNumber: record.itemNumber ?? "",
-    itemName: record.itemName ?? "",
-    expectedQuantity,
-    countedQuantity,
-    variance,
-    variancePct,
-    accuracyScore,
-    status: "pending" as const,
-    adjustmentType: null,
-    adjustmentAmount: null,
-    adjustmentDate: null,
-    notes: null,
-    generatedAt: new Date(),
-  };
-}
-
-async function processInventoryAdjustments(
-  tenantId: string,
-  session: SessionInfo,
-  records: VarianceRecord[]
-) {
-  for (const record of records) {
-    const expectedQuantity = toNumber(record.expectedQuantity);
-    const countedQuantity = toNumber(record.countedQuantity);
-    const variance = countedQuantity - expectedQuantity;
-
-    if (variance === 0) {
-      continue;
-    }
-
-    // Find the inventory item
-    const inventoryItem = await database.inventoryItem.findFirst({
-      where: {
-        tenantId,
-        id: record.itemId,
-        deletedAt: null,
-      },
-    });
-
-    if (!inventoryItem) {
-      continue;
-    }
-
-    // Create inventory transaction
-    await database.inventoryTransaction.create({
-      data: {
-        tenantId,
-        itemId: record.itemId,
-        transactionType: "adjustment",
-        quantity: variance,
-        unit_cost: inventoryItem.unitCost,
-        reason: `Cycle count session ${session.sessionId}`,
-        reference: session.sessionId,
-        referenceType: "cycle_count",
-        referenceId: session.id,
-        storage_location_id: record.storageLocationId || undefined,
-      },
-    });
-
-    // Update inventory item quantity
-    await database.inventoryItem.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: record.itemId,
-        },
-      },
-      data: {
-        quantityOnHand: countedQuantity,
-      },
-    });
-
-    // Update variance report with adjustment details
-    await database.varianceReport.updateMany({
-      where: {
-        tenantId,
-        sessionId: session.id,
-        itemId: record.itemId,
-        deletedAt: null,
-      },
-      data: {
-        status: "approved",
-        adjustmentType: getAdjustmentType(variance),
-        adjustmentAmount: Math.abs(variance),
-        adjustmentDate: new Date(),
-      },
-    });
-  }
-}
-
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
@@ -164,13 +44,17 @@ interface RouteContext {
 /**
  * POST /api/inventory/cycle-count/sessions/[sessionId]/finalize - Finalize a session
  *
- * This endpoint:
- * 1. Generates variance reports for all items
- * 2. Creates inventory adjustments for variances
- * 3. Updates inventory item quantities
- * 4. Creates an audit log entry
- * 5. Marks the session as finalized (via manifest runtime)
+ * Governed flow:
+ * 1. Generate variance reports via VarianceReport.create (per record)
+ * 2. Create inventory adjustments via InventoryTransaction.create
+ * 3. Adjust inventory quantities via InventoryItem.adjust
+ * 4. Review + approve variance reports (state machine: pending→reviewed→approved)
+ * 5. Finalize session via CycleCountSession.finalize (status + summary fields)
+ * 6. Append audit log (direct Prisma — no Manifest entity)
  */
+
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const { orgId } = await auth();
@@ -183,7 +67,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { id: sessionId } = await context.params;
     const body = await request.json().catch(() => ({})) as Record<string, unknown>;
 
-    // Find the session by sessionId (not id)
+    // Find the session by sessionId (not id) — read, constitution §10
     const session = await database.cycleCountSession.findFirst({
       where: {
         tenantId: user.tenantId,
@@ -206,7 +90,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Fetch all records for this session
+    // Fetch all records for this session — read, constitution §10
     const records = await database.cycleCountRecord.findMany({
       where: {
         tenantId: user.tenantId,
@@ -227,76 +111,255 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const variancePercentage =
       totalExpected > 0 ? Math.abs((totalVariance / totalExpected) * 100) : 0;
 
-    // Generate variance reports
-    const varianceReports = records.map((record) =>
-      generateVarianceReport(record, user.tenantId, session)
-    );
+    // Governed: VarianceReport.create per record (constitution §3/§9)
+    for (const record of records) {
+      const expectedQuantity = toNumber(record.expectedQuantity);
+      const countedQuantity = toNumber(record.countedQuantity);
+      const variance = countedQuantity - expectedQuantity;
+      const variancePct =
+        expectedQuantity > 0 ? Math.abs((variance / expectedQuantity) * 100) : 0;
+      const accuracyScore =
+        expectedQuantity > 0 ? Math.max(0, 100 - variancePct) : 100;
 
-    await database.varianceReport.createMany({
-      data: varianceReports.map((report) => ({
-        tenantId: report.tenantId,
-        sessionId: report.sessionId,
-        reportType: report.reportType,
-        itemId: report.itemId,
-        itemNumber: report.itemNumber,
-        itemName: report.itemName,
-        expectedQuantity: report.expectedQuantity,
-        countedQuantity: report.countedQuantity,
-        variance: report.variance,
-        variancePct: report.variancePct,
-        accuracyScore: report.accuracyScore,
-        status: report.status,
-        adjustmentType: report.adjustmentType,
-        adjustmentAmount: report.adjustmentAmount,
-        adjustmentDate: report.adjustmentDate,
-        notes: report.notes,
-        generatedAt: report.generatedAt,
-      })),
-    });
-
-    // Process inventory adjustments for records with variance
-    await processInventoryAdjustments(user.tenantId, session, records);
-
-    // Delegate session finalization to manifest runtime
-    // NOTE: The manifest finalize command sets status="finalized", finalizedAt, approvedById.
-    // The totalVariance, variancePercentage, countedItems, totalItems, and notes updates
-    // are done via a direct Prisma write here because the manifest command only handles
-    // the status transition. TODO: Move these property mutations into the manifest command
-    // or an event handler once the manifest DSL supports computed property updates.
-    await database.cycleCountSession.update({
-      where: {
-        tenantId_id: {
-          tenantId: user.tenantId,
-          id: session.id,
+      const vrResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      },
-      data: {
-        totalVariance,
-        variancePercentage,
-        countedItems: records.length,
-        totalItems: records.length,
-        notes: (body.notes as string) || session.notes,
-      },
-    });
+        {
+          entity: "VarianceReport",
+          command: "create",
+          body: {
+            sessionId: session.id,
+            reportType: "item_variance",
+            itemId: record.itemId,
+            itemNumber: record.itemNumber ?? "",
+            itemName: record.itemName ?? "",
+            expectedQuantity,
+            countedQuantity,
+            variance,
+            variancePct,
+            accuracyScore,
+            notes: "",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        }
+      );
 
-    const manifestResult = await runManifestCommand({
-      entity: "CycleCountSession",
-      command: "finalize",
-      body: {
-        id: session.id,
-        tenantId: user.tenantId,
-        userId: user.id,
-      },
-      user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    });
-
-    // If manifest command returned an error, forward it
-    if (manifestResult.status >= 400) {
-      return manifestResult;
+      if (!vrResult.ok) {
+        log.error("Failed to create variance report", {
+          itemId: record.itemId,
+          error: vrResult.message,
+        });
+      }
     }
 
-    // Create audit log entry
-    // TODO: Migrate audit log to manifest event handler
+    // Governed: inventory adjustments for records with variance (constitution §3/§9)
+    for (const record of records) {
+      const expectedQuantity = toNumber(record.expectedQuantity);
+      const countedQuantity = toNumber(record.countedQuantity);
+      const variance = countedQuantity - expectedQuantity;
+
+      if (variance === 0) {
+        continue;
+      }
+
+      // Read inventory item — constitution §10
+      const inventoryItem = await database.inventoryItem.findFirst({
+        where: {
+          tenantId: user.tenantId,
+          id: record.itemId,
+          deletedAt: null,
+        },
+      });
+
+      if (!inventoryItem) {
+        continue;
+      }
+
+      // Governed: InventoryTransaction.create (constitution §3/§9)
+      const txResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "InventoryTransaction",
+          command: "create",
+          body: {
+            itemId: record.itemId,
+            transactionType: "adjustment",
+            quantity: variance,
+            unitCost: toNumber(inventoryItem.unitCost),
+            referenceType: "cycle_count",
+            referenceId: session.id,
+            reason: `Cycle count session ${session.sessionId}`,
+            notes: "",
+            employeeId: "",
+            storageLocationId: record.storageLocationId || "",
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        }
+      );
+
+      if (!txResult.ok) {
+        log.error("Failed to create inventory transaction", {
+          itemId: record.itemId,
+          error: txResult.message,
+        });
+      }
+
+      // Governed: InventoryItem.adjust (constitution §3/§9)
+      const currentOnHand = toNumber(inventoryItem.quantityOnHand);
+      const adjustmentDelta = countedQuantity - currentOnHand;
+
+      const adjustResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
+        },
+        {
+          entity: "InventoryItem",
+          command: "adjust",
+          body: {
+            quantity: adjustmentDelta,
+            reason: `Cycle count adjustment for session ${session.sessionId}`,
+            userId: user.id,
+          },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
+          instanceId: record.itemId,
+        }
+      );
+
+      if (!adjustResult.ok) {
+        log.error("Failed to adjust inventory item", {
+          itemId: record.itemId,
+          error: adjustResult.message,
+        });
+      }
+
+      // Governed: VarianceReport review + approve (state machine, constitution §3/§9)
+      const pendingReports = await database.varianceReport.findMany({
+        where: {
+          tenantId: user.tenantId,
+          sessionId: session.id,
+          itemId: record.itemId,
+          deletedAt: null,
+        },
+        select: { id: true, status: true },
+      });
+
+      const adjustmentType = getAdjustmentType(variance);
+
+      for (const report of pendingReports) {
+        if (report.status === "pending") {
+          const reviewResult = await runManifestCommandCore(
+            {
+              createRuntime: ({ user: u, entityName }) =>
+                createManifestRuntime({
+                  user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                  entityName,
+                }),
+            },
+            {
+              entity: "VarianceReport",
+              command: "review",
+              body: {
+                userId: user.id,
+                notes: "",
+              },
+              user: { id: user.id, tenantId: user.tenantId, role: user.role },
+              instanceId: report.id,
+            }
+          );
+
+          if (!reviewResult.ok) {
+            log.error("Failed to review variance report", {
+              reportId: report.id,
+              error: reviewResult.message,
+            });
+            continue;
+          }
+        }
+
+        if (report.status === "reviewed" || report.status === "pending") {
+          const approveResult = await runManifestCommandCore(
+            {
+              createRuntime: ({ user: u, entityName }) =>
+                createManifestRuntime({
+                  user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                  entityName,
+                }),
+            },
+            {
+              entity: "VarianceReport",
+              command: "approve",
+              body: {
+                userId: user.id,
+                adjustmentType,
+                adjustmentAmount: Math.abs(variance),
+              },
+              user: { id: user.id, tenantId: user.tenantId, role: user.role },
+              instanceId: report.id,
+            }
+          );
+
+          if (!approveResult.ok) {
+            log.error("Failed to approve variance report", {
+              reportId: report.id,
+              error: approveResult.message,
+            });
+          }
+        }
+      }
+    }
+
+    // Governed: CycleCountSession.finalize with summary fields (constitution §3/§9).
+    // The expanded finalize command now handles status + finalizedAt + approvedById +
+    // notes + totalVariance + variancePercentage + countedItems + totalItems.
+    const manifestResult = await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "CycleCountSession",
+        command: "finalize",
+        body: {
+          userId: user.id,
+          notes: (body.notes as string) || session.notes || "",
+          totalVariance,
+          variancePercentage,
+          countedItems: records.length,
+          totalItems: records.length,
+        },
+        user: { id: user.id, tenantId: user.tenantId, role: user.role },
+        instanceId: session.id,
+      }
+    );
+
+    // If manifest command returned an error, forward it
+    if (!manifestResult.ok) {
+      return NextResponse.json(
+        { message: manifestResult.message },
+        { status: manifestResult.httpStatus }
+      );
+    }
+
+    // CycleCountAuditLog has no Manifest entity — direct Prisma append-only.
+    // Low governance gap: no state transitions to enforce (infrastructure audit trail).
     await database.cycleCountAuditLog.create({
       data: {
         tenantId: user.tenantId,
