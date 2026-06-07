@@ -259,7 +259,28 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[proactive bridge @ 75% context — saved before compacting]
+Files (41):
+  packages/supplier-connectors/src/sync-service.ts (create)
+  packages/supplier-connectors/src/index.ts (edit)
+  apps/api/app/api/inventory/supplier-sync/route.ts (edit)
+  manifest/governance/baselines/direct-writes.json (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  manifest/source/payment-method-rules.manifest (edit)
+  manifest/source/admin-chat-participant-rules.manifest (edit)
+  manifest/source/crm-admin-extended-rules.manifest (edit)
+  manifest/source/events-extended-rules.manifest (edit)
+  manifest/source/bank-account-rules.manifest (edit)
+  manifest/source/labor-budget-rules.manifest (edit)
+  manifest/source/logistics-all-rules.manifest (edit)
+  manifest/source/vendor-catalog-rules.manifest (edit)
+  manifest/source/work-order-rules.manifest (edit)
+  manifest/source/equipment-rules.manifest (edit)
+  manifest/source/staff-performance-rules.manifest (edit)
+  manifest/source/ai-event-setup-rules.manifest (edit)
+  manifest/source/prep-comment-rules.manifest (edit)
+  manifest/source/staff-logistics-extended-rules.manifest (edit)
+  manifest/source/version-control-rules.manifest (edit)
+  ... +21 more
 
 # === END COGNILAYER ===
