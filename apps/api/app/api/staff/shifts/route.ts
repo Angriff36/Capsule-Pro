@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -37,84 +37,97 @@ export async function GET(request: Request) {
   const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
   const offset = (page - 1) * limit;
 
-  const [shifts, totalCount] = await Promise.all([
-    database.$queryRaw<
-      Array<{
-        id: string;
-        schedule_id: string;
-        employee_id: string;
-        employee_first_name: string | null;
-        employee_last_name: string | null;
-        employee_email: string;
-        employee_role: string;
-        location_id: string;
-        location_name: string;
-        shift_start: Date;
-        shift_end: Date;
-        role_during_shift: string | null;
-        notes: string | null;
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      Prisma.sql`
-        SELECT
-          ss.id,
-          ss.schedule_id,
-          ss.employee_id,
-          e.first_name AS employee_first_name,
-          e.last_name AS employee_last_name,
-          e.email AS employee_email,
-          e.role AS employee_role,
-          ss.location_id,
-          l.name AS location_name,
-          ss.shift_start,
-          ss.shift_end,
-          ss.role_during_shift,
-          ss.notes,
-          ss.created_at,
-          ss.updated_at
-        FROM tenant_staff.schedule_shifts ss
-        JOIN tenant_staff.employees e
-          ON e.tenant_id = ss.tenant_id
-         AND e.id = ss.employee_id
-        JOIN tenant.locations l
-          ON l.tenant_id = ss.tenant_id
-         AND l.id = ss.location_id
-        WHERE ss.tenant_id = ${tenantId}
-          AND ss.deleted_at IS NULL
-          ${startDate ? Prisma.sql`AND ss.shift_start >= ${new Date(startDate)}` : Prisma.empty}
-          ${endDate ? Prisma.sql`AND ss.shift_end <= ${new Date(endDate)}` : Prisma.empty}
-          ${employeeId ? Prisma.sql`AND ss.employee_id = ${employeeId}` : Prisma.empty}
-          ${locationId ? Prisma.sql`AND ss.location_id = ${locationId}` : Prisma.empty}
-          ${role ? Prisma.sql`AND ss.role_during_shift = ${role}` : Prisma.empty}
-        ORDER BY ss.shift_start ASC
-        LIMIT ${limit}
-        OFFSET ${offset}
-      `
-    ),
-    database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint
-        FROM tenant_staff.schedule_shifts ss
-        WHERE ss.tenant_id = ${tenantId}
-          AND ss.deleted_at IS NULL
-          ${startDate ? Prisma.sql`AND ss.shift_start >= ${new Date(startDate)}` : Prisma.empty}
-          ${endDate ? Prisma.sql`AND ss.shift_end <= ${new Date(endDate)}` : Prisma.empty}
-          ${employeeId ? Prisma.sql`AND ss.employee_id = ${employeeId}` : Prisma.empty}
-          ${locationId ? Prisma.sql`AND ss.location_id = ${locationId}` : Prisma.empty}
-          ${role ? Prisma.sql`AND ss.role_during_shift = ${role}` : Prisma.empty}
-      `
-    ),
+  const where = {
+    tenantId,
+    deletedAt: null,
+    ...(startDate ? { shift_start: { gte: new Date(startDate) } } : {}),
+    ...(endDate ? { shift_end: { lte: new Date(endDate) } } : {}),
+    ...(employeeId ? { employeeId } : {}),
+    ...(locationId ? { locationId } : {}),
+    ...(role ? { role_during_shift: role } : {}),
+  };
+
+  const [shiftRows, totalCount] = await Promise.all([
+    database.scheduleShift.findMany({
+      where,
+      orderBy: { shift_start: "asc" },
+      skip: offset,
+      take: limit,
+      select: {
+        id: true,
+        scheduleId: true,
+        employeeId: true,
+        locationId: true,
+        shift_start: true,
+        shift_end: true,
+        role_during_shift: true,
+        notes: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    }),
+    database.scheduleShift.count({ where }),
   ]);
+
+  const [employees, locations] = await Promise.all([
+    database.user.findMany({
+      where: {
+        tenantId,
+        id: { in: [...new Set(shiftRows.map((shift) => shift.employeeId))] },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+      },
+    }),
+    database.location.findMany({
+      where: {
+        tenantId,
+        id: { in: [...new Set(shiftRows.map((shift) => shift.locationId))] },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    }),
+  ]);
+
+  const employeesById = new Map(employees.map((employee) => [employee.id, employee]));
+  const locationsById = new Map(locations.map((location) => [location.id, location]));
+  const shifts = shiftRows.map((shift) => {
+    const employee = employeesById.get(shift.employeeId);
+    const location = locationsById.get(shift.locationId);
+    return {
+      id: shift.id,
+      schedule_id: shift.scheduleId,
+      employee_id: shift.employeeId,
+      employee_first_name: employee?.firstName ?? null,
+      employee_last_name: employee?.lastName ?? null,
+      employee_email: employee?.email ?? "",
+      employee_role: employee?.role ?? "",
+      location_id: shift.locationId,
+      location_name: location?.name ?? "",
+      shift_start: shift.shift_start,
+      shift_end: shift.shift_end,
+      role_during_shift: shift.role_during_shift,
+      notes: shift.notes,
+      created_at: shift.createdAt,
+      updated_at: shift.updatedAt,
+    };
+  });
 
   return NextResponse.json({
     shifts,
     pagination: {
       page,
       limit,
-      total: Number(totalCount[0].count),
-      totalPages: Math.ceil(Number(totalCount[0].count) / limit),
+      total: totalCount,
+      totalPages: Math.ceil(totalCount / limit),
     },
   });
 }

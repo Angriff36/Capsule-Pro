@@ -200,6 +200,8 @@ export const database: Record<string, unknown> = {
   // Time tracking models
   timeEntry: createMockModel(),
   employeeTimeOffRequest: createMockModel(),
+  employeeAvailability: createMockModel(),
+  employeeCertification: createMockModel(),
   // Role policy model
   rolePolicy: createMockModel(),
 };

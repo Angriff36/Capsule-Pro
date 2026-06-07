@@ -10,11 +10,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 import type { FSAStatus, ItemCategory } from "../items/types";
 import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 
@@ -120,15 +122,40 @@ export async function POST(request: NextRequest) {
     }
 
     if (body.action === "delete") {
-      // Soft-delete all items
-      await database.inventoryItem.updateMany({
-        where: {
-          tenantId,
-          id: { in: ids },
-          deletedAt: null,
-        },
-        data: { deletedAt: new Date() },
-      });
+      // Soft-delete all items via governed Manifest runtime
+      const user = await resolveCurrentUser(request);
+      const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
+      let failCount = 0;
+
+      for (const id of ids) {
+        const result = await runManifestCommandCore(
+          {
+            createRuntime: ({ user: u, entityName }) =>
+              createManifestRuntime({
+                user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                entityName,
+              }),
+          },
+          {
+            entity: "InventoryItem",
+            command: "softDelete",
+            body: { id },
+            instanceId: id,
+            user: userCtx,
+          }
+        );
+        if (!result.ok) failCount++;
+      }
+
+      if (failCount > 0) {
+        return NextResponse.json(
+          {
+            message: `Failed to delete ${failCount} of ${ids.length} items`,
+            deleted: ids.length - failCount,
+          },
+          { status: 207 }
+        );
+      }
 
       return NextResponse.json({
         success: true,
@@ -154,33 +181,94 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Build update data dynamically, only including provided fields
-      const data: Record<string, unknown> = {
-        updatedAt: new Date(),
-      };
-      if (updates.category !== undefined) data.category = updates.category;
-      if (updates.fsa_status !== undefined)
-        data.fsa_status = updates.fsa_status;
-      if (updates.tags !== undefined) data.tags = updates.tags;
-      if (updates.unit_cost !== undefined) data.unitCost = updates.unit_cost;
-      if (updates.reorder_level !== undefined)
-        data.reorder_level = updates.reorder_level;
-
-      if (Object.keys(data).length === 1) {
+      // Verify at least one update field was provided
+      const hasUpdates =
+        updates.category !== undefined ||
+        updates.fsa_status !== undefined ||
+        updates.tags !== undefined ||
+        updates.unit_cost !== undefined ||
+        updates.reorder_level !== undefined;
+      if (!hasUpdates) {
         return NextResponse.json(
           { message: "No valid updates provided" },
           { status: 400 }
         );
       }
 
-      await database.inventoryItem.updateMany({
-        where: {
-          tenantId,
-          id: { in: ids },
-          deletedAt: null,
+      // Batch update via governed Manifest runtime (one command per item)
+      const user = await resolveCurrentUser(request);
+      const userCtx = { id: user.id, tenantId: user.tenantId, role: user.role };
+      const currentItems = await database.inventoryItem.findMany({
+        where: { tenantId, id: { in: ids }, deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          category: true,
+          unitOfMeasure: true,
+          unitCost: true,
+          quantityOnHand: true,
+          parLevel: true,
+          reorder_level: true,
+          supplierId: true,
+          tags: true,
+          fsa_status: true,
+          fsa_temp_logged: true,
+          fsa_allergen_info: true,
+          fsa_traceable: true,
         },
-        data,
       });
+
+      let failCount = 0;
+      for (const item of currentItems) {
+        // Merge partial updates over current values
+        const cmdBody: Record<string, unknown> = {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          category: updates.category !== undefined ? updates.category : item.category,
+          unitOfMeasure: item.unitOfMeasure,
+          unitCost: updates.unit_cost !== undefined ? updates.unit_cost : item.unitCost,
+          quantityOnHand: item.quantityOnHand,
+          parLevel: item.parLevel,
+          reorder_level: updates.reorder_level !== undefined ? updates.reorder_level : item.reorder_level,
+          supplierId: item.supplierId,
+          tags: updates.tags !== undefined ? updates.tags.join(",") : item.tags,
+          fsa_status: updates.fsa_status !== undefined ? updates.fsa_status : item.fsa_status,
+          fsa_temp_logged: item.fsa_temp_logged,
+          fsa_allergen_info: item.fsa_allergen_info,
+          fsa_traceable: item.fsa_traceable,
+        };
+
+        const result = await runManifestCommandCore(
+          {
+            createRuntime: ({ user: u, entityName }) =>
+              createManifestRuntime({
+                user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                entityName,
+              }),
+          },
+          {
+            entity: "InventoryItem",
+            command: "update",
+            body: cmdBody,
+            instanceId: item.id,
+            user: userCtx,
+          }
+        );
+        if (!result.ok) failCount++;
+      }
+
+      if (failCount > 0) {
+        return NextResponse.json(
+          {
+            message: `Failed to update ${failCount} of ${ids.length} items`,
+            updated: ids.length - failCount,
+            updates,
+          },
+          { status: 207 }
+        );
+      }
 
       return NextResponse.json({
         success: true,

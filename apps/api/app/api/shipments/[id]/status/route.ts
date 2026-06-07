@@ -11,8 +11,8 @@
  *   cancelled    -> cancel
  *
  * Inventory side effects (reservation on prepare, receipt on deliver, reversal
- * on cancel) remain as direct DB operations — they mutate InventoryItem and
- * InventoryTransaction, which are separate entities from Shipment.
+ * on cancel) are governed via Manifest runtime — InventoryTransaction.create and
+ * InventoryItem.adjust commands.
  */
 
 import { auth } from "@repo/auth/server";
@@ -211,7 +211,7 @@ async function fetchShipmentItems(
 }
 
 /**
- * Creates an inventory transaction for a received shipment item
+ * Creates an inventory transaction for a received shipment item (governed via Manifest runtime)
  */
 async function createInventoryTransaction(
   tenantId: string,
@@ -220,57 +220,59 @@ async function createInventoryTransaction(
   goodQuantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
-  await database.inventoryTransaction.create({
-    data: {
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
       tenantId,
       itemId: item.item_id,
       transactionType: TRANSACTION_TYPE_PURCHASE,
-      quantity: new Prisma.Decimal(goodQuantity),
-      unit_cost: unitCost,
-      total_cost: unitCost.mul(goodQuantity),
-      reference: shipmentNumber,
+      quantity: goodQuantity,
+      unitCost: item.unit_cost ?? 0,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      reason: "shipment_receipt",
       notes:
         `Received from shipment ${shipmentNumber}` +
         (item.lot_number ? ` (Lot: ${item.lot_number})` : "") +
         (item.expiration_date
           ? ` (Expires: ${item.expiration_date.toISOString().split("T")[0]})`
           : ""),
-      employee_id: userId,
-      referenceType: "shipment",
-      referenceId: shipmentId,
-      storage_location_id: locationId,
-      reason: "shipment_receipt",
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
     },
+    user: userContext,
   });
 }
 
 /**
- * Updates inventory item quantity on hand
+ * Updates inventory item quantity on hand (governed via Manifest adjust command)
  */
 async function updateInventoryQuantity(
   tenantId: string,
   itemId: string,
-  goodQuantity: number
+  goodQuantity: number,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.inventoryItem.updateMany({
-    where: {
-      tenantId,
+  await runManifestCommand({
+    entity: "InventoryItem",
+    command: "adjust",
+    body: {
       id: itemId,
-      deletedAt: null,
+      tenantId,
+      quantity: goodQuantity,
+      reason: "shipment_receipt",
+      userId: userContext.id,
     },
-    data: {
-      quantityOnHand: {
-        increment: new Prisma.Decimal(goodQuantity),
-      },
-    },
+    user: userContext,
   });
 }
 
 /**
- * Creates an inventory reservation transaction for an outgoing shipment item
+ * Creates an inventory reservation transaction for an outgoing shipment item (governed via Manifest runtime)
  */
 async function createReservationTransaction(
   tenantId: string,
@@ -279,49 +281,51 @@ async function createReservationTransaction(
   quantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
-  await database.inventoryTransaction.create({
-    data: {
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
       tenantId,
       itemId: item.item_id,
       transactionType: TRANSACTION_TYPE_TRANSFER,
-      quantity: new Prisma.Decimal(-quantity),
-      unit_cost: unitCost,
-      total_cost: unitCost.mul(-quantity),
-      reference: shipmentNumber,
+      quantity: -quantity,
+      unitCost: item.unit_cost ?? 0,
+      referenceType: "shipment",
+      referenceId: shipmentId,
+      reason: "shipment_preparation",
       notes:
         `Reserved for outgoing shipment ${shipmentNumber}` +
         (item.lot_number ? ` (Lot: ${item.lot_number})` : ""),
-      employee_id: userId,
-      referenceType: "shipment",
-      referenceId: shipmentId,
-      storage_location_id: locationId,
-      reason: "shipment_preparation",
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
     },
+    user: userContext,
   });
 }
 
 /**
- * Reduces inventory item quantity on hand for outgoing shipments
+ * Reduces inventory item quantity on hand for outgoing shipments (governed via Manifest adjust command)
  */
 async function reduceInventoryQuantity(
   tenantId: string,
   itemId: string,
-  quantity: number
+  quantity: number,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  await database.inventoryItem.updateMany({
-    where: {
-      tenantId,
+  await runManifestCommand({
+    entity: "InventoryItem",
+    command: "adjust",
+    body: {
       id: itemId,
-      deletedAt: null,
+      tenantId,
+      quantity: -quantity,
+      reason: "shipment_preparation",
+      userId: userContext.id,
     },
-    data: {
-      quantityOnHand: {
-        decrement: new Prisma.Decimal(quantity),
-      },
-    },
+    user: userContext,
   });
 }
 
@@ -402,7 +406,8 @@ async function processPreparationInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -420,15 +425,16 @@ async function processPreparationInventory(
       quantityToReserve,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve);
+    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve, userContext);
   }
 }
 
 /**
- * Creates a reversal transaction when a shipment is cancelled during preparation
+ * Creates a reversal transaction when a shipment is cancelled during preparation (governed via Manifest runtime)
  */
 async function createReversalTransaction(
   tenantId: string,
@@ -437,25 +443,26 @@ async function createReversalTransaction(
   quantity: number,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
-  const unitCost = new Prisma.Decimal(item.unit_cost ?? 0);
-  await database.inventoryTransaction.create({
-    data: {
+  await runManifestCommand({
+    entity: "InventoryTransaction",
+    command: "create",
+    body: {
       tenantId,
       itemId: item.item_id,
       transactionType: TRANSACTION_TYPE_TRANSFER,
-      quantity: new Prisma.Decimal(quantity),
-      unit_cost: unitCost,
-      total_cost: unitCost.mul(quantity),
-      reference: shipmentNumber,
-      notes: `Reversal: Cancelled shipment ${shipmentNumber}`,
-      employee_id: userId,
+      quantity: quantity,
+      unitCost: item.unit_cost ?? 0,
       referenceType: "shipment",
       referenceId: shipmentId,
-      storage_location_id: locationId,
       reason: "shipment_cancellation",
+      notes: `Reversal: Cancelled shipment ${shipmentNumber}`,
+      employeeId: userId ?? "",
+      storageLocationId: locationId ?? "",
     },
+    user: userContext,
   });
 }
 
@@ -468,7 +475,8 @@ async function processCancellationInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -486,10 +494,11 @@ async function processCancellationInventory(
       quantityToRestore,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore);
+    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore, userContext);
   }
 }
 
@@ -501,7 +510,8 @@ async function processDeliveryInventory(
   shipmentId: string,
   shipmentNumber: string,
   locationId: string | null,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
@@ -525,10 +535,11 @@ async function processDeliveryInventory(
       goodQuantity,
       shipmentNumber,
       locationId,
-      userId
+      userId,
+      userContext
     );
 
-    await updateInventoryQuantity(tenantId, item.item_id, goodQuantity);
+    await updateInventoryQuantity(tenantId, item.item_id, goodQuantity, userContext);
   }
 }
 
@@ -539,7 +550,8 @@ async function handleInventoryOnDelivery(
   updated: Shipment,
   previousStatus: string,
   tenantId: string,
-  shipmentId: string
+  shipmentId: string,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   if (updated.status !== "delivered" || previousStatus === "delivered") {
     return;
@@ -551,7 +563,8 @@ async function handleInventoryOnDelivery(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      updated.deliveredBy ?? updated.receivedBy ?? null
+      updated.deliveredBy ?? updated.receivedBy ?? null,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to update inventory for delivered shipment", {
@@ -570,7 +583,8 @@ async function handleInventoryOnPreparation(
   previousStatus: string,
   tenantId: string,
   shipmentId: string,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   // Only process when entering "preparing" status
   if (updated.status !== "preparing" || previousStatus === "preparing") {
@@ -588,7 +602,8 @@ async function handleInventoryOnPreparation(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      userId
+      userId,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to reserve inventory for preparing shipment", {
@@ -607,7 +622,8 @@ async function handleInventoryOnCancellation(
   previousStatus: string,
   tenantId: string,
   shipmentId: string,
-  userId: string | null
+  userId: string | null,
+  userContext: { id: string; tenantId: string; role: string }
 ): Promise<void> {
   // Only process when entering "cancelled" status
   if (updated.status !== "cancelled") {
@@ -630,7 +646,8 @@ async function handleInventoryOnCancellation(
       shipmentId,
       updated.shipmentNumber,
       updated.locationId,
-      userId
+      userId,
+      userContext
     );
   } catch (inventoryError) {
     log.error("Failed to reverse inventory for cancelled shipment", {
@@ -772,7 +789,8 @@ export async function POST(
     }
 
     // Handle inventory updates on delivery
-    await handleInventoryOnDelivery(updated, existing.status, tenantId, id);
+    const userContext = { id: user.id, tenantId: user.tenantId, role: user.role };
+    await handleInventoryOnDelivery(updated, existing.status, tenantId, id, userContext);
 
     // Handle inventory reservation on preparation (outgoing shipments)
     await handleInventoryOnPreparation(
@@ -780,7 +798,8 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      user.id
+      user.id,
+      userContext
     );
 
     // Handle inventory reversal on cancellation
@@ -789,7 +808,8 @@ export async function POST(
       existing.status,
       tenantId,
       id,
-      user.id
+      user.id,
+      userContext
     );
 
     // Fire-and-forget webhook dispatch for shipment status change

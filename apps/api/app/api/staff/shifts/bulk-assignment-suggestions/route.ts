@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -61,40 +61,31 @@ export const POST = withRateLimit(
         });
       }
 
-      // Get all shift details using raw query
+      // Get all shift details.
       const shiftIds = shifts.map((s) => s.shiftId);
-      const shiftsFromDb = await database.$queryRaw<
-        Array<{
-          tenant_id: string;
-          id: string;
-          schedule_id: string;
-          location_id: string;
-          shift_start: Date;
-          shift_end: Date;
-          role_during_shift: string | null;
-        }>
-      >(Prisma.sql`
-        SELECT
-          tenant_id,
-          id,
-          schedule_id,
-          location_id,
-          shift_start,
-          shift_end,
-          role_during_shift
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND id = ANY(${shiftIds})
-          AND deleted_at IS NULL
-      `);
+      const shiftsFromDb = await database.scheduleShift.findMany({
+        where: {
+          tenantId,
+          id: { in: shiftIds },
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          scheduleId: true,
+          locationId: true,
+          shift_start: true,
+          shift_end: true,
+          role_during_shift: true,
+        },
+      });
 
       // Build requirements
       const requirements: ShiftRequirement[] = shiftsFromDb.map((shift) => {
         const requestShift = shifts.find((s) => s.shiftId === shift.id);
         return {
           shiftId: shift.id,
-          scheduleId: shift.schedule_id,
-          locationId: requestShift?.locationId || shift.location_id || "",
+          scheduleId: shift.scheduleId,
+          locationId: requestShift?.locationId || shift.locationId || "",
           shiftStart: shift.shift_start,
           shiftEnd: shift.shift_end,
           roleDuringShift: shift.role_during_shift || undefined,
@@ -161,37 +152,28 @@ export const GET = withRateLimit(
     const endDate = searchParams.get("endDate");
 
     try {
-      // Get open shifts (shifts without assigned employees) using raw query
-      const openShifts = await database.$queryRaw<
-        Array<{
-          tenant_id: string;
-          id: string;
-          schedule_id: string;
-          location_id: string;
-          shift_start: Date;
-          shift_end: Date;
-          role_during_shift: string | null;
-        }>
-      >(Prisma.sql`
-        SELECT
-          tenant_id,
-          id,
-          schedule_id,
-          location_id,
-          shift_start,
-          shift_end,
-          role_during_shift
-        FROM tenant_staff.schedule_shifts
-        WHERE tenant_id = ${tenantId}
-          AND deleted_at IS NULL
-          AND employee_id IS NULL
-          ${scheduleId ? Prisma.sql`AND schedule_id = ${scheduleId}` : Prisma.empty}
-          ${locationId ? Prisma.sql`AND location_id = ${locationId}` : Prisma.empty}
-          ${startDate ? Prisma.sql`AND shift_start >= ${new Date(startDate)}` : Prisma.empty}
-          ${endDate ? Prisma.sql`AND shift_end <= ${new Date(endDate)}` : Prisma.empty}
-        ORDER BY shift_start ASC
-        LIMIT 50
-      `);
+      // Get open shifts (shifts without assigned employees).
+      const openShifts = await database.scheduleShift.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          employeeId: null as unknown as string,
+          ...(scheduleId ? { scheduleId } : {}),
+          ...(locationId ? { locationId } : {}),
+          ...(startDate ? { shift_start: { gte: new Date(startDate) } } : {}),
+          ...(endDate ? { shift_end: { lte: new Date(endDate) } } : {}),
+        },
+        orderBy: { shift_start: "asc" },
+        take: 50,
+        select: {
+          id: true,
+          scheduleId: true,
+          locationId: true,
+          shift_start: true,
+          shift_end: true,
+          role_during_shift: true,
+        },
+      });
 
       if (openShifts.length === 0) {
         return NextResponse.json({
@@ -208,8 +190,8 @@ export const GET = withRateLimit(
       // Build requirements
       const requirements: ShiftRequirement[] = openShifts.map((shift) => ({
         shiftId: shift.id,
-        scheduleId: shift.schedule_id,
-        locationId: locationId || shift.location_id || "",
+        scheduleId: shift.scheduleId,
+        locationId: locationId || shift.locationId || "",
         shiftStart: shift.shift_start,
         shiftEnd: shift.shift_end,
         roleDuringShift: shift.role_during_shift || undefined,

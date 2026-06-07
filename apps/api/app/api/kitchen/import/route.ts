@@ -9,11 +9,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { parseError as parseErrorToMessage } from "@repo/observability/error";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // ═══════════════════════════════════════════════════════════════════════
 // Types
@@ -138,46 +140,84 @@ async function importRecipes(
     }
 
     try {
-      // Create the recipe
-      const recipe = await database.recipe.create({
-        data: {
-          tenantId,
-          name,
-          category: trimOpt(row.category) ?? undefined,
-          cuisineType: trimOpt(row.cuisine_type) ?? undefined,
-          description: trimOpt(row.description) ?? undefined,
-          tags: parseListOpt(row.tags),
+      // Create the recipe (governed)
+      const recipeResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "Recipe",
+          command: "create",
+          user: { id: userId, tenantId, role: "admin" },
+          body: {
+            tenantId,
+            name,
+            category: trimOpt(row.category) ?? "",
+            cuisineType: trimOpt(row.cuisine_type) ?? "",
+            description: trimOpt(row.description) ?? "",
+            tags: parseListOpt(row.tags),
+          },
+        }
+      );
 
-      // Create version 1
+      if (!recipeResult.ok) {
+        throw new Error(
+          `Failed to create Recipe via Manifest: ${recipeResult.message}`
+        );
+      }
+
+      const recipeId = (recipeResult.result as { id?: string }).id!;
+
+      // Create version 1 (governed)
       const yieldQty = parseDecimalOpt(row.yield_quantity) ?? 1;
       const yieldUnitId = parseIntOpt(row.yield_unit) ?? 1; // default to "servings" unit 1
       const prepTime = parseIntOpt(row.prep_time_minutes);
       const cookTime = parseIntOpt(row.cook_time_minutes);
       const difficultyLevel = parseIntOpt(row.difficulty_level);
 
-      await database.recipeVersion.create({
-        data: {
-          tenantId,
-          recipeId: recipe.id,
-          name: row.version_name?.trim() || name,
-          versionNumber: 1,
-          yieldQuantity: yieldQty,
-          yieldUnitId,
-          yieldDescription: trimOpt(row.yield_description) ?? undefined,
-          prepTimeMinutes: prepTime,
-          cookTimeMinutes: cookTime,
-          restTimeMinutes: parseIntOpt(row.rest_time_minutes),
-          difficultyLevel,
-          instructions: trimOpt(row.instructions) ?? undefined,
-          notes: trimOpt(row.notes) ?? undefined,
-          category: trimOpt(row.category) ?? undefined,
-          cuisineType: trimOpt(row.cuisine_type) ?? undefined,
-          description: trimOpt(row.description) ?? undefined,
-          tags: parseListOpt(row.tags),
+      const versionResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "RecipeVersion",
+          command: "create",
+          user: { id: userId, tenantId, role: "admin" },
+          body: {
+            tenantId,
+            recipeId,
+            name: row.version_name?.trim() || name,
+            versionNumber: 1,
+            yieldQuantity: yieldQty,
+            yieldUnitId,
+            yieldDescription: trimOpt(row.yield_description) ?? "",
+            prepTimeMinutes: prepTime ?? 0,
+            cookTimeMinutes: cookTime ?? 0,
+            restTimeMinutes: parseIntOpt(row.rest_time_minutes) ?? 0,
+            difficultyLevel: difficultyLevel ?? 1,
+            instructions: trimOpt(row.instructions) ?? "",
+            notes: trimOpt(row.notes) ?? "",
+            category: trimOpt(row.category) ?? "",
+            cuisineType: trimOpt(row.cuisine_type) ?? "",
+            description: trimOpt(row.description) ?? "",
+            tags: parseListOpt(row.tags).join(";"),
+          },
+        }
+      );
+
+      if (!versionResult.ok) {
+        throw new Error(
+          `Failed to create RecipeVersion via Manifest: ${versionResult.message}`
+        );
+      }
 
       summary.imported++;
       summary.created.push(`Recipe: ${name}`);
@@ -245,30 +285,48 @@ async function importDishes(
       const pricePerPerson = parseDecimalOpt(row.price_per_person);
       const costPerPerson = parseDecimalOpt(row.cost_per_person);
 
-      await database.dish.create({
-        data: {
-          tenantId,
-          recipeId,
-          name,
-          description: trimOpt(row.description) ?? undefined,
-          category: trimOpt(row.category) ?? undefined,
-          serviceStyle: trimOpt(row.service_style) ?? undefined,
-          portionSizeDescription:
-            trimOpt(row.portion_size_description) ?? undefined,
-          dietaryTags: parseListOpt(row.dietary_tags),
-          allergens: parseListOpt(row.allergens),
-          pricePerPerson:
-            pricePerPerson != null
-              ? new Prisma.Decimal(pricePerPerson)
-              : undefined,
-          costPerPerson:
-            costPerPerson != null
-              ? new Prisma.Decimal(costPerPerson)
-              : undefined,
-          minPrepLeadDays: parseIntOpt(row.min_prep_lead_days) ?? 0,
-          maxPrepLeadDays: parseIntOpt(row.max_prep_lead_days) ?? undefined,
+      const dishResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "Dish",
+          command: "create",
+          user: { id: _userId, tenantId, role: "admin" },
+          body: {
+            tenantId,
+            recipeId,
+            name,
+            description: trimOpt(row.description) ?? "",
+            category: trimOpt(row.category) ?? "",
+            serviceStyle: trimOpt(row.service_style) ?? "",
+            portionSizeDescription:
+              trimOpt(row.portion_size_description) ?? "",
+            dietaryTags: parseListOpt(row.dietary_tags),
+            allergens: parseListOpt(row.allergens),
+            pricePerPerson:
+              pricePerPerson != null
+                ? new Prisma.Decimal(pricePerPerson).toFixed(2)
+                : "0.00",
+            costPerPerson:
+              costPerPerson != null
+                ? new Prisma.Decimal(costPerPerson).toFixed(2)
+                : "0.00",
+            minPrepLeadDays: parseIntOpt(row.min_prep_lead_days) ?? 0,
+            maxPrepLeadDays: parseIntOpt(row.max_prep_lead_days) ?? 0,
+          },
+        }
+      );
+
+      if (!dishResult.ok) {
+        throw new Error(
+          `Failed to create Dish via Manifest: ${dishResult.message}`
+        );
+      }
 
       summary.imported++;
       summary.created.push(`Dish: ${name}`);
@@ -332,19 +390,39 @@ async function importPrepLists(
         listRows[0]?.dietary_restrictions
       );
 
-      const prepList = await database.prepList.create({
-        data: {
-          tenantId,
-          eventId: eventId ?? "00000000-0000-0000-0000-000000000000", // placeholder
-          name: listName,
-          batchMultiplier,
-          dietaryRestrictions,
-          status: "draft",
-          totalItems: listRows.length,
+      const prepListResult = await runManifestCommandCore(
+        {
+          createRuntime: ({ user: u, entityName }) =>
+            createManifestRuntime({
+              user: { id: u.id, tenantId: u.tenantId, role: u.role },
+              entityName,
+            }),
         },
-      });
+        {
+          entity: "PrepList",
+          command: "create",
+          user: { id: _userId, tenantId, role: "admin" },
+          body: {
+            tenantId,
+            eventId: eventId ?? "00000000-0000-0000-0000-000000000000",
+            name: listName,
+            batchMultiplier: batchMultiplier.toFixed(2),
+            dietaryRestrictions,
+            status: "draft",
+            totalItems: listRows.length,
+          },
+        }
+      );
 
-      // Create PrepListItems
+      if (!prepListResult.ok) {
+        throw new Error(
+          `Failed to create PrepList via Manifest: ${prepListResult.message}`
+        );
+      }
+
+      const prepListId = (prepListResult.result as { id?: string }).id!;
+
+      // Create PrepListItems (governed)
       for (let i = 0; i < listRows.length; i++) {
         const row = listRows[i];
         const itemName = trimOpt(row.item_name) ?? `Item ${i + 1}`;
@@ -352,22 +430,41 @@ async function importPrepLists(
         const baseQty = parseDecimalOpt(row.base_quantity) ?? 1;
         const baseUnit = trimOpt(row.base_unit) ?? "ea";
 
-        await database.prepListItem.create({
-          data: {
-            tenantId,
-            prepListId: prepList.id,
-            stationName,
-            ingredientId: "00000000-0000-0000-0000-000000000000", // placeholder
-            ingredientName: itemName,
-            baseQuantity: baseQty,
-            baseUnit,
-            scaledQuantity: baseQty * batchMultiplier,
-            scaledUnit: baseUnit,
-            preparationNotes: trimOpt(row.preparation_notes) ?? undefined,
-            dishName: trimOpt(row.dish_name) ?? undefined,
-            sortOrder: i,
+        const itemResult = await runManifestCommandCore(
+          {
+            createRuntime: ({ user: u, entityName }) =>
+              createManifestRuntime({
+                user: { id: u.id, tenantId: u.tenantId, role: u.role },
+                entityName,
+              }),
           },
-        });
+          {
+            entity: "PrepListItem",
+            command: "create",
+            user: { id: _userId, tenantId, role: "admin" },
+            body: {
+              tenantId,
+              prepListId,
+              stationId: "",
+              stationName,
+              ingredientId: "00000000-0000-0000-0000-000000000000",
+              ingredientName: itemName,
+              baseQuantity: baseQty,
+              baseUnit,
+              scaledQuantity: baseQty * batchMultiplier,
+              scaledUnit: baseUnit,
+              preparationNotes: trimOpt(row.preparation_notes) ?? "",
+              dishName: trimOpt(row.dish_name) ?? "",
+              sortOrder: i,
+            },
+          }
+        );
+
+        if (!itemResult.ok) {
+          throw new Error(
+            `Failed to create PrepListItem via Manifest: ${itemResult.message}`
+          );
+        }
       }
 
       summary.imported += listRows.length;

@@ -1,8 +1,40 @@
 import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+/** User context required by Manifest runtime commands */
+type ManifestUser = { id: string; tenantId: string; role: string };
+
+/**
+ * Run a Manifest command internally (not returning HTTP Response).
+ * Returns the created/mutated entity data including `id`.
+ */
+async function execCommand(
+  entity: string,
+  command: string,
+  body: Record<string, unknown>,
+  user: ManifestUser,
+  instanceId?: string
+) {
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    { entity, command, body, user, instanceId }
+  );
+  if (!result.ok) {
+    throw new Error(`Manifest ${entity}.${command} failed: ${result.message}`);
+  }
+  return result.result as Record<string, unknown>;
+}
 
 interface SyncErrorDetail {
   externalId: string;
@@ -29,6 +61,13 @@ export async function POST(request: NextRequest) {
     if (!tenantId) {
       return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
+
+    const currentUser = await resolveCurrentUser(request);
+    const manifestUser: ManifestUser = {
+      id: currentUser.id,
+      tenantId: currentUser.tenantId,
+      role: currentUser.role,
+    };
 
     const body = await request.json();
     const { provider, startDate, endDate } = body as {
@@ -98,7 +137,8 @@ export async function POST(request: NextRequest) {
           sync.calendarId || "primary",
           start,
           end,
-          tenantId
+          tenantId,
+          manifestUser
         );
         importedCount = result.imported;
         errorCount = result.errors;
@@ -109,7 +149,8 @@ export async function POST(request: NextRequest) {
           sync.calendarId || "primary",
           start,
           end,
-          tenantId
+          tenantId,
+          manifestUser
         );
         importedCount = result.imported;
         errorCount = result.errors;
@@ -172,7 +213,8 @@ async function syncGoogleCalendar(
   calendarId: string,
   start: Date,
   end: Date,
-  _tenantId: string
+  _tenantId: string,
+  manifestUser: ManifestUser
 ): Promise<{
   imported: number;
   errors: number;
@@ -227,27 +269,38 @@ async function syncGoogleCalendar(
         },
       });
 
-      const eventData = {
+      const eventPayload: Record<string, unknown> = {
+        tenantId: _tenantId,
         title,
         eventDate,
         eventType,
-        status: "confirmed" as const,
-        venueName: event.location || null,
+        status: "confirmed",
+        venueName: event.location || "",
         guestCount: event.attendees?.length || 0,
+        // Required IR params with sensible defaults for external sync
+        clientId: "",
+        eventNumber: `ext-google-${event.id || Date.now()}`,
+        venueAddress: "",
+        notes: "",
+        tags: [],
+        budget: 0,
+        ticketPrice: 0,
+        ticketTier: "",
+        eventFormat: "",
+        accessibilityOptions: [],
+        featuredMediaUrl: "",
       };
 
       if (existing) {
-        await database.event.update({
-          where: { tenantId_id: { tenantId: _tenantId, id: existing.id } },
-          data: eventData,
-        });
+        await execCommand(
+          "Event",
+          "update",
+          { ...eventPayload, id: existing.id },
+          manifestUser,
+          existing.id
+        );
       } else {
-        await database.event.create({
-          data: {
-            tenantId: _tenantId,
-            ...eventData,
-          },
-        });
+        await execCommand("Event", "create", eventPayload, manifestUser);
       }
       imported++;
     } catch (error) {
@@ -272,7 +325,8 @@ async function syncOutlookCalendar(
   _calendarId: string,
   start: Date,
   end: Date,
-  _tenantId: string
+  _tenantId: string,
+  manifestUser: ManifestUser
 ): Promise<{
   imported: number;
   errors: number;
@@ -322,27 +376,38 @@ async function syncOutlookCalendar(
         },
       });
 
-      const eventData = {
+      const eventPayload: Record<string, unknown> = {
+        tenantId: _tenantId,
         title,
         eventDate,
         eventType,
-        status: "confirmed" as const,
-        venueName: event.location?.displayName || null,
+        status: "confirmed",
+        venueName: event.location?.displayName || "",
         guestCount: event.attendees?.length || 0,
+        // Required IR params with sensible defaults for external sync
+        clientId: "",
+        eventNumber: `ext-outlook-${event.id || Date.now()}`,
+        venueAddress: "",
+        notes: "",
+        tags: [],
+        budget: 0,
+        ticketPrice: 0,
+        ticketTier: "",
+        eventFormat: "",
+        accessibilityOptions: [],
+        featuredMediaUrl: "",
       };
 
       if (existing) {
-        await database.event.update({
-          where: { tenantId_id: { tenantId: _tenantId, id: existing.id } },
-          data: eventData,
-        });
+        await execCommand(
+          "Event",
+          "update",
+          { ...eventPayload, id: existing.id },
+          manifestUser,
+          existing.id
+        );
       } else {
-        await database.event.create({
-          data: {
-            tenantId: _tenantId,
-            ...eventData,
-          },
-        });
+        await execCommand("Event", "create", eventPayload, manifestUser);
       }
       imported++;
     } catch (error) {

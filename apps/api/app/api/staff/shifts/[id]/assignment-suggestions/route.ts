@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
@@ -9,6 +9,26 @@ import {
   autoAssignShift,
   getEligibleEmployeesForShift,
 } from "@/lib/staff/auto-assignment";
+
+async function getShiftForAssignment(tenantId: string, shiftId: string) {
+  return database.scheduleShift.findFirst({
+    where: {
+      tenantId,
+      id: shiftId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      scheduleId: true,
+      locationId: true,
+      shift_start: true,
+      shift_end: true,
+      role_during_shift: true,
+      notes: true,
+      employeeId: true,
+    },
+  });
+}
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions
@@ -36,48 +56,19 @@ export async function GET(
   const requiredSkillsParam = searchParams.get("requiredSkills");
 
   try {
-    // Get the shift details - use raw query to avoid type issues
-    const shift = await database.$queryRaw<
-      Array<{
-        tenant_id: string;
-        id: string;
-        schedule_id: string;
-        location_id: string;
-        shift_start: Date;
-        shift_end: Date;
-        role_during_shift: string | null;
-        notes: string | null;
-        employee_id: string | null;
-      }>
-    >(Prisma.sql`
-      SELECT
-        tenant_id,
-        id,
-        schedule_id,
-        location_id,
-        shift_start,
-        shift_end,
-        role_during_shift,
-        notes,
-        employee_id
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `);
+    const shift = await getShiftForAssignment(tenantId, shiftId);
 
-    if (!shift || shift.length === 0) {
+    if (!shift) {
       return NextResponse.json({ message: "Shift not found" }, { status: 404 });
     }
 
-    const shiftData = shift[0];
     const requirement: ShiftRequirement = {
       shiftId,
-      scheduleId: shiftData.schedule_id,
-      locationId: locationId || shiftData.location_id || "",
-      shiftStart: shiftData.shift_start,
-      shiftEnd: shiftData.shift_end,
-      roleDuringShift: shiftData.role_during_shift || undefined,
+      scheduleId: shift.scheduleId,
+      locationId: locationId || shift.locationId || "",
+      shiftStart: shift.shift_start,
+      shiftEnd: shift.shift_end,
+      roleDuringShift: shift.role_during_shift || undefined,
       requiredSkills: requiredSkillsParam ? requiredSkillsParam.split(",") : [],
     };
 
@@ -122,41 +113,12 @@ export async function POST(
       force?: boolean;
     };
 
-    // Always verify the shift exists first
-    const shift = await database.$queryRaw<
-      Array<{
-        tenant_id: string;
-        id: string;
-        schedule_id: string;
-        location_id: string;
-        shift_start: Date;
-        shift_end: Date;
-        role_during_shift: string | null;
-        notes: string | null;
-        employee_id: string | null;
-      }>
-    >(Prisma.sql`
-      SELECT
-        tenant_id,
-        id,
-        schedule_id,
-        location_id,
-        shift_start,
-        shift_end,
-        role_during_shift,
-        notes,
-        employee_id
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ${shiftId}
-        AND deleted_at IS NULL
-    `);
+    // Always verify the shift exists first.
+    const shift = await getShiftForAssignment(tenantId, shiftId);
 
-    if (!shift || shift.length === 0) {
+    if (!shift) {
       return NextResponse.json({ message: "Shift not found" }, { status: 404 });
     }
-
-    const shiftData = shift[0];
 
     // If employeeId provided, assign directly
     if (employeeId) {
@@ -170,11 +132,11 @@ export async function POST(
     // Otherwise, get suggestions and assign best match
     const requirement = {
       shiftId,
-      scheduleId: shiftData.schedule_id,
-      locationId: shiftData.location_id || "",
-      shiftStart: shiftData.shift_start,
-      shiftEnd: shiftData.shift_end,
-      roleDuringShift: shiftData.role_during_shift || undefined,
+      scheduleId: shift.scheduleId,
+      locationId: shift.locationId || "",
+      shiftStart: shift.shift_start,
+      shiftEnd: shift.shift_end,
+      roleDuringShift: shift.role_during_shift || undefined,
     };
 
     const result = await getEligibleEmployeesForShift(tenantId, requirement);
