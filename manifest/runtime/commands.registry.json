@@ -3336,6 +3336,11 @@
   },
   {
     "entity": "Proposal",
+    "command": "generatePublicLink",
+    "commandId": "Proposal.generatePublicLink"
+  },
+  {
+    "entity": "Proposal",
     "command": "markViewed",
     "commandId": "Proposal.markViewed"
   },
@@ -3343,6 +3348,11 @@
     "entity": "Proposal",
     "command": "reject",
     "commandId": "Proposal.reject"
+  },
+  {
+    "entity": "Proposal",
+    "command": "remove",
+    "commandId": "Proposal.remove"
   },
   {
     "entity": "Proposal",
@@ -3433,6 +3443,11 @@
     "entity": "PurchaseOrder",
     "command": "submit",
     "commandId": "PurchaseOrder.submit"
+  },
+  {
+    "entity": "PurchaseOrder",
+    "command": "updateTotals",
+    "commandId": "PurchaseOrder.updateTotals"
   },
   {
     "entity": "PurchaseOrderItem",
@@ -4523,6 +4538,16 @@
     "entity": "User",
     "command": "deactivate",
     "commandId": "User.deactivate"
+  },
+  {
+    "entity": "User",
+    "command": "reactivate",
+    "commandId": "User.reactivate"
+  },
+  {
+    "entity": "User",
+    "command": "softDelete",
+    "commandId": "User.softDelete"
   },
   {
     "entity": "User",

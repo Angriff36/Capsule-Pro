@@ -106,14 +106,13 @@ function generateRequisitionNumber(year: number, suffix: string): string {
 /**
  * Create a new purchase order with line items.
  *
- * Governed write: PurchaseOrder.create + PurchaseOrderItem.create run through
- * the Manifest runtime (constitution §9). requireCurrentUser supplies the
- * actor + tenant for policy + audit context (§19).
+ * Governed write: PurchaseOrder.create + PurchaseOrderItem.create +
+ * PurchaseOrder.updateTotals all run through the Manifest runtime
+ * (constitution §9). requireCurrentUser supplies the actor + tenant for
+ * policy + audit context (§19).
  *
- * NOTE: The manifest PurchaseOrder.create command initializes subtotal/total/
- * itemCount to 0. After creating items, we update the header financial fields
- * via direct Prisma because the manifest spec has no "updateTotals" command
- * for PurchaseOrder. This is a spec gap, not an intentional bypass.
+ * NOTE: submittedBy/submittedAt are intentionally NOT set here — the PO is
+ * still in draft status. These fields belong to the `submit` command.
  */
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
   const user = await requireCurrentUser();
@@ -191,22 +190,25 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput) {
     }
   }
 
-  // --- Update header financial fields ---
-  // Spec gap: no Manifest command for PO total updates. Direct Prisma for
-  // subtotal/total/itemCount/submittedBy/submittedAt/expectedDeliveryDate.
-  await database.purchaseOrder.update({
-    where: { tenantId_id: { tenantId, id: orderId } },
-    data: {
+  // --- Update header financial fields via governed command ---
+  const totalsResult = await runManifestCommand({
+    entity: "PurchaseOrder",
+    command: "updateTotals",
+    instanceId: orderId,
+    body: {
       subtotal,
       total: subtotal,
       itemCount: data.items.length,
-      submittedBy: user.id,
-      submittedAt: new Date(),
       expectedDeliveryDate: data.expectedDeliveryDate
-        ? new Date(`${data.expectedDeliveryDate}T00:00:00.000Z`)
-        : null,
+        ? new Date(`${data.expectedDeliveryDate}T00:00:00.000Z`).getTime()
+        : 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!totalsResult.ok) {
+    throw new Error(totalsResult.message || "Failed to update purchase order totals");
+  }
 
   revalidatePath("/procurement/purchase-orders");
   revalidatePath("/procurement");

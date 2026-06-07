@@ -286,14 +286,15 @@ export const updateStaffMember = async (
     invariant(existing, "Staff member not found.");
 
     // Governed write: User.update runs through Manifest runtime (constitution §9).
-    // User.update mutates firstName, lastName, phone, employmentType, hourlyRate,
-    // salaryAnnual, avatarUrl. It does NOT mutate email, role, or isActive.
+    // User.update mutates email, firstName, lastName, phone, employmentType,
+    // hourlyRate, salaryAnnual, avatarUrl. It does NOT mutate role or isActive.
     // Supply existing values for fields not in the form (phone, hourlyRate, etc.).
     const updateResult = await runManifestCommand({
       entity: "User",
       command: "update",
       body: {
         id,
+        email,
         firstName,
         lastName,
         phone: existing.phone ?? "",
@@ -331,9 +332,7 @@ export const updateStaffMember = async (
       }
     }
 
-    // Governed write: User.deactivate if isActive changed to false.
-    // Reactivation (isActive true on inactive user) has no command — direct Prisma
-    // with TODO for when a User.reactivate command is added.
+    // Governed write: User.deactivate or User.reactivate if isActive changed.
     if (isActive !== existing.isActive) {
       if (!isActive) {
         const deactivateResult = await runManifestCommand({
@@ -352,27 +351,20 @@ export const updateStaffMember = async (
           );
         }
       } else {
-        // TODO: No User.reactivate command exists yet. Using direct Prisma until
-        // a governed command is available.
-        await database.user.update({
-          where: { tenantId_id: { tenantId, id } },
-          data: { isActive: true },
+        // Governed write: User.reactivate (constitution §9).
+        const reactivateResult = await runManifestCommand({
+          entity: "User",
+          command: "reactivate",
+          body: { userId: id },
+          user: { id: user.id, tenantId: user.tenantId, role: user.role },
         });
-      }
-    }
 
-    // Email update is not supported by any User command (User.update doesn't
-    // mutate email). Direct Prisma for email changes only.
-    // TODO: Add email to User.update mutates, or create User.updateEmail command.
-    const currentRecord = await database.user.findFirst({
-      where: { tenantId, id },
-      select: { email: true },
-    });
-    if (currentRecord && currentRecord.email !== email) {
-      await database.user.update({
-        where: { tenantId_id: { tenantId, id } },
-        data: { email },
-      });
+        if (!reactivateResult.ok) {
+          throw new Error(
+            reactivateResult.message || "Failed to reactivate staff member."
+          );
+        }
+      }
     }
 
     revalidatePath("/staff/team");
@@ -397,28 +389,21 @@ export const updateStaffMember = async (
 /**
  * Soft-delete a staff member.
  *
- * TODO: Not fully migrated to governed commands. The current code sets deletedAt
- * (soft delete), but no User.softDelete command exists. User.terminate sets
- * isActive=false + terminationDate, which is a different semantic. The entity
- * also lacks a softDelete lifecycle transition. Kept as direct Prisma until a
- * User.softDelete command is added to the manifest.
+ * Governed write: User.softDelete sets deletedAt = now() via Manifest runtime.
  */
 export const deleteStaffMember = async (
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> => {
   try {
-    const { orgId } = await auth();
-    invariant(orgId, "You must be signed in to delete staff.");
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    invariant(tenantId, "Tenant not found for this organization.");
+    const user = await requireCurrentUser();
+    const tenantId = user.tenantId;
 
     const id = readText(formData, "id");
 
     invariant(id, "Staff ID is required.");
 
-    // Check employee exists
+    // Read: verify employee exists (constitution §10)
     const existing = await database.user.findFirst({
       where: {
         tenantId,
@@ -432,15 +417,17 @@ export const deleteStaffMember = async (
 
     invariant(existing, "Staff member not found.");
 
-    // Soft delete - set deletedAt
-    await database.user.update({
-      where: {
-        tenantId_id: { tenantId, id },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
+    // Governed write: User.softDelete (constitution §9).
+    const deleteResult = await runManifestCommand({
+      entity: "User",
+      command: "softDelete",
+      body: { userId: id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
     });
+
+    if (!deleteResult.ok) {
+      throw new Error(deleteResult.message || "Failed to delete staff member.");
+    }
 
     revalidatePath("/staff/team");
 

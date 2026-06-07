@@ -151,6 +151,17 @@ entity PurchaseOrder {
     emit PurchaseOrderReceived
   }
 
+  command updateTotals(subtotal: money, total: money, itemCount: int, expectedDeliveryDate: datetime) {
+    guard self.status == "draft" "Can only update totals on draft orders"
+
+    mutate subtotal = subtotal
+    mutate total = total
+    mutate itemCount = itemCount
+    mutate expectedDeliveryDate = expectedDeliveryDate
+
+    emit PurchaseOrderTotalsUpdated
+  }
+
   // State transitions
   transition status from "draft" to ["submitted", "cancelled"]
   transition status from "submitted" to ["approved", "rejected", "cancelled"]
@@ -299,6 +310,17 @@ event PurchaseOrderReceived: "purchasing.po.received" {
   vendorId: string
   receivedBy: string
   receivedAt: datetime
+}
+
+event PurchaseOrderTotalsUpdated: "purchasing.po.totals.updated" {
+  purchaseOrderId: string
+  tenantId: string
+  poNumber: string
+  subtotal: number
+  total: number
+  itemCount: number
+  expectedDeliveryDate: datetime
+  updatedAt: datetime
 }
 
 event PurchaseOrderItemCreated: "purchasing.po.item.created" {

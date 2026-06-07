@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 88% context — saved before compacting]
+[proactive bridge @ 99% context — saved before compacting]
 Files (1):
-  manifest/governance/bypasses.json (edit)
+  apps/api/app/api/cron/inventory-audit/route.ts (edit)
 
 # === END COGNILAYER ===

@@ -53,9 +53,10 @@ entity User {
     emit UserCreated
   }
 
-  command update(firstName: string, lastName: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, avatarUrl: string) {
+  command update(email: string, firstName: string, lastName: string, phone: string, employmentType: string, hourlyRate: number, salaryAnnual: number, avatarUrl: string) {
     guard self.isActive "Cannot update an inactive user"
 
+    mutate email = email
     mutate firstName = firstName
     mutate lastName = lastName
     mutate phone = phone
@@ -112,6 +113,23 @@ entity User {
     emit UserRoleUpdated
   }
 
+  command reactivate(userId: string) {
+    guard self.isActive == false "User is already active"
+    guard self.deletedAt == null "Cannot reactivate a deleted user"
+
+    mutate isActive = true
+
+    emit UserReactivated
+  }
+
+  command softDelete(userId: string) {
+    guard self.deletedAt == null "User is already deleted"
+
+    mutate deletedAt = now()
+
+    emit UserSoftDeleted
+  }
+
   store User in durable
 }
 
@@ -166,4 +184,18 @@ event UserRoleUpdated: "staff.user.role.updated" {
   newRole: string
   updatedBy: string
   updatedAt: datetime
+}
+
+event UserReactivated: "staff.user.reactivated" {
+  userId: string
+  email: string
+  name: string
+  reactivatedAt: datetime
+}
+
+event UserSoftDeleted: "staff.user.soft_deleted" {
+  userId: string
+  email: string
+  name: string
+  deletedAt: datetime
 }

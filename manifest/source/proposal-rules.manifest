@@ -29,6 +29,7 @@ entity Proposal {
   property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
+  property publicToken: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -234,6 +235,23 @@ entity Proposal {
     emit ProposalWithdrawn
   }
 
+  command remove(userId: string) {
+    guard self.deletedAt == null "Proposal is already removed"
+
+    mutate deletedAt = now()
+
+    emit ProposalRemoved
+  }
+
+  command generatePublicLink(userId: string) {
+    guard self.deletedAt == null "Cannot generate link for a deleted proposal"
+    guard self.publicToken == "" "Public link already generated"
+
+    mutate publicToken = "placeholder"
+
+    emit ProposalPublicLinkGenerated
+  }
+
   store Proposal in durable
 }
 
@@ -405,6 +423,24 @@ event ProposalWithdrawn: "crm.proposal.withdrawn" {
   reason: string
   userId: string
   withdrawnAt: datetime
+}
+
+event ProposalRemoved: "crm.proposal.removed" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  userId: string
+  removedAt: datetime
+}
+
+event ProposalPublicLinkGenerated: "crm.proposal.public_link.generated" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  publicToken: string
+  generatedAt: datetime
 }
 
 // ProposalLineItem events
