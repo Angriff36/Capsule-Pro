@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 23rd revision, updated batch 29)
+## Validation Baseline (2026-06-07, comprehensive audit -- 25th revision, updated Task 0.4 batch 1)
 
 ### Claim Verification Matrix
 
@@ -20,7 +20,7 @@
 | 1 | 189 entities, ALL durable | **CONFIRMED** | `stores[]` in IR: 189 entries, all `target: "durable"`, 0 memory |
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
 | 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). Additionally **15 entities have models but wrong accessor names** (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1). |
-| 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
+| 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1 added 58 declarations across 43 entities. 57 entities without relationships (polymorphic FKs, missing targets, or no FK props). |
 | 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **RESOLVED** (v0.12.149) | Governed-entity violations reduced from 33 to 0. All remaining writes registered as documented bypasses in `bypasses.json` (15 bypassed) or ungoverned infrastructure (47 ungoverned — entities with no Manifest IR definition). Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services, Nowsta sync, event document parser all migrated to Manifest runtime. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
@@ -103,7 +103,7 @@
 | **notifications package has 9+ direct DB writes** | **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (Task 8.4). Remaining writes are infrastructure logs (not governed). | `packages/notifications/` |
 | **realtime package outbox duplicates manifest/runtime outbox** | Duplicate outbox implementation. | `packages/realtime/` |
 | **packages/services/ is EMPTY** | Should be removed from monorepo. | `packages/services/` |
-| **152 entities have FK properties but no relationships** | Far larger than prior "21 event-domain" estimate. Top gap entities: CycleCountRecord (5 FKs), InventoryTransaction (5 FKs), PrepListItem (5 FKs), WasteEntry (5 FKs). | IR analysis |
+| **57 entities have FK properties but no relationships (was 152)** | Task 0.4 batch 1 added 58 declarations across 43 entities. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. | IR analysis |
 | **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.** | | IR analysis |
 | **563/611 computed properties have empty dependencies** | 92.1% may not recalculate correctly when upstream values change. | IR analysis |
 | **0 overrideable constraints out of 583 total** | No constraint is marked overrideable despite the feature being available. | IR analysis |
@@ -341,7 +341,7 @@
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
-- **Only 8 entities have relationships** (12 declarations total). **152 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
+- **145 entities have relationships** (219 declarations total). **57 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
 - 563/611 computed properties have empty `dependencies` (92.1% may not recalculate correctly)
 - `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
@@ -642,7 +642,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 7. **manifest.config.yaml not consumed by scripts:** File is descriptive/forward-looking. 6 hardcoded values in `generate.mjs` should come from config.
 
-8. **Relationship gap: ~104 declarations across 60+ entities (was 12 across 8):** Event, kitchen, inventory, staff/logistics/CRM/finance/collections/facilities/command-board domains covered. Some lower-priority entities with FKs to non-IR targets still lack relationship blocks.
+8. **Relationship gap: 219 declarations across 145 entities (was 12 across 8):** Batch 1 added 58 declarations across 43 entities. 57 entities remain without relationships (polymorphic FKs, missing IR targets, or no FK props).
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
@@ -698,7 +698,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 35. ~~**notifications package has 9+ direct DB writes** across 4 files -- not listed in prior governance audit.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (Task 8.4). Remaining writes are infrastructure logs (not governed entities).
 
-36. **152 entities with FK properties but NO relationship blocks:** Far larger than initial "21 event-domain" estimate. 563/611 computed properties have empty dependencies. irHash and contentHash are empty (no IR integrity verification).
+36. **57 entities with FK properties but NO relationship blocks (was 152):** Batch 1 added 58 declarations across 43 entities. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. 563/611 computed properties have empty dependencies. irHash and contentHash are empty (no IR integrity verification).
 
 37. **39 export paths in @angriff36/manifest, only 4 actively used (10.3%):** Major unused features include Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, Roles, Enums, Value Objects, Async Commands, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system.
 
@@ -768,7 +768,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 0 -- FIX TYPECHECK BASELINE & RELATIONSHIP MODELING
 
-> **Why:** 80 typecheck errors block deploy. 72 are in generated files (fix the generator). 16 IR entities lack Prisma models. Only 8/189 entities have relationships (152 entities with FK properties but no relationship blocks). Source-level bugs across ALL domains produce incorrect runtime behavior. This is the single most important blocking tier.
+> **Why:** 80 typecheck errors block deploy. 72 are in generated files (fix the generator). 16 IR entities lack Prisma models. 145/189 entities now have relationships (57 entities with FK properties but no relationship blocks remain). Source-level bugs across ALL domains produce incorrect runtime behavior. This is the single most important blocking tier.
 
 ### 0.1 Categorize and fix the 80 typecheck errors via generator changes — ✅ DONE 2026-06-04 / ✅ FOLLOW-UP RESOLVED 2026-06-06
 - **RESOLVED (2026-06-06 follow-up — soft-delete `deletedAt` drift):** A fresh measurement at session start found **12 residual typecheck errors** not present in the 2026-06-04 baseline. Root cause: the upstream Next.js projection emits `where: { ..., deletedAt: null }` in generated soft-delete read routes, but 6 Prisma models lack a camelCase `deletedAt` field. 4 models use raw snake_case `deleted_at` (Document/`documents`, SmsAutomationRule/`sms_automation_rules`, StorageLocation/`storage_locations`, OnboardingTask/`onboarding_tasks`); 2 models have NO soft-delete column at all (CrmScoringRule, EventFollowup — the IR declares `deletedAt` but the Prisma table lacks the column). **Fix (producer-side, constitution §10/§16):** extended `applyFieldOverrides()` in `manifest/scripts/entity-domain-map.mjs` with a `deletedAt` branch (mirroring the existing `createdAt` rewrite/drop logic). Added `deletedAt` keys to `ENTITY_FIELD_OVERRIDES`: `deletedAt: "deleted_at"` (rewrite) for the 4 snake_case models; `deletedAt: null` (drop the filter) for CrmScoringRule and EventFollowup. Regenerated via `pnpm manifest:generate` → 12 generated routes corrected. **Verification:** `pnpm --filter api typecheck` = 0 errors; `pnpm --filter @repo/manifest-runtime typecheck` = 0; `pnpm manifest:generate` re-run produces no new diff (drift gate passes). Only the producer source + 12 generated route outputs changed.
@@ -810,7 +810,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Note:** 7 entities previously in this list now have Prisma models: BankAccount (→EmployeeBankAccount), EventImportWorkflow (→EventImport), EventTimelineItem (→EventTimeline), LogisticsRoute (→DeliveryRoute), QACheck (→QualityCheck), QACorrectiveAction (→CorrectiveAction), QATemperatureLog (→TemperatureLog). These 7 need ACCESSOR OVERRIDES instead (see Task 0.1).
 
 ### 0.4 Model relationship declarations in .manifest sources
-- **✅ DONE 2026-06-04 (pilot + expansion).** ~104 relationship declarations now exist (was 12). Event domain pilot (27 declarations across 19 entities), then expanded to kitchen (30, 21 entities), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). FK properties verified against source before each addition. Entities with FKs pointing to non-IR targets (e.g., Location, Employee, Unit) intentionally skipped. IR compiles: 189 entities, 952 commands. API+runtime typecheck: 0 errors.
+- **✅ DONE 2026-06-04 (pilot + expansion). Batch 1 COMPLETE 2026-06-07: 58 new declarations across 43 entities.** 219 total relationship declarations across 145 entities (was 12 across 8). Event domain pilot (27 declarations across 19 entities), expanded to kitchen (30, 21 entities), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37), then batch 1 added 58 more. FK properties verified against source before each addition. 57 entities without relationships (polymorphic FKs, missing IR targets, or no FK props). IR compiles: 202 entities, 1000+ commands. API+runtime typecheck: 0 errors.
 - **Done when:** All junction entities and relation-carrying entities have `relationship` blocks. The top 60+ high-priority entities are now covered. Some lower-priority entities with FK properties pointing to non-IR targets may still benefit from relationships if those targets are later added to the IR.
 - **Minimum required relationships:**
   - Event: belongsTo Client (via clientId), hasMany EventStaff, hasMany EventBudget, hasMany EventGuest, hasMany EventDish, hasMany EventFollowup, hasMany EventTimelineItem, hasMany EventReport, hasMany EventContract, hasOne EventProfitability, hasOne EventSummary
@@ -827,7 +827,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - EventReport: belongsTo Event (via eventId)
   - CateringOrder: belongsTo Event (via eventId)
   - Venue: referenced by Event but no relationship declared
-- **Why:** Only 8/189 entities have relationships. **152 entities with FK properties lack relationship blocks** (far larger than initial "21 event-domain" estimate). This blocks: (a) PrismaProjection from emitting foreign keys and relation fields, (b) entity graph construction from IR, (c) cascade delete safety, (d) referential integrity in generated schema, (e) relationship traversal in expressions.
+- **Why:** 145/189 entities now have relationships. **57 entities with FK properties still lack relationship blocks** (polymorphic FKs, missing IR targets, or no FK props). This blocks: (a) PrismaProjection from emitting foreign keys and relation fields, (b) entity graph construction from IR, (c) cascade delete safety, (d) referential integrity in generated schema, (e) relationship traversal in expressions.
 - **Backpressure:** `pnpm manifest:compile` succeeds with relationships. `pnpm manifest:try-prisma <JunctionEntity>` produces models with relation fields.
 - **Source to change:** `manifest/source/event-*.manifest` and other source files with foreign key properties.
 
@@ -1855,7 +1855,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-07, 23rd revision)
+## Codebase Metrics (verified 2026-06-07, 25th revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1864,8 +1864,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | IR events | 936 | 936 | -- |
 | IR sagas | 1 (ProcessInvoicePayment) | 1 | -- |
 | IR reactions | **10** (finance: 3, inventory: 1, events: 1, equipment: 2, crm: 1, events: 1) | 0 | Target 5+ EXCEEDED |
-| IR relationships | 8 entities (12 declarations) | 8 | -- |
-| IR entities with FK props but no relationship | **152** | 152 | -- |
+| IR relationships | **145 entities (219 declarations)** | 8 (12 declarations) | UPDATED: Task 0.4 batch 1 — +58 declarations, +43 entities |
+| IR entities with FK props but no relationship | **57** | 152 | UPDATED: Task 0.4 batch 1 — 152→57 |
 | IR entities with transitions | 96 | 96 | -- |
 | IR status entities lacking transitions | 4 | 4 | -- |
 | IR computed properties with empty dependencies | 563/611 (92.1%) | 563/611 | -- |
@@ -1943,7 +1943,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 4. **Hardcoded CLI flags bypass manifest.config.yaml:** `compile.mjs` and `generate.mjs` pass 6 explicit flags that override the 147-line config file. Task 2.3.
 
-5. **Relationship gap in IR sources:** Only 8/189 entities have relationships defined. 152 entities with FK properties lack relationship blocks. Blocks PrismaProjection, entity graph, cascade analysis, relationship traversal in expressions. Task 0.4.
+5. **Relationship gap in IR sources:** 145/189 entities now have relationships defined. 57 entities with FK properties still lack relationship blocks (polymorphic FKs, missing IR targets, or no FK props). Blocks PrismaProjection, entity graph, cascade analysis, relationship traversal in expressions. Task 0.4 batch 1 COMPLETE.
 
 6. **Generated client disconnected from frontend patterns:** 1,330 functions with **0 consumers**. Task 6.1 must decide direction before building on it.
 
@@ -1969,7 +1969,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 17. ~~**notifications package ungoverned:** 9+ direct DB writes across 4 files (emailLog, sms_logs, notification_preferences, emailWorkflow) bypassing Manifest. Task 8.4.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (callback pattern). emailLog/sms_logs/notification_preferences are infrastructure logs, not governed entities. Task 8.4 COMPLETE.
 
-18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). 0 overrideable constraints out of 583 total. Task 0.4, 9.8.
+18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). 0 overrideable constraints out of 583 total. Task 0.4 batch 1 COMPLETE, 9.8.
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 
@@ -2048,3 +2048,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Twenty-second revision:** Task 8.2/8.3 batch 22. Dead code cleanup: deleted recipe-version-helpers.ts (815 LOC, 0 consumers, contained 5 direct Prisma writes on governed entities with dual-write bug). CommandBoard manifest source fixed (tags→array, added autoPopulate/scope). Migrated createCommandBoard to governed Manifest runtime. Updated IR stats: 202 entities, 998 commands, 978 events. Governed-entity violations: 14→13. API+app typecheck 0. |
 | 2026-06-07 | **Twenty-third revision:** Task 8.2/8.3 batches 23–29 (v0.12.149). Governance migration milestone: governed-entity direct-write violations reduced from 33 to 0. Calendar sync, kitchen import, event importer, shipment inventory side-effects, inventory batch, auto-assignment, labor-budget, recipe-costing, GoodShuffle sync services (event/inventory/invoice), Nowsta sync, event document parser all migrated to Manifest runtime. 15 documented bypasses in bypasses.json. 47 ungoverned writes (infrastructure entities with no Manifest IR definition). IR: 1000+ commands, 980+ events. API+app typecheck 0. |
 | 2026-06-07 | **Task 8.4 complete (twenty-fourth revision):** Package-specific governance migration done. `supplier-connectors/src/sync-service.ts` — 5 direct Prisma writes replaced with Manifest command callback (`VendorCatalogCommandFn`). Design: reads bypass Manifest (§10), writes go through injected callback provided by supplier-sync route wrapping `runManifestCommand`. `packages/notifications/email-workflow-triggers.ts` and `apps/app/app/(authenticated)/settings/email-workflows/actions.ts` confirmed already migrated (callback/`runManifestCommand` patterns). `apps/api/app/api/webhooks/supplier-catalog/route.ts` confirmed already migrated. Remaining package writes (sentry-integration, payroll-engine, realtime outbox) are infrastructure — not governed entities. direct-writes.json baseline updated: 141→136 (4 stale entries removed, 3 supplier-connector entries marked migrated). |
+| 2026-06-07 | **Twenty-fifth revision:** Task 0.4 batch 1 COMPLETE. 58 new relationship declarations added across 43 entities. Entities with relationships: 102→145 (+43). Total relationship blocks: 161→219 (+58). Remaining: 57 entities without relationships (polymorphic FKs, missing IR targets, or no FK props). Metrics updated: "152 entities with FK properties but no relationship blocks"→57, "8 entities have relationships"→145. Claim #4, finding #5, finding #8, finding #36, Task 0.4 section, Codebase Metrics table, and changelog all updated. |
