@@ -259,7 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/staffing/coverage/route.ts (edit), apps/api/lib/trash/entity-helpers.ts (edit), apps/api/app/api/administrative/trash/list/route.ts (create), apps/api/app/api/administrative/trash/analyze/route.ts (create), apps/api/app/api/administrative/trash/restore/route.ts (create), apps/api/lib/trash/entity-helpers.ts (create)
 
 # === END COGNILAYER ===
