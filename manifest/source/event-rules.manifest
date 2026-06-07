@@ -244,6 +244,12 @@ entity Event {
     emit EventUnfinalized
   }
 
+  command softDelete() {
+    guard self.deletedAt == null "Event is already deleted"
+    mutate deletedAt = now()
+    emit EventDeleted
+  }
+
   // State transitions (self-transitions allowed for idempotent mutations)
   transition status from "draft" to ["draft", "confirmed", "cancelled"]
   transition status from "confirmed" to ["confirmed", "completed", "cancelled"]
@@ -533,6 +539,13 @@ event EventUnfinalized: "events.event.unfinalized" {
   userId: string
   reason: string
   unfinalizedAt: datetime
+}
+
+event EventDeleted: "events.event.deleted" {
+  eventId: string
+  tenantId: string
+  title: string
+  deletedAt: datetime
 }
 
 // Profitability events

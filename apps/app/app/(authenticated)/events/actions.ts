@@ -210,13 +210,19 @@ const isPdf = (file: File): boolean =>
   file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
 
 const softDeleteEvent = async (
-  tenantId: string,
+  user: { id: string; tenantId: string; role: string },
   eventId: string
 ): Promise<void> => {
-  await database.event.updateMany({
-    where: { tenantId, id: eventId },
-    data: { deletedAt: new Date() },
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "softDelete",
+    body: { id: eventId },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete event");
+  }
 };
 
 /**
@@ -359,22 +365,57 @@ export const assignClientToEvent = async (
   eventId: string,
   clientId: string
 ): Promise<void> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
   const safeEventId = required(eventId, "Event id");
   const safeClientId = required(clientId, "Client id");
 
-  await database.event.updateMany({
-    where: { tenantId, id: safeEventId },
-    data: { clientId: safeClientId },
+  // Read existing event to preserve required fields through the update command
+  const existing = await database.event.findFirst({
+    where: { tenantId, id: safeEventId, deletedAt: null },
   });
+
+  if (!existing) {
+    throw new Error("Event not found");
+  }
+
+  const result = await runManifestCommand({
+    entity: "Event",
+    command: "update",
+    body: {
+      id: safeEventId,
+      clientId: safeClientId,
+      eventNumber: existing.eventNumber ?? "",
+      title: existing.title ?? "",
+      eventType: existing.eventType ?? "",
+      eventDate: existing.eventDate ?? "",
+      guestCount: existing.guestCount ?? 0,
+      venueName: existing.venueName ?? "",
+      venueAddress: existing.venueAddress ?? "",
+      notes: existing.notes ?? "",
+      tags: (existing.tags as string[]) ?? [],
+      status: existing.status ?? "",
+      budget: existing.budget ? Number(existing.budget) : 0,
+      ticketPrice: existing.ticketPrice ? Number(existing.ticketPrice) : 0,
+      ticketTier: existing.ticketTier ?? "",
+      eventFormat: existing.eventFormat ?? "",
+      accessibilityOptions: (existing.accessibilityOptions as string[]) ?? [],
+      featuredMediaUrl: existing.featuredMediaUrl ?? "",
+    },
+    user: { id: user.id, tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to assign client to event");
+  }
 
   revalidateEvent(safeEventId, safeClientId);
 };
 
 export const deleteEvent = async (formData: FormData): Promise<void> => {
-  const tenantId = await requireTenantId();
+  const user = await requireCurrentUser();
   await softDeleteEvent(
-    tenantId,
+    user,
     required(text(formData, "eventId"), "Event id")
   );
 
@@ -384,8 +425,8 @@ export const deleteEvent = async (formData: FormData): Promise<void> => {
 
 /** Soft-delete an event by id. Call from client with confirmation. */
 export async function deleteEventById(eventId: string): Promise<void> {
-  const tenantId = await requireTenantId();
-  await softDeleteEvent(tenantId, required(eventId, "Event id"));
+  const user = await requireCurrentUser();
+  await softDeleteEvent(user, required(eventId, "Event id"));
 
   revalidatePath("/events");
   redirect("/events");
