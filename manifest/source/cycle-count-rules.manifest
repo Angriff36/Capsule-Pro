@@ -357,6 +357,8 @@ entity VarianceReport {
     mutate adjustmentType = adjustmentType
     mutate adjustmentAmount = adjustmentAmount
     mutate adjustmentDate = now()
+    mutate resolvedById = userId
+    mutate resolvedAt = now()
 
     emit VarianceReportApproved
   }

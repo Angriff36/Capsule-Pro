@@ -376,17 +376,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return handleCommandError(resolveResult, currentUser.role, "UpdateDiscrepancy");
     }
 
-    // BYPASS: resolvedById/resolvedAt are not covered by any Manifest command
-    // (updateDiscrepancy mutates rootCause/resolutionNotes/notes; approve mutates status/adjustment*).
-    // These audit fields should be added to the approve command IR in a future iteration.
-    const now = new Date();
-    const updatedReport = await database.varianceReport.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: {
-        resolvedById: currentUser.id,
-        resolvedAt: now,
-      },
+    // Read back the updated report for the response (constitution §10 — reads bypass Manifest).
+    const updatedReport = await database.varianceReport.findFirst({
+      where: { tenantId, id },
     });
+
+    if (!updatedReport) {
+      return manifestErrorResponse("Discrepancy not found after update", 404);
+    }
 
     log.info("[discrepancies/resolve] Resolved discrepancy:", {
       id,
