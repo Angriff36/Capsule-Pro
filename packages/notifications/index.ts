@@ -47,6 +47,7 @@ export {
   buildTaskRecipients,
   buildTaskTemplateData,
   triggerEmailWorkflows,
+  type UpdateLastTriggeredFn,
   type WorkflowTriggerContext,
 } from "./email-workflow-triggers";
 // Re-export Outbound Webhook utilities

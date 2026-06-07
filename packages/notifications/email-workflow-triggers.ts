@@ -34,11 +34,31 @@ export interface WorkflowTriggerContext {
 }
 
 /**
- * Triggers email workflows for a given trigger type and context
+ * Optional governed update callback. When provided, `triggerEmailWorkflows`
+ * calls it instead of the direct Prisma write to set `lastTriggeredAt`.
+ * This lets cron routes (which have Manifest runtime access) route the
+ * timestamp update through the governed command without coupling the
+ * notifications package to the Manifest runtime.
+ */
+export type UpdateLastTriggeredFn = (params: {
+  tenantId: string;
+  workflowId: string;
+}) => Promise<void>;
+
+/**
+ * Triggers email workflows for a given trigger type and context.
+ *
+ * @param database - Prisma client for reads (finding active workflows).
+ * @param context - Trigger context (tenant, type, entity, recipients).
+ * @param updateLastTriggered - Optional governed write callback. When provided,
+ *   replaces the direct `database.emailWorkflow.update` for `lastTriggeredAt`.
+ *   Callers in API routes should pass a wrapper around `runManifestCommandCore`
+ *   to route the write through the Manifest runtime (constitution §9).
  */
 export async function triggerEmailWorkflows(
   database: PrismaClient,
-  context: WorkflowTriggerContext
+  context: WorkflowTriggerContext,
+  updateLastTriggered?: UpdateLastTriggeredFn
 ): Promise<{
   triggered: number;
   results: Array<{ workflowId: string; success: boolean; error?: string }>;
@@ -104,18 +124,26 @@ export async function triggerEmailWorkflows(
         continue;
       }
 
-      // Update last triggered timestamp
-      await database.emailWorkflow.update({
-        where: {
-          tenantId_id: {
-            tenantId,
-            id: workflow.id,
+      // Update last triggered timestamp — governed when caller provides
+      // the callback, direct Prisma write as fallback for unmanaged callers.
+      if (updateLastTriggered) {
+        await updateLastTriggered({
+          tenantId,
+          workflowId: workflow.id,
+        });
+      } else {
+        await database.emailWorkflow.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: workflow.id,
+            },
           },
-        },
-        data: {
-          lastTriggeredAt: new Date(),
-        },
-      });
+          data: {
+            lastTriggeredAt: new Date(),
+          },
+        });
+      }
 
       results.push({
         workflowId: workflow.id,

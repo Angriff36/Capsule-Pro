@@ -12,6 +12,7 @@ entity EmailWorkflow {
   property emailTemplateTenantId: string = ""
   property recipientConfig: string = "{}"
   property isActive: boolean = true
+  property lastTriggeredAt: datetime
   timestamps
   property deletedAt: datetime
 
@@ -19,7 +20,7 @@ entity EmailWorkflow {
 
   constraint requireName: self.name != "" "Workflow name is required"
 
-  default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Email workflow management"
+  default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin", "system"] "Email workflow management"
   command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
     guard name != null and name != "" "Workflow name is required"
 
@@ -72,6 +73,17 @@ entity EmailWorkflow {
     emit EmailWorkflowDeleted
   }
 
+  // System-level timestamp stamp. Called by the email trigger service after a
+  // workflow successfully sends an email. Does not change business state, so it
+  // bypasses the manager/admin policy (only requires an authenticated user).
+  command recordTriggered() {
+    guard self.deletedAt == null "Cannot update a deleted workflow"
+
+    mutate lastTriggeredAt = now()
+
+    emit EmailWorkflowTriggered
+  }
+
   store EmailWorkflow in durable
 }
 
@@ -93,4 +105,10 @@ event EmailWorkflowUpdated: "collaboration.email-workflow.updated" {
 event EmailWorkflowDeleted: "collaboration.email-workflow.deleted" {
   workflowId: string
   deletedAt: datetime
+}
+
+event EmailWorkflowTriggered: "collaboration.email-workflow.triggered" {
+  workflowId: string
+  tenantId: string
+  triggeredAt: datetime
 }

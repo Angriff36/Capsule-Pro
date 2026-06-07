@@ -10,10 +10,12 @@
  */
 
 import { database } from "@repo/database";
-import { triggerEmailWorkflows } from "@repo/notifications";
+import { triggerEmailWorkflows, type UpdateLastTriggeredFn } from "@repo/notifications";
 import { log } from "@repo/observability/log";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";
@@ -107,6 +109,54 @@ export async function POST(request: NextRequest) {
     timestamp: new Date().toISOString(),
     results,
   });
+}
+
+/**
+ * Get or create a system user for automated operations (same pattern as
+ * cron/inventory-audit). Uses the first admin/owner for the tenant.
+ */
+async function getSystemUserId(tenantId: string): Promise<string> {
+  const adminUser = await database.user.findFirst({
+    where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    select: { id: true },
+  });
+  if (adminUser) return adminUser.id;
+
+  const anyUser = await database.user.findFirst({
+    where: { tenantId, deletedAt: null },
+    select: { id: true },
+  });
+  if (anyUser) return anyUser.id;
+
+  throw new Error(`No active users found for tenant ${tenantId}`);
+}
+
+/**
+ * Governed callback for updating `lastTriggeredAt` via Manifest runtime
+ * (constitution §9). Replaces the direct `database.emailWorkflow.update`
+ * that the notifications package used previously.
+ */
+function makeGovernedUpdateLastTriggered(
+  tenantId: string
+): UpdateLastTriggeredFn {
+  return async ({ workflowId }) => {
+    const systemUserId = await getSystemUserId(tenantId);
+    await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "EmailWorkflow",
+        command: "recordTriggered",
+        body: { id: workflowId },
+        user: { id: systemUserId, tenantId, role: "system" },
+      },
+    );
+  };
 }
 
 /**
@@ -240,7 +290,7 @@ async function processTaskReminders() {
                 .join(" "),
             },
           ],
-        });
+        }, makeGovernedUpdateLastTriggered(tenantId));
 
         if (triggerResult.triggered > 0) {
           result.sent += triggerResult.triggered;
@@ -386,7 +436,7 @@ async function processShiftReminders() {
                 .join(" "),
             },
           ],
-        });
+        }, makeGovernedUpdateLastTriggered(tenantId));
 
         if (triggerResult.triggered > 0) {
           result.sent += triggerResult.triggered;

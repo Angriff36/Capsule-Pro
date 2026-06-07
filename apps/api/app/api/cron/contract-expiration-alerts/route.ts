@@ -15,10 +15,13 @@ import {
   buildContractRecipients,
   buildContractTemplateData,
   triggerEmailWorkflows,
+  type UpdateLastTriggeredFn,
 } from "@repo/notifications";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
 export const dynamic = "force-dynamic";
@@ -88,6 +91,52 @@ async function parseConfig(request: NextRequest): Promise<AlertConfig> {
   } catch {
     return DEFAULT_CONFIG;
   }
+}
+
+/**
+ * Get a system user for automated operations (admin/owner fallback).
+ */
+async function getSystemUserId(tenantId: string): Promise<string> {
+  const adminUser = await database.user.findFirst({
+    where: { tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
+    select: { id: true },
+  });
+  if (adminUser) return adminUser.id;
+
+  const anyUser = await database.user.findFirst({
+    where: { tenantId, deletedAt: null },
+    select: { id: true },
+  });
+  if (anyUser) return anyUser.id;
+
+  throw new Error(`No active users found for tenant ${tenantId}`);
+}
+
+/**
+ * Governed callback for updating `lastTriggeredAt` via Manifest runtime
+ * (constitution §9). Replaces the direct `database.emailWorkflow.update`.
+ */
+function makeGovernedUpdateLastTriggered(
+  tenantId: string
+): UpdateLastTriggeredFn {
+  return async ({ workflowId }) => {
+    const systemUserId = await getSystemUserId(tenantId);
+    await runManifestCommandCore(
+      {
+        createRuntime: ({ user: u, entityName }) =>
+          createManifestRuntime({
+            user: { id: u.id, tenantId: u.tenantId, role: u.role },
+            entityName,
+          }),
+      },
+      {
+        entity: "EmailWorkflow",
+        command: "recordTriggered",
+        body: { id: workflowId },
+        user: { id: systemUserId, tenantId, role: "system" },
+      },
+    );
+  };
 }
 
 /**
@@ -170,7 +219,7 @@ async function processTenantContracts(
         client_last_name: contract.client.last_name,
         client_id: contract.client.id,
       }),
-    });
+    }, makeGovernedUpdateLastTriggered(tenantId));
 
     if (triggerResult.triggered > 0) {
       result.alertsSent += triggerResult.triggered;

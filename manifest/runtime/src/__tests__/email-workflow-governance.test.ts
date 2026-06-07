@@ -27,6 +27,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 //      join resolves against) was unmodeled, so a migrated create/update would
 //      silently break the `emailTemplate` include. create/update now persist it.
 //
+//   4. `recordTriggered` stamps `lastTriggeredAt` after a workflow successfully
+//      sends an email. This is called by cron routes via a governed callback
+//      (replacing the direct Prisma write in the notifications package).
+//      The default policy was widened to include "system" so the cron runtime
+//      (which authenticates as a system user) can execute it.
+//
 // `triggerConfig`/`recipientConfig` map to Prisma `Json` columns but are modeled
 // as `string` (repo convention); the GenericPrismaStore passes the value through
 // (`asJsonInput` does not parse), so the runtime must accept OBJECT bodies and
@@ -51,6 +57,7 @@ entity EmailWorkflow {
   property emailTemplateTenantId: string = ""
   property recipientConfig: string = "{}"
   property isActive: boolean = true
+  property lastTriggeredAt: datetime
   timestamps
   property deletedAt: datetime
 
@@ -58,7 +65,7 @@ entity EmailWorkflow {
 
   constraint requireName: self.name != "" "Workflow name is required"
 
-  default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin"] "Email workflow management"
+  default policy EmailWorkflowDefaultAccess execute: user.role in ["manager", "admin", "system"] "Email workflow management"
 
   command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, emailTemplateTenantId: string, recipientConfig: string, isActive: boolean) {
     guard name != null and name != "" "Workflow name is required"
@@ -96,6 +103,12 @@ entity EmailWorkflow {
     mutate isActive = false
     emit EmailWorkflowDeleted
   }
+
+  command recordTriggered() {
+    guard self.deletedAt == null "Cannot update a deleted workflow"
+    mutate lastTriggeredAt = now()
+    emit EmailWorkflowTriggered
+  }
 }
 
 event EmailWorkflowCreated: "collaboration.email-workflow.created" {
@@ -112,6 +125,11 @@ event EmailWorkflowUpdated: "collaboration.email-workflow.updated" {
 event EmailWorkflowDeleted: "collaboration.email-workflow.deleted" {
   workflowId: string
   deletedAt: datetime
+}
+event EmailWorkflowTriggered: "collaboration.email-workflow.triggered" {
+  workflowId: string
+  tenantId: string
+  triggeredAt: datetime
 }
 `;
 
@@ -303,8 +321,62 @@ describe("EmailWorkflow.softDelete — governed soft delete", () => {
   });
 });
 
+describe("EmailWorkflow.recordTriggered — stamps lastTriggeredAt for cron callers", () => {
+  const SYSTEM_USER = { id: "sys1", tenantId: "t1", role: "system" } as const;
+
+  it("sets lastTriggeredAt to a non-null datetime via system user", async () => {
+    const engine = newEngine();
+    const created = await createWorkflow(engine);
+    const id = created.ok ? (created.result as { id: string }).id : "";
+
+    // lastTriggeredAt starts null
+    const before = (await engine.getInstance("EmailWorkflow", id)) as Record<string, unknown>;
+    expect(before.lastTriggeredAt).toBeFalsy();
+
+    const result = await runManifestCommandCore(
+      { createRuntime: async () => engine },
+      {
+        entity: "EmailWorkflow",
+        command: "recordTriggered",
+        body: { id },
+        user: { ...SYSTEM_USER },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const stored = (await engine.getInstance("EmailWorkflow", id)) as Record<string, unknown>;
+    expect(stored.lastTriggeredAt).toBeTruthy();
+    // Other fields untouched
+    expect(stored.name).toBe("Welcome Email");
+    expect(stored.isActive).toBe(true);
+  });
+
+  it("blocks recordTriggered on a deleted workflow", async () => {
+    const engine = newEngine();
+    const created = await createWorkflow(engine);
+    const id = created.ok ? (created.result as { id: string }).id : "";
+
+    // Soft-delete first
+    await runManifestCommandCore(
+      { createRuntime: async () => engine },
+      { entity: "EmailWorkflow", command: "softDelete", body: { id }, user: { ...USER } },
+    );
+
+    const result = await runManifestCommandCore(
+      { createRuntime: async () => engine },
+      {
+        entity: "EmailWorkflow",
+        command: "recordTriggered",
+        body: { id },
+        user: { ...SYSTEM_USER },
+      },
+    );
+    expect(result.ok).toBe(false);
+  });
+});
+
 describe("compiled command registry carries the EmailWorkflow governed-write surface", () => {
-  it("includes create, update, setActive, and softDelete", () => {
+  it("includes create, update, setActive, softDelete, and recordTriggered", () => {
     const registryPath = join(here, "..", "..", "commands.registry.json");
     const registry = JSON.parse(readFileSync(registryPath, "utf8")) as {
       commandId: string;
@@ -312,8 +384,8 @@ describe("compiled command registry carries the EmailWorkflow governed-write sur
     const ids = new Set(registry.map((r) => r.commandId));
     expect(ids.has("EmailWorkflow.create")).toBe(true);
     expect(ids.has("EmailWorkflow.update")).toBe(true);
-    // RED until email-workflow-rules.manifest adds setActive + recompile.
     expect(ids.has("EmailWorkflow.setActive")).toBe(true);
     expect(ids.has("EmailWorkflow.softDelete")).toBe(true);
+    expect(ids.has("EmailWorkflow.recordTriggered")).toBe(true);
   });
 });
