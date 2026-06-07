@@ -207,6 +207,12 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "PrepTaskPlanWorkflow",
   "Station",
   "InventoryTransfer",
+
+  // ── Recently reconciled entities (Driver/Vehicle governance migration) ──
+  // Added to route through GenericPrismaStore → real Prisma tables instead
+  // of PrismaJsonStore (JSON blob). Manifest source + Prisma schema aligned.
+  "Driver",
+  "Vehicle",
 ]);
 
 // ---------------------------------------------------------------------------

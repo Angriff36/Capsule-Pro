@@ -1201,8 +1201,8 @@
   },
   {
     "entity": "Driver",
-    "command": "suspend",
-    "commandId": "Driver.suspend"
+    "command": "setOffDuty",
+    "commandId": "Driver.setOffDuty"
   },
   {
     "entity": "Driver",
@@ -4651,13 +4651,13 @@
   },
   {
     "entity": "Vehicle",
-    "command": "remove",
-    "commandId": "Vehicle.remove"
+    "command": "decommission",
+    "commandId": "Vehicle.decommission"
   },
   {
     "entity": "Vehicle",
-    "command": "retire",
-    "commandId": "Vehicle.retire"
+    "command": "remove",
+    "commandId": "Vehicle.remove"
   },
   {
     "entity": "Vehicle",
