@@ -86,6 +86,10 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
 }));
 
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
@@ -109,6 +113,7 @@ vi.mock("@/app/lib/webhook-dispatch", () => ({
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { POST as ApplySimulation } from "@/app/api/command-board/simulations/[id]/apply/route";
 import { GET as GetDelta } from "@/app/api/command-board/simulations/[id]/delta/route";
 import { POST as DiscardSimulation } from "@/app/api/command-board/simulations/[id]/discard/route";
@@ -261,14 +266,19 @@ describe("Command Board Simulations API", () => {
         annotations: [],
       } as any);
 
-      mockCommandBoard.create.mockResolvedValueOnce({
-        id: TEST_SIMULATION_ID,
-        tenantId: TEST_TENANT_ID,
-        name: "[Simulation] Test Sim",
-        status: "draft",
-        tags: ["simulation", `source:${TEST_BOARD_ID}`],
-        createdAt: new Date(),
-      } as any);
+      vi.mocked(runManifestCommandCore).mockResolvedValueOnce({
+        ok: true,
+        entity: "CommandBoard",
+        command: "create",
+        result: {
+          id: TEST_SIMULATION_ID,
+          tenantId: TEST_TENANT_ID,
+          name: "[Simulation] Test Sim",
+          status: "draft",
+          tags: ["simulation", `source:${TEST_BOARD_ID}`],
+          createdAt: new Date(),
+        },
+      });
 
       const response = await POST(
         createRequest("http://localhost/api/command-board/simulations", {

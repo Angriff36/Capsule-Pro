@@ -259,8 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 97% context — saved before compacting]
-Files (1):
-  apps/api/__tests__/facilities/facilities-list.test.ts (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts (edit), apps/app/app/(authenticated)/crm/clients/actions.ts (edit), apps/api/app/api/staff/availability/batch/route.ts (edit), apps/api/app/api/inventory/import/route.ts (edit), apps/api/app/api/training/modules/route.ts (edit)
 
 # === END COGNILAYER ===

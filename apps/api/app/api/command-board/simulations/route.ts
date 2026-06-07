@@ -14,6 +14,10 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+// Uses createManifestRuntime — requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 import type {
   CreateSimulationRequest,
   SimulationListItem,

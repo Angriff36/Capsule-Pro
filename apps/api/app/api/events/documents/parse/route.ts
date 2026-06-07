@@ -24,6 +24,9 @@ import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+// Uses createManifestRuntime — requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 /** User context required by Manifest runtime commands */
 type ManifestUser = { id: string; tenantId: string; role: string };
 
