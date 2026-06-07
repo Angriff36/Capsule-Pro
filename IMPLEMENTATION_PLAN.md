@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-06, comprehensive audit -- 20th revision, updated batch 12)
+## Validation Baseline (2026-06-06, comprehensive audit -- 20th revision, updated batch 17)
 
 ### Claim Verification Matrix
 
@@ -21,7 +21,7 @@
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
 | 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). Additionally **15 entities have models but wrong accessor names** (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1). |
 | 4 | ~~Only 8~~ **60+ entities have relationships** | **UPDATED** | ~104 relationship declarations across 60+ entities (was 12 across 8). Event pilot (27), kitchen (30), inventory (~25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Some lower-priority entities with FKs to non-IR targets remain without relationships. |
-| 5 | ~~371~~ **301** direct-write violations | **CONFIRMED** | 191 API mutation calls across 80 files + 110 server action writes across 28 files = 301 total. 12 hybrid files. |
+| 5 | ~~371~~ ~~301~~ **298** direct-write violations | **UPDATED** | 189 API mutation calls across ~78 files + 109 server action writes across ~27 files = 298 total. Session eliminated 3 violations (1 server action: ClientInteraction.softDelete; 2 API routes: RevenueRecognitionSchedule adjust+default). |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
@@ -335,7 +335,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 990 commands, 970 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 991 commands, 971 events, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -545,6 +545,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 8.3 batch 12: WasteEntry server actions governance migration** | `apps/app/app/(authenticated)/kitchen/actions.ts` — 3 writes migrated (create/update/delete). `locationId` NOT in create params (parent-context inheritance from Event). `totalCost` auto-computed. `status` never set explicitly (self-transition bug avoidance). Hard delete changed to `WasteEntry.softDelete`. API+App typecheck 0, 2689 tests pass. |
 | 2026-06-07 | **Task 8.3 batch 13: KitchenTask/Claim/Progress server actions governance migration** | `apps/app/app/(authenticated)/kitchen/tasks/actions.ts` — 7 writes migrated across 3 entities. KitchenTask: create/update(updateTitle/Summary/Priority/DueDate per-field commands)/status→transition commands(start/complete/cancel/release)/delete→cancel. KitchenTaskClaim: claim/release. KitchenTaskProgress: create. Multi-entity claim/release sequences (2 sequential commands). Prisma enum mismatch: "open"≠"pending", "canceled"≠"cancelled". API+App typecheck 0. |
 | 2026-06-07 | **Task 8.3 batch 14: Ingredient raw SQL → governed create** | `apps/app/app/(authenticated)/kitchen/recipes/actions-ingredient.ts` — raw SQL INSERT into tenant_kitchen.ingredients replaced with `Ingredient.create` governed command. All 9 columns have matching IR properties. `allergens` array→comma string. `randomUUID()` eliminated (runtime generates ID). Removed `database`/`Prisma`/`randomUUID` imports. API+App typecheck 0. |
+| 2026-06-07 | **Task 8.3 batch 17: ClientInteraction.softDelete governance migration** | `apps/app/app/(authenticated)/crm/clients/actions.ts` — `deleteClientInteraction` direct `database.clientInteraction.delete` → `runManifestCommand(ClientInteraction.softDelete)`. 1 direct write eliminated. IR: 991 commands (+2 from adjustSchedule expansion), 971 events. API+App typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Task 8.2 batch 16: RevenueRecognitionSchedule adjust+default fallback governance migration** | Expanded `adjustSchedule` command with description/notes/recognitionPeriod params. Replaced 2 direct `database.revenueRecognitionSchedule.update()` calls with governed `runManifestCommand`. Default schedule creation falls back to adjust (command-expanded). IR: 991 commands (+2), 971 events. API+App typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Infrastructure classification confirmed (no migration needed)** | Calendar sync routes (ProviderSync — OAuth credential management), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook — operational infrastructure). Already in `manifest/governance/write-route-infra-allowlist.json`. Not governed entities. |
+| 2026-06-07 | **Deferred items documented** | events/actions.ts EventImport raw SQL — IR lacks content/mimeType/fileSize properties. staff/team/actions.ts syncCurrentUser — bootstrap function, architecturally necessary direct writes. command-board/actions.ts — bulk updateMany, no bulk Manifest commands. bulk-tasks/confirm PrepTask supplementary update — IR lacks dishId/locationId/estimatedMinutes/dueByTime. |
 
 ---
 
@@ -1291,9 +1295,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `manifest/source/admin-chat-participant-rules.manifest` — added `create` command + AdminChatParticipantCreated event.
     - IR: 990 commands (+1), 970 events (+1). 2689 tests pass, 0 typecheck errors.
     - Total: 64 mutate handlers in 48 route files migrated.
-  - **Total migrated across all batches:** 64 mutate handlers in 48 route files. Remaining: ~129 violations across ~35 files (most remaining are complex multi-entity transactions or infrastructure entities without Manifest IR definitions).
+  - **Progress 2026-06-07 (batch 16 — RevenueRecognitionSchedule adjust+default):** 2 direct `database.revenueRecognitionSchedule.update()` calls replaced with governed `runManifestCommand`. Expanded `adjustSchedule` command with description/notes/recognitionPeriod params. Default schedule creation falls back to adjust. IR: 991 commands (+2), 971 events.
+  - **Infrastructure classification confirmed:** Calendar sync routes (ProviderSync), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook) — already in infra allowlist, no migration needed.
+  - **Total migrated across all batches:** 66 mutate handlers in 49 route files. Remaining: ~126 violations across ~33 files (most remaining are complex multi-entity transactions, infrastructure entities, or IR gaps).
 
-### 8.3 Server actions governance migration (~110 violations across 28 files)
+### 8.3 Server actions governance migration (~109 violations across ~27 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
 - **Why:** App uses `database.*` singleton for direct writes. 28 files with direct `database.*` calls bypass governance.
 - **Backpressure:** `pnpm manifest:audit-direct-writes` shows zero violations in `apps/app/`.
@@ -1359,7 +1365,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - `updateWasteEntry` → `WasteEntry.update`
     - `deleteWasteEntry` → `WasteEntry.softDelete` (hard delete changed to soft delete with reason/userId params)
     - `totalCost` auto-computed from items (not passed as explicit param); `status` never set explicitly on create (self-transition bug avoidance per AdminTask.create pattern)
-  - **Total migrated across Task 8.3 batches:** 4 files with 19 handler migrations in recent batches (menu server actions batch 10: 6, InventoryItem batch 11: 3, WasteEntry batch 12: 3, KitchenTask/Claim/Progress batch 13: 7), plus prior batches (events/BattleBoard create, Lead.create, AdminTask create/updateStatus, EmployeeAvailability create/batch/softDelete/update, EmailWorkflow CRUD, Facility create, FacilityArea create, FacilityAsset create).
+  - **Total migrated across Task 8.3 batches:** 5 files with 20 handler migrations in recent batches (menu server actions batch 10: 6, InventoryItem batch 11: 3, WasteEntry batch 12: 3, KitchenTask/Claim/Progress batch 13: 7, ClientInteraction.softDelete batch 17: 1), plus prior batches (events/BattleBoard create, Lead.create, AdminTask create/updateStatus, EmployeeAvailability create/batch/softDelete/update, EmailWorkflow CRUD, Facility create, FacilityArea create, FacilityAsset create).
+  - **Infrastructure classification confirmed (no migration needed):** Calendar sync routes (ProviderSync — OAuth credential management), Webhook DLQ routes (WebhookDeadLetterQueue/WebhookDeliveryLog/OutboundWebhook — operational infrastructure). Already in `manifest/governance/write-route-infra-allowlist.json`.
+  - **Deferred items (IR gaps / architectural constraints):** (a) events/actions.ts EventImport raw SQL — IR lacks content/mimeType/fileSize properties; (b) staff/team/actions.ts syncCurrentUser — bootstrap function with architecturally necessary direct writes; (c) command-board/actions.ts — bulk updateMany has no bulk Manifest command equivalent; (d) bulk-tasks/confirm PrepTask supplementary update — IR lacks dishId/locationId/estimatedMinutes/dueByTime.
   - **Progress 2026-06-07 (batch 13 — KitchenTask/Claim/Progress server actions):** `apps/app/app/(authenticated)/kitchen/tasks/actions.ts` — 7 direct Prisma writes migrated across 3 entities:
     - `createKitchenTask` → `KitchenTask.create` (complexity/tags added with defaults)
     - `updateKitchenTask` → per-field commands: `updateTitle`, `updateSummary`, `updatePriority`, `updateDueDate` (only changed fields trigger commands)
@@ -1955,6 +1963,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 | Date | Change |
 |---|---|
+| 2026-06-07 | **Task 8.3 batch 17 + Task 8.2 batch 16 (v0.12.140+)** | ClientInteraction.softDelete governed (1 server action write eliminated). RevenueRecognitionSchedule adjustSchedule expanded with description/notes/recognitionPeriod params (2 API route writes eliminated). Infrastructure classification confirmed: Calendar sync (ProviderSync) + Webhook DLQ routes already in infra allowlist. Deferred items documented: EventImport raw SQL (IR gap), syncCurrentUser (bootstrap), command-board updateMany (no bulk command), PrepTask supplementary update (IR gap). IR: 202 entities, 991 commands, 971 events. Violations: 298 (was 301). API+App typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.3 server-action governance batch — 8 files migrated (v0.12.127)** | Governed writes for EmailTemplate (create/update/softDelete), PrepTask task-breakdown (create + priority bug fix: was 8→now 1), Event.update mutation (unblocked by adding accessibilityOptions/featuredMediaUrl params + relaxing guards), ProposalTemplate (entity expanded + create/update/softDelete/duplicate), generate-proposal (Proposal.create + line items), event-summary (EventSummary.create), command-board (card move + group create/update/remove), client CRM (Client archive, ClientContact CRUD, ClientInteraction create/update, ClientPreference CRUD). Event.update unblocked. Training-module source syntax fixed (15 optional keyword, 9 multi-line params, 3 unique declarations). ProposalTemplate entity expanded with 10 properties + softDelete command. Parent-context overrides for TrainingQuestion/TrainingAttempt. IR: 202 entities, 973 commands. Direct-write governed-entity violations: 53 (was ~58). |
 | 2026-06-03 | **Comprehensive rewrite via 83-agent audit**. Package version confirmed 2.2.0. RuntimeOptions corrected to 19 properties (3 wired). Major corrections: manifest-runtime.ts is 66 lines not 3,100+; generated client is 1,330 functions not 1,708; CLI usage is 14+ scripts not 5. |
 | 2026-06-03 | **Second comprehensive update**: ALL 189 entities durable, 0 number-type properties, 80 API typecheck errors (was 939), 0 runtime typecheck errors (was 96). Tier 4 marked DONE. Added Tier 0 (typecheck + Prisma gaps + relationships). Added CLI adoption, relationship modeling, command-level policies. |
