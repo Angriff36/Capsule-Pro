@@ -12,6 +12,90 @@
       "owner": "governance-migration",
       "approvedDate": "2026-06-06",
       "reviewDate": "2026-09-06"
+    },
+    {
+      "entity": "Account",
+      "file": "apps/api/app/lib/tenant.ts",
+      "lines": "31-36",
+      "method": "database.account.create",
+      "reason": "Auto-provisions the tenant Account record on first request for a new Clerk org. This runs inside getTenantIdForOrg which is called by every authenticated route — including the Manifest runtime factory itself. The tenant Account does not exist yet when this write fires; Manifest runtime requires a tenantId to initialize, and tenantId IS the Account.id being created here. This is the identity bootstrap chicken-and-egg: Account must exist before any governed command can run.",
+      "whyBypassSafe": "No Manifest runtime context exists yet — there is no tenant to scope to. The Account being created IS the tenant. No business rules or state transitions apply to tenant provisioning; it is a pure infrastructure bootstrap. All subsequent domain writes within this tenant do go through Manifest runtime.",
+      "tenantBoundary": "Single-row create scoped to orgId slug; no cross-tenant access possible",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "User",
+      "file": "apps/api/app/lib/tenant.ts",
+      "lines": "151-153,185-187,228-237",
+      "method": "database.user.update / database.user.create",
+      "reason": "Auto-provisions or restores the internal User (employee) record from Clerk identity during requireCurrentUser(). This runs on every authenticated request to resolve the actor. The User record must exist before any governed command can identify who is performing the action (actor context). Migrating would create a circular dependency: requireCurrentUser -> governed command -> requireCurrentUser.",
+      "whyBypassSafe": "Identity bootstrap: the User record being created/restored IS the actor that Manifest runtime requires for authorization context. No governed command can execute without this User existing first. The write only sets identity fields (email, name, authUserId) — no domain state transitions. All subsequent domain mutations on this User (role changes, profile edits) go through governed commands.",
+      "tenantBoundary": "All queries scoped by (tenantId, authUserId) composite unique index",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "Account",
+      "file": "apps/app/app/lib/tenant.ts",
+      "lines": "21-26",
+      "method": "database.account.create",
+      "reason": "App-side mirror of the API tenant.ts Account.create auto-provisioning. Same chicken-and-egg: the tenant Account must exist before any Manifest runtime context can be initialized for the app server actions.",
+      "whyBypassSafe": "Identical rationale to apps/api/app/lib/tenant.ts Account bypass. No tenant context exists; this IS the tenant creation.",
+      "tenantBoundary": "Single-row create scoped to orgId slug",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "User",
+      "file": "apps/app/app/lib/tenant.ts",
+      "lines": "134-136,168-170,211-229",
+      "method": "database.user.update / database.user.create",
+      "reason": "App-side mirror of the API tenant.ts User auto-provisioning in resolveClerkUser(). Same circular dependency: User must exist before governed commands can resolve the actor. This code path runs when requireCurrentUser() is called from app server actions that subsequently invoke Manifest runtime.",
+      "whyBypassSafe": "Identity bootstrap, same as API tenant.ts User bypass. Only identity fields are set; no domain state transitions.",
+      "tenantBoundary": "All queries scoped by (tenantId, authUserId) composite unique index",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "User",
+      "file": "apps/app/app/(authenticated)/staff/team/actions.ts",
+      "lines": "102-111,133-136,142-152",
+      "method": "database.user.update / database.user.create",
+      "reason": "syncCurrentUser() is an auth bootstrap function that runs BEFORE a User record exists — it creates the User that subsequent governed commands require as actor context. Migrating it would create a circular dependency (requireCurrentUser -> syncCurrentUser -> governed command -> requireCurrentUser). It also doesn't supply all User.create required params (e.g. hireDate) expected by the governed command. Kept as direct Prisma per constitution §10 exception for bootstrapping identity. Note: addStaffMember and other staff actions in this file DO use governed runManifestCommand — only syncCurrentUser is bypassed.",
+      "whyBypassSafe": "The function creates the actor record that Manifest runtime needs for authorization. Without this User existing, no governed command can identify who is performing the action. The write only sets identity fields (email, firstName, lastName, authUserId) and restores soft-deleted records. All subsequent User mutations in this file go through runManifestCommand.",
+      "tenantBoundary": "All queries scoped by (tenantId, authUserId) or (tenantId, email) unique lookups",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "VendorCatalog",
+      "file": "packages/supplier-connectors/src/sync-service.ts",
+      "lines": "75-80+",
+      "method": "prisma.vendorCatalog.create / update / updateMany",
+      "reason": "External supplier sync service that runs outside the Next.js request lifecycle. The SupplierSyncService is a standalone class that receives a Prisma-like interface via constructor injection — it has no access to the Manifest runtime factory, no Clerk auth context, no tenant resolution middleware, and no Next.js server action environment. It runs in background sync jobs or CLI scripts that pull catalog data from external supplier APIs.",
+      "whyBypassSafe": "No Manifest runtime is available in this execution context. The service operates through a injected SupplierSyncDb interface, not the app's database client. Catalog sync is a data ingestion pipeline, not a user-initiated domain mutation. Business rules (pricing, availability) are enforced by downstream governed commands when the catalog data is consumed by purchase orders.",
+      "tenantBoundary": "All queries scoped by tenantId + supplierId from the SupplierConnectorConfig parameter",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
+    },
+    {
+      "entity": "CycleCountRecord",
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/records.ts",
+      "lines": "62-67,110-115,190-195,274-284,378-386",
+      "method": "database.cycleCountRecord.update (syncStatus, offlineId fields)",
+      "reason": "syncStatus and offlineId are offline-sync coordination fields used by the client-side offline-first data layer. They track whether a record is pending sync, conflicted, or synced, and map client-generated IDs to server IDs. These fields are not covered by any Manifest command and have no domain semantics — they are infrastructure metadata for the offline sync protocol.",
+      "whyBypassSafe": "syncStatus and offlineId are transport-layer coordination fields with no business rules or state transitions. They do not affect domain logic, calculations, or reporting. The governed fields on CycleCountRecord (quantity, notes, status) are mutated through Manifest commands. Patching syncStatus/offlineId alongside governed fields in the same update is safe because Prisma atomic updates only touch the specified fields.",
+      "tenantBoundary": "All updates scoped by tenantId from requireCurrentUser() context",
+      "owner": "system",
+      "approvedDate": "2026-06-07",
+      "reviewDate": "2026-09-07"
     }
   ]
 }
