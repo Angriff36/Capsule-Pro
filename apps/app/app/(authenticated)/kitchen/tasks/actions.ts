@@ -5,10 +5,12 @@ import {
   type KitchenTaskClaim,
   type KitchenTaskProgress,
   type KitchenTaskStatus,
-  tenantDatabase,
+  database,
 } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { invariant } from "@/app/lib/invariant";
 
 // ============================================================================
 // Helper Functions
@@ -41,19 +43,15 @@ const getOptionalString = (
 
 const getDateTime = (formData: FormData, key: string): Date | undefined => {
   const value = getString(formData, key);
-
   if (!value) {
     return;
   }
-
   const dateValue = new Date(value);
   return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
 };
 
-// enqueueOutboxEvent removed — outbox writes are now inlined inside $transaction blocks
-
 // ============================================================================
-// Query Operations
+// Query Operations (direct Prisma reads — constitution §10)
 // ============================================================================
 
 /**
@@ -64,10 +62,10 @@ export const getKitchenTasks = async (filters?: {
   priority?: number;
 }): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findMany({
+  return database.kitchenTask.findMany({
     where: {
+      tenantId,
       ...(filters?.status && { status: filters.status }),
       ...(filters?.priority && { priority: filters.priority }),
     },
@@ -82,10 +80,9 @@ export const getKitchenTaskById = async (
   taskId: string
 ): Promise<KitchenTask | null> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findFirst({
-    where: { id: taskId },
+  return database.kitchenTask.findFirst({
+    where: { tenantId, id: taskId },
   });
 };
 
@@ -101,15 +98,15 @@ export const getKitchenTasksByStatus = async (
  */
 export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
-  return client.kitchenTask.findMany({
+  return database.kitchenTask.findMany({
     where: {
+      tenantId,
       priority: {
         lte: 2, // Urgent and Critical (1-2)
       },
       status: {
-        in: ["open", "in_progress"],
+        in: ["pending", "open", "in_progress"],
       },
     },
     orderBy: [{ dueDate: "asc" }, { createdAt: "asc" }],
@@ -117,17 +114,20 @@ export const getUrgentTasks = async (): Promise<KitchenTask[]> => {
 };
 
 // ============================================================================
-// CRUD Operations
+// Create Operation (governed via Manifest runtime)
 // ============================================================================
 
 /**
- * Create a new kitchen task
+ * Create a new kitchen task.
+ *
+ * Uses KitchenTask.create. Status defaults to "pending" via property default
+ * — not set explicitly. Complexity defaults to 5 (medium).
  */
 export const createKitchenTask = async (
   formData: FormData
 ): Promise<KitchenTask> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const title = getString(formData, "title");
   if (!title) {
@@ -136,52 +136,55 @@ export const createKitchenTask = async (
 
   const summary = getOptionalString(formData, "summary") || "";
   const priorityStr = getString(formData, "priority");
-  const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
+  const priority = priorityStr ? Number.parseInt(priorityStr, 10) : 5;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.$transaction(async (tx) => {
-    const created = await tx.kitchenTask.create({
-      data: {
-        tenantId,
-        title,
-        summary,
-        priority: priority || 5, // default to medium (5)
-        dueDate,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: created.id,
-        eventType: "kitchen.task.created",
-        payload: {
-          taskId: created.id,
-          title: created.title,
-          priority: created.priority,
-          status: created.status,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return created;
+  const result = await runManifestCommand({
+    entity: "KitchenTask",
+    command: "create",
+    body: {
+      title,
+      summary,
+      priority,
+      complexity: 5,
+      tags: "",
+      dueDate: dueDate ?? "",
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create kitchen task");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  invariant(createdId, "KitchenTask.create did not return an id");
+
+  const task = await database.kitchenTask.findFirst({
+    where: { tenantId, id: createdId },
+  });
+  invariant(task, "Created kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
   return task;
 };
 
+// ============================================================================
+// Update Operations (governed via Manifest runtime)
+// ============================================================================
+
 /**
- * Update kitchen task fields
+ * Update kitchen task fields.
+ *
+ * The IR uses individual commands per field (updateTitle, updateSummary, etc.)
+ * instead of a single update command. Only changed fields trigger commands.
  */
 export const updateKitchenTask = async (
   formData: FormData
 ): Promise<KitchenTask> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   const taskId = getString(formData, "taskId");
   if (!taskId) {
@@ -194,35 +197,53 @@ export const updateKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.$transaction(async (tx) => {
-    const updated = await tx.kitchenTask.update({
-      where: { tenantId_id: { tenantId, id: taskId } },
-      data: {
-        ...(title && { title }),
-        ...(summary !== undefined && { summary: summary || "" }),
-        ...(priority && { priority }),
-        ...(dueDate && { dueDate }),
-      },
-    });
+  // Execute individual field-update commands for each changed field
+  const userCtx = { id: user.id, tenantId, role: user.role };
 
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: updated.id,
-        eventType: "kitchen.task.updated",
-        payload: {
-          taskId: updated.id,
-          title: updated.title,
-          priority: updated.priority,
-          status: updated.status,
-        },
-        status: "pending" as const,
-      },
+  if (title) {
+    const r = await runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateTitle",
+      body: { id: taskId, title },
+      user: userCtx,
     });
+    if (!r.ok) throw new Error(r.message || "Failed to update task title");
+  }
 
-    return updated;
+  if (summary !== undefined) {
+    const r = await runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateSummary",
+      body: { id: taskId, summary: summary || "" },
+      user: userCtx,
+    });
+    if (!r.ok) throw new Error(r.message || "Failed to update task summary");
+  }
+
+  if (priority && priority >= 1 && priority <= 5) {
+    const r = await runManifestCommand({
+      entity: "KitchenTask",
+      command: "updatePriority",
+      body: { id: taskId, priority },
+      user: userCtx,
+    });
+    if (!r.ok) throw new Error(r.message || "Failed to update task priority");
+  }
+
+  if (dueDate) {
+    const r = await runManifestCommand({
+      entity: "KitchenTask",
+      command: "updateDueDate",
+      body: { id: taskId, dueDate },
+      user: userCtx,
+    });
+    if (!r.ok) throw new Error(r.message || "Failed to update task due date");
+  }
+
+  const task = await database.kitchenTask.findFirst({
+    where: { tenantId, id: taskId },
   });
+  invariant(task, "Updated kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
@@ -230,143 +251,182 @@ export const updateKitchenTask = async (
 };
 
 /**
- * Update only the status of a task
+ * Update only the status of a task.
+ *
+ * Maps the target status to the appropriate IR transition command:
+ * - "in_progress" → KitchenTask.start(userId)
+ * - "done" → KitchenTask.complete(userId)
+ * - "cancelled" → KitchenTask.cancel(reason, canceledBy)
+ * - "pending"/"open" → KitchenTask.release(userId, reason)
  */
 export const updateKitchenTaskStatus = async (
   taskId: string,
   status: KitchenTaskStatus
 ): Promise<KitchenTask> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const userCtx = { id: user.id, tenantId, role: user.role };
 
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  // Fetch the current task to capture the previous status
-  const currentTask = await client.kitchenTask.findFirst({
-    where: { id: taskId },
+  // Fetch current task to determine the right transition command
+  const currentTask = await database.kitchenTask.findFirst({
+    where: { tenantId, id: taskId },
   });
-
   if (!currentTask) {
     throw new Error("Task not found.");
   }
 
-  const previousStatus = currentTask.status;
+  // Map target status to the correct transition command
+  switch (status) {
+    case "in_progress": {
+      const r = await runManifestCommand({
+        entity: "KitchenTask",
+        command: "start",
+        body: { id: taskId, userId: user.id },
+        user: userCtx,
+      });
+      if (!r.ok) throw new Error(r.message || "Failed to start task");
+      break;
+    }
+    case "done": {
+      const r = await runManifestCommand({
+        entity: "KitchenTask",
+        command: "complete",
+        body: { id: taskId, userId: user.id },
+        user: userCtx,
+      });
+      if (!r.ok) throw new Error(r.message || "Failed to complete task");
+      break;
+    }
+    case "canceled": {
+      const r = await runManifestCommand({
+        entity: "KitchenTask",
+        command: "cancel",
+        body: { id: taskId, reason: "Status changed to cancelled", canceledBy: user.id },
+        user: userCtx,
+      });
+      if (!r.ok) throw new Error(r.message || "Failed to cancel task");
+      break;
+    }
+    case "open": {
+      const r = await runManifestCommand({
+        entity: "KitchenTask",
+        command: "release",
+        body: { id: taskId, userId: user.id, reason: "Status changed back to open" },
+        user: userCtx,
+      });
+      if (!r.ok) throw new Error(r.message || "Failed to release task");
+      break;
+    }
+    default:
+      throw new Error(`Unsupported status transition: ${status}`);
+  }
 
-  const task = await client.$transaction(async (tx) => {
-    const updated = await tx.kitchenTask.update({
-      where: { tenantId_id: { tenantId, id: taskId } },
-      data: { status },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: updated.id,
-        eventType: "kitchen.task.status_changed",
-        payload: {
-          taskId: updated.id,
-          status: updated.status,
-          previousStatus,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return updated;
+  const task = await database.kitchenTask.findFirst({
+    where: { tenantId, id: taskId },
   });
+  invariant(task, "Updated kitchen task could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
   return task;
 };
 
+// ============================================================================
+// Delete Operation (governed via Manifest runtime)
+// ============================================================================
+
 /**
- * Delete a kitchen task
+ * Cancel a kitchen task.
+ *
+ * No softDelete command exists for KitchenTask — use cancel instead.
+ * This preserves the task record (safer than hard delete) while marking
+ * it as cancelled.
  */
 export const deleteKitchenTask = async (taskId: string): Promise<void> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
 
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  await client.$transaction(async (tx) => {
-    await tx.kitchenTask.delete({
-      where: { tenantId_id: { tenantId, id: taskId } },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: taskId,
-        eventType: "kitchen.task.deleted",
-        payload: {
-          taskId,
-        },
-        status: "pending" as const,
-      },
-    });
+  const result = await runManifestCommand({
+    entity: "KitchenTask",
+    command: "cancel",
+    body: {
+      id: taskId,
+      reason: "Deleted by user",
+      canceledBy: user.id,
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to delete kitchen task");
+  }
 
   revalidatePath("/kitchen/tasks");
 };
 
 // ============================================================================
-// Claim Operations
+// Claim Operations (governed via Manifest runtime)
 // ============================================================================
 
 /**
- * Claim a task for a user and set status to in_progress
+ * Claim a task for a user and set status to in_progress.
+ *
+ * Two governed commands:
+ * 1. KitchenTask.claim(userId) — sets status=in_progress, assignedTo
+ * 2. KitchenTaskClaim.claim(kitchenTaskId, employeeId, claimedAt) — creates claim record
  */
 export const claimTask = async (
   taskId: string,
   employeeId: string
 ): Promise<KitchenTaskClaim> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const userCtx = { id: user.id, tenantId, role: user.role };
 
   if (!(taskId && employeeId)) {
     throw new Error("Task id and employee id are required.");
   }
 
-  const claim = await client.$transaction(async (tx) => {
-    // Update task status to in_progress
-    await tx.kitchenTask.update({
-      where: { tenantId_id: { tenantId, id: taskId } },
-      data: { status: "in_progress" },
-    });
-
-    // Create claim record
-    const created = await tx.kitchenTaskClaim.create({
-      data: {
-        tenantId,
-        taskId,
-        employeeId,
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: taskId,
-        eventType: "kitchen.task.claimed",
-        payload: {
-          taskId,
-          employeeId,
-          claimedAt: created.claimedAt.toISOString(),
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return created;
+  // 1. Claim the task (sets status=in_progress, assignedTo=userId)
+  const claimResult = await runManifestCommand({
+    entity: "KitchenTask",
+    command: "claim",
+    body: { id: taskId, userId: employeeId },
+    user: userCtx,
   });
+  if (!claimResult.ok) {
+    throw new Error(claimResult.message || "Failed to claim task");
+  }
+
+  // 2. Create the claim record
+  const createClaimResult = await runManifestCommand({
+    entity: "KitchenTaskClaim",
+    command: "claim",
+    body: {
+      kitchenTaskId: taskId,
+      employeeId,
+      claimedAt: new Date(),
+    },
+    user: userCtx,
+  });
+  if (!createClaimResult.ok) {
+    throw new Error(createClaimResult.message || "Failed to create claim record");
+  }
+
+  const claimId = (createClaimResult.result as { id?: string } | null)?.id;
+  invariant(claimId, "KitchenTaskClaim.claim did not return an id");
+
+  const claim = await database.kitchenTaskClaim.findFirst({
+    where: { tenantId, id: claimId },
+  });
+  invariant(claim, "Created claim could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
@@ -374,22 +434,28 @@ export const claimTask = async (
 };
 
 /**
- * Release a task claim
+ * Release a task claim.
+ *
+ * Two governed commands:
+ * 1. KitchenTaskClaim.release(releasedBy, reason) — marks claim as released
+ * 2. KitchenTask.release(userId, reason) — sets status=pending, assignedTo=""
  */
 export const releaseTask = async (
   taskId: string,
   reason?: string | null
 ): Promise<KitchenTaskClaim | null> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
+  const userCtx = { id: user.id, tenantId, role: user.role };
 
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
   // Find the active claim
-  const activeClaim = await client.kitchenTaskClaim.findFirst({
+  const activeClaim = await database.kitchenTaskClaim.findFirst({
     where: {
+      tenantId,
       taskId,
       releasedAt: null,
     },
@@ -399,39 +465,40 @@ export const releaseTask = async (
     return null;
   }
 
-  const updatedClaim = await client.$transaction(async (tx) => {
-    // Release the claim
-    const released = await tx.kitchenTaskClaim.update({
-      where: { tenantId_id: { tenantId, id: activeClaim.id } },
-      data: {
-        releasedAt: new Date(),
-        releaseReason: reason ?? undefined,
-      },
-    });
-
-    // Update task status back to open
-    await tx.kitchenTask.update({
-      where: { tenantId_id: { tenantId, id: taskId } },
-      data: { status: "open" },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task",
-        aggregateId: taskId,
-        eventType: "kitchen.task.released",
-        payload: {
-          taskId,
-          employeeId: activeClaim.employeeId,
-          reason: reason ?? null,
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return released;
+  // 1. Release the claim record
+  const releaseResult = await runManifestCommand({
+    entity: "KitchenTaskClaim",
+    command: "release",
+    body: {
+      id: activeClaim.id,
+      releasedBy: user.id,
+      reason: reason ?? "",
+    },
+    user: userCtx,
   });
+  if (!releaseResult.ok) {
+    throw new Error(releaseResult.message || "Failed to release claim");
+  }
+
+  // 2. Release the task (sets status=pending, assignedTo="")
+  const taskReleaseResult = await runManifestCommand({
+    entity: "KitchenTask",
+    command: "release",
+    body: {
+      id: taskId,
+      userId: user.id,
+      reason: reason ?? "",
+    },
+    user: userCtx,
+  });
+  if (!taskReleaseResult.ok) {
+    throw new Error(taskReleaseResult.message || "Failed to release task");
+  }
+
+  const updatedClaim = await database.kitchenTaskClaim.findFirst({
+    where: { tenantId, id: activeClaim.id },
+  });
+  invariant(updatedClaim, "Released claim could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
@@ -445,14 +512,13 @@ export const getTaskClaims = async (
   taskId: string
 ): Promise<KitchenTaskClaim[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  return client.kitchenTaskClaim.findMany({
-    where: { taskId },
+  return database.kitchenTaskClaim.findMany({
+    where: { tenantId, taskId },
     orderBy: { claimedAt: "desc" },
   });
 };
@@ -464,14 +530,14 @@ export const getMyActiveClaims = async (
   employeeId: string
 ): Promise<KitchenTaskClaim[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
   if (!employeeId) {
     throw new Error("Employee id is required.");
   }
 
-  return client.kitchenTaskClaim.findMany({
+  return database.kitchenTaskClaim.findMany({
     where: {
+      tenantId,
       employeeId,
       releasedAt: null,
     },
@@ -480,11 +546,17 @@ export const getMyActiveClaims = async (
 };
 
 // ============================================================================
-// Progress Operations
+// Progress Operations (governed via Manifest runtime)
 // ============================================================================
 
 /**
- * Add a progress entry for a task
+ * Add a progress entry for a task.
+ *
+ * Uses KitchenTaskProgress.create. Maps:
+ * - taskId → kitchenTaskId
+ * - progressType → status
+ * - quantityCompleted → progressPct
+ * - notes → note
  */
 export const addTaskProgress = async (
   taskId: string,
@@ -497,48 +569,38 @@ export const addTaskProgress = async (
     notes?: string;
   }
 ): Promise<KitchenTaskProgress> => {
-  const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
   if (!(taskId && employeeId)) {
     throw new Error("Task id and employee id are required.");
   }
 
-  const progress = await client.$transaction(async (tx) => {
-    const created = await tx.kitchenTaskProgress.create({
-      data: {
-        tenantId,
-        taskId,
-        employeeId,
-        progressType,
-        ...(options?.oldStatus && { oldStatus: options.oldStatus }),
-        ...(options?.newStatus && { newStatus: options.newStatus }),
-        ...(options?.quantityCompleted && {
-          quantityCompleted: options.quantityCompleted,
-        }),
-        ...(options?.notes && { notes: options.notes }),
-      },
-    });
-
-    await tx.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: "kitchen.task.progress",
-        aggregateId: taskId,
-        eventType: "kitchen.task.progress",
-        payload: {
-          taskId,
-          employeeId,
-          progressType,
-          ...(options?.newStatus && { newStatus: options.newStatus }),
-          ...(options?.notes && { notes: options.notes }),
-        },
-        status: "pending" as const,
-      },
-    });
-
-    return created;
+  const result = await runManifestCommand({
+    entity: "KitchenTaskProgress",
+    command: "create",
+    body: {
+      kitchenTaskId: taskId,
+      employeeId,
+      status: options?.newStatus ?? progressType,
+      progressPct: options?.quantityCompleted ?? 0,
+      note: options?.notes ?? "",
+      recordedAt: new Date(),
+    },
+    user: { id: user.id, tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to add task progress");
+  }
+
+  const progressId = (result.result as { id?: string } | null)?.id;
+  invariant(progressId, "KitchenTaskProgress.create did not return an id");
+
+  const progress = await database.kitchenTaskProgress.findFirst({
+    where: { tenantId, id: progressId },
+  });
+  invariant(progress, "Created progress entry could not be loaded");
 
   revalidatePath("/kitchen/tasks");
 
@@ -552,14 +614,13 @@ export const getTaskProgressLog = async (
   taskId: string
 ): Promise<KitchenTaskProgress[]> => {
   const tenantId = await requireTenantId();
-  const client = tenantDatabase(tenantId);
 
   if (!taskId) {
     throw new Error("Task id is required.");
   }
 
-  return client.kitchenTaskProgress.findMany({
-    where: { taskId },
+  return database.kitchenTaskProgress.findMany({
+    where: { tenantId, taskId },
     orderBy: { createdAt: "desc" },
   });
 };
