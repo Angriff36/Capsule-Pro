@@ -259,9 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 94% context — saved before compacting]
+[proactive bridge @ 97% context — saved before compacting]
 Files (2):
-  apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts (create)
-  apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts (edit)
+  manifest/source/equipment-rules.manifest (edit)
+  manifest/source/staff-logistics-extended-rules.manifest (edit)
 
 # === END COGNILAYER ===

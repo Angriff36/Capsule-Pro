@@ -8,7 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { randomUUID } from "crypto";
+
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId, requireCurrentUser } from "@/app/lib/tenant";
@@ -206,32 +206,56 @@ export interface CreateWorkOrderInput {
 }
 
 export async function createWorkOrder(input: CreateWorkOrderInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: MaintenanceWorkOrder.create runs through the Manifest runtime
+  // (constitution §9) — no direct database.maintenanceWorkOrder.create.
+  // requireCurrentUser supplies the actor + tenant for policy + audit (§19).
+  // `status` is command-owned (mutated to "open"), NOT sent in body.
+  // `workOrderNumber` is auto-generated inside the command.
+  // `equipmentId`/`areaId` are both optional — work orders can target either.
+  // `reportedBy` set to orgId (Clerk org) for tracking who submitted.
+  // Empty optionals sent as "" — GenericPrismaStore coerces "" → NULL for
+  // nullable columns.
+  const user = await requireCurrentUser();
 
-  const workOrderNumber = `WO-${randomUUID().slice(0, 8).toUpperCase()}`;
-
-  const wo = await database.maintenanceWorkOrder.create({
-    data: {
-      tenantId,
-      workOrderNumber,
-      areaId: input.areaId || null,
-      equipmentId: input.equipmentId || null,
-      workOrderType: input.workOrderType || "corrective",
-      priority: input.priority || "medium",
+  const result = await runManifestCommand({
+    entity: "MaintenanceWorkOrder",
+    command: "create",
+    body: {
       title: input.title.trim(),
-      description: input.description?.trim() || null,
-      reportedBy: orgId,
-      assignedTo: input.assignedTo || null,
-      scheduledDate: input.scheduledDate ? new Date(input.scheduledDate) : null,
-      notes: input.notes?.trim() || null,
+      type: input.workOrderType || "corrective",
+      priority: input.priority || "medium",
+      description: input.description?.trim() || "",
+      areaId: input.areaId || "",
+      equipmentId: input.equipmentId || "",
+      assignedTo: input.assignedTo || "",
+      reportedBy: user.id,
+      scheduledDate: input.scheduledDate || "",
+      notes: input.notes?.trim() || "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create work order");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+
+  // Read back the persisted row to preserve the return shape (constitution §10).
+  if (createdId) {
+    const wo = await database.maintenanceWorkOrder.findFirst({
+      where: { tenantId: user.tenantId, id: createdId },
+    });
+    if (wo) {
+      revalidatePath("/facilities");
+      revalidatePath("/facilities/work-orders");
+      return wo;
+    }
+  }
 
   revalidatePath("/facilities");
   revalidatePath("/facilities/work-orders");
-  return wo;
+  return (result.result as Record<string, unknown>) ?? {};
 }
 
 // ── PreventiveMaintenanceSchedule ───────────────────────────────────────────
@@ -250,33 +274,56 @@ export interface CreatePMScheduleInput {
 }
 
 export async function createPMSchedule(input: CreatePMScheduleInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: PreventiveMaintenanceSchedule.create runs through the
+  // Manifest runtime (constitution §9) — no direct
+  // database.preventiveMaintenanceSchedule.create. requireCurrentUser supplies
+  // the actor + tenant for policy + audit (§19). `status` is command-owned
+  // (mutated to "active"), NOT sent in body. `scheduleNumber` is auto-generated
+  // inside the command. `equipmentId`/`areaId` both optional — schedules can
+  // target either. nextDueAt passed as ISO datetime string — GenericPrismaStore
+  // coerces for @db.Timestamptz columns. Nullable decimal fields (estimatedHours,
+  // estimatedCost) sent as 0 for empty — store coerces 0 → NULL.
+  const user = await requireCurrentUser();
 
-  const scheduleNumber = `PM-${randomUUID().slice(0, 8).toUpperCase()}`;
-
-  const schedule = await database.preventiveMaintenanceSchedule.create({
-    data: {
-      tenantId,
-      scheduleNumber,
-      areaId: input.areaId || null,
-      equipmentId: input.equipmentId || null,
+  const result = await runManifestCommand({
+    entity: "PreventiveMaintenanceSchedule",
+    command: "create",
+    body: {
       title: input.title.trim(),
-      description: input.description?.trim() || null,
+      areaId: input.areaId || "",
+      equipmentId: input.equipmentId || "",
+      description: input.description?.trim() || "",
       frequency: input.frequency || "monthly",
       intervalDays: input.intervalDays ?? 30,
-      nextDueAt: new Date(input.nextDueAt),
-      assignedTo: input.assignedTo || null,
-      estimatedHours: input.estimatedHours ?? null,
-      estimatedCost: input.estimatedCost ?? null,
-      status: "active",
+      nextDueAt: input.nextDueAt,
+      assignedTo: input.assignedTo || "",
+      estimatedHours: input.estimatedHours ?? 0,
+      estimatedCost: input.estimatedCost ?? 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create maintenance schedule");
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+
+  // Read back the persisted row to preserve the return shape (constitution §10).
+  if (createdId) {
+    const schedule = await database.preventiveMaintenanceSchedule.findFirst({
+      where: { tenantId: user.tenantId, id: createdId },
+    });
+    if (schedule) {
+      revalidatePath("/facilities");
+      revalidatePath("/facilities/schedules");
+      return schedule;
+    }
+  }
 
   revalidatePath("/facilities");
   revalidatePath("/facilities/schedules");
-  return schedule;
+  return (result.result as Record<string, unknown>) ?? {};
 }
 
 // ── Schedule Queries / Complete ─────────────────────────────────────────────
@@ -304,16 +351,23 @@ export async function getFacilityAssets() {
 }
 
 export async function completeSchedule(scheduleId: string) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: PreventiveMaintenanceSchedule.complete runs through the
+  // Manifest runtime (constitution §9) — no direct
+  // database.preventiveMaintenanceSchedule.update. The command mutates
+  // nextDueAt + lastCompletedAt (auto-set inside the command).
+  // requireCurrentUser supplies the actor + tenant for policy + audit (§19).
+  // Read-then-calculate is constitution §10 compliant (reads bypass runtime).
+  const user = await requireCurrentUser();
+  const tenantId = user.tenantId;
 
+  // Read: fetch current schedule to calculate next due date (constitution §10).
   const schedule = await database.preventiveMaintenanceSchedule.findFirst({
     where: { tenantId, id: scheduleId },
   });
 
   if (!schedule) throw new Error("Schedule not found");
 
+  // Calculate the next due date by advancing past now.
   const now = new Date();
   const nextDue = new Date(schedule.nextDueAt);
   const intervalMs = schedule.intervalDays * 24 * 60 * 60 * 1000;
@@ -322,13 +376,19 @@ export async function completeSchedule(scheduleId: string) {
     nextDue.setTime(nextDue.getTime() + intervalMs);
   }
 
-  await database.preventiveMaintenanceSchedule.update({
-    where: { tenantId_id: { tenantId, id: scheduleId } },
-    data: {
-      lastCompletedAt: now,
-      nextDueAt: nextDue,
+  const result = await runManifestCommand({
+    entity: "PreventiveMaintenanceSchedule",
+    command: "complete",
+    body: {
+      id: scheduleId,
+      nextDueAt: nextDue.toISOString(),
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to complete schedule");
+  }
 
   revalidatePath("/facilities/schedules");
 }

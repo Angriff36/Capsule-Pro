@@ -842,44 +842,65 @@ entity PreventiveMaintenanceSchedule {
   key [tenantId, id]
   property required id: string
   property required tenantId: string
-  property required equipmentId: string
-  property name: string = ""
-  property frequency: string = ""
+  property scheduleNumber: string = ""
+  property areaId: string = ""
+  property equipmentId: string = ""
+  property title: string = ""
+  property description: string = ""
+  property frequency: string = "monthly"
+  property intervalDays: int = 30
   property nextDueAt: datetime
+  property lastCompletedAt: datetime
+  property assignedTo: string = ""
+  property estimatedHours: decimal = 0
+  property estimatedCost: money = 0
+  property status: string = "active"
   property isActive: boolean = true
   timestamps
 
   computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt
-  computed isActiveSchedule: boolean = self.isActive == true
+  computed isActiveSchedule: boolean = self.isActive == true and self.status == "active"
 
-  constraint requireName: self.name != "" "Schedule name is required"
+  constraint requireTitle: self.title != "" "Schedule title is required"
   constraint requireFrequency: self.frequency != "" "Frequency is required"
 
-  default policy PreventiveMaintenanceScheduleDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(equipmentId: string, name: string, frequency: string, nextDueAt: datetime) {
-    guard equipmentId != null and equipmentId != "" "Equipment ID is required"
-    guard name != null and name != "" "Schedule name is required"
+  default policy PreventiveMaintenanceScheduleDefaultAccess execute: user.role in ["facilities_manager", "facility_manager", "manager", "admin"] "Facility management"
+  command create(title: string, areaId: string, equipmentId: string, description: string, frequency: string, intervalDays: int, nextDueAt: datetime, assignedTo: string, estimatedHours: decimal, estimatedCost: money) {
+    guard title != null and title != "" "Schedule title is required"
     guard frequency != null and frequency != "" "Frequency is required"
     guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
 
+    mutate title = title
+    mutate areaId = areaId
     mutate equipmentId = equipmentId
-    mutate name = name
+    mutate description = description
     mutate frequency = frequency
+    mutate intervalDays = intervalDays
     mutate nextDueAt = nextDueAt
+    mutate assignedTo = assignedTo
+    mutate estimatedHours = estimatedHours
+    mutate estimatedCost = estimatedCost
+    mutate scheduleNumber = "PM-" + substring(id, 0, 8)
+    mutate status = "active"
     mutate isActive = true
 
     emit MaintenanceScheduleCreated
   }
 
-  command update(name: string, frequency: string, nextDueAt: datetime) {
+  command update(title: string, description: string, frequency: string, intervalDays: int, nextDueAt: datetime, assignedTo: string, estimatedHours: decimal, estimatedCost: money) {
     guard self.isActive "Cannot update an inactive maintenance schedule"
-    guard name != null and name != "" "Schedule name is required"
+    guard title != null and title != "" "Schedule title is required"
     guard frequency != null and frequency != "" "Frequency is required"
     guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
 
-    mutate name = name
+    mutate title = title
+    mutate description = description
     mutate frequency = frequency
+    mutate intervalDays = intervalDays
     mutate nextDueAt = nextDueAt
+    mutate assignedTo = assignedTo
+    mutate estimatedHours = estimatedHours
+    mutate estimatedCost = estimatedCost
 
     emit MaintenanceScheduleUpdated
   }
@@ -889,6 +910,7 @@ entity PreventiveMaintenanceSchedule {
     guard nextDueAt != null and nextDueAt > 0 "Next due date is required for recurrence"
 
     mutate nextDueAt = nextDueAt
+    mutate lastCompletedAt = now()
 
     emit MaintenanceScheduleCompleted
   }
@@ -897,6 +919,7 @@ entity PreventiveMaintenanceSchedule {
     guard self.isActive "Schedule is already inactive"
 
     mutate isActive = false
+    mutate status = "archived"
 
     emit MaintenanceScheduleDeactivated
   }
