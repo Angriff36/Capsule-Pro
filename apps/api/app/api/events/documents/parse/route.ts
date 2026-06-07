@@ -20,11 +20,45 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+/** User context required by Manifest runtime commands */
+type ManifestUser = { id: string; tenantId: string; role: string };
 
 type EventParserModule = typeof import("@repo/event-parser");
 
 let eventParserPromise: Promise<EventParserModule> | null = null;
+
+/**
+ * Run a Manifest command internally (not returning HTTP Response).
+ * Returns the created/mutated entity data including `id`.
+ */
+async function execCommand(
+  entity: string,
+  command: string,
+  body: Record<string, unknown>,
+  user: ManifestUser,
+  instanceId?: string
+) {
+  const result = await runManifestCommandCore(
+    {
+      createRuntime: ({ user: u, entityName }) =>
+        createManifestRuntime({
+          user: { id: u.id, tenantId: u.tenantId, role: u.role },
+          entityName,
+        }),
+    },
+    { entity, command, body, user, instanceId }
+  );
+  if (!result.ok) {
+    throw new Error(
+      `Manifest ${entity}.${command} failed: ${result.message}`
+    );
+  }
+  return result.result as Record<string, unknown>;
+}
 
 const getEventParser = () => {
   eventParserPromise ??= import("@repo/event-parser");
@@ -245,7 +279,8 @@ function aggregateMenuItems(
 async function findOrCreateRecipe(
   tenantId: string,
   dishName: string,
-  category: string | null
+  category: string | null,
+  user: ManifestUser
 ): Promise<{ recipeId: string; created: boolean }> {
   const existingRecipe = await database.recipe.findFirst({
     where: {
@@ -263,17 +298,28 @@ async function findOrCreateRecipe(
     return { recipeId: existingRecipe.id, created: false };
   }
 
-  const createdRecipe = await database.recipe.create({
-    data: {
+  // Governed write: Recipe.create via Manifest runtime
+  const created = await execCommand(
+    "Recipe",
+    "create",
+    {
       tenantId,
       name: dishName,
-      category: category ?? undefined,
+      category: category ?? "",
+      cuisineType: "",
+      description: "",
       tags: ["imported"],
       isActive: true,
     },
-  });
+    user
+  );
 
-  return { recipeId: createdRecipe.id, created: true };
+  const recipeId = created.id as string;
+  if (!recipeId) {
+    throw new Error("Failed to create recipe via Manifest");
+  }
+
+  return { recipeId, created: true };
 }
 
 /**
@@ -282,7 +328,8 @@ async function findOrCreateRecipe(
 async function findOrCreateDish(
   tenantId: string,
   entry: AggregatedMenuItem,
-  serviceStyle: string | undefined
+  serviceStyle: string | undefined,
+  user: ManifestUser
 ): Promise<{ dishId: string; created: boolean; recipeCreated: boolean }> {
   const existingDish = await database.dish.findFirst({
     where: {
@@ -306,23 +353,37 @@ async function findOrCreateDish(
   const { recipeId, created: recipeCreated } = await findOrCreateRecipe(
     tenantId,
     entry.name,
-    entry.category
+    entry.category,
+    user
   );
 
-  const createdDish = await database.dish.create({
-    data: {
+  // Governed write: Dish.create via Manifest runtime
+  const createdDish = await execCommand(
+    "Dish",
+    "create",
+    {
       tenantId,
       recipeId,
       name: entry.name,
-      category: entry.category ?? undefined,
-      serviceStyle,
-      dietaryTags: Array.from(entry.dietaryTags),
-      allergens: Array.from(entry.allergens),
+      description: "",
+      category: entry.category ?? "",
+      serviceStyle: serviceStyle ?? "",
+      defaultContainerId: "",
+      presentationImageUrl: "",
+      minPrepLeadDays: 0,
+      maxPrepLeadDays: 0,
+      portionSizeDescription: "",
+      dietaryTags: Array.from(entry.dietaryTags).join(","),
+      allergens: Array.from(entry.allergens).join(","),
+      pricePerPerson: "0",
+      costPerPerson: "0",
       isActive: true,
     },
-  });
+    user
+  );
 
-  return { dishId: createdDish.id, created: true, recipeCreated };
+  const dishId = createdDish.id as string;
+  return { dishId, created: true, recipeCreated };
 }
 
 /**
@@ -350,6 +411,12 @@ async function findExistingEventDishLink(
 
 /**
  * Update an existing event-dish link
+ *
+ * BYPASS: Direct Prisma write retained because `serviceStyle` has no
+ * dedicated EventDish IR command. The available commands (updateQuantity,
+ * updateCourse, updateNotes) cannot update serviceStyle, so a Manifest
+ * migration would silently drop that field. Revisit when EventDish gains
+ * an `update` or `updateServiceStyle` command.
  */
 async function updateEventDishLink(
   tenantId: string,
@@ -384,22 +451,31 @@ async function createEventDishLink(
   eventId: string,
   dishId: string,
   entry: AggregatedMenuItem,
-  serviceStyle: string | undefined
+  serviceStyle: string | undefined,
+  user: ManifestUser
 ): Promise<void> {
   const specialInstructions = Array.from(entry.instructions).join("; ");
 
-  await database.eventDish.create({
-    data: {
+  // Governed write: EventDish.create via Manifest runtime
+  await execCommand(
+    "EventDish",
+    "create",
+    {
       tenantId,
       eventId,
       dishId,
+      quantity: Math.max(1, Math.round(entry.quantity)),
+      notes: specialInstructions.length > 0 ? specialInstructions : "",
+      courseLabel: entry.category ?? "",
+      sortOrder: 0,
+      // Extra fields passed through to store (not in IR params but needed by schema)
       course: entry.category ?? null,
-      quantityServings: Math.max(1, Math.round(entry.quantity)),
       serviceStyle: entry.serviceLocation ?? serviceStyle ?? null,
       specialInstructions:
         specialInstructions.length > 0 ? specialInstructions : null,
     },
-  });
+    user
+  );
 }
 
 /**
@@ -410,12 +486,14 @@ async function processMenuItemEntry(
   eventId: string,
   entry: AggregatedMenuItem,
   serviceStyle: string | undefined,
-  summary: MenuImportSummary
+  summary: MenuImportSummary,
+  user: ManifestUser
 ): Promise<void> {
   const { dishId, created, recipeCreated } = await findOrCreateDish(
     tenantId,
     entry,
-    serviceStyle
+    serviceStyle,
+    user
   );
 
   if (created) {
@@ -441,7 +519,7 @@ async function processMenuItemEntry(
     );
     summary.updatedLinks += 1;
   } else {
-    await createEventDishLink(tenantId, eventId, dishId, entry, serviceStyle);
+    await createEventDishLink(tenantId, eventId, dishId, entry, serviceStyle, user);
     summary.linkedDishes += 1;
   }
 }
@@ -464,7 +542,8 @@ function buildMissingQuantitiesSummary(
 const importMenuToEvent = async (
   tenantId: string,
   eventId: string,
-  event: ParsedEvent
+  event: ParsedEvent,
+  user: ManifestUser
 ): Promise<MenuImportSummary> => {
   const summary: MenuImportSummary = {
     missingQuantities: [],
@@ -492,7 +571,8 @@ const importMenuToEvent = async (
       eventId,
       entry,
       event.serviceStyle?.trim(),
-      summary
+      summary,
+      user
     );
   }
 
@@ -506,29 +586,39 @@ const importMenuToEvent = async (
 async function _createBattleBoard(
   mergedEvent: ParsedEvent,
   tenantId: string,
-  eventId: string
+  eventId: string,
+  user: ManifestUser
 ) {
   const { buildBattleBoardFromEvent } = await getEventParser();
   const battleBoardResult = buildBattleBoardFromEvent(mergedEvent);
 
-  // Save battle board to database
+  // Save battle board to database — governed write via Manifest runtime
   const boardName = mergedEvent.client || mergedEvent.number || eventId || "";
 
-  const savedBattleBoard = await database.battleBoard.create({
-    data: {
+  const saved = await execCommand(
+    "BattleBoard",
+    "create",
+    {
       tenantId,
       eventId,
-      board_name: boardName,
-      board_type: "event-specific",
+      boardName,
+      boardType: "event-specific",
+      description: "",
+      isTemplate: false,
+      notes: "",
+      tags: "imported",
+      // Extra fields passed through to store
       schema_version: "mangia-battle-board@1",
       boardData: battleBoardResult.battleBoard as object,
       status: "draft",
       is_template: false,
-      tags: ["imported"],
+      board_name: boardName,
+      board_type: "event-specific",
     },
-  });
+    user
+  );
 
-  return { battleBoard: battleBoardResult, battleBoardId: savedBattleBoard.id };
+  return { battleBoard: battleBoardResult, battleBoardId: saved.id as string };
 }
 
 /**
@@ -660,30 +750,44 @@ async function createEventFromParsedData(
   tenantId: string,
   event: ParsedEvent,
   files: File[],
-  missingFields: MissingField[]
+  missingFields: MissingField[],
+  user: ManifestUser
 ): Promise<{ eventId: string; title: string }> {
   const derivedTitle = deriveEventTitle(event, files);
   const parsedDate = parseEventDate(event.date);
   const resolvedEventDate = parsedDate ?? new Date();
   const notes = buildEventNotes(files, event);
 
-  const newEvent = await database.event.create({
-    data: {
+  // Governed write: Event.create via Manifest runtime
+  const newEvent = await execCommand(
+    "Event",
+    "create",
+    {
       tenantId,
       title: derivedTitle,
       eventType: event.serviceStyle || "catering",
-      eventDate: resolvedEventDate,
+      eventDate: resolvedEventDate.toISOString(),
       guestCount: event.headcount > 0 ? event.headcount : 0,
       status: missingFields.length > 0 ? "draft" : "confirmed",
-      eventNumber: event.number || undefined,
-      venueName: event.venue?.name || undefined,
-      venueAddress: event.venue?.address || undefined,
+      eventNumber: event.number || "",
+      venueName: event.venue?.name || "",
+      venueAddress: event.venue?.address || "",
       notes,
       tags: buildEventTags(["imported", ...(event.kits || [])], missingFields),
+      // Required IR params not in original write — sensible defaults for import
+      clientId: "",
+      budget: 0,
+      ticketPrice: 0,
+      ticketTier: "",
+      eventFormat: "",
+      accessibilityOptions: [],
+      featuredMediaUrl: "",
     },
-  });
+    user
+  );
 
-  return { eventId: newEvent.id, title: derivedTitle };
+  const eventId = newEvent.id as string;
+  return { eventId, title: derivedTitle };
 }
 
 /**
@@ -710,7 +814,8 @@ async function handleEventCreation(
   tenantId: string,
   event: ParsedEvent,
   files: File[],
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  user: ManifestUser
 ): Promise<{ eventId: string; title: string }> {
   log.debug("[handleEventCreation] Creating new event from parsed data");
   const missingFields = getMissingFieldsFromParsedEvent(event);
@@ -718,7 +823,8 @@ async function handleEventCreation(
     tenantId,
     event,
     files,
-    missingFields
+    missingFields,
+    user
   );
   log.info("[handleEventCreation] Event created", { eventId: result.eventId });
 
@@ -734,35 +840,47 @@ async function generateBattleBoardForEvent(
   tenantId: string,
   eventId: string,
   event: ParsedEvent,
-  response: ParseDocumentsResponse
+  response: ParseDocumentsResponse,
+  user: ManifestUser
 ): Promise<void> {
   try {
     log.debug("[generateBattleBoardForEvent] Creating battle board");
 
     const { buildBattleBoardFromEvent } = await getEventParser();
     const battleBoardResult = buildBattleBoardFromEvent(event);
-    const battleBoardId = crypto.randomUUID();
+    const boardName = event.client || event.number || eventId || "";
 
-    const savedBattleBoard = await database.battleBoard.create({
-      data: {
+    // Governed write: BattleBoard.create via Manifest runtime
+    const savedBattleBoard = await execCommand(
+      "BattleBoard",
+      "create",
+      {
         tenantId,
-        id: battleBoardId,
+        id: crypto.randomUUID(),
         eventId,
-        board_name: event.client || event.number || eventId || "",
-        board_type: "event-specific",
+        boardName,
+        boardType: "event-specific",
+        description: "",
+        isTemplate: false,
+        notes: "",
+        tags: "imported",
+        // Extra fields passed through to store
         schema_version: "mangia-battle-board@1",
         boardData: battleBoardResult.battleBoard as object,
         status: "draft",
         is_template: false,
-        tags: ["imported"],
+        board_name: boardName,
+        board_type: "event-specific",
       },
-    });
+      user
+    );
 
+    const savedId = savedBattleBoard.id as string;
     log.info("[generateBattleBoardForEvent] Battle board saved", {
-      battleBoardId: savedBattleBoard.id,
+      battleBoardId: savedId,
     });
     response.battleBoard = battleBoardResult.battleBoard;
-    response.battleBoardId = savedBattleBoard.id;
+    response.battleBoardId = savedId;
   } catch (error) {
     log.error("[generateBattleBoardForEvent] Generation failed", { error });
     response.battleBoardError =
@@ -778,7 +896,8 @@ async function generateChecklistForEvent(
   eventId: string,
   event: ParsedEvent,
   eventTitle: string,
-  response: ParseDocumentsResponse
+  response: ParseDocumentsResponse,
+  user: ManifestUser
 ): Promise<void> {
   try {
     log.debug("[generateChecklistForEvent] Creating checklist");
@@ -794,29 +913,38 @@ async function generateChecklistForEvent(
           )
         : 0;
 
-    const savedReport = await database.eventReport.create({
-      data: {
+    // Governed write: EventReport.create via Manifest runtime
+    const savedReport = await execCommand(
+      "EventReport",
+      "create",
+      {
         tenantId,
         id: crypto.randomUUID(),
         eventId,
         name: eventTitle || eventId,
+        version: "1",
+        checklistData: JSON.stringify({
+          checklist: checklistResult.checklist,
+          warnings: checklistResult.warnings,
+        }),
+        reportConfig: "",
+        notes: "",
+        // Extra fields passed through to store
         status: "draft",
         completion: completionPercent,
         autoFillScore: checklistResult.autoFilledCount,
-        checklistData: {
-          checklist: checklistResult.checklist,
-          warnings: checklistResult.warnings,
-        } as unknown as Prisma.InputJsonObject,
-        parsedEventData: event as unknown as Prisma.InputJsonObject,
+        parsedEventData: event as unknown as Record<string, unknown>,
       },
-    });
+      user
+    );
 
+    const reportId = savedReport.id as string;
     log.info("[generateChecklistForEvent] Checklist saved", {
-      reportId: savedReport.id,
+      reportId,
     });
 
     response.checklist = checklistResult;
-    response.checklistId = savedReport.id;
+    response.checklistId = reportId;
   } catch (error) {
     log.error("[generateChecklistForEvent] Generation failed", { error });
     response.checklistError =
@@ -832,7 +960,8 @@ async function processParsedEventData(
   eventId: string | undefined,
   event: ParsedEvent,
   files: File[],
-  importRecords: Array<{ importId: string; document: ProcessedDocument }>
+  importRecords: Array<{ importId: string; document: ProcessedDocument }>,
+  user: ManifestUser
 ): Promise<{ actualEventId: string; derivedTitle: string }> {
   let actualEventId = eventId ?? "";
 
@@ -841,7 +970,8 @@ async function processParsedEventData(
       tenantId,
       event,
       files,
-      importRecords
+      importRecords,
+      user
     );
     actualEventId = result.eventId;
   }
@@ -849,7 +979,7 @@ async function processParsedEventData(
   // Import menu items to event
   if (actualEventId) {
     try {
-      await importMenuToEvent(tenantId, actualEventId, event);
+      await importMenuToEvent(tenantId, actualEventId, event, user);
     } catch (menuError) {
       log.error("[processParsedEventData] Menu import failed", {
         error: menuError,
@@ -869,6 +999,7 @@ async function processDocumentsAndGenerateResponse(
   files: File[],
   tenantId: string,
   _userId: string,
+  user: ManifestUser,
   eventId: string | undefined,
   shouldGenerateChecklist: boolean,
   shouldGenerateBattleBoard: boolean
@@ -1000,7 +1131,8 @@ async function processDocumentsAndGenerateResponse(
       eventId,
       result.mergedEvent,
       files,
-      importRecords
+      importRecords,
+      user
     );
     actualEventId = eventData.actualEventId;
     derivedTitle = eventData.derivedTitle;
@@ -1018,7 +1150,8 @@ async function processDocumentsAndGenerateResponse(
         tenantId,
         actualEventId,
         result.mergedEvent,
-        response
+        response,
+        user
       );
     } else {
       log.warn(
@@ -1042,7 +1175,8 @@ async function processDocumentsAndGenerateResponse(
         actualEventId,
         result.mergedEvent,
         derivedTitle,
-        response
+        response,
+        user
       );
     } else {
       log.warn(
@@ -1098,34 +1232,42 @@ function buildResponse(
 async function _createChecklist(
   mergedEvent: ParsedEvent,
   tenantId: string,
-  eventId: string
+  eventId: string,
+  user: ManifestUser
 ) {
   const { buildInitialChecklist } = await getEventParser();
   const checklistResult = buildInitialChecklist(mergedEvent);
   const reportName = deriveEventTitle(mergedEvent, []) || eventId;
 
-  // Save the checklist/report
-  const savedReport = await database.eventReport.create({
-    data: {
+  // Governed write: EventReport.create via Manifest runtime
+  const savedReport = await execCommand(
+    "EventReport",
+    "create",
+    {
       tenantId,
       eventId,
       name: reportName,
+      version: "1",
+      checklistData: JSON.stringify({
+        checklist: checklistResult.checklist,
+        warnings: checklistResult.warnings,
+      }),
+      reportConfig: "",
+      notes: "",
+      // Extra fields passed through to store
       status: "draft",
       completion: Math.round(
         (checklistResult.autoFilledCount / checklistResult.totalQuestions) * 100
       ),
       autoFillScore: checklistResult.autoFilledCount,
-      checklistData: {
-        checklist: checklistResult.checklist,
-        warnings: checklistResult.warnings,
-      } as unknown as Prisma.InputJsonObject,
-      parsedEventData: mergedEvent as unknown as Prisma.InputJsonObject,
+      parsedEventData: mergedEvent as unknown as Record<string, unknown>,
     },
-  });
+    user
+  );
 
   return {
     checklist: checklistResult,
-    checklistId: savedReport.id,
+    checklistId: savedReport.id as string,
   };
 }
 
@@ -1148,6 +1290,13 @@ export async function POST(request: Request) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    // Resolve full user context for Manifest runtime commands
+    const currentUser = await resolveCurrentUser(request);
+    const manifestUser: ManifestUser = {
+      id: currentUser.id,
+      tenantId: currentUser.tenantId,
+      role: currentUser.role,
+    };
     const { searchParams } = new URL(request.url);
 
     const eventId = searchParams.get("eventId");
@@ -1189,6 +1338,7 @@ export async function POST(request: Request) {
         files,
         tenantId,
         userId,
+        manifestUser,
         eventId ?? undefined,
         generateChecklist,
         generateBattleBoard
