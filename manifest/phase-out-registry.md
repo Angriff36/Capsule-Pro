@@ -87,6 +87,11 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 |---|---|---|
 | `app/api/accounting/payments/route.ts` | Payment | POST create → Manifest; explicit Invoice.applyPayment removed (PaymentProcessed reaction handles it); GET unchanged (Prisma read); ACCEPTED_NOT_APPLIED fallback retained as minimal Prisma bypass |
 
+### Migrated (1 route, 2026-06-06) — Task 8.3 batch 14 inventory item [id]
+| Route | Entity | Notes |
+|---|---|---|
+| `app/api/inventory/items/[id]/route.ts` | InventoryItem | PUT update → Manifest (COALESCE→read-merge-write; snake_case→camelCase mapping; recipe cost recalculation retained as post-command side effect); DELETE softDelete → Manifest (7-table dependency pre-validation retained); GET unchanged (Prisma read). `$executeRaw` writes fully removed. |
+
 ### COMPLETED: Legacy manifest-command-handler.ts removal (2026-06-04)
 - File: `apps/api/lib/manifest-command-handler.ts` (289 lines) — **DELETED**
 - All 71 route consumers migrated to canonical `runManifestCommand` from `@/lib/manifest/execute-command`

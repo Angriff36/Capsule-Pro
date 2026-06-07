@@ -5,7 +5,8 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TEAM_THREAD_SLUG = "team";
 const TEAM_THREAD_TYPE = "team";
@@ -129,40 +130,81 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
   });
 };
 
-const ensureTeamThread = async (tenantId: string, employeeId: string) => {
-  const teamThread = await database.adminChatThread.upsert({
+/**
+ * Ensures the team thread and current user's participant exist.
+ * Uses Manifest commands for writes; direct reads per constitution §10.
+ */
+const ensureTeamThread = async (
+  tenantId: string,
+  employeeId: string,
+  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string }
+) => {
+  // Read: check if team thread already exists (read per constitution §10)
+  let teamThread = await database.adminChatThread.findFirst({
     where: {
-      tenantId_slug: {
-        tenantId,
-        slug: TEAM_THREAD_SLUG,
-      },
-    },
-    update: {},
-    create: {
       tenantId,
-      threadType: TEAM_THREAD_TYPE,
       slug: TEAM_THREAD_SLUG,
-      createdBy: employeeId,
-    },
-  });
-
-  await database.adminChatParticipant.upsert({
-    where: {
-      tenantId_threadId_userId: {
-        tenantId,
-        threadId: teamThread.id,
-        userId: employeeId,
-      },
-    },
-    update: {
       deletedAt: null,
     },
-    create: {
+    select: { id: true },
+  });
+
+  if (!teamThread) {
+    // Write: create team thread via Manifest
+    const threadResult = await runManifestCommand({
+      entity: "AdminChatThread",
+      command: "create",
+      body: {
+        threadType: TEAM_THREAD_TYPE,
+        slug: TEAM_THREAD_SLUG,
+        directKey: "",
+        createdBy: employeeId,
+      },
+      user,
+    });
+
+    if (threadResult.status !== 200 && threadResult.status !== 201) {
+      throw new Error("Failed to create team thread");
+    }
+
+    // Re-read to get the created thread (read per constitution §10)
+    teamThread = await database.adminChatThread.findFirst({
+      where: {
+        tenantId,
+        slug: TEAM_THREAD_SLUG,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (!teamThread) {
+      throw new Error("Team thread not found after creation");
+    }
+  }
+
+  // Read: check if participant exists (read per constitution §10)
+  const existingParticipant = await database.adminChatParticipant.findFirst({
+    where: {
       tenantId,
       threadId: teamThread.id,
       userId: employeeId,
+      deletedAt: null,
     },
+    select: { id: true },
   });
+
+  if (!existingParticipant) {
+    // Write: create participant via Manifest
+    await runManifestCommand({
+      entity: "AdminChatParticipant",
+      command: "create",
+      body: {
+        threadId: teamThread.id,
+        userId: employeeId,
+      },
+      user,
+    });
+  }
 
   return teamThread;
 };
@@ -194,7 +236,8 @@ export async function GET(request: Request) {
       );
     }
 
-    const teamThread = await ensureTeamThread(tenantId, employee.id);
+    const user = await resolveCurrentUser(request);
+    const teamThread = await ensureTeamThread(tenantId, employee.id, user);
 
     const participantRows = await database.adminChatParticipant.findMany({
       where: {
@@ -337,60 +380,114 @@ export async function POST(request: Request) {
       );
     }
 
+    const user = await resolveCurrentUser(request);
     const directKey = buildDirectKey(employee.id, participantId);
 
-    const thread = await database.adminChatThread.upsert({
+    // Read: check if thread already exists (read per constitution §10)
+    let thread = await database.adminChatThread.findFirst({
       where: {
-        tenantId_directKey: {
-          tenantId,
-          directKey,
-        },
-      },
-      update: {},
-      create: {
         tenantId,
-        threadType: DIRECT_THREAD_TYPE,
         directKey,
-        createdBy: employee.id,
-      },
-    });
-
-    await database.adminChatParticipant.upsert({
-      where: {
-        tenantId_threadId_userId: {
-          tenantId,
-          threadId: thread.id,
-          userId: employee.id,
-        },
-      },
-      update: {
         deletedAt: null,
       },
-      create: {
+      select: { id: true },
+    });
+
+    if (!thread) {
+      // Write: create direct thread via Manifest
+      const threadResult = await runManifestCommand({
+        entity: "AdminChatThread",
+        command: "create",
+        body: {
+          threadType: DIRECT_THREAD_TYPE,
+          slug: "",
+          directKey,
+          createdBy: employee.id,
+        },
+        user,
+      });
+
+      if (threadResult.status !== 200 && threadResult.status !== 201) {
+        return threadResult;
+      }
+
+      // Re-read to get the created thread (read per constitution §10)
+      thread = await database.adminChatThread.findFirst({
+        where: {
+          tenantId,
+          directKey,
+          deletedAt: null,
+        },
+        select: { id: true },
+      });
+
+      if (!thread) {
+        return NextResponse.json(
+          { message: "Failed to create thread" },
+          { status: 500, headers: corsHeaders(request, "GET, POST, OPTIONS") }
+        );
+      }
+    }
+
+    // Ensure both participants exist via Manifest
+    // Read: check current user's participant (read per constitution §10)
+    const existingSelfParticipant = await database.adminChatParticipant.findFirst({
+      where: {
         tenantId,
         threadId: thread.id,
         userId: employee.id,
-      },
-    });
-
-    await database.adminChatParticipant.upsert({
-      where: {
-        tenantId_threadId_userId: {
-          tenantId,
-          threadId: thread.id,
-          userId: participantId,
-        },
-      },
-      update: {
         deletedAt: null,
       },
-      create: {
+      select: { id: true },
+    });
+
+    if (!existingSelfParticipant) {
+      await runManifestCommand({
+        entity: "AdminChatParticipant",
+        command: "create",
+        body: {
+          threadId: thread.id,
+          userId: employee.id,
+        },
+        user,
+      });
+    }
+
+    // Read: check other participant (read per constitution §10)
+    const existingOtherParticipant = await database.adminChatParticipant.findFirst({
+      where: {
         tenantId,
         threadId: thread.id,
         userId: participantId,
+        deletedAt: null,
       },
+      select: { id: true, archivedAt: true },
     });
 
+    if (!existingOtherParticipant) {
+      await runManifestCommand({
+        entity: "AdminChatParticipant",
+        command: "create",
+        body: {
+          threadId: thread.id,
+          userId: participantId,
+        },
+        user,
+      });
+    } else if (existingOtherParticipant.archivedAt) {
+      // If the other participant was archived, unarchive them
+      await runManifestCommand({
+        entity: "AdminChatParticipant",
+        command: "unarchive",
+        body: {
+          id: existingOtherParticipant.id,
+          threadId: thread.id,
+        },
+        user,
+      });
+    }
+
+    // Read: fetch the full participant row for response (read per constitution §10)
     const participantRow = await database.adminChatParticipant.findFirst({
       where: {
         tenantId,

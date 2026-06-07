@@ -36,6 +36,11 @@
   },
   {
     "entity": "AdminChatParticipant",
+    "command": "create",
+    "commandId": "AdminChatParticipant.create"
+  },
+  {
+    "entity": "AdminChatParticipant",
     "command": "unarchive",
     "commandId": "AdminChatParticipant.unarchive"
   },

@@ -2,8 +2,8 @@
  * Individual Inventory Item API Endpoints
  *
  * GET    /api/inventory/items/[id]      - Get a single inventory item
- * PUT    /api/inventory/items/[id]      - Update an inventory item
- * DELETE /api/inventory/items/[id]      - Delete an inventory item (soft delete)
+ * PUT    /api/inventory/items/[id]      - Update an inventory item (Manifest runtime)
+ * DELETE /api/inventory/items/[id]      - Delete an inventory item (Manifest softDelete)
  */
 
 import { auth } from "@repo/auth/server";
@@ -13,7 +13,8 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { recalculateRecipeCostsForInventoryItem } from "@/app/lib/recipe-costing";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 import type { FSAStatus, InventoryItemWithStatus } from "../types";
 import { validateUpdateInventoryItemRequest } from "../validation";
 
@@ -194,7 +195,12 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 /**
- * PUT /api/inventory/items/[id] - Update an inventory item
+ * PUT /api/inventory/items/[id] - Update an inventory item via Manifest runtime.
+ *
+ * The Manifest `update` command takes all fields (not a partial patch), so this
+ * handler reads the current state, merges incoming changes on top, maps API
+ * snake_case to manifest camelCase, and delegates to runManifestCommand.
+ * Recipe cost recalculation runs as a post-command side effect.
  */
 export async function PUT(request: Request, context: RouteContext) {
   try {
@@ -253,27 +259,39 @@ export async function PUT(request: Request, context: RouteContext) {
       body.unit_cost !== undefined &&
       Number(body.unit_cost) !== Number(existing.unitCost);
 
-    await database.$executeRaw`
-      UPDATE "tenant_inventory".inventory_items
-      SET
-        name = COALESCE(${body.name}, name),
-        description = COALESCE(${body.description}, description),
-        category = COALESCE(${body.category}, category),
-        unit_of_measure = COALESCE(${body.unit_of_measure}, unit_of_measure),
-        unit_cost = COALESCE(${body.unit_cost != null ? body.unit_cost.toString() : null}, unit_cost::text)::decimal(10,2),
-        quantity_on_hand = COALESCE(${body.quantity_on_hand != null ? body.quantity_on_hand.toString() : null}, quantity_on_hand::text)::decimal(12,3),
-        par_level = COALESCE(${body.par_level != null ? body.par_level.toString() : null}, par_level::text)::decimal(12,3),
-        reorder_level = COALESCE(${body.reorder_level != null ? body.reorder_level.toString() : null}, reorder_level::text)::decimal(12,3),
-        supplier_id = COALESCE(${body.supplier_id}::uuid, supplier_id),
-        tags = COALESCE(${body.tags ? JSON.stringify(body.tags) : null}, tags::jsonb),
-        fsa_status = COALESCE(${body.fsa_status}, fsa_status),
-        fsa_temp_logged = COALESCE(${body.fsa_temp_logged}, fsa_temp_logged),
-        fsa_allergen_info = COALESCE(${body.fsa_allergen_info}, fsa_allergen_info),
-        fsa_traceable = COALESCE(${body.fsa_traceable}, fsa_traceable),
-        updated_at = NOW()
-      WHERE id = ${id} AND tenant_id = ${tenantId} AND deleted_at IS NULL
-    `;
+    // Merge current values with incoming changes and map to manifest camelCase
+    const mergedBody: Record<string, unknown> = {
+      id,
+      name: body.name ?? existing.name,
+      description: body.description ?? existing.description ?? "",
+      category: body.category ?? existing.category,
+      unitOfMeasure: body.unit_of_measure ?? existing.unitOfMeasure,
+      unitCost: body.unit_cost ?? Number(existing.unitCost),
+      quantityOnHand: body.quantity_on_hand ?? Number(existing.quantityOnHand),
+      parLevel: body.par_level ?? Number(existing.parLevel),
+      reorder_level: body.reorder_level ?? Number(existing.reorder_level),
+      supplierId: body.supplier_id ?? existing.supplierId ?? "",
+      tags: body.tags ?? existing.tags ?? "",
+      fsa_status: body.fsa_status ?? existing.fsa_status ?? "unknown",
+      fsa_temp_logged: body.fsa_temp_logged ?? existing.fsa_temp_logged ?? false,
+      fsa_allergen_info: body.fsa_allergen_info ?? existing.fsa_allergen_info ?? false,
+      fsa_traceable: body.fsa_traceable ?? existing.fsa_traceable ?? false,
+    };
 
+    const user = await resolveCurrentUser(request);
+    const manifestResult = await runManifestCommand({
+      entity: "InventoryItem",
+      command: "update",
+      body: mergedBody,
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
+
+    // If the manifest command failed, return its error response directly
+    if (manifestResult.status >= 400) {
+      return manifestResult;
+    }
+
+    // Read back the updated item for the response shape + side effects
     const updatedItem = await database.inventoryItem.findFirst({
       where: {
         id,
@@ -284,7 +302,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     if (!updatedItem) {
       return NextResponse.json(
-        { message: "Inventory item not found" },
+        { message: "Inventory item not found after update" },
         { status: 404 }
       );
     }
@@ -329,9 +347,12 @@ export async function PUT(request: Request, context: RouteContext) {
 }
 
 /**
- * DELETE /api/inventory/items/[id] - Soft delete an inventory item
+ * DELETE /api/inventory/items/[id] - Soft delete an inventory item via Manifest runtime.
+ *
+ * Pre-validates 7 dependency tables before delegating to the Manifest softDelete
+ * command (per constitution §10 — reads bypass Manifest).
  */
-export async function DELETE(_request: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -370,7 +391,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
-    // Check for dependencies before deletion
+    // Check for dependencies before deletion (pre-validation reads per §10)
     // An item cannot be deleted if it has dependencies in:
     // - WasteEntry (waste_entries table via inventory_item_id)
     // - ShipmentItem (shipment_items table via item_id)
@@ -478,14 +499,14 @@ export async function DELETE(_request: Request, context: RouteContext) {
       );
     }
 
-    // Soft delete the item using raw SQL for composite key
-    await database.$executeRaw`
-      UPDATE "tenant_inventory".inventory_items
-      SET deleted_at = NOW()
-      WHERE id = ${id} AND tenant_id = ${tenantId} AND deleted_at IS NULL
-    `;
-
-    return NextResponse.json({ success: true });
+    // Delegate soft-delete to Manifest runtime
+    const user = await resolveCurrentUser(request);
+    return runManifestCommand({
+      entity: "InventoryItem",
+      command: "softDelete",
+      body: { id },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
   } catch (error) {
     captureException(error);
     log.error("Failed to delete inventory item", { error });

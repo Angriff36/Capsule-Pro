@@ -36,26 +36,54 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
   });
 };
 
-const ensureParticipant = async (options: {
+/**
+ * Ensures a participant exists for a team thread using Manifest commands.
+ * For team threads, auto-join is allowed; for direct threads, the participant
+ * must already exist. Returns the participant record (read per constitution §10).
+ */
+const ensureTeamThreadParticipant = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
+  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
 }) => {
-  return await database.adminChatParticipant.upsert({
+  // Read: check if participant exists (read per constitution §10)
+  const existing = await database.adminChatParticipant.findFirst({
     where: {
-      tenantId_threadId_userId: {
-        tenantId: options.tenantId,
-        threadId: options.threadId,
-        userId: options.userId,
-      },
-    },
-    update: {
-      deletedAt: null,
-    },
-    create: {
       tenantId: options.tenantId,
       threadId: options.threadId,
       userId: options.userId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      archivedAt: true,
+      clearedAt: true,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  // Write: create participant via Manifest
+  await runManifestCommand({
+    entity: "AdminChatParticipant",
+    command: "create",
+    body: {
+      threadId: options.threadId,
+      userId: options.userId,
+    },
+    user: options.user,
+  });
+
+  // Re-read to get the created record (read per constitution §10)
+  return await database.adminChatParticipant.findFirst({
+    where: {
+      tenantId: options.tenantId,
+      threadId: options.threadId,
+      userId: options.userId,
+      deletedAt: null,
     },
     select: {
       id: true,
@@ -124,11 +152,20 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!participant) {
       if (thread.threadType === TEAM_THREAD_TYPE) {
-        participant = await ensureParticipant({
+        const user = await resolveCurrentUser(request);
+        const ensured = await ensureTeamThreadParticipant({
           tenantId,
           threadId,
           userId: employee.id,
+          user,
         });
+        if (!ensured) {
+          return NextResponse.json(
+            { message: "Failed to ensure participant" },
+            { status: 500, headers: corsHeaders(request, "PATCH, OPTIONS") }
+          );
+        }
+        participant = ensured;
       } else {
         return NextResponse.json(
           { message: "Thread not found" },

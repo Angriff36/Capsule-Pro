@@ -15,6 +15,16 @@ entity AdminChatParticipant {
   computed isArchived: boolean = self.archivedAt != null
 
   default policy AdminChatParticipantDefaultAccess execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Admin chat"
+  command create(threadId: string, userId: string) {
+    guard threadId != null and threadId != "" "Thread ID is required"
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate threadId = threadId
+    mutate userId = userId
+
+    emit AdminChatParticipantCreated
+  }
+
   command archive() {
     mutate archivedAt = now()
 
@@ -37,6 +47,12 @@ entity AdminChatParticipant {
 }
 
 policy AdminChatManagement execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can manage their chat participation"
+
+event AdminChatParticipantCreated: "admin.chat-participant.created" {
+  participantId: string
+  threadId: string
+  userId: string
+}
 
 event ChatParticipantArchived: "admin.chat-participant.archived" {
   participantId: string

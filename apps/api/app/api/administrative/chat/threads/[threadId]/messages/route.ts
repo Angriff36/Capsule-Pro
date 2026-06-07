@@ -64,26 +64,53 @@ const getEmployee = async (tenantId: string, authUserId: string) => {
   });
 };
 
-const ensureParticipant = async (options: {
+/**
+ * Ensures a participant exists for a team thread using Manifest commands.
+ * Returns the participant record or null for direct threads without access.
+ */
+const ensureTeamThreadParticipant = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
+  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
 }) => {
-  return await database.adminChatParticipant.upsert({
+  // Read: check if participant exists (read per constitution §10)
+  const existing = await database.adminChatParticipant.findFirst({
     where: {
-      tenantId_threadId_userId: {
-        tenantId: options.tenantId,
-        threadId: options.threadId,
-        userId: options.userId,
-      },
-    },
-    update: {
-      deletedAt: null,
-    },
-    create: {
       tenantId: options.tenantId,
       threadId: options.threadId,
       userId: options.userId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      clearedAt: true,
+      archivedAt: true,
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  // Write: create participant via Manifest
+  await runManifestCommand({
+    entity: "AdminChatParticipant",
+    command: "create",
+    body: {
+      threadId: options.threadId,
+      userId: options.userId,
+    },
+    user: options.user,
+  });
+
+  // Re-read to get the created record (read per constitution §10)
+  return await database.adminChatParticipant.findFirst({
+    where: {
+      tenantId: options.tenantId,
+      threadId: options.threadId,
+      userId: options.userId,
+      deletedAt: null,
     },
     select: {
       id: true,
@@ -97,6 +124,7 @@ const resolveThreadAccess = async (options: {
   tenantId: string;
   threadId: string;
   userId: string;
+  user: { id: string; tenantId: string; role: string; email: string; firstName: string; lastName: string };
 }) => {
   const thread = await database.adminChatThread.findFirst({
     where: {
@@ -133,8 +161,16 @@ const resolveThreadAccess = async (options: {
   }
 
   if (thread.threadType === TEAM_THREAD_TYPE) {
-    const created = await ensureParticipant(options);
-    return { thread, participant: created };
+    const created = await ensureTeamThreadParticipant({
+      tenantId: options.tenantId,
+      threadId: options.threadId,
+      userId: options.userId,
+      user: options.user,
+    });
+    if (created) {
+      return { thread, participant: created };
+    }
+    return null;
   }
 
   return null;
@@ -171,10 +207,12 @@ export async function GET(request: Request, context: RouteContext) {
     invariant(threadId, "threadId is required");
     invariant(UUID_REGEX.test(threadId), "threadId must be a UUID");
 
+    const user = await resolveCurrentUser(request);
     const access = await resolveThreadAccess({
       tenantId,
       threadId,
       userId: employee.id,
+      user,
     });
 
     if (!access) {
@@ -269,10 +307,12 @@ export async function POST(request: Request, context: RouteContext) {
     invariant(threadId, "threadId is required");
     invariant(UUID_REGEX.test(threadId), "threadId must be a UUID");
 
+    const user = await resolveCurrentUser(request);
     const access = await resolveThreadAccess({
       tenantId,
       threadId,
       userId: employee.id,
+      user,
     });
 
     if (!access) {
@@ -298,7 +338,6 @@ export async function POST(request: Request, context: RouteContext) {
         .trim()
         .trim() || employee.email;
 
-    const user = await resolveCurrentUser(request);
     const result = await runManifestCommand({
       entity: "AdminChatMessage",
       command: "create",
