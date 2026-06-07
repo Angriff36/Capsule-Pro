@@ -20,10 +20,21 @@ neonConfig.webSocketConstructor = ws;
 // Use HTTP fetch for queries when possible; avoids WebSocket "Connection terminated unexpectedly" (neondatabase/serverless#168)
 neonConfig.poolQueryViaFetch = true;
 
-const connectionString = keys().DATABASE_URL;
+// Guard: skip real DB initialization when DATABASE_URL is absent (test/mock environments).
+// The vitest mock for @repo/database intercepts most imports, but transitive imports
+// via @repo/database/standalone (e.g. manifest/runtime prisma-stores/shared.ts)
+// bypass the mock and load this module. Without DATABASE_URL the keys() call crashes.
+const connectionString = process.env.DATABASE_URL
+  ? keys().DATABASE_URL
+  : undefined;
+
 // Dev-only: confirm which host we're using (no credentials)
 // Use console.error to avoid polluting stdout (MCP stdio transport requires JSON-only stdout)
-if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
+if (
+  connectionString &&
+  process.env.NODE_ENV !== "production" &&
+  typeof process !== "undefined"
+) {
   try {
     const u = new URL(connectionString);
     console.error(
@@ -36,12 +47,22 @@ if (process.env.NODE_ENV !== "production" && typeof process !== "undefined") {
     // ignore
   }
 }
-const adapter = new PrismaNeon({ connectionString });
 
-export const database = globalForPrisma.prisma || new PrismaClient({ adapter });
+// When DATABASE_URL is absent (test environments), the real client is never used
+// — the vitest mock for @repo/database intercepts all direct usage. This branch
+// only fires when standalone.ts is loaded transitively (e.g. via shared.ts) for
+// the Prisma namespace re-export.
+const adapter = connectionString
+  ? new PrismaNeon({ connectionString })
+  : undefined;
+
+export const database = globalForPrisma.prisma ||
+  (adapter
+    ? new PrismaClient({ adapter })
+    : (undefined as unknown as PrismaClient));
 export const db = database;
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production" && adapter) {
   globalForPrisma.prisma = database;
 }
 
