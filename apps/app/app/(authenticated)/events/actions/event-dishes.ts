@@ -3,7 +3,8 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
-import { getTenantIdForOrg } from "../../../lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
+import { getTenantIdForOrg, requireCurrentUser } from "../../../lib/tenant";
 
 // Recipe options for inline dish creation
 export interface RecipeForDishCreation {
@@ -90,48 +91,42 @@ export async function createDishAndAddToEvent(
   }
 
   try {
-    const dishId = await database.$executeRaw(Prisma.sql`
-      INSERT INTO tenant_kitchen.dishes (
-        tenant_id,
-        id,
-        recipe_id,
-        name,
-        description,
-        category,
-        is_active,
-        created_at,
-        updated_at
-      ) VALUES (
-        ${tenantId},
-        gen_random_uuid(),
-        ${recipeId},
-        ${name.trim()},
-        null,
-        ${category?.trim() || null},
-        true,
-        NOW(),
-        NOW()
-      )
-      RETURNING id
-    `);
+    // Governed write: Dish.create runs through the Manifest runtime
+    // (constitution §9) — no direct SQL INSERT. The user context is
+    // supplied via requireCurrentUser for policy + audit.
+    const user = await requireCurrentUser();
+    const result = await runManifestCommand({
+      entity: "Dish",
+      command: "create",
+      body: {
+        recipeId,
+        name: name.trim(),
+        description: "",
+        category: category?.trim() || "",
+        serviceStyle: "",
+        defaultContainerId: "",
+        presentationImageUrl: "",
+        minPrepLeadDays: 0,
+        maxPrepLeadDays: 0,
+        portionSizeDescription: "",
+        dietaryTags: "",
+        allergens: "",
+        pricePerPerson: 0,
+        costPerPerson: 0,
+      },
+      user: { id: user.id, tenantId: user.tenantId, role: user.role },
+    });
 
-    // Get the created dish ID
-    const [createdDish] = await database.$queryRaw<{ id: string }[]>(
-      Prisma.sql`
-        SELECT id FROM tenant_kitchen.dishes
-        WHERE tenant_id = ${tenantId}
-          AND recipe_id = ${recipeId}
-          AND name = ${name.trim()}
-        ORDER BY created_at DESC
-        LIMIT 1
-      `
-    );
-
-    if (!createdDish) {
-      return { success: false, error: "Failed to create dish" };
+    if (!result.ok) {
+      return { success: false, error: result.message || "Failed to create dish" };
     }
 
-    // Add to event
+    const createdId = (result.result as { id?: string } | null)?.id;
+    if (!createdId) {
+      return { success: false, error: "Dish.create did not return an id" };
+    }
+
+    // Add to event (event_dishes is a separate entity — not governed yet)
     await database.$executeRaw(Prisma.sql`
       INSERT INTO tenant_events.event_dishes (
         tenant_id,
@@ -146,7 +141,7 @@ export async function createDishAndAddToEvent(
         ${tenantId},
         gen_random_uuid(),
         ${eventId},
-        ${createdDish.id},
+        ${createdId},
         ${course ?? null},
         1,
         NOW(),
@@ -160,7 +155,7 @@ export async function createDishAndAddToEvent(
     return {
       success: true,
       dish: {
-        id: createdDish.id,
+        id: createdId,
         name: name.trim(),
         category: category?.trim() || null,
         recipe_name: recipe.name,
@@ -441,31 +436,52 @@ export async function createDishVariantForEvent(
     return { success: false, error: "Source dish not found." };
   }
 
-  const createdDish = await database.dish.create({
-    data: {
-      tenantId,
+  // Governed write: Dish.create runs through the Manifest runtime
+  // (constitution §9) — no direct database.dish.create. Source dish
+  // fields are forwarded so the variant inherits recipe, pricing, etc.
+  const user = await requireCurrentUser();
+  const dishResult = await runManifestCommand({
+    entity: "Dish",
+    command: "create",
+    body: {
       recipeId: sourceDish.recipeId,
       name: trimmedName,
-      description: sourceDish.description ?? undefined,
-      category: sourceDish.category ?? undefined,
-      serviceStyle: sourceDish.serviceStyle ?? undefined,
-      defaultContainerId: sourceDish.defaultContainerId ?? undefined,
-      presentationImageUrl: sourceDish.presentationImageUrl ?? undefined,
+      description: sourceDish.description ?? "",
+      category: sourceDish.category ?? "",
+      serviceStyle: sourceDish.serviceStyle ?? "",
+      defaultContainerId: sourceDish.defaultContainerId ?? "",
+      presentationImageUrl: sourceDish.presentationImageUrl ?? "",
       minPrepLeadDays: sourceDish.minPrepLeadDays ?? 0,
-      maxPrepLeadDays: sourceDish.maxPrepLeadDays ?? undefined,
-      portionSizeDescription: sourceDish.portionSizeDescription ?? undefined,
+      maxPrepLeadDays: sourceDish.maxPrepLeadDays ?? 0,
+      portionSizeDescription: sourceDish.portionSizeDescription ?? "",
       dietaryTags: sourceDish.dietaryTags ?? [],
       allergens: sourceDish.allergens ?? [],
-      pricePerPerson: sourceDish.pricePerPerson ?? undefined,
-      costPerPerson: sourceDish.costPerPerson ?? undefined,
-      isActive: sourceDish.isActive ?? true,
+      pricePerPerson: sourceDish.pricePerPerson
+        ? Number(sourceDish.pricePerPerson)
+        : 0,
+      costPerPerson: sourceDish.costPerPerson
+        ? Number(sourceDish.costPerPerson)
+        : 0,
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!dishResult.ok) {
+    return {
+      success: false,
+      error: dishResult.message || "Failed to create dish variant",
+    };
+  }
+
+  const createdDishId = (dishResult.result as { id?: string } | null)?.id;
+  if (!createdDishId) {
+    return { success: false, error: "Dish.create did not return an id" };
+  }
 
   await database.$executeRaw(
     Prisma.sql`
       UPDATE tenant_events.event_dishes
-      SET dish_id = ${createdDish.id},
+      SET dish_id = ${createdDishId},
           updated_at = ${new Date()}
       WHERE tenant_id = ${tenantId}
         AND id = ${linkId}
@@ -474,5 +490,5 @@ export async function createDishVariantForEvent(
   );
 
   revalidatePath(`/events/${eventId}`);
-  return { success: true, dishId: createdDish.id };
+  return { success: true, dishId: createdDishId };
 }

@@ -335,7 +335,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 989 commands, 969 events, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 990 commands, 970 events, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -538,6 +538,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-06 | **Task 8.2 batch 13: AI bulk-tasks confirm + cron inventory-audit governance migration (v0.12.138)** | bulk-tasks/confirm: PrepTask.create via runManifestCommandCore (was direct database.prepTask.create). Supplementary update for dishId/locationId/estimatedMinutes/dueByTime outside governed surface. Cron inventory-audit: CycleCountSession.create via runManifestCommandCore + createManifestRuntime (system-user context). Uses structured result instead of HTTP Response wrapper. Total: 64 mutate handlers in 49 route files. API typecheck 0, 2689 tests pass. |
 | 2026-06-06 | **Task 8.3 batch 9: proposals, staff team, procurement actions governance migration + 6 new manifest commands (v0.12.139)** | Proposals: 6 writes migrated (create/update/delete/send/public-link/line-items). Staff team: 3 remaining writes migrated (reactivate/email/soft-delete). Procurement: 1 write migrated (updateTotals). New manifest commands: User.reactivate, User.softDelete, User.update(email), Proposal.remove, Proposal.generatePublicLink, PurchaseOrder.updateTotals. IR: 202 entities, 987 commands. API+App typecheck 0, 2689 tests pass. |
 | 2026-06-07 | **Task 8.2 batch 14: Payments POST + InventoryItem update/softDelete governance migration (v0.12.140)** | Payments POST: `database.payment.create` → `manifestRuntime.runCommand("create")` + `runCommand("process")`. Invoice.applyPayment removed (PaymentProcessed reaction handles). ACCEPTED_NOT_APPLIED fallback preserved. InventoryItem: `update` command (13 mutable fields) + `softDelete` command + events added to manifest source. IR: 989 commands (+2), 969 events (+2). API+App typecheck 0, 2689 tests pass. |
+| 2026-06-07 | **Task 8.2 batch 15: Admin chat threads + inventory items governance migration (v0.12.140)** | Admin chat: `POST/GET /api/administrative/chat/threads` — `database.adminChatThread.upsert` + `database.adminChatParticipant.upsert` → read-check + Manifest AdminChatThread.create / AdminChatParticipant.create. 3 route files (threads, [threadId], [threadId]/messages). Inventory items: `PUT /api/inventory/items/[id]` — `$executeRaw` COALESCE update → read-merge-write + Manifest InventoryItem.update (13 mutable fields). `DELETE /api/inventory/items/[id]` — `$executeRaw` soft-delete → Manifest InventoryItem.softDelete. All 7 dependency checks kept as pre-validation reads. New manifest source: `admin-chat-participant-rules.manifest` with `create` command + AdminChatParticipantCreated event. IR: 990 commands (+1), 970 events (+1). API+App typecheck 0, 2689 tests pass. Total: 64 mutate handlers in 48 route files migrated. |
 
 ---
 
@@ -1277,7 +1278,14 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
     - Payment-create-idempotency test updated: mock `runCommand` instead of `paymentCreateMock`. 7/7 idempotency tests pass.
     - IR: 989 commands (+2), 969 events (+2). 2689 tests pass, 0 typecheck errors.
     - Total: 60 mutate handlers in 45 route files migrated.
-  - **Total migrated across all batches:** 64 mutate handlers in 49 route files. Remaining: ~129 violations across ~35 files (most remaining are complex multi-entity transactions or infrastructure entities without Manifest IR definitions).
+  - **Progress 2026-06-07 (batch 15):** Admin chat threads + inventory items migrated to Manifest governance:
+    - `POST/GET /api/administrative/chat/threads` — `database.adminChatThread.upsert` + `database.adminChatParticipant.upsert` → read-check + Manifest AdminChatThread.create / AdminChatParticipant.create. 3 route files (threads, [threadId], [threadId]/messages).
+    - `PUT /api/inventory/items/[id]` — `$executeRaw` COALESCE update → read-merge-write + Manifest InventoryItem.update (13 mutable fields)
+    - `DELETE /api/inventory/items/[id]` — `$executeRaw` soft-delete → Manifest InventoryItem.softDelete. All 7 dependency checks kept as pre-validation reads.
+    - `manifest/source/admin-chat-participant-rules.manifest` — added `create` command + AdminChatParticipantCreated event.
+    - IR: 990 commands (+1), 970 events (+1). 2689 tests pass, 0 typecheck errors.
+    - Total: 64 mutate handlers in 48 route files migrated.
+  - **Total migrated across all batches:** 64 mutate handlers in 48 route files. Remaining: ~129 violations across ~35 files (most remaining are complex multi-entity transactions or infrastructure entities without Manifest IR definitions).
 
 ### 8.3 Server actions governance migration (~110 violations across 28 files)
 - **Done when:** All ~110 domain-entity server action writes across 28 files in `apps/app/` route through Manifest runtime via `executeCommand()` or the API route.
