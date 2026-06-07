@@ -122,6 +122,8 @@
     "manifest:validate": "pnpm exec manifest validate manifest/ir/kitchen.ir.json",
     "manifest:validate-ai": "pnpm exec manifest validate-ai manifest/ir/kitchen.ir.json --min-score 80",
     "manifest:registries": "node manifest/scripts/emit-registries.mjs",
+    "manifest:audit-ir-drift": "node manifest/scripts/audit-ir-drift.mjs",
+    "manifest:audit-ir-drift:strict": "node manifest/scripts/audit-ir-drift.mjs --strict",
     "manifest:audit-direct-writes": "node manifest/scripts/audit-direct-writes.mjs",
     "manifest:audit-direct-writes:strict": "node manifest/scripts/audit-direct-writes.mjs --strict",
     "manifest:audit-direct-writes:baseline": "node manifest/scripts/audit-direct-writes-baseline.mjs",

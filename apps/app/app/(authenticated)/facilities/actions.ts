@@ -141,32 +141,54 @@ export interface CreateFacilityAssetInput {
 }
 
 export async function createFacilityAsset(input: CreateFacilityAssetInput) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-  const tenantId = await getTenantId();
+  // Governed write: FacilityAsset.create runs through the Manifest runtime
+  // (constitution §9) — no direct database.facilityAsset.create.
+  // requireCurrentUser supplies the actor + tenant for policy + audit (§19).
+  // `status` is command-owned (mutated to "operational" inside the command), so
+  // it is NOT sent in the body. DateTime fields (purchaseDate, warrantyExpiry)
+  // are passed as ISO strings — GenericPrismaStore coerces for @db.Date columns.
+  // Empty optionals sent as "" — GenericPrismaStore coerces "" → NULL for
+  // nullable columns. purchasePrice maps to the Manifest command param; note the
+  // Prisma column is `purchaseCost` (IR drift — purchasePrice not in Prisma).
+  const user = await requireCurrentUser();
 
-  const asset = await database.facilityAsset.create({
-    data: {
-      tenantId,
+  const result = await runManifestCommand({
+    entity: "FacilityAsset",
+    command: "create",
+    body: {
+      facilityId: "",
+      areaId: input.areaId?.trim() || "",
       name: input.name.trim(),
       assetType: input.assetType || "other",
-      serialNumber: input.serialNumber?.trim() || null,
-      manufacturer: input.manufacturer?.trim() || null,
-      model: input.model?.trim() || null,
-      purchaseDate: input.purchaseDate ? new Date(input.purchaseDate) : null,
-      purchaseCost: input.purchaseCost ?? null,
-      warrantyExpiry: input.warrantyExpiry
-        ? new Date(input.warrantyExpiry)
-        : null,
-      areaId: input.areaId || null,
-      status: input.status || "active",
-      notes: input.notes?.trim() || null,
+      purchaseDate: input.purchaseDate || "",
+      purchasePrice: input.purchaseCost ?? 0,
+      serialNumber: input.serialNumber?.trim() || "",
+      manufacturer: input.manufacturer?.trim() || "",
+      model: input.model?.trim() || "",
+      warrantyExpiry: input.warrantyExpiry || "",
+      notes: input.notes?.trim() || "",
     },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });
+
+  if (!result.ok) {
+    throw new Error(result.message || "Failed to create facility asset");
+  }
+
+  // Read back the persisted row to preserve the return shape (constitution §10 —
+  // reads may bypass runtime). The created id comes from the command result.
+  const createdId = (result.result as { id?: string } | null)?.id;
+
+  let asset: Record<string, unknown> | null = null;
+  if (createdId) {
+    asset = await database.facilityAsset.findFirst({
+      where: { tenantId: user.tenantId, id: createdId },
+    });
+  }
 
   revalidatePath("/facilities");
   revalidatePath("/facilities/assets");
-  return asset;
+  return asset ?? (result.result as Record<string, unknown>) ?? {};
 }
 
 // ── MaintenanceWorkOrder ────────────────────────────────────────────────────

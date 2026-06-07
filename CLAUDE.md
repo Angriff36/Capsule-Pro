@@ -259,8 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 96% context — saved before compacting]
-Files (1):
-  manifest/source/reactions.manifest (edit)
+[proactive bridge @ 94% context — saved before compacting]
+Files (2):
+  apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts (create)
+  apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts (edit)
 
 # === END COGNILAYER ===
