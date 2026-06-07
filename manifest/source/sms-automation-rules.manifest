@@ -93,6 +93,8 @@ entity SmsAutomationRule {
     emit SmsAutomationRuleDeleted
   }
 
+  relationship belongsTo template: EmailTemplate with templateId
+
   store SmsAutomationRule in durable
 }
 

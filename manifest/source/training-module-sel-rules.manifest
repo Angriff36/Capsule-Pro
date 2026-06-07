@@ -47,6 +47,8 @@ entity SelOnboardingTrainingModuleDefinition {
     emit SelOnboardingTrainingDefinitionCreated
   }
 
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -76,6 +78,9 @@ entity SelOnboardingTrainingQuestion01Definition {
   command create() {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
+
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
 
   store in memory
 }
@@ -107,6 +112,9 @@ entity SelOnboardingTrainingQuestion02Definition {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -136,6 +144,9 @@ entity SelOnboardingTrainingQuestion03Definition {
   command create() {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
+
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
 
   store in memory
 }
@@ -167,6 +178,9 @@ entity SelOnboardingTrainingQuestion04Definition {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -196,6 +210,9 @@ entity SelOnboardingTrainingQuestion05Definition {
   command create() {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
+
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
 
   store in memory
 }
@@ -227,6 +244,9 @@ entity SelOnboardingTrainingQuestion06Definition {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -256,6 +276,9 @@ entity SelOnboardingTrainingQuestion07Definition {
   command create() {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
+
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
 
   store in memory
 }
@@ -287,6 +310,9 @@ entity SelOnboardingTrainingQuestion08Definition {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -317,6 +343,9 @@ entity SelOnboardingTrainingQuestion09Definition {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
 
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
+
   store in memory
 }
 
@@ -346,6 +375,9 @@ entity SelOnboardingTrainingQuestion10Definition {
   command create() {
     emit SelOnboardingTrainingQuestionDefinitionCreated
   }
+
+  relationship belongsTo question: TrainingQuestion with questionId
+  relationship belongsTo module: TrainingModule with moduleId
 
   store in memory
 }

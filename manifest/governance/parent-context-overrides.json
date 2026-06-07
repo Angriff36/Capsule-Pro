@@ -168,6 +168,20 @@
       "reason": "PRE-EXISTING (2026-06-06): moduleId, staffMemberId, and managerReviewRequired are all inferable from the parent TrainingAssignment, which already holds these values. Candidates for propagation; tracked in IMPLEMENTATION_PLAN.md.",
       "owner": "training",
       "reviewed": "2026-06-06"
+    },
+    "EmailWorkflow": {
+      "fields": ["isActive"],
+      "category": "FALSE_POSITIVE",
+      "reason": "EmailWorkflow.isActive is the workflow's own enabled/disabled state, semantically independent of EmailTemplate.isActive (whether the template is available). A workflow can be inactive even when its template is active — the name match is coincidental.",
+      "owner": "notifications",
+      "reviewed": "2026-06-07"
+    },
+    "SmsAutomationRule": {
+      "fields": ["isActive"],
+      "category": "FALSE_POSITIVE",
+      "reason": "SmsAutomationRule.isActive is the rule's own enabled/disabled state, semantically independent of EmailTemplate.isActive (whether the referenced template is available). A rule can be inactive even when its template is active — the name match is coincidental.",
+      "owner": "notifications",
+      "reviewed": "2026-06-07"
     }
   }
 }

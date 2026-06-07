@@ -84,6 +84,8 @@ entity EmailWorkflow {
     emit EmailWorkflowTriggered
   }
 
+  relationship belongsTo template: EmailTemplate with emailTemplateId
+
   store EmailWorkflow in durable
 }
 

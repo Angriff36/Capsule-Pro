@@ -137,6 +137,8 @@ entity ApiKey {
     emit ApiKeyUsed
   }
 
+  relationship belongsTo creator: User with createdByUserId
+
   store ApiKey in durable
 }
 

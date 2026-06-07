@@ -87,6 +87,8 @@ entity CommandBoard {
     emit CommandBoardDeactivated
   }
 
+  relationship belongsTo event: Event with eventId
+
   store CommandBoard in durable
 }
 

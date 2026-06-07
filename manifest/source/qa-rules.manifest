@@ -193,6 +193,8 @@ entity QACorrectiveAction {
     emit CorrectiveActionDismissed
   }
 
+  relationship belongsTo check: QACheck with checkId
+
   store QACorrectiveAction in durable
 }
 

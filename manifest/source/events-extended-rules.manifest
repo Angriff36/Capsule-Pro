@@ -735,6 +735,8 @@ entity BoardAnnotation {
     mutate deletedAt = now()
     emit BoardAnnotationRemoved
   }
+  relationship belongsTo board: CommandBoard with boardId
+
   store BoardAnnotation in durable
 }
 
