@@ -1141,7 +1141,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-16 done 2026-06-08, ~80 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-17 done 2026-06-08, ~82 files migrated)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1172,6 +1172,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Batch 14 DONE (2026-06-08):** 8 files (knowledge-base-detail, purchase-orders/page, purchase-orders/[id] with 8 command dispatches, vendors/[id] composite response, staff/performance completion, requisitions/new, training delete/edit). Net -4 lines.
 - **Batch 15 DONE (2026-06-08):** 4 files migrated + 9 files with NOTE comments documenting remaining apiFetch blockers (custom endpoints, AI endpoints, file uploads). Collections commands migrated. Net changes.
 - **Batch 16 DONE (2026-06-08):** 6 files (purchase-orders/new, budget/page, mobile prep-lists/page, mobile prep-lists/[id], shipments-client, battleboards-client). Net -42 lines. First mobile-kitchen path migrations.
+- **Batch 17 DONE (2026-06-08):** 2 complex event files migrated (guest-management.tsx, contract-detail-client.tsx). Guest management: 5 apiFetch calls replaced (listEventGuests, listEventDishes, eventGuestCreate, eventGuestUpdate, eventGuestSoftDelete) + dead code removed (GuestsResponse, ApiErrorPayload, getResponseErrorMessage). Contract detail: 5 command calls migrated to generated functions (eventContractSend/Sign/Cancel/Expire/MarkViewed, eventContractSoftDelete, contractSignatureCreate); 3 apiFetch calls retained for custom endpoints (history fetch, send-to-client with signing token, document upload). ~80 files now consuming generated client. API+app typecheck 0, 2785 tests pass, route drift 0. Key finding: 4 additional files investigated but CANNOT migrate — invoices/new, payments/new, payment-form-client (no paymentCreate/invoiceCreate in generated client; server routes have essential pre-validation), admin-chat-client (8 custom endpoints with participant logic not in generated routes).
 - **Remaining apiFetch files (~80):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
 - **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.

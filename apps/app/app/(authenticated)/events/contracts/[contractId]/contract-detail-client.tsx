@@ -58,7 +58,15 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { executeCommand } from "@/app/lib/manifest-client";
+import {
+  eventContractCancel,
+  eventContractExpire,
+  eventContractMarkViewed,
+  eventContractSend,
+  eventContractSign,
+  eventContractSoftDelete,
+  contractSignatureCreate,
+} from "@/app/lib/manifest-client.generated";
 import { SignaturePad } from "../components/signature-pad";
 
 interface ContractDetailClientProps {
@@ -252,17 +260,28 @@ export function ContractDetailClient({
   const handleStatusChange = useCallback(
     async (newStatus: ContractStatus) => {
       try {
-        const response = await apiFetch(
-          `/api/events/contracts/${contract.id}/status`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ status: newStatus }),
-          }
-        );
+        const input = { id: contract.id };
 
-        if (!response.ok) {
-          throw new Error("Failed to update contract status");
+        // Map status to the appropriate Manifest command, matching the
+        // server-side STATUS_COMMAND_MAP in the status route handler.
+        switch (newStatus) {
+          case "pending":
+            await eventContractSend(input);
+            break;
+          case "signed":
+            await eventContractSign(input);
+            break;
+          case "expired":
+            await eventContractExpire(input);
+            break;
+          case "cancelled":
+            await eventContractCancel({ ...input, reason: "Status update via API" });
+            break;
+          case "draft":
+            await eventContractMarkViewed(input);
+            break;
+          default:
+            throw new Error(`Unsupported status transition: ${newStatus}`);
         }
 
         toast.success("Contract status updated");
@@ -277,13 +296,7 @@ export function ContractDetailClient({
 
   const handleDelete = useCallback(async () => {
     try {
-      const response = await apiFetch(`/api/events/contracts/${contract.id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete contract");
-      }
+      await eventContractSoftDelete({ id: contract.id });
 
       toast.success("Contract deleted successfully");
       router.push(`/events/${contract.eventId}`);
@@ -361,17 +374,19 @@ export function ContractDetailClient({
   const handleSignatureSave = useCallback(
     async (signatureData: string, signerName: string, signerEmail?: string) => {
       try {
-        // Typed command client: canonical { success, result, events } contract.
-        // No raw fetch URL / response-shape guessing in the component.
-        const response = await executeCommand<ContractSignature>(
-          "ContractSignature",
-          "create",
-          { signatureData, signerName, signerEmail },
-          { path: `/api/events/contracts/${contract.id}/signatures` }
-        );
-        const createdSignature = response.result;
+        const createdSignature = await contractSignatureCreate({
+          contractId: contract.id,
+          signatureData,
+          signerName,
+          signerEmail,
+        });
         if (createdSignature) {
-          setSignatures((prev) => [createdSignature, ...prev]);
+          // Cast to the Prisma ContractSignature type (generated client returns
+          // string dates; the component state uses Date dates from server props).
+          setSignatures((prev) => [
+            createdSignature as unknown as ContractSignature,
+            ...prev,
+          ]);
         }
         toast.success("Signature captured successfully");
         setShowSignatureDialog(false);

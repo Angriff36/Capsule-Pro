@@ -64,7 +64,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import {
+  eventGuestCreate,
+  eventGuestSoftDelete,
+  eventGuestUpdate,
+  listEventDishes,
+  listEventGuests,
+} from "@/app/lib/manifest-client.generated";
 
 interface EventDish {
   link_id: string;
@@ -86,44 +92,6 @@ interface ConflictAlert {
 interface GuestManagementProps {
   eventId: string;
 }
-
-interface GuestsResponse {
-  guests: EventGuest[];
-  pagination: {
-    limit: number;
-    offset: number;
-    total: number;
-  };
-}
-
-interface ApiErrorPayload {
-  error?: string;
-  message?: string;
-}
-
-const getResponseErrorMessage = async (
-  response: Response,
-  fallback: string
-): Promise<string> => {
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (contentType.includes("application/json")) {
-    const payload = (await response
-      .json()
-      .catch(() => null)) as ApiErrorPayload | null;
-    const message = payload?.message || payload?.error;
-    if (typeof message === "string" && message.trim().length > 0) {
-      return message.trim();
-    }
-  }
-
-  const text = (await response.text().catch(() => "")).trim();
-  if (text.length > 0) {
-    return text.slice(0, 180);
-  }
-
-  return fallback;
-};
 
 // Common dietary restrictions and allergens
 const COMMON_DIETARY_RESTRICTIONS = [
@@ -199,31 +167,15 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
       setIsLoading(true);
       setGuestFetchError(null);
       try {
-        const params = new URLSearchParams();
+        const params: Record<string, string> = { eventId };
         if (query) {
-          params.append("guestName", query);
+          params.guestName = query;
         }
 
-        const response = await apiFetch(
-          `/api/events/${eventId}/guests${params.toString() ? `?${params.toString()}` : ""}`
-        );
+        const result = await listEventGuests(params);
+        const guestList = result.data as unknown as EventGuest[];
 
-        if (!response.ok) {
-          const apiMessage = await getResponseErrorMessage(
-            response,
-            "Failed to fetch guests"
-          );
-          const detailedMessage = `Guest API returned ${response.status}: ${apiMessage}`;
-          setGuests([]);
-          setGuestFetchError(detailedMessage);
-          if (!query) {
-            toast.error(detailedMessage);
-          }
-          return;
-        }
-
-        const data = (await response.json()) as Partial<GuestsResponse>;
-        if (!Array.isArray(data.guests)) {
+        if (!Array.isArray(guestList)) {
           const invalidShapeError =
             "Guest API returned an invalid payload (missing guests array).";
           setGuests([]);
@@ -234,7 +186,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
           return;
         }
 
-        setGuests(data.guests);
+        setGuests(guestList);
         setGuestFetchError(null);
       } catch (error) {
         console.error("Error fetching guests:", error);
@@ -257,11 +209,8 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
   // Fetch event dishes for conflict detection
   const fetchEventDishes = useCallback(async () => {
     try {
-      const response = await apiFetch(`/api/events/${eventId}/dishes`);
-      if (response.ok) {
-        const dishes = await response.json();
-        setEventDishes(dishes);
-      }
+      const result = await listEventDishes({ eventId });
+      setEventDishes(result.data as unknown as EventDish[]);
     } catch (error) {
       console.error("Error fetching dishes:", error);
     }
@@ -466,16 +415,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      const response = await apiFetch(`/api/events/${eventId}/guests`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to add guest");
-      }
+      await eventGuestCreate({ eventId, ...formData } as unknown as Parameters<typeof eventGuestCreate>[0]);
 
       await fetchGuests(searchQuery);
       setIsAddDialogOpen(false);
@@ -501,19 +441,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     }
 
     try {
-      const response = await apiFetch(
-        `/api/events/guests/${selectedGuest.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update guest");
-      }
+      await eventGuestUpdate({ id: selectedGuest.id, ...formData } as unknown as Parameters<typeof eventGuestUpdate>[0]);
 
       await fetchGuests(searchQuery);
       setIsEditDialogOpen(false);
@@ -541,13 +469,7 @@ export function GuestManagement({ eventId }: GuestManagementProps) {
     setGuestToDelete(null);
     setIsDeleting(true);
     try {
-      const response = await apiFetch(`/api/events/guests/${guestId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete guest");
-      }
+      await eventGuestSoftDelete({ id: guestId });
 
       await fetchGuests(searchQuery);
       toast.success("Guest deleted successfully");
