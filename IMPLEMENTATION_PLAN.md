@@ -1141,7 +1141,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-13 done 2026-06-08, ~68 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-16 done 2026-06-08, ~80 files migrated)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1169,7 +1169,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Batch 11 DONE (2026-06-08):** 6 files (upcoming-maintenance-widget, workflows-client, vendor-contracts/[id], alerts-client, requisitions/[id], knowledge-base-client). Generated client envelope key fixes for listFacilityAssets and listKnowledgeBaseEntries. Net -46 lines.
 - **Batch 12 DONE (2026-06-08):** 6 files (notifications-client, follow-ups/page, workflows-client command dispatch, security-client, invoices/[id], payments/[id]). Net -74 lines.
 - **Batch 13 DONE (2026-06-08):** 6 files (prep-lists/mobile, allergen-modal, payroll-periods, payroll-payouts, task-card partial, payroll-reports partial). Net -33 lines.
-- **Remaining apiFetch files (~91):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
+- **Batch 14 DONE (2026-06-08):** 8 files (knowledge-base-detail, purchase-orders/page, purchase-orders/[id] with 8 command dispatches, vendors/[id] composite response, staff/performance completion, requisitions/new, training delete/edit). Net -4 lines.
+- **Batch 15 DONE (2026-06-08):** 4 files migrated + 9 files with NOTE comments documenting remaining apiFetch blockers (custom endpoints, AI endpoints, file uploads). Collections commands migrated. Net changes.
+- **Batch 16 DONE (2026-06-08):** 6 files (purchase-orders/new, budget/page, mobile prep-lists/page, mobile prep-lists/[id], shipments-client, battleboards-client). Net -42 lines. First mobile-kitchen path migrations.
+- **Remaining apiFetch files (~80):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
 - **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
 - **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
@@ -2153,3 +2156,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.2 batch 9: 7 more frontend files migrated** | vendor-catalogs, vendor-contracts, requisitions, drivers, vehicles. 59 files total. Net -13 lines. |
 | 2026-06-08 | **Task 6.2 batch 10: 4 more frontend files migrated** | work-orders, inventory-transfers, payroll-periods, staff-performance. 60 files total. Net -10 lines. |
 | 2026-06-08 | **Task 6.2 batches 11-13: 18 more frontend files migrated** | facilities-widget, knowledge-base, notifications, security, invoices, payments, payroll, task-card. 68 files total consuming generated client. Key blocker: endpoint path mismatch between frontend legacy routes and generated Manifest routes. |
+| 2026-06-08 | **Task 6.2 batches 14-16: 18 more frontend files migrated** | purchase-orders CRUD, vendors/[id] composite, budget, mobile prep-lists, shipments, battleboards. 80 files total consuming generated client. First mobile-kitchen migrations. |
