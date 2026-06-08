@@ -586,6 +586,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 6.1: Frontend Data Layer Decision** | DECISION: Adopt TanStack Query wrapping generated client as `queryFn` sources. QueryProvider already live. 1,328 generated functions → 3 consumers. Migration path defined for Tasks 6.2-6.4. |
 | 2026-06-07 | **Schema drift allowlist: Json type entries** | Added adapter-derived rules for ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions. 51→49 violations. **RESOLVED in follow-up:** all remaining violations fixed (0 violations, 110/110 clean). |
 | 2026-06-08 | **Task 6.2 batch 6: 6 more files migrated to generated client** | Settings alerts (3 writes), Kitchen allergens (7 calls), Kitchen containers (1), Accounting chart-of-accounts (1), Staff training-module-create (1), CRM scoring (5). ~15 apiFetch calls replaced. Key blockers identified for remaining files: pagination loss, PUT/POST mismatch, missing domain fns. Total: ~51 files migrated across 6 batches. API+app typecheck 0, 3088 tests pass. |
+| 2026-06-08 | **Task 6.2 batch 8: 8 more frontend files migrated** | lib/leads, lib/proposals, vendors, routes-view, pipeline-board, equipment, catering, collections. 57 files total consuming generated client. Net -34 lines. API+App typecheck 0, 2785 tests pass. |
+| 2026-06-08 | **Idempotent command core + allergen acknowledge idempotency** | run-manifest-command-core: IDEMPOTENT_COMMANDS registry, noop flag on success, tryGetInstance helper. 3 allergen commands registered. execute-command skips webhooks on noop. New test: allergen-acknowledge-idempotency (4 cases). |
 
 ---
 
@@ -1139,7 +1141,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-6 done 2026-06-08, ~51 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-8 done 2026-06-08, ~59 files migrated)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1160,6 +1162,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Frontend `/api/manifest/` migration COMPLETE:** All remaining frontend files referencing `/api/manifest/` endpoints are either infrastructure (`manifest-client.ts`, `routes.ts`, `tool-registry.ts`) or server-side (`crm/clients/actions.ts` uses `runManifestCommand`, not `apiFetch`). No more frontend apiFetch calls to `/api/manifest/` exist.
 - **Store provider regression tests ADDED:** Tests verify generated client store provider integration and prevent regressions in governed-write paths.
 - **Batch 6 DONE (2026-06-08):** 6 more files migrated across 5 domains (~15 apiFetch calls replaced): Settings alerts (3 writes), Kitchen allergens (7 calls), Kitchen containers (1), Accounting chart-of-accounts (1), Staff training-module-create (1), CRM scoring (5 calls; calculate/distribution kept on apiFetch).
+- **Batch 7 DONE (2026-06-08):** 4 more frontend files migrated to generated Manifest client: facilities/areas/page.tsx, facilities/assets/page.tsx, kitchen/schedule/page.tsx, warehouse/audits/cycle-count-client.tsx. Net -12 lines, 4 apiFetch calls replaced.
+- **Batch 8 DONE (2026-06-08):** 8 more frontend files migrated to generated Manifest client: lib/leads.ts (listLeads, getLead), lib/proposals.ts (listProposals, getProposal), procurement/vendors/page.tsx (listVendors), logistics/routes/routes-view.tsx (listLogisticsRoutes), crm/pipeline/pipeline-board.tsx (listDeals), kitchen/equipment/equipment-page-client.tsx (listEquipments, listFacilityWorkOrders), events/catering/catering-client.tsx (listCateringOrders), accounting/collections/collections-client.tsx (listCollectionCases). Net -34 lines, 11 apiFetch calls replaced. 57 files now consume generated client.
 - **Remaining apiFetch files (~125):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
 - **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.

@@ -64,8 +64,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "../../../lib/api";
 import {
+  listInventorySuppliers,
+  listVendorCatalogs,
   vendorCatalogCreate,
   vendorCatalogDeactivate,
   vendorCatalogReactivate,
@@ -231,10 +232,8 @@ export function VendorCatalogsClient() {
   const loadCatalogs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await apiFetch("/api/inventory/vendor-catalogs/list");
-      if (!res.ok) throw new Error("Failed to load vendor catalogs");
-      const data = await res.json();
-      setCatalogs(data.vendorCatalogs ?? []);
+      const result = await listVendorCatalogs();
+      setCatalogs(result.data as unknown as VendorCatalog[]);
     } catch (error) {
       toast.error(
         error instanceof Error
@@ -248,10 +247,8 @@ export function VendorCatalogsClient() {
 
   const loadSuppliers = useCallback(async () => {
     try {
-      const res = await apiFetch("/api/inventory/suppliers/list?limit=500");
-      if (!res.ok) throw new Error("Failed to load suppliers");
-      const data = await res.json();
-      setSuppliers(data.inventorySuppliers ?? []);
+      const result = await listInventorySuppliers({ limit: 500 });
+      setSuppliers(result.data as unknown as Supplier[]);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to load suppliers"

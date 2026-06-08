@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { purchaseRequisitionReject } from "@/app/lib/manifest-client.generated";
+import { getPurchaseRequisition, purchaseRequisitionReject } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
   formatDate,
@@ -83,11 +83,8 @@ export default function RequisitionDetailPage() {
   const loadRequisition = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/procurement/requisitions/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setRequisition(data.data.purchaseRequisition);
-      }
+      const data = await getPurchaseRequisition(id);
+      setRequisition((data as unknown as Requisition) ?? null);
     } catch (error) {
       console.error("Failed to load requisition:", error);
     } finally {

@@ -35,8 +35,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { vendorContractCreate } from "@/app/lib/manifest-client.generated";
+import { vendorContractCreate, listVendorContracts } from "@/app/lib/manifest-client.generated";
 import {
   CONTRACT_TYPE_CONFIG,
   formatDateShort,
@@ -81,11 +80,8 @@ export default function VendorContractsPage() {
   const loadContracts = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/procurement/vendor-contracts/list");
-      const data = await res.json();
-      if (data.success) {
-        setContracts(data.data.vendorContracts || []);
-      }
+      const result = await listVendorContracts();
+      setContracts(result.data as unknown as VendorContract[]);
     } catch (error) {
       console.error("Failed to load contracts:", error);
     } finally {

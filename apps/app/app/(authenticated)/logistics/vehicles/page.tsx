@@ -59,8 +59,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listVehicles,
   vehicleRemove,
   vehicleUpdate,
 } from "@/app/lib/manifest-client.generated";
@@ -145,9 +145,8 @@ export default function VehiclesPage() {
   const loadVehicles = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/logistics/vehicles/list");
-      const data = await res.json();
-      if (data.success) setVehicles(data.data.vehicles || []);
+      const result = await listVehicles();
+      setVehicles(result.data as unknown as Vehicle[]);
     } catch (e) {
       console.error("Failed to load vehicles:", e);
     } finally {

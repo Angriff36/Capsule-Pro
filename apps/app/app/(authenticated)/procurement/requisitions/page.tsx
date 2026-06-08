@@ -29,7 +29,7 @@ import {
 import { DollarSign, Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { listPurchaseRequisitions } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
   formatDateShort,
@@ -64,11 +64,8 @@ export default function RequisitionsPage() {
   const loadRequisitions = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/procurement/requisitions/list");
-      const data = await res.json();
-      if (data.success) {
-        setRequisitions(data.data.purchaseRequisitions || []);
-      }
+      const result = await listPurchaseRequisitions();
+      setRequisitions(result.data as unknown as Requisition[]);
     } catch (error) {
       console.error("Failed to load requisitions:", error);
     } finally {

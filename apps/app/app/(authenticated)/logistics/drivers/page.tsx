@@ -59,8 +59,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listDrivers,
+  listVehicles,
   driverRemove,
   driverUpdate,
 } from "@/app/lib/manifest-client.generated";
@@ -147,14 +148,12 @@ export default function DriversPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [driversRes, vehiclesRes] = await Promise.all([
-        apiFetch("/api/logistics/drivers/list"),
-        apiFetch("/api/logistics/vehicles/list"),
+      const [driversResult, vehiclesResult] = await Promise.all([
+        listDrivers(),
+        listVehicles(),
       ]);
-      const driversData = await driversRes.json();
-      const vehiclesData = await vehiclesRes.json();
-      if (driversData.success) setDrivers(driversData.data.drivers || []);
-      if (vehiclesData.success) setVehicles(vehiclesData.data.vehicles || []);
+      setDrivers(driversResult.data as unknown as Driver[]);
+      setVehicles(vehiclesResult.data as unknown as Vehicle[]);
     } catch (e) {
       console.error("Failed to load:", e);
     } finally {

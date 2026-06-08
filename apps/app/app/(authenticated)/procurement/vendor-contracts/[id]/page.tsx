@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { getVendorContract } from "@/app/lib/manifest-client.generated";
 import {
   CONTRACT_TYPE_CONFIG,
   formatCurrency,
@@ -89,11 +90,8 @@ export default function VendorContractDetailPage() {
   const loadContract = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/procurement/vendor-contracts/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setContract(data.data.vendorContract);
-      }
+      const data = await getVendorContract(id);
+      setContract((data as unknown as VendorContract) ?? null);
     } catch (error) {
       console.error("Failed to load contract:", error);
     } finally {
