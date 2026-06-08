@@ -59,6 +59,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { listBattleBoards, getBattleBoard, battleBoardCreate, battleBoardUpdate } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -701,17 +702,12 @@ export function BattleboardsClient() {
   const loadBoards = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
+      const query: Record<string, string | number> = { limit: 100 };
       if (search.trim()) {
-        params.set("search", search.trim());
+        query.search = search.trim();
       }
-      params.set("limit", "100");
-      const qs = params.toString();
-      const url = `/api/command-board${qs ? `?${qs}` : ""}`;
-      const res = await apiFetch(url);
-      if (!res.ok) throw new Error("Failed to fetch boards");
-      const data = await res.json();
-      setBoards(data.data ?? []);
+      const result = await listBattleBoards(query);
+      setBoards(result.data as unknown as CommandBoardListItem[]);
     } catch {
       toast.error("Failed to load battleboards.");
     } finally {
@@ -726,10 +722,8 @@ export function BattleboardsClient() {
   const loadBoardDetail = useCallback(async (boardId: string) => {
     setDetailLoading(true);
     try {
-      const res = await apiFetch(`/api/command-board/${boardId}`);
-      if (!res.ok) throw new Error("Failed to fetch board details");
-      const data = await res.json();
-      setBoardDetail(data);
+      const data = await getBattleBoard(boardId);
+      setBoardDetail(data as unknown as CommandBoardDetail);
     } catch {
       toast.error("Failed to load board details.");
       setBoardDetail(null);
@@ -812,15 +806,7 @@ export function BattleboardsClient() {
       if (formData.isTemplate) {
         body.isTemplate = true;
       }
-      const res = await apiFetch("/api/command-board", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.message ?? "Failed to create board");
-      }
+      await battleBoardCreate(body);
       toast.success(`Board "${formData.name.trim()}" created.`);
       setCreateOpen(false);
       await loadBoards();
@@ -838,6 +824,7 @@ export function BattleboardsClient() {
     setSubmitting(true);
     try {
       const body: Record<string, unknown> = {
+        id: editTarget.id,
         name: formData.name.trim(),
       };
       if (formData.description.trim()) {
@@ -849,15 +836,7 @@ export function BattleboardsClient() {
       if (formData.eventId.trim()) {
         body.eventId = formData.eventId.trim();
       }
-      const res = await apiFetch(`/api/command-board/${editTarget.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        throw new Error(errBody?.message ?? "Failed to update board");
-      }
+      await battleBoardUpdate(body);
       toast.success(`Board "${formData.name.trim()}" updated.`);
       setEditOpen(false);
       setEditTarget(null);

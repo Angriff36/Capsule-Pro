@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { listPrepLists } from "@/app/lib/manifest-client.generated";
 import type { PrepList } from "../types";
 
 function formatEventDate(dateString: string | null): string {
@@ -78,15 +78,8 @@ export default function MobilePrepListsPage() {
     setError(null);
 
     try {
-      const response = await apiFetch("/api/kitchen/prep-lists?status=active");
-
-      if (response.ok) {
-        const data = await response.json();
-        setPrepLists(data.prepLists || []);
-      } else {
-        const errData = await response.json();
-        setError(errData.message || "Failed to load prep lists");
-      }
+      const result = await listPrepLists({ status: "active" });
+      setPrepLists(result.data as unknown as PrepList[]);
     } catch (err) {
       captureException(err);
       console.error("[MobilePrepLists] Failed to fetch prep lists:", err);

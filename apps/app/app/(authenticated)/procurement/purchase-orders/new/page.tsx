@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { listVendors, listInventoryItems, listStorageLocations } from "@/app/lib/manifest-client.generated";
 import { createPurchaseOrder } from "../../actions";
 import type { Location, POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
@@ -68,17 +68,14 @@ export default function NewPOPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [vendorsRes, itemsRes, locationsRes] = await Promise.all([
-        apiFetch("/api/procurement/vendors/list"),
-        apiFetch("/api/inventory/items?limit=200"),
-        apiFetch("/api/locations?isActive=true"),
+      const [vendorsResult, itemsResult, locationsResult] = await Promise.all([
+        listVendors(),
+        listInventoryItems({ limit: 200 }),
+        listStorageLocations({ isActive: "true" }),
       ]);
-      const vendorsData = await vendorsRes.json();
-      const itemsData = await itemsRes.json();
-      const locationsData = await locationsRes.json();
-      if (vendorsData.success) setVendors(vendorsData.data.vendors || []);
-      if (itemsData.success) setInventoryItems(itemsData.data || []);
-      setLocations(locationsData.locations || []);
+      setVendors(vendorsResult.data as unknown as Vendor[]);
+      setInventoryItems(itemsResult.data as unknown as InventoryItem[]);
+      setLocations(locationsResult.data as unknown as Location[]);
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {

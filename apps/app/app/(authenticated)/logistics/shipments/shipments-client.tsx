@@ -59,6 +59,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { listShipments } from "@/app/lib/manifest-client.generated";
 
 const fmtCurrency = (v: number | null) =>
   formatCurrency(v, { nullDisplay: "\u2014" });
@@ -237,13 +238,8 @@ export function ShipmentsClient() {
   const loadShipments = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/shipments");
-      const data = await res.json();
-      const shipmentData = Array.isArray(data.data)
-        ? data.data
-        : Array.isArray(data.shipments)
-          ? data.shipments
-          : [];
+      const result = await listShipments();
+      const shipmentData = result.data as unknown as Record<string, unknown>[];
       setShipments(
         shipmentData.map((shipment: Record<string, unknown>) =>
           normalizeShipment(shipment)

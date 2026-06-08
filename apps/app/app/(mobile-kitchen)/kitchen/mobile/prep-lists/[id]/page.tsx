@@ -24,7 +24,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
+import { getPrepList, prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
 import type { PrepList, PrepListItem } from "../../types";
 
 interface CompletionQueueItem {
@@ -205,15 +205,8 @@ export default function MobilePrepListDetailPage() {
     setError(null);
 
     try {
-      const response = await apiFetch(`/api/kitchen/prep-lists/${prepListId}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setPrepList(data.prepList || data);
-      } else {
-        const errData = await response.json();
-        setError(errData.message || "Failed to load prep list");
-      }
+      const data = await getPrepList(prepListId);
+      setPrepList((data ?? {}) as unknown as PrepList);
     } catch (err) {
       captureException(err);
       console.error("[MobilePrepListDetail] Failed to fetch prep list:", err);

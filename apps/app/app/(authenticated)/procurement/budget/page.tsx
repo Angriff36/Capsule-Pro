@@ -49,11 +49,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   budgetCreate,
   budgetRefresh,
   budgetRemove,
+  listProcurementBudgets,
+  getProcurementBudget,
 } from "@/app/lib/manifest-client.generated";
 import {
   type Budget,
@@ -116,9 +117,8 @@ export default function BudgetPage() {
   const loadBudgets = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/procurement/budget/list?status=active");
-      const data = await res.json();
-      if (data.success) setBudgets(data.data.budgets || []);
+      const result = await listProcurementBudgets({ status: "active" });
+      setBudgets(result.data as unknown as Budget[]);
     } catch (error) {
       console.error("Failed to load budgets:", error);
     } finally {
@@ -198,13 +198,13 @@ export default function BudgetPage() {
     setDetailLoading(true);
     setSelectedBudget(budgetId);
     try {
-      const res = await apiFetch(`/api/procurement/budget/${budgetId}`);
-      const data = await res.json();
-      if (data.success) {
+      const data = await getProcurementBudget(budgetId);
+      if (data) {
+        const raw = data as unknown as Record<string, unknown>;
         setDetailData({
-          spend: data.data.spend,
-          alerts: data.data.alerts || [],
-          monthlyBreakdown: data.data.monthlyBreakdown || [],
+          spend: (raw.spend ?? (raw.data as Record<string, unknown>)?.spend) as BudgetSpend,
+          alerts: ((raw.alerts ?? (raw.data as Record<string, unknown>)?.alerts) as BudgetAlert[]) || [],
+          monthlyBreakdown: ((raw.monthlyBreakdown ?? (raw.data as Record<string, unknown>)?.monthlyBreakdown) as MonthlyBreakdown[]) || [],
         });
       }
     } catch (error) {
