@@ -1,0 +1,7 @@
+-- DropEmptyLegacyPublicTables
+-- This migration was originally applied to drop empty legacy public-schema tables
+-- that predated the multi-schema architecture. The tables were dropped at that time
+-- but have since been recreated as legitimate Prisma models (new entities without
+-- @@schema placement). This is a no-op placeholder to restore the missing migration
+-- folder that was lost from disk but recorded in _prisma_migrations.
+-- See: IMPLEMENTATION_PLAN.md Task 8.9 baseline defect notes.

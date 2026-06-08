@@ -1,0 +1,6 @@
+-- No-op: index naming was reconciled in the live DB.
+-- The 0_init baseline (regenerated 2026-06-07 from current schema.prisma)
+-- already creates indexes with the correct Prisma-generated names.
+-- This migration is retained for _prisma_migrations history continuity
+-- but performs no DDL changes (the work was done to the live DB before
+-- the 0_init baseline was regenerated).

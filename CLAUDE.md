@@ -259,11 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
-Files (4):
-  packages/mcp-server/src/test-sdk-import.ts (create)
-  packages/mcp-server/src/plugins/ir-introspection.ts (edit)
-  packages/mcp-server/src/lib/agent-sdk.ts (create)
-  packages/mcp-server/src/lib/agent-sdk.ts (edit)
+[proactive bridge @ 90% context — saved before compacting]
+Files (1):
+  packages/database/prisma/migrations/20260607155308_drop_empty_legacy_public_tables/migration.sql (create)
 
 # === END COGNILAYER ===
