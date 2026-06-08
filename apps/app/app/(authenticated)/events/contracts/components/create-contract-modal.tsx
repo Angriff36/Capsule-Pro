@@ -105,7 +105,7 @@ export function CreateContractModal({
         documentUrl: "",
         documentType: "",
         notes: notes.trim() || undefined,
-        expiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
+        expiresAt: expiresAt ? new Date(expiresAt).getTime().toString() : null,
       });
 
       const contractId = result?.id;

@@ -425,7 +425,7 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: editingId, ...editForm });
+        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail, guestPhone: editForm.guestPhone, tableAssignment: editForm.tableAssignment, mealPreference: editForm.mealPreference, notes: editForm.notes, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions.join(",") : null });
         toast.success("Guest updated");
         setEditingId(null);
         setEditForm({});

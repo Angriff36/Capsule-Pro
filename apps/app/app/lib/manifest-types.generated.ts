@@ -334,7 +334,7 @@ export interface CollectionCase {
   collectedAmount?: number;
   status?: string;
   priority?: string;
-  dunningStage?: number;
+  dunningStage?: string;
   daysOverdue?: number;
   agingBucket?: string;
   assignedTo?: string;
@@ -411,7 +411,9 @@ export interface CommandBoard {
   description?: string;
   status?: string;
   isTemplate?: boolean;
-  tags?: string;
+  tags?: unknown[];
+  autoPopulate?: boolean;
+  scope?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -510,10 +512,18 @@ export interface ProposalTemplate {
   tenantId: string;
   name?: string;
   description?: string;
-  headerHtml?: string;
-  footerHtml?: string;
+  eventType?: string;
   defaultTerms?: string;
+  defaultTaxRate?: number;
+  defaultNotes?: string;
+  defaultLineItems?: string;
   isActive?: boolean;
+  isDefault?: boolean;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -536,10 +546,13 @@ export interface InteractionAttachment {
 export interface CrmScoringRule {
   id: string;
   tenantId: string;
-  name?: string;
-  criterion?: string;
+  ruleName?: string;
+  field?: string;
+  condition?: string;
+  value?: string;
   points?: number;
   isActive?: boolean;
+  priority?: number;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -578,10 +591,13 @@ export interface Document {
 export interface AdminChatThread {
   id: string;
   tenantId: string;
-  subject?: string;
+  threadType?: string;
+  slug?: string;
+  directKey?: string;
   status?: string;
   createdBy?: string;
   lastMessageAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -589,10 +605,10 @@ export interface AdminChatThread {
 export interface AdminChatMessage {
   id: string;
   tenantId: string;
-  adminChatThreadId?: string;
-  senderId?: string;
-  body?: string;
-  sentAt: string;
+  threadId?: string;
+  authorId?: string;
+  authorName?: string;
+  text?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -669,6 +685,10 @@ export interface VarianceReport {
   rejectedBy?: string;
   rejectionReason?: string;
   notes?: string;
+  rootCause?: string;
+  resolutionNotes?: string;
+  resolvedById?: string;
+  resolvedAt: string;
   generatedAt: string;
   deletedAt: string;
   createdAt: string;
@@ -764,8 +784,10 @@ export interface EmailWorkflow {
   triggerType?: string;
   triggerConfig?: string;
   emailTemplateId?: string;
+  emailTemplateTenantId?: string;
   recipientConfig?: string;
   isActive?: boolean;
+  lastTriggeredAt: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -832,20 +854,24 @@ export interface Equipment {
 export interface MaintenanceWorkOrder {
   id: string;
   tenantId: string;
-  equipmentId: string;
-  equipmentName: string;
+  workOrderNumber?: string;
+  areaId?: string;
+  equipmentId?: string;
+  equipmentName?: string;
   title: string;
   type?: string;
   priority?: string;
   status?: string;
   description?: string;
+  reportedBy?: string;
   assignedTo?: string;
-  estimatedCost?: number;
-  actualCost?: number;
   scheduledDate: string;
   completedDate: string;
+  estimatedCost?: number;
+  actualCost?: number;
   partsUsed?: string;
   vendorId?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1280,15 +1306,17 @@ export interface Facility {
   id: string;
   tenantId: string;
   name: string;
-  type?: string;
-  address?: string;
+  code?: string;
+  facilityType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
   city?: string;
   state?: string;
-  zip?: string;
+  postalCode?: string;
+  country?: string;
   phone?: string;
   status?: string;
-  capacity?: number;
-  description?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1322,6 +1350,9 @@ export interface FacilityAsset {
   currentValue?: number;
   depreciationRate?: number;
   serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
+  warrantyExpiry: string;
   lastMaintenanceAt: string;
   nextMaintenanceAt: string;
   notes?: string;
@@ -1380,6 +1411,7 @@ export interface Ingredient {
   storageInstructions?: string;
   allergens?: string;
   isActive?: boolean;
+  inventoryItemId?: string;
   currentLotNumber?: string;
   currentLotReceivedAt: string;
   currentLotExpiresAt: string;
@@ -1968,15 +2000,13 @@ export interface Lead {
 export interface Driver {
   id: string;
   tenantId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email?: string;
   phone?: string;
   licenseNumber?: string;
   licenseExpiry: string;
+  vehicleId?: string;
   status?: string;
-  currentVehicleId?: string;
-  rating?: number;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -1985,18 +2015,16 @@ export interface Driver {
 export interface Vehicle {
   id: string;
   tenantId: string;
-  name: string;
-  type?: string;
+  make: string;
+  model: string;
+  year?: number;
   plateNumber?: string;
   vin?: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  capacity?: string;
+  capacityWeight?: number;
+  capacityVolume?: number;
+  fuelType?: string;
+  mileage?: number;
   status?: string;
-  currentDriverId?: string;
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
   notes?: string;
   createdAt: string;
   updatedAt: string;
@@ -2349,6 +2377,10 @@ export interface PrepTask {
   startByDate: string;
   dueByDate: string;
   priority?: number;
+  dishId?: string;
+  locationId?: string;
+  estimatedMinutes?: number;
+  dueByTime: string;
   notes?: string;
   ingredients?: string;
   createdAt: string;
@@ -2452,6 +2484,7 @@ export interface Proposal {
   notes?: string;
   termsAndConditions?: string;
   lineItemCount?: number;
+  publicToken?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -3020,10 +3053,19 @@ export interface PaymentRefundAttempt {
 export interface PreventiveMaintenanceSchedule {
   id: string;
   tenantId: string;
-  equipmentId: string;
-  name?: string;
+  scheduleNumber?: string;
+  areaId?: string;
+  equipmentId?: string;
+  title?: string;
+  description?: string;
   frequency?: string;
+  intervalDays?: number;
   nextDueAt: string;
+  lastCompletedAt: string;
+  assignedTo?: string;
+  estimatedHours?: number;
+  estimatedCost?: number;
+  status?: string;
   isActive?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -3132,28 +3174,10 @@ export interface TimeOffRequest {
   updatedAt: string;
 }
 
-export interface TrainingAssignment {
-  id: string;
-  tenantId: string;
-  moduleId?: string;
-  employeeId?: string;
-  assignedToAll?: boolean;
-  assignedBy?: string;
-  dueDate?: string;
-  status?: string;
-  score?: number;
-  waiveReason?: string;
-  assignedAt: string;
-  startedAt: string;
-  completedAt: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface TrainingModule {
-  id: string;
   tenantId: string;
+  id: string;
+  code?: string;
   title?: string;
   description?: string;
   contentUrl?: string;
@@ -3161,6 +3185,9 @@ export interface TrainingModule {
   durationMinutes?: number;
   category?: string;
   isRequired?: boolean;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  requiredRole?: string;
   isActive?: boolean;
   status?: string;
   version?: number;
@@ -3169,6 +3196,301 @@ export interface TrainingModule {
   notes?: string;
   createdBy?: string;
   deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingQuestion {
+  tenantId: string;
+  id: string;
+  moduleId: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingAssignment {
+  tenantId: string;
+  id: string;
+  moduleId: string;
+  moduleCode?: string;
+  moduleTitle?: string;
+  staffMemberId: string;
+  staffRole?: string;
+  status?: string;
+  dueAt: string;
+  dueDateReviewNeeded?: boolean;
+  firstShiftAt: string;
+  startedAt: string;
+  completedAt: string;
+  waivedAt: string;
+  waiverReason?: string;
+  waiverApprovedBy?: string;
+  attemptCount?: number;
+  lastAttemptId?: string;
+  lastScorePercent?: number;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  managerReviewRequired?: boolean;
+  reminderSentAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TrainingAttempt {
+  tenantId: string;
+  id: string;
+  assignmentId: string;
+  moduleId: string;
+  staffMemberId: string;
+  attemptNumber?: number;
+  scorePercent?: number;
+  passThresholdPercent?: number;
+  passed?: boolean;
+  managerReviewRequired?: boolean;
+  answersJson?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StaffTrainingSignal {
+  tenantId: string;
+  id: string;
+  staffMemberId: string;
+  moduleId: string;
+  assignmentId: string;
+  signalType?: string;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingModuleDefinition {
+  tenantId: string;
+  id: string;
+  moduleId?: string;
+  code?: string;
+  title?: string;
+  description?: string;
+  contentType?: string;
+  contentUrl?: string;
+  durationMinutes?: number;
+  category?: string;
+  isRequired?: boolean;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  requiredRole?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion01Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion02Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion03Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion04Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion05Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion06Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion07Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion08Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion09Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SelOnboardingTrainingQuestion10Definition {
+  tenantId: string;
+  id: string;
+  questionId?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
   createdAt: string;
   updatedAt: string;
 }

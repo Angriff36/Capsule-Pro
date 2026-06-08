@@ -85,8 +85,26 @@ for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
 }
 
 // writes (all IR commands, via dispatcher unless overridden)
+// Map Manifest scalar types to TypeScript types (same mapping as read types above)
+const SCALAR_TO_TS = {
+  string: "string", datetime: "string", number: "number", decimal: "number",
+  money: "number", int: "number", float: "number", bigint: "number",
+  boolean: "boolean", bool: "boolean", array: "unknown[]", json: "unknown",
+  text: "string", uuid: "string",
+};
+function paramTsType(p) {
+  const base = SCALAR_TO_TS[p.type.name] || "unknown";
+  // All input fields accept null (Prisma nullable columns) and undefined (optional ?).
+  // Nullable IR types explicitly declare null; non-nullable ones may still receive null
+  // from form state or partial Prisma reads, so we include it unconditionally.
+  return `${base} | null`;
+}
+
+// Generate per-command typed input interfaces
 const overrides = conv.routePaths.commandOverrides || {};
 const seen = new Set();
+const interfaces = []; // collected interface declarations
+
 for (const c of ir.commands) {
   const key = `${c.entity}.${c.name}`;
   if (seen.has(key)) continue; seen.add(key);
@@ -95,7 +113,22 @@ for (const c of ir.commands) {
   const fn = `${camel(c.entity)}${cap(c.name)}`;
   const ov = overrides[key];
   const pathArg = ov ? `, { path: \`${ov.replace(/\{(\w+)\}/g, "${String(input.$1 ?? \"\")}")}\` }` : "";
-  out.push(`export async function ${fn}(input: Record<string, unknown> = {}): Promise<${T} | undefined> {`);
+
+  // Build typed input interface from IR parameters.
+  // All fields are optional (with `?`) because the Manifest runtime fills defaults
+  // for omitted params. An index signature allows extra/arbitrary properties.
+  let inputType = "Record<string, unknown>";
+  if (c.parameters && c.parameters.length > 0) {
+    const iName = `${c.entity}${cap(c.name)}Input`;
+    const fields = c.parameters.map(p => {
+      const ts = paramTsType(p);
+      return `  ${p.name}?: ${ts};`;
+    });
+    interfaces.push(`export interface ${iName} {\n  [key: string]: unknown;\n${fields.join("\n")}\n}`);
+    inputType = iName;
+  }
+
+  out.push(`export async function ${fn}(input: ${inputType} = {}): Promise<${T} | undefined> {`);
   out.push(`  const r = await executeCommand<${T}>(${JSON.stringify(c.entity)}, ${JSON.stringify(c.name)}, input${pathArg});`);
   out.push(`  return r.result;`);
   out.push(`}`);
@@ -104,7 +137,11 @@ for (const c of ir.commands) {
 const importLine = usedTypes.size
   ? `import type { ${[...usedTypes].sort().join(", ")} } from "./manifest-types.generated";`
   : "";
-writeFileSync(conv.client.clientOutput, out.join("\n").replace("__TYPE_IMPORT__", importLine) + "\n");
+// Insert the typed input interfaces before the function declarations
+const ifaceBlock = interfaces.length > 0
+  ? "// Command input types (generated from IR parameters)\n" + interfaces.join("\n\n") + "\n\n"
+  : "";
+writeFileSync(conv.client.clientOutput, out.join("\n").replace("__TYPE_IMPORT__", importLine) + "\n" + ifaceBlock);
 
 console.log("WROTE", conv.client.typesOutput, "(" + typeSet.size + " types)");
-console.log("WROTE", conv.client.clientOutput, "(" + Object.keys(ENTITY_DOMAIN_MAP).length + " entities, " + seen.size + " commands)");
+console.log("WROTE", conv.client.clientOutput, "(" + Object.keys(ENTITY_DOMAIN_MAP).length + " entities, " + seen.size + " commands, " + interfaces.length + " typed inputs)");

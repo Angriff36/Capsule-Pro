@@ -363,24 +363,24 @@ export function VendorCatalogsClient() {
 
     setIsSubmitting(true);
     try {
-      const payload = {
+      const payload: Record<string, unknown> = {
         supplierId: formData.supplierId,
         itemNumber: formData.itemNumber,
         itemName: formData.itemName,
-        description: formData.description || undefined,
-        category: formData.category || undefined,
+        description: formData.description || null,
+        category: formData.category || null,
         baseUnitCost: Number(formData.baseUnitCost) || 0,
         currency: formData.currency || "USD",
         unitOfMeasure: formData.unitOfMeasure || "each",
         leadTimeDays: formData.leadTimeDays
           ? Number(formData.leadTimeDays)
-          : undefined,
+          : null,
         minimumOrderQuantity: formData.minimumOrderQuantity
           ? Number(formData.minimumOrderQuantity)
-          : undefined,
-        effectiveFrom: formData.effectiveFrom || undefined,
-        effectiveTo: formData.effectiveTo || undefined,
-        notes: formData.notes || undefined,
+          : null,
+        effectiveFrom: formData.effectiveFrom ? Number(formData.effectiveFrom) : null,
+        effectiveTo: formData.effectiveTo ? Number(formData.effectiveTo) : null,
+        notes: formData.notes || null,
       };
 
       if (editingCatalog) {

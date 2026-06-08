@@ -139,7 +139,7 @@ export function InventoryTransfersClient() {
         fromLocationId: fromLocation,
         toLocationId: toLocation,
         notes,
-        items: transferItems.filter((i) => i.itemId && i.quantity),
+        items: JSON.stringify(transferItems.filter((i) => i.itemId && i.quantity)),
       });
 
       toast.success("Transfer created successfully");
