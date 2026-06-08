@@ -316,8 +316,11 @@ function checkEntity({
     if (ignoredFields.has(field.name)) continue;
 
     const expectedKind = manifestKindFor(field.prismaType);
-    const irParam = params.get(field.name);
-    const irProp = props.get(field.name);
+    // Also check camelCase variant: Prisma uses snake_case column names
+    // (e.g. first_name) while manifest uses camelCase (firstName).
+    const camelName = field.name.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    const irParam = params.get(field.name) || params.get(camelName);
+    const irProp = props.get(field.name) || props.get(camelName);
     const declaredAsParam = !!irParam;
     const declaredAsPropWithDefault =
       !!irProp && hasManifestDefault(irProp);

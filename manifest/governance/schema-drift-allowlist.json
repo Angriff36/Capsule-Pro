@@ -113,6 +113,102 @@
         "rule": "Manifest declares endDate as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
         "owner": "platform",
         "reviewBy": "2027-01-01"
+      },
+      "hours": {
+        "rule": "Adapter-derived: computed from startDate/endDate difference during business hours, or supplied by payroll integration. Prisma column is Decimal. TODO: consider adding as explicit create param for employee self-service.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "RecipeVersion": {
+      "recipeId": {
+        "rule": "Parent-context propagated from the parent Recipe entity. RecipeVersion belongs to Recipe and inherits recipeId server-side. The create command does not take recipeId as user input.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "name": {
+        "rule": "Adapter-derived: inherited from the parent Recipe's name when creating a version. The version carries the same name as its parent recipe.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "versionNumber": {
+        "rule": "Adapter-derived: auto-computed as max(versionNumber) + 1 for the tenant and recipe. First version gets 1. The create command does not take versionNumber as user input.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "TrainingAssignment": {
+      "assignedBy": {
+        "rule": "Adapter-derived from RuntimeContext.user.id. The currently authenticated user performing the training assignment. Same pattern as InventoryTransfer.requestedBy.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "KnowledgeBaseEntry": {
+      "slug": {
+        "rule": "Auto-generated from the title field by the store adapter (slugified: title.toLowerCase().replace(/[^a-z0-9]+/g, '-')). Prisma requires slug as unique String.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "BudgetAlert": {
+      "utilization": {
+        "rule": "Computed from thresholdPct/actualPct by the BudgetAlert adapter. The manifest create takes thresholdPct and alertType; utilization is derived server-side.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "LaborBudget": {
+      "name": {
+        "rule": "Adapter-derived: the labor budget name is generated from the period and type (e.g. 'Weekly Budget - Week 23, 2026'). Manifest create does not take name as user input.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "budgetTarget": {
+        "rule": "Adapter-derived: mapped from manifest budgetAmount field. Prisma uses budgetTarget, manifest uses budgetAmount — the adapter renames the field during persistence.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "budgetUnit": {
+        "rule": "Adapter-derived: inferred from budgetType (e.g. weekly→hours, monthly→dollars). Manifest create takes budgetType; budgetUnit is resolved server-side.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "DocumentVersion": {
+      "versionNumber": {
+        "rule": "Hardcoded to 1 in manifest create via mutate. Subsequent versions use a different command. Correct initial value.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "changeSummary": {
+        "rule": "Adapter-derived: mapped from manifest changeDescription field. Prisma uses changeSummary, manifest uses changeDescription — the adapter renames the field during persistence.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "documentType": {
+        "rule": "Adapter-derived: inferred from the parent document entity's type during creation. The document version inherits its type from the parent document.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "RevenueRecognitionSchedule": {
+      "eventId": {
+        "rule": "Parent-context propagated from the linked Invoice. Manifest source explicitly documents this: eventId + clientId are NOT caller input, inherited server-side from Invoice.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "clientId": {
+        "rule": "Parent-context propagated from the linked Invoice. Same as eventId — inherited server-side from Invoice.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "VersionApproval": {
+      "status": {
+        "rule": "Hardcoded to 'pending' in manifest create via mutate status = 'pending'. Initial status of an approval request is always pending, never user-supplied.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
       }
     }
   },
