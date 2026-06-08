@@ -15,7 +15,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { trainingModuleSoftDelete } from "@/app/lib/manifest-client.generated";
 
 interface DeleteTrainingModuleButtonProps {
   moduleId: string;
@@ -33,14 +33,7 @@ export function DeleteTrainingModuleButton({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const response = await apiFetch(`/api/training/modules/${moduleId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to delete module");
-      }
+      await trainingModuleSoftDelete({ id: moduleId });
 
       toast.success("Training module deleted");
       router.push("/staff/training");

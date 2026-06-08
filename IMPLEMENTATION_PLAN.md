@@ -1141,7 +1141,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-10 done 2026-06-08, ~60 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-13 done 2026-06-08, ~68 files migrated)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1166,7 +1166,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Batch 8 DONE (2026-06-08):** 8 more frontend files migrated to generated Manifest client: lib/leads.ts (listLeads, getLead), lib/proposals.ts (listProposals, getProposal), procurement/vendors/page.tsx (listVendors), logistics/routes/routes-view.tsx (listLogisticsRoutes), crm/pipeline/pipeline-board.tsx (listDeals), kitchen/equipment/equipment-page-client.tsx (listEquipments, listFacilityWorkOrders), events/catering/catering-client.tsx (listCateringOrders), accounting/collections/collections-client.tsx (listCollectionCases). Net -34 lines, 11 apiFetch calls replaced. 57 files now consume generated client.
 - **Batch 9 DONE (2026-06-08):** 7 more files migrated (vendor-catalogs-client, vendor-contracts/page, requisitions/page, vendor-contracts/[id], requisitions/[id], logistics/drivers/page, logistics/vehicles/page). ~9 apiFetch calls replaced. 59 files total consuming generated client.
 - **Batch 10 DONE (2026-06-08):** 4 more files migrated (facilities/work-orders, inventory/transfers-client, payroll/periods/[id], staff/performance). ~4 apiFetch calls replaced. 60 files total consuming generated client. Note: several files skipped due to endpoint path mismatches (procurement endpoints vs inventory endpoints in generated functions).
-- **Remaining apiFetch files (~115):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
+- **Batch 11 DONE (2026-06-08):** 6 files (upcoming-maintenance-widget, workflows-client, vendor-contracts/[id], alerts-client, requisitions/[id], knowledge-base-client). Generated client envelope key fixes for listFacilityAssets and listKnowledgeBaseEntries. Net -46 lines.
+- **Batch 12 DONE (2026-06-08):** 6 files (notifications-client, follow-ups/page, workflows-client command dispatch, security-client, invoices/[id], payments/[id]). Net -74 lines.
+- **Batch 13 DONE (2026-06-08):** 6 files (prep-lists/mobile, allergen-modal, payroll-periods, payroll-payouts, task-card partial, payroll-reports partial). Net -33 lines.
+- **Remaining apiFetch files (~91):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
 - **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
 - **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
@@ -2149,3 +2152,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Thirty-second revision:** Task 6.2 batch 4 DONE — 14 more files migrated from apiFetch to generated client across events (7), inventory (2), kitchen (3), staff (2) domains. ~35 additional command call sites replaced. Net -325 lines boilerplate total across batches 1-4. Total migrated files: 34. Tier 6 intro, Codebase Metrics table, finding #20, Completed Milestones table all updated. |
 | 2026-06-08 | **Task 6.2 batch 9: 7 more frontend files migrated** | vendor-catalogs, vendor-contracts, requisitions, drivers, vehicles. 59 files total. Net -13 lines. |
 | 2026-06-08 | **Task 6.2 batch 10: 4 more frontend files migrated** | work-orders, inventory-transfers, payroll-periods, staff-performance. 60 files total. Net -10 lines. |
+| 2026-06-08 | **Task 6.2 batches 11-13: 18 more frontend files migrated** | facilities-widget, knowledge-base, notifications, security, invoices, payments, payroll, task-card. 68 files total consuming generated client. Key blocker: endpoint path mismatch between frontend legacy routes and generated Manifest routes. |

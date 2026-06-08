@@ -21,7 +21,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { ArrowLeft, BookOpen, Calendar, Tag } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { getKnowledgeBaseEntry } from "@/app/lib/manifest-client.generated";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -52,12 +52,11 @@ export default function KnowledgeBaseDetailClient({ slug }: { slug: string }) {
       setLoading(true);
       setError(null);
       try {
-        const res = await apiFetch(`/api/knowledge-base/entries/${slug}`);
-        const data = await res.json();
-        if (data.success && data.entry) {
-          setEntry(data.entry);
+        const result = await getKnowledgeBaseEntry(slug);
+        if (result) {
+          setEntry(result as unknown as KnowledgeBaseEntry);
         } else {
-          setError(data.message || "Article not found");
+          setError("Article not found");
         }
       } catch {
         setError("Failed to load article");

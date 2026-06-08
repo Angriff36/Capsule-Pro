@@ -46,8 +46,7 @@ import {
   User,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { listStaffPerformances, staffPerformanceCreate, staffPerformanceComplete } from "@/app/lib/manifest-client.generated";
+import { listStaffPerformances, listStaffMembers, staffPerformanceCreate, staffPerformanceComplete } from "@/app/lib/manifest-client.generated";
 
 // Types matching the PerformanceReview model
 interface Employee {
@@ -191,14 +190,12 @@ export default function PerformancePageClient() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [reviewsResult, employeesRes] = await Promise.all([
+      const [reviewsResult, employeesResult] = await Promise.all([
         listStaffPerformances(),
-        apiFetch("/api/staff/performance/employees"),
+        listStaffMembers(),
       ]);
       setReviews(reviewsResult.data as unknown as PerformanceReview[]);
-      const employeesData = await employeesRes.json();
-      if (employeesData.success)
-        setEmployees(employeesData.data.employees || []);
+      setEmployees(employeesResult.data as unknown as Employee[]);
     } catch (error) {
       console.error("Failed to load performance data:", error);
     } finally {

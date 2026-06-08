@@ -21,7 +21,16 @@ import { ArrowLeft, DollarSign, Loader2, Package } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import {
+  getPurchaseOrder,
+  listPurchaseOrderItems,
+  purchaseOrderSubmit,
+  purchaseOrderApprove,
+  purchaseOrderCancel,
+  purchaseOrderReject,
+  purchaseOrderMarkOrdered,
+  purchaseOrderMarkReceived,
+} from "@/app/lib/manifest-client.generated";
 import {
   type POItem,
   POLineItemsDisplay,
@@ -70,22 +79,25 @@ export default function PODetailPage() {
   const loadOrder = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/procurement/purchase-orders/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setOrder(data.data.order);
-        setItems(data.data.items || []);
-        const initial: Record<string, string> = {};
-        (data.data.items || []).forEach((item: POItem) => {
-          initial[item.id] = String(
-            Math.max(
-              0,
-              Number(item.quantity_ordered) - Number(item.quantity_received)
-            )
-          );
-        });
-        setReceiveItems(initial);
-      }
+      const [orderResult, itemsResult] = await Promise.all([
+        getPurchaseOrder(id),
+        listPurchaseOrderItems(),
+      ]);
+      const orderData = orderResult as unknown as POOrder;
+      const allItems = itemsResult.data as unknown as POItem[];
+      const poItems = allItems.filter((item) => (item as unknown as Record<string, unknown>).purchaseOrderId === id);
+      setOrder(orderData);
+      setItems(poItems);
+      const initial: Record<string, string> = {};
+      poItems.forEach((item: POItem) => {
+        initial[item.id] = String(
+          Math.max(
+            0,
+            Number(item.quantity_ordered) - Number(item.quantity_received)
+          )
+        );
+      });
+      setReceiveItems(initial);
     } catch (error) {
       console.error("Failed to load PO:", error);
     } finally {
@@ -93,20 +105,21 @@ export default function PODetailPage() {
     }
   };
 
+  const STATUS_COMMANDS: Record<string, (params: Record<string, unknown>) => Promise<unknown>> = {
+    submitted: purchaseOrderSubmit,
+    approved: purchaseOrderApprove,
+    ordered: purchaseOrderMarkOrdered,
+    cancelled: purchaseOrderCancel,
+    rejected: purchaseOrderReject,
+  };
+
   const handleStatusUpdate = async (newStatus: string) => {
     if (!order) return;
     setUpdating(newStatus);
     try {
-      const res = await fetch(
-        "/api/procurement/purchase-orders/commands/update-status",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId: order.id, status: newStatus }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
+      const command = STATUS_COMMANDS[newStatus];
+      if (command) {
+        await command({ orderId: order.id });
         setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
       }
     } catch (error) {
@@ -120,31 +133,18 @@ export default function PODetailPage() {
     if (!order) return;
     setReceiving(true);
     try {
-      const receivePayload = Object.entries(receiveItems).map(
-        ([itemId, qty]) => ({
-          itemId,
-          quantityReceived: Number(qty),
-          quantityOrdered:
-            Number(items.find((i) => i.id === itemId)?.quantity_ordered) || 0,
-        })
-      );
-
-      const res = await fetch(
-        "/api/procurement/purchase-orders/commands/receive",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+      for (const [itemId, qty] of Object.entries(receiveItems)) {
+        const qtyReceived = Number(qty);
+        if (qtyReceived > 0) {
+          await purchaseOrderMarkReceived({
             orderId: order.id,
-            items: receivePayload,
-          }),
+            itemId,
+            quantityReceived: qtyReceived,
+          });
         }
-      );
-      const data = await res.json();
-      if (data.success) {
-        setShowReceiveDialog(false);
-        await loadOrder();
       }
+      setShowReceiveDialog(false);
+      await loadOrder();
     } catch (error) {
       console.error("Failed to receive items:", error);
     } finally {

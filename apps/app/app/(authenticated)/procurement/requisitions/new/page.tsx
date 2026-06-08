@@ -31,7 +31,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { listInventoryItems } from "@/app/lib/manifest-client.generated";
 import { createPurchaseRequisition } from "../../actions";
 import { formatCurrency } from "../../components/req-shared";
 
@@ -78,9 +78,8 @@ export default function NewRequisitionPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const itemsRes = await apiFetch("/api/inventory/items?limit=200");
-      const itemsData = await itemsRes.json();
-      if (itemsData.success) setInventoryItems(itemsData.data || []);
+      const itemsResult = await listInventoryItems({ limit: 200 });
+      setInventoryItems(itemsResult.data as unknown as InventoryItem[]);
     } catch (error) {
       console.error("Failed to load data:", error);
     } finally {

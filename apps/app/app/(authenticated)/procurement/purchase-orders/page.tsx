@@ -18,7 +18,7 @@ import {
 import { DollarSign, Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { listPurchaseOrders } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
   formatDateShort,
@@ -53,9 +53,8 @@ export default function PurchaseOrdersPage() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/procurement/purchase-orders/list");
-      const data = await res.json();
-      if (data.success) setOrders(data.data.orders || []);
+      const result = await listPurchaseOrders();
+      setOrders(result.data as unknown as PurchaseOrder[]);
     } catch (error) {
       console.error("Failed to load POs:", error);
     } finally {

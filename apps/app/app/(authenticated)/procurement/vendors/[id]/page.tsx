@@ -50,8 +50,15 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { vendorUpdate, vendorAddContact, vendorRate } from "@/app/lib/manifest-client.generated";
+import {
+  getVendor,
+  listVendorContacts,
+  listVendorRatings,
+  listVendorCatalogs,
+  vendorUpdate,
+  vendorAddContact,
+  vendorRate,
+} from "@/app/lib/manifest-client.generated";
 import { formatDate } from "../../components/po-shared";
 import {
   formatPaymentTerms,
@@ -121,35 +128,41 @@ export default function VendorDetailPage() {
   const loadVendor = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`/api/procurement/vendors/${vendorId}`);
-      const data = await res.json();
-      if (data.success) {
-        const v = data.data.vendor as Vendor;
-        setVendor(v);
-        setContacts(data.data.contacts || []);
-        setRatings(data.data.ratings || []);
-        setCatalogItemCount(data.data.catalogItemCount || 0);
-        setForm({
-          name: v.name || "",
-          contactPerson: v.contact_person || "",
-          email: v.email || "",
-          phone: v.phone || "",
-          paymentTerms: v.payment_terms || "NET_30",
-          addressLine1: v.address_line1 || "",
-          addressLine2: v.address_line2 || "",
-          city: v.city || "",
-          state: v.state || "",
-          postalCode: v.postal_code || "",
-          country: v.country || "US",
-          taxId: v.tax_id || "",
-          website: v.website || "",
-          notes: v.notes || "",
-        });
-      } else {
-        router.push("/procurement/vendors");
-      }
+      const [vendorResult, contactsResult, ratingsResult, catalogResult] = await Promise.all([
+        getVendor(vendorId),
+        listVendorContacts(),
+        listVendorRatings(),
+        listVendorCatalogs(),
+      ]);
+      const v = vendorResult as unknown as Vendor;
+      const allContacts = contactsResult.data as unknown as VendorContact[];
+      const allRatings = ratingsResult.data as unknown as VendorRating[];
+      const vendorContacts = allContacts.filter((c) => (c as unknown as Record<string, unknown>).vendorId === vendorId);
+      const vendorRatings = allRatings.filter((r) => (r as unknown as Record<string, unknown>).vendorId === vendorId);
+      const vendorCatalogItems = (catalogResult.data as unknown as Record<string, unknown>[]).filter((c) => c.vendorId === vendorId);
+      setVendor(v);
+      setContacts(vendorContacts);
+      setRatings(vendorRatings);
+      setCatalogItemCount(vendorCatalogItems.length);
+      setForm({
+        name: v.name || "",
+        contactPerson: v.contact_person || "",
+        email: v.email || "",
+        phone: v.phone || "",
+        paymentTerms: v.payment_terms || "NET_30",
+        addressLine1: v.address_line1 || "",
+        addressLine2: v.address_line2 || "",
+        city: v.city || "",
+        state: v.state || "",
+        postalCode: v.postal_code || "",
+        country: v.country || "US",
+        taxId: v.tax_id || "",
+        website: v.website || "",
+        notes: v.notes || "",
+      });
     } catch (error) {
       console.error("Failed to load vendor:", error);
+      router.push("/procurement/vendors");
     } finally {
       setLoading(false);
     }
