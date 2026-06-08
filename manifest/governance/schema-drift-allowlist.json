@@ -31,6 +31,27 @@
         "owner": "inventory-platform",
         "reviewBy": "2027-01-01"
       }
+    },
+    "ClientPreference": {
+      "preferenceValue": {
+        "rule": "Manifest IR grammar cannot express Json/object types. Manifest declares preferenceValue as string; the dispatcher serializes/deserializes JSON transparently. Prisma column is @db.Json. Same grammar-blocked pattern as InventoryTransfer.items and CommandBoardLayout.viewport.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "CommandBoardLayout": {
+      "viewport": {
+        "rule": "Manifest IR grammar cannot express Json/object types. Manifest declares viewport as string with default '{}'; the dispatcher passes the JSON object verbatim. Prisma column is @db.Json. Same grammar-blocked pattern as InventoryTransfer.items and ClientPreference.preferenceValue.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "Workflow": {
+      "permissions": {
+        "rule": "Manifest IR grammar cannot express Json/array-of-object types. Manifest declares permissions as string; the dispatcher passes the array verbatim which Prisma stores as Json. Prisma column is @db.Json.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
     }
   },
   "nonconforming": {},
