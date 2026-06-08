@@ -27,6 +27,11 @@ export function normalizeCommandResult(
   events?: CommandResult["emittedEvents"];
   diagnostics?: Array<{ kind: string; message: string }>;
 } {
+  const toDiagnostic = (kind: string, message: string | undefined, fallback: string) => ({
+    kind,
+    message: message ?? fallback,
+  });
+
   if (result.success) {
     return {
       success: true,
@@ -35,23 +40,23 @@ export function normalizeCommandResult(
       events: result.emittedEvents,
       diagnostics: result.constraintOutcomes
         ?.filter((o) => !o.passed)
-        .map((o) => ({ kind: "constraint_block" as const, message: o.formatted ?? o.message ?? "Constraint failed" })),
+        .map((o) => toDiagnostic("constraint_block", o.formatted ?? o.message, "Constraint failed")),
     };
   }
 
   // Map failure mode to a diagnostic kind
   const diagnostics: Array<{ kind: string; message: string }> = [];
   if (result.policyDenial) {
-    diagnostics.push({ kind: "policy_denial", message: result.policyDenial.formatted ?? "Policy denied" });
+    diagnostics.push(toDiagnostic("policy_denial", result.policyDenial.formatted, "Policy denied"));
   }
   if (result.guardFailure) {
-    diagnostics.push({ kind: "guard_failure", message: result.guardFailure.formatted ?? "Guard failed" });
+    diagnostics.push(toDiagnostic("guard_failure", result.guardFailure.formatted, "Guard failed"));
   }
   if (result.concurrencyConflict) {
-    diagnostics.push({ kind: "concurrency_conflict", message: result.concurrencyConflict.conflictCode ?? "Conflict" });
+    diagnostics.push(toDiagnostic("concurrency_conflict", result.concurrencyConflict.conflictCode, "Conflict"));
   }
   for (const outcome of result.constraintOutcomes?.filter((o) => !o.passed) ?? []) {
-    diagnostics.push({ kind: "constraint_block", message: outcome.formatted ?? outcome.message ?? "Constraint failed" });
+    diagnostics.push(toDiagnostic("constraint_block", outcome.formatted ?? outcome.message, "Constraint failed"));
   }
 
   return {
