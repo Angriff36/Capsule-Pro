@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
 import { listPrepTaskPlanWorkflows, prepTaskPlanWorkflowCreate } from "@/app/lib/manifest-client.generated";
 
 interface Workflow {
@@ -276,18 +276,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
   ) => {
     setActioning(workflowId);
     try {
-      const res = await apiFetch(
-        `/api/kitchen/prep-task-plan-workflows/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: workflowId }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Action failed");
-      }
+      await executeCommand("PrepTaskPlanWorkflow", command, { id: workflowId });
       toast.success(successLabel);
       setConfirmAction(null);
       await loadWorkflows();

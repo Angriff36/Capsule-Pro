@@ -44,7 +44,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { getInvoice, invoiceApplyPayment, invoiceMarkAsPaid, invoiceMarkOverdue, invoiceSend, invoiceSendReminder, invoiceVoidInvoice } from "@/app/lib/manifest-client.generated";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
@@ -152,13 +152,9 @@ export default function InvoiceDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiFetch(`/api/accounting/invoices/${id}`);
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to load invoice");
-      }
-      const data = await response.json();
-      setInvoice(data);
+      const data = await getInvoice(id);
+      if (!data) throw new Error("Invoice not found");
+      setInvoice(data as unknown as Invoice);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load invoice";
@@ -179,19 +175,24 @@ export default function InvoiceDetailPage() {
   ) => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/accounting/invoices/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, ...body }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || `Failed to ${action}`);
+      let result: unknown;
+      switch (action) {
+        case "apply-payment":
+          result = await invoiceApplyPayment({ invoiceId: id, amount: body?.amount });
+          break;
+        case "mark-as-paid":
+          result = await invoiceMarkAsPaid({ invoiceId: id });
+          break;
+        case "send-reminder":
+          result = await invoiceSendReminder({ invoiceId: id });
+          break;
+        case "mark-overdue":
+          result = await invoiceMarkOverdue({ invoiceId: id });
+          break;
+        default:
+          throw new Error(`Unknown action: ${action}`);
       }
-
-      const updated = await response.json();
-      setInvoice(updated);
+      setInvoice(result as unknown as Invoice);
       toast.success(`Invoice ${action.replace(/-/g, " ")}`);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : `Failed to ${action}`);
@@ -203,16 +204,8 @@ export default function InvoiceDetailPage() {
   const handleSend = async () => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/accounting/invoices/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to send invoice");
-      }
-      const updated = await response.json();
-      setInvoice(updated);
+      const result = await invoiceSend({ invoiceId: id });
+      setInvoice(result as unknown as Invoice);
       toast.success("Invoice sent to client");
     } catch (err) {
       toast.error(
@@ -226,15 +219,8 @@ export default function InvoiceDetailPage() {
   const handleVoid = async () => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/accounting/invoices/${id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to void invoice");
-      }
-      const updated = await response.json();
-      setInvoice(updated);
+      const result = await invoiceVoidInvoice({ invoiceId: id });
+      setInvoice(result as unknown as Invoice);
       toast.success("Invoice voided");
     } catch (err) {
       toast.error(

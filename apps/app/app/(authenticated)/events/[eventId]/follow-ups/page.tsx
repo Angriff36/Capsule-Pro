@@ -21,8 +21,7 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { automatedFollowupGenerate, automatedFollowupComplete, automatedFollowupSkip } from "@/app/lib/manifest-client.generated";
+import { automatedFollowupGenerate, automatedFollowupComplete, automatedFollowupSkip, listAutomatedFollowups } from "@/app/lib/manifest-client.generated";
 
 interface Followup {
   id: string;
@@ -66,11 +65,8 @@ export default function EventFollowUpsPage() {
   const fetchFollowups = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(
-        `/api/events/automated-followups/list?eventId=${eventId}`
-      );
-      const data = await res.json();
-      setFollowups(data.followups || []);
+      const result = await listAutomatedFollowups({ eventId });
+      setFollowups(result.data as unknown as Followup[]);
     } catch (e) {
       console.error("Failed to fetch followups:", e);
     } finally {

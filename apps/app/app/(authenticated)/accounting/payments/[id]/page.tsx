@@ -34,7 +34,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { getPayment, paymentProcess, paymentRefund } from "@/app/lib/manifest-client.generated";
 
 const formatCurrency = (v: string | number | null) =>
   _formatCurrency(v, { nullDisplay: "\u2014" });
@@ -125,13 +125,9 @@ export default function PaymentDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiFetch(`/api/accounting/payments/${id}`);
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to load payment");
-      }
-      const data = await response.json();
-      setPayment(data.payment || data);
+      const data = await getPayment(id);
+      if (!data) throw new Error("Payment not found");
+      setPayment(data as unknown as Payment);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load payment";
@@ -149,16 +145,8 @@ export default function PaymentDetailPage() {
   const handleProcess = async () => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/accounting/payments/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to process payment");
-      }
-      const updated = await response.json();
-      setPayment(updated.payment || updated);
+      const result = await paymentProcess({ paymentId: id });
+      setPayment(result as unknown as Payment);
       toast.success("Payment processed");
     } catch (err) {
       toast.error(
@@ -182,17 +170,8 @@ export default function PaymentDetailPage() {
 
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/accounting/payments/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount, reason: refundReason.trim() }),
-      });
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to refund payment");
-      }
-      const updated = await response.json();
-      setPayment(updated.payment || updated);
+      const result = await paymentRefund({ paymentId: id, amount, reason: refundReason.trim() });
+      setPayment(result as unknown as Payment);
       toast.success("Refund processed");
       setRefundDialogOpen(false);
       setRefundAmount("");

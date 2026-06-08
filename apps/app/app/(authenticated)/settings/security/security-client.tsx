@@ -44,7 +44,7 @@ import {
 import { AlertCircle, Eye, Key, Loader2, Shield, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { apiKeyRevoke, getRolePolicy, listApiKeies, listRolePolicies } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -388,20 +388,13 @@ export function SecurityClient() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [keysRes, policiesRes] = await Promise.all([
-        apiFetch("/api/settings/api-keys/list"),
-        apiFetch("/api/rolepolicy/policies/list"),
+      const [keysResult, policiesResult] = await Promise.all([
+        listApiKeies(),
+        listRolePolicies(),
       ]);
 
-      if (!(keysRes.ok && policiesRes.ok)) {
-        throw new Error("Failed to fetch data");
-      }
-
-      const keysData = await keysRes.json();
-      const policiesData = await policiesRes.json();
-
-      setApiKeys(keysData.apiKeys ?? []);
-      setRolePolicies(policiesData.rolePolicys ?? []);
+      setApiKeys(keysResult.data as unknown as ApiKey[]);
+      setRolePolicies(policiesResult.data as unknown as RolePolicy[]);
     } catch {
       toast.error("Failed to load security settings.");
     } finally {
@@ -430,14 +423,7 @@ export function SecurityClient() {
     }
     setRevoking(true);
     try {
-      const res = await apiFetch(
-        `/api/settings/api-keys/${revokeTarget.id}/revoke`,
-        { method: "POST" }
-      );
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? "Revoke failed");
-      }
+      await apiKeyRevoke({ id: revokeTarget.id });
       toast.success(`API key "${revokeTarget.name}" revoked.`);
       setRevokeOpen(false);
       setRevokeTarget(null);
@@ -456,12 +442,8 @@ export function SecurityClient() {
     setPolicyDetailOpen(true);
     setPolicyDetailLoading(true);
     try {
-      const res = await apiFetch(`/api/rolepolicy/policies/${policy.id}`);
-      if (!res.ok) {
-        throw new Error("Failed to fetch policy details");
-      }
-      const data = await res.json();
-      setPolicyDetail(data.rolePolicy ?? data);
+      const data = await getRolePolicy(policy.id);
+      setPolicyDetail((data ?? policy) as RolePolicyDetail);
     } catch {
       toast.error("Failed to load policy details.");
       setPolicyDetail(null);

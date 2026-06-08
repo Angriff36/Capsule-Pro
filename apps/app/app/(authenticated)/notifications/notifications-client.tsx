@@ -24,8 +24,7 @@ import { Bell, BellOff, CheckCircle, Eye, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { notificationMarkDismissed, notificationMarkRead, notificationRemove } from "@/app/lib/manifest-client.generated";
+import { notificationMarkDismissed, notificationMarkRead, notificationRemove, listNotifications } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -155,13 +154,8 @@ export function NotificationsClient({
   const _loadNotifications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/collaboration/notifications/list");
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error("Failed to load notifications");
-        return;
-      }
-      setNotifications(data.notifications ?? []);
+      const result = await listNotifications();
+      setNotifications(result.data as unknown as Notification[]);
     } catch {
       toast.error("Failed to load notifications");
     } finally {
