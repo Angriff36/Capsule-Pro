@@ -33,9 +33,11 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   getEventImportWorkflow,
+  eventImportWorkflowCancel,
+  eventImportWorkflowResume,
+  eventImportWorkflowRetry,
 } from "@/app/lib/manifest-client.generated";
 
 interface EventImport {
@@ -186,24 +188,16 @@ export function WorkflowDetailClient({
     }
   }, [workflow?.parseStatus, loadWorkflow]);
 
-  const handleCommand = async (command: string) => {
+  const handleCommand = async (command: "resume" | "retry" | "cancel") => {
     setActioning(true);
     try {
-      // NOTE: Command dispatch uses dynamic command name — keeping apiFetch for the generic command route.
-      const res = await apiFetch(
-        `/api/events/import-workflows/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: workflowId }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(
-          err.error ?? err.message ?? `Failed to ${command} workflow`
-        );
-      }
+      const commandFn = {
+        resume: eventImportWorkflowResume,
+        retry: eventImportWorkflowRetry,
+        cancel: eventImportWorkflowCancel,
+      }[command];
+
+      await commandFn({ id: workflowId });
       toast.success(`Workflow ${command}ed successfully`);
       setConfirmAction(null);
       await loadWorkflow();

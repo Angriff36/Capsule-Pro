@@ -75,6 +75,8 @@ import {
   eventDishCreate,
   eventReportCreate,
   eventUpdate,
+  listEventReports,
+  listEvents,
   scheduleShiftCreate,
 } from "@/app/lib/manifest-client.generated";
 
@@ -91,15 +93,6 @@ interface EventReport {
   createdAt: string;
 }
 
-interface EventReportsResponse {
-  data: EventReport[];
-  pagination: {
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-  };
-}
 
 interface ParsedMenuItem {
   name: string;
@@ -245,13 +238,9 @@ function EventReportsTab() {
   const loadReports = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/events/reports");
-      const json = (await res.json()) as EventReportsResponse;
-      if (!res.ok) {
-        toast.error("Failed to load event reports");
-        return;
-      }
-      setReports(json.data ?? []);
+      const result = await listEventReports();
+      const reports = (result.data ?? []) as unknown as EventReport[];
+      setReports(reports);
     } catch {
       toast.error("Failed to load event reports");
     } finally {
@@ -557,15 +546,8 @@ function DocumentParserTab() {
   const searchEvents = useCallback(async (query: string) => {
     setEventSearchLoading(true);
     try {
-      const res = await apiFetch(
-        `/api/events?search=${encodeURIComponent(query)}&limit=10`
-      );
-      if (res.ok) {
-        const json = (await res.json()) as {
-          data: EventSearchResult[];
-        };
-        setEventSearchResults(json.data ?? []);
-      }
+      const result = await listEvents({ search: query, limit: 10 });
+      setEventSearchResults((result.data ?? []) as unknown as EventSearchResult[]);
     } catch {
       setEventSearchResults([]);
     } finally {

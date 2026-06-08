@@ -49,6 +49,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  shipmentItemCreate,
+  shipmentItemSoftDelete,
+} from "@/app/lib/manifest-client.generated";
 import { listInventoryItems } from "../../../lib/inventory";
 import {
   type CreateShipmentRequest,
@@ -59,6 +63,7 @@ import {
   getItemConditionLabel,
   getShipmentStatusColor,
   getShipmentStatusLabel,
+  listShipmentItems,
   listShipments,
   type Shipment,
   type ShipmentItem,
@@ -206,12 +211,8 @@ export const ShipmentsPageClient = () => {
   // Load shipment items
   const loadShipmentItems = useCallback(async (shipmentId: string) => {
     try {
-      // No generated client function for per-shipment items list (generated listShipmentItems uses /shipment-items/list)
-      const response = await apiFetch(`/api/shipments/${shipmentId}/items`);
-      if (response.ok) {
-        const items = await response.json();
-        setShipmentItems(items);
-      }
+      const items = await listShipmentItems(shipmentId);
+      setShipmentItems(items);
     } catch (error) {
       console.error("Failed to load shipment items:", error);
     }
@@ -232,12 +233,7 @@ export const ShipmentsPageClient = () => {
   const handleRemoveItem = async (itemId: string) => {
     if (!selectedShipment) return;
     try {
-      // No generated client function for removing shipment item
-      const response = await apiFetch(
-        `/api/shipments/${selectedShipment.id}/items/${itemId}`,
-        { method: "DELETE" }
-      );
-      if (!response.ok) throw new Error("Failed to remove item");
+      await shipmentItemSoftDelete({ id: itemId });
       toast.success("Item removed from shipment");
       loadShipmentItems(selectedShipment.id);
     } catch (error) {
@@ -324,39 +320,25 @@ export const ShipmentsPageClient = () => {
 
     setIsSubmitting(true);
     try {
-      // No generated client function for adding shipment item
-      const response = await apiFetch(
-        `/api/shipments/${selectedShipment.id}/items`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            item_id: addItemForm.item_id,
-            quantity_shipped: addItemForm.quantity_shipped,
-            unit_cost: addItemForm.unit_cost || 0,
-            condition: addItemForm.condition,
-            condition_notes: addItemForm.condition_notes || undefined,
-            lot_number: addItemForm.lot_number || undefined,
-          }),
-        }
-      );
+      await shipmentItemCreate({
+        shipmentId: selectedShipment.id,
+        itemId: addItemForm.item_id,
+        quantityShipped: addItemForm.quantity_shipped,
+        unitCost: addItemForm.unit_cost || 0,
+        lotNumber: addItemForm.lot_number || undefined,
+      });
 
-      if (response.ok) {
-        toast.success("Item added to shipment");
-        setIsAddItemModalOpen(false);
-        setAddItemForm({
-          item_id: "",
-          quantity_shipped: 0,
-          unit_cost: 0,
-          condition: "good",
-          condition_notes: "",
-          lot_number: "",
-        });
-        loadShipmentItems(selectedShipment.id);
-      } else {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to add item");
-      }
+      toast.success("Item added to shipment");
+      setIsAddItemModalOpen(false);
+      setAddItemForm({
+        item_id: "",
+        quantity_shipped: 0,
+        unit_cost: 0,
+        condition: "good",
+        condition_notes: "",
+        lot_number: "",
+      });
+      loadShipmentItems(selectedShipment.id);
     } catch (error) {
       console.error("Failed to add item:", error);
       toast.error(

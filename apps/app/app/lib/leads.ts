@@ -11,9 +11,12 @@
 "use client";
 
 import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
-import { apiFetch } from "@/app/lib/api";
 import {
   leadCreate,
+  leadUpdate as _leadUpdate,
+  leadConvertToClient as _leadConvertToClient,
+  leadDisqualify as _leadDisqualify,
+  leadArchive as _leadArchive,
   listLeads,
   getLead,
 } from "@/app/lib/manifest-client.generated";
@@ -89,26 +92,6 @@ export async function fetchLeadById(id: string): Promise<Lead> {
 // Command helpers
 // ---------------------------------------------------------------------------
 
-async function executeCommand(
-  command: string,
-  instanceId: string,
-  body?: Record<string, unknown>
-): Promise<Response> {
-  const response = await apiFetch(`/api/crm/leads/commands/${command}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ instanceId, ...body }),
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message ||
-        `Failed to execute ${command} on lead`
-    );
-  }
-  return response;
-}
-
 export async function createLead(data: {
   contactName: string;
   companyName?: string;
@@ -128,19 +111,19 @@ export async function updateLead(
   id: string,
   data: Record<string, unknown>
 ): Promise<void> {
-  await executeCommand("update", id, data);
+  await _leadUpdate({ id, ...data } as Parameters<typeof _leadUpdate>[0]);
 }
 
 export async function convertLeadToClient(id: string): Promise<void> {
-  await executeCommand("convert-to-client", id);
+  await _leadConvertToClient({ id });
 }
 
 export async function disqualifyLead(id: string): Promise<void> {
-  await executeCommand("disqualify", id);
+  await _leadDisqualify({ id });
 }
 
 export async function archiveLead(id: string): Promise<void> {
-  await executeCommand("archive", id);
+  await _leadArchive({ id });
 }
 
 // ---------------------------------------------------------------------------

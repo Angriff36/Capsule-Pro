@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
+import { kitchenTaskComplete, kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
 import type { OfflineQueueItem, Task } from "../types";
 import { priorityConfig } from "../types";
 
@@ -341,19 +341,8 @@ export default function MobileMyWorkPage() {
       setState((prev) => ({ ...prev, isLoading: true }));
 
       try {
-        const response = await apiFetch(`/api/kitchen/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "done" }),
-        });
-
-        if (response.ok) {
-          await fetchMyWork();
-        } else {
-          const errData = await response.json();
-          setError(errData.message || "Failed to complete task");
-          setState((prev) => ({ ...prev, isLoading: false }));
-        }
+        await kitchenTaskComplete({ id: taskId });
+        await fetchMyWork();
       } catch (err) {
         captureException(err);
         setError("Failed to complete task. Please try again.");

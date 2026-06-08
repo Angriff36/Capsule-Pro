@@ -2,7 +2,6 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -48,11 +47,9 @@ import {
   Shield,
   Star,
   Trash2,
-  Users,
 } from "lucide-react";
 import {
   Empty,
-  EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
@@ -60,42 +57,43 @@ import {
 } from "@repo/design-system/components/ui/empty";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   bankAccountCreate,
   bankAccountRemove,
   bankAccountUpdate,
   bankAccountVerify,
+  listBankAccounts,
+  listUsers,
 } from "@/app/lib/manifest-client.generated";
 import { executeCommand } from "@/app/lib/manifest-client";
 
 interface Employee {
   id: string;
-  first_name: string | null;
-  last_name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   email: string;
-  payout_method: string;
+  payoutMethod: string;
 }
 
 interface BankAccount {
   id: string;
   employeeId: string;
-  bank_name: string;
-  account_type: string;
-  routing_number: string;
-  account_number_last4: string;
-  account_holder_name: string;
-  is_default: boolean;
+  bankName: string;
+  accountType: string;
+  routingNumber: string;
+  accountNumberLast4: string;
+  accountHolderName: string;
+  isDefault: boolean;
   status: string;
-  verified_at: string | null;
-  verification_method: string | null;
+  verifiedAt: string | null;
+  verificationMethod: string | null;
   notes: string | null;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 function getEmployeeName(e: Employee): string {
-  return [e.first_name, e.last_name].filter(Boolean).join(" ") || e.email;
+  return [e.firstName, e.lastName].filter(Boolean).join(" ") || e.email;
 }
 
 function formatDate(date: string | null): string {
@@ -138,16 +136,37 @@ export default function DirectDepositPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (selectedEmployeeId) params.set("employeeId", selectedEmployeeId);
-
-      const res = await apiFetch(
-        `/api/payroll/bank-accounts?${params.toString()}`
+      const [bankResult, userResult] = await Promise.all([
+        listBankAccounts(selectedEmployeeId ? { employeeId: selectedEmployeeId } : undefined),
+        listUsers(),
+      ]);
+      setAccounts(
+        (bankResult.data || []).map((a) => ({
+          id: a.id,
+          employeeId: a.employeeId,
+          bankName: a.bankName ?? "",
+          accountType: a.accountType ?? "checking",
+          routingNumber: a.routingNumber,
+          accountNumberLast4: a.accountNumber?.slice(-4) ?? "",
+          accountHolderName: a.accountHolderName,
+          isDefault: a.isDefault ?? false,
+          status: a.status ?? "pending",
+          verifiedAt: a.verifiedAt ?? null,
+          verificationMethod: null,
+          notes: null,
+          createdAt: a.createdAt,
+          updatedAt: a.updatedAt,
+        }))
       );
-      if (!res.ok) throw new Error("Failed to fetch bank accounts");
-      const data = await res.json();
-      setAccounts(data.accounts || []);
-      setEmployees(data.employees || []);
+      setEmployees(
+        (userResult.data || []).map((u) => ({
+          id: u.id,
+          firstName: u.firstName ?? null,
+          lastName: u.lastName ?? null,
+          email: u.email,
+          payoutMethod: ((u as unknown) as Record<string, unknown>).payoutMethod as string ?? "manual",
+        }))
+      );
     } catch (err) {
       console.error("Error fetching bank accounts:", err);
       toast.error("Failed to load bank accounts");
@@ -181,12 +200,12 @@ export default function DirectDepositPage() {
 
   function openEditModal(account: BankAccount) {
     setEditingAccount(account);
-    setFormBankName(account.bank_name);
-    setFormAccountType(account.account_type);
-    setFormRoutingNumber(account.routing_number);
+    setFormBankName(account.bankName);
+    setFormAccountType(account.accountType);
+    setFormRoutingNumber(account.routingNumber);
     setFormAccountNumber("");
-    setFormAccountHolderName(account.account_holder_name);
-    setFormIsDefault(account.is_default);
+    setFormAccountHolderName(account.accountHolderName);
+    setFormIsDefault(account.isDefault);
     setModalOpen(true);
   }
 
@@ -283,7 +302,7 @@ export default function DirectDepositPage() {
   ).length;
   const pendingAccounts = accounts.filter((a) => a.status === "pending").length;
   const directDepositEmployees = employees.filter(
-    (e) => e.payout_method === "direct_deposit"
+    (e) => e.payoutMethod === "direct_deposit"
   ).length;
 
   return (
@@ -410,9 +429,9 @@ export default function DirectDepositPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                           <p className="font-medium text-sm">
-                            {account.bank_name}
+                            {account.bankName}
                           </p>
-                          {account.is_default && (
+                          {account.isDefault && (
                             <Badge
                               className="text-[10px] gap-1"
                               variant="secondary"
@@ -443,15 +462,15 @@ export default function DirectDepositPage() {
                         </div>
                         <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
                           <p>
-                            {account.account_type === "checking"
+                            {account.accountType === "checking"
                               ? "Checking"
                               : "Savings"}{" "}
-                            •••• {account.account_number_last4}
+                            •••• {account.accountNumberLast4}
                           </p>
                           <p>
-                            Routing: {maskRoutingNumber(account.routing_number)}
+                            Routing: {maskRoutingNumber(account.routingNumber)}
                           </p>
-                          <p>Holder: {account.account_holder_name}</p>
+                          <p>Holder: {account.accountHolderName}</p>
                         </div>
                         {employee && (
                           <p className="text-xs text-muted-foreground mt-2">
@@ -462,16 +481,16 @@ export default function DirectDepositPage() {
                                 variant="outline"
                               >
                                 <ArrowLeftRight className="h-2.5 w-2.5" />
-                                {employee.payout_method}
+                                {employee.payoutMethod}
                               </Badge>
                             </span>
                           </p>
                         )}
-                        {account.verified_at && (
+                        {account.verifiedAt && (
                           <p className="text-[10px] text-muted-foreground mt-1">
-                            Verified {formatDate(account.verified_at)}
-                            {account.verification_method &&
-                              ` via ${account.verification_method}`}
+                            Verified {formatDate(account.verifiedAt)}
+                            {account.verificationMethod &&
+                              ` via ${account.verificationMethod}`}
                           </p>
                         )}
                         {account.notes && (
@@ -503,7 +522,7 @@ export default function DirectDepositPage() {
                           )}
                         </Button>
                       )}
-                      {!account.is_default && (
+                      {!account.isDefault && (
                         <Button
                           className="h-8 w-8 text-amber-600 hover:text-amber-700"
                           disabled={actionLoading === account.id}
@@ -615,7 +634,7 @@ export default function DirectDepositPage() {
                 {editingAccount && (
                   <span className="text-muted-foreground font-normal ml-2">
                     (leave blank to keep current: ••••{" "}
-                    {editingAccount.account_number_last4})
+                    {editingAccount.accountNumberLast4})
                   </span>
                 )}
               </Label>
@@ -687,8 +706,8 @@ export default function DirectDepositPage() {
           <DialogHeader>
             <DialogTitle>Verify Bank Account</DialogTitle>
             <DialogDescription>
-              Confirm verification for •••• {verifyTarget?.account_number_last4}{" "}
-              at {verifyTarget?.bank_name}
+              Confirm verification for •••• {verifyTarget?.accountNumberLast4}{" "}
+              at {verifyTarget?.bankName}
             </DialogDescription>
           </DialogHeader>
 

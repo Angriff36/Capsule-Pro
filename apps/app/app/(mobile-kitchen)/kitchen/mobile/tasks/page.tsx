@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskClaim, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
+import { kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
 import type {
   ApiResponse,
   BundleClaimResponse,
@@ -487,21 +487,8 @@ export default function MobileTasksPage() {
       setError(null);
 
       try {
-        const response = await apiFetch(`/api/kitchen/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "done" }),
-        });
-
-        if (response.ok) {
-          await fetchMyTasks();
-        } else {
-          const message = "Failed to complete task";
-          setError(message);
-          captureException(
-            new Error(`[MobileTasks] Complete failed for task ${taskId}`)
-          );
-        }
+        await kitchenTaskComplete({ id: taskId });
+        await fetchMyTasks();
       } catch (err) {
         captureException(err);
         console.error("[MobileTasks] Failed to complete task:", err);

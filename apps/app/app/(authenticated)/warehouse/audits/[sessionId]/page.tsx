@@ -61,10 +61,15 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  cycleCountRecordCreate,
   cycleCountRecordUpdate,
   cycleCountRecordVerify,
+  cycleCountSessionComplete,
+  cycleCountSessionFinalize,
+  getCycleCountSession,
+  listCycleCountRecords,
+  listInventoryItems,
 } from "@/app/lib/manifest-client.generated";
 import { formatCurrency } from "@/app/lib/format";
 
@@ -339,15 +344,11 @@ export default function CycleCountSessionDetailPage() {
   const loadSession = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}`
-      );
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to load session");
+      const data = await getCycleCountSession(sessionId);
+      if (!data) {
+        throw new Error("Failed to load session");
       }
-      const data = await response.json();
-      setSession(data);
+      setSession(data as unknown as CycleCountSession);
     } catch (error) {
       console.error("Failed to load session:", error);
       toast.error(
@@ -361,15 +362,8 @@ export default function CycleCountSessionDetailPage() {
   const loadRecords = useCallback(async () => {
     setIsLoadingRecords(true);
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}/records?limit=500`
-      );
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to load records");
-      }
-      const data = await response.json();
-      setRecords(data.data || []);
+      const result = await listCycleCountRecords({ sessionId, limit: 500 });
+      setRecords(result.data as unknown as CycleCountRecord[]);
     } catch (error) {
       console.error("Failed to load records:", error);
       toast.error(
@@ -386,14 +380,8 @@ export default function CycleCountSessionDetailPage() {
       return;
     }
     try {
-      const response = await apiFetch(
-        `/api/inventory/items?search=${encodeURIComponent(query)}&limit=50`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to search items");
-      }
-      const data = await response.json();
-      setInventoryItems(data.data || []);
+      const result = await listInventoryItems({ search: query, limit: 50 });
+      setInventoryItems(result.data as unknown as InventoryItem[]);
     } catch (error) {
       console.error("Failed to search inventory:", error);
     }
@@ -423,27 +411,16 @@ export default function CycleCountSessionDetailPage() {
 
     setIsAddingItem(true);
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}/records`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            itemId: selectedItem.id,
-            itemNumber: selectedItem.item_number,
-            itemName: selectedItem.name,
-            storageLocationId: "default",
-            expectedQuantity: selectedItem.quantity_on_hand,
-            countedQuantity: Number.parseFloat(countedQuantity),
-            notes: itemNotes || undefined,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to add item");
-      }
+      await cycleCountRecordCreate({
+        sessionId,
+        itemId: selectedItem.id,
+        itemNumber: selectedItem.item_number,
+        itemName: selectedItem.name,
+        storageLocationId: "default",
+        expectedQuantity: selectedItem.quantity_on_hand,
+        countedQuantity: Number.parseFloat(countedQuantity),
+        notes: itemNotes || undefined,
+      });
 
       toast.success(`Added count for ${selectedItem.name}`);
       setIsAddDialogOpen(false);
@@ -510,19 +487,7 @@ export default function CycleCountSessionDetailPage() {
     }
 
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${session.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "completed" }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to complete session");
-      }
+      await cycleCountSessionComplete({ id: session.id });
 
       toast.success("Session completed");
       setIsCompleteDialogOpen(false);
@@ -541,15 +506,7 @@ export default function CycleCountSessionDetailPage() {
     }
 
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${session.id}/finalize`,
-        { method: "POST" }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to finalize session");
-      }
+      await cycleCountSessionFinalize({ id: session.id });
 
       toast.success("Session finalized");
       loadSession();

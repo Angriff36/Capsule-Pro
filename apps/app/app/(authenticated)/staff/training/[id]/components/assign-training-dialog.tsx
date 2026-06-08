@@ -43,6 +43,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { apiFetch } from "@/app/lib/api";
+import { trainingAssignmentCreate } from "@/app/lib/manifest-client.generated";
 
 const formSchema = z.object({
   employeeId: z.string().optional(),
@@ -112,21 +113,11 @@ export function AssignTrainingDialog({
 
     setIsSubmitting(true);
     try {
-      const response = await apiFetch("/api/training/assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          moduleId,
-          employeeId: values.assignToAll ? undefined : values.employeeId,
-          assignToAll: values.assignToAll,
-          dueDate: values.dueDate?.toISOString(),
-        }),
+      await trainingAssignmentCreate({
+        moduleId,
+        staffMemberId: values.assignToAll ? undefined : values.employeeId,
+        dueAt: values.dueDate?.toISOString(),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to assign training");
-      }
 
       toast.success(
         values.assignToAll

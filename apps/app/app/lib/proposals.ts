@@ -10,10 +10,13 @@
 
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import {
   listProposals,
   getProposal,
+  proposalSend as _proposalSend,
+  proposalAccept as _proposalAccept,
+  proposalReject as _proposalReject,
+  proposalWithdraw as _proposalWithdraw,
 } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
@@ -118,39 +121,20 @@ export async function fetchProposalById(id: string): Promise<Proposal> {
 // Command helpers
 // ---------------------------------------------------------------------------
 
-async function executeCommand(
-  command: string,
-  instanceId: string
-): Promise<Response> {
-  const response = await apiFetch(`/api/crm/proposals/commands/${command}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ instanceId }),
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message ||
-        `Failed to execute ${command} on proposal`
-    );
-  }
-  return response;
-}
-
 export async function sendProposal(id: string): Promise<void> {
-  await executeCommand("send", id);
+  await _proposalSend({ id });
 }
 
 export async function acceptProposal(id: string): Promise<void> {
-  await executeCommand("accept", id);
+  await _proposalAccept({ id });
 }
 
 export async function rejectProposal(id: string): Promise<void> {
-  await executeCommand("reject", id);
+  await _proposalReject({ id });
 }
 
 export async function withdrawProposal(id: string): Promise<void> {
-  await executeCommand("withdraw", id);
+  await _proposalWithdraw({ id });
 }
 
 // ---------------------------------------------------------------------------

@@ -23,8 +23,7 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { getPrepList, prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
+import { getPrepList, prepListItemMarkCompleted, prepListItemMarkUncompleted, prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
 import type { PrepList, PrepListItem } from "../../types";
 
 interface CompletionQueueItem {
@@ -231,17 +230,10 @@ export default function MobilePrepListDetailPage() {
 
       for (const item of completionQueue) {
         try {
-          const response = await apiFetch(
-            `/api/kitchen/prep-lists/${prepListId}/items/${item.itemId}/complete`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ completed: item.completed }),
-            }
-          );
-
-          if (!response.ok) {
-            failedItems.push(item);
+          if (item.completed) {
+            await prepListItemMarkCompleted({ id: item.itemId });
+          } else {
+            await prepListItemMarkUncompleted({ id: item.itemId });
           }
         } catch {
           failedItems.push(item);
@@ -288,20 +280,10 @@ export default function MobilePrepListDetailPage() {
       }
 
       try {
-        const response = await apiFetch(
-          `/api/kitchen/prep-lists/${prepListId}/items/${item.id}/complete`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ completed: newCompleted }),
-          }
-        );
-
-        if (!response.ok) {
-          // Revert optimistic update on failure
-          await fetchPrepList();
-          const errData = await response.json();
-          setError(errData.message || "Failed to update item");
+        if (newCompleted) {
+          await prepListItemMarkCompleted({ id: item.id });
+        } else {
+          await prepListItemMarkUncompleted({ id: item.id });
         }
       } catch (err) {
         captureException(err);

@@ -24,8 +24,7 @@ import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskCancel, kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
+import { kitchenTaskCancel, kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
 
 type UserSelect = Pick<
   DbUser,
@@ -292,24 +291,8 @@ export function TaskCard({
         await kitchenTaskComplete({ id: task.id });
       } else if (newStatus === "cancelled") {
         await kitchenTaskCancel({ id: task.id });
-      } else {
-        // NOTE: No generated function for reopen/general status update — keeping apiFetch.
-        const response = await apiFetch(`/api/kitchen/tasks/${task.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
-        });
-        if (!response.ok) {
-          const errorData = await response
-            .json()
-            .catch(() => ({ message: "Unknown error" }));
-          captureException(
-            new Error(`Task status update failed: ${JSON.stringify(errorData)}`)
-          );
-          throw new Error(
-            `Failed to update task status: ${JSON.stringify(errorData)}`
-          );
-        }
+      } else if (newStatus === "open") {
+        await kitchenTaskStart({ id: task.id });
       }
       router.refresh();
     } catch (error) {

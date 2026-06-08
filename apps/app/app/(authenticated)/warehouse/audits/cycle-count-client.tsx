@@ -54,9 +54,15 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import { formatCurrency } from "@/app/lib/format";
-import { listCycleCountSessions as listCycleCountSessionsGenerated } from "@/app/lib/manifest-client.generated";
+import {
+  cycleCountSessionCancel,
+  cycleCountSessionComplete,
+  cycleCountSessionCreate,
+  cycleCountSessionFinalize,
+  cycleCountSessionStart,
+  listCycleCountSessions as listCycleCountSessionsGenerated,
+} from "@/app/lib/manifest-client.generated";
 import type { CycleCountSession as GeneratedCycleCountSession } from "@/app/lib/manifest-types.generated";
 import type { CycleCountSessionType, CycleCountSessionStatus } from "@/app/(authenticated)/cycle-counting/types";
 import type { StorageLocation } from "@/app/lib/stock-levels";
@@ -181,24 +187,12 @@ export const CycleCountClient = () => {
 
     setIsCreating(true);
     try {
-      // No generated client function for create cycle-count session
-      const response = await apiFetch("/api/inventory/cycle-count/sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          session_name: newSessionName,
-          location_id: selectedLocationId,
-          count_type: newSessionType,
-          notes: newSessionNotes || undefined,
-        }),
+      await cycleCountSessionCreate({
+        sessionName: newSessionName,
+        locationId: selectedLocationId,
+        countType: newSessionType,
+        notes: newSessionNotes || undefined,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create session");
-      }
 
       toast.success("Cycle count session created");
       setIsCreateDialogOpen(false);
@@ -223,22 +217,7 @@ export const CycleCountClient = () => {
 
   const handleStartSession = async (sessionId: string) => {
     try {
-      // No generated client function for session status update
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "in_progress" }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to start session");
-      }
+      await cycleCountSessionStart({ id: sessionId });
 
       toast.success("Session started");
       loadSessions();
@@ -252,21 +231,7 @@ export const CycleCountClient = () => {
 
   const handleCompleteSession = async (sessionId: string) => {
     try {
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "completed" }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to complete session");
-      }
+      await cycleCountSessionComplete({ id: sessionId });
 
       toast.success("Session completed");
       loadSessions();
@@ -280,18 +245,7 @@ export const CycleCountClient = () => {
 
   const handleFinalizeSession = async (sessionId: string) => {
     try {
-      // No generated client function for session finalize
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}/finalize`,
-        {
-          method: "POST",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to finalize session");
-      }
+      await cycleCountSessionFinalize({ id: sessionId });
 
       toast.success("Session finalized");
       loadSessions();
@@ -305,22 +259,7 @@ export const CycleCountClient = () => {
 
   const handleCancelSession = async (sessionId: string) => {
     try {
-      // No generated client function for session status update
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions/${sessionId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: "cancelled" }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to cancel session");
-      }
+      await cycleCountSessionCancel({ id: sessionId });
 
       toast.success("Session cancelled");
       loadSessions();
