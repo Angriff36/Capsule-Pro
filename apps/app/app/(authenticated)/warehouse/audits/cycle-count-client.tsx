@@ -56,49 +56,14 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { formatCurrency } from "@/app/lib/format";
+import { listCycleCountSessions as listCycleCountSessionsGenerated } from "@/app/lib/manifest-client.generated";
+import type { CycleCountSession as GeneratedCycleCountSession } from "@/app/lib/manifest-types.generated";
+import type { CycleCountSessionType, CycleCountSessionStatus } from "@/app/(authenticated)/cycle-counting/types";
 import type { StorageLocation } from "@/app/lib/stock-levels";
 import { listLocations } from "@/app/lib/stock-levels";
 
-type CycleCountSessionType =
-  | "ad_hoc"
-  | "scheduled_daily"
-  | "scheduled_weekly"
-  | "scheduled_monthly";
-
-type CycleCountSessionStatus =
-  | "draft"
-  | "in_progress"
-  | "completed"
-  | "finalized"
-  | "cancelled";
-
-interface CycleCountSession {
-  id: string;
-  session_id: string;
-  session_name: string;
-  count_type: CycleCountSessionType;
-  scheduled_date: string | null;
-  started_at: string | null;
-  completed_at: string | null;
-  finalized_at: string | null;
-  status: CycleCountSessionStatus;
-  total_items: number;
-  counted_items: number;
-  total_variance: number;
-  variance_percentage: number;
-  notes: string | null;
-  created_at: string;
-}
-
-interface CycleCountSessionsResponse {
-  data: CycleCountSession[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-}
+// Use generated type for API responses (camelCase strings from JSON)
+type CycleCountSession = GeneratedCycleCountSession;
 
 const statusVariant: Record<
   CycleCountSessionStatus,
@@ -152,28 +117,19 @@ export const CycleCountClient = () => {
   const loadSessions = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-      });
+      const query: Record<string, string | number> = {
+        page,
+        limit: 20,
+      };
 
       if (statusFilter !== "all") {
-        params.set("status", statusFilter);
+        query.status = statusFilter;
       }
       if (typeFilter !== "all") {
-        params.set("countType", typeFilter);
+        query.countType = typeFilter;
       }
 
-      const response = await apiFetch(
-        `/api/inventory/cycle-count/sessions?${params}`
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to load sessions");
-      }
-
-      const result: CycleCountSessionsResponse = await response.json();
+      const result = await listCycleCountSessionsGenerated(query);
       setSessions(result.data);
       setTotalPages(result.pagination.totalPages);
       setTotalCount(result.pagination.total);
@@ -225,6 +181,7 @@ export const CycleCountClient = () => {
 
     setIsCreating(true);
     try {
+      // No generated client function for create cycle-count session
       const response = await apiFetch("/api/inventory/cycle-count/sessions", {
         method: "POST",
         headers: {
@@ -266,6 +223,7 @@ export const CycleCountClient = () => {
 
   const handleStartSession = async (sessionId: string) => {
     try {
+      // No generated client function for session status update
       const response = await apiFetch(
         `/api/inventory/cycle-count/sessions/${sessionId}`,
         {
@@ -322,6 +280,7 @@ export const CycleCountClient = () => {
 
   const handleFinalizeSession = async (sessionId: string) => {
     try {
+      // No generated client function for session finalize
       const response = await apiFetch(
         `/api/inventory/cycle-count/sessions/${sessionId}/finalize`,
         {
@@ -346,6 +305,7 @@ export const CycleCountClient = () => {
 
   const handleCancelSession = async (sessionId: string) => {
     try {
+      // No generated client function for session status update
       const response = await apiFetch(
         `/api/inventory/cycle-count/sessions/${sessionId}`,
         {
@@ -378,7 +338,7 @@ export const CycleCountClient = () => {
     }
     const query = searchQuery.toLowerCase();
     return (
-      session.session_name.toLowerCase().includes(query) ||
+      session.sessionName.toLowerCase().includes(query) ||
       session.notes?.toLowerCase().includes(query)
     );
   });
@@ -389,7 +349,7 @@ export const CycleCountClient = () => {
     (s) => s.status === "in_progress"
   ).length;
   const totalVariance = sessions.reduce(
-    (sum, s) => sum + Math.abs(s.total_variance),
+    (sum, s) => sum + Math.abs(s.totalVariance ?? 0),
     0
   );
 
@@ -553,7 +513,7 @@ export const CycleCountClient = () => {
                     <TableCell className="font-medium">
                       <div>
                         <div className="font-medium">
-                          {session.session_name}
+                          {session.sessionName}
                         </div>
                         {session.notes && (
                           <div className="text-sm text-muted-foreground truncate max-w-md">
@@ -564,42 +524,42 @@ export const CycleCountClient = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {countTypeLabel[session.count_type]}
+                        {countTypeLabel[session.countType as CycleCountSessionType] ?? session.countType}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant[session.status]}>
-                        {statusLabel[session.status]}
+                      <Badge variant={statusVariant[session.status as CycleCountSessionStatus] ?? "secondary"}>
+                        {statusLabel[session.status as CycleCountSessionStatus] ?? session.status}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <span>
-                        {session.counted_items} / {session.total_items}
+                        {session.countedItems ?? 0} / {session.totalItems ?? 0}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
                       <span
                         className={
-                          session.total_variance !== 0
-                            ? session.total_variance > 0
+                          (session.totalVariance ?? 0) !== 0
+                            ? (session.totalVariance ?? 0) > 0
                               ? "text-green-600"
                               : "text-red-600"
                             : ""
                         }
                       >
-                        {formatCurrency(Math.abs(session.total_variance))}
-                        {session.total_variance !== 0 && (
+                        {formatCurrency(Math.abs(session.totalVariance ?? 0))}
+                        {(session.totalVariance ?? 0) !== 0 && (
                           <span className="text-xs">
                             {" "}
-                            ({session.total_variance > 0 ? "+" : ""}
-                            {session.variance_percentage.toFixed(1)}%)
+                            ({(session.totalVariance ?? 0) > 0 ? "+" : ""}
+                            {(session.variancePercentage ?? 0).toFixed(1)}%)
                           </span>
                         )}
                       </span>
                     </TableCell>
                     <TableCell>
-                      {session.scheduled_date
-                        ? new Date(session.scheduled_date).toLocaleDateString()
+                      {session.scheduledDate
+                        ? new Date(session.scheduledDate).toLocaleDateString()
                         : "-"}
                     </TableCell>
                     <TableCell>

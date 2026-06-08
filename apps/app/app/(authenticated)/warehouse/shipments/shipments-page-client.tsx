@@ -206,6 +206,7 @@ export const ShipmentsPageClient = () => {
   // Load shipment items
   const loadShipmentItems = useCallback(async (shipmentId: string) => {
     try {
+      // No generated client function for per-shipment items list (generated listShipmentItems uses /shipment-items/list)
       const response = await apiFetch(`/api/shipments/${shipmentId}/items`);
       if (response.ok) {
         const items = await response.json();
@@ -220,6 +221,7 @@ export const ShipmentsPageClient = () => {
   useEffect(() => {
     loadShipments();
     loadInventoryItems();
+    // No generated client function for general locations (listStorageLocations is inventory-specific)
     apiFetch("/api/locations")
       .then((r) => (r.ok ? r.json() : { locations: [] }))
       .then((d) => setLocations(d.locations ?? d.data ?? []))
@@ -230,6 +232,7 @@ export const ShipmentsPageClient = () => {
   const handleRemoveItem = async (itemId: string) => {
     if (!selectedShipment) return;
     try {
+      // No generated client function for removing shipment item
       const response = await apiFetch(
         `/api/shipments/${selectedShipment.id}/items/${itemId}`,
         { method: "DELETE" }
@@ -321,6 +324,7 @@ export const ShipmentsPageClient = () => {
 
     setIsSubmitting(true);
     try {
+      // No generated client function for adding shipment item
       const response = await apiFetch(
         `/api/shipments/${selectedShipment.id}/items`,
         {
@@ -373,6 +377,7 @@ export const ShipmentsPageClient = () => {
     try {
       toast.loading("Generating packing list PDF...", { id: "pdf-loading" });
 
+      // No generated client function for shipment PDF download
       const response = await apiFetch(
         `/api/shipments/${shipment.id}/pdf?download=true`
       );

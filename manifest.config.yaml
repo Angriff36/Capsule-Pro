@@ -31,6 +31,15 @@ projections:
   nextjs:
     # Generated read routes land under apps/api/app/api/ (after generate.mjs domain remap).
     output: apps/api/app/api/
+    # CLI projection identifier + generation surfaces consumed by
+    # manifest/scripts/generate.mjs. These live here so the projection/surface
+    # names are part of the build contract instead of string literals in the script.
+    projection: nextjs
+    surfaces:
+      # List/collection read routes — CLI `manifest generate --surface <route>`.
+      route: route
+      # Per-id detail read routes — NextJsProjection surface, invoked directly.
+      detail: nextjs.detail
     options:
       # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
       authProvider: clerk

@@ -74,6 +74,45 @@ describe("manifest issue log", () => {
     expect(parsed.message).toContain("already acknowledged");
   });
 
+  it("classifies guard_failed as an expected validation outcome (separate from real issues)", async () => {
+    const { logManifestIssue, getManifestIssueLogPath } = await import(
+      "@repo/observability/manifest-issue-log"
+    );
+
+    // A genuine guard failure is still recorded for debugging...
+    logManifestIssue({
+      kind: "guard_failed",
+      entity: "AllergenWarning",
+      command: "escalate",
+      httpStatus: 422,
+      message: "Guard 1 failed: already acknowledged",
+    });
+    // ...but a real fault is not "expected".
+    logManifestIssue({
+      kind: "runtime_error",
+      entity: "AllergenWarning",
+      command: "acknowledge",
+      httpStatus: 500,
+      message: "boom",
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 25));
+
+    const contents = await readFile(getManifestIssueLogPath(), "utf8");
+    const lines = contents.trim().split("\n").filter(Boolean);
+    const records = lines.map(
+      (l) => JSON.parse(l) as { kind: string; expected?: boolean }
+    );
+    const guard = records.find((r) => r.kind === "guard_failed");
+    const fault = records.find((r) => r.kind === "runtime_error");
+
+    // guard_failed is persisted (debuggable) AND flagged expected → it can be
+    // filtered out of the real-issue signal.
+    expect(guard?.expected).toBe(true);
+    // real faults are not expected.
+    expect(fault?.expected ?? false).toBe(false);
+  });
+
   it("dedupes store_json_fallback entries per entity", async () => {
     const { logManifestIssue, getManifestIssueLogPath } = await import(
       "@repo/observability/manifest-issue-log"

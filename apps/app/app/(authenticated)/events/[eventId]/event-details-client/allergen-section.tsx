@@ -52,6 +52,11 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   const [isChecking, setIsChecking] = useState(false);
   const [expandedConflicts, setExpandedConflicts] = useState(true);
   const [expandedWarnings, setExpandedWarnings] = useState(true);
+  // Acknowledge requests in flight, by warning id — prevents double-submit from
+  // a double-click or a stale UI while the request is pending.
+  const [acknowledgingIds, setAcknowledgingIds] = useState<Set<string>>(
+    () => new Set()
+  );
 
   const fetchWarnings = useCallback(async () => {
     try {
@@ -99,12 +104,19 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   }, [runAllergenCheck, fetchWarnings]);
 
   const acknowledgeWarning = async (warningId: string) => {
+    // Ignore repeat clicks while this warning's request is already in flight.
+    if (acknowledgingIds.has(warningId)) {
+      return;
+    }
+    setAcknowledgingIds((prev) => new Set(prev).add(warningId));
     try {
       const res = await apiFetch("/api/events/allergens/warnings/acknowledge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ warningId }),
       });
+      // A no-op (already acknowledged) now returns 200 from the backend, so the
+      // user never sees an error for an action that is effectively already done.
       if (res.ok) {
         toast.success("Warning acknowledged");
         await fetchWarnings();
@@ -113,6 +125,12 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
       }
     } catch {
       toast.error("Failed to acknowledge warning");
+    } finally {
+      setAcknowledgingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(warningId);
+        return next;
+      });
     }
   };
 
@@ -281,11 +299,14 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
                       </p>
                     </div>
                     <button
-                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent"
+                      className="shrink-0 rounded-md border border-border bg-background px-2 py-1 text-xs font-medium hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={acknowledgingIds.has(w.id)}
                       onClick={() => acknowledgeWarning(w.id)}
                       type="button"
                     >
-                      Acknowledge
+                      {acknowledgingIds.has(w.id)
+                        ? "Acknowledging…"
+                        : "Acknowledge"}
                     </button>
                   </div>
                 </div>

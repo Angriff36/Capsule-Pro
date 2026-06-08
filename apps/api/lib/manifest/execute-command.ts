@@ -118,10 +118,12 @@ export async function runManifestCommand(
     return manifestErrorResponse(result.message, result.httpStatus);
   }
 
-  // Fire-and-forget webhook dispatch (matches legacy handler behavior)
+  // Fire-and-forget webhook dispatch (matches legacy handler behavior).
+  // Skip on a no-op: nothing changed, so we must not emit a spurious
+  // "updated" webhook for an already-completed idempotent action.
   const resultData = result.result as Record<string, unknown> | undefined;
   const entityId = String(resultData?.id ?? params.body?.id ?? "");
-  if (resultData?.id) {
+  if (resultData?.id && !result.noop) {
     const webhookAction =
       params.command === "create"
         ? ("created" as const)

@@ -51,33 +51,10 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { facilityAssetRemove, facilityAssetUpdate } from "@/app/lib/manifest-client.generated";
+import { facilityAssetRemove, facilityAssetUpdate, listFacilityAssets, listFacilityAreas } from "@/app/lib/manifest-client.generated";
+import type { FacilityAsset, FacilityArea } from "@/app/lib/manifest-types.generated";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
-
-interface Asset {
-  id: string;
-  name: string;
-  asset_type: string;
-  serial_number: string | null;
-  manufacturer: string | null;
-  model: string | null;
-  purchase_date: string | null;
-  purchase_cost: number | null;
-  warranty_expiry: string | null;
-  status: string;
-  area_id: string | null;
-  area_name: string | null;
-  area_code: string | null;
-  notes: string | null;
-}
-
-interface Area {
-  id: string;
-  name: string;
-  code: string | null;
-}
 
 const STATUS_CONFIG: Record<
   string,
@@ -130,12 +107,12 @@ const formatCurrencyWithDash = (n: number | null) =>
   formatCurrency(n, { nullDisplay: "\u2014" });
 
 export default function AssetsPage() {
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [areas, setAreas] = useState<Area[]>([]);
+  const [assets, setAssets] = useState<FacilityAsset[]>([]);
+  const [areas, setAreas] = useState<FacilityArea[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showDialog, setShowDialog] = useState(false);
-  const [editing, setEditing] = useState<Asset | null>(null);
+  const [editing, setEditing] = useState<FacilityAsset | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -164,18 +141,12 @@ export default function AssetsPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [assetsRes, areasRes] = await Promise.all([
-        apiFetch("/api/facilities/assets/list?status=all"),
-        apiFetch("/api/facilities/areas/list?status=all"),
+      const [assetsResult, areasResult] = await Promise.all([
+        listFacilityAssets({ status: "all" }),
+        listFacilityAreas({ status: "all" }),
       ]);
-      const assetsData = await assetsRes.json();
-      const areasData = await areasRes.json();
-      if (assetsData.success) {
-        setAssets(assetsData.assets || []);
-      }
-      if (areasData.success) {
-        setAreas(areasData.areas || []);
-      }
+      setAssets(assetsResult.data || []);
+      setAreas(areasResult.data || []);
     } catch (e) {
       console.error("Failed to load:", e);
     } finally {
@@ -186,9 +157,9 @@ export default function AssetsPage() {
   const filteredAssets = assets.filter(
     (a) =>
       a.name.toLowerCase().includes(search.toLowerCase()) ||
-      (a.serial_number || "").toLowerCase().includes(search.toLowerCase()) ||
+      (a.serialNumber || "").toLowerCase().includes(search.toLowerCase()) ||
       (a.manufacturer || "").toLowerCase().includes(search.toLowerCase()) ||
-      (a.area_name || "").toLowerCase().includes(search.toLowerCase())
+      (a.areaId || "").toLowerCase().includes(search.toLowerCase())
   );
 
   const openCreate = () => {
@@ -209,19 +180,19 @@ export default function AssetsPage() {
     setShowDialog(true);
   };
 
-  const openEdit = (asset: Asset) => {
+  const openEdit = (asset: FacilityAsset) => {
     setEditing(asset);
     setForm({
       name: asset.name,
-      assetType: asset.asset_type,
-      serialNumber: asset.serial_number || "",
+      assetType: asset.assetType ?? "other",
+      serialNumber: asset.serialNumber || "",
       manufacturer: asset.manufacturer || "",
       model: asset.model || "",
-      purchaseDate: asset.purchase_date?.slice(0, 10) || "",
-      purchaseCost: asset.purchase_cost?.toString() || "",
-      warrantyExpiry: asset.warranty_expiry?.slice(0, 10) || "",
-      areaId: asset.area_id || "",
-      status: asset.status,
+      purchaseDate: asset.purchaseDate?.slice(0, 10) || "",
+      purchaseCost: asset.purchasePrice?.toString() || "",
+      warrantyExpiry: asset.warrantyExpiry?.slice(0, 10) || "",
+      areaId: asset.areaId || "",
+      status: asset.status ?? "active",
       notes: asset.notes || "",
     });
     setShowDialog(true);
@@ -292,20 +263,20 @@ export default function AssetsPage() {
     }
   };
 
-  const confirmDelete = (asset: Asset) => {
+  const confirmDelete = (asset: FacilityAsset) => {
     setAssetToDelete({ id: asset.id, name: asset.name });
     setDeleteDialogOpen(true);
   };
 
   const totalValue = assets
     .filter((a) => a.status === "active")
-    .reduce((sum, a) => sum + (a.purchase_cost || 0), 0);
+    .reduce((sum, a) => sum + (a.purchasePrice || 0), 0);
 
   const warrantyExpiring = assets.filter(
     (a) =>
-      a.warranty_expiry &&
+      a.warrantyExpiry &&
       a.status === "active" &&
-      new Date(a.warranty_expiry) < new Date(Date.now() + 90 * 86_400_000)
+      new Date(a.warrantyExpiry) < new Date(Date.now() + 90 * 86_400_000)
   ).length;
 
   if (loading) {
@@ -397,12 +368,12 @@ export default function AssetsPage() {
           <div className="space-y-3">
             {filteredAssets.map((asset) => {
               const config =
-                STATUS_CONFIG[asset.status] || STATUS_CONFIG.active;
+                STATUS_CONFIG[asset.status ?? "active"] || STATUS_CONFIG.active;
               const Icon = config.icon;
               const isWarrantyExpiring =
-                asset.warranty_expiry &&
+                asset.warrantyExpiry &&
                 asset.status === "active" &&
-                new Date(asset.warranty_expiry) <
+                new Date(asset.warrantyExpiry) <
                   new Date(Date.now() + 90 * 86_400_000);
               return (
                 <Card
@@ -421,8 +392,8 @@ export default function AssetsPage() {
                           <span className="font-semibold">{asset.name}</span>
                           <Badge className={config.color}>{config.label}</Badge>
                           <Badge variant="outline">
-                            {ASSET_TYPE_LABELS[asset.asset_type] ||
-                              asset.asset_type}
+                            {ASSET_TYPE_LABELS[asset.assetType ?? "other"] ??
+                              asset.assetType ?? "Other"}
                           </Badge>
                           {isWarrantyExpiring && (
                             <Badge variant="destructive">
@@ -431,8 +402,8 @@ export default function AssetsPage() {
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {asset.serial_number && (
-                            <span>SN: {asset.serial_number}</span>
+                          {asset.serialNumber && (
+                            <span>SN: {asset.serialNumber}</span>
                           )}
                           {asset.manufacturer && (
                             <span>
@@ -440,10 +411,10 @@ export default function AssetsPage() {
                               {asset.model ? ` ${asset.model}` : ""}
                             </span>
                           )}
-                          {asset.area_name && <span>📍 {asset.area_name}</span>}
-                          {asset.purchase_cost != null && (
+                          {asset.areaId && <span>📍 {asset.areaId}</span>}
+                          {asset.purchasePrice != null && (
                             <span>
-                              {formatCurrencyWithDash(asset.purchase_cost)}
+                              {formatCurrencyWithDash(asset.purchasePrice)}
                             </span>
                           )}
                         </div>

@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 96% context — saved before compacting]
+[proactive bridge @ 94% context — saved before compacting]
 Files (1):
-  manifest/scripts/generate-capsule-client.mjs (edit)
+  apps/app/app/(authenticated)/warehouse/audits/cycle-count-client.tsx (edit)
 
 # === END COGNILAYER ===

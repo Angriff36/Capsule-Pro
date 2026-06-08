@@ -48,6 +48,74 @@ export interface RunManifestCommandCoreSuccess {
   result: unknown;
   events?: EmittedEvent[];
   constraintOutcomes?: ConstraintOutcome[];
+  /**
+   * True when the command was a no-op: the engine guard rejected it, but the
+   * entity was already in the final state this command produces, so we return
+   * success with the current entity instead of a 422. No events/audit are
+   * emitted and no [manifest-issue] is logged for a no-op.
+   */
+  noop?: boolean;
+}
+
+/**
+ * Idempotent user actions (acknowledge / dismiss / markRead / complete-style).
+ * Re-issuing one after it has already taken effect is a no-op, not an error —
+ * e.g. a double-click, a stale UI, or two tabs.
+ *
+ * `completedWhen` describes the FINAL state the command itself produces. It is
+ * consulted ONLY after the engine guard has already rejected the command, and
+ * only returns success when the entity is genuinely already in that final
+ * state. This never turns a real invalid transition into success (those don't
+ * satisfy completedWhen), and it never weakens the engine guards themselves.
+ *
+ * Keyed by `"<Entity>.<command>"`. Add an entry only for actions whose repeat
+ * is semantically a no-op.
+ */
+export interface IdempotentCommandRule {
+  completedWhen: (entity: Record<string, unknown>) => boolean;
+}
+
+export const IDEMPOTENT_COMMANDS: Readonly<
+  Record<string, IdempotentCommandRule>
+> = {
+  // Acknowledging an already-acknowledged warning is done; don't 422 the user.
+  "AllergenWarning.acknowledge": {
+    completedWhen: (e) => e.isAcknowledged === true,
+  },
+  // Resolving an already-resolved warning is done.
+  "AllergenWarning.markResolved": {
+    completedWhen: (e) => e.resolved === true,
+  },
+  // Soft-deleting an already-deleted warning is done.
+  "AllergenWarning.softDelete": {
+    completedWhen: (e) => e.deletedAt != null,
+  },
+};
+
+/**
+ * Best-effort fetch of the live instance for idempotency detection. Never
+ * throws — if the runtime can't surface the instance we simply fall through to
+ * the normal guard_failed path.
+ */
+async function tryGetInstance(
+  runtime: RuntimeEngine,
+  entity: string,
+  id: string
+): Promise<Record<string, unknown> | undefined> {
+  const withGetter = runtime as unknown as {
+    getInstance?: (entityName: string, instanceId: string) => Promise<unknown>;
+  };
+  if (typeof withGetter.getInstance !== "function") {
+    return undefined;
+  }
+  try {
+    const instance = await withGetter.getInstance(entity, id);
+    return instance && typeof instance === "object"
+      ? (instance as Record<string, unknown>)
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export interface RunManifestCommandCoreFailure {
@@ -231,6 +299,32 @@ export async function runManifestCommandCore(
         };
       }
       if (result.guardFailure) {
+        // Idempotency: if this is a known idempotent action and the entity is
+        // already in the final state the command produces, treat the rejected
+        // guard as a no-op success rather than a 422. The guard ran in the
+        // engine (no mutate, no event, no audit), so returning the current
+        // instance here emits nothing and logs nothing. A genuine invalid
+        // transition does NOT satisfy completedWhen and still falls through to
+        // the 422 below.
+        const idempotent = IDEMPOTENT_COMMANDS[`${entity}.${command}`];
+        if (idempotent && resolvedInstanceId) {
+          const current = await tryGetInstance(
+            runtime,
+            entity,
+            resolvedInstanceId
+          );
+          if (current && idempotent.completedWhen(current)) {
+            return {
+              ok: true,
+              entity,
+              command,
+              result: current,
+              events: [],
+              noop: true,
+            };
+          }
+        }
+
         return {
           ok: false,
           entity,

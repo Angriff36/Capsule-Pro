@@ -30,7 +30,25 @@ export interface ManifestIssueEntry {
   userRole?: string;
   source?: "api" | "app" | "database";
   details?: Record<string, unknown>;
+  /**
+   * True for kinds that represent an EXPECTED, user-facing validation outcome
+   * (e.g. a guard rejecting an invalid transition) rather than a real system
+   * fault. Expected entries are still recorded for debugging, but are mirrored
+   * to the console on a separate, quiet `[manifest-validation]` channel so they
+   * don't pollute the `[manifest-issue]` signal. Note: idempotent stale-state
+   * guard failures never reach this logger at all — runManifestCommandCore
+   * converts them to a no-op success upstream.
+   */
+  expected?: boolean;
 }
+
+/**
+ * Kinds that are normal user/validation outcomes, not system faults. They are
+ * classified separately from real manifest issues. `guard_failed` here is a
+ * GENUINE invalid transition (the user tried something not allowed) — still
+ * surfaced as 422 to the caller, but it is not `[manifest-issue]` noise.
+ */
+const EXPECTED_KINDS: ReadonlySet<ManifestIssueKind> = new Set(["guard_failed"]);
 
 type IssueInput = Omit<ManifestIssueEntry, "ts">;
 
@@ -99,6 +117,17 @@ function mirrorToConsole(record: ManifestIssueEntry): void {
   const label = record.entity
     ? `${record.entity}.${record.command ?? "?"}`
     : (record.entity ?? record.source ?? "manifest");
+
+  // Expected validation outcomes (e.g. genuine guard rejections) are classified
+  // separately: a quiet debug-level `[manifest-validation]` line, NOT the
+  // `[manifest-issue]` channel reserved for real faults.
+  if (record.expected) {
+    console.debug(
+      `[manifest-validation] ${record.kind} ${label} — ${record.message}`
+    );
+    return;
+  }
+
   const line = `[manifest-issue] ${record.kind} ${label} — ${record.message}`;
 
   if (
@@ -139,6 +168,7 @@ export function logManifestIssue(entry: IssueInput): void {
 
   const record: ManifestIssueEntry = {
     ...entry,
+    expected: entry.expected ?? EXPECTED_KINDS.has(entry.kind),
     ts: new Date().toISOString(),
   };
 

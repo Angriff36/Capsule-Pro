@@ -41,8 +41,7 @@ import {
 } from "@repo/design-system/components/ui/empty";
 import { LayoutGrid, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { facilityAreaEdit, facilityAreaRemove } from "@/app/lib/manifest-client.generated";
+import { facilityAreaEdit, facilityAreaRemove, listFacilityAreas } from "@/app/lib/manifest-client.generated";
 import { createFacilityArea } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -74,9 +73,8 @@ export default function AreasPage() {
   const loadAreas = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/facilities/areas/list?status=all");
-      const data = await res.json();
-      if (data.success) setAreas(data.data.areas || []);
+      const result = await listFacilityAreas({ status: "all" });
+      setAreas(result.data || []);
     } catch (error) {
       console.error("Failed to load areas:", error);
     } finally {
@@ -102,9 +100,9 @@ export default function AreasPage() {
     setForm({
       name: area.name,
       code: area.code || "",
-      areaType: area.area_type || "other",
+      areaType: area.areaType ?? "other",
       floor: area.floor || "",
-      squareFeet: area.square_feet?.toString() || "",
+      squareFeet: area.squareFeet?.toString() || "",
       description: area.description || "",
     });
     setShowDialog(true);
@@ -180,7 +178,7 @@ export default function AreasPage() {
     other: "🏢",
   };
 
-  const totalSqFt = areas.reduce((sum, a) => sum + (a.square_feet || 0), 0);
+  const totalSqFt = areas.reduce((sum, a) => sum + (a.squareFeet || 0), 0);
 
   if (loading) {
     return (
@@ -249,7 +247,7 @@ export default function AreasPage() {
                 <CardContent className="pt-4">
                   <div className="flex items-start gap-3">
                     <div className="text-2xl">
-                      {areaTypeIcons[area.area_type] || "🏢"}
+                      {areaTypeIcons[area.areaType ?? "other"] || "🏢"}
                     </div>
                     <div className="flex-1">
                       <div className="font-medium">{area.name}</div>
@@ -260,11 +258,11 @@ export default function AreasPage() {
                       )}
                       <div className="mt-2 flex items-center gap-2">
                         <Badge className="capitalize" variant="outline">
-                          {area.area_type?.replace("_", " ")}
+                          {area.areaType?.replace("_", " ")}
                         </Badge>
-                        {area.square_feet && (
+                        {area.squareFeet && (
                           <span className="text-xs text-muted-foreground">
-                            {area.square_feet} sq ft
+                            {area.squareFeet} sq ft
                           </span>
                         )}
                         {area.floor && (
