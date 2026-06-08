@@ -125,6 +125,7 @@ export default function StaffingCoveragePage() {
       params.set("period", period);
       if (locationId && locationId !== "all") params.set("locationId", locationId);
 
+      // NOTE: Keeping apiFetch for /api/staffing/coverage — custom aggregate endpoint, no generated function.
       const res = await apiFetch(`/api/staffing/coverage?${params.toString()}`);
       if (res.ok) {
         const result = await res.json();

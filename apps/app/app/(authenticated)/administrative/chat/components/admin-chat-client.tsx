@@ -40,6 +40,7 @@ import {
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useCallback, useEffect, useMemo, useState } from "react";
+// NOTE: Keeping apiFetch for chat endpoints (/api/administrative/chat/*, /api/staff/employees) — no generated client for chat operations
 import { apiFetch } from "@/app/lib/api";
 import {
   type RealtimeEventMessage,

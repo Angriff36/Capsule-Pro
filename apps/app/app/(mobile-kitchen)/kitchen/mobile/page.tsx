@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for /api/kitchen/events/today aggregate endpoint (no generated client)
 import { apiFetch } from "@/app/lib/api";
 import type { TodayEvent } from "./types";
 

@@ -65,6 +65,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom calendar aggregation endpoint (/api/calendar) and reschedule action (/api/calendar/reschedule) — no generated client for calendar operations
 import { apiFetch } from "@/app/lib/api";
 
 interface CalendarEvent {

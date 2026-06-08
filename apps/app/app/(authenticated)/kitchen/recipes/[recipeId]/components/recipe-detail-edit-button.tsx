@@ -10,6 +10,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { captureException } from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { startTransition, useState, useTransition } from "react";
+// NOTE: Keeping apiFetch for composite recipe update-with-version route — no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipeCompositeUpdate } from "@/app/lib/routes";
 import {

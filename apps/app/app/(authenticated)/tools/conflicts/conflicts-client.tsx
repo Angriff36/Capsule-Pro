@@ -50,6 +50,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for conflict detection endpoint (/api/conflicts/detect) — no generated client for conflict detection
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

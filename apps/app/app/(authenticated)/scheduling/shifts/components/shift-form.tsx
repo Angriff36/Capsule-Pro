@@ -259,6 +259,7 @@ export function ShiftForm({
           ? staffShiftsUpdateValidated()
           : staffShiftsCreateValidated();
 
+      // NOTE: Keeping apiFetch for staff-shifts validated routes — custom validation endpoint, no generated StaffShifts function.
       const response = await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

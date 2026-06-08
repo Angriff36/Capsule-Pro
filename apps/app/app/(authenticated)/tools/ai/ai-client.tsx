@@ -44,6 +44,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for AI endpoints (/api/ai/suggestions, /api/ai/summaries/*) — no generated client for AI operations
 import { apiFetch } from "@/app/lib/api";
 import { BulkTaskGeneratorTab } from "./bulk-task-generator";
 

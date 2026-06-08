@@ -51,6 +51,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for version history, version detail, version compare, and version restore composite routes — no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import {
   kitchenRecipeCompositeRestore,

@@ -45,9 +45,9 @@ const KitchenSchedulePage = () => {
     async function fetchStats() {
       try {
         // No generated client function for staffing coverage endpoint
+        // NOTE: Keeping apiFetch — staffing/coverage and staff/time-off are custom aggregate endpoints with no generated client equivalent.
         const [coverageRes, timeOffRes] = await Promise.allSettled([
           apiFetch("/api/staffing/coverage?period=today"),
-          // No generated client function for staff time-off requests (listTimeOffRequests uses /timecards/time-off-requests/list)
           apiFetch("/api/staff/time-off/requests?status=PENDING&limit=1"),
         ]);
 

@@ -41,6 +41,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for /api/search aggregate endpoint (no generated client)
 import { apiFetch } from "@/app/lib/api";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {

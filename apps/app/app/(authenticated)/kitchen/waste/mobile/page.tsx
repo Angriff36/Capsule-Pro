@@ -78,6 +78,7 @@ export default function WasteLoggingMobilePage() {
 
   const fetchInventoryItems = useCallback(async () => {
     try {
+      // NOTE: Keeping apiFetch — /api/inventory/items is a different endpoint from generated listInventoryItems (/api/kitchen/inventory/list) with different response shape.
       const response = await apiFetch("/api/inventory/items?limit=100");
       if (response.ok) {
         const data = await response.json();
@@ -90,6 +91,7 @@ export default function WasteLoggingMobilePage() {
 
   const fetchWasteReasons = useCallback(async () => {
     try {
+      // NOTE: Keeping apiFetch — /api/kitchen/waste/reasons is a custom lookup endpoint with no generated client equivalent.
       const response = await apiFetch("/api/kitchen/waste/reasons");
       if (response.ok) {
         const data = await response.json();
@@ -103,6 +105,7 @@ export default function WasteLoggingMobilePage() {
   const syncOfflineEntries = async () => {
     for (const entry of syncQueue) {
       try {
+        // NOTE: Keeping apiFetch — offline sync POST to /api/kitchen/waste/entries; wasteEntryCreate uses Manifest command dispatch instead.
         await apiFetch("/api/kitchen/waste/entries", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -188,6 +191,7 @@ export default function WasteLoggingMobilePage() {
     }
 
     try {
+      // NOTE: Keeping apiFetch — POST to /api/kitchen/waste/entries for waste logging; wasteEntryCreate uses Manifest command dispatch instead.
       const response = await apiFetch("/api/kitchen/waste/entries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

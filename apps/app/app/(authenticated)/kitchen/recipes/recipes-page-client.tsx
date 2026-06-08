@@ -5,6 +5,7 @@ import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for composite recipe routes (create-with-version, update-with-version) — no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import {
   kitchenRecipeCompositeCreate,

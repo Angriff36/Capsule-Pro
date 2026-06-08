@@ -13,6 +13,7 @@ import {
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+// NOTE: Keeping apiFetch for composite recipe create-with-version route — no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipeCompositeCreate } from "@/app/lib/routes";
 

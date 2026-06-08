@@ -35,6 +35,7 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for custom analytics endpoints (/api/analytics/staff/*) — no generated client for analytics
 import { apiFetch } from "@/app/lib/api";
 import type {
   EmployeePerformanceMetrics,

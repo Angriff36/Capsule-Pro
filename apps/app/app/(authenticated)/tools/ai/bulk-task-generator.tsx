@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for AI bulk-task endpoints (/api/ai/bulk-tasks, /api/ai/bulk-tasks/confirm) — no generated client for AI operations
 import { apiFetch } from "@/app/lib/api";
 
 // --- Types ---

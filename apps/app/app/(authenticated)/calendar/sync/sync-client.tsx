@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for calendar sync OAuth endpoints (/api/calendar/sync/*) — no generated client for calendar sync operations
 import { apiFetch } from "@/app/lib/api";
 
 interface SyncStatus {

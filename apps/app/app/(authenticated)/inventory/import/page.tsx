@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+// NOTE: Keeping apiFetch for file upload (FormData POST to /api/inventory/import)
 import { apiFetch } from "@/app/lib/api";
 
 interface ImportResult {

@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for webhook management custom endpoints (CRUD, delivery-logs, DLQ)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

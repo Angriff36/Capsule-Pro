@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for API key management custom endpoints (create/revoke/delete/rotate)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

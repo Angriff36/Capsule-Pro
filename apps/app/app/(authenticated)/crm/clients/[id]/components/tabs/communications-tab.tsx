@@ -50,6 +50,7 @@ import {
   getClientInteractions,
   updateClientInteraction,
 } from "../../../actions";
+// NOTE: Keeping apiFetch for attachment file upload/delete operations (FormData, binary)
 import { apiFetch } from "@/app/lib/api";
 
 interface CommunicationsTabProps {

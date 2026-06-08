@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for barcode lookup and stock adjustment custom endpoints
 import { apiFetch } from "@/app/lib/api";
 import type { InventoryItemWithStatus } from "@/app/lib/inventory";
 import { BarcodeScanner } from "../components/barcode-scanner";

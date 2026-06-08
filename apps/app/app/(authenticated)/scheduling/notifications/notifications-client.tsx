@@ -165,6 +165,7 @@ export function NotificationsClient() {
         params.set("type", type);
       }
 
+      // NOTE: Keeping apiFetch for /api/staff/notifications — staffing-specific endpoint, generated listNotifications targets /api/collaboration/notifications.
       const res = await apiFetch(`/api/staff/notifications?${params}`);
       if (!res.ok) {
         throw new Error("Failed to fetch notifications");
@@ -189,6 +190,7 @@ export function NotificationsClient() {
   const handleMarkRead = async (notificationId: string) => {
     setMarkingRead(notificationId);
     try {
+      // NOTE: Keeping apiFetch for /notification/mark-read — custom endpoint, generated notificationMarkRead uses Manifest dispatcher.
       const res = await apiFetch("/notification/mark-read", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -42,8 +42,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { apiFetch } from "@/app/lib/api";
-import { trainingAssignmentCreate } from "@/app/lib/manifest-client.generated";
+import { listStaffMembers, trainingAssignmentCreate } from "@/app/lib/manifest-client.generated";
 
 const formSchema = z.object({
   employeeId: z.string().optional(),
@@ -89,11 +88,17 @@ export function AssignTrainingDialog({
   useEffect(() => {
     if (open) {
       setLoadingEmployees(true);
-      apiFetch("/api/staff/employees")
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.employees) {
-            setEmployees(data.employees);
+      listStaffMembers({ limit: 200 })
+        .then((result) => {
+          if (result.data) {
+            setEmployees(
+              result.data.map((s) => ({
+                id: s.id,
+                firstName: s.displayName ?? null,
+                lastName: null,
+                email: s.email ?? "",
+              }))
+            );
           }
         })
         .catch(() => {

@@ -156,6 +156,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
   const handleSave = async () => {
     setIsSaving(true);
     try {
+      // NOTE: Keeping apiFetch for PUT /api/events/reports/:id — custom endpoint updates checklistData + status together.
       const response = await apiFetch(`/api/events/reports/${report.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -188,6 +189,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
     setStatus("completed");
     setIsSaving(true);
     try {
+      // NOTE: Keeping apiFetch for PUT /api/events/reports/:id — custom endpoint updates checklistData + status together.
       const response = await apiFetch(`/api/events/reports/${report.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

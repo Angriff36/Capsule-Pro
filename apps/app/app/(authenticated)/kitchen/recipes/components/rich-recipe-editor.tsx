@@ -48,6 +48,7 @@ import {
 // Auth handled at page level via server components
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
+// NOTE: Keeping apiFetch for ingredient cost calculation, ingredient search (/api/kitchen/ingredients?search=), and recipe search — custom endpoints with no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 import { kitchenRecipesSearch } from "@/app/lib/routes";
 

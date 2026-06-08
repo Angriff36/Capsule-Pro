@@ -38,6 +38,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for trash/recovery endpoints (/api/administrative/trash/*) — no generated client for trash operations
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 import { DependencyAnalysisDialog } from "./dependency-analysis-dialog";

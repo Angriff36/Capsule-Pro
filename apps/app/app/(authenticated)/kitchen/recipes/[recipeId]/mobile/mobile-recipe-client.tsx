@@ -242,6 +242,8 @@ export const MobileRecipeClient = ({
 
         // If online, fetch fresh data
         if (navigator.onLine) {
+          // NOTE: Keeping apiFetch — these are recipe-specific nested endpoints (steps/ingredients by recipeId)
+          // with custom response shapes that differ from generated listRecipeSteps/listRecipeIngredients.
           const [stepsRes, ingredientsRes] = await Promise.all([
             apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
             apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),
@@ -373,6 +375,7 @@ export const MobileRecipeClient = ({
         icon: <RefreshCw className="h-4 w-4 animate-spin" />,
       });
 
+      // NOTE: Keeping apiFetch — same nested recipe endpoints as above, see NOTE there.
       const [stepsRes, ingredientsRes] = await Promise.all([
         apiFetch(`/api/kitchen/recipes/${recipeId}/steps`),
         apiFetch(`/api/kitchen/recipes/${recipeId}/ingredients`),

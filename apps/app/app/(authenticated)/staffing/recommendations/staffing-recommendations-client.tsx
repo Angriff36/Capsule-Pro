@@ -53,6 +53,7 @@ export function StaffingRecommendationsClient() {
     setLoading(true);
     setError(null);
     try {
+      // NOTE: Keeping apiFetch for POST /api/staffing/recommendations — computed/AI endpoint, no generated function.
       const res = await apiFetch("/api/staffing/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
