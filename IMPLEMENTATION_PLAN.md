@@ -1125,18 +1125,18 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 6 -- FRONTEND CLIENT STRATEGY
 
-> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 34 consumers** (Task 6.2 batches 1-4). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 34 files now use generated client hooks; remaining apiFetch files still get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
+> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 45 consumers** (Task 6.2 batches 1-5). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 45 files now use generated client hooks; remaining apiFetch files still get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
 
 ### 6.1 Frontend data layer decision — ✅ DONE 2026-06-07
 - **✅ DECISION: Adopt TanStack Query wrapping the generated client as `queryFn` sources.**
-- **Rationale:** TanStack Query v5 is installed and `QueryProvider` is live in production (wraps entire app). The generated client has 1,328 typed functions (914 reads, 414 commands) with 34 consumers (Task 6.2 batches 1-4). Remaining files still use bare `apiFetch` + `useState/useEffect` with zero caching. The gold-standard pattern already exists at `events/[eventId]/event-hooks.ts` (query key factories, `useQuery`, `useMutation` with optimistic updates).
+- **Rationale:** TanStack Query v5 is installed and `QueryProvider` is live in production (wraps entire app). The generated client has 1,328 typed functions (914 reads, 414 commands) with 45 consumers (Task 6.2 batches 1-5). Remaining files still use bare `apiFetch` + `useState/useEffect` with zero caching. The gold-standard pattern already exists at `events/[eventId]/event-hooks.ts` (query key factories, `useQuery`, `useMutation` with optimistic updates).
 - **Migration path for Tasks 6.2-6.4:**
   - Phase 1 (Task 6.2): Create per-domain `hooks.ts` files with query key factories + `useQuery`/`useMutation` hooks using generated client reads + `executeCommand` for writes
   - Phase 2 (Task 6.3): Migrate components from `useState/useEffect/apiFetch` to TanStack Query hooks
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-4 done 2026-06-07, 34 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-5 done 2026-06-07, 45 files migrated)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1153,8 +1153,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Inventory (2): transfers/inventory-transfers-client.tsx, vendor-catalogs/vendor-catalogs-client.tsx
   - Kitchen (3): quality-assurance/qa-actions-client.tsx, prep-task-plan-workflows/workflows-client.tsx, task-card.tsx
   - Staff (2): performance/page.tsx, mobile/timeclock/page.tsx
+- **Batch 5 DONE (2026-06-07):** 11 more files migrated across logistics, warehouse, procurement, contracts, kitchen-mobile, facilities, knowledge-base, and events/catering domains.
+- **Frontend `/api/manifest/` migration COMPLETE:** All remaining frontend files referencing `/api/manifest/` endpoints are either infrastructure (`manifest-client.ts`, `routes.ts`, `tool-registry.ts`) or server-side (`crm/clients/actions.ts` uses `runManifestCommand`, not `apiFetch`). No more frontend apiFetch calls to `/api/manifest/` exist.
+- **Store provider regression tests ADDED:** Tests verify generated client store provider integration and prevent regressions in governed-write paths.
+- **Remaining apiFetch files (~130):** These call non-manifest REST endpoints (`/api/payroll/`, `/api/accounting/`, `/api/hr/`, `/api/inventory/`, etc.) and cannot be migrated to the generated client until those backend routes are migrated to Manifest commands. Migration of these files is blocked on Tier 8 (governance migration of backend API routes).
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
-- **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. 167 other apiFetch files (1,092 call sites) get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
+- **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
 - **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
 - **Source to change:** `apps/app/app/lib/api.ts` (expand TanStack Query wrapper beyond events domain).
 
