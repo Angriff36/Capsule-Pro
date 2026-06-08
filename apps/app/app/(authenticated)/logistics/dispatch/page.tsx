@@ -130,6 +130,7 @@ export default function DispatchPage() {
   const loadData = async () => {
     setLoading(true);
     try {
+      // NOTE: No generated function for /api/logistics/dispatch — custom aggregate endpoint (routes + drivers + stats).
       const res = await apiFetch("/api/logistics/dispatch");
       const json = await res.json();
       if (json.success) {

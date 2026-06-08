@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { allergenWarningAcknowledge } from "@/app/lib/manifest-client.generated";
 
 interface AllergenConflict {
   guestId: string;
@@ -60,6 +61,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
 
   const fetchWarnings = useCallback(async () => {
     try {
+      // NOTE: No generated list function for event-specific warnings aggregate — keeping apiFetch.
       const res = await apiFetch(`/api/events/${eventId}/warnings`);
       if (res.ok) {
         const data = await res.json();
@@ -73,6 +75,7 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
   const runAllergenCheck = useCallback(async () => {
     setIsChecking(true);
     try {
+      // NOTE: No generated function for /api/events/allergens/check — custom batch operation.
       const res = await apiFetch("/api/events/allergens/check", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,19 +113,9 @@ export function AllergenSection({ eventId }: AllergenSectionProps) {
     }
     setAcknowledgingIds((prev) => new Set(prev).add(warningId));
     try {
-      const res = await apiFetch("/api/events/allergens/warnings/acknowledge", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ warningId }),
-      });
-      // A no-op (already acknowledged) now returns 200 from the backend, so the
-      // user never sees an error for an action that is effectively already done.
-      if (res.ok) {
-        toast.success("Warning acknowledged");
-        await fetchWarnings();
-      } else {
-        toast.error("Failed to acknowledge warning");
-      }
+      await allergenWarningAcknowledge({ id: warningId });
+      toast.success("Warning acknowledged");
+      await fetchWarnings();
     } catch {
       toast.error("Failed to acknowledge warning");
     } finally {

@@ -293,7 +293,7 @@ export function TaskCard({
       } else if (newStatus === "cancelled") {
         await kitchenTaskCancel({ id: task.id });
       } else {
-        // Reopen and other status changes fall back to direct API patch
+        // NOTE: No generated function for reopen/general status update — keeping apiFetch.
         const response = await apiFetch(`/api/kitchen/tasks/${task.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

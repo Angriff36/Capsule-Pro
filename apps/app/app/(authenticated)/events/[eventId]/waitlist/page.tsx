@@ -46,8 +46,12 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { eventWaitlistEntryAddGuest, eventWaitlistEntryUpdateRsvp, eventWaitlistEntryPromote } from "@/app/lib/manifest-client.generated";
+import {
+  listEventWaitlistEntries,
+  eventWaitlistEntryAddGuest,
+  eventWaitlistEntryUpdateRsvp,
+  eventWaitlistEntryPromote,
+} from "@/app/lib/manifest-client.generated";
 
 interface Guest {
   id: string;
@@ -130,10 +134,25 @@ export default function WaitlistPage() {
 
   const fetchGuests = useCallback(async () => {
     try {
-      const res = await apiFetch(`/api/events/${eventId}/waitlist`);
-      const json = await res.json();
-      setGuests(json.data.guests);
-      setSummary(json.data.summary);
+      const result = await listEventWaitlistEntries({ eventId });
+      const guestList = result.data as unknown as Guest[];
+      setGuests(guestList);
+      // Compute summary from the returned guest list
+      const confirmed = guestList.filter((g) => g.rsvp_status === "confirmed").length;
+      const pending = guestList.filter((g) => g.rsvp_status === "pending").length;
+      const declined = guestList.filter((g) => g.rsvp_status === "declined").length;
+      const tentative = guestList.filter((g) => g.rsvp_status === "tentative").length;
+      const waitlisted = guestList.filter((g) => g.rsvp_status === "waitlisted").length;
+      setSummary({
+        total: guestList.length,
+        confirmed,
+        pending,
+        declined,
+        tentative,
+        waitlisted,
+        capacity: null,
+        spotsRemaining: null,
+      });
     } catch {
       toast.error("Failed to load waitlist");
     } finally {

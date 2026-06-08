@@ -51,6 +51,7 @@ export function EventBriefingCard({
     setError(null);
 
     try {
+      // NOTE: AI summary endpoint has no generated client — keeping apiFetch.
       const response = await apiFetch(`/api/ai/summaries/${eventId}`);
       if (!response.ok) {
         throw new Error("Failed to generate briefing");

@@ -94,6 +94,7 @@ export function RunSheetClient({ eventId }: RunSheetClientProps) {
   const fetchRunSheet = useCallback(async () => {
     setIsLoading(true);
     try {
+      // NOTE: No generated function for /api/events/:eventId/run-sheet — custom aggregate endpoint.
       const res = await apiFetch(`/api/events/${eventId}/run-sheet`);
       if (res.ok) {
         const json = await res.json();

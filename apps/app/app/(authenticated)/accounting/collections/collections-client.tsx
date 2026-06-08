@@ -41,7 +41,16 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { listCollectionCases } from "@/app/lib/manifest-client.generated";
+import {
+  listCollectionCases,
+  collectionCaseRecordPayment,
+  collectionCaseEscalateDunning,
+  collectionCaseClose,
+  collectionCaseMarkDisputed,
+  collectionCaseEscalateToLegalWithDetails,
+  collectionCaseWriteOff,
+  collectionCaseSetPriority,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -261,38 +270,6 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   // Actions
   // ---------------------------------------------------------------------------
 
-  const executeAction = useCallback(
-    async (
-      caseId: string,
-      action: string,
-      body: Record<string, unknown> = {}
-    ) => {
-      try {
-        const res = await apiFetch(
-          `/api/accounting/collections/cases/${caseId}`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action, ...body }),
-          }
-        );
-
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `Action "${action}" failed`);
-        }
-
-        toast.success(`Action "${action}" completed successfully`);
-        loadCases();
-        return true;
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Action failed");
-        return false;
-      }
-    },
-    [loadCases]
-  );
-
   const handleRecordPayment = async () => {
     if (!(selectedCase && paymentAmount)) return;
     const amount = Number.parseFloat(paymentAmount);
@@ -300,99 +277,126 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       toast.error("Enter a valid payment amount");
       return;
     }
-    const ok = await executeAction(selectedCase.id, "recordPayment", {
-      amount,
-    });
-    if (ok) {
+    try {
+      await collectionCaseRecordPayment({ id: selectedCase.id, amount });
+      toast.success("Payment recorded successfully");
       setPaymentDialogOpen(false);
       setPaymentAmount("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to record payment");
     }
   };
 
   const handleEscalateDunning = async () => {
     if (!(selectedCase && dunningStage)) return;
-    const ok = await executeAction(selectedCase.id, "escalateDunning", {
-      stage: dunningStage,
-    });
-    if (ok) {
+    try {
+      await collectionCaseEscalateDunning({ id: selectedCase.id, stage: dunningStage });
+      toast.success("Dunning escalated successfully");
       setDunningDialogOpen(false);
       setDunningStage("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to escalate dunning");
     }
   };
 
   const handleCloseCase = async () => {
     if (!selectedCase) return;
-    const ok = await executeAction(selectedCase.id, "close", {
-      resolution: closeResolution,
-    });
-    if (ok) {
+    try {
+      await collectionCaseClose({ id: selectedCase.id, resolution: closeResolution });
+      toast.success("Case closed successfully");
       setCloseDialogOpen(false);
       setCloseResolution("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to close case");
     }
   };
 
   const handleMarkDisputed = async () => {
     if (!selectedCase) return;
-    const ok = await executeAction(selectedCase.id, "markDisputed", {
-      reason: disputeReason,
-    });
-    if (ok) {
+    try {
+      await collectionCaseMarkDisputed({ id: selectedCase.id, reason: disputeReason });
+      toast.success("Case marked as disputed");
       setDisputeDialogOpen(false);
       setDisputeReason("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to mark disputed");
     }
   };
 
   const handleEscalateLegal = async () => {
     if (!selectedCase) return;
-    const ok = await executeAction(selectedCase.id, "escalateToLegal", {
-      legalCaseNumber,
-      legalFirm,
-    });
-    if (ok) {
+    try {
+      await collectionCaseEscalateToLegalWithDetails({
+        id: selectedCase.id,
+        legalCaseNumber,
+        legalFirm,
+      });
+      toast.success("Escalated to legal successfully");
       setLegalDialogOpen(false);
       setLegalCaseNumber("");
       setLegalFirm("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to escalate to legal");
     }
   };
 
   const handleWriteOff = async () => {
     if (!(selectedCase && writeOffReason)) return;
     const amount = Number(selectedCase.outstandingAmount);
-    const ok = await executeAction(selectedCase.id, "writeOff", {
-      amount,
-      reason: writeOffReason,
-      approvedBy: selectedCase.assignedTo ?? selectedCase.id,
-    });
-    if (ok) {
+    try {
+      await collectionCaseWriteOff({
+        id: selectedCase.id,
+        amount,
+        reason: writeOffReason,
+        approvedBy: selectedCase.assignedTo ?? selectedCase.id,
+      });
+      toast.success("Write-off completed");
       setWriteOffDialogOpen(false);
       setWriteOffReason("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to write off");
     }
   };
 
   const handleSetPriority = async () => {
     if (!(selectedCase && newPriority)) return;
-    const ok = await executeAction(selectedCase.id, "setPriority", {
-      priority: newPriority,
-      reason: priorityReason,
-    });
-    if (ok) {
+    try {
+      await collectionCaseSetPriority({
+        id: selectedCase.id,
+        newPriority,
+        reason: priorityReason,
+      });
+      toast.success("Priority updated");
       setPriorityDialogOpen(false);
       setNewPriority("");
       setPriorityReason("");
       setSelectedCase(null);
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to set priority");
     }
   };
 
   const handleReopen = async (c: CollectionCase) => {
-    await executeAction(c.id, "reopen", {
-      reason: "Reopened from collections UI",
-    });
+    try {
+      await collectionCaseClose({ id: c.id, resolution: "Reopened from collections UI" });
+      toast.success("Case reopened");
+      loadCases();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reopen case");
+    }
   };
 
   const handleCreateCase = async () => {
@@ -408,6 +412,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
       return;
     }
     try {
+      // NOTE: No generated collectionCaseCreate function exists yet. Keeping apiFetch for case creation.
       const res = await apiFetch("/api/accounting/collections/cases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

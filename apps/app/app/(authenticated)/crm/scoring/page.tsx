@@ -26,6 +26,7 @@ async function fetchRules(): Promise<ScoringRule[]> {
 }
 
 async function fetchDistribution(): Promise<ScoringDistribution> {
+  // NOTE: No generated function for /api/crm/scoring/distribution — custom aggregate endpoint.
   const res = await apiFetch("/api/crm/scoring/distribution");
   if (!res.ok) return { hot: 0, warm: 0, cold: 0 };
   const json = await res.json();

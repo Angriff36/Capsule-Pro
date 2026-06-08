@@ -34,6 +34,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  getEventImportWorkflow,
+} from "@/app/lib/manifest-client.generated";
 
 interface EventImport {
   id: string;
@@ -152,18 +155,12 @@ export function WorkflowDetailClient({
 
   const loadWorkflow = useCallback(async () => {
     try {
-      const res = await apiFetch(`/api/events/import-workflows/${workflowId}`);
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError("Workflow not found");
-          return;
-        }
-        throw new Error("Failed to load workflow");
+      const data = await getEventImportWorkflow(workflowId);
+      if (!data) {
+        setError("Workflow not found");
+        return;
       }
-      const data = await res.json();
-      setWorkflow(
-        data.data?.eventImportWorkflow ?? data.eventImportWorkflow ?? null
-      );
+      setWorkflow(data as unknown as EventImport);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load workflow");
@@ -192,6 +189,7 @@ export function WorkflowDetailClient({
   const handleCommand = async (command: string) => {
     setActioning(true);
     try {
+      // NOTE: Command dispatch uses dynamic command name — keeping apiFetch for the generic command route.
       const res = await apiFetch(
         `/api/events/import-workflows/commands/${command}`,
         {

@@ -155,6 +155,7 @@ export function ImportForm() {
         params.append("generateBattleBoard", "true");
       }
 
+      // NOTE: File upload / document parse endpoint has no generated client — keeping apiFetch.
       const response = await apiFetch(
         `/api/events/documents/parse?${params.toString()}`,
         {

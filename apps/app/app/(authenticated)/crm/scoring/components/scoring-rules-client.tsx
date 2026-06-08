@@ -238,6 +238,7 @@ export function ScoringRulesClient({
   const handleCalculateScores = async () => {
     setIsCalculating(true);
     try {
+      // NOTE: No generated function for /api/crm/scoring/calculate — custom batch operation.
       const res = await apiFetch("/api/crm/scoring/calculate", {
         method: "POST",
       });

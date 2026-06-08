@@ -107,6 +107,7 @@ export const EventImportsViewer = ({ imports }: { imports: ImportFile[] }) => {
 
     setLoading(true);
     try {
+      // NOTE: File content endpoints have no generated client — keeping apiFetch.
       const response = await apiFetch(
         `/api/events/imports/${file.id}?inline=1`
       );

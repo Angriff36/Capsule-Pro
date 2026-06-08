@@ -191,6 +191,7 @@ export function EquipmentPageClient() {
 
   async function fetchAlerts() {
     try {
+      // NOTE: No generated function for /api/kitchen/equipment/alerts — custom aggregate endpoint.
       const res = await apiFetch(
         "/api/kitchen/equipment/alerts?minSeverity=low"
       );
