@@ -37,6 +37,9 @@ entity PrepTask {
 
   relationship belongsTo prepList: PrepList fields [tenantId, prepListId] references [tenantId, id]
   relationship belongsTo station: Station fields [tenantId, stationId] references [tenantId, id]
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo dish: Dish fields [tenantId, dishId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   // State transitions enforce valid status flows at runtime
   transition status from "open" to ["in_progress", "canceled"]

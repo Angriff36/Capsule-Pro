@@ -53,6 +53,8 @@ entity RevenueRecognitionSchedule {
   // Constraints
   relationship belongsTo invoice: Invoice fields [tenantId, invoiceId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo contract: EventContract fields [tenantId, contractId] references [tenantId, id]
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
 
   constraint amount_positive: self.totalAmount > 0 "Total amount must be positive"
   constraint amount_consistent: self.totalAmount == self.recognizedAmount + self.remainingAmount "Total must equal recognized plus remaining"

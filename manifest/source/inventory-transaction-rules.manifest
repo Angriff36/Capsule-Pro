@@ -35,6 +35,8 @@ entity InventoryTransaction {
 
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
   relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
+  relationship belongsTo reverseOfTransaction: InventoryTransaction fields [tenantId, reverseOfTransactionId] references [tenantId, id]
 
   constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
 

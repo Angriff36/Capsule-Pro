@@ -402,6 +402,8 @@ entity TrainingAssignment {
 
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
   relationship hasMany attempts: TrainingAttempt
+  relationship belongsTo staffMember: StaffMember with staffMemberId
+  relationship belongsTo lastAttempt: TrainingAttempt with lastAttemptId
 
   timestamps
 
@@ -584,6 +586,7 @@ entity TrainingAttempt {
 
   relationship belongsTo assignment: TrainingAssignment fields [tenantId, assignmentId] references [tenantId, id]
   relationship belongsTo module: TrainingModule fields [tenantId, moduleId] references [tenantId, id]
+  relationship belongsTo staffMember: StaffMember with staffMemberId
 
   timestamps
 

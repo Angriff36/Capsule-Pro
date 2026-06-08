@@ -24,6 +24,8 @@ entity LaborBudget {
   computed isOverBudget: boolean = self.actualAmount > self.budgetAmount
   computed varianceAmount: money = self.actualAmount - self.budgetAmount
 
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
   constraint validStatus: self.status in ["draft", "approved", "closed"] "Invalid labor budget status"
   constraint positiveBudget: self.budgetAmount > 0 "Budget amount must be positive"
 

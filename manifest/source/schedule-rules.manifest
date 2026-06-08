@@ -28,6 +28,7 @@ entity Schedule {
   computed isEditable: boolean = self.status in ["draft", "approved"]
 
   relationship hasMany shifts: ScheduleShift
+  relationship belongsTo location: Facility with locationId
 
   transition status from "draft" to ["approved"]
   transition status from "approved" to ["draft", "published"]
@@ -135,6 +136,8 @@ entity ScheduleShift {
   computed hasSwapPending: boolean = self.swapStatus == "offered"
 
   relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo location: Facility with locationId
 
   constraint validShiftTimes: self.shiftEnd > self.shiftStart "Shift end must be after shift start"
   constraint validSwapStatus: self.swapStatus in ["none", "offered", "accepted", "declined"] "Invalid swap status"

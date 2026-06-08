@@ -24,6 +24,8 @@ entity TimeEntry {
   computed isApproved: boolean = self.approvedBy != ""
 
   relationship belongsTo shift: ScheduleShift fields [tenantId, shiftId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
+  relationship belongsTo location: Facility with locationId
 
   default policy TimeEntryDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
   command clockIn(employeeId: string, locationId: string, shiftId: string, notes: string) {
@@ -130,6 +132,7 @@ entity TimecardEditRequest {
   computed isProcessed: boolean = self.status != "pending"
 
   relationship belongsTo timeEntry: TimeEntry fields [tenantId, timeEntryId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Invalid edit request status"
 

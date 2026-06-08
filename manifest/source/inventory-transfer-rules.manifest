@@ -30,6 +30,8 @@ entity InventoryTransfer {
   computed isInTransit: boolean = self.status == "in_transit"
 
   relationship hasMany items: InventoryTransferItem
+  relationship belongsTo fromLocation: StorageLocation fields [tenantId, fromLocationId] references [tenantId, id]
+  relationship belongsTo toLocation: StorageLocation fields [tenantId, toLocationId] references [tenantId, id]
 
   constraint validStatus: self.status in ["draft", "pending_approval", "approved", "in_transit", "received", "cancelled"] "Invalid transfer status"
 

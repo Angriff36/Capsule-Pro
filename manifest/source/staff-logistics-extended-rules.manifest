@@ -77,6 +77,7 @@ entity TimecardApproval {
 
   relationship belongsTo employee: User with employeeId
   relationship belongsTo payrollRun: PayrollRun with payrollRunId
+  relationship belongsTo payrollPeriod: PayrollPeriod with payrollPeriodId
 
   store TimecardApproval in durable
 }
@@ -184,6 +185,7 @@ entity TipPool {
   constraint totalTipsPositive: self.totalTips >= 0 "Total tips cannot be negative"
 
   relationship belongsTo period: PayrollPeriod with periodId
+  relationship belongsTo event: Event with eventId
 
   default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
@@ -475,6 +477,7 @@ entity TrainingCompletion {
   computed hasScore: boolean = self.score > 0
 
   relationship belongsTo trainingModule: TrainingModule fields [tenantId, trainingModuleId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
 
   constraint scoreRange: self.score >= 0 and self.score <= 100 "Score must be between 0 and 100"
 
@@ -557,6 +560,7 @@ entity OnboardingCompletion {
   computed isComplete: boolean = self.status == "completed"
 
   relationship belongsTo onboardingTask: OnboardingTask fields [tenantId, onboardingTaskId] references [tenantId, id]
+  relationship belongsTo employee: User with employeeId
 
   constraint validStatus: self.status in ["pending", "completed"] "Invalid onboarding completion status"
 
@@ -744,6 +748,7 @@ entity RouteStop {
   transition status from "arrived" to ["completed"]
 
   relationship belongsTo deliveryRoute: DeliveryRoute fields [tenantId, deliveryRouteId] references [tenantId, id]
+  relationship belongsTo event: Event with eventId
 
   default policy RouteStopDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {

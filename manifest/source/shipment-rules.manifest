@@ -39,6 +39,9 @@ entity Shipment {
   computed hasTracking: boolean = self.trackingNumber != ""
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo purchaseOrder: PurchaseOrder fields [tenantId, purchaseOrderId] references [tenantId, id]
+  relationship belongsTo supplier: InventorySupplier fields [tenantId, supplierId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   constraint validStatus: self.status in ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"] "Invalid shipment status"
 
@@ -188,6 +191,7 @@ entity ShipmentItem {
   constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
 
   relationship belongsTo shipment: Shipment fields [tenantId, shipmentId] references [tenantId, id]
+  relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
   default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
   command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {

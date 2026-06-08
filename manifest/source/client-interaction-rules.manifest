@@ -34,6 +34,7 @@ entity ClientInteraction {
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
   constraint warnNoClientOrLead:warn self.clientId == "" and self.leadId == "" {
     messageTemplate: "Interaction '{subject}' is not linked to any client or lead"

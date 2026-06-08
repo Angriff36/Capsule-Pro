@@ -28,6 +28,7 @@ entity PurchaseOrder {
 
   hasMany items: PurchaseOrderItem
   belongsTo vendor: Vendor with vendorId
+  belongsTo location: Facility with locationId
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"
@@ -193,6 +194,7 @@ entity PurchaseOrderItem {
   key [tenantId, id]
 
   belongsTo purchaseOrder: PurchaseOrder fields [tenantId, purchaseOrderId] references [tenantId, id] onDelete cascade
+  belongsTo item: InventoryItem with itemId
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityOrdered
   computed isPartiallyReceived: boolean = self.quantityReceived > 0 and self.quantityReceived < self.quantityOrdered

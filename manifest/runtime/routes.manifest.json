@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-06T02:26:23.140Z",
+  "generatedAt": "2026-06-08T07:26:19.856Z",
   "basePath": "/api",
   "routes": [
     {
@@ -4565,6 +4565,336 @@
       "tenant": true
     },
     {
+      "id": "SelOnboardingTrainingModuleDefinition.get.list",
+      "path": "/api/selonboardingtrainingmoduledefinition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingModuleDefinition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingModuleDefinition.get.detail",
+      "path": "/api/selonboardingtrainingmoduledefinition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingModuleDefinition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion01Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion01definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion01Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion01Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion01definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion01Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion02Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion02definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion02Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion02Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion02definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion02Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion03Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion03definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion03Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion03Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion03definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion03Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion04Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion04definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion04Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion04Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion04definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion04Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion05Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion05definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion05Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion05Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion05definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion05Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion06Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion06definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion06Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion06Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion06definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion06Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion07Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion07definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion07Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion07Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion07definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion07Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion08Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion08definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion08Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion08Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion08definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion08Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion09Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion09definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion09Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion09Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion09definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion09Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion10Definition.get.list",
+      "path": "/api/selonboardingtrainingquestion10definition/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion10Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion10Definition.get.detail",
+      "path": "/api/selonboardingtrainingquestion10definition/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SelOnboardingTrainingQuestion10Definition"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Shipment.get.list",
       "path": "/api/shipment/list",
       "method": "GET",
@@ -4710,6 +5040,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "StaffPerformance"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "StaffTrainingSignal.get.list",
+      "path": "/api/stafftrainingsignal/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "StaffTrainingSignal"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "StaffTrainingSignal.get.detail",
+      "path": "/api/stafftrainingsignal/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "StaffTrainingSignal"
       },
       "auth": true,
       "tenant": true
@@ -5135,6 +5495,36 @@
       "tenant": true
     },
     {
+      "id": "TrainingAttempt.get.list",
+      "path": "/api/trainingattempt/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingAttempt"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAttempt.get.detail",
+      "path": "/api/trainingattempt/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingAttempt"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "TrainingCompletion.get.list",
       "path": "/api/trainingcompletion/list",
       "method": "GET",
@@ -5190,6 +5580,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "TrainingModule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingQuestion.get.list",
+      "path": "/api/trainingquestion/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingQuestion"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingQuestion.get.detail",
+      "path": "/api/trainingquestion/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingQuestion"
       },
       "auth": true,
       "tenant": true
@@ -5708,19 +6128,25 @@
       "method": "POST",
       "params": [
         {
-          "name": "adminChatThreadId",
+          "name": "threadId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "senderId",
+          "name": "authorId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "body",
+          "name": "authorName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "text",
           "type": "string",
           "location": "body",
           "required": true
@@ -5781,6 +6207,32 @@
       "tenant": true
     },
     {
+      "id": "AdminChatParticipant.create",
+      "path": "/api/manifest/AdminChatParticipant/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "threadId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminChatParticipant",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "AdminChatParticipant.unarchive",
       "path": "/api/manifest/AdminChatParticipant/commands/unarchive",
       "method": "POST",
@@ -5819,7 +6271,19 @@
       "method": "POST",
       "params": [
         {
-          "name": "subject",
+          "name": "threadType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "directKey",
           "type": "string",
           "location": "body",
           "required": true
@@ -7195,6 +7659,26 @@
       "tenant": true
     },
     {
+      "id": "BattleBoard.recordImport",
+      "path": "/api/manifest/BattleBoard/commands/record-import",
+      "method": "POST",
+      "params": [
+        {
+          "name": "boardData",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BattleBoard",
+        "command": "recordImport"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BattleBoard.removeDish",
       "path": "/api/manifest/BattleBoard/commands/remove-dish",
       "method": "POST",
@@ -7236,6 +7720,44 @@
         "kind": "command",
         "entity": "BattleBoard",
         "command": "startVoting"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BattleBoard.update",
+      "path": "/api/manifest/BattleBoard/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "boardName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "boardData",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BattleBoard",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -8322,18 +8844,6 @@
           "required": true
         },
         {
-          "name": "venueName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "venueAddress",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "venueCity",
           "type": "string",
           "location": "body",
@@ -9333,6 +9843,19 @@
       "tenant": true
     },
     {
+      "id": "ClientInteraction.softDelete",
+      "path": "/api/manifest/ClientInteraction/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ClientInteraction",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "ClientInteraction.update",
       "path": "/api/manifest/ClientInteraction/commands/update",
       "method": "POST",
@@ -10123,6 +10646,18 @@
         },
         {
           "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "autoPopulate",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scope",
           "type": "string",
           "location": "body",
           "required": true
@@ -11201,19 +11736,43 @@
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "ruleName",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "criterion",
+          "name": "field",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "value",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "points",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": "string",
           "location": "body",
           "required": true
@@ -11241,24 +11800,61 @@
       "tenant": true
     },
     {
+      "id": "CrmScoringRule.softDelete",
+      "path": "/api/manifest/CrmScoringRule/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CrmScoringRule",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "CrmScoringRule.update",
       "path": "/api/manifest/CrmScoringRule/commands/update",
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "ruleName",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "criterion",
+          "name": "field",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "value",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "points",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": "string",
           "location": "body",
           "required": true
@@ -11530,12 +12126,75 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "totalVariance",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "variancePercentage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "countedItems",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "totalItems",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
         "kind": "command",
         "entity": "CycleCountSession",
         "command": "finalize"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CycleCountSession.reopen",
+      "path": "/api/manifest/CycleCountSession/commands/reopen",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CycleCountSession",
+        "command": "reopen"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CycleCountSession.softDelete",
+      "path": "/api/manifest/CycleCountSession/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CycleCountSession",
+        "command": "softDelete"
       },
       "auth": true,
       "tenant": true
@@ -11556,6 +12215,38 @@
         "kind": "command",
         "entity": "CycleCountSession",
         "command": "start"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CycleCountSession.update",
+      "path": "/api/manifest/CycleCountSession/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "sessionName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CycleCountSession",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -12599,13 +13290,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "firstName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "lastName",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
@@ -12630,6 +13315,18 @@
         },
         {
           "name": "licenseExpiry",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "vehicleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "status",
           "type": "string",
           "location": "body",
           "required": true
@@ -12709,12 +13406,12 @@
       "tenant": true
     },
     {
-      "id": "Driver.suspend",
-      "path": "/api/manifest/Driver/commands/suspend",
+      "id": "Driver.setOffDuty",
+      "path": "/api/manifest/Driver/commands/set-off-duty",
       "method": "POST",
       "params": [
         {
-          "name": "reason",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -12723,7 +13420,7 @@
       "source": {
         "kind": "command",
         "entity": "Driver",
-        "command": "suspend"
+        "command": "setOffDuty"
       },
       "auth": true,
       "tenant": true
@@ -12734,13 +13431,7 @@
       "method": "POST",
       "params": [
         {
-          "name": "firstName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "lastName",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
@@ -12765,6 +13456,12 @@
         },
         {
           "name": "licenseExpiry",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "vehicleId",
           "type": "string",
           "location": "body",
           "required": true
@@ -12939,6 +13636,12 @@
           "required": true
         },
         {
+          "name": "emailTemplateTenantId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "recipientConfig",
           "type": "string",
           "location": "body",
@@ -12955,6 +13658,39 @@
         "kind": "command",
         "entity": "EmailWorkflow",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailWorkflow.recordTriggered",
+      "path": "/api/manifest/EmailWorkflow/commands/record-triggered",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EmailWorkflow",
+        "command": "recordTriggered"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailWorkflow.setActive",
+      "path": "/api/manifest/EmailWorkflow/commands/set-active",
+      "method": "POST",
+      "params": [
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmailWorkflow",
+        "command": "setActive"
       },
       "auth": true,
       "tenant": true
@@ -12984,6 +13720,12 @@
           "required": true
         },
         {
+          "name": "triggerType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "triggerConfig",
           "type": "string",
           "location": "body",
@@ -12991,6 +13733,12 @@
         },
         {
           "name": "emailTemplateId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "emailTemplateTenantId",
           "type": "string",
           "location": "body",
           "required": true
@@ -14037,6 +14785,18 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "accessibilityOptions",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "featuredMediaUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -14063,6 +14823,19 @@
         "kind": "command",
         "entity": "Event",
         "command": "finalize"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Event.softDelete",
+      "path": "/api/manifest/Event/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Event",
+        "command": "softDelete"
       },
       "auth": true,
       "tenant": true
@@ -14187,12 +14960,44 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "accessibilityOptions",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "featuredMediaUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
         "kind": "command",
         "entity": "Event",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Event.updateBudget",
+      "path": "/api/manifest/Event/commands/update-budget",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newBudget",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Event",
+        "command": "updateBudget"
       },
       "auth": true,
       "tenant": true
@@ -15618,6 +16423,54 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "budgetedRevenue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetedFoodCost",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetedLaborCost",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetedOverhead",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualRevenue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualFoodCost",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualLaborCost",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "actualOverhead",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -16629,13 +17482,25 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "code",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "address",
+          "name": "facilityType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine1",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
           "type": "string",
           "location": "body",
           "required": true
@@ -16653,7 +17518,13 @@
           "required": true
         },
         {
-          "name": "zip",
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "country",
           "type": "string",
           "location": "body",
           "required": true
@@ -16665,13 +17536,7 @@
           "required": true
         },
         {
-          "name": "capacity",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "description",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -16697,13 +17562,25 @@
           "required": true
         },
         {
-          "name": "type",
+          "name": "code",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "address",
+          "name": "facilityType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine1",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "addressLine2",
           "type": "string",
           "location": "body",
           "required": true
@@ -16721,7 +17598,13 @@
           "required": true
         },
         {
-          "name": "zip",
+          "name": "postalCode",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "country",
           "type": "string",
           "location": "body",
           "required": true
@@ -16733,13 +17616,7 @@
           "required": true
         },
         {
-          "name": "capacity",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "description",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -16994,6 +17871,24 @@
         },
         {
           "name": "serialNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "manufacturer",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "warrantyExpiry",
           "type": "string",
           "location": "body",
           "required": true
@@ -17423,18 +18318,6 @@
       "method": "POST",
       "params": [
         {
-          "name": "facilityId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "areaId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "assetId",
           "type": "string",
           "location": "body",
@@ -17690,6 +18573,32 @@
       "tenant": true
     },
     {
+      "id": "Ingredient.linkInventoryItem",
+      "path": "/api/manifest/Ingredient/commands/link-inventory-item",
+      "method": "POST",
+      "params": [
+        {
+          "name": "inventoryItemId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Ingredient",
+        "command": "linkInventoryItem"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Ingredient.reactivate",
       "path": "/api/manifest/Ingredient/commands/reactivate",
       "method": "POST",
@@ -17737,6 +18646,32 @@
         "kind": "command",
         "entity": "Ingredient",
         "command": "recordLot"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Ingredient.unlinkInventoryItem",
+      "path": "/api/manifest/Ingredient/commands/unlink-inventory-item",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Ingredient",
+        "command": "unlinkInventoryItem"
       },
       "auth": true,
       "tenant": true
@@ -18374,6 +19309,117 @@
         "kind": "command",
         "entity": "InventoryItem",
         "command": "restock"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "InventoryItem.softDelete",
+      "path": "/api/manifest/InventoryItem/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "InventoryItem",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "InventoryItem.update",
+      "path": "/api/manifest/InventoryItem/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "quantityOnHand",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "parLevel",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reorder_level",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "supplierId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fsa_status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fsa_temp_logged",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fsa_allergen_info",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fsa_traceable",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "InventoryItem",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -19248,6 +20294,74 @@
         "kind": "command",
         "entity": "Invoice",
         "command": "sendReminder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.update",
+      "path": "/api/manifest/Invoice/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "subtotal",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "taxAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "total",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amountDue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "internalNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentTerms",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "lineItems",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -21122,18 +22236,6 @@
       "method": "POST",
       "params": [
         {
-          "name": "equipmentId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "equipmentName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "title",
           "type": "string",
           "location": "body",
@@ -21158,13 +22260,37 @@
           "required": true
         },
         {
-          "name": "estimatedCost",
-          "type": "number",
+          "name": "areaId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "equipmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reportedBy",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "scheduledDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -22169,6 +23295,19 @@
         "kind": "command",
         "entity": "OverrideAudit",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.markAcceptedNotApplied",
+      "path": "/api/manifest/Payment/commands/mark-accepted-not-applied",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "markAcceptedNotApplied"
       },
       "auth": true,
       "tenant": true
@@ -24327,6 +25466,44 @@
       "tenant": true
     },
     {
+      "id": "PrepTask.updateDetails",
+      "path": "/api/manifest/PrepTask/commands/update-details",
+      "method": "POST",
+      "params": [
+        {
+          "name": "dishId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedMinutes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueByTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTask",
+        "command": "updateDetails"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "PrepTask.updateDueDate",
       "path": "/api/manifest/PrepTask/commands/update-due-date",
       "method": "POST",
@@ -24789,13 +25966,25 @@
       "method": "POST",
       "params": [
         {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "areaId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "equipmentId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "name",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -24807,7 +25996,31 @@
           "required": true
         },
         {
+          "name": "intervalDays",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "nextDueAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedHours",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedCost",
           "type": "string",
           "location": "body",
           "required": true
@@ -24840,7 +26053,13 @@
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
@@ -24852,7 +26071,31 @@
           "required": true
         },
         {
+          "name": "intervalDays",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "nextDueAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedHours",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedCost",
           "type": "string",
           "location": "body",
           "required": true
@@ -25300,6 +26543,26 @@
       "tenant": true
     },
     {
+      "id": "Proposal.generatePublicLink",
+      "path": "/api/manifest/Proposal/commands/generate-public-link",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Proposal",
+        "command": "generatePublicLink"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Proposal.markViewed",
       "path": "/api/manifest/Proposal/commands/mark-viewed",
       "method": "POST",
@@ -25341,6 +26604,26 @@
         "kind": "command",
         "entity": "Proposal",
         "command": "reject"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Proposal.remove",
+      "path": "/api/manifest/Proposal/commands/remove",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Proposal",
+        "command": "remove"
       },
       "auth": true,
       "tenant": true
@@ -25670,19 +26953,73 @@
           "required": true
         },
         {
-          "name": "headerHtml",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "footerHtml",
+          "name": "eventType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "defaultTerms",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultTaxRate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultLineItems",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "logoUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "primaryColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "secondaryColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accentColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fontFamily",
           "type": "string",
           "location": "body",
           "required": true
@@ -25710,6 +27047,19 @@
       "tenant": true
     },
     {
+      "id": "ProposalTemplate.softDelete",
+      "path": "/api/manifest/ProposalTemplate/commands/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ProposalTemplate",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "ProposalTemplate.update",
       "path": "/api/manifest/ProposalTemplate/commands/update",
       "method": "POST",
@@ -25727,19 +27077,73 @@
           "required": true
         },
         {
-          "name": "headerHtml",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "footerHtml",
+          "name": "eventType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
           "name": "defaultTerms",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultTaxRate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "defaultLineItems",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "logoUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "primaryColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "secondaryColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accentColor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "fontFamily",
           "type": "string",
           "location": "body",
           "required": true
@@ -25919,6 +27323,44 @@
         "kind": "command",
         "entity": "PurchaseOrder",
         "command": "submit"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PurchaseOrder.updateTotals",
+      "path": "/api/manifest/PurchaseOrder/commands/update-totals",
+      "method": "POST",
+      "params": [
+        {
+          "name": "subtotal",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "total",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemCount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expectedDeliveryDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PurchaseOrder",
+        "command": "updateTotals"
       },
       "auth": true,
       "tenant": true
@@ -27982,6 +29424,19 @@
       "tenant": true
     },
     {
+      "id": "RevenueRecognitionLine.reverse",
+      "path": "/api/manifest/RevenueRecognitionLine/commands/reverse",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "reverse"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "RevenueRecognitionLine.skip",
       "path": "/api/manifest/RevenueRecognitionLine/commands/skip",
       "method": "POST",
@@ -28014,6 +29469,24 @@
         },
         {
           "name": "newTotalAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognitionPeriod",
           "type": "string",
           "location": "body",
           "required": true
@@ -28098,19 +29571,7 @@
           "required": true
         },
         {
-          "name": "eventId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
           "name": "contractId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "clientId",
           "type": "string",
           "location": "body",
           "required": true
@@ -28153,6 +29614,12 @@
         },
         {
           "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "metadata",
           "type": "string",
           "location": "body",
           "required": true
@@ -28260,6 +29727,32 @@
         "kind": "command",
         "entity": "RevenueRecognitionSchedule",
         "command": "resume"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.reverseRecognition",
+      "path": "/api/manifest/RevenueRecognitionSchedule/commands/reverse-recognition",
+      "method": "POST",
+      "params": [
+        {
+          "name": "recognizedAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "remainingAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "reverseRecognition"
       },
       "auth": true,
       "tenant": true
@@ -28904,6 +30397,149 @@
       "tenant": true
     },
     {
+      "id": "SelOnboardingTrainingModuleDefinition.create",
+      "path": "/api/manifest/SelOnboardingTrainingModuleDefinition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingModuleDefinition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion01Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion01Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion01Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion02Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion02Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion02Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion03Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion03Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion03Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion04Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion04Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion04Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion05Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion05Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion05Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion06Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion06Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion06Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion07Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion07Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion07Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion08Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion08Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion08Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion09Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion09Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion09Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SelOnboardingTrainingQuestion10Definition.create",
+      "path": "/api/manifest/SelOnboardingTrainingQuestion10Definition/commands/create",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SelOnboardingTrainingQuestion10Definition",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Shipment.cancel",
       "path": "/api/manifest/Shipment/commands/cancel",
       "method": "POST",
@@ -29191,6 +30827,82 @@
         "kind": "command",
         "entity": "ShipmentItem",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.softDelete",
+      "path": "/api/manifest/ShipmentItem/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ShipmentItem",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.update",
+      "path": "/api/manifest/ShipmentItem/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "quantityShipped",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitId",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "conditionNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "lotNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expirationDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ShipmentItem",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -29773,6 +31485,94 @@
         "kind": "command",
         "entity": "StaffPerformance",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "StaffTrainingSignal.recordSchedulabilityGranted",
+      "path": "/api/manifest/StaffTrainingSignal/commands/record-schedulability-granted",
+      "method": "POST",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "StaffTrainingSignal",
+        "command": "recordSchedulabilityGranted"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "StaffTrainingSignal.recordWaiverLogged",
+      "path": "/api/manifest/StaffTrainingSignal/commands/record-waiver-logged",
+      "method": "POST",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "StaffTrainingSignal",
+        "command": "recordWaiverLogged"
       },
       "auth": true,
       "tenant": true
@@ -31275,13 +33075,37 @@
       "tenant": true
     },
     {
-      "id": "TrainingAssignment.complete",
-      "path": "/api/manifest/TrainingAssignment/commands/complete",
+      "id": "TrainingAssignment.applyFirstShiftDueDate",
+      "path": "/api/manifest/TrainingAssignment/commands/apply-first-shift-due-date",
       "method": "POST",
       "params": [
         {
-          "name": "score",
-          "type": "number",
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "firstShiftAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueAt",
+          "type": "string",
           "location": "body",
           "required": true
         }
@@ -31289,7 +33113,7 @@
       "source": {
         "kind": "command",
         "entity": "TrainingAssignment",
-        "command": "complete"
+        "command": "applyFirstShiftDueDate"
       },
       "auth": true,
       "tenant": true
@@ -31300,32 +33124,68 @@
       "method": "POST",
       "params": [
         {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "moduleId",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "employeeId",
+          "name": "moduleCode",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "assignedToAll",
+          "name": "moduleTitle",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffRole",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "passThresholdPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxAttempts",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "firstShiftAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDateReviewNeeded",
           "type": "boolean",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "assignedBy",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "dueDate",
-          "type": "string",
           "location": "body",
           "required": true
         }
@@ -31339,30 +33199,35 @@
       "tenant": true
     },
     {
-      "id": "TrainingAssignment.extendDueDate",
-      "path": "/api/manifest/TrainingAssignment/commands/extend-due-date",
+      "id": "TrainingAssignment.markOverdue",
+      "path": "/api/manifest/TrainingAssignment/commands/mark-overdue",
       "method": "POST",
       "params": [
         {
-          "name": "dueDate",
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "referenceTime",
           "type": "string",
           "location": "body",
           "required": true
         }
       ],
-      "source": {
-        "kind": "command",
-        "entity": "TrainingAssignment",
-        "command": "extendDueDate"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "TrainingAssignment.markOverdue",
-      "path": "/api/manifest/TrainingAssignment/commands/mark-overdue",
-      "method": "POST",
-      "params": [],
       "source": {
         "kind": "command",
         "entity": "TrainingAssignment",
@@ -31372,27 +33237,183 @@
       "tenant": true
     },
     {
-      "id": "TrainingAssignment.softDelete",
-      "path": "/api/manifest/TrainingAssignment/commands/soft-delete",
+      "id": "TrainingAssignment.start",
+      "path": "/api/manifest/TrainingAssignment/commands/start",
       "method": "POST",
-      "params": [],
+      "params": [
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
       "source": {
         "kind": "command",
         "entity": "TrainingAssignment",
-        "command": "softDelete"
+        "command": "start"
       },
       "auth": true,
       "tenant": true
     },
     {
-      "id": "TrainingAssignment.start",
-      "path": "/api/manifest/TrainingAssignment/commands/start",
+      "id": "TrainingAssignment.submitFailedAttempt",
+      "path": "/api/manifest/TrainingAssignment/commands/submit-failed-attempt",
       "method": "POST",
-      "params": [],
+      "params": [
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "attemptId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scorePercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "answersJson",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
       "source": {
         "kind": "command",
         "entity": "TrainingAssignment",
-        "command": "start"
+        "command": "submitFailedAttempt"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.submitFinalFailedAttempt",
+      "path": "/api/manifest/TrainingAssignment/commands/submit-final-failed-attempt",
+      "method": "POST",
+      "params": [
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "attemptId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scorePercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "answersJson",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingAssignment",
+        "command": "submitFinalFailedAttempt"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.submitPassingAttempt",
+      "path": "/api/manifest/TrainingAssignment/commands/submit-passing-attempt",
+      "method": "POST",
+      "params": [
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "attemptId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scorePercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "answersJson",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingAssignment",
+        "command": "submitPassingAttempt"
       },
       "auth": true,
       "tenant": true
@@ -31403,13 +33424,31 @@
       "method": "POST",
       "params": [
         {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "reason",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "waivedBy",
+          "name": "approvedBy",
           "type": "string",
           "location": "body",
           "required": true
@@ -31419,6 +33458,80 @@
         "kind": "command",
         "entity": "TrainingAssignment",
         "command": "waive"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAttempt.create",
+      "path": "/api/manifest/TrainingAttempt/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "attemptNumber",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scorePercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "passThresholdPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "passed",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "managerReviewRequired",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "answersJson",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingAttempt",
+        "command": "create"
       },
       "auth": true,
       "tenant": true
@@ -31493,6 +33606,18 @@
       "method": "POST",
       "params": [
         {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "title",
           "type": "string",
           "location": "body",
@@ -31535,8 +33660,32 @@
           "required": true
         },
         {
+          "name": "passThresholdPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxAttempts",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "requiredRole",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
           "name": "createdBy",
           "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "publishImmediately",
+          "type": "boolean",
           "location": "body",
           "required": true
         }
@@ -31654,12 +33803,135 @@
           "type": "boolean",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "passThresholdPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxAttempts",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "requiredRole",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
         "kind": "command",
         "entity": "TrainingModule",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingQuestion.create",
+      "path": "/api/manifest/TrainingQuestion/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "sectionTitle",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "displayOrder",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "prompt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "optionA",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "optionB",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "optionC",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "optionD",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "correctOptionKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "explanation",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "whyItMatters",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingQuestion",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingQuestion.deactivate",
+      "path": "/api/manifest/TrainingQuestion/commands/deactivate",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingQuestion",
+        "command": "deactivate"
       },
       "auth": true,
       "tenant": true
@@ -31765,6 +34037,46 @@
       "tenant": true
     },
     {
+      "id": "User.reactivate",
+      "path": "/api/manifest/User/commands/reactivate",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "User",
+        "command": "reactivate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "User.softDelete",
+      "path": "/api/manifest/User/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "User",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "User.terminate",
       "path": "/api/manifest/User/commands/terminate",
       "method": "POST",
@@ -31801,6 +34113,12 @@
       "path": "/api/manifest/User/commands/update",
       "method": "POST",
       "params": [
+        {
+          "name": "email",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
         {
           "name": "firstName",
           "type": "string",
@@ -32043,18 +34361,56 @@
       "tenant": true
     },
     {
-      "id": "Vehicle.create",
-      "path": "/api/manifest/Vehicle/commands/create",
+      "id": "VarianceReport.updateDiscrepancy",
+      "path": "/api/manifest/VarianceReport/commands/update-discrepancy",
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "type",
+          "name": "rootCause",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "resolutionNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "VarianceReport",
+        "command": "updateDiscrepancy"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Vehicle.create",
+      "path": "/api/manifest/Vehicle/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "make",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "model",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "year",
           "type": "string",
           "location": "body",
           "required": true
@@ -32072,25 +34428,31 @@
           "required": true
         },
         {
-          "name": "make",
+          "name": "capacityWeight",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "model",
+          "name": "capacityVolume",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "year",
-          "type": "number",
+          "name": "fuelType",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "capacity",
+          "name": "mileage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "status",
           "type": "string",
           "location": "body",
           "required": true
@@ -32111,6 +34473,26 @@
       "tenant": true
     },
     {
+      "id": "Vehicle.decommission",
+      "path": "/api/manifest/Vehicle/commands/decommission",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Vehicle",
+        "command": "decommission"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Vehicle.remove",
       "path": "/api/manifest/Vehicle/commands/remove",
       "method": "POST",
@@ -32124,38 +34506,12 @@
       "tenant": true
     },
     {
-      "id": "Vehicle.retire",
-      "path": "/api/manifest/Vehicle/commands/retire",
-      "method": "POST",
-      "params": [
-        {
-          "name": "reason",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "Vehicle",
-        "command": "retire"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
       "id": "Vehicle.returnFromMaintenance",
       "path": "/api/manifest/Vehicle/commands/return-from-maintenance",
       "method": "POST",
       "params": [
         {
-          "name": "maintenanceNotes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "nextMaintenanceDate",
+          "name": "notes",
           "type": "string",
           "location": "body",
           "required": true
@@ -32179,12 +34535,6 @@
           "type": "string",
           "location": "body",
           "required": true
-        },
-        {
-          "name": "nextMaintenanceDate",
-          "type": "string",
-          "location": "body",
-          "required": true
         }
       ],
       "source": {
@@ -32201,13 +34551,19 @@
       "method": "POST",
       "params": [
         {
-          "name": "name",
+          "name": "make",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "type",
+          "name": "model",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "year",
           "type": "string",
           "location": "body",
           "required": true
@@ -32225,25 +34581,25 @@
           "required": true
         },
         {
-          "name": "make",
+          "name": "capacityWeight",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "model",
+          "name": "capacityVolume",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "year",
-          "type": "number",
+          "name": "fuelType",
+          "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "capacity",
+          "name": "mileage",
           "type": "string",
           "location": "body",
           "required": true

@@ -545,6 +545,7 @@ entity KitchenTaskClaim {
   constraint requireEmployeeId: self.employeeId != "" "Employee ID is required"
 
   relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
   default policy KitchenTaskClaimDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command claim(kitchenTaskId: string, employeeId: string, claimedAt: datetime) {
@@ -593,6 +594,7 @@ entity KitchenTaskProgress {
   constraint validProgressPct: self.progressPct >= 0 and self.progressPct <= 100 "Progress percentage must be between 0 and 100"
 
   relationship belongsTo kitchenTask: KitchenTask fields [tenantId, kitchenTaskId] references [tenantId, id]
+  relationship belongsTo employee: User fields [tenantId, employeeId] references [tenantId, id]
 
   default policy KitchenTaskProgressDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen extended entities"
   command create(kitchenTaskId: string, employeeId: string, status: string, progressPct: number, note: string, recordedAt: datetime) {
@@ -631,6 +633,7 @@ entity TaskBundle {
   computed isActive: boolean = self.status == "active"
 
   relationship hasMany items: TaskBundleItem
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   transition status from "active" to ["archived"]
 

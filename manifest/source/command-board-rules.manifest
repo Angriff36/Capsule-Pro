@@ -127,6 +127,7 @@ entity CommandBoardCard {
   constraint positiveHeight: self.height > 0 "Card height must be positive"
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+  relationship belongsTo group: CommandBoardGroup fields [tenantId, groupId] references [tenantId, id]
 
   default policy CommandBoardCardDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, title: string, content: string, cardType: string, status: string, positionX: number, positionY: number, width: number, height: number, color: string, metadata: string, groupId: string, entityId: string, entityType: string) {
@@ -301,6 +302,8 @@ entity CommandBoardConnection {
   constraint validRelationshipType: self.relationshipType in ["generic", "dependency", "blocks", "related", "sequence"] "Invalid connection type"
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+  relationship belongsTo fromCard: CommandBoardCard fields [tenantId, fromCardId] references [tenantId, id]
+  relationship belongsTo toCard: CommandBoardCard fields [tenantId, toCardId] references [tenantId, id]
 
   default policy CommandBoardConnectionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, fromCardId: string, toCardId: string, relationshipType: string, label: string) {
@@ -351,6 +354,7 @@ entity CommandBoardLayout {
   constraint positiveGridSize: self.gridSize > 0 "Grid size must be positive"
 
   relationship belongsTo board: CommandBoard fields [tenantId, boardId] references [tenantId, id]
+  relationship belongsTo user: User fields [tenantId, userId] references [tenantId, id]
 
   default policy CommandBoardLayoutDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Command board"
   command create(boardId: string, userId: string, name: string, viewport: string, visibleCards: string, gridSize: number, showGrid: boolean, snapToGrid: boolean) {

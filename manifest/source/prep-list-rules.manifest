@@ -26,6 +26,7 @@ entity PrepList {
 
   relationship hasMany items: PrepListItem
   relationship hasMany tasks: PrepTask
+  relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
   constraint validName: self.name != null and self.name != "" "Prep list name is required"
   constraint validEventId: self.eventId != null and self.eventId != "" "Event ID is required"

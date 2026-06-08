@@ -19,6 +19,8 @@ entity WorkforceOptimization {
   constraint validOptimizationType: self.optimizationType in ["schedule", "assignment", "performance"] "Invalid optimization type"
   constraint validStatus: self.status in ["pending", "in_progress", "completed", "failed"] "Invalid status"
 
+  relationship belongsTo location: Facility with locationId
+
   // State transitions
   transition status from "pending" to ["in_progress", "failed"]
   transition status from "in_progress" to ["completed", "failed"]

@@ -6,6 +6,9 @@
 
 entity Station {
   // No relationships: locationId is a loose location reference, not a direct FK to a Manifest entity
+  // (relationship added below for parent-context resolution)
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
   key [tenantId, id]
   property required id: string
   property required tenantId: string

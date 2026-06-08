@@ -21,6 +21,8 @@ entity StorageLocation {
 
   computed isDeactivated: boolean = self.isActive == false
 
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
   constraint requireName: self.name != "" "Storage location name is required"
   constraint requireStorageType: self.storageType != "" "Storage type is required"
   constraint validStorageType: self.storageType in ["cooler", "freezer", "dry_shelf", "ambient", "walk_in", "other"] "Invalid storage type"

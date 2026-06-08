@@ -49,6 +49,7 @@ entity Proposal {
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo lead: Lead fields [tenantId, leadId] references [tenantId, id]
   constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
   constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
   constraint positiveTotal: self.total >= 0 "Total must be non-negative"

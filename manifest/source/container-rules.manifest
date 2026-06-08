@@ -25,6 +25,8 @@ entity Container {
   computed hasAnyCapacity: boolean = self.capacityVolumeMl > 0 or self.capacityWeightG > 0 or self.capacityPortions > 0
   computed isDeactivated: boolean = self.isActive == false
 
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
   constraint requireName: self.name != "" "Container name is required"
   constraint positiveVolume: self.capacityVolumeMl >= 0 "Volume capacity cannot be negative"
   constraint positiveWeight: self.capacityWeightG >= 0 "Weight capacity cannot be negative"

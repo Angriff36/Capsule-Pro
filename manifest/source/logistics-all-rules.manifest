@@ -383,6 +383,8 @@ entity LogisticsDispatch {
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent"] "Invalid priority"
 
   relationship belongsTo route: LogisticsRoute fields [tenantId, routeId] references [tenantId, id]
+  relationship belongsTo driver: Driver fields [tenantId, driverId] references [tenantId, id]
+  relationship belongsTo vehicle: Vehicle fields [tenantId, vehicleId] references [tenantId, id]
 
   transition status from "pending" to ["assigned"]
   transition status from "assigned" to ["in_transit", "pending"]

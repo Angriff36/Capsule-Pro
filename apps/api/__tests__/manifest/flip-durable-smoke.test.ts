@@ -62,6 +62,7 @@ interface FieldMeta {
   hasDefault: boolean;
   isUpdatedAt: boolean;
   isId: boolean;
+  isEnum: boolean;
 }
 interface ModelMeta {
   accessor: string;
@@ -138,7 +139,8 @@ function makeRunner(entity: string) {
       {
         createRuntime: async (ctx) => {
           engine = await createManifestRuntime({
-            user: { ...ctx.user, entityName: entity },
+            user: ctx.user,
+            entityName: entity,
           });
           return engine;
         },

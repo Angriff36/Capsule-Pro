@@ -71,6 +71,7 @@ entity CateringOrder {
   // event must not re-ask for the venue the event already owns. The broken-out
   // venueCity/State/Zip/Contact fields remain caller-supplied because Event does not own them.
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo customer: Client fields [tenantId, customerId] references [tenantId, id]
 
   constraint warnUnstaffed:warn self.staffRequired > 0 and self.staffAssigned < self.staffRequired {
     messageTemplate: "Order {orderNumber} needs {needed} more staff ({assigned}/{required})"

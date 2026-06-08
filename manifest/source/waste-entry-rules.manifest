@@ -31,6 +31,7 @@ entity WasteEntry {
 
   relationship belongsTo item: InventoryItem fields [tenantId, inventoryItemId] references [tenantId, id]
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   constraint requireInventoryItem: self.inventoryItemId != "" "Inventory item is required"
   constraint requireReason: self.reasonId > 0 "Waste reason is required"

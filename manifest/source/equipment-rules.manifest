@@ -30,6 +30,8 @@ entity Equipment {
   computed isNearEndOfLife: boolean = self.usagePercentage >= 80
   computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
 
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
   constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
   constraint validCondition: self.condition in ["excellent", "good", "fair", "poor"] "Invalid equipment condition"

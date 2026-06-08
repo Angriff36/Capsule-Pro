@@ -42,6 +42,7 @@ entity PurchaseRequisition {
 
   hasMany items: PurchaseRequisitionItem
   belongsTo convertedToPo: PurchaseOrder with convertedToPoId
+  belongsTo location: Facility with locationId
 
   computed isDraft: boolean = self.status == "draft"
   computed isPending: boolean = self.status == "pending_manager"
@@ -215,6 +216,8 @@ entity PurchaseRequisitionItem {
   key [tenantId, id]
 
   belongsTo requisition: PurchaseRequisition fields [tenantId, requisitionId] references [tenantId, id] onDelete cascade
+  belongsTo item: InventoryItem with itemId
+  belongsTo suggestedVendor: Vendor with suggestedVendorId
 
   computed totalCost: number = self.quantityRequested * self.estimatedUnitCost
   computed hasSuggestedVendor: boolean = self.suggestedVendorId != ""

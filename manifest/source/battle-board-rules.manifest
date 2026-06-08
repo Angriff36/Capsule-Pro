@@ -42,6 +42,8 @@ entity BattleBoard {
   computed hasDocument: boolean = self.documentUrl != "" and self.documentUrl != null
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
+  relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
 
   constraint validBoardName: self.boardName != null and self.boardName != "" "Board name is required"
   constraint validStatus: self.status in ["draft", "open", "voting", "finalized"] "Status must be valid"

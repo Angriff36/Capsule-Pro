@@ -39,6 +39,9 @@ entity Event {
   computed isLargeEvent: boolean = self.guestCount > 200
 
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]
+  relationship belongsTo location: Facility fields [tenantId, locationId] references [tenantId, id]
+  relationship belongsTo venue: Venue fields [tenantId, venueId] references [tenantId, id]
+  relationship belongsTo venueEntity: Venue fields [tenantId, venueEntityId] references [tenantId, id]
   relationship hasMany invoices: Invoice
   relationship hasMany payments: Payment
   relationship hasMany budgets: EventBudget

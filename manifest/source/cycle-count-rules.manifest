@@ -31,6 +31,10 @@ entity CycleCountSession {
   computed countProgress: number = percent(self.countedItems, self.totalItems)
   computed hasVariance: boolean = self.totalVariance != 0
 
+  belongsTo location: Facility with locationId
+  belongsTo createdBy: User with createdById
+  belongsTo approvedBy: User with approvedById
+
   relationship hasMany records: CycleCountRecord
   relationship hasMany varianceReports: VarianceReport
 
@@ -187,6 +191,9 @@ entity CycleCountRecord {
 
   relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+  relationship belongsTo storageLocation: StorageLocation fields [tenantId, storageLocationId] references [tenantId, id]
+  relationship belongsTo countedBy: User fields [tenantId, countedById] references [tenantId, id]
+  relationship belongsTo verifiedBy: User fields [tenantId, verifiedById] references [tenantId, id]
 
   default policy CycleCountRecordDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
   command create(sessionId: string, itemId: string, itemNumber: string, itemName: string, storageLocationId: string, expectedQuantity: number, countedQuantity: number, userId: string, barcode: string, notes: string) {
@@ -298,6 +305,7 @@ entity VarianceReport {
 
   relationship belongsTo session: CycleCountSession fields [tenantId, sessionId] references [tenantId, id]
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
+  relationship belongsTo resolvedBy: User fields [tenantId, resolvedById] references [tenantId, id]
 
   constraint validStatus: self.status in ["pending", "reviewed", "approved", "adjusted", "rejected"] "Invalid variance report status"
 
