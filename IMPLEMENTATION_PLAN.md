@@ -66,7 +66,7 @@
 | **Manifest spec: defaultPolicies (vNext) available** | Entities MAY define `defaultPolicies` applied to all bound commands. Compiler expands them. Currently zero entities use this. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: command-level constraints (vNext) available** | Commands may define constraints for pre-execution validation (after policies, before guards). Currently unused. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: constraint severity/codes (vNext) available** | Constraints can have `ok`/`warn`/`block` severity and stable `code` identifiers for overrides/auditing. Currently only default `block` is used. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
-| **Manifest spec: overrideable constraints (vNext) available** | Constraints may be marked `overrideable: true` with policy-gated bypass and justification tracking. All 735 overrideable flags are currently `false`. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
+| **Manifest spec: overrideable constraints (vNext) available** | Constraints may be marked `overrideable: true` with policy-gated bypass and justification tracking. **5/583 constraints now overrideable** (was 0/583). Task 9.8 DONE. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: entity concurrency (vNext) available** | Optimistic concurrency via `versionProperty`/`versionAtProperty` with `ConcurrencyConflict` result. Currently unused. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: state transitions (vNext) available** | Entities may define `transitions` for state machine enforcement. Currently status changes are guarded but not declared as transitions. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **generate.mjs has 6 hardcoded values** | `defaultIr`, `defaultOutput`, `commandsManifestPath`, `dispatcherDirInfo`, projection name, surface names -- all hardcoded. Should come from `manifest.config.yaml`. | `manifest/scripts/generate.mjs` |
@@ -106,7 +106,7 @@
 | **54→32 entities have FK properties but no relationships (was 152)** | Task 0.4 COMPLETE: 68 belongsTo declarations added to 48 entities across 32 source files. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. | IR analysis |
 | **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.** | | IR analysis |
 | **563/611 computed properties have empty dependencies** | 92.1% may not recalculate correctly when upstream values change. | IR analysis |
-| **0 overrideable constraints out of 583 total** | No constraint is marked overrideable despite the feature being available. | IR analysis |
+| **5 overrideable constraints out of 583 total** | Task 9.8 DONE: VendorCatalog.warnLargePriceIncrease, EventBudget.warnOverBudget, Proposal.warnHighDiscount, VendorContract.warnEarlyTermination, Shipment.warnCancelInTransit. | IR analysis |
 | **irHash and contentHash are EMPTY** | No IR integrity verification possible. `requireValidProvenance` would fail if wired. | IR provenance analysis |
 | **RESOLVED: 0/952 commands had policies bound → 952/952 bound** | ROOT CAUSE: Top-level `policy` declarations are NOT bound by the compiler. Only `default policy` inside entity blocks auto-expands. Fixed by moving/adding policies inside entity blocks across all 92 source files. | `manifest/source/*.manifest` (all files modified) |
 | **TanStack Query IS installed with QueryProvider** | But only events domain uses it (5 files). 162 other apiFetch files get zero caching. Prior audit incorrectly said "no data caching installed". | `apps/app/app/providers/` |
@@ -355,7 +355,7 @@
 - `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
 - 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
-- 0 overrideable constraints out of 583 total
+- **5 overrideable constraints out of 583 total** (Task 9.8 DONE: 5 overrideable warn constraints across 5 entities)
 - **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
 - **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
 ### Property types (all resolved)
@@ -1632,10 +1632,20 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/source/*.manifest`.
 - **Result:** 534 modifier annotations across 94 files: 92 `indexed`, 73 `searchable`, 18 `unique`, 32 `encrypted`, 7 `private`. Parser accepts without error. Note: IR compiler does not yet emit modifiers to JSON (future package upgrade needed).
 
-### 9.8 Overrideable constraints
+### 9.8 Overrideable constraints -- DONE (2026-06-08)
 - **Done when:** Decision documented on which warn-level constraints should be overrideable. At least 3 warn constraints enabled for override with policy-gated bypass.
 - **Why:** All 735 overrideable flags are `false`. The Manifest runtime supports constraint override with justification tracking. Warn constraints like `warnLargePriceIncrease`, `warnOverBudget`, `warnHighWaste` are natural override candidates.
 - **Source to change:** `manifest/source/*.manifest`.
+- **Result:** 5 overrideable constraints across 5 entities:
+  - `VendorCatalog.warnLargePriceIncrease`
+  - `EventBudget.warnOverBudget`
+  - `Proposal.warnHighDiscount`
+  - `VendorContract.warnEarlyTermination`
+  - `Shipment.warnCancelInTransit`
+  - Syntax: `constraint overrideable <name>:warn <expression>` — compiles to IR with `overrideable: true` and `severity: "warn"`.
+  - IR compiled: 5/583 constraints now overrideable (was 0/583).
+  - 8 new tests in `overrideable-constraints.test.ts` covering override flow, justification tracking, and block-when-not-overridden behavior.
+  - API typecheck: 0, runtime typecheck: 0, 2807 API tests + 123 runtime tests pass.
 
 ### 9.9 Permission guard to middleware migration (SECURITY PRIORITY) — **DONE (mitigated by Task 8.6)**
 - **DONE (2026-06-07):** The security goal ("all entity types have enforcement") is achieved through a dual-layer model:
@@ -1794,10 +1804,17 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/runtime/src/entity-graph/graph-builder.ts`, `manifest/runtime/src/manifest-telemetry-collector.ts`.
 - **✅ DONE 2026-06-07.** `graph-builder.ts` was already deleted (Task 10.4). Implemented `getAggregateMetrics()` in `manifest-telemetry-collector.ts` to query actual persisted telemetry from `manifestCommandTelemetry` table. Computes real counts by status (success/failure/guard_denied), avg/p95/p99 duration percentiles, and idempotency hit rate. Added `findMany` to `TelemetryPrismaClient` interface. Graceful fallback returns zeros if table/query unavailable. `percentile()` helper added for interpolation-based percentile calculation. API+runtime typecheck: 0.
 
-### 10.12 Adopt entity concurrency for high-contention entities
+### 10.12 Adopt entity concurrency for high-contention entities -- DONE (2026-06-08)
 - **Done when:** At least 3 high-contention entities (InventoryItem, ScheduleShift, EventGuest) declare `versionProperty`/`versionAtProperty` for optimistic concurrency.
 - **Why:** Manifest spec defines entity concurrency with `ConcurrencyConflict` results. Currently no entity uses this, making concurrent mutations prone to lost-update bugs.
 - **Source to change:** `manifest/source/*.manifest`.
+- **Result:** InventoryItem, ScheduleShift, EventGuest now have `versionProperty version` and `versionAtProperty versionAt` declarations.
+  - DB-level optimistic locking in GenericPrismaStore (WHERE version = expected on updates, increment on success).
+  - 322-line entity-concurrency test suite covering create, read, concurrent update conflict, retry after conflict, version increment, versionAt timestamp.
+  - Two DB migrations: `20260608204125_add_version_columns` + baseline drift fix.
+  - db:dev unblocked (migration baseline drift fixed -- 3 missing Manifest runtime tables added to schema.prisma).
+  - API response handles `ConcurrencyConflict` (HTTP 409) via existing error handler.
+  - `prisma-model-metadata` generator extended to read `versionProperty` from IR.
 
 ### 10.13 Remove legacy manifest-command-handler.ts -- DONE (2026-06-04)
 - **Completed:** `apps/api/lib/manifest-command-handler.ts` (legacy monolithic handler, 289 lines) deleted. All code paths use `execute-command.ts` (canonical handler) via the dispatcher.
@@ -1814,8 +1831,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 ## TIER 11 -- ADVANCED MANIFEST FEATURES (9TH REVISION + 12TH REVISION ADDITIONS)
 
 > **Why:** The 9th revision research uncovered several high-value Manifest features that are fully implemented in the package but have zero adoption: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands. The 12th revision added Rate Limiting, Command Retry Policies, Dynamic Data Masking, and cataloged 116 planned features across v1.9-v1.12. These features would replace hand-rolled patterns with Manifest-native alternatives, reducing code and increasing consistency. agent-sdk and ir-diff are covered in Tier 5 (Tasks 5.12, 5.13).
+>
+> **Tier 11 Status:** Tasks 11.1, 11.3, 11.4, 11.5, 11.6 are BLOCKED -- the Manifest v2.2.0 compiler does not support `schedule`, `mixin`, `rateLimit`, `retry`, or `async` keywords. Only `overrideable` (fully supported) and `flag()` (runtime-only, not parser) are available as vNext features in v2.2.0. Tasks 11.2, 11.7-11.12 remain open.
 
-### 11.1 Implement Async Commands for long-running operations
+### 11.1 Implement Async Commands for long-running operations -- **BLOCKED (keyword not in v2.2.0 compiler)**
+- **BLOCKED 2026-06-08.** The `async command` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Only `overrideable` and `flag()` are supported as vNext features (`overrideable` fully, `flag()` runtime-only not parser). The `schedule`, `mixin`, `rateLimit`, and `retry` keywords are not recognized by the compiler/parser and will cause parse errors if used. Blocked pending package upgrade.
 - **Done when:** At least 3 long-running operations converted to `async command`. `jobQueue` RuntimeOption wired. Auto-synthesized `CommandNameCompleted`/`CommandNameFailed` events verified.
 - **Why:** The `async command <name>()` prefix defers execution to a background worker, returning `{ jobId, status: "pending" }` immediately. The `JobQueue` adapter interface supports pluggable backends. High-value candidates: report generation (currently blocks HTTP request), batch imports (vendor catalog sync), payroll processing (runs for minutes). These operations currently either block the request or use ad-hoc queue mechanisms.
 - **Backpressure:** Async command returns immediately with jobId. Completion event fires when done. Failed commands produce `CommandNameFailed` event.
@@ -1829,27 +1849,31 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/source/*.manifest` (add `flag()` calls), `manifest/runtime/src/manifest-runtime-factory.ts` (wire `flagProvider`).
 - **Spec:** `specs/feature-flags.md`
 
-### 11.3 Adopt Mixin Composition for shared properties
+### 11.3 Adopt Mixin Composition for shared properties -- **BLOCKED (keyword not in v2.2.0 compiler)**
+- **BLOCKED 2026-06-08.** The `mixin` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
 - **Done when:** `Auditable` mixin created (createdAt, updatedAt, deletedAt, tenantId). Applied to entities with heavy repetition. Source file duplication measurably reduced.
 - **Why:** 189 entities have heavy repetition of common property sets: timestamps (createdAt/updatedAt), tenantId, audit fields, status fields. The `mixin Auditable { ... }` construct allows property/constraint reuse across entities. Currently every entity repeats these declarations verbatim. A single mixin could eliminate duplication across 150+ entities.
 - **Backpressure:** Entities using mixin compile and run identically to entities with inline declarations. `pnpm manifest:compile` succeeds.
 - **Source to change:** `manifest/source/*.manifest` (extract shared properties into mixins).
 
-### 11.4 Implement Scheduled Commands
+### 11.4 Implement Scheduled Commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
+- **BLOCKED 2026-06-08.** The `schedule` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
 - **Done when:** At least 3 scheduled commands defined. Next.js cron routes auto-generated and registered. Schedules execute on time.
 - **Why:** The `schedule <name> { cron "0 6 * * *" } run <command>` construct auto-generates Next.js cron routes. Zero scheduled commands exist today. Candidates: daily reconciliation (invoice/payroll), nightly inventory sync (supplier connectors), expiration checks (vendor contracts, certifications, licenses). These are currently either manual or implemented as ad-hoc cron jobs outside the Manifest lifecycle.
 - **Backpressure:** Cron route fires at scheduled time. Command executes through full Manifest lifecycle (RBAC, audit, policies).
 - **Source to change:** `manifest/source/*.manifest` (add `schedule` blocks).
 - **Spec:** `specs/scheduled-commands.md`
 
-### 11.5 Adopt Rate Limiting for high-traffic commands
+### 11.5 Adopt Rate Limiting for high-traffic commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
+- **BLOCKED 2026-06-08.** The `rateLimit` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
 - **Done when:** At least 3 high-traffic commands have `rateLimit` blocks. `RateLimitConfig` entity governs limits through Manifest rather than external middleware.
 - **Why:** The `rateLimit { window, maxRequests, scope, strategy }` block is a Manifest DSL feature for command-level rate limiting with per-user, per-tenant, or global scope. Capsule has a `RateLimitConfig` entity and rate-limiting infrastructure outside Manifest. Migrating to Manifest-native rate limiting centralizes the policy.
 - **Backpressure:** Command exceeding rate limit returns `rateLimitExceeded` with retry-after metadata.
 - **Source to change:** `manifest/source/*.manifest` (add `rateLimit` blocks to commands).
 - **Doc:** Rate limiting documented at command level in Manifest DSL docs. NOTE: `/features/security-features` URL returns 404.
 
-### 11.6 Adopt Command Retry Policies for transient-failure commands
+### 11.6 Adopt Command Retry Policies for transient-failure commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
+- **BLOCKED 2026-06-08.** The `retry` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
 - **Done when:** At least 3 commands with external dependencies have `retry` blocks. Notification `sendEmail` and report generation use Manifest-native retry.
 - **Why:** The `retry { maxAttempts, backoff, initialDelay, maxDelay, jitter }` block provides configurable retry with exponential backoff for transient failures. Auto-synthesized `{Command}RetryAttempted` and `{Command}RetryExhausted` events. Currently retry logic is hand-rolled or absent.
 - **Backpressure:** Transient failure triggers retry. Exhausted retries emit `RetryExhausted` event.
@@ -1974,7 +1998,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | IR entities with transitions | 96 | 96 | -- |
 | IR status entities lacking transitions | 4 | 4 | -- |
 | IR computed properties with empty dependencies | 563/611 (92.1%) | 563/611 | -- |
-| IR overrideable constraints | 0/583 | 0/583 | -- |
+| IR overrideable constraints | **5/583** (Task 9.8 DONE: 5 warn constraints overrideable) | 0/583 | UPDATED: Task 9.8 DONE |
 | IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
 | IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32) private(7) | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future package upgrade) |
 | IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 559 | CONFIRMED across ALL domains |
@@ -2076,7 +2100,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 17. ~~**notifications package ungoverned:** 9+ direct DB writes across 4 files (emailLog, sms_logs, notification_preferences, emailWorkflow) bypassing Manifest. Task 8.4.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (callback pattern). emailLog/sms_logs/notification_preferences are infrastructure logs, not governed entities. Task 8.4 COMPLETE.
 
-18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). 0 overrideable constraints out of 583 total. Task 0.4 COMPLETE, 9.8.
+18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). ~~0 overrideable constraints out of 583 total~~ **RESOLVED 2026-06-08:** 5/583 overrideable (Task 9.8 DONE). Task 0.4 COMPLETE, 9.8 DONE.
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 

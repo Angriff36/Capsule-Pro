@@ -140,7 +140,7 @@ entity Shipment {
     guard self.status != "delivered" "Cannot cancel a delivered shipment"
     guard self.status != "cancelled" "Shipment is already cancelled"
 
-    constraint warnCancelInTransit:warn self.status == "in_transit" {
+    constraint overrideable warnCancelInTransit:warn self.status == "in_transit" {
       messageTemplate: "Cancelling in-transit shipment '{shipmentNumber}' - carrier may need notification"
       details: {
         shipmentNumber: self.shipmentNumber

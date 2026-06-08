@@ -259,9 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 95% context — saved before compacting]
-Files (2):
-  apps/api/lib/manifest-response.ts (edit)
-  apps/api/lib/manifest-runtime.ts (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: packages/database/prisma/schema.prisma (edit), packages/database/prisma/migrations/20260608000147_manifest_runtime_tables/migration.sql (create)
 
 # === END COGNILAYER ===

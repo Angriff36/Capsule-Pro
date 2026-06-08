@@ -68,7 +68,7 @@ entity Proposal {
     }
   }
 
-  constraint warnHighDiscount:warn self.subtotal > 0 and self.discountAmount > self.subtotal * 0.2 {
+  constraint overrideable warnHighDiscount:warn self.subtotal > 0 and self.discountAmount > self.subtotal * 0.2 {
     messageTemplate: "Proposal '{proposalNumber}' has a discount exceeding 20% of subtotal"
     details: {
       proposalNumber: self.proposalNumber

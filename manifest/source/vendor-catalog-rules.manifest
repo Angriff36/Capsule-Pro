@@ -102,7 +102,7 @@ entity VendorCatalog {
     guard self.isActive "Cannot update price on an inactive catalog entry"
     guard newBaseUnitCost >= 0 "Unit cost must be non-negative"
 
-    constraint warnLargePriceIncrease:warn self.baseUnitCost > 0 and (newBaseUnitCost - self.baseUnitCost) / self.baseUnitCost > 0.1 {
+    constraint overrideable warnLargePriceIncrease:warn self.baseUnitCost > 0 and (newBaseUnitCost - self.baseUnitCost) / self.baseUnitCost > 0.1 {
       messageTemplate: "Price increase of more than 10% for '{itemName}' (from {old} to {new})"
       details: {
         itemName: self.itemName

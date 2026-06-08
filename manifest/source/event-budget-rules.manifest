@@ -31,7 +31,7 @@ entity EventBudget {
   transition status from "draft" to ["approved"]
   transition status from "approved" to ["finalized"]
 
-  constraint warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {
+  constraint overrideable warnOverBudget:warn self.totalActualAmount > self.totalBudgetAmount {
     messageTemplate: "Budget is over by {varianceAmount} ({variancePct}%)"
     details: {
       totalBudgetAmount: self.totalBudgetAmount

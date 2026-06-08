@@ -167,7 +167,7 @@ entity VendorContract {
     guard self.status == "active" "Can only terminate active contracts"
     guard reason != null and reason != "" "Termination reason is required"
 
-    constraint warnEarlyTermination:warn now() < self.startDate {
+    constraint overrideable warnEarlyTermination:warn now() < self.startDate {
       messageTemplate: "Terminating contract '{contractNumber}' before start date"
       details: {
         contractNumber: self.contractNumber
