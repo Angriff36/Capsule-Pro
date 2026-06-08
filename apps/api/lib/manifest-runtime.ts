@@ -46,6 +46,12 @@ interface GeneratedRuntimeContext {
     tenantId: string;
     role?: string;
   };
+  /** Acting user identifier — forwarded to the engine's RuntimeContext. */
+  actorId?: string;
+  /** Caller-supplied request id; surfaces in diagnostics and emitted events. */
+  requestId?: string;
+  /** Origin surface: 'route' | 'job' | 'cli' | 'test' | 'ui' | 'workflow'. */
+  source?: string;
   entityName?: string;
   /**
    * Optional Prisma transaction client for atomic multi-entity writes.

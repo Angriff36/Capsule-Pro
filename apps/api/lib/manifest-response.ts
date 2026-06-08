@@ -6,7 +6,61 @@
  * that the generated handlers call.
  */
 
+import type { CommandResult } from "@angriff36/manifest";
 import { NextResponse } from "next/server";
+
+/**
+ * Normalize a CommandResult into a structured shape for generated dispatcher routes.
+ *
+ * The Manifest projection generator emits calls to this function in universal
+ * dispatcher snapshots. It extracts the data, events, and diagnostic information
+ * from a raw CommandResult into a flat object the route handler can branch on.
+ */
+export function normalizeCommandResult(
+  _entity: string,
+  _command: string,
+  result: CommandResult,
+): {
+  success: boolean;
+  data?: unknown;
+  error: string;
+  events?: CommandResult["emittedEvents"];
+  diagnostics?: Array<{ kind: string; message: string }>;
+} {
+  if (result.success) {
+    return {
+      success: true,
+      data: result.result ?? result.instance,
+      error: "",
+      events: result.emittedEvents,
+      diagnostics: result.constraintOutcomes
+        ?.filter((o) => !o.passed)
+        .map((o) => ({ kind: "constraint_block" as const, message: o.formatted ?? o.message ?? "Constraint failed" })),
+    };
+  }
+
+  // Map failure mode to a diagnostic kind
+  const diagnostics: Array<{ kind: string; message: string }> = [];
+  if (result.policyDenial) {
+    diagnostics.push({ kind: "policy_denial", message: result.policyDenial.formatted ?? "Policy denied" });
+  }
+  if (result.guardFailure) {
+    diagnostics.push({ kind: "guard_failure", message: result.guardFailure.formatted ?? "Guard failed" });
+  }
+  if (result.concurrencyConflict) {
+    diagnostics.push({ kind: "concurrency_conflict", message: result.concurrencyConflict.conflictCode ?? "Conflict" });
+  }
+  for (const outcome of result.constraintOutcomes?.filter((o) => !o.passed) ?? []) {
+    diagnostics.push({ kind: "constraint_block", message: outcome.formatted ?? outcome.message ?? "Constraint failed" });
+  }
+
+  return {
+    success: false,
+    error: result.error ?? "Command failed",
+    events: result.emittedEvents,
+    diagnostics,
+  };
+}
 
 export function manifestSuccessResponse(data: unknown, status = 200): Response {
   return NextResponse.json(
