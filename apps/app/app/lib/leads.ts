@@ -1,5 +1,5 @@
 /**
- * @module use-leads
+ * @module leads
  * @intent Client-side helpers and types for the Marketing Leads page
  * @responsibility Provide typed fetch wrappers, command helpers, formatting
  *   utilities, and status helpers consumed by the leads-page-client component

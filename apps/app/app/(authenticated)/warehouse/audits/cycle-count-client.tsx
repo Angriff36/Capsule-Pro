@@ -56,8 +56,8 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { formatCurrency } from "@/app/lib/format";
-import type { StorageLocation } from "@/app/lib/use-stock-levels";
-import { listLocations } from "@/app/lib/use-stock-levels";
+import type { StorageLocation } from "@/app/lib/stock-levels";
+import { listLocations } from "@/app/lib/stock-levels";
 
 type CycleCountSessionType =
   | "ad_hoc"

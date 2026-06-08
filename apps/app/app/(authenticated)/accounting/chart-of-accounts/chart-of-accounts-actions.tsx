@@ -3,7 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import type { ChartOfAccountWithParent } from "@/app/lib/use-chart-of-accounts";
+import type { ChartOfAccountWithParent } from "@/app/lib/chart-of-accounts";
 import { AccountModal } from "./components/account-modal";
 
 export function ChartOfAccountsActions() {

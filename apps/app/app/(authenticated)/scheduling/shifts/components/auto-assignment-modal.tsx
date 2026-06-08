@@ -30,7 +30,7 @@ import {
   type AutoAssignRequest,
   autoAssignShift,
   getAssignmentSuggestions,
-} from "../../../../lib/use-assignment";
+} from "../../../../lib/assignment";
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
 interface AutoAssignmentModalProps {

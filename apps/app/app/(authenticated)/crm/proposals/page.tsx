@@ -32,7 +32,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { serializeDecimals } from "@/app/lib/decimal";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { Proposal } from "@/app/lib/use-proposals";
+import type { Proposal } from "@/app/lib/proposals";
 import { ProposalsPageClient } from "./proposals-page-client";
 
 export const metadata: Metadata = {

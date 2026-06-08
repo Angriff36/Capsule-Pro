@@ -53,7 +53,7 @@ import {
   deactivateChartOfAccount,
   getAccountTypeLabel,
   listChartOfAccounts,
-} from "@/app/lib/use-chart-of-accounts";
+} from "@/app/lib/chart-of-accounts";
 import { AccountModal } from "./components/account-modal";
 import { AccountTypeBadge } from "./components/account-type-badge";
 

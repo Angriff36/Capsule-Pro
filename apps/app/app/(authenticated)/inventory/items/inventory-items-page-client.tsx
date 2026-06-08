@@ -65,7 +65,7 @@ import {
   listSuppliers,
   type StockStatus,
   type Supplier,
-} from "../../../lib/use-inventory";
+} from "../../../lib/inventory";
 import { CreateInventoryItemModal } from "./components/create-inventory-item-modal";
 
 export const InventoryItemsPageClient = () => {

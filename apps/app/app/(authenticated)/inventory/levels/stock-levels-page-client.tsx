@@ -49,7 +49,7 @@ import {
 import { usePostHog } from "posthog-js/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/use-inventory";
+import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/inventory";
 import {
   type AdjustmentReason,
   type CreateAdjustmentRequest,
@@ -70,7 +70,7 @@ import {
   type StockLevelWithStatus,
   type StockReorderStatus,
   type StorageLocation,
-} from "../../../lib/use-stock-levels";
+} from "../../../lib/stock-levels";
 
 // Filter options
 const REORDER_STATUSES: Array<{

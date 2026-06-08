@@ -59,7 +59,7 @@ import { useState } from "react";
 import {
   getBudgetStatusLabel,
   getVarianceColor,
-} from "../../../lib/use-budgets";
+} from "../../../lib/budgets";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
 import { attachEventImport } from "../actions";
 import type { GeneratedEventSummary } from "../actions/event-summary";

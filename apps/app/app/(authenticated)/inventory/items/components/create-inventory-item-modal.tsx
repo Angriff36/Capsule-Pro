@@ -41,7 +41,7 @@ import {
   listSuppliers,
   type UpdateInventoryItemRequest,
   updateInventoryItem,
-} from "../../../../lib/use-inventory";
+} from "../../../../lib/inventory";
 
 interface CreateInventoryItemModalProps {
   open: boolean;

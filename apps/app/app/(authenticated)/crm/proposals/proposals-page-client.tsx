@@ -55,7 +55,7 @@ import {
   rejectProposal,
   sendProposal,
   withdrawProposal,
-} from "@/app/lib/use-proposals";
+} from "@/app/lib/proposals";
 
 // ---------------------------------------------------------------------------
 // Types

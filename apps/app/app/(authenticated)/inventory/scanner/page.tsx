@@ -34,7 +34,7 @@ import {
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import type { InventoryItemWithStatus } from "@/app/lib/use-inventory";
+import type { InventoryItemWithStatus } from "@/app/lib/inventory";
 import { BarcodeScanner } from "../components/barcode-scanner";
 
 type ScanMode = "lookup" | "stock_count";

@@ -1,5 +1,5 @@
 /**
- * @module use-proposals
+ * @module proposals
  * @intent Client-side helpers and types for the Proposals CRM page
  * @responsibility Provide typed fetch wrappers, formatting utilities, and status
  *   helpers consumed by the proposals-page-client component

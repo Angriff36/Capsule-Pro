@@ -39,7 +39,7 @@ import {
   getAccountTypeLabel,
   type UpdateChartOfAccountRequest,
   updateChartOfAccount,
-} from "@/app/lib/use-chart-of-accounts";
+} from "@/app/lib/chart-of-accounts";
 
 interface AccountModalProps {
   open: boolean;

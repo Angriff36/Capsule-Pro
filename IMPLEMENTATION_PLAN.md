@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 28th revision, Tier 9 status update)
+## Validation Baseline (2026-06-07, comprehensive audit -- 29th revision, v0.12.166 target)
 
 ### Claim Verification Matrix
 
@@ -574,6 +574,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 10.8: `as unknown as` double-cast cleanup** | 67% reduction (60→20). Created `toJson()` helper. Fixed allergen string[]→string bug. API+runtime typecheck 0, 2772 tests pass. |
 | 2026-06-07 | **Task 2.3: manifest.config.yaml script wiring** | Shared `read-config.mjs` reads paths from config. generate.mjs + compile.mjs import from it. 6 hardcoded values eliminated. Zero drift, zero typecheck errors. |
 | 2026-06-07 | **Task 10.11: Telemetry collector placeholder fixed** | `getAggregateMetrics()` now queries real persisted telemetry data. graph-builder.ts part already done (deleted Task 10.4). API+runtime typecheck 0. |
+| 2026-06-07 | **Task 10.6: MCP server entity-domain-map ESM consolidation** | Replaced require() CJS hack with proper ESM re-export. 14→8 lines, eslint-disable eliminated. Sole consumer (route-conformance-scan.ts) verified. All typechecks clean. |
+| 2026-06-07 | **Task 6.5: Rename misleading use-*.ts files** | 10 files renamed from use-*.ts to *.ts in apps/app/app/lib/. 23 import paths updated. All typechecks clean (app, api, mcp-server). |
+| 2026-06-07 | **Schema drift audit fix: allowlist path + semantic aliases** | Fixed allowlist path from stale `scripts/manifest/` to `manifest/governance/`. Added MANIFEST_SEMANTIC_ALIASES normalization (datetime→number, money→number, int→number, decimal→number, etc.). Results: 179→51 violations (72% reduction), 76 clean entities (was 0). Remaining 51 are genuine gaps. Top offenders: RecipeVersion (3), LaborBudget (3), CateringOrder (3), ClientContact (2). Json type mismatches (ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions) need adapter-derived entries. |
 
 ---
 
@@ -1138,10 +1141,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** The IR defines per-command input schemas with required/optional fields and types, but the generated client projects all commands as `(input: Record<string, unknown>)`.
 - **Source to change:** `manifest/scripts/generate-capsule-client.mjs`.
 
-### 6.5 Rename misleading `use-*.ts` files
-- **Done when:** Files that export plain async functions (not React hooks) use a naming convention that matches their export shape (e.g. `api-*.ts` or `data-*.ts`).
+### 6.5 Rename misleading `use-*.ts` files — ✅ DONE 2026-06-07
+- **✅ DONE 2026-06-07.** Renamed 10 files in `apps/app/app/lib/` from `use-*.ts` to `*.ts` (they export plain functions, not React hooks). Updated 23 import paths across consumer files. All typechecks clean (app, api, mcp-server).
+- **Done when:** Files that export plain async functions (not React hooks) use a naming convention that matches their export shape (e.g. `api-*.ts` or `data-*.ts`). ✅ ACHIEVED.
 - **Why:** The `use-*.ts` convention implies React hooks per community standards. These files export plain async functions. This is misleading for developers.
-- **Source to change:** `apps/app/app/lib/use-*.ts` files (21 files: 10 plain functions, 11 hooks, 1 TanStack Query).
+- **Source changed:** `apps/app/app/lib/use-*.ts` files (10 plain function files renamed).
 
 ---
 
@@ -1684,9 +1688,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** 3 separate `createOutboxEvent` functions write to the same `outboxEvent` table. Kitchen task claim routes use a duplicate version (`shared-task-helpers.ts`) that lacks transactional safety (uses global singleton, not tx client). Events could be lost on failure.
 - **Source to change:** Replace `apps/api/app/api/kitchen/tasks/shared-task-helpers.ts` local `createOutboxEvent` with import from `@repo/realtime/src/outbox/create.ts`.
 
-### 10.6 MCP server entity-domain-map consolidation
-- **Done when:** `packages/mcp-server/src/lib/entity-domain-map.ts` imports from canonical `entity-domain-map.mjs`. OR replaced entirely by agent-sdk (Task 5.12).
-- **Source to change:** `packages/mcp-server/src/lib/entity-domain-map.ts`.
+### 10.6 MCP server entity-domain-map consolidation — ✅ DONE 2026-06-07
+- **✅ DONE 2026-06-07.** Replaced `require()` CJS hack with proper ESM `export { ENTITY_DOMAIN_MAP } from "..."` re-export. 14 lines → 8 lines, eliminated eslint-disable comment. Sole consumer (`route-conformance-scan.ts`) verified compatible. All typechecks clean (app, api, mcp-server).
+- **Done when:** `packages/mcp-server/src/lib/entity-domain-map.ts` imports from canonical `entity-domain-map.mjs`. OR replaced entirely by agent-sdk (Task 5.12). ✅ ACHIEVED (proper ESM re-export).
+- **Source changed:** `packages/mcp-server/src/lib/entity-domain-map.ts`.
 
 ### 10.7 Fix `as any` usage in API routes — ✅ DONE (2026-06-07)
 - **✅ DONE 2026-06-07.** Before: 34 `as any` across 12 production files. After: **0 `as any`**.
@@ -1952,7 +1957,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | describe.skip test suites | 1 (sales-reporting) | 1 | -- |
 | apiFetch call sites | **1,092** across **167 files** | 1,098/169 | CORRECTED (9th rev) |
 | Frontend data caching | TanStack Query installed, **5 files, 31 uses** | 6/32 | CORRECTED (9th rev) |
-| use-*.ts files | 21 (10 plain functions, 11 hooks, 1 TanStack Query) | 21 | -- |
+| use-*.ts files | **11** (10 renamed to `*.ts` in Task 6.5, 1 TanStack Query) | 21 | RESOLVED (Task 6.5, 2026-06-07) |
 | Hardcoded API URL paths | ~1,092 (81% of total) | ~1,098 | CORRECTED (9th rev) |
 | Typed path builders | ~50 | ~50 | -- |
 | Files using typed routes | **7** (routes.ts has 218 lines of helpers) | 6 | CORRECTED (9th rev) |
@@ -2096,3 +2101,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Twenty-sixth revision:** Tier 5 Zod projection evaluation COMPLETE. `pnpm manifest:generate-zod` produces 202 entity schemas at `manifest/generated/schemas/*.schema.ts`. Constraint-derived refinements (.min, .max, .int) working. Upstream packaging bug (missing `.js` extension on ESM imports) patched as local workaround. Projection table updated: `projections/zod` row changed from NO to YES. Section 5.1 marked COMPLETE. Task 0.4 batch 1 status confirmed: 145 entities with relationships (219 declarations), 57 remaining without. |
 | 2026-06-07 | **Twenty-seventh revision:** Task 9.9 resolved — dual-layer security model documented. **Primary layer:** IR policies provide deny-by-default for ALL 952/952 commands (Task 8.6). **Secondary layer:** RBAC middleware provides fine-grained role-to-command mapping for 31 high-value commands across 9 entity types. Proxy wrapper removed (Task 7.4a). `COMMAND_PERMISSION_MAP` retained as useful secondary RBAC. Findings #9, #23, #38 all marked RESOLVED. Task 9.18 reference updated. |
 | 2026-06-07 | **Twenty-eighth revision:** Tasks 9.1, 9.5, 9.15 marked DONE. Tasks 9.10, 9.17 marked BLOCKED (features not in @angriff36/manifest v2.2.0). Task 9.1: entity-graph module deleted in Task 10.4 (dead code, zero consumers). Task 9.5: 60+ entities have declarative transition blocks; EventGuest was last meaningful entity without transitions (now added). Task 9.15: 40/40 CLI commands wired to package.json (was 24/42). Spec audit: 58 specs across 11 categories, ~40/58 TODO labels stale (fully implemented), ~8 partially implemented, ~4 genuinely not implemented. Config validation: 3 violations fixed in manifest.config.yaml (dispatcher structure, removed placementPolicy, relocated multiSchema). Findings #12, #13, #55 updated to RESOLVED. |
+| 2026-06-07 | **Twenty-ninth revision (v0.12.166 target):** Tasks 10.6, 6.5 marked DONE. Schema drift audit fix applied. **Task 10.6:** MCP server entity-domain-map.ts converted from require() CJS hack to proper ESM re-export (14→8 lines). **Task 6.5:** 10 misleading use-*.ts files renamed to *.ts (plain functions, not hooks); 23 import paths updated. **Schema drift audit:** Fixed allowlist path from stale `scripts/manifest/` to `manifest/governance/`; added MANIFEST_SEMANTIC_ALIASES normalization (datetime→number, money→number, int→number, decimal→number, etc.). Results: 179→51 violations (72% reduction), 76 clean entities (was 0). Remaining 51 are genuine gaps (top offenders: RecipeVersion 3, LaborBudget 3, CateringOrder 3, ClientContact 2). Json type mismatches (ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions) need adapter-derived entries. Report at manifest/reports/schema-drift/. |

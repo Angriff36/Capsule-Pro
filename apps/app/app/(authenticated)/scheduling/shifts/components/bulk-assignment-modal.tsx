@@ -31,7 +31,7 @@ import {
   autoAssignShift,
   type BulkAssignmentResponse,
   getBulkAssignmentSuggestions,
-} from "../../../../lib/use-assignment";
+} from "../../../../lib/assignment";
 import { AssignmentSuggestionCard } from "./assignment-suggestion-card";
 
 interface BulkAssignmentModalProps {

@@ -36,7 +36,7 @@ import {
   type Lead,
   type LeadStatus,
   type LeadSummary,
-} from "@/app/lib/use-leads";
+} from "@/app/lib/leads";
 
 // ---------------------------------------------------------------------------
 // Props

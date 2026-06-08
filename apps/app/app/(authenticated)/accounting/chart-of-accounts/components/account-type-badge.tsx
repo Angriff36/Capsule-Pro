@@ -12,7 +12,7 @@ import {
   type AccountType,
   getAccountTypeColor,
   getAccountTypeLabel,
-} from "@/app/lib/use-chart-of-accounts";
+} from "@/app/lib/chart-of-accounts";
 
 interface AccountTypeBadgeProps {
   type: AccountType;

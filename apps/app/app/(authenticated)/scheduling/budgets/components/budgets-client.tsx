@@ -50,7 +50,7 @@ import type {
   CreateBudgetInput,
   LaborBudget,
   UpdateBudgetInput,
-} from "@/app/lib/use-labor-budgets";
+} from "@/app/lib/labor-budgets";
 import {
   createBudget,
   deleteBudget,
@@ -61,7 +61,7 @@ import {
   getStatusColor,
   getUtilizationColor,
   updateBudget,
-} from "@/app/lib/use-labor-budgets";
+} from "@/app/lib/labor-budgets";
 import { BudgetFormModal } from "./budget-form-modal";
 
 export function BudgetsClient() {

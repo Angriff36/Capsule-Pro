@@ -3,7 +3,7 @@
 import { apiFetch } from "@/app/lib/api";
 
 /**
- * @module use-chart-of-accounts
+ * @module chart-of-accounts
  * @intent Client-side functions for Chart of Accounts operations
  * @responsibility Provide TypeScript types and API functions for managing chart of accounts
  * @domain Accounting

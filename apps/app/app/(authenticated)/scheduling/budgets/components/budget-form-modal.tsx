@@ -30,7 +30,7 @@ import type {
   CreateBudgetInput,
   LaborBudget,
   UpdateBudgetInput,
-} from "@/app/lib/use-labor-budgets";
+} from "@/app/lib/labor-budgets";
 
 interface BudgetFormModalProps {
   open: boolean;

@@ -45,11 +45,11 @@ const PATHS = {
   prismaSchema: path.join(ROOT, "packages/database/prisma/schema.prisma"),
   ir: path.join(ROOT, "manifest/ir/kitchen.ir.json"),
   entitiesRegistry: path.join(ROOT, "manifest/governance/entities.json"),
-  // Allowlist is policy and lives under scripts/manifest/ (tracked in git),
-  // matching the convention used by write-route-infra-allowlist.json and
-  // duplicate-drop-allowlist.json. Outputs go to manifest/reports/schema-drift/
+  // Allowlist is policy and lives under manifest/governance/ (tracked in git).
+  // Previously at scripts/manifest/ but moved to the canonical governance
+  // directory. Outputs go to manifest/reports/schema-drift/
   // (gitignored — see docs/audits/manifest-artifact-layout-adr.md).
-  allowlist: path.join(ROOT, "scripts/manifest/schema-drift-allowlist.json"),
+  allowlist: path.join(ROOT, "manifest/governance/schema-drift-allowlist.json"),
   outDir: path.join(ROOT, "manifest/reports/schema-drift"),
 };
 
@@ -70,8 +70,29 @@ const PRISMA_TO_MANIFEST = {
   DateTime: "number",
 };
 
+// Manifest semantic types that are aliases for base types.
+// The IR uses semantic types (datetime, money, int, decimal) that all map
+// to `number` at the Prisma level. Without this normalization, the audit
+// reports false type mismatches (e.g. manifest `datetime` vs expected `number`).
+const MANIFEST_SEMANTIC_ALIASES = {
+  datetime: "number",
+  money: "number",
+  int: "number",
+  decimal: "number",
+  text: "string",
+  email: "string",
+  url: "string",
+  uuid: "string",
+  date: "string",
+  time: "string",
+};
+
 function manifestKindFor(prismaType) {
   return PRISMA_TO_MANIFEST[prismaType] ?? "unknown";
+}
+
+function normalizeManifestType(kind) {
+  return MANIFEST_SEMANTIC_ALIASES[kind] ?? kind;
 }
 
 // ---------------------------------------------------------------------------
@@ -305,8 +326,11 @@ function checkEntity({
     if (irParam) actualKind = irParam.type?.name ?? null;
     else if (irProp) actualKind = irProp.type?.name ?? null;
 
+    // Normalize semantic manifest types (datetime, money, int, decimal)
+    // to their base types so they compare correctly against Prisma mappings.
+    const normalizedActual = normalizeManifestType(actualKind ?? "");
     const typeMismatch =
-      actualKind && expectedKind !== "unknown" && actualKind !== expectedKind;
+      actualKind && expectedKind !== "unknown" && normalizedActual !== expectedKind;
 
     const declared = declaredAsParam || declaredAsPropWithDefault;
     const derivedRule = adapterDerived[field.name];

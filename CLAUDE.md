@@ -259,8 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
-Files (1):
-  packages/database/prisma/migrations/20260607155308_drop_empty_legacy_public_tables/migration.sql (create)
+[auto-bridge snapshot @ 10 changes]
+Files: IMPLEMENTATION_PLAN.md (edit), manifest/source/event-guest-rules.manifest (edit), manifest.config.yaml (edit), package.json (edit)
 
 # === END COGNILAYER ===

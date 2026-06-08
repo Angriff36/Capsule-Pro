@@ -39,7 +39,7 @@ import {
   getStatusLabel,
   type Lead,
   type LeadStatus,
-} from "@/app/lib/use-leads";
+} from "@/app/lib/leads";
 
 // ---------------------------------------------------------------------------
 // Props

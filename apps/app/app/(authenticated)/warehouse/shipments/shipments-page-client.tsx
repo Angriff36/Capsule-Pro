@@ -49,7 +49,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { listInventoryItems } from "../../../lib/use-inventory";
+import { listInventoryItems } from "../../../lib/inventory";
 import {
   type CreateShipmentRequest,
   createShipment,
@@ -65,7 +65,7 @@ import {
   type ShipmentStatus,
   type UpdateShipmentStatusRequest,
   updateShipmentStatus,
-} from "../../../lib/use-shipments";
+} from "../../../lib/shipments";
 
 // Status filter options
 const STATUS_FILTERS = [

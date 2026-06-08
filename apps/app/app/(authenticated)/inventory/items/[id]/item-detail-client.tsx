@@ -14,7 +14,7 @@ import {
   getFSAStatusLabel,
   getStockStatusColor,
   getStockStatusLabel,
-} from "../../../../lib/use-inventory";
+} from "../../../../lib/inventory";
 
 interface SerializedItem {
   id: string;

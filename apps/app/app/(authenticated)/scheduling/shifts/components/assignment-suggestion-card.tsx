@@ -31,7 +31,7 @@ import {
   getScoreBarColor,
   getScoreBarWidth,
   getScoreColor,
-} from "../../../../lib/use-assignment";
+} from "../../../../lib/assignment";
 
 interface AssignmentSuggestionCardProps {
   suggestion: AssignmentSuggestion;

@@ -38,7 +38,7 @@ import {
   searchPurchaseOrderByNumber,
   updatePurchaseOrderItemQuality,
   updatePurchaseOrderItemQuantity,
-} from "@/app/lib/use-purchase-orders";
+} from "@/app/lib/purchase-orders";
 
 // Local state type that extends API response with isDirty flag
 type POItemLocal = PurchaseOrderWithDetails["items"][number] & {
