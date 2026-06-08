@@ -189,6 +189,41 @@
       "reason": "PurchaseRequisition.locationId is the location where items are needed (origin), semantically independent of PurchaseOrder.locationId (where the order is fulfilled). A requisition may originate at a different location than where its converted purchase order is processed — structural name match but not semantic inheritance.",
       "owner": "procurement",
       "reviewed": "2026-06-07"
+    },
+    "CommandBoardCard": {
+      "fields": ["boardId", "color"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-08): boardId is deterministically the group's board (card must be on same board as its group). color is a per-card override of the group color; both are propagation candidates. boardId is the primary candidate (invariant), color is secondary (default from group).",
+      "owner": "command-board",
+      "reviewed": "2026-06-08"
+    },
+    "CommandBoardConnection": {
+      "fields": ["boardId"],
+      "category": "BASELINE",
+      "reason": "PRE-EXISTING (2026-06-08): Connection's boardId is deterministically the board of either connected card (fromCardId/toCardId). Both cards live on the same board. Candidate for propagation from CommandBoardCard.",
+      "owner": "command-board",
+      "reviewed": "2026-06-08"
+    },
+    "InventoryTransaction": {
+      "fields": ["itemId", "transactionType", "referenceType", "referenceId", "reason", "employeeId", "storageLocationId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Self-referencing back-link via reverseOfTransactionId. This FK is empty at creation (set only by the reverse() command). All 7 fields are the transaction's own core identity — a reversal copies and inverts explicitly, not via parent-context inheritance. Inheriting would be circular: the original transaction authored these values.",
+      "owner": "inventory",
+      "reviewed": "2026-06-08"
+    },
+    "PurchaseOrderItem": {
+      "fields": ["unitCost"],
+      "category": "FALSE_POSITIVE",
+      "reason": "PO line unitCost is a per-order negotiated price with the vendor, not inherited from InventoryItem's standard cost. Purchase pricing varies by vendor, contract terms, and order timing — the name match is structural, not semantic.",
+      "owner": "procurement",
+      "reviewed": "2026-06-08"
+    },
+    "TrainingAssignment": {
+      "fields": ["moduleId", "staffMemberId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Inverted relationship direction: TrainingAssignment is the PARENT of TrainingAttempt (not the child). The lastAttemptId FK is empty at creation and only set after an attempt is submitted. moduleId and staffMemberId are the assignment's own defining identity — which module is assigned to which staff member. Inheriting from TrainingAttempt would be circular.",
+      "owner": "training",
+      "reviewed": "2026-06-08"
     }
   }
 }
