@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
+[proactive bridge @ 97% context — saved before compacting]
 Files (1):
-  manifest/runtime/src/flag-provider.ts (create)
+  manifest/scripts/generate-prisma-model-metadata.mjs (edit)
 
 # === END COGNILAYER ===

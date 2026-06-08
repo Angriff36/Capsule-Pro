@@ -8,14 +8,55 @@
 //    phantom and breaks `pnpm --filter api typecheck` / `next build` (generated-surface drift,
 //    constitution §10/§16). The fix belongs in the producer (this repo) + regenerate — never by
 //    hand-editing the "DO NOT EDIT" generated files.
-//  - ENTITY_ACCESSOR_OVERRIDES is the authoritative, reviewed correction map. Names are NOT
-//    guessed: each entry is verified against packages/database/prisma/schema.prisma (@@map) and
-//    the runtime store headers in manifest/runtime/src/prisma-stores/.
+//  - resolveAccessor() now auto-derives from the generated Prisma model metadata when available,
+//    falling back to ENTITY_ACCESSOR_OVERRIDES for edge cases (entities whose IR name doesn't
+//    match any Prisma model key, or intentional overrides like QACheck).
 //
 // NOTE (consolidation, phase-out-registry.md §D): ENTITY_DOMAIN_MAP is currently duplicated in
 // manifest/scripts/generate-all-routes.mjs and generate-route-manifest.ts (and a separate copy
 // in packages/mcp-server/src/lib/entity-domain-map.ts). Those consumers should import from this
 // module; that rewire is a follow-up. This module is the canonical home.
+
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
+// Load auto-generated Prisma model metadata (produced by generate-prisma-model-metadata.mjs).
+// Keys are Prisma MODEL names; values include the Prisma client accessor.
+// For ~172/202 IR entities the model key equals the IR entity name directly.
+const here = dirname(fileURLToPath(import.meta.url));
+let _prismaMetadata = null;
+function loadPrismaMetadata() {
+  if (_prismaMetadata) return _prismaMetadata;
+  try {
+    const jsonPath = join(here, "..", "runtime", "src", "generated", "prisma-model-metadata.generated.json");
+    _prismaMetadata = JSON.parse(readFileSync(jsonPath, "utf8"));
+  } catch {
+    _prismaMetadata = {};
+  }
+  return _prismaMetadata;
+}
+
+// Bridge map: IR entity name → Prisma MODEL name for entities where the names differ.
+// Used by resolveAccessor() to look up the correct metadata entry.
+// Each entry verified against schema.prisma (constitution: never invent accessors).
+const ENTITY_TO_PRISMA_MODEL = {
+  EventImportWorkflow: "EventImport",      // model EventImport @@map("event_imports")
+  BankAccount: "EmployeeBankAccount",       // model EmployeeBankAccount @@map("employee_bank_accounts")
+  LogisticsRoute: "DeliveryRoute",          // model DeliveryRoute @@map("delivery_routes")
+  Document: "documents",                    // snake_case model name
+  SmsAutomationRule: "sms_automation_rules", // snake_case model name
+  EventTimelineItem: "EventTimeline",       // model EventTimeline @map("event_timeline") — different name
+  StorageLocation: "storage_locations",     // snake_case model name
+  BulkCombineRule: "bulk_combine_rules",    // snake_case model name
+  MethodVideo: "method_videos",             // snake_case model name
+  PrepListImport: "prep_list_imports",       // snake_case model name
+  QACorrectiveAction: "correctiveAction",   // camelCase-but-different-casing model
+  QATemperatureLog: "temperatureLog",       // camelCase-but-different-casing model
+  TaskBundleItem: "task_bundle_items",       // snake_case model name
+  TaskBundle: "task_bundles",               // snake_case model name
+  OpenShift: "open_shifts",                 // snake_case model name
+};
 
 // Maps each Manifest entity to its domain directory under apps/api/app/api/.
 export const ENTITY_DOMAIN_MAP = {
@@ -376,6 +417,15 @@ for (const entity of Object.keys(ENTITY_DOMAIN_MAP)) {
 
 /**
  * Resolve how a generated read route for `entityName` should reference Prisma.
+ *
+ * Resolution order:
+ *   1. Hard overrides (ENTITY_ACCESSOR_OVERRIDES) — edge cases like QACheck where
+ *      the Prisma model exists but represents a DIFFERENT domain concept. Also serves
+ *      as the drop list for entities with no table.
+ *   2. Auto-derive from PRISMA_MODEL_METADATA — if a metadata entry exists for the
+ *      entity (direct key or via ENTITY_TO_PRISMA_MODEL bridge), use its accessor.
+ *   3. Fallback — assume naive camelCase(entityName) is correct.
+ *
  * @param {string} entityName
  * @returns {{ naive: string, accessor: string|null, drop: boolean, overridden: boolean }}
  *   - naive: the accessor the upstream projection emitted (camelCase entity).
@@ -385,14 +435,28 @@ for (const entity of Object.keys(ENTITY_DOMAIN_MAP)) {
  */
 export function resolveAccessor(entityName) {
   const naive = toCamelCase(entityName);
-  if (!Object.prototype.hasOwnProperty.call(ENTITY_ACCESSOR_OVERRIDES, entityName)) {
-    return { naive, accessor: naive, drop: false, overridden: false };
+
+  // 1. Hard overrides take precedence (edge cases + drop list)
+  if (Object.prototype.hasOwnProperty.call(ENTITY_ACCESSOR_OVERRIDES, entityName)) {
+    const override = ENTITY_ACCESSOR_OVERRIDES[entityName];
+    if (override === null) {
+      return { naive, accessor: null, drop: true, overridden: false };
+    }
+    return { naive, accessor: override, drop: false, overridden: override !== naive };
   }
-  const override = ENTITY_ACCESSOR_OVERRIDES[entityName];
-  if (override === null) {
-    return { naive, accessor: null, drop: true, overridden: false };
+
+  // 2. Auto-derive from generated Prisma metadata
+  const meta = loadPrismaMetadata();
+  const modelKey = ENTITY_TO_PRISMA_MODEL[entityName] || entityName;
+  const modelMeta = meta[modelKey];
+  if (modelMeta) {
+    const accessor = modelMeta.accessor;
+    return { naive, accessor, drop: false, overridden: accessor !== naive };
   }
-  return { naive, accessor: override, drop: false, overridden: override !== naive };
+
+  // 3. No metadata entry — entity has no Prisma table, drop the route.
+  //    This auto-handles new entities added to the IR without a matching Prisma model.
+  return { naive, accessor: null, drop: true, overridden: false };
 }
 
 export function resolveDetailSegment(entityName) {

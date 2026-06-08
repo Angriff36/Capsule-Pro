@@ -197,6 +197,25 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = ${JSON.str
 
 mkdirSync(dirname(outPath), { recursive: true });
 writeFileSync(outPath, header + "\n" + body);
+
+// Also emit a lightweight JSON file for consumption by .mjs scripts
+// (generate.mjs, entity-domain-map.mjs) that cannot import .ts directly.
+// Contains only the accessor + field-name metadata needed for route generation.
+const jsonOutPath = resolve(
+  root,
+  "manifest/runtime/src/generated/prisma-model-metadata.generated.json",
+);
+const lightweight = {};
+for (const [entityName, meta] of Object.entries(models)) {
+  lightweight[entityName] = {
+    accessor: meta.accessor,
+    hasDeletedAt: meta.hasDeletedAt,
+    pkFields: meta.pkFields,
+    fields: meta.fields.map((f) => ({ name: f.name, irName: f.irName })),
+  };
+}
+writeFileSync(jsonOutPath, JSON.stringify(lightweight, null, 2) + "\n");
+
 process.stdout.write(
-  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\n`,
+  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\n`,
 );
