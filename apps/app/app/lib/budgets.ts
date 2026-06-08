@@ -1,6 +1,16 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
+import {
+  listEventBudgets as _listEventBudgets,
+  getEventBudget as _getEventBudget,
+  eventBudgetCreate,
+  eventBudgetUpdate,
+  listBudgetLineItems as _listBudgetLineItems,
+  budgetLineItemCreate,
+  budgetLineItemUpdate,
+  budgetLineItemRemove,
+} from "@/app/lib/manifest-client.generated";
+import type { EventBudget as GeneratedEventBudget, BudgetLineItem as GeneratedBudgetLineItem } from "@/app/lib/manifest-types.generated";
 // Type definitions matching the API response
 export type EventBudgetStatus = "draft" | "approved" | "locked";
 export type BudgetCategory = "food" | "labor" | "rentals" | "miscellaneous";
@@ -111,83 +121,49 @@ export async function listBudgets(params: {
   page?: number;
   limit?: number;
 }): Promise<BudgetListResponse> {
-  const searchParams = new URLSearchParams();
-  if (params.eventId) {
-    searchParams.set("eventId", params.eventId);
-  }
-  if (params.status) {
-    searchParams.set("status", params.status);
-  }
-  if (params.page) {
-    searchParams.set("page", params.page.toString());
-  }
-  if (params.limit) {
-    searchParams.set("limit", params.limit.toString());
-  }
+  const query: Record<string, string | number> = {};
+  if (params.eventId) query.eventId = params.eventId;
+  if (params.status) query.status = params.status;
+  if (params.page) query.page = params.page;
+  if (params.limit) query.limit = params.limit;
 
-  const response = await apiFetch(
-    `/api/events/budgets?${searchParams.toString()}`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to list budgets");
-  }
-
-  return response.json();
+  return _listEventBudgets(query) as unknown as Promise<BudgetListResponse>;
 }
 
 // Get a single budget by ID
 export async function getBudget(budgetId: string): Promise<EventBudget> {
-  const response = await apiFetch(`/api/events/budgets/${budgetId}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to get budget");
-  }
-
-  const data = await response.json();
-  return data.data;
+  const result = await _getEventBudget(budgetId);
+  if (!result) throw new Error("Failed to get budget");
+  return result as unknown as EventBudget;
 }
 
 // Create a new budget
 export async function createBudget(
   request: CreateBudgetRequest
-): Promise<EventBudget> {
-  const response = await apiFetch("/api/events/budgets", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+): Promise<GeneratedEventBudget> {
+  const result = await eventBudgetCreate({
+    eventId: request.eventId,
+    notes: request.notes,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create budget");
-  }
-
-  const data = await response.json();
-  return data.data;
+  if (!result) throw new Error("Failed to create budget");
+  return result;
 }
 
 // Update a budget
 export async function updateBudget(
   budgetId: string,
   request: UpdateBudgetRequest
-): Promise<EventBudget> {
-  const response = await apiFetch(`/api/events/budgets/${budgetId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+): Promise<GeneratedEventBudget> {
+  const result = await eventBudgetUpdate({
+    id: budgetId,
+    notes: request.notes,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update budget");
-  }
-
-  const data = await response.json();
-  return data.data;
+  if (!result) throw new Error("Failed to update budget");
+  return result;
 }
+
+// NOTE: Keeping apiFetch for delete budget — no generated eventBudgetRemove/softDelete exists
+import { apiFetch } from "@/app/lib/api";
 
 // Delete a budget
 export async function deleteBudget(budgetId: string): Promise<void> {
@@ -205,77 +181,50 @@ export async function deleteBudget(budgetId: string): Promise<void> {
 export async function getLineItems(
   budgetId: string
 ): Promise<BudgetLineItem[]> {
-  const response = await apiFetch(`/api/events/budgets/${budgetId}/line-items`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to get line items");
-  }
-
-  const data = await response.json();
-  return data.data;
+  const result = await _listBudgetLineItems({ budgetId });
+  return result.data as unknown as BudgetLineItem[];
 }
 
 // Create a line item
 export async function createLineItem(
   request: CreateLineItemRequest
-): Promise<BudgetLineItem> {
-  const response = await apiFetch(
-    `/api/events/budgets/${request.budgetId}/line-items`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create line item");
-  }
-
-  const data = await response.json();
-  return data.data;
+): Promise<GeneratedBudgetLineItem> {
+  const result = await budgetLineItemCreate({
+    budgetId: request.budgetId,
+    category: request.category,
+    name: request.name,
+    description: request.description,
+    budgetedAmount: request.budgetedAmount,
+    sortOrder: request.sortOrder,
+    notes: request.notes,
+  });
+  if (!result) throw new Error("Failed to create line item");
+  return result;
 }
 
 // Update a line item
 export async function updateLineItem(
-  budgetId: string,
+  _budgetId: string,
   lineItemId: string,
   request: UpdateLineItemRequest
-): Promise<BudgetLineItem> {
-  const response = await apiFetch(
-    `/api/events/budgets/${budgetId}/line-items/${lineItemId}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update line item");
-  }
-
-  const data = await response.json();
-  return data.data;
+): Promise<GeneratedBudgetLineItem> {
+  const result = await budgetLineItemUpdate({
+    id: lineItemId,
+    budgetedAmount: request.budgetedAmount,
+    actualAmount: request.actualAmount,
+    description: request.description,
+    notes: request.notes,
+  });
+  if (!result) throw new Error("Failed to update line item");
+  return result;
 }
 
 // Delete a line item
 export async function deleteLineItem(
-  budgetId: string,
+  _budgetId: string,
   lineItemId: string
 ): Promise<void> {
-  const response = await apiFetch(
-    `/api/events/budgets/${budgetId}/line-items/${lineItemId}`,
-    { method: "DELETE" }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete line item");
-  }
+  await budgetLineItemRemove({ id: lineItemId });
 }
 
 // Helper to get budget status badge color

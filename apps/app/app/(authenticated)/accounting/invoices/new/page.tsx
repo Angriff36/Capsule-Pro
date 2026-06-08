@@ -24,6 +24,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for invoice create (POST /api/accounting/invoices) — generated client
+// has no invoiceCreate function.
 import { apiFetch } from "@/app/lib/api";
 
 const INVOICE_TYPES = [

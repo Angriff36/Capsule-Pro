@@ -70,6 +70,9 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all calls — approvals/history endpoints return enriched data with joins
+// (performerFirstName, performerLastName, performerEmail) not available in generated list functions;
+// approve/reject use custom PUT endpoint, not Manifest commands
 
 // --- Types ---
 

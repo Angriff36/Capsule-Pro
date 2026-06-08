@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for finance analytics endpoint (no generated equivalent for /api/analytics/*)
 import { apiFetch } from "@/app/lib/api";
 
 // TypeScript types for Finance Analytics

@@ -152,38 +152,21 @@ function unwrapManifestResponse<T>(payload: T | ManifestResponse<T>): T {
 export async function listRecipes(
   filters: RecipeListFilters = {}
 ): Promise<RecipeListResponse> {
-  const params = new URLSearchParams();
+  const query: Record<string, string | number> = {};
 
-  if (filters.search) {
-    params.set("search", filters.search);
-  }
-  if (filters.category) {
-    params.set("category", filters.category);
-  }
-  if (filters.cuisineType) {
-    params.set("cuisineType", filters.cuisineType);
-  }
-  if (filters.tag) {
-    params.set("tag", filters.tag);
-  }
-  if (filters.isActive !== undefined) {
-    params.set("isActive", filters.isActive.toString());
-  }
-  if (filters.page) {
-    params.set("page", filters.page.toString());
-  }
-  if (filters.limit) {
-    params.set("limit", filters.limit.toString());
-  }
+  if (filters.search) query.search = filters.search;
+  if (filters.category) query.category = filters.category;
+  if (filters.cuisineType) query.cuisineType = filters.cuisineType;
+  if (filters.tag) query.tag = filters.tag;
+  if (filters.isActive !== undefined) query.isActive = String(filters.isActive);
+  if (filters.page) query.page = filters.page;
+  if (filters.limit) query.limit = filters.limit;
 
-  const response = await apiFetch(`/api/kitchen/recipes?${params.toString()}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch recipes");
-  }
-
-  return response.json();
+  const result = await generatedListRecipes(Object.keys(query).length > 0 ? query : undefined);
+  return {
+    data: result.data as unknown as Recipe[],
+    pagination: result.pagination,
+  };
 }
 
 /**
@@ -306,6 +289,8 @@ export async function updateEventBudgets(
 
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for getRecipeCost, recalculateRecipeCost, scaleRecipe, updateWasteFactor, updateEventBudgets (no generated equivalents for custom sub-endpoints)
+import { listRecipes as generatedListRecipes } from "@/app/lib/manifest-client.generated";
 
 export interface UseRecipeCostResult {
   data: RecipeCostBreakdown | null;

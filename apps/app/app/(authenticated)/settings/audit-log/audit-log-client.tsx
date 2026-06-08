@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom settings audit-log endpoint (no generated client equivalent)
 import { apiFetch } from "@/app/lib/api";
 
 interface AuditLogEntry {

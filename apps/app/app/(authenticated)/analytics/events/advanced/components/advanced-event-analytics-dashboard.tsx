@@ -45,6 +45,8 @@ import {
   Calendar,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for custom analytics endpoint (/api/analytics/events/advanced)
+// — not an entity CRUD route, no generated client equivalent.
 import { apiFetch } from "@/app/lib/api";
 import { VegaChart, barChartSpec, lineChartSpec } from "../../../sales/components/vega-chart";
 import type { TopLevelSpec } from "vega-lite";

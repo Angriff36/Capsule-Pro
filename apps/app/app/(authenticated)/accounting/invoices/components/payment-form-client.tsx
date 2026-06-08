@@ -15,6 +15,9 @@ import { Banknote, Building, CreditCard, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useState } from "react";
+// NOTE: Keeping apiFetch for payment create (POST /api/accounting/payments) and payment process
+// (PUT /api/accounting/payments/:id) — generated client has no paymentCreate, and paymentProcess
+// only operates on an existing payment record.
 import { apiFetch } from "@/app/lib/api";
 
 type PaymentMethodType =

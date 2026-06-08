@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom integration endpoints: GoodShuffle/Nowsta config/status/test/sync, QuickBooks export/history (no generated client equivalents)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

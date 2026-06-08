@@ -56,6 +56,7 @@ import {
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom user management endpoints: update-role, deactivate (no generated client equivalent)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

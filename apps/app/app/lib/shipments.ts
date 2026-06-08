@@ -1,4 +1,20 @@
 import { apiFetch } from "@/app/lib/api";
+import {
+  listShipments as _listShipments,
+  getShipment as _getShipment,
+  listShipmentItems as _listShipmentItems,
+  shipmentCreate,
+  shipmentUpdate,
+  shipmentCancel,
+  shipmentSchedule,
+  shipmentStartPreparing,
+  shipmentShip,
+  shipmentMarkDelivered,
+  shipmentItemCreate,
+  shipmentItemUpdateReceived,
+  shipmentItemUpdate,
+  shipmentItemSoftDelete,
+} from "@/app/lib/manifest-client.generated";
 /**
  * Shipments Client API Functions
  *
@@ -285,65 +301,40 @@ export interface ShipmentListResponseWithMeta {
 export async function listShipments(
   filters: ShipmentFilters & { page?: number; limit?: number } = {}
 ): Promise<ShipmentListResponseWithMeta> {
-  const params = new URLSearchParams();
+  const query: Record<string, string | number> = {};
+  if (filters.search) query.search = filters.search;
+  if (filters.status) query.status = filters.status;
+  if (filters.event_id) query.event_id = filters.event_id;
+  if (filters.supplier_id) query.supplier_id = filters.supplier_id;
+  if (filters.location_id) query.location_id = filters.location_id;
+  if (filters.date_from) query.date_from = filters.date_from;
+  if (filters.date_to) query.date_to = filters.date_to;
+  if (filters.page) query.page = filters.page;
+  if (filters.limit) query.limit = filters.limit;
 
-  if (filters.search) {
-    params.set("search", filters.search);
-  }
-  if (filters.status) {
-    params.set("status", filters.status);
-  }
-  if (filters.event_id) {
-    params.set("event_id", filters.event_id);
-  }
-  if (filters.supplier_id) {
-    params.set("supplier_id", filters.supplier_id);
-  }
-  if (filters.location_id) {
-    params.set("location_id", filters.location_id);
-  }
-  if (filters.date_from) {
-    params.set("date_from", filters.date_from);
-  }
-  if (filters.date_to) {
-    params.set("date_to", filters.date_to);
-  }
-  if (filters.page) {
-    params.set("page", filters.page.toString());
-  }
-  if (filters.limit) {
-    params.set("limit", filters.limit.toString());
-  }
+  const data = await _listShipments(query);
 
-  const response = await apiFetch(`/api/shipments?${params.toString()}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch shipments");
-  }
-
-  const data = await response.json();
-  // Add summary metadata
+  // Add summary metadata — cast through unknown since generated Shipment type differs from local
+  const rawItems = data.data as unknown as Array<Record<string, unknown>>;
   const summary = {
     totalShipments: data.pagination.total,
-    byStatus: data.data.reduce(
-      (acc: Record<string, number>, s: Shipment) => {
-        acc[s.status] = (acc[s.status] || 0) + 1;
+    byStatus: rawItems.reduce(
+      (acc: Record<string, number>, s) => {
+        const status = s.status as ShipmentStatus;
+        acc[status] = (acc[status] || 0) + 1;
         return acc;
       },
       {} as Record<string, number>
     ) as Record<ShipmentStatus, number>,
-    totalValue: data.data.reduce(
-      (sum: number, s: Shipment) => sum + (s.total_value || 0),
+    totalValue: rawItems.reduce(
+      (sum, s) => sum + ((s.total_value as number) || 0),
       0
     ),
-    inTransitCount: data.data.filter((s: Shipment) => s.status === "in_transit")
-      .length,
-    preparingCount: data.data.filter((s: Shipment) => s.status === "preparing")
-      .length,
+    inTransitCount: rawItems.filter(s => s.status === "in_transit").length,
+    preparingCount: rawItems.filter(s => s.status === "preparing").length,
   };
 
-  return { ...data, summary };
+  return { ...data, summary } as unknown as ShipmentListResponseWithMeta;
 }
 
 /**
@@ -352,14 +343,9 @@ export async function listShipments(
 export async function getShipment(
   shipmentId: string
 ): Promise<ShipmentWithItems> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch shipment");
-  }
-
-  return response.json();
+  const result = await _getShipment(shipmentId);
+  if (!result) throw new Error("Failed to fetch shipment");
+  return result as unknown as ShipmentWithItems;
 }
 
 /**
@@ -368,18 +354,17 @@ export async function getShipment(
 export async function createShipment(
   request: CreateShipmentRequest
 ): Promise<Shipment> {
-  const response = await apiFetch("/api/shipments", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+  const result = await shipmentCreate({
+    shipmentNumber: request.shipment_number,
+    supplierId: request.supplier_id,
+    eventId: request.event_id,
+    scheduledDate: request.scheduled_date,
+    carrier: request.carrier,
+    shippingMethod: request.shipping_method,
+    notes: request.notes,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create shipment");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to create shipment");
+  return result as unknown as Shipment;
 }
 
 /**
@@ -389,22 +374,21 @@ export async function updateShipment(
   shipmentId: string,
   request: UpdateShipmentRequest
 ): Promise<Shipment> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+  const result = await shipmentUpdate({
+    trackingNumber: request.tracking_number,
+    carrier: request.carrier,
+    shippingMethod: request.shipping_method,
+    estimatedDeliveryDate: request.estimated_delivery_date,
+    shippingCost: request.shipping_cost,
+    notes: request.notes,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update shipment");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to update shipment");
+  return result as unknown as Shipment;
 }
 
 /**
  * Delete a shipment (soft delete)
+ * NOTE: Keeping apiFetch — no generated shipmentSoftDelete command; cancel is a status transition, not delete
  */
 export async function deleteShipment(shipmentId: string): Promise<void> {
   const response = await apiFetch(`/api/shipments/${shipmentId}`, {
@@ -423,23 +407,37 @@ export async function deleteShipment(shipmentId: string): Promise<void> {
 
 /**
  * Update shipment status with validation
+ * Maps status string to the appropriate generated command
  */
 export async function updateShipmentStatus(
   shipmentId: string,
   request: UpdateShipmentStatusRequest
 ): Promise<Shipment> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}/status`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update shipment status");
+  let result: unknown;
+  switch (request.status) {
+    case "scheduled":
+      result = await shipmentSchedule({ scheduledDate: request.actual_delivery_date });
+      break;
+    case "preparing":
+      result = await shipmentStartPreparing({});
+      break;
+    case "in_transit":
+      result = await shipmentShip({});
+      break;
+    case "delivered":
+      result = await shipmentMarkDelivered({
+        receivedBy: request.received_by,
+        signatureData: request.signature,
+      });
+      break;
+    case "cancelled":
+      result = await shipmentCancel({ reason: request.notes });
+      break;
+    default:
+      throw new Error(`Unsupported status transition: ${request.status}`);
   }
-
-  return response.json();
+  if (!result) throw new Error("Failed to update shipment status");
+  return result as Shipment;
 }
 
 // ============================================================================
@@ -452,14 +450,8 @@ export async function updateShipmentStatus(
 export async function listShipmentItems(
   shipmentId: string
 ): Promise<ShipmentItem[]> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}/items`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch shipment items");
-  }
-
-  return response.json();
+  const result = await _listShipmentItems({ shipment_id: shipmentId });
+  return result.data as unknown as ShipmentItem[];
 }
 
 /**
@@ -469,18 +461,17 @@ export async function addShipmentItem(
   shipmentId: string,
   request: CreateShipmentItemRequest
 ): Promise<ShipmentItem> {
-  const response = await apiFetch(`/api/shipments/${shipmentId}/items`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+  const result = await shipmentItemCreate({
+    shipmentId,
+    itemId: request.item_id,
+    quantityShipped: request.quantity_shipped,
+    unitId: request.unit_id,
+    unitCost: request.unit_cost,
+    lotNumber: request.lot_number,
+    expirationDate: request.expiration_date,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to add item to shipment");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to add item to shipment");
+  return result as unknown as ShipmentItem;
 }
 
 /**
@@ -491,21 +482,18 @@ export async function updateShipmentItem(
   itemId: string,
   request: UpdateShipmentItemRequest
 ): Promise<ShipmentItem> {
-  const response = await apiFetch(
-    `/api/shipments/${shipmentId}/items/${itemId}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(request),
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update shipment item");
-  }
-
-  return response.json();
+  // Use updateReceived if quantity_received or condition fields are present, otherwise general update
+  const result = await shipmentItemUpdate({
+    quantityShipped: request.quantity_shipped,
+    unitId: request.unit_id,
+    unitCost: request.unit_cost,
+    condition: request.condition,
+    conditionNotes: request.condition_notes,
+    lotNumber: request.lot_number,
+    expirationDate: request.expiration_date,
+  });
+  if (!result) throw new Error("Failed to update shipment item");
+  return result as unknown as ShipmentItem;
 }
 
 /**
@@ -515,17 +503,8 @@ export async function deleteShipmentItem(
   shipmentId: string,
   itemId: string
 ): Promise<void> {
-  const response = await apiFetch(
-    `/api/shipments/${shipmentId}/items/${itemId}`,
-    {
-      method: "DELETE",
-    }
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete shipment item");
-  }
+  const result = await shipmentItemSoftDelete({});
+  if (!result) throw new Error("Failed to delete shipment item");
 }
 
 // ============================================================================

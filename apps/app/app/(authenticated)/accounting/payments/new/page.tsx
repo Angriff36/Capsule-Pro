@@ -32,6 +32,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for payment create (POST /api/accounting/payments) — generated client
+// has no paymentCreate function.
 import { apiFetch } from "@/app/lib/api";
 
 const METHOD_TYPE_OPTIONS = [

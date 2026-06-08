@@ -1,6 +1,7 @@
 "use client";
 
 import { apiFetch } from "@/app/lib/api";
+import { getPurchaseOrder as _getPurchaseOrder } from "@/app/lib/manifest-client.generated";
 // Type definitions matching the API response
 export const PO_STATUSES = [
   "draft",
@@ -143,36 +144,23 @@ export async function listPurchaseOrders(params: {
   page?: number;
   limit?: number;
 }): Promise<PurchaseOrderListResponse> {
-  const searchParams = new URLSearchParams();
-  if (params.search) {
-    searchParams.set("search", params.search);
-  }
-  if (params.status) {
-    searchParams.set("status", params.status);
-  }
-  if (params.vendor_id) {
-    searchParams.set("vendor_id", params.vendor_id);
-  }
-  if (params.location_id) {
-    searchParams.set("location_id", params.location_id);
-  }
-  if (params.po_number) {
-    searchParams.set("po_number", params.po_number);
-  }
-  if (params.page) {
-    searchParams.set("page", params.page.toString());
-  }
-  if (params.limit) {
-    searchParams.set("limit", params.limit.toString());
-  }
+  // NOTE: Keeping apiFetch — generated client returns PurchaseOrder[] without joined items/details
+  const queryParams = new URLSearchParams();
+  if (params.search) queryParams.set("search", params.search);
+  if (params.status) queryParams.set("status", params.status);
+  if (params.vendor_id) queryParams.set("vendor_id", params.vendor_id);
+  if (params.location_id) queryParams.set("location_id", params.location_id);
+  if (params.po_number) queryParams.set("po_number", params.po_number);
+  if (params.page) queryParams.set("page", String(params.page));
+  if (params.limit) queryParams.set("limit", String(params.limit));
 
   const response = await apiFetch(
-    `/api/inventory/purchase-orders?${searchParams.toString()}`
+    `/api/inventory/purchase-orders?${queryParams.toString()}`
   );
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to list purchase orders");
+    throw new Error(error.message || "Failed to fetch purchase orders");
   }
 
   return response.json();
@@ -182,14 +170,9 @@ export async function listPurchaseOrders(params: {
 export async function getPurchaseOrder(
   poId: string
 ): Promise<PurchaseOrderWithDetails> {
-  const response = await apiFetch(`/api/inventory/purchase-orders/${poId}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to get purchase order");
-  }
-
-  return response.json();
+  const result = await _getPurchaseOrder(poId);
+  if (!result) throw new Error("Failed to get purchase order");
+  return result as unknown as PurchaseOrderWithDetails;
 }
 
 // Search for a purchase order by PO number
@@ -204,6 +187,7 @@ export async function searchPurchaseOrderByNumber(
 }
 
 // Update quantity received for a purchase order item
+// NOTE: Keeping apiFetch — no generated equivalent for item quantity update sub-route
 export async function updatePurchaseOrderItemQuantity(
   poId: string,
   itemId: string,
@@ -227,6 +211,7 @@ export async function updatePurchaseOrderItemQuantity(
 }
 
 // Update quality status for a purchase order item
+// NOTE: Keeping apiFetch — no generated equivalent for item quality update sub-route
 export async function updatePurchaseOrderItemQuality(
   poId: string,
   itemId: string,
@@ -250,6 +235,7 @@ export async function updatePurchaseOrderItemQuality(
 }
 
 // Complete receiving for a purchase order
+// NOTE: Keeping apiFetch — no generated equivalent for complete receiving sub-route
 export async function completePurchaseOrderReceiving(
   poId: string,
   request: CompleteReceivingRequest

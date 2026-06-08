@@ -65,6 +65,9 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom notification endpoints:
+//   - /api/communications/sms/automation-rules (listSmsAutomationRules generated client targets different route with different envelope/pagination)
+//   - /api/collaboration/notifications/sms/history, email/history, sms/preferences, email/preferences (no generated client equivalents)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+// NOTE: Keeping apiFetch for tenant locations endpoint (no generated equivalent for /api/locations — StorageLocation is a different entity)
 import { apiFetch } from "@/app/lib/api";
 
 /**

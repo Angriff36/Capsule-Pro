@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  listLaborBudgets as _listLaborBudgets,
+  getLaborBudget as _getLaborBudget,
+  laborBudgetCreate,
+  laborBudgetUpdate,
+  laborBudgetSoftDelete,
+} from "@/app/lib/manifest-client.generated";
+import type { LaborBudget as GeneratedLaborBudget } from "@/app/lib/manifest-types.generated";
+// NOTE: Keeping apiFetch for budget alerts endpoint (custom response shape) and alert acknowledge/resolve actions
 import { apiFetch } from "@/app/lib/api";
 
 // Type definitions and API client functions for Labor Budget Management
@@ -116,27 +125,14 @@ const API_BASE = "/api/staff/budgets";
 export async function getBudgets(
   filters?: BudgetFilters
 ): Promise<LaborBudget[]> {
-  const params = new URLSearchParams();
-  if (filters?.locationId) {
-    params.set("locationId", filters.locationId);
-  }
-  if (filters?.eventId) {
-    params.set("eventId", filters.eventId);
-  }
-  if (filters?.budgetType) {
-    params.set("budgetType", filters.budgetType);
-  }
-  if (filters?.status) {
-    params.set("status", filters.status);
-  }
+  const query: Record<string, string | number> = {};
+  if (filters?.locationId) query.locationId = filters.locationId;
+  if (filters?.eventId) query.eventId = filters.eventId;
+  if (filters?.budgetType) query.budgetType = filters.budgetType;
+  if (filters?.status) query.status = filters.status;
 
-  const response = await apiFetch(`${API_BASE}?${params.toString()}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch budgets: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.budgets;
+  const result = await _listLaborBudgets(query);
+  return result.data as unknown as LaborBudget[];
 }
 
 /**
@@ -145,13 +141,9 @@ export async function getBudgets(
 export async function getBudgetById(
   id: string
 ): Promise<BudgetWithUtilization> {
-  const response = await apiFetch(`${API_BASE}/${id}`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch budget: ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return data.budget;
+  const result = await _getLaborBudget(id);
+  if (!result) throw new Error("Failed to fetch budget");
+  return result as unknown as BudgetWithUtilization;
 }
 
 /**
@@ -159,20 +151,17 @@ export async function getBudgetById(
  */
 export async function createBudget(
   input: CreateBudgetInput
-): Promise<LaborBudget> {
-  const response = await apiFetch(API_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+): Promise<GeneratedLaborBudget> {
+  const result = await laborBudgetCreate({
+    locationId: input.locationId,
+    periodStart: input.periodStart,
+    periodEnd: input.periodEnd,
+    budgetAmount: input.budgetTarget,
+    budgetType: input.budgetType,
+    notes: input.description,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create budget");
-  }
-
-  const data = await response.json();
-  return data.budget;
+  if (!result) throw new Error("Failed to create budget");
+  return result;
 }
 
 /**
@@ -181,37 +170,24 @@ export async function createBudget(
 export async function updateBudget(
   id: string,
   updates: UpdateBudgetInput
-): Promise<LaborBudget> {
-  const response = await apiFetch(`${API_BASE}/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(updates),
+): Promise<GeneratedLaborBudget> {
+  const result = await laborBudgetUpdate({
+    id,
+    notes: updates.description,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update budget");
-  }
-
-  const data = await response.json();
-  return data.budget;
+  if (!result) throw new Error("Failed to update budget");
+  return result;
 }
 
 /**
  * Delete (soft delete) a labor budget
  */
 export async function deleteBudget(id: string): Promise<{ success: boolean }> {
-  const response = await apiFetch(`${API_BASE}/${id}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to delete budget: ${response.statusText}`);
-  }
-
+  await laborBudgetSoftDelete({ id });
   return { success: true };
 }
 
+// NOTE: Keeping apiFetch for budget alerts — custom endpoint with non-standard response shape
 /**
  * Get budget alerts with optional filters
  */
@@ -238,6 +214,7 @@ export async function getBudgetAlerts(
   return data.alerts;
 }
 
+// NOTE: Keeping apiFetch for alert acknowledge — custom action endpoint
 /**
  * Acknowledge a budget alert
  */
@@ -257,6 +234,7 @@ export async function acknowledgeAlert(
   return { success: true };
 }
 
+// NOTE: Keeping apiFetch for alert resolve — custom action endpoint
 /**
  * Resolve a budget alert
  */

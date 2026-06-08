@@ -54,6 +54,7 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom webhook management endpoints: CRUD, delivery-logs, DLQ retry/resolve (no generated client equivalent)
 import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------

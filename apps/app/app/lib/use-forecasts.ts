@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for forecast/analytics endpoints (no generated equivalent for /api/inventory/forecasts/*, /api/inventory/reorder-suggestions/*)
 import { apiFetch } from "@/app/lib/api";
 
 // Types

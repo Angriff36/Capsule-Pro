@@ -1,6 +1,12 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
+import {
+  listChartOfAccounts as _listChartOfAccounts,
+  getChartOfAccount as _getChartOfAccount,
+  chartOfAccountCreate,
+  chartOfAccountUpdate,
+} from "@/app/lib/manifest-client.generated";
+import type { ChartOfAccount as GeneratedChartOfAccount } from "@/app/lib/manifest-types.generated";
 
 /**
  * @module chart-of-accounts
@@ -84,30 +90,14 @@ export interface ChartOfAccountsFilters {
 export async function listChartOfAccounts(
   params: ChartOfAccountsFilters = {}
 ): Promise<ChartOfAccountsListResponse> {
-  const searchParams = new URLSearchParams();
+  const query: Record<string, string | number> = {};
+  if (params.search) query.search = params.search;
+  if (params.account_type) query.account_type = params.account_type;
+  if (params.include_inactive) query.include_inactive = "true";
+  query.page = params.page ?? 1;
+  query.limit = params.limit ?? 50;
 
-  if (params.search) {
-    searchParams.set("search", params.search);
-  }
-  if (params.account_type) {
-    searchParams.set("account_type", params.account_type);
-  }
-  if (params.include_inactive) {
-    searchParams.set("include_inactive", "true");
-  }
-  searchParams.set("page", String(params.page ?? 1));
-  searchParams.set("limit", String(params.limit ?? 50));
-
-  const response = await apiFetch(
-    `/api/accounting/accounts?${searchParams.toString()}`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch chart of accounts");
-  }
-
-  return response.json();
+  return _listChartOfAccounts(query) as unknown as Promise<ChartOfAccountsListResponse>;
 }
 
 /**
@@ -116,14 +106,9 @@ export async function listChartOfAccounts(
 export async function getChartOfAccount(
   id: string
 ): Promise<ChartOfAccountWithParent> {
-  const response = await apiFetch(`/api/accounting/accounts/${id}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch chart of account");
-  }
-
-  return response.json();
+  const result = await _getChartOfAccount(id);
+  if (!result) throw new Error("Failed to fetch chart of account");
+  return result as unknown as ChartOfAccountWithParent;
 }
 
 /**
@@ -131,21 +116,16 @@ export async function getChartOfAccount(
  */
 export async function createChartOfAccount(
   data: CreateChartOfAccountRequest
-): Promise<ChartOfAccount> {
-  const response = await apiFetch("/api/accounting/accounts", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+): Promise<GeneratedChartOfAccount> {
+  const result = await chartOfAccountCreate({
+    accountNumber: data.account_number,
+    accountName: data.account_name,
+    accountType: data.account_type,
+    parentId: data.parent_id,
+    description: data.description,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create chart of account");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to create chart of account");
+  return result;
 }
 
 /**
@@ -154,22 +134,22 @@ export async function createChartOfAccount(
 export async function updateChartOfAccount(
   id: string,
   data: UpdateChartOfAccountRequest
-): Promise<ChartOfAccount> {
-  const response = await apiFetch(`/api/accounting/accounts/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+): Promise<GeneratedChartOfAccount> {
+  const result = await chartOfAccountUpdate({
+    id,
+    accountNumber: data.account_number,
+    accountName: data.account_name,
+    accountType: data.account_type,
+    parentId: data.parent_id,
+    description: data.description,
+    isActive: data.is_active,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update chart of account");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to update chart of account");
+  return result;
 }
+
+// NOTE: Keeping apiFetch for delete — no generated chartOfAccountRemove/softDelete exists
+import { apiFetch } from "@/app/lib/api";
 
 /**
  * Delete a chart of account
@@ -190,7 +170,7 @@ export async function deleteChartOfAccount(id: string): Promise<void> {
  */
 export async function deactivateChartOfAccount(
   id: string
-): Promise<ChartOfAccount> {
+): Promise<GeneratedChartOfAccount> {
   return updateChartOfAccount(id, { is_active: false });
 }
 

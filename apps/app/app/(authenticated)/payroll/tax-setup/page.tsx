@@ -65,6 +65,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all calls — tax list/brackets/preview endpoints are custom actions with no generated client
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */

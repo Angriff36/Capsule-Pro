@@ -3,6 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  listEventBudgets as _listEventBudgets,
+  getEventBudget as _getEventBudget,
+  listBudgetLineItems as _listBudgetLineItems,
+  eventBudgetCreate,
+  eventBudgetUpdate,
+  budgetLineItemCreate,
+  budgetLineItemUpdate,
+  budgetLineItemRemove,
+} from "@/app/lib/manifest-client.generated";
 
 // Types
 export type EventBudgetStatus =
@@ -152,24 +162,14 @@ export async function getBudgets(
   filters: EventBudgetFilters = {}
 ): Promise<EventBudget[]> {
   try {
-    const params = new URLSearchParams();
-    if (filters.eventId) {
-      params.set("eventId", filters.eventId);
-    }
-    if (filters.status) {
-      params.set("status", filters.status);
-    }
-    params.set("page", String(filters.page || 1));
-    params.set("limit", String(filters.limit || 50));
+    const query: Record<string, string | number> = {};
+    if (filters.eventId) query.eventId = filters.eventId;
+    if (filters.status) query.status = filters.status;
+    query.page = filters.page || 1;
+    query.limit = filters.limit || 50;
 
-    const response = await apiFetch(`${API_BASE}?${params.toString()}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to fetch budgets");
-    }
-
-    const data: EventBudgetListResponse = await response.json();
-    return data.budgets;
+    const result = await _listEventBudgets(query);
+    return result.data as unknown as EventBudget[];
   } catch (error) {
     console.error("Error fetching budgets:", error);
     throw error;
@@ -178,13 +178,9 @@ export async function getBudgets(
 
 export async function getBudget(budgetId: string): Promise<EventBudget> {
   try {
-    const response = await apiFetch(`${API_BASE}/${budgetId}`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to fetch budget");
-    }
-
-    return await response.json();
+    const result = await _getEventBudget(budgetId);
+    if (!result) throw new Error("Failed to fetch budget");
+    return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error fetching budget:", error);
     throw error;
@@ -195,18 +191,13 @@ export async function createBudget(
   input: CreateEventBudgetInput
 ): Promise<EventBudget> {
   try {
-    const response = await apiFetch(API_BASE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+    const result = await eventBudgetCreate({
+      eventId: input.eventId,
+      totalBudgetAmount: input.totalBudgetAmount,
+      notes: input.notes,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to create budget");
-    }
-
-    return await response.json();
+    if (!result) throw new Error("Failed to create budget");
+    return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error creating budget:", error);
     throw error;
@@ -218,24 +209,19 @@ export async function updateBudget(
   input: UpdateEventBudgetInput
 ): Promise<EventBudget> {
   try {
-    const response = await apiFetch(`${API_BASE}/${budgetId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+    const result = await eventBudgetUpdate({
+      totalBudgetAmount: input.totalBudgetAmount,
+      notes: input.notes,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to update budget");
-    }
-
-    return await response.json();
+    if (!result) throw new Error("Failed to update budget");
+    return result as unknown as EventBudget;
   } catch (error) {
     console.error("Error updating budget:", error);
     throw error;
   }
 }
 
+// NOTE: Keeping apiFetch — no generated eventBudgetDelete/eventBudgetSoftDelete command
 export async function deleteBudget(budgetId: string): Promise<void> {
   try {
     const response = await apiFetch(`${API_BASE}/${budgetId}`, {
@@ -257,14 +243,8 @@ export async function getLineItems(
   budgetId: string
 ): Promise<BudgetLineItem[]> {
   try {
-    const response = await apiFetch(`${API_BASE}/${budgetId}/line-items`);
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to fetch line items");
-    }
-
-    const data = await response.json();
-    return data.lineItems;
+    const result = await _listBudgetLineItems({ budgetId });
+    return result.data as unknown as BudgetLineItem[];
   } catch (error) {
     console.error("Error fetching line items:", error);
     throw error;
@@ -276,18 +256,17 @@ export async function createLineItem(
   input: CreateBudgetLineItemInput
 ): Promise<BudgetLineItem> {
   try {
-    const response = await apiFetch(`${API_BASE}/${budgetId}/line-items`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input),
+    const result = await budgetLineItemCreate({
+      budgetId,
+      category: input.category,
+      name: input.name,
+      description: input.description,
+      budgetedAmount: input.budgetedAmount,
+      sortOrder: input.sortOrder,
+      notes: input.notes,
     });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to create line item");
-    }
-
-    return await response.json();
+    if (!result) throw new Error("Failed to create line item");
+    return result as unknown as BudgetLineItem;
   } catch (error) {
     console.error("Error creating line item:", error);
     throw error;
@@ -300,21 +279,14 @@ export async function updateLineItem(
   input: UpdateBudgetLineItemInput
 ): Promise<BudgetLineItem> {
   try {
-    const response = await apiFetch(
-      `${API_BASE}/${budgetId}/line-items/${lineItemId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to update line item");
-    }
-
-    return await response.json();
+    const result = await budgetLineItemUpdate({
+      budgetedAmount: input.budgetedAmount,
+      actualAmount: input.actualAmount,
+      description: input.description,
+      notes: input.notes,
+    });
+    if (!result) throw new Error("Failed to update line item");
+    return result as unknown as BudgetLineItem;
   } catch (error) {
     console.error("Error updating line item:", error);
     throw error;
@@ -326,15 +298,8 @@ export async function deleteLineItem(
   lineItemId: string
 ): Promise<void> {
   try {
-    const response = await apiFetch(
-      `${API_BASE}/${budgetId}/line-items/${lineItemId}`,
-      { method: "DELETE" }
-    );
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Failed to delete line item");
-    }
+    const result = await budgetLineItemRemove({});
+    if (!result) throw new Error("Failed to delete line item");
   } catch (error) {
     console.error("Error deleting line item:", error);
     throw error;

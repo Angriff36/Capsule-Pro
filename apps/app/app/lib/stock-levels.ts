@@ -1,5 +1,9 @@
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all stock-levels calls — generated client targets different
+// API routes (/api/inventory/stock/list, /api/inventory/transactions/list, /api/inventory/storage-locations/list)
+// while these functions hit custom stock-levels aggregation endpoints with computed fields
+// (reorderStatus, parStatus, stockOutRisk, totalValue) not present in the generated types.
 /**
  * Stock Levels Client API Functions
  *

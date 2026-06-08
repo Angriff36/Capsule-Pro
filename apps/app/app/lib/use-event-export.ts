@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+// NOTE: Keeping apiFetch — event export endpoint /api/events/${id}/export/${format} has no generated client equivalent
 import { apiFetch } from "@/app/lib/api";
 
 /**

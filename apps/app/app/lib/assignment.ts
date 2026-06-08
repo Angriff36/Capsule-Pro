@@ -1,5 +1,6 @@
 "use client";
 
+// NOTE: Keeping apiFetch for custom shift assignment endpoints (no generated equivalents)
 import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 

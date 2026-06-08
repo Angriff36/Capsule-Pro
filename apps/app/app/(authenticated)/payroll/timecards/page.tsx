@@ -71,6 +71,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all calls — timecards list uses custom /api/timecards endpoint with
+// joins/aggregation; bulk actions, clock-out, and generate are custom actions with no generated client
 import TimecardBulkActions from "./timecard-bulk-actions";
 import TimecardDetailModal from "./timecard-detail-modal";
 

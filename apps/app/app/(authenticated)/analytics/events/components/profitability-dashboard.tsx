@@ -35,6 +35,8 @@ import {
   SectionHeader,
 } from "@repo/design-system/components/blocks/page-shell";
 import { useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for custom analytics endpoints (/api/events/:id/profitability,
+// /api/analytics/events/profitability) — not entity CRUD routes, no generated client equivalents.
 import { apiFetch } from "@/app/lib/api";
 import type {
   EventProfitabilityMetrics,

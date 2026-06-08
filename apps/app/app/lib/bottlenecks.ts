@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for custom analytics bottleneck endpoint (no generated equivalent)
 import { apiFetch } from "@/app/lib/api";
 import { invariant } from "@/app/lib/invariant";
 

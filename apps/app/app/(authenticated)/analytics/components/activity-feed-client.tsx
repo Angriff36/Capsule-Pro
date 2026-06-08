@@ -20,6 +20,8 @@ import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom activity-feed endpoints (/api/activity-feed/list, /api/activity-feed/stats)
+// — these are not entity CRUD routes and have no generated client equivalents.
 import { apiFetch } from "@/app/lib/api";
 
 interface ActivityFeedClientProps {

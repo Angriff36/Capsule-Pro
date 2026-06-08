@@ -1,6 +1,16 @@
 "use client";
 
 import { formatCurrency } from "@repo/design-system/lib/format-currency";
+import {
+  listInventoryItems as _listInventoryItems,
+  getInventoryItem as _getInventoryItem,
+  inventoryItemCreate,
+  inventoryItemUpdate,
+  inventoryItemSoftDelete,
+  listInventorySuppliers as _listInventorySuppliers,
+} from "@/app/lib/manifest-client.generated";
+import type { InventoryItem as GeneratedInventoryItem, InventorySupplier as GeneratedInventorySupplier } from "@/app/lib/manifest-types.generated";
+// NOTE: Keeping apiFetch for batch operations, CSV import, and custom supplier list endpoint
 import { apiFetch } from "@/app/lib/api";
 // Type definitions matching the API response
 export const FSA_STATUSES = [
@@ -143,105 +153,82 @@ export async function listInventoryItems(params: {
   page?: number;
   limit?: number;
 }): Promise<InventoryItemListResponse> {
-  const searchParams = new URLSearchParams();
-  if (params.search) {
-    searchParams.set("search", params.search);
-  }
-  if (params.category) {
-    searchParams.set("category", params.category);
-  }
-  if (params.supplierId) {
-    searchParams.set("supplier_id", params.supplierId);
-  }
-  if (params.stockStatus) {
-    searchParams.set("stock_status", params.stockStatus);
-  }
-  if (params.fsaStatus) {
-    searchParams.set("fsa_status", params.fsaStatus);
-  }
-  if (params.tags?.length) {
-    searchParams.set("tags", params.tags.join(","));
-  }
-  if (params.page) {
-    searchParams.set("page", params.page.toString());
-  }
-  if (params.limit) {
-    searchParams.set("limit", params.limit.toString());
-  }
+  const query: Record<string, string | number> = {};
+  if (params.search) query.search = params.search;
+  if (params.category) query.category = params.category;
+  if (params.supplierId) query.supplier_id = params.supplierId;
+  if (params.stockStatus) query.stock_status = params.stockStatus;
+  if (params.fsaStatus) query.fsa_status = params.fsaStatus;
+  if (params.tags?.length) query.tags = params.tags.join(",");
+  if (params.page) query.page = params.page;
+  if (params.limit) query.limit = params.limit;
 
-  const response = await apiFetch(
-    `/api/inventory/items?${searchParams.toString()}`
-  );
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to list inventory items");
-  }
-
-  return response.json();
+  return _listInventoryItems(query) as unknown as Promise<InventoryItemListResponse>;
 }
 
 // Get a single inventory item by ID
 export async function getInventoryItem(
   itemId: string
 ): Promise<InventoryItemWithStatus> {
-  const response = await apiFetch(`/api/inventory/items/${itemId}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to get inventory item");
-  }
-
-  return response.json();
+  const result = await _getInventoryItem(itemId);
+  if (!result) throw new Error("Failed to get inventory item");
+  return result as unknown as InventoryItemWithStatus;
 }
 
 // Create a new inventory item
 export async function createInventoryItem(
   request: CreateInventoryItemRequest
-): Promise<InventoryItemWithStatus> {
-  const response = await apiFetch("/api/inventory/items", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+): Promise<GeneratedInventoryItem> {
+  const result = await inventoryItemCreate({
+    item_number: request.item_number,
+    name: request.name,
+    description: request.description,
+    category: request.category,
+    unitOfMeasure: request.unit_of_measure,
+    unitCost: request.unit_cost,
+    quantityOnHand: request.quantity_on_hand,
+    parLevel: request.par_level,
+    reorder_level: request.reorder_level,
+    supplierId: request.supplier_id,
+    tags: request.tags?.join(","),
+    fsa_status: request.fsa_status,
+    fsa_temp_logged: request.fsa_temp_logged,
+    fsa_allergen_info: request.fsa_allergen_info,
+    fsa_traceable: request.fsa_traceable,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to create inventory item");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to create inventory item");
+  return result;
 }
 
 // Update an inventory item
 export async function updateInventoryItem(
   itemId: string,
   request: UpdateInventoryItemRequest
-): Promise<InventoryItemWithStatus> {
-  const response = await apiFetch(`/api/inventory/items/${itemId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
+): Promise<GeneratedInventoryItem> {
+  const result = await inventoryItemUpdate({
+    id: itemId,
+    name: request.name,
+    description: request.description,
+    category: request.category,
+    unitOfMeasure: request.unit_of_measure,
+    unitCost: request.unit_cost,
+    quantityOnHand: request.quantity_on_hand,
+    parLevel: request.par_level,
+    reorder_level: request.reorder_level,
+    supplierId: request.supplier_id,
+    tags: request.tags?.join(","),
+    fsa_status: request.fsa_status,
+    fsa_temp_logged: request.fsa_temp_logged as unknown as string | null | undefined,
+    fsa_allergen_info: request.fsa_allergen_info as unknown as string | null | undefined,
+    fsa_traceable: request.fsa_traceable as unknown as string | null | undefined,
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to update inventory item");
-  }
-
-  return response.json();
+  if (!result) throw new Error("Failed to update inventory item");
+  return result;
 }
 
 // Delete an inventory item (soft delete)
 export async function deleteInventoryItem(itemId: string): Promise<void> {
-  const response = await apiFetch(`/api/inventory/items/${itemId}`, {
-    method: "DELETE",
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to delete inventory item");
-  }
+  await inventoryItemSoftDelete({ id: itemId });
 }
 
 // Helper to get stock status badge color
@@ -346,6 +333,7 @@ export interface Supplier {
   supplier_number: string;
 }
 
+// NOTE: Keeping apiFetch for custom supplier list endpoint (response shape differs from generated listInventorySuppliers)
 export async function listSuppliers(): Promise<Supplier[]> {
   const response = await apiFetch("/api/inventory/suppliers/list?limit=500");
   if (!response.ok) {
@@ -394,6 +382,7 @@ export interface BatchDeleteResponse {
 
 export type BatchResponse = BatchUpdateResponse | BatchDeleteResponse;
 
+// NOTE: Keeping apiFetch for batch update — no generated batch operation exists
 /**
  * Batch update inventory items (category, fsa_status, tags, unit_cost, reorder_level)
  */
@@ -415,6 +404,7 @@ export async function batchUpdateItems(
   return response.json();
 }
 
+// NOTE: Keeping apiFetch for batch delete — no generated batch operation exists
 /**
  * Batch delete inventory items (soft delete)
  */
@@ -445,6 +435,7 @@ export interface ImportResponse {
   errors: ImportError[];
 }
 
+// NOTE: Keeping apiFetch for CSV file import — no generated file upload equivalent
 /**
  * Import inventory items from a CSV File object
  */

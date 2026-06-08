@@ -13,6 +13,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
+// NOTE: Keeping apiFetch for custom manifest-editor settings endpoints (no generated client equivalent)
 import { apiFetch } from "@/app/lib/api";
 
 const ManifestPolicyEditor = dynamic(

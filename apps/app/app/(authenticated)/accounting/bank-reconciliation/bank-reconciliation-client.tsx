@@ -14,6 +14,7 @@ import { Landmark, Plus, RefreshCw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all calls — bank-reconciliation endpoint is a custom aggregation with no generated client
 
 // ---------------------------------------------------------------------------
 // Types

@@ -12,6 +12,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { listEventProfitabilities, getEventProfitability } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types — mirrors the EventProfitability Prisma model in tenant_events schema
@@ -71,30 +72,21 @@ const API_BASE = "/api/events/profitability";
 export async function fetchProfitabilities(): Promise<
   EventProfitabilityRecord[]
 > {
-  const response = await apiFetch(`${API_BASE}/list`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch profitability records");
-  }
-
-  const data = await response.json();
-  return data.eventProfitabilitys ?? [];
+  const result = await listEventProfitabilities();
+  return result.data as unknown as EventProfitabilityRecord[];
 }
 
 export async function fetchProfitabilityById(
   id: string
 ): Promise<EventProfitabilityRecord> {
-  const response = await apiFetch(`${API_BASE}/${id}`);
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to fetch profitability record");
+  const result = await getEventProfitability(id);
+  if (!result) {
+    throw new Error("Failed to fetch profitability record");
   }
-
-  return await response.json();
+  return result as unknown as EventProfitabilityRecord;
 }
 
+// NOTE: Keeping apiFetch for recalculate command (no generated equivalent for custom command endpoint)
 export async function recalculateProfitability(
   id: string
 ): Promise<{ success: boolean }> {

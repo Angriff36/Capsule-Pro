@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+// NOTE: Keeping apiFetch for kitchen analytics endpoint (no generated equivalent for /api/analytics/*)
 import { apiFetch } from "@/app/lib/api";
 
 // Types for kitchen analytics data

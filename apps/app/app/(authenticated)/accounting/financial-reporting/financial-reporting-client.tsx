@@ -13,6 +13,7 @@ import { Download } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+// NOTE: Keeping apiFetch for all calls — financial-reports endpoint is a custom report generator with no generated client
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
