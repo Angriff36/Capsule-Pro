@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 29th revision, v0.12.166 target)
+## Validation Baseline (2026-06-07, comprehensive audit -- 30th revision, v0.12.168 target)
 
 ### Claim Verification Matrix
 
@@ -577,6 +577,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 10.6: MCP server entity-domain-map ESM consolidation** | Replaced require() CJS hack with proper ESM re-export. 14→8 lines, eslint-disable eliminated. Sole consumer (route-conformance-scan.ts) verified. All typechecks clean. |
 | 2026-06-07 | **Task 6.5: Rename misleading use-*.ts files** | 10 files renamed from use-*.ts to *.ts in apps/app/app/lib/. 23 import paths updated. All typechecks clean (app, api, mcp-server). |
 | 2026-06-07 | **Schema drift audit fix: allowlist path + semantic aliases** | Fixed allowlist path from stale `scripts/manifest/` to `manifest/governance/`. Added MANIFEST_SEMANTIC_ALIASES normalization (datetime→number, money→number, int→number, decimal→number, etc.). Results: 179→51 violations (72% reduction), 76 clean entities (was 0). Remaining 51 are genuine gaps. Top offenders: RecipeVersion (3), LaborBudget (3), CateringOrder (3), ClientContact (2). Json type mismatches (ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions) need adapter-derived entries. |
+| 2026-06-07 | **Task 10.8 batch 2: `as unknown as` double-cast cleanup** | 157→91 (54 removed, 42% reduction). 28 files fixed across apps/api, apps/app, packages/ai, packages/design-system, packages/event-parser, packages/mcp-server, packages/sentry-integration. Remaining 91 are architecturally necessary (test mocks, Prisma JSON, Vega-Lite specs). |
+| 2026-06-07 | **Task 6.1: Frontend Data Layer Decision** | DECISION: Adopt TanStack Query wrapping generated client as `queryFn` sources. QueryProvider already live. 1,328 generated functions → 3 consumers. Migration path defined for Tasks 6.2-6.4. |
+| 2026-06-07 | **Schema drift allowlist: Json type entries** | Added adapter-derived rules for ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions. 51→49 violations. |
 
 ---
 
@@ -1121,10 +1124,14 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 0 consumers**. The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it; 167 other apiFetch files get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
 
-### 6.1 Frontend data layer decision
-- **Done when:** Evaluate three options: (a) Fix and adopt generated client (currently 1,330 functions, **0 consumers**), (b) Delete generated client and formalize existing `use-*` pattern, (c) Generate only React Query hooks via `react-query` projection and retire both flat client and hand-written hooks.
-- **Why:** The `use-*.ts` naming convention implies React hooks but files export plain async functions -- misleading. 21 hand-written modules (10 plain functions, 11 hooks, 1 TanStack Query) duplicate patterns the generated file already covers. Generated client has **0 actual consumers** despite 1,330 functions. `manifest-client.ts` (executeCommand) is already wired but orphaned -- clean migration target.
-- **Backpressure:** Decision document with trade-offs.
+### 6.1 Frontend data layer decision — ✅ DONE 2026-06-07
+- **✅ DECISION: Adopt TanStack Query wrapping the generated client as `queryFn` sources.**
+- **Rationale:** TanStack Query v5 is installed and `QueryProvider` is live in production (wraps entire app). The generated client has 1,328 typed functions (914 reads, 414 commands) but only 3 consumers. 167 files use bare `apiFetch` + `useState/useEffect` with zero caching. The gold-standard pattern already exists at `events/[eventId]/event-hooks.ts` (query key factories, `useQuery`, `useMutation` with optimistic updates).
+- **Migration path for Tasks 6.2-6.4:**
+  - Phase 1 (Task 6.2): Create per-domain `hooks.ts` files with query key factories + `useQuery`/`useMutation` hooks using generated client reads + `executeCommand` for writes
+  - Phase 2 (Task 6.3): Migrate components from `useState/useEffect/apiFetch` to TanStack Query hooks
+  - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
+- **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
 ### 6.2 Add data caching/deduplication layer
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
@@ -1953,7 +1960,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `as any` in apps/api/app/ | **0** | 39 | RESOLVED (Task 10.7, 2026-06-07) |
 | `as any` in manifest/runtime/src/ | **0** (factory verified clean 2026-06-06) | 10 | RESOLVED |
 | `as any` in factory specifically | **0** (verified 2026-06-06) | 6 | RESOLVED |
-| `as unknown as` double-casts | **20** (architecturally necessary) | 60 | RESOLVED (Task 10.8, 2026-06-07) |
+| `as unknown as` double-casts | **91** (architecturally necessary: test mocks, Prisma JSON, Vega-Lite) | 157 | RESOLVED (Task 10.8, v0.12.168: 42% reduction) |
 | describe.skip test suites | 1 (sales-reporting) | 1 | -- |
 | apiFetch call sites | **1,092** across **167 files** | 1,098/169 | CORRECTED (9th rev) |
 | Frontend data caching | TanStack Query installed, **5 files, 31 uses** | 6/32 | CORRECTED (9th rev) |
