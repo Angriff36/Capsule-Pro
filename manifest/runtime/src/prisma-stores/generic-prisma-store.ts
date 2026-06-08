@@ -64,7 +64,7 @@ export class GenericPrismaStore implements Store<EntityInstance> {
 
   constructor(
     prisma: PrismaClient,
-    private readonly entityName: string,
+    entityName: string,
     private readonly tenantId: string,
   ) {
     const meta = PRISMA_MODEL_METADATA[entityName];
@@ -203,8 +203,36 @@ export class GenericPrismaStore implements Store<EntityInstance> {
     data: Partial<EntityInstance>,
   ): Promise<EntityInstance | undefined> {
     try {
+      const where = this.whereUnique(id);
+
+      // DB-level optimistic concurrency: when the entity declares a versionProperty
+      // and the incoming data includes a new version value, add a WHERE clause
+      // requiring the current row to have the OLD version (newVersion - 1).
+      // This prevents lost updates when two concurrent requests read the same row.
+      if (this.meta.versionProperty) {
+        const versionField = this.meta.fields.find(
+          (f) => f.irName === this.meta.versionProperty || f.name === this.meta.versionProperty,
+        );
+        const newVersion = versionField
+          ? (data[versionField.irName] ?? data[versionField.name]) as number | undefined
+          : undefined;
+        if (versionField && newVersion !== undefined) {
+          const fieldName = versionField.name;
+          const expectedVersion = newVersion - 1;
+          // For composite keys, where is { whereAccessor: { tenantId, id } };
+          // merge version alongside the unique compound.
+          // For single PK, where is { id: "..." }; merge version at top level.
+          if (this.meta.pkFields.length > 1) {
+            const compound = where[this.meta.whereAccessor] as Record<string, unknown>;
+            compound[fieldName] = expectedVersion;
+          } else {
+            where[fieldName] = expectedVersion;
+          }
+        }
+      }
+
       const row = await this.delegate.update({
-        where: this.whereUnique(id),
+        where,
         data: this.buildPatch(data),
       });
       return this.mapToManifestEntity(row);

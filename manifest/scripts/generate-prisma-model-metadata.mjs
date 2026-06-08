@@ -14,8 +14,8 @@
  *
  * Usage: node manifest/scripts/generate-prisma-model-metadata.mjs
  */
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { resolve, dirname } from "node:path";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
+import { resolve, dirname, join } from "node:path";
 
 const root = resolve(process.cwd());
 const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
@@ -23,6 +23,35 @@ const outPath = resolve(
   root,
   "manifest/runtime/src/generated/prisma-model-metadata.generated.ts",
 );
+
+/**
+ * Load versionProperty from IR JSON files.
+ * Returns a Map<entityName, versionPropertyName> for entities that declare one.
+ */
+function loadVersionProperties() {
+  const irDir = resolve(root, "manifest/ir");
+  const versionMap = new Map();
+  if (!existsSync(irDir)) return versionMap;
+
+  const irFiles = readdirSync(irDir)
+    .filter((name) => name.endsWith(".ir.json"))
+    .sort();
+
+  for (const irFile of irFiles) {
+    const irPath = join(irDir, irFile);
+    try {
+      const ir = JSON.parse(readFileSync(irPath, "utf8"));
+      for (const entity of ir.entities || []) {
+        if (entity.versionProperty) {
+          versionMap.set(entity.name, entity.versionProperty);
+        }
+      }
+    } catch {
+      // Skip unreadable/parsable IR files silently
+    }
+  }
+  return versionMap;
+}
 
 const schema = readFileSync(schemaPath, "utf8");
 
@@ -122,6 +151,14 @@ while ((mm = modelRe.exec(schema)) !== null) {
   };
 }
 
+// Merge versionProperty from compiled IR into model metadata
+const versionMap = loadVersionProperties();
+for (const [entityName, versionProp] of versionMap) {
+  if (models[entityName]) {
+    models[entityName].versionProperty = versionProp;
+  }
+}
+
 const header = `// Generated from packages/database/prisma/schema.prisma - DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs
 // Re-run after any schema change. Consumed by GenericPrismaStore.
@@ -147,6 +184,7 @@ export interface PrismaModelMeta {
   pkFields: string[];
   whereAccessor: string;
   hasDeletedAt: boolean;
+  versionProperty?: string;
   fields: PrismaFieldMeta[];
 }
 

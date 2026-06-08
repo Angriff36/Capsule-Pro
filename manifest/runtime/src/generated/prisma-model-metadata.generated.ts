@@ -22,6 +22,7 @@ export interface PrismaModelMeta {
   pkFields: string[];
   whereAccessor: string;
   hasDeletedAt: boolean;
+  versionProperty?: string;
   fields: PrismaFieldMeta[];
 }
 
@@ -5532,6 +5533,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "score",
+        "irName": "score",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scoreBreakdown",
+        "irName": "scoreBreakdown",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -8136,6 +8159,17 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "isActive",
         "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isTemplate",
+        "irName": "isTemplate",
         "type": "Boolean",
         "isEnum": false,
         "isList": false,
@@ -11279,6 +11313,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "fsa_status",
         "irName": "fsaStatus",
         "type": "String",
@@ -11322,7 +11378,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "InventoryTransaction": {
     "accessor": "inventoryTransaction",
@@ -17349,8 +17406,31 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "TimeEntry": {
     "accessor": "timeEntry",
@@ -27112,8 +27192,31 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false
+      },
+      {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "EventContract": {
     "accessor": "eventContract",
@@ -29826,6 +29929,482 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isEnum": false,
         "isList": false,
         "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "ManifestApprovalRequest": {
+    "accessor": "manifestApprovalRequest",
+    "dbName": "manifest_approval_requests",
+    "pgSchema": "public",
+    "pkFields": [
+      "requestKey"
+    ],
+    "whereAccessor": "requestKey",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "requestKey",
+        "irName": "requestKey",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": true
+      },
+      {
+        "name": "entity",
+        "irName": "entity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "instanceId",
+        "irName": "instanceId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "approvalName",
+        "irName": "approvalName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "command",
+        "irName": "command",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requiredStages",
+        "irName": "requiredStages",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "grants",
+        "irName": "grants",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requestedAt",
+        "irName": "requestedAt",
+        "type": "BigInt",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "expiresAt",
+        "irName": "expiresAt",
+        "type": "BigInt",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deniedBy",
+        "irName": "deniedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deniedReason",
+        "irName": "deniedReason",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "insertedAt",
+        "irName": "insertedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "ManifestAuditRecord": {
+    "accessor": "manifestAuditRecord",
+    "dbName": "manifest_audit_records",
+    "pgSchema": "public",
+    "pkFields": [
+      "recordId"
+    ],
+    "whereAccessor": "recordId",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "recordId",
+        "irName": "recordId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": true
+      },
+      {
+        "name": "occurredAt",
+        "irName": "occurredAt",
+        "type": "BigInt",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "orgId",
+        "irName": "orgId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actorId",
+        "irName": "actorId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "requestId",
+        "irName": "requestId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source",
+        "irName": "source",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "entity",
+        "irName": "entity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "command",
+        "irName": "command",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "commandId",
+        "irName": "commandId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "outcome",
+        "irName": "outcome",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "emittedEventNames",
+        "irName": "emittedEventNames",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "irHash",
+        "irName": "irHash",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "diagnostics",
+        "irName": "diagnostics",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "insertedAt",
+        "irName": "insertedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "ManifestOutboxEntry": {
+    "accessor": "manifestOutboxEntry",
+    "dbName": "manifest_outbox_entries",
+    "pgSchema": "public",
+    "pkFields": [
+      "entryId"
+    ],
+    "whereAccessor": "entryId",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "entryId",
+        "irName": "entryId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": true
+      },
+      {
+        "name": "enqueuedAt",
+        "irName": "enqueuedAt",
+        "type": "BigInt",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event",
+        "irName": "event",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "attempts",
+        "irName": "attempts",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "lastError",
+        "irName": "lastError",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "claimedAt",
+        "irName": "claimedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deliveredAt",
+        "irName": "deliveredAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "failedAt",
+        "irName": "failedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "insertedAt",
+        "irName": "insertedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subjectEntity",
+        "irName": "subjectEntity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "subjectId",
+        "irName": "subjectId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
         "hasDefault": false,
         "isUpdatedAt": false,
         "isId": false

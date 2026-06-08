@@ -22,6 +22,8 @@ entity EventGuest {
   property rsvpStatus: string = "pending"
   property rsvpAt: datetime
   property checkedInAt: datetime
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 

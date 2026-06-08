@@ -1788,6 +1788,8 @@ model InventoryItem {
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt         DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  version           Int                @default(0)
+  versionAt         DateTime?
   fsa_status        String?            @default("unknown")
   fsa_temp_logged   Boolean?           @default(false)
   fsa_allergen_info Boolean?           @default(false)
@@ -2719,6 +2721,8 @@ model ScheduleShift {
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  version           Int       @default(0)
+  versionAt         DateTime?
   tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -4266,6 +4270,8 @@ model EventGuest {
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+  version              Int       @default(0)
+  versionAt            DateTime?
   tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
@@ -4947,6 +4953,76 @@ model ManifestIdempotency {
   @@index([expiresAt])
   @@map("manifest_idempotency")
   @@schema("tenant")
+}
+
+/// Manifest approval workflow requests
+model ManifestApprovalRequest {
+  requestKey     String   @id @map("request_key")
+  entity         String
+  instanceId     String   @map("instance_id")
+  approvalName   String   @map("approval_name")
+  command        String
+  status         String   @default("pending")
+  requiredStages Json     @default("[]") @map("required_stages")
+  grants         Json     @default("[]")
+  requestedAt    BigInt   @map("requested_at")
+  expiresAt      BigInt?  @map("expires_at")
+  deniedBy       String?  @map("denied_by")
+  deniedReason   String?  @map("denied_reason")
+  insertedAt     DateTime @default(now()) @map("inserted_at") @db.Timestamptz
+
+  @@index([expiresAt], map: "idx_manifest_approval_expires")
+  @@index([status], map: "idx_manifest_approval_status")
+  @@map("manifest_approval_requests")
+  @@schema("public")
+}
+
+/// Manifest audit trail for all governed commands
+model ManifestAuditRecord {
+  recordId          String   @id @map("record_id")
+  occurredAt        BigInt   @map("occurred_at")
+  tenantId          String?  @map("tenant_id")
+  orgId             String?  @map("org_id")
+  actorId           String?  @map("actor_id")
+  requestId         String?  @map("request_id")
+  source            String?
+  entity            String?
+  command           String
+  commandId         String?  @map("command_id")
+  outcome           String
+  emittedEventNames String[] @map("emitted_event_names")
+  irHash            String?  @map("ir_hash")
+  diagnostics       Json?
+  insertedAt        DateTime @default(now()) @map("inserted_at") @db.Timestamptz
+
+  @@index([commandId, occurredAt], map: "idx_manifest_audit_command_occurred")
+  @@index([outcome], map: "idx_manifest_audit_outcome")
+  @@index([tenantId, occurredAt], map: "idx_manifest_audit_tenant_occurred")
+  @@map("manifest_audit_records")
+  @@schema("public")
+}
+
+/// Manifest outbox for reliable event delivery
+model ManifestOutboxEntry {
+  entryId       String    @id @map("entry_id")
+  enqueuedAt    BigInt    @map("enqueued_at")
+  event         Json
+  status        String
+  attempts      Int       @default(0)
+  lastError     String?   @map("last_error")
+  claimedAt     DateTime? @map("claimed_at") @db.Timestamptz
+  deliveredAt   DateTime? @map("delivered_at") @db.Timestamptz
+  failedAt      DateTime? @map("failed_at") @db.Timestamptz
+  insertedAt    DateTime  @default(now()) @map("inserted_at") @db.Timestamptz
+  subjectEntity String?   @map("subject_entity")
+  subjectId     String?   @map("subject_id")
+
+  @@index([enqueuedAt], map: "idx_manifest_outbox_pending_unclaimed")
+  @@index([status], map: "idx_manifest_outbox_status")
+  @@index([subjectEntity], map: "idx_manifest_outbox_subject_entity")
+  @@index([subjectId], map: "idx_manifest_outbox_subject_id")
+  @@map("manifest_outbox_entries")
+  @@schema("public")
 }
 
 /// Sentry-to-PR auto-fixer job tracking

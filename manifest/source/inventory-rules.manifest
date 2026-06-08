@@ -21,6 +21,8 @@ entity InventoryItem {
   property fsa_temp_logged: boolean = false
   property fsa_allergen_info: boolean = false
   property fsa_traceable: boolean = false
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 

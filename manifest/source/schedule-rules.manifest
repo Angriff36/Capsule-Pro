@@ -127,6 +127,8 @@ entity ScheduleShift {
   property swapStatus: string = "none"
   property swapOfferedAt: datetime
   property swapAcceptedAt: datetime
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 
