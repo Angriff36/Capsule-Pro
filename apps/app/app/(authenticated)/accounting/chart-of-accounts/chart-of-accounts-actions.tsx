@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { listChartOfAccounts } from "@/app/lib/manifest-client.generated";
 import type { ChartOfAccountWithParent } from "@/app/lib/chart-of-accounts";
 import { AccountModal } from "./components/account-modal";
 
@@ -14,12 +14,9 @@ export function ChartOfAccountsActions() {
 
   // Fetch accounts for parent dropdown on mount
   useEffect(() => {
-    apiFetch("/api/accounting/accounts?includeInactive=true")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data?.data) {
-          setParentAccounts(data.data);
-        }
+    listChartOfAccounts()
+      .then((accounts) => {
+        setParentAccounts(accounts as unknown as ChartOfAccountWithParent[]);
       })
       .catch(() => {
         // Silently fail — parent dropdown just won't show

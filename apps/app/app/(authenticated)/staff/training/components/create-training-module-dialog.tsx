@@ -35,7 +35,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { apiFetch } from "@/app/lib/api";
+import { trainingModuleCreate } from "@/app/lib/manifest-client.generated";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -76,29 +76,19 @@ export function CreateTrainingModuleDialog({}: CreateTrainingModuleDialogProps) 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await apiFetch("/api/training/modules", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: values.title,
-          description: values.description || undefined,
-          contentUrl: values.contentUrl || undefined,
-          contentType: values.contentType,
-          durationMinutes: values.durationMinutes
-            ? Number(values.durationMinutes)
-            : undefined,
-          category: values.category || undefined,
-          isRequired: values.isRequired,
-        }),
+      const result = await trainingModuleCreate({
+        title: values.title,
+        description: values.description || undefined,
+        contentUrl: values.contentUrl || undefined,
+        contentType: values.contentType,
+        durationMinutes: values.durationMinutes
+          ? Number(values.durationMinutes)
+          : undefined,
+        category: values.category || undefined,
+        isRequired: values.isRequired,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `Server error (${response.status})`);
-      }
-
-      if (!data.result) {
+      if (!result) {
         throw new Error(
           "Module was not created — no result returned from server"
         );

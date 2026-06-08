@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: IMPLEMENTATION_PLAN.md (edit), packages/database/src/__tests__/ingredient-resolution.test.ts (edit)
+[proactive bridge @ 90% context — saved before compacting]
+Files (1):
+  manifest/governance/parent-context-overrides.json (edit)
 
 # === END COGNILAYER ===

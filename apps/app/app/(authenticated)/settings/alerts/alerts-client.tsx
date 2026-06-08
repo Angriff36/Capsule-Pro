@@ -42,6 +42,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  alertsConfigCreate,
+  alertsConfigRemove,
+  alertsConfigUpdate,
+} from "@/app/lib/manifest-client.generated";
 
 interface AlertsConfig {
   id: string;
@@ -152,18 +157,10 @@ export function AlertsConfigClient({
 
   const handleCreate = async () => {
     try {
-      const res = await apiFetch("/api/alertsconfig/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channel: form.channel,
-          destination: form.destination,
-        }),
+      await alertsConfigCreate({
+        channel: form.channel,
+        destination: form.destination,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Create failed");
-      }
       toast.success("Alert configuration created");
       setCreateOpen(false);
       setForm(EMPTY_FORM);
@@ -181,19 +178,11 @@ export function AlertsConfigClient({
     if (!editTarget) return;
     setActioning(editTarget.id);
     try {
-      const res = await apiFetch("/api/alertsconfig/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editTarget.id,
-          channel: form.channel,
-          destination: form.destination,
-        }),
+      await alertsConfigUpdate({
+        id: editTarget.id,
+        channel: form.channel,
+        destination: form.destination,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Update failed");
-      }
       toast.success("Alert configuration updated");
       setEditTarget(null);
       setForm(EMPTY_FORM);
@@ -213,18 +202,10 @@ export function AlertsConfigClient({
     if (!deleteTarget) return;
     setActioning(deleteTarget.id);
     try {
-      const res = await apiFetch("/api/alertsconfig/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: deleteTarget.id,
-          reason: "Removed via settings UI",
-        }),
+      await alertsConfigRemove({
+        id: deleteTarget.id,
+        reason: "Removed via settings UI",
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Remove failed");
-      }
       toast.success("Alert configuration removed");
       setDeleteTarget(null);
       await loadConfigs();

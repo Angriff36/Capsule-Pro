@@ -38,8 +38,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listContainers,
   containerCreate,
   containerUpdate,
   containerDeactivate,
@@ -151,10 +151,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
   const loadContainers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await apiFetch("/api/kitchen/containers/list");
-      if (!res.ok) throw new Error("Failed to load containers");
-      const data = await res.json();
-      const all: ContainerRecord[] = data.containers ?? [];
+      const all = await listContainers() as unknown as ContainerRecord[];
 
       // Client-side filtering since list endpoint has no query params
       let filtered = all;

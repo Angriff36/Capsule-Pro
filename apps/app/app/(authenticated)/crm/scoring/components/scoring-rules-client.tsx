@@ -68,6 +68,12 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  crmScoringRuleCreate,
+  crmScoringRuleActivate,
+  crmScoringRuleDeactivate,
+  crmScoringRuleSoftDelete,
+} from "@/app/lib/manifest-client.generated";
 
 // Types
 export interface ScoringRule {
@@ -178,16 +184,15 @@ export function ScoringRulesClient({
 
     setIsSubmitting(true);
     try {
-      const res = await apiFetch("/api/crm/scoring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      await crmScoringRuleCreate({
+        ruleName: form.rule_name,
+        field: form.field,
+        condition: form.condition,
+        value: form.value,
+        points: form.points,
+        isActive: form.is_active,
+        priority: form.priority,
       });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to create rule");
-      }
 
       toast.success("Rule created successfully");
       setIsDialogOpen(false);
@@ -206,20 +211,10 @@ export function ScoringRulesClient({
   // Toggle rule active status
   const handleToggleActive = async (rule: ScoringRule) => {
     try {
-      // For now, we'll delete and recreate since there's no PATCH endpoint
-      // This is a workaround - ideally we'd add a PATCH endpoint
-      const res = await apiFetch("/api/crm/scoring", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...rule,
-          is_active: !rule.is_active,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to update rule");
+      if (rule.is_active) {
+        await crmScoringRuleDeactivate({ id: rule.id });
+      } else {
+        await crmScoringRuleActivate({ id: rule.id });
       }
 
       // Update local state optimistically
@@ -445,13 +440,7 @@ export function ScoringRulesClient({
                               return;
                             }
                             try {
-                              const res = await apiFetch(
-                                `/api/crm/scoring/${rule.id}`,
-                                { method: "DELETE" }
-                              );
-                              if (!res.ok) {
-                                throw new Error("Failed to delete rule");
-                              }
+                              await crmScoringRuleSoftDelete({ id: rule.id });
                               toast.success("Scoring rule deleted");
                               loadData();
                             } catch {

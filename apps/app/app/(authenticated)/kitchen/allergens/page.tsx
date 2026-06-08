@@ -39,7 +39,14 @@ import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import {
+  listAllergenWarnings,
+  listDishes,
+  listEvents,
+  listRecipes,
+  allergenWarningAcknowledge,
+  allergenWarningMarkResolved,
+} from "@/app/lib/manifest-client.generated";
 import { AllergenMatrix } from "@/components/allergen-matrix";
 import { AllergenManagementModal } from "./allergen-management-modal";
 
@@ -116,15 +123,8 @@ export default function AllergenManagementPage() {
   // Fetch helpers — stable refs (empty deps) so mount effects don't re-fire every render
   const fetchWarnings = useCallback(async () => {
     try {
-      const response = await apiFetch("/api/kitchen/allergens/warnings");
-      if (!response.ok) {
-        // Don't throw - handle gracefully and return empty array
-        logger.warn("Failed to fetch warnings, server may be unavailable");
-        setWarnings([]);
-        return;
-      }
-      const data = await response.json();
-      setWarnings(data.warnings || []);
+      const data = await listAllergenWarnings();
+      setWarnings((data || []) as unknown as AllergenWarning[]);
     } catch (error) {
       // Network errors or other issues - handle gracefully
       logger.warn(logger.fmt`Error fetching warnings: ${String(error)}`);
@@ -134,14 +134,8 @@ export default function AllergenManagementPage() {
 
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await apiFetch("/api/events?limit=50");
-      if (!response.ok) {
-        logger.warn("Failed to fetch events, server may be unavailable");
-        setEvents([]);
-        return;
-      }
-      const data = await response.json();
-      setEvents(data.data || []);
+      const data = await listEvents({ limit: 50 });
+      setEvents((data || []) as unknown as Event[]);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching events: ${String(error)}`);
       setEvents([]);
@@ -150,14 +144,9 @@ export default function AllergenManagementPage() {
 
   const fetchDishes = useCallback(async () => {
     try {
-      const response = await apiFetch("/api/kitchen/dishes?limit=100");
-      if (!response.ok) {
-        logger.warn("Failed to fetch dishes, server may be unavailable");
-        setDishes([]);
-        return;
-      }
-      const data = await response.json();
-      setDishes(data.data || []);
+      const data = await listDishes({ limit: 100 });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setDishes((data || []) as any);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching dishes: ${String(error)}`);
       setDishes([]);
@@ -166,14 +155,9 @@ export default function AllergenManagementPage() {
 
   const fetchRecipes = useCallback(async () => {
     try {
-      const response = await apiFetch("/api/kitchen/recipes?limit=100");
-      if (!response.ok) {
-        logger.warn("Failed to fetch recipes, server may be unavailable");
-        setRecipes([]);
-        return;
-      }
-      const data = await response.json();
-      setRecipes(data.data || []);
+      const data = await listRecipes({ limit: 100 });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setRecipes((data || []) as any);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching recipes: ${String(error)}`);
       setRecipes([]);
@@ -239,22 +223,7 @@ export default function AllergenManagementPage() {
   const handleAcknowledgeWarning = async (warningId: string) => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(
-        "/api/events/allergens/warnings/acknowledge",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            warningId,
-            resolved: false,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        toast.error("Failed to acknowledge warning");
-        return;
-      }
+      await allergenWarningAcknowledge({ warningId });
 
       toast.success("Warning acknowledged");
 
@@ -274,23 +243,7 @@ export default function AllergenManagementPage() {
   ) => {
     setActionLoading(true);
     try {
-      const response = await apiFetch(
-        "/api/events/allergens/warnings/acknowledge",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            warningId,
-            overrideReason,
-            resolved: true,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        toast.error("Failed to resolve warning");
-        return;
-      }
+      await allergenWarningMarkResolved({ warningId, overrideReason });
 
       toast.success("Warning resolved");
 
