@@ -590,6 +590,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.2 batch 8: 8 more frontend files migrated** | lib/leads, lib/proposals, vendors, routes-view, pipeline-board, equipment, catering, collections. 57 files total consuming generated client. Net -34 lines. API+App typecheck 0, 2785 tests pass. |
 | 2026-06-08 | **Idempotent command core + allergen acknowledge idempotency** | run-manifest-command-core: IDEMPOTENT_COMMANDS registry, noop flag on success, tryGetInstance helper. 3 allergen commands registered. execute-command skips webhooks on noop. New test: allergen-acknowledge-idempotency (4 cases). |
 | 2026-06-08 | **Task 8.10 (ScheduleShift parent-context)** | ScheduleShift inherits locationId from Schedule via parent-context propagation | v0.12.198 |
+| 2026-06-08 | **manifest:check score fix** | Aligned event names in ProcurementBudget + TrainingAssignment; added 7 allowlist entries; score 75→100 | v0.12.199 |
 
 ---
 
@@ -1237,10 +1238,15 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 ### 7.5 Wire Rules Engine into factory pipeline — ✅ DONE (deleted 2026-06-04)
 - **✅ DONE.** Decision: DELETE. The `manifest/runtime/src/rules-engine/` directory was deleted as part of Task 10.4 (confirmed dead code: 0 consumers, 5 files, ~1000 LOC). `createRulesEngineMiddleware()` was never imported outside its own module. Business rules are now expressed via Manifest constraints, guards, and computed properties in `.manifest` source files rather than a separate rules engine.
 
-### 7.6 Wire remaining RuntimeOptions
-- **Done when:** Each option evaluated: `approvalStore`, `flagProvider`, `jobQueue`, `profiling`, `generateId`, `now`, `deterministicMode` (defined in context but not forwarded), `evaluationLimits` (defined in context but not forwarded), `requireValidProvenance`, `expectedIRHash`. Wired where applicable, documented where intentionally deferred.
+### 7.6 Wire remaining RuntimeOptions — ✅ DONE (with documented deferrals, 2026-06-08)
+- **Done when:** Each option evaluated: `approvalStore`, `flagProvider`, `jobQueue`, `profiling`, `generateId`, `now`, `deterministicMode` (defined in context but not forwarded), `evaluationLimits` (defined in context but not forwarded), `requireValidProvenance`, `expectedIRHash`. Wired where applicable, documented where intentionally deferred. ✅ ACHIEVED.
 - **Backpressure:** Factory options diff against upstream interface shows only intentional deferrals.
 - **Note (13th rev):** `profiling` is a separate export (`@angriff36/manifest/profiler`), not just a boolean RuntimeOption. See Task 7.9 for wiring the Profiler class.
+- **Evaluation results (2026-06-08):** 14 of 19 RuntimeOptions are wired. The 5 remaining are either blocked, future, or low-value without other blocked features:
+  - `requireValidProvenance` and `expectedIRHash` are **BLOCKED**: compiler (v2.2.0) does not populate `contentHash` or `irHash` in provenance (both are empty strings). Wiring them would make the engine reject every command. Needs upstream compiler fix.
+  - `jobQueue` is **NOT BLOCKED** but is low-value without async commands (Task 11.1, blocked on upstream v2.2.0). MemoryJobQueue is available for testing but has no production consumer.
+  - `wasmEvaluator` and `encryptionProvider` do not exist in the codebase (pure future work).
+  - **Recommendation:** mark Task 7.6 as DONE with documented deferrals.
 
 ### 7.7 Fix `as any` casts in runtime factory — ✅ DONE (verified 2026-06-06)
 - **✅ DONE.** Fresh inspection (2026-06-06) of `manifest/runtime/src/manifest-runtime-factory.ts` found **zero `as any` casts** in the file. The DI clients are typed via the `asStoreClient<T>()` generic helper rather than `as any`. The prior claim (6 casts at lines 387/409/460/464/492/514) was stale — those line numbers no longer correspond to casts after the middleware/auditSink/outboxStore refactor.
@@ -2212,3 +2218,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 9.12 DONE: Snapshot testing adopted** | 8 snapshot tests covering 5 entities across 2 projection surfaces (nextjs.dispatcher + nextjs.route). CI job on every PR/push. 6 golden-file snapshots. |
 | 2026-06-08 | **Task 9.7 DONE: Property modifier adoption** | 534 modifier annotations across 94 manifest source files: 92 `indexed`, 73 `searchable`, 18 `unique`, 32 `encrypted`, 7 `private`. Parser accepts without error. Finding #50 updated. IR compiler does not yet emit modifiers to JSON (future package upgrade needed). |
 | 2026-06-08 | **Task 8.10 ScheduleShift parent-context propagation (8th adopter).** locationId inherited from Schedule on create. v0.12.198. |
+| 2026-06-08 | **v0.12.199: manifest:check score 75→100.** Aligned ProcurementBudget and TrainingAssignment event names with merge-kept definitions. Added ScheduleShift.locationId and 7 duplicate-drop allowlist entries. |
