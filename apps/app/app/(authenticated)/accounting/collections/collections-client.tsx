@@ -41,6 +41,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { listCollectionCases } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -218,22 +219,17 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   const loadCases = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (priorityFilter !== "all") params.set("priority", priorityFilter);
+      const query: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (statusFilter !== "all") query.status = statusFilter;
+      if (priorityFilter !== "all") query.priority = priorityFilter;
 
-      const res = await apiFetch(
-        `/api/accounting/collections/cases?${params.toString()}`
-      );
-      if (!res.ok) throw new Error("Failed to load collection cases");
-
-      const data = await res.json();
-      setCases(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listCollectionCases(query);
+      setCases(result.data as unknown as CollectionCase[]);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load collection cases"

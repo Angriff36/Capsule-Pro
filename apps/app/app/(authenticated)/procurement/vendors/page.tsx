@@ -48,8 +48,8 @@ import {
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listVendors,
   vendorCreate,
   vendorRemove,
 } from "@/app/lib/manifest-client.generated";
@@ -93,9 +93,8 @@ export default function VendorsPage() {
   const loadVendors = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch("/api/procurement/vendors/list");
-      const data = await res.json();
-      if (data.success) setVendors(data.data.vendors || []);
+      const result = await listVendors();
+      setVendors(result.data as unknown as Vendor[]);
     } catch (error) {
       console.error("Failed to load vendors:", error);
     } finally {

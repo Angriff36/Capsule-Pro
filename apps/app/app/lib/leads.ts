@@ -12,7 +12,11 @@
 
 import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
-import { leadCreate } from "@/app/lib/manifest-client.generated";
+import {
+  leadCreate,
+  listLeads,
+  getLead,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -71,27 +75,14 @@ export interface LeadSummary {
 // ---------------------------------------------------------------------------
 
 export async function fetchLeads(): Promise<Lead[]> {
-  const response = await apiFetch("/api/crm/leads/list?limit=200");
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message || "Failed to fetch leads"
-    );
-  }
-  const data = (await response.json()) as { leads: Lead[] };
-  return data.leads;
+  const result = await listLeads({ limit: 200 });
+  return result.data as Lead[];
 }
 
 export async function fetchLeadById(id: string): Promise<Lead> {
-  const response = await apiFetch(`/api/crm/leads/${id}`);
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message || "Failed to fetch lead"
-    );
-  }
-  const data = (await response.json()) as { lead: Lead };
-  return data.lead;
+  const lead = await getLead(id);
+  if (!lead) throw new Error("Failed to fetch lead");
+  return lead as Lead;
 }
 
 // ---------------------------------------------------------------------------

@@ -59,8 +59,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listLogisticsRoutes,
   logisticsRouteComplete,
   logisticsRouteCreate,
   logisticsRouteOptimize,
@@ -140,9 +140,8 @@ export function RoutesView() {
 
   const loadRoutes = async () => {
     try {
-      const res = await apiFetch("/api/logistics/routes/list");
-      const data = await res.json();
-      setRoutes(data.routes || []);
+      const result = await listLogisticsRoutes();
+      setRoutes(result.data as unknown as DeliveryRoute[]);
     } catch (error) {
       console.error("Failed to load routes:", error);
     } finally {

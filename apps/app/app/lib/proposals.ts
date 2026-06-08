@@ -11,6 +11,10 @@
 "use client";
 
 import { apiFetch } from "@/app/lib/api";
+import {
+  listProposals,
+  getProposal,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,6 +28,8 @@ export type ProposalStatus =
   | "rejected"
   | "withdrawn"
   | "expired";
+
+export type DateOrString = Date | string;
 
 export interface ProposalLineItem {
   id: string;
@@ -39,8 +45,6 @@ export interface ProposalLineItem {
   sortOrder: number;
   notes: string | null;
 }
-
-export type DateOrString = Date | string;
 
 export interface Proposal {
   id: string;
@@ -100,26 +104,14 @@ export interface ProposalSummary {
 // ---------------------------------------------------------------------------
 
 export async function fetchProposals(): Promise<Proposal[]> {
-  const response = await apiFetch("/api/crm/proposals/list");
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message || "Failed to fetch proposals"
-    );
-  }
-  const data = (await response.json()) as { proposals: Proposal[] };
-  return data.proposals;
+  const result = await listProposals();
+  return result.data as Proposal[];
 }
 
 export async function fetchProposalById(id: string): Promise<Proposal> {
-  const response = await apiFetch(`/api/crm/proposals/${id}`);
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message || "Failed to fetch proposal"
-    );
-  }
-  return (await response.json()) as Proposal;
+  const proposal = await getProposal(id);
+  if (!proposal) throw new Error("Failed to fetch proposal");
+  return proposal as Proposal;
 }
 
 // ---------------------------------------------------------------------------

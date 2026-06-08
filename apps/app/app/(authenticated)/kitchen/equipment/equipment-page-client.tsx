@@ -47,7 +47,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
-import { equipmentCreate, equipmentScheduleMaintenance, facilityWorkOrderCreate } from "@/app/lib/manifest-client.generated";
+import { equipmentCreate, equipmentScheduleMaintenance, facilityWorkOrderCreate, listEquipments, listFacilityWorkOrders } from "@/app/lib/manifest-client.generated";
 
 interface Equipment {
   id: string;
@@ -173,11 +173,8 @@ export function EquipmentPageClient() {
 
   async function fetchEquipment() {
     try {
-      const res = await apiFetch("/api/kitchen/equipment/list");
-      const data = await res.json();
-      if (data.success) {
-        setEquipment(data.equipment || []);
-      }
+      const result = await listEquipments();
+      setEquipment(result.data as unknown as Equipment[]);
     } catch (error) {
       console.error("Error fetching equipment:", error);
     }
@@ -185,11 +182,8 @@ export function EquipmentPageClient() {
 
   async function fetchWorkOrders() {
     try {
-      const res = await apiFetch("/api/facilities/work-orders/list");
-      const data = await res.json();
-      if (data.success) {
-        setWorkOrders(data.workOrders || []);
-      }
+      const result = await listFacilityWorkOrders();
+      setWorkOrders(result.data as unknown as WorkOrder[]);
     } catch (error) {
       console.error("Error fetching work orders:", error);
     }

@@ -13,8 +13,7 @@ import { format } from "date-fns";
 import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-import { dealUpdateStage } from "@/app/lib/manifest-client.generated";
+import { listDeals, dealUpdateStage } from "@/app/lib/manifest-client.generated";
 
 const fmtCurrency = (v: string | number | null) =>
   formatCurrency(v, { fractionDigits: 0, nullDisplay: "\u2014" });
@@ -209,10 +208,8 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
 
   const fetchDeals = useCallback(async () => {
     try {
-      const res = await apiFetch("/api/crm/deals");
-      if (!res.ok) throw new Error("Failed to fetch deals");
-      const data = await res.json();
-      setDeals(data.data ?? []);
+      const result = await listDeals();
+      setDeals(result.data as unknown as Deal[]);
     } catch (err) {
       console.error(err);
       toast.error("Failed to load pipeline");

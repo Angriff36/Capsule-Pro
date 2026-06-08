@@ -32,13 +32,13 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   cateringOrderConfirm,
   cateringOrderStartPrep,
   cateringOrderMarkComplete,
   cateringOrderCancel,
   cateringOrderCreate,
+  listCateringOrders,
 } from "@/app/lib/manifest-client.generated";
 
 interface CateringOrder {
@@ -162,19 +162,17 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
   const loadOrders = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (searchQuery) params.set("search", searchQuery);
+      const query: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (statusFilter !== "all") query.status = statusFilter;
+      if (searchQuery) query.search = searchQuery;
 
-      const res = await apiFetch(`/api/cateringorder/list?${params}`);
-      if (!res.ok) throw new Error("Failed to load catering orders");
-      const data = await res.json();
-      setOrders(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listCateringOrders(query);
+      setOrders(result.data as unknown as CateringOrder[]);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load catering orders"
