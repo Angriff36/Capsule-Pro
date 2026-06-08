@@ -36,6 +36,7 @@ import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { vendorContractCreate } from "@/app/lib/manifest-client.generated";
 import {
   CONTRACT_TYPE_CONFIG,
   formatDateShort,
@@ -107,28 +108,18 @@ export default function VendorContractsPage() {
     if (!(contractNumber && vendorId && startDate)) return;
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/VendorContract/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contractNumber,
-            vendorId,
-            contractType,
-            startDate,
-            endDate: endDate || undefined,
-            paymentTerms,
-            notes: contractNotes || undefined,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        setShowCreateDialog(false);
-        resetForm();
-        await loadContracts();
-      }
+      await vendorContractCreate({
+        contractNumber,
+        vendorId,
+        contractType,
+        startDate,
+        endDate: endDate || undefined,
+        paymentTerms,
+        notes: contractNotes || undefined,
+      });
+      setShowCreateDialog(false);
+      resetForm();
+      await loadContracts();
     } catch (error) {
       console.error("Failed to create contract:", error);
     } finally {

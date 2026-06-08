@@ -309,16 +309,77 @@ describe("createManifestRuntime (shared factory)", () => {
         storeProvider: (name: string) => unknown;
       };
 
-      // Call with an entity that has no dedicated model (e.g., "Venue" uses PrismaJsonStore fallback)
-      engineOptions.storeProvider("Venue");
+      // Call with an entity that genuinely has no typed store: "Account" has no
+      // tenantId column, so it is EXCLUDED from GENERIC_STORE_SAFE_ENTITIES and
+      // still falls back to PrismaJsonStore. (NB: "Venue" is no longer a valid
+      // example here — it is tenant-scoped and now routes to PrismaStore via the
+      // GenericPrismaStore flip; see the regression test below.)
+      engineOptions.storeProvider("Account");
       expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
       expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           tenantId: "tenant-1",
-          entityType: "Venue",
+          entityType: "Account",
         })
       );
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
+    });
+
+    it("keeps JSON fallback for entities with no Prisma model at all (Sel* onboarding defs)", async () => {
+      const deps = makeDeps();
+
+      const runtime = await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+
+      prismaStoreConstructorSpy.mockClear();
+      prismaJsonStoreConstructorSpy.mockClear();
+
+      const engineOptions = (runtime as unknown as { options: unknown })
+        .options as { storeProvider: (name: string) => unknown };
+
+      // SelOnboardingTrainingModuleDefinition has NO row in
+      // PRISMA_MODEL_METADATA (no real table), so it cannot be flipped and must
+      // remain on PrismaJsonStore. Documents the finding that the Sel* entities
+      // are unflippable until they get real Prisma models.
+      engineOptions.storeProvider("SelOnboardingTrainingModuleDefinition");
+      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
+      expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
+    });
+
+    it("routes tenant-scoped reconciled entities to PrismaStore (GenericPrismaStore flip regression)", async () => {
+      // Regression guard for the PrismaJsonStore→GenericPrismaStore flip:
+      // every tenant-scoped entity with a real [id] or [tenantId,id] model now
+      // goes through PrismaStore (→ GenericPrismaStore → real typed table)
+      // instead of the JSON blob. These six previously emitted
+      // store_json_fallback and silently wrote to manifest_entity.
+      const flippedEntities = [
+        "Venue",
+        "Event",
+        "Dish",
+        "PrepList",
+        "TrainingModule",
+        "StaffMember",
+      ];
+
+      const deps = makeDeps();
+      const runtime = await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+
+      const engineOptions = (runtime as unknown as { options: unknown })
+        .options as { storeProvider: (name: string) => unknown };
+
+      for (const entity of flippedEntities) {
+        prismaStoreConstructorSpy.mockClear();
+        prismaJsonStoreConstructorSpy.mockClear();
+        engineOptions.storeProvider(entity);
+        expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
+        expect(prismaStoreConstructorSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ entityName: entity, tenantId: "tenant-1" })
+        );
+        expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
+      }
     });
 
     it("routes all 5 dedicated entities to PrismaStore", async () => {

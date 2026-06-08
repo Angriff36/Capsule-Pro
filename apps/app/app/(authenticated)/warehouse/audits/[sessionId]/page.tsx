@@ -62,6 +62,10 @@ import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  cycleCountRecordUpdate,
+  cycleCountRecordVerify,
+} from "@/app/lib/manifest-client.generated";
 import { formatCurrency } from "@/app/lib/format";
 
 type CycleCountSessionStatus =
@@ -466,23 +470,11 @@ export default function CycleCountSessionDetailPage() {
 
     setIsUpdating(true);
     try {
-      const response = await apiFetch(
-        "/api/manifest/CycleCountRecord/commands/update",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: editingRecord.id,
-            countedQuantity: Number.parseFloat(editQuantity),
-            notes: editNotes || undefined,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update count");
-      }
+      await cycleCountRecordUpdate({
+        id: editingRecord.id,
+        countedQuantity: Number.parseFloat(editQuantity),
+        notes: editNotes || undefined,
+      });
 
       toast.success("Count updated");
       setIsEditDialogOpen(false);
@@ -500,19 +492,7 @@ export default function CycleCountSessionDetailPage() {
 
   const handleVerifyRecord = async (record: CycleCountRecord) => {
     try {
-      const response = await apiFetch(
-        "/api/manifest/CycleCountRecord/commands/verify",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: record.id }),
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to verify record");
-      }
+      await cycleCountRecordVerify({ id: record.id });
 
       toast.success(`Verified ${record.item_name}`);
       loadRecords();

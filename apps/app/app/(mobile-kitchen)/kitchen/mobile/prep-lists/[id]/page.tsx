@@ -24,6 +24,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { prepListItemUpdatePrepNotes } from "@/app/lib/manifest-client.generated";
 import type { PrepList, PrepListItem } from "../../types";
 
 interface CompletionQueueItem {
@@ -330,22 +331,11 @@ export default function MobilePrepListDetailPage() {
 
       for (const item of noteQueue) {
         try {
-          const response = await apiFetch(
-            "/api/manifest/PrepListItem/commands/updatePrepNotes",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: item.itemId,
-                newNotes: item.notes,
-                newDietarySubstitutions: "",
-              }),
-            }
-          );
-
-          if (!response.ok) {
-            failedItems.push(item);
-          }
+          await prepListItemUpdatePrepNotes({
+            id: item.itemId,
+            newNotes: item.notes,
+            newDietarySubstitutions: "",
+          });
         } catch {
           failedItems.push(item);
         }
@@ -399,25 +389,11 @@ export default function MobilePrepListDetailPage() {
     }
 
     try {
-      const response = await apiFetch(
-        "/api/manifest/PrepListItem/commands/updatePrepNotes",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: selectedItem.id,
-            newNotes: noteText.trim(),
-            newDietarySubstitutions: "",
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        // Revert optimistic update on failure
-        await fetchPrepList();
-        const errData = await response.json();
-        setError(errData.message || "Failed to save note");
-      }
+      await prepListItemUpdatePrepNotes({
+        id: selectedItem.id,
+        newNotes: noteText.trim(),
+        newDietarySubstitutions: "",
+      });
     } catch (err) {
       captureException(err);
       await fetchPrepList();

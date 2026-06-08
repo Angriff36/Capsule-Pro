@@ -60,6 +60,14 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  logisticsRouteComplete,
+  logisticsRouteCreate,
+  logisticsRouteOptimize,
+  logisticsRouteRemove,
+  logisticsRouteStart,
+  logisticsRouteUpdate,
+} from "@/app/lib/manifest-client.generated";
 
 interface RouteStop {
   id: string;
@@ -148,21 +156,13 @@ export function RoutesView() {
 
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: createForm.name,
-            description: createForm.description || null,
-            scheduledDate: createForm.scheduledDate || null,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.route) {
-        setRoutes((prev) => [data.route, ...prev]);
+      const route = await logisticsRouteCreate({
+        name: createForm.name,
+        description: createForm.description || null,
+        scheduledDate: createForm.scheduledDate || null,
+      });
+      if (route) {
+        setRoutes((prev) => [route as unknown as DeliveryRoute, ...prev]);
         setShowCreateDialog(false);
         setCreateForm({ name: "", scheduledDate: "", description: "" });
       }
@@ -176,33 +176,10 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/optimize",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ routeId }),
-        }
-      );
-
-      if (!res.ok) {
-        if (res.status === 501) {
-          toast.info(
-            "Route optimization is not yet available. You can start the route directly from draft status."
-          );
-        } else {
-          const data = await res.json().catch(() => null);
-          toast.error(
-            data?.error || `Failed to optimize route (HTTP ${res.status})`
-          );
-        }
-        return;
-      }
-
-      const data = await res.json();
-      if (data.route) {
+      const route = await logisticsRouteOptimize({ routeId });
+      if (route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === routeId ? data.route : r))
+          prev.map((r) => (r.id === routeId ? (route as unknown as DeliveryRoute) : r))
         );
       }
     } catch (error) {
@@ -216,19 +193,11 @@ export function RoutesView() {
 
   const handleStartRoute = async (routeId: string) => {
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/update-status",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ routeId, status: "in_progress" }),
-        }
-      );
-      const data = await res.json();
-      if (data.route) {
+      const route = await logisticsRouteStart({ routeId });
+      if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
-            r.id === routeId ? { ...r, status: data.route.status } : r
+            r.id === routeId ? { ...r, status: (route as unknown as DeliveryRoute).status } : r
           )
         );
       }
@@ -239,19 +208,11 @@ export function RoutesView() {
 
   const handleCompleteRoute = async (routeId: string) => {
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/update-status",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ routeId, status: "completed" }),
-        }
-      );
-      const data = await res.json();
-      if (data.route) {
+      const route = await logisticsRouteComplete({ routeId });
+      if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
-            r.id === routeId ? { ...r, status: data.route.status } : r
+            r.id === routeId ? { ...r, status: (route as unknown as DeliveryRoute).status } : r
           )
         );
       }
@@ -278,23 +239,15 @@ export function RoutesView() {
 
     setSaving(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/update",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            routeId: editingRoute.id,
-            name: editForm.name,
-            description: editForm.description || null,
-            scheduledDate: editForm.scheduledDate || null,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.route) {
+      const route = await logisticsRouteUpdate({
+        routeId: editingRoute.id,
+        name: editForm.name,
+        description: editForm.description || null,
+        scheduledDate: editForm.scheduledDate || null,
+      });
+      if (route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === editingRoute.id ? data.route : r))
+          prev.map((r) => (r.id === editingRoute.id ? (route as unknown as DeliveryRoute) : r))
         );
         setShowEditDialog(false);
         toast.success("Route updated");
@@ -311,20 +264,9 @@ export function RoutesView() {
 
     setDeleting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsRoute/commands/remove",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ routeId: deleteRouteId }),
-        }
-      );
-      if (res.ok) {
-        setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
-        toast.success("Route deleted");
-      } else {
-        toast.error("Failed to delete route");
-      }
+      await logisticsRouteRemove({ routeId: deleteRouteId });
+      setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
+      toast.success("Route deleted");
     } catch (error) {
       toast.error("Failed to delete route");
     } finally {

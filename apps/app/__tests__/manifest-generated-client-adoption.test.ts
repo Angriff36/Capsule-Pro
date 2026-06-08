@@ -42,9 +42,19 @@ const migratedFiles = [
   "apps/app/app/(authenticated)/events/[eventId]/guests/event-guests-client.tsx",
   "apps/app/app/(authenticated)/events/[eventId]/staff/event-staff-client.tsx",
   "apps/app/app/(authenticated)/events/[eventId]/timeline/event-timeline-client.tsx",
+  "apps/app/app/(authenticated)/logistics/routes/routes-view.tsx",
+  "apps/app/app/(authenticated)/logistics/dispatch/page.tsx",
+  "apps/app/app/(authenticated)/warehouse/audits/[sessionId]/page.tsx",
+  "apps/app/app/(authenticated)/procurement/vendor-contracts/page.tsx",
+  "apps/app/app/(authenticated)/procurement/requisitions/[id]/page.tsx",
+  "apps/app/app/(mobile-kitchen)/kitchen/mobile/tasks/page.tsx",
+  "apps/app/app/(mobile-kitchen)/kitchen/mobile/prep-lists/[id]/page.tsx",
+  "apps/app/app/(authenticated)/facilities/work-orders/page.tsx",
+  "apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx",
+  "apps/app/app/(authenticated)/events/catering/catering-client.tsx",
 ];
 
-describe("manifest generated client adoption (34 migrated files)", () => {
+describe("manifest generated client adoption (44 migrated files)", () => {
   it("keeps migrated frontend pages from calling Manifest command URLs directly", () => {
     const missing = migratedFiles.filter(
       (file) => !existsSync(resolve(repoRoot, file))

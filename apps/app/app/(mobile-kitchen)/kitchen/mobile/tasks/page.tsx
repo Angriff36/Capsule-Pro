@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { kitchenTaskClaim, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
 import type {
   ApiResponse,
   BundleClaimResponse,
@@ -432,29 +433,14 @@ export default function MobileTasksPage() {
       }
 
       try {
-        const response = await apiFetch(
-          "/api/manifest/KitchenTask/commands/claim",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: taskId }),
-          }
-        );
-
-        if (response.ok) {
-          await fetchAvailableTasks();
-          await fetchMyTasks();
-          setActiveTab("my-tasks");
-        } else {
-          const errData = await response.json();
-          const message = errData.message || "Failed to claim task";
-          setError(message);
-          captureException(new Error(`[MobileTasks] Claim failed: ${message}`));
-        }
+        await kitchenTaskClaim({ id: taskId });
+        await fetchAvailableTasks();
+        await fetchMyTasks();
+        setActiveTab("my-tasks");
       } catch (err) {
         captureException(err);
-        console.error("[MobileTasks] Failed to claim task:", err);
-        setError("Failed to claim task. Please try again.");
+        const message = err instanceof Error ? err.message : "Failed to claim task";
+        setError(message);
       } finally {
         setIsLoading(false);
       }
@@ -481,30 +467,13 @@ export default function MobileTasksPage() {
       }
 
       try {
-        const response = await apiFetch(
-          "/api/manifest/KitchenTask/commands/release",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: taskId, reason: "" }),
-          }
-        );
-
-        if (response.ok) {
-          await fetchAvailableTasks();
-          await fetchMyTasks();
-        } else {
-          const errData = await response.json();
-          const message = errData.message || "Failed to release task";
-          setError(message);
-          captureException(
-            new Error(`[MobileTasks] Release failed: ${message}`)
-          );
-        }
+        await kitchenTaskRelease({ id: taskId, reason: "" });
+        await fetchAvailableTasks();
+        await fetchMyTasks();
       } catch (err) {
         captureException(err);
-        console.error("[MobileTasks] Failed to release task:", err);
-        setError("Failed to release task. Please try again.");
+        const message = err instanceof Error ? err.message : "Failed to release task";
+        setError(message);
       } finally {
         setIsLoading(false);
       }

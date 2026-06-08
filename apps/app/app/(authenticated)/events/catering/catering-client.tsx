@@ -33,7 +33,13 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { executeCommand } from "@/app/lib/manifest-client";
+import {
+  cateringOrderConfirm,
+  cateringOrderStartPrep,
+  cateringOrderMarkComplete,
+  cateringOrderCancel,
+  cateringOrderCreate,
+} from "@/app/lib/manifest-client.generated";
 
 interface CateringOrder {
   id: string;
@@ -192,8 +198,16 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     if (!action) return;
     setActioning(order.id);
     try {
-      // Typed command client → canonical dispatcher (/api/manifest/CateringOrder/commands/{command}).
-      await executeCommand("CateringOrder", action.command, { id: order.id });
+      // Typed command client → canonical dispatcher.
+      const commandMap: Record<string, (input: Record<string, unknown>) => Promise<unknown>> = {
+        confirm: cateringOrderConfirm,
+        startPrep: cateringOrderStartPrep,
+        markComplete: cateringOrderMarkComplete,
+      };
+      const fn = commandMap[action.command];
+      if (fn) {
+        await fn({ id: order.id });
+      }
       toast.success(`Order ${action.label.toLowerCase()}ed successfully`);
       await loadOrders();
     } catch (err) {
@@ -207,7 +221,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
     if (!cancelTarget) return;
     setActioning(cancelTarget.id);
     try {
-      await executeCommand("CateringOrder", "cancel", {
+      await cateringOrderCancel({
         id: cancelTarget.id,
         reason: "Cancelled by user",
       });
@@ -223,7 +237,7 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
 
   const handleCreate = async () => {
     try {
-      await executeCommand("CateringOrder", "create", {
+      await cateringOrderCreate({
         customerId: form.customerId,
         deliveryDate: form.deliveryDate,
         deliveryTime: form.deliveryTime,

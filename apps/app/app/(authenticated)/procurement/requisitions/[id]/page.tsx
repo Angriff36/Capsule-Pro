@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { purchaseRequisitionReject } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
   formatDate,
@@ -128,22 +129,11 @@ export default function RequisitionDetailPage() {
     setUpdating("reject");
     setReasonDialogOpen(false);
     try {
-      const body: Record<string, unknown> = {
+      await purchaseRequisitionReject({
         id: requisition.id,
         reason: reasonText.trim(),
-      };
-      const res = await apiFetch(
-        "/api/manifest/PurchaseRequisition/commands/reject",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadRequisition();
-      }
+      });
+      await loadRequisition();
     } catch (error) {
       console.error("Failed to execute reject:", error);
     } finally {

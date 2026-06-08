@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { logisticsDispatchAssign } from "@/app/lib/manifest-client.generated";
 
 interface RouteStop {
   id: string;
@@ -152,22 +153,12 @@ export default function DispatchPage() {
 
     setAssigning(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/LogisticsDispatch/commands/assign",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            routeId: selectedRoute.id,
-            driverId: selectedDriverId === "__none__" ? null : selectedDriverId || null,
-          }),
-        }
-      );
-
-      if (res.ok) {
-        await loadData();
-        setShowAssignDialog(false);
-      }
+      await logisticsDispatchAssign({
+        routeId: selectedRoute.id,
+        driverId: selectedDriverId === "__none__" ? null : selectedDriverId || null,
+      });
+      await loadData();
+      setShowAssignDialog(false);
     } catch (e) {
       console.error("Failed to assign driver:", e);
     } finally {

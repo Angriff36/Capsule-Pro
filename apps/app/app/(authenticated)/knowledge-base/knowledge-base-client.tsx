@@ -38,6 +38,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowUpRight, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { knowledgeBaseEntryCreate } from "@/app/lib/manifest-client.generated";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -109,41 +110,31 @@ export default function KnowledgeBaseClient() {
 
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/KnowledgeBaseEntry/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: createForm.title,
-            slug: createForm.slug,
-            content: createForm.content || null,
-            category: createForm.category || null,
-            tags: createForm.tags
-              ? createForm.tags
-                  .split(",")
-                  .map((t) => t.trim())
-                  .filter(Boolean)
-              : [],
-            status: createForm.status,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        if (createForm.status === "published") {
-          setEntries((prev) => [data.data.entry, ...prev]);
-        }
-        setShowCreateDialog(false);
-        setCreateForm({
-          title: "",
-          slug: "",
-          content: "",
-          category: "",
-          tags: "",
-          status: "draft",
-        });
+      await knowledgeBaseEntryCreate({
+        title: createForm.title,
+        slug: createForm.slug,
+        content: createForm.content || null,
+        category: createForm.category || null,
+        tags: createForm.tags
+          ? createForm.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
+        status: createForm.status,
+      });
+      if (createForm.status === "published") {
+        await fetchEntries();
       }
+      setShowCreateDialog(false);
+      setCreateForm({
+        title: "",
+        slug: "",
+        content: "",
+        category: "",
+        tags: "",
+        status: "draft",
+      });
     } catch (error) {
       console.error("Failed to create article:", error);
     } finally {

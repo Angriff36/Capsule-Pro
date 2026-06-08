@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { facilityWorkOrderStart, facilityWorkOrderComplete } from "@/app/lib/manifest-client.generated";
 import { createWorkOrder } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -185,17 +186,12 @@ export default function FacilitiesWorkOrdersPage() {
 
     setUpdatingStatus(workOrderId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ workOrderId, status: newStatus }),
-        }
-      );
-      if (res.ok) {
-        await loadWorkOrders();
+      if (newStatus === "in_progress") {
+        await facilityWorkOrderStart({ workOrderId, status: newStatus });
+      } else if (newStatus === "completed") {
+        await facilityWorkOrderComplete({ workOrderId, status: newStatus });
       }
+      await loadWorkOrders();
     } catch (error) {
       console.error("Failed to update status:", error);
     } finally {
@@ -208,32 +204,23 @@ export default function FacilitiesWorkOrdersPage() {
     if (!completingWorkOrder) return;
     setUpdatingStatus(completingWorkOrder.id);
     try {
-      const res = await apiFetch(
-        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            workOrderId: completingWorkOrder.id,
-            status: "completed",
-            laborHours: completeForm.laborHours
-              ? Number.parseFloat(completeForm.laborHours)
-              : null,
-            partsCost: completeForm.partsCost
-              ? Number.parseFloat(completeForm.partsCost)
-              : null,
-            laborCost: completeForm.laborCost
-              ? Number.parseFloat(completeForm.laborCost)
-              : null,
-            notes: completeForm.notes || null,
-          }),
-        }
-      );
-      if (res.ok) {
-        await loadWorkOrders();
-        setShowCompleteDialog(false);
-        setCompletingWorkOrder(null);
-      }
+      await facilityWorkOrderComplete({
+        workOrderId: completingWorkOrder.id,
+        status: "completed",
+        laborHours: completeForm.laborHours
+          ? Number.parseFloat(completeForm.laborHours)
+          : null,
+        partsCost: completeForm.partsCost
+          ? Number.parseFloat(completeForm.partsCost)
+          : null,
+        laborCost: completeForm.laborCost
+          ? Number.parseFloat(completeForm.laborCost)
+          : null,
+        notes: completeForm.notes || null,
+      });
+      await loadWorkOrders();
+      setShowCompleteDialog(false);
+      setCompletingWorkOrder(null);
     } catch (error) {
       console.error("Failed to complete work order:", error);
     } finally {

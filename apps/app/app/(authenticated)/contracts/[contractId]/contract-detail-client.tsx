@@ -46,7 +46,16 @@ import {
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { eventContractSend } from "@/app/lib/manifest-client.generated";
+import {
+  vendorContractSubmit,
+  vendorContractApprove,
+  vendorContractReject,
+  vendorContractActivate,
+  vendorContractRenew,
+  vendorContractTerminate,
+  vendorContractRecordSlaBreach,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types (must match the serialized shapes from the server page)
@@ -193,17 +202,11 @@ function EventContractDetail({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const executeCommand = useCallback(
-    async (commandPath: string, label: string) => {
+    async (command: string, label: string) => {
       setActionLoading(label);
       try {
-        const res = await apiFetch(commandPath, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId: contract.id }),
-        });
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || `Command failed: ${res.status}`);
+        if (command === "send") {
+          await eventContractSend({ instanceId: contract.id });
         }
         toast.success(`${label} completed`);
         window.location.reload();
@@ -229,7 +232,7 @@ function EventContractDetail({
   if (contract.status === "draft") {
     statusActions.push({
       label: "Send",
-      command: "/api/manifest/EventContract/commands/send",
+      command: "send",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -528,21 +531,25 @@ function VendorContractDetail({
 
   const executeCommand = useCallback(
     async (
-      commandPath: string,
+      command: string,
       label: string,
       body?: Record<string, unknown>
     ) => {
       setActionLoading(label);
       try {
-        const res = await apiFetch(commandPath, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instanceId: contract.id, ...body }),
-        });
-        if (!res.ok) {
-          const err = await res.text();
-          throw new Error(err || `Command failed: ${res.status}`);
-        }
+        const payload = { instanceId: contract.id, ...body };
+        const commandFn: Record<string, (input: Record<string, unknown>) => Promise<unknown>> = {
+          submit: vendorContractSubmit,
+          approve: vendorContractApprove,
+          reject: vendorContractReject,
+          activate: vendorContractActivate,
+          renew: vendorContractRenew,
+          terminate: vendorContractTerminate,
+          recordSlaBreach: vendorContractRecordSlaBreach,
+        };
+        const fn = commandFn[command];
+        if (!fn) throw new Error(`Unknown command: ${command}`);
+        await fn(payload);
         toast.success(`${label} completed`);
         window.location.reload();
       } catch (err) {
@@ -570,7 +577,7 @@ function VendorContractDetail({
   if (contract.status === "draft") {
     statusActions.push({
       label: "Submit",
-      command: "/api/manifest/VendorContract/commands/submit",
+      command: "submit",
       icon: <Send className="mr-2 h-4 w-4" />,
     });
   }
@@ -578,12 +585,12 @@ function VendorContractDetail({
     statusActions.push(
       {
         label: "Approve",
-        command: "/api/manifest/VendorContract/commands/approve",
+        command: "approve",
         icon: <CheckCircle2 className="mr-2 h-4 w-4" />,
       },
       {
         label: "Reject",
-        command: "/api/manifest/VendorContract/commands/reject",
+        command: "reject",
         icon: <XCircle className="mr-2 h-4 w-4" />,
         variant: "destructive",
       }
@@ -592,7 +599,7 @@ function VendorContractDetail({
   if (contract.status === "approved") {
     statusActions.push({
       label: "Activate",
-      command: "/api/manifest/VendorContract/commands/activate",
+      command: "activate",
       icon: <ArrowRight className="mr-2 h-4 w-4" />,
     });
   }
@@ -600,13 +607,13 @@ function VendorContractDetail({
     statusActions.push(
       {
         label: "Renew",
-        command: "/api/manifest/VendorContract/commands/renew",
+        command: "renew",
         icon: <RefreshCw className="mr-2 h-4 w-4" />,
         variant: "outline",
       },
       {
         label: "Terminate",
-        command: "/api/manifest/VendorContract/commands/terminate",
+        command: "terminate",
         icon: <Gavel className="mr-2 h-4 w-4" />,
         variant: "destructive",
       }
@@ -901,7 +908,7 @@ function VendorContractDetail({
               disabled={actionLoading !== null}
               onClick={() =>
                 executeCommand(
-                  "/api/manifest/VendorContract/commands/recordSlaBreach",
+                  "recordSlaBreach",
                   "Record SLA breach"
                 )
               }
