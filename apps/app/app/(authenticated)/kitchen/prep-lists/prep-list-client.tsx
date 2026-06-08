@@ -43,6 +43,9 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom prep-lists endpoints (generate, mark-item-complete)
+// — generated client has prepListCreate/prepListItemMarkCompleted but these target different
+//   API routes and semantics (Manifest command dispatch vs. custom action endpoints)
 import { apiFetch } from "@/app/lib/api";
 import type {
   IngredientItem,
@@ -429,6 +432,7 @@ export function PrepListClient({
 
     setIsDownloadingPdf(true);
     try {
+      // NOTE: Using raw fetch (not apiFetch) for binary PDF download
       const response = await fetch(
         `/api/kitchen/prep-lists/${savedPrepListId}/pdf`,
         {

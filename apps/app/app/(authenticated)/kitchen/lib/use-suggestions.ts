@@ -4,6 +4,7 @@
 import * as Sentry from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+// NOTE: Keeping apiFetch for /api/ai/suggestions — custom AI endpoint with no generated function
 import { apiFetch } from "@/app/lib/api";
 import type { SuggestedAction, SuggestionsResponse } from "./suggestions-types";
 

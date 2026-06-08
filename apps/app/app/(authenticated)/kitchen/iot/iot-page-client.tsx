@@ -40,6 +40,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+// NOTE: Keeping apiFetch for custom /api/kitchen/iot/* endpoints (probes, readings, alerts)
+// — generated client uses /api/kitchen/temperature-probes/*, /api/kitchen/temperature-readings/*,
+//   /api/kitchen/iot-alerts/* which are different routes with different response shapes
 import { apiFetch } from "@/app/lib/api";
 
 interface TemperatureProbe {

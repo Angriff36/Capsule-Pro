@@ -27,6 +27,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
+// NOTE: Keeping apiFetch for file upload (FormData POST) — generated client does not support multipart/form-data
 import { apiFetch } from "@/app/lib/api";
 
 // ─── Types ───────────────────────────────────────────────────────────
