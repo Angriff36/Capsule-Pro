@@ -116,6 +116,24 @@ entity VendorContract {
     emit VendorContractSubmitted
   }
 
+  // Approval workflow: procurement approves all contracts; finance co-signs high-value (>= $50k)
+  approval contractApproval {
+    command: approve
+    stages {
+      procurement {
+        policy: user.role in ["procurement_manager", "manager", "admin"]
+        required: 1
+      }
+      finance {
+        policy: user.role in ["manager", "admin"]
+        required: 1
+        when: self.annualSpendCommitment >= 50000
+      }
+    }
+    timeout: 72
+    on_timeout: "cancel"
+  }
+
   command approve(userId: string) {
     guard self.status == "pending_approval" "Can only approve contracts pending approval"
 

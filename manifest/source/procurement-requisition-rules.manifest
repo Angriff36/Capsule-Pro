@@ -136,6 +136,24 @@ entity PurchaseRequisition {
     emit PurchaseRequisitionSubmitted
   }
 
+  // Approval workflow: manager always required; finance co-signs when estimatedTotal >= $5000
+  approval procurementChain {
+    command: approveManager
+    stages {
+      manager {
+        policy: user.role in ["kitchen_lead", "manager", "admin"]
+        required: 1
+      }
+      finance {
+        policy: user.role in ["manager", "admin"]
+        required: 1
+        when: self.estimatedTotal >= 5000
+      }
+    }
+    timeout: 72
+    on_timeout: "cancel"
+  }
+
   command approveManager(userId: string) {
     guard self.status == "pending_manager" "Can only approve requisitions pending manager approval"
 

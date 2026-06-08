@@ -82,6 +82,19 @@ entity PurchaseOrder {
     emit PurchaseOrderSubmitted
   }
 
+  // Approval workflow: manager must approve submitted POs before they transition to "approved"
+  approval managerApproval {
+    command: approve
+    stages {
+      manager {
+        policy: user.role in ["manager", "admin"]
+        required: 1
+      }
+    }
+    timeout: 48
+    on_timeout: "cancel"
+  }
+
   command approve(userId: string) {
     guard self.status == "submitted" "Can only approve submitted orders"
 
