@@ -13,6 +13,7 @@
 import type { RuntimeEngine } from "@angriff36/manifest";
 import { database } from "@repo/database";
 import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-runtime/manifest-runtime-factory";
+import { createEnvFlagProvider } from "@repo/manifest-runtime/flag-provider";
 import { registerManifestStoreIssueReporter } from "@repo/manifest-runtime/prisma-store";
 import { captureException } from "@sentry/nextjs";
 import {
@@ -36,6 +37,7 @@ const manifestTelemetry = mergeTelemetryHooks(
   createIssueLogTelemetry()
 );
 const manifestRuntimeLog = createManifestRuntimeLogger();
+const flagProvider = createEnvFlagProvider();
 
 /**
  * Context for creating a manifest runtime.
@@ -91,6 +93,7 @@ export async function createManifestRuntime(
       log: manifestRuntimeLog,
       captureException,
       telemetry: manifestTelemetry,
+      flagProvider,
     },
     ctx
   );

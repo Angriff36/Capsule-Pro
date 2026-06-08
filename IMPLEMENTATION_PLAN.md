@@ -344,7 +344,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 999 commands, 981 events, 6 sagas, 3 approval blocks, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 999 commands, 981 events, 6 sagas, 3 approval blocks, 241 policies, 92 source files. **3 feature flags** using `flag()` builtin in guards/constraints.
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -404,7 +404,7 @@
 ### Runtime Wiring
 
 - Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
-- **14 of 19 RuntimeOptions properties wired** (9 directly wired + 5 forwarded passthrough)
+- **15 of 19 RuntimeOptions properties wired** (10 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2).
 - **5 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
@@ -1741,9 +1741,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - manifest-runtime typecheck: 0 errors. API typecheck: 0 errors.
 - **Done when:** Dead recipe engine removed. Active recipe engine uses Manifest reads instead of raw SQL. ✅ ACHIEVED (dead code removed; active engine uses Manifest commands).
 
-### 10.3 Rules engine Manifest middleware integration
-- **Done when:** Rules engine's middleware factory registered through Manifest's `middleware` option (Tier 7.4/7.5), not as external wrapper. OR module deleted if dead code decision favors removal.
-- **Source to change:** `manifest/runtime/src/rules-engine/runtime-integration.ts`.
+### 10.3 Rules engine Manifest middleware integration — ✅ DONE 2026-06-04 (via Task 10.4)
+- **✅ DONE.** The rules engine module (`manifest/runtime/src/rules-engine/`) was deleted as dead code in Task 10.4. Zero consumers existed. The Manifest middleware pipeline (identity, RBAC, audit/outbox) replaces any role the rules engine would have played.
+- **Done when:** Rules engine's middleware factory registered through Manifest's `middleware` option, OR module deleted if dead code. ✅ ACHIEVED (deleted).
+- **Source to change:** `manifest/runtime/src/rules-engine/runtime-integration.ts` (DELETED in Task 10.4).
 
 ### 10.4 Delete confirmed dead code (rules-engine, entity-graph, packages/services)
 - **✅ DONE 2026-06-04.** Removed rules-engine/ (5 files, ~1000 LOC), entity-graph/ (7 files, ~1400 LOC), and packages/services/ (empty). Re-exports removed from index.ts. 2560/2560 tests pass.
@@ -1842,11 +1843,20 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/source/*.manifest` (add `async` prefix to commands), `manifest/runtime/src/manifest-runtime-factory.ts` (wire `jobQueue`).
 - **Spec:** `specs/async-commands.md`
 
-### 11.2 Implement Feature Flags via flagProvider
-- **Done when:** `flagProvider` RuntimeOption wired. At least 3 flags defined in `.manifest` sources. Flags resolve via external provider (LaunchDarkly etc) or local config.
-- **Why:** The `flag("name")` builtin is available in guards and computed properties. Resolved via `flagProvider` RuntimeOption. Supports external providers. Zero flags defined today. Feature gating is currently done via ad-hoc environment variable checks scattered across the codebase. Centralizing in Manifest makes flags auditable and consistent with the entity model.
+### 11.2 Implement Feature Flags via flagProvider — ✅ DONE 2026-06-08
+- **✅ DONE 2026-06-08.** Feature flags wired end-to-end:
+  - **Flag provider:** `manifest/runtime/src/flag-provider.ts` — `createEnvFlagProvider()` reads `MANIFEST_FLAG_*` env vars. Dotted flag names (`events.advanced_pricing`) map to uppercased underscored env keys (`MANIFEST_FLAG_EVENTS_ADVANCED_PRICING`). Values parsed as boolean/number/string; unknown flags return `false` (safe default).
+  - **Wiring:** `apps/api/lib/manifest-runtime.ts` passes `flagProvider: createEnvFlagProvider()` to the shared factory. The factory already forwarded it to `RuntimeEngine` (line 531).
+  - **3 flags in .manifest sources:**
+    1. `flag("budget.early_warning")` — warn-level constraint on EventBudget (`warnBudgetOverrunRisk`). Fires a warning when budget is 80-100% consumed, but only when the flag is enabled. Feature gate pattern (off by default).
+    2. `!flag("payroll.maintenance_mode")` — guard on `PayrollRun.process`. Blocks payroll processing when maintenance mode is active. Kill switch pattern (on-by-default, set env var to block).
+    3. `flag("procurement.budget_management")` — guard on `ProcurementBudget.create`. Requires flag to be ON to create procurement budgets. Feature gate pattern (off by default).
+  - **Tests:** 14 tests in `manifest/runtime/src/__tests__/feature-flags.test.ts` — 12 unit tests for env-var parsing + 2 IR verification tests confirming all 3 flag() expressions are compiled correctly.
+  - **IR verification:** `pnpm manifest:compile` succeeds (202 entities, 999 commands). All 3 flag() call nodes present in `kitchen.ir.json`. API typecheck 0, runtime typecheck 0, 137 runtime tests pass, zero route drift.
+- **Done when:** `flagProvider` RuntimeOption wired. At least 3 flags defined in `.manifest` sources. Flags resolve via external provider or local config. ✅ ACHIEVED.
+- **Why:** The `flag("name")` builtin is available in guards and computed properties. Zero flags defined today. Feature gating is currently done via ad-hoc environment variable checks. Centralizing in Manifest makes flags auditable and consistent with the entity model.
 - **Backpressure:** `flag("enableBatchImport")` returns correct value in guard evaluation. Changing flag at runtime affects command flow.
-- **Source to change:** `manifest/source/*.manifest` (add `flag()` calls), `manifest/runtime/src/manifest-runtime-factory.ts` (wire `flagProvider`).
+- **Source to change:** `manifest/source/event-budget-rules.manifest`, `manifest/source/payroll-rules.manifest`, `manifest/source/inventory-extended-rules.manifest`, `manifest/runtime/src/flag-provider.ts` (new), `apps/api/lib/manifest-runtime.ts` (wiring).
 - **Spec:** `specs/feature-flags.md`
 
 ### 11.3 Adopt Mixin Composition for shared properties -- **BLOCKED (keyword not in v2.2.0 compiler)**

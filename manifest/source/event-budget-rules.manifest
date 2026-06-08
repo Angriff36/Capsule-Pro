@@ -41,6 +41,14 @@ entity EventBudget {
     }
   }
 
+  constraint warnBudgetOverrunRisk:warn flag("budget.early_warning") and self.totalActualAmount > self.totalBudgetAmount * 0.8 and self.totalActualAmount <= self.totalBudgetAmount {
+    messageTemplate: "Budget approaching limit — {spent} of {budget}"
+    details: {
+      totalBudgetAmount: self.totalBudgetAmount
+      totalActualAmount: self.totalActualAmount
+    }
+  }
+
   constraint warnHighVariance:warn self.variancePercentage > 10 or self.variancePercentage < -10 {
     messageTemplate: "Budget variance exceeds 10% threshold ({variancePct}%)"
     details: {

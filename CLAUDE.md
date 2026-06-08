@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: packages/database/prisma/schema.prisma (edit), packages/database/prisma/migrations/20260608000147_manifest_runtime_tables/migration.sql (create)
+[proactive bridge @ 90% context — saved before compacting]
+Files (1):
+  manifest/runtime/src/flag-provider.ts (create)
 
 # === END COGNILAYER ===

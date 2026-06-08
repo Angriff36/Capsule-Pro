@@ -21,7 +21,8 @@
     "./commands-registry": "./src/commands-registry.ts",
     "./command-resolver": "./src/command-resolver.ts",
     "./run-manifest-command-core": "./src/run-manifest-command-core.ts",
-    "./bottleneck-detector": "./src/bottleneck-detector/index.ts"
+    "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
+    "./flag-provider": "./src/flag-provider.ts"
   },
   "dependencies": {
     "@angriff36/manifest": "2.2.0",
