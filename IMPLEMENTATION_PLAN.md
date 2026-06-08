@@ -1130,18 +1130,18 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 6 -- FRONTEND CLIENT STRATEGY
 
-> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 45 consumers** (Task 6.2 batches 1-5). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 45 files now use generated client hooks; remaining apiFetch files still get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
+> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 94 consumers** (Task 6.2 batches 1-21). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 94 files now use generated client hooks; remaining ~107 apiFetch files still get zero caching (many retained for valid reasons: custom endpoints, file uploads, binary downloads, enriched responses, composite commands). Before adopting or extending the generated client, decide whether it is the right abstraction.
 
 ### 6.1 Frontend data layer decision — ✅ DONE 2026-06-07
 - **✅ DECISION: Adopt TanStack Query wrapping the generated client as `queryFn` sources.**
-- **Rationale:** TanStack Query v5 is installed and `QueryProvider` is live in production (wraps entire app). The generated client has 1,328 typed functions (914 reads, 414 commands) with 45 consumers (Task 6.2 batches 1-5). Remaining files still use bare `apiFetch` + `useState/useEffect` with zero caching. The gold-standard pattern already exists at `events/[eventId]/event-hooks.ts` (query key factories, `useQuery`, `useMutation` with optimistic updates).
+- **Rationale:** TanStack Query v5 is installed and `QueryProvider` is live in production (wraps entire app). The generated client has 1,328 typed functions (914 reads, 414 commands) with 94 consumers (Task 6.2 batches 1-21). Remaining ~107 files still use bare `apiFetch` + `useState/useEffect` with zero caching (many retained for valid reasons: custom endpoints, file uploads, binary downloads, enriched responses, composite commands). The gold-standard pattern already exists at `events/[eventId]/event-hooks.ts` (query key factories, `useQuery`, `useMutation` with optimistic updates).
 - **Migration path for Tasks 6.2-6.4:**
   - Phase 1 (Task 6.2): Create per-domain `hooks.ts` files with query key factories + `useQuery`/`useMutation` hooks using generated client reads + `executeCommand` for writes
   - Phase 2 (Task 6.3): Migrate components from `useState/useEffect/apiFetch` to TanStack Query hooks
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-17 done 2026-06-08, ~82 files migrated)
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (batches 1-21 done 2026-06-08, ~94 files migrated, ~40 apiFetch calls replaced)
 - **Phase 1 DONE (2026-06-07):**
   - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
   - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
@@ -1173,9 +1173,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Batch 15 DONE (2026-06-08):** 4 files migrated + 9 files with NOTE comments documenting remaining apiFetch blockers (custom endpoints, AI endpoints, file uploads). Collections commands migrated. Net changes.
 - **Batch 16 DONE (2026-06-08):** 6 files (purchase-orders/new, budget/page, mobile prep-lists/page, mobile prep-lists/[id], shipments-client, battleboards-client). Net -42 lines. First mobile-kitchen path migrations.
 - **Batch 17 DONE (2026-06-08):** 2 complex event files migrated (guest-management.tsx, contract-detail-client.tsx). Guest management: 5 apiFetch calls replaced (listEventGuests, listEventDishes, eventGuestCreate, eventGuestUpdate, eventGuestSoftDelete) + dead code removed (GuestsResponse, ApiErrorPayload, getResponseErrorMessage). Contract detail: 5 command calls migrated to generated functions (eventContractSend/Sign/Cancel/Expire/MarkViewed, eventContractSoftDelete, contractSignatureCreate); 3 apiFetch calls retained for custom endpoints (history fetch, send-to-client with signing token, document upload). ~80 files now consuming generated client. API+app typecheck 0, 2785 tests pass, route drift 0. Key finding: 4 additional files investigated but CANNOT migrate — invoices/new, payments/new, payment-form-client (no paymentCreate/invoiceCreate in generated client; server routes have essential pre-validation), admin-chat-client (8 custom endpoints with participant logic not in generated routes).
-- **Remaining apiFetch files (~80):** Key blockers for further migration: pagination metadata loss in generated list functions, PUT vs POST mismatch (executeCommand only does POST), missing generated functions for some domains (tax, IoT).
+- **Batches 18-21 DONE (2026-06-08):** 12+ additional files migrated. ~94 files now import from generated client. ~40 apiFetch calls replaced total. Net -400+ lines of boilerplate eliminated across all batches. 0 typecheck errors.
+- **Remaining apiFetch files (~107):** Many annotated with NOTE comments documenting retention reasons. Categories: (1) custom endpoints (analytics, AI, search, calendar sync) with no generated equivalent, (2) file uploads (FormData/multipart not supported by generated client), (3) binary downloads (PDF, CSV, reports), (4) enriched response shapes with joined data (generated client returns flat entities), (5) composite commands (recipe versioning, batch operations) with different API patterns.
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
-- **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. ~130 remaining apiFetch files call non-manifest REST endpoints and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
+- **Why:** TanStack Query IS installed with QueryProvider. 94 files now use generated client. ~107 remaining apiFetch files call non-manifest REST endpoints or custom patterns (file uploads, binary downloads, enriched responses, composite commands) and get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
 - **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
 - **Source to change:** `apps/app/app/lib/api.ts` (expand TanStack Query wrapper beyond events domain).
 
@@ -1982,7 +1983,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `manifest-runtime.ts` (API shim) | 376 lines | 376 | -- |
 | `manifest-command-handler.ts` (legacy) | ~~Monolithic handler, SHOULD BE DELETED~~ DELETED (Task 10.13) | N/A | RESOLVED 2026-06-04 |
 | `execute-command.ts` (canonical) | Single canonical handler, used by all 71 routes + dispatcher | N/A | RESOLVED 2026-06-04 |
-| `manifest-client.generated.ts` | **1,330 functions, 34 consumers** (Task 6.2 batches 1-4) | 1,330/0 | UPDATED (Task 6.2 batches 1-4) |
+| `manifest-client.generated.ts` | **1,330 functions, 94 consumers** (Task 6.2 batches 1-21) | 1,330/0 | UPDATED (Task 6.2 batches 1-21) |
 | `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
 | API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED 2026-06-06; ingredient-resolution test fix 2026-06-07; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes (2026-06-04) + `deletedAt` branch in applyFieldOverrides() for 6 models (2026-06-06) |
 | Runtime typecheck errors | **0** | 0 | -- |
@@ -2003,8 +2004,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `as unknown as` double-casts | **91** (architecturally necessary: test mocks, Prisma JSON, Vega-Lite) | 157 | RESOLVED (Task 10.8, v0.12.168: 42% reduction) |
 | Schema drift violations | **0** (110/110 entities clean, strict mode exit 0) | 179 | RESOLVED (v0.12.170) |
 | describe.skip test suites | 1 (sales-reporting) | 1 | -- |
-| apiFetch call sites | **1,092** across **167 files** | 1,098/169 | CORRECTED (9th rev) |
-| Frontend data caching | TanStack Query installed, **34 files** migrated to generated client, hooks generator live | 5/31 | UPDATED (Task 6.2 batches 1-4) |
+| apiFetch call sites | **~1,052** across **~107 files** (~40 replaced via generated client) | 1,098/169 | UPDATED (Task 6.2 batches 1-21) |
+| Frontend data caching | TanStack Query installed, **94 files** migrated to generated client, hooks generator live | 5/31 | UPDATED (Task 6.2 batches 1-21) |
 | use-*.ts files | **11** (10 renamed to `*.ts` in Task 6.5, 1 TanStack Query) | 21 | RESOLVED (Task 6.5, 2026-06-07) |
 | Hardcoded API URL paths | ~1,092 (81% of total) | ~1,098 | CORRECTED (9th rev) |
 | Typed path builders | ~50 | ~50 | -- |
@@ -2069,7 +2070,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 
-20. **~~Frontend caching gap~~ IN PROGRESS (Task 6.2 batches 1-4, 34 files migrated):** TanStack Query IS installed with QueryProvider. Hooks generator live, 34 files migrated from apiFetch to generated client across events/inventory/kitchen/staff domains. Remaining apiFetch files still get zero caching. Task 6.2 ongoing.
+20. **~~Frontend caching gap~~ IN PROGRESS (Task 6.2 batches 1-21, 94 files migrated):** TanStack Query IS installed with QueryProvider. Hooks generator live, 94 files migrated from apiFetch to generated client. ~40 apiFetch calls replaced, net -400+ lines boilerplate. Remaining ~107 apiFetch files categorized: custom endpoints, file uploads, binary downloads, enriched responses, composite commands. Many annotated with NOTE comments. Task 6.2 ongoing.
 
 21. **build.mjs broken path (CONFIRMED):** Line 170 references `scripts/manifest/generate-route-manifest.ts` which doesn't exist. `pnpm manifest:build` Step 3 will fail. Task 0.2.
 
@@ -2158,3 +2159,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.2 batch 10: 4 more frontend files migrated** | work-orders, inventory-transfers, payroll-periods, staff-performance. 60 files total. Net -10 lines. |
 | 2026-06-08 | **Task 6.2 batches 11-13: 18 more frontend files migrated** | facilities-widget, knowledge-base, notifications, security, invoices, payments, payroll, task-card. 68 files total consuming generated client. Key blocker: endpoint path mismatch between frontend legacy routes and generated Manifest routes. |
 | 2026-06-08 | **Task 6.2 batches 14-16: 18 more frontend files migrated** | purchase-orders CRUD, vendors/[id] composite, budget, mobile prep-lists, shipments, battleboards. 80 files total consuming generated client. First mobile-kitchen migrations. |
+| 2026-06-08 | **Task 6.2 batches 17-21: ~14 more files migrated** | 94 files total consuming generated client. ~40 apiFetch calls replaced total, net -400+ lines boilerplate. Remaining ~107 apiFetch files categorized: custom endpoints (analytics/AI/search/calendar), file uploads (FormData), binary downloads (PDF/CSV), enriched responses (joined data), composite commands (recipe versioning/batch ops). Many annotated with NOTE comments. 0 typecheck errors. |
