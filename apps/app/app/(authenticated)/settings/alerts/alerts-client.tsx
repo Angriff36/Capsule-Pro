@@ -41,11 +41,11 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
   alertsConfigCreate,
   alertsConfigRemove,
   alertsConfigUpdate,
+  listAlertsConfigs,
 } from "@/app/lib/manifest-client.generated";
 
 interface AlertsConfig {
@@ -122,19 +122,17 @@ export function AlertsConfigClient({
   const loadConfigs = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (channelFilter !== "all") params.set("channel", channelFilter);
-      if (searchQuery) params.set("search", searchQuery);
+      const query: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (channelFilter !== "all") query.channel = channelFilter;
+      if (searchQuery) query.search = searchQuery;
 
-      const res = await apiFetch(`/api/alertsconfig/list?${params}`);
-      if (!res.ok) throw new Error("Failed to load alert configurations");
-      const data = await res.json();
-      setConfigs(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listAlertsConfigs(query);
+      setConfigs(result.data as unknown as AlertsConfig[]);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error

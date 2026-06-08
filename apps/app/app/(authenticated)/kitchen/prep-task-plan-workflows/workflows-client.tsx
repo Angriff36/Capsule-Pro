@@ -38,7 +38,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { prepTaskPlanWorkflowCreate } from "@/app/lib/manifest-client.generated";
+import { listPrepTaskPlanWorkflows, prepTaskPlanWorkflowCreate } from "@/app/lib/manifest-client.generated";
 
 interface Workflow {
   id: string;
@@ -213,21 +213,17 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
   const loadWorkflows = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (searchQuery) params.set("search", searchQuery);
+      const query: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (statusFilter !== "all") query.status = statusFilter;
+      if (searchQuery) query.search = searchQuery;
 
-      const res = await apiFetch(
-        `/api/kitchen/prep-task-plan-workflows/list?${params}`
-      );
-      if (!res.ok) throw new Error("Failed to load workflows");
-      const data = await res.json();
-      setWorkflows(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listPrepTaskPlanWorkflows(query);
+      setWorkflows(result.data as unknown as Workflow[]);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load workflows"

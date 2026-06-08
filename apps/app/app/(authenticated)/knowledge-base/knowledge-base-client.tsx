@@ -37,8 +37,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowUpRight, FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { knowledgeBaseEntryCreate } from "@/app/lib/manifest-client.generated";
+import { knowledgeBaseEntryCreate, listKnowledgeBaseEntries } from "@/app/lib/manifest-client.generated";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -75,17 +74,12 @@ export default function KnowledgeBaseClient() {
   const fetchEntries = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (search) params.set("search", search);
-      if (selectedCategory) params.set("category", selectedCategory);
-      params.set("status", "published");
+      const query: Record<string, string | number> = { status: "published" };
+      if (search) query.search = search;
+      if (selectedCategory) query.category = selectedCategory;
 
-      const res = await apiFetch(`/api/knowledge-base/entries?${params}`);
-      const data = await res.json();
-
-      if (data.success) {
-        setEntries(data.entries ?? []);
-      }
+      const result = await listKnowledgeBaseEntries(query);
+      setEntries(result.data as unknown as KnowledgeBaseEntry[]);
     } catch (error) {
       console.error("Failed to fetch entries:", error);
     } finally {

@@ -22,7 +22,7 @@ import { ArrowLeft, Loader2, Shield } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
 import { getVendorContract } from "@/app/lib/manifest-client.generated";
 import {
   CONTRACT_TYPE_CONFIG,
@@ -109,19 +109,8 @@ export default function VendorContractDetailPage() {
     }
     setUpdating(command);
     try {
-      const body: Record<string, unknown> = { id: contract.id };
-      const res = await apiFetch(
-        `/api/procurement/vendor-contracts/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadContract();
-      }
+      await executeCommand("VendorContract", command, { id: contract.id });
+      await loadContract();
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
     } finally {
@@ -135,22 +124,11 @@ export default function VendorContractDetailPage() {
     setUpdating(command);
     setReasonDialogOpen(false);
     try {
-      const body: Record<string, unknown> = {
+      await executeCommand("VendorContract", command, {
         id: contract.id,
         reason: reasonText.trim(),
-      };
-      const res = await apiFetch(
-        `/api/procurement/vendor-contracts/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadContract();
-      }
+      });
+      await loadContract();
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
     } finally {

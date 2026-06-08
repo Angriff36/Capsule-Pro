@@ -22,7 +22,7 @@ import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
 import { getPurchaseRequisition, purchaseRequisitionReject } from "@/app/lib/manifest-client.generated";
 import {
   formatCurrency,
@@ -101,19 +101,10 @@ export default function RequisitionDetailPage() {
     }
     setUpdating(command);
     try {
-      const body: Record<string, unknown> = { id: requisition.id };
-      const res = await apiFetch(
-        `/api/procurement/requisitions/commands/${command}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadRequisition();
-      }
+      // Convert kebab-case command to camelCase for Manifest dispatcher
+      const camelCommand = command.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+      await executeCommand("PurchaseRequisition", camelCommand, { id: requisition.id });
+      await loadRequisition();
     } catch (error) {
       console.error(`Failed to execute ${command}:`, error);
     } finally {

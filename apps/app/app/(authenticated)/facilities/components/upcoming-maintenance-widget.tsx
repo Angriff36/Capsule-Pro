@@ -18,11 +18,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
 import {
   listPreventiveMaintenanceSchedules,
-  // TODO: Replace apiFetch for assets once listFacilityAssets envelope key is fixed
-  // (generated extracts json.facilityAssets but actual API returns json.assets)
+  listFacilityAssets,
 } from "@/app/lib/manifest-client.generated";
 import type { PreventiveMaintenanceSchedule } from "@/app/lib/manifest-types.generated";
 
@@ -42,15 +40,10 @@ export function UpcomingMaintenanceWidget({
     try {
       const [schedulesRes, assetsRes] = await Promise.all([
         listPreventiveMaintenanceSchedules({ status: "active" }),
-        // TODO: Replace with listFacilityAssets once envelope key mismatch is fixed
-        // (generated extracts json.facilityAssets but actual API returns json.assets)
-        apiFetch("/api/facilities/assets/list?status=active"),
+        listFacilityAssets({ status: "active" }),
       ]);
       setSchedules(schedulesRes.data);
-      const assetsData = await assetsRes.json();
-      if (assetsData.success) {
-        setAssets(assetsData.assets || []);
-      }
+      setAssets(assetsRes.data as unknown as { id: string; name: string }[]);
     } catch (error) {
       console.error("Failed to load widget data:", error);
     } finally {

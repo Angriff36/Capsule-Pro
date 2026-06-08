@@ -2296,7 +2296,7 @@ export async function listFacilityAssets(query?: Record<string, string | number>
   const res = await apiFetch(`/api/facilities/assets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list FacilityAsset (${res.status})`);
   const json = await res.json();
-  const data = (json.facilityAssets ?? json.data ?? []) as FacilityAsset[];
+  const data = (json.facilityAssets ?? json.assets ?? json.data ?? []) as FacilityAsset[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
@@ -2746,7 +2746,7 @@ export async function listKnowledgeBaseEntries(query?: Record<string, string | n
   const res = await apiFetch(`/api/administrative/knowledge-base/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KnowledgeBaseEntry (${res.status})`);
   const json = await res.json();
-  const data = (json.knowledgeBaseEntries ?? json.data ?? []) as KnowledgeBaseEntry[];
+  const data = (json.knowledgeBaseEntries ?? json.knowledgeBaseEntrys ?? json.data ?? []) as KnowledgeBaseEntry[];
   const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
   return { data, pagination };
 }
