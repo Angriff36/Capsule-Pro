@@ -28,29 +28,12 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
-
-interface VarianceReport {
-  id: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity: string;
-  countedQuantity: string;
-  variance: string;
-  variancePct: string;
-  accuracyScore: string;
-  status: string;
-  adjustmentType: string | null;
-  adjustmentAmount: string | null;
-  adjustmentDate: string | null;
-  notes: string | null;
-  generatedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  listVarianceReports,
+  varianceReportApprove,
+  varianceReportReview,
+} from "@/app/lib/manifest-client.generated";
+import type { VarianceReport } from "@/app/lib/manifest-types.generated";
 
 interface InitialMetrics {
   total: number;
@@ -85,16 +68,16 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function formatDecimal(value: string | null): string {
-  if (!value) return "0.000";
+function formatDecimal(value: number | string | null | undefined): string {
+  if (value == null) return "0.000";
   return Number(value).toLocaleString("en-US", {
     minimumFractionDigits: 3,
     maximumFractionDigits: 3,
   });
 }
 
-function formatPct(value: string | null): string {
-  if (!value) return "0.0%";
+function formatPct(value: number | string | null | undefined): string {
+  if (value == null) return "0.0%";
   return `${Number(value).toFixed(1)}%`;
 }
 
@@ -146,19 +129,17 @@ export function VarianceReportsClient({
   const loadReports = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (searchQuery) params.set("search", searchQuery);
+      const params: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (searchQuery) params.search = searchQuery;
 
-      const res = await apiFetch(`/api/variancereport/list?${params}`);
-      if (!res.ok) throw new Error("Failed to load variance reports");
-      const data = await res.json();
-      setReports(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listVarianceReports(params);
+      setReports(result.data);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load variance reports"
@@ -181,18 +162,10 @@ export function VarianceReportsClient({
     if (!reviewTarget) return;
     setActioning(reviewTarget.id);
     try {
-      const res = await apiFetch("/api/variancereport/review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: reviewTarget.id,
-          notes: reviewForm.notes,
-        }),
+      await varianceReportReview({
+        id: reviewTarget.id,
+        notes: reviewForm.notes,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? err.message ?? "Review failed");
-      }
       toast.success("Report reviewed");
       setReviewTarget(null);
       setReviewForm(EMPTY_REVIEW);
@@ -210,21 +183,13 @@ export function VarianceReportsClient({
     if (!approveTarget) return;
     setActioning(approveTarget.id);
     try {
-      const res = await apiFetch("/api/variancereport/approve", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: approveTarget.id,
-          adjustmentType: approveForm.adjustmentType || undefined,
-          adjustmentAmount: approveForm.adjustmentAmount
-            ? Number(approveForm.adjustmentAmount)
-            : undefined,
-        }),
+      await varianceReportApprove({
+        id: approveTarget.id,
+        adjustmentType: approveForm.adjustmentType || undefined,
+        adjustmentAmount: approveForm.adjustmentAmount
+          ? Number(approveForm.adjustmentAmount)
+          : undefined,
       });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? err.message ?? "Approval failed");
-      }
       toast.success("Report approved");
       setApproveTarget(null);
       setApproveForm(EMPTY_APPROVE);
@@ -306,7 +271,7 @@ export function VarianceReportsClient({
             <span className="text-right">Actions</span>
           </div>
           {reports.map((report) => {
-            const statusCfg = STATUS_CONFIG[report.status] ?? {
+            const statusCfg = STATUS_CONFIG[report.status ?? ""] ?? {
               label: report.status,
               icon: null,
               variant: "neutral",

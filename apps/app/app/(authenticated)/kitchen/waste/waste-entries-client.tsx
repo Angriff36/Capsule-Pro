@@ -25,6 +25,7 @@ import { AlertCircle, DollarSign, Package, Search, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { wasteEntryCreate } from "@/app/lib/manifest-client.generated";
 
 const { logger, captureException } = Sentry;
 
@@ -198,22 +199,16 @@ export function WasteEntriesClient() {
     setSubmitting(true);
 
     try {
-      const response = await apiFetch("/api/kitchen/waste/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(formData),
+      const result = await wasteEntryCreate({
+        inventoryItemId: formData.inventoryItemId,
+        quantity: formData.quantity ? Number.parseFloat(formData.quantity) : null,
+        reasonId: formData.reasonId ? Number.parseInt(formData.reasonId) : null,
+        unitId: formData.unitId ? Number.parseInt(formData.unitId) : null,
+        notes: formData.notes || null,
       });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to log waste entry");
-      }
-
-      const result = await response.json();
-
       toast.success(
-        `Waste entry logged - Cost: $${result.entry.totalCost?.toFixed(2) || "0.00"}`
+        `Waste entry logged - Cost: $${result?.totalCost?.toFixed(2) || "0.00"}`
       );
 
       // Reset form

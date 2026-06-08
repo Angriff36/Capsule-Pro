@@ -64,6 +64,8 @@ export default function NutritionLabelsPage() {
   const fetchRecipes = async () => {
     setLoading(true);
     try {
+      // NOTE: Not migrated to generated Manifest client — no generated function exists for
+      // this custom endpoint (aggregates recipes + versions + ingredients server-side).
       const res = await apiFetch("/api/kitchen/nutrition-labels/list");
       const data = await res.json();
       if (data.success) {
@@ -83,6 +85,8 @@ export default function NutritionLabelsPage() {
     setNutritionLabel(null);
 
     try {
+      // NOTE: Not migrated to generated Manifest client — no generated function exists for
+      // this custom endpoint (AI-driven nutrition label generation).
       const res = await apiFetch("/api/kitchen/nutrition-labels/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

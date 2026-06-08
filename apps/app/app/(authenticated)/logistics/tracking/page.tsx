@@ -282,6 +282,9 @@ export default function TrackingPage() {
 
   const loadTrackingData = useCallback(async () => {
     try {
+      // NOTE: No generated Manifest client function exists for /api/logistics/tracking.
+      // This is an aggregate endpoint (deliveries + stats), not a standard entity read route.
+      // Keeping apiFetch until a generated function is added for this endpoint.
       const res = await apiFetch("/api/logistics/tracking");
       const data: TrackingResponse = await res.json();
       setDeliveries(data.deliveries || []);

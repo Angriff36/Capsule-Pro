@@ -41,8 +41,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listPricingTiers,
   pricingTierCreate,
   pricingTierUpdate,
   pricingTierSoftDelete,
@@ -166,19 +166,17 @@ export function PricingTiersClient({
   const loadTiers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: "25",
-      });
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (searchQuery) params.set("search", searchQuery);
+      const params: Record<string, string | number> = {
+        page,
+        limit: 25,
+      };
+      if (statusFilter !== "all") params.status = statusFilter;
+      if (searchQuery) params.search = searchQuery;
 
-      const res = await apiFetch(`/api/inventory/pricing-tiers/list?${params}`);
-      if (!res.ok) throw new Error("Failed to load pricing tiers");
-      const data = await res.json();
-      setTiers(data.data ?? []);
-      setTotalCount(data.pagination?.total ?? 0);
-      setTotalPages(data.pagination?.totalPages ?? 1);
+      const result = await listPricingTiers(params);
+      setTiers(result.data as unknown as PricingTier[]);
+      setTotalCount(result.pagination.total);
+      setTotalPages(result.pagination.totalPages);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to load pricing tiers"

@@ -19,21 +19,12 @@ import {
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-
-interface Schedule {
-  id: string;
-  schedule_number: string;
-  title: string;
-  frequency: string;
-  next_due_at: string;
-  equipment_id: string | null;
-  estimated_hours: number | null;
-}
-
-interface Asset {
-  id: string;
-  name: string;
-}
+import {
+  listPreventiveMaintenanceSchedules,
+  // TODO: Replace apiFetch for assets once listFacilityAssets envelope key is fixed
+  // (generated extracts json.facilityAssets but actual API returns json.assets)
+} from "@/app/lib/manifest-client.generated";
+import type { PreventiveMaintenanceSchedule } from "@/app/lib/manifest-types.generated";
 
 interface UpcomingMaintenanceWidgetProps {
   compact?: boolean;
@@ -42,22 +33,21 @@ interface UpcomingMaintenanceWidgetProps {
 export function UpcomingMaintenanceWidget({
   compact = false,
 }: UpcomingMaintenanceWidgetProps) {
-  const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [assets, setAssets] = useState<Asset[]>([]);
+  const [schedules, setSchedules] = useState<PreventiveMaintenanceSchedule[]>([]);
+  const [assets, setAssets] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [schedulesRes, assetsRes] = await Promise.all([
-        apiFetch("/api/facilities/schedules/list?status=active"),
+        listPreventiveMaintenanceSchedules({ status: "active" }),
+        // TODO: Replace with listFacilityAssets once envelope key mismatch is fixed
+        // (generated extracts json.facilityAssets but actual API returns json.assets)
         apiFetch("/api/facilities/assets/list?status=active"),
       ]);
-      const schedulesData = await schedulesRes.json();
+      setSchedules(schedulesRes.data);
       const assetsData = await assetsRes.json();
-      if (schedulesData.success) {
-        setSchedules(schedulesData.schedules || []);
-      }
       if (assetsData.success) {
         setAssets(assetsData.assets || []);
       }
@@ -76,11 +66,11 @@ export function UpcomingMaintenanceWidget({
   const sevenDaysFromNow = addDays(now, 7);
 
   const overdueSchedules = schedules.filter((s) =>
-    isBefore(new Date(s.next_due_at), now)
+    isBefore(new Date(s.nextDueAt), now)
   );
   const upcomingSchedules = schedules
     .filter((s) => {
-      const dueDate = new Date(s.next_due_at);
+      const dueDate = new Date(s.nextDueAt);
       return (
         (isAfter(dueDate, now) || isSameDay(dueDate, now)) &&
         isBefore(dueDate, sevenDaysFromNow)
@@ -88,7 +78,7 @@ export function UpcomingMaintenanceWidget({
     })
     .slice(0, compact ? 3 : 5);
 
-  const getAssetName = (equipmentId: string | null) => {
+  const getAssetName = (equipmentId: string | null | undefined) => {
     if (!equipmentId) {
       return null;
     }
@@ -182,8 +172,8 @@ export function UpcomingMaintenanceWidget({
         ) : (
           <div className="space-y-2">
             {upcomingSchedules.map((schedule) => {
-              const dueDate = new Date(schedule.next_due_at);
-              const assetName = getAssetName(schedule.equipment_id);
+              const dueDate = new Date(schedule.nextDueAt);
+              const assetName = getAssetName(schedule.equipmentId);
               const isDueToday = isSameDay(dueDate, now);
 
               return (
@@ -218,7 +208,7 @@ export function UpcomingMaintenanceWidget({
                   </div>
                   <Badge
                     className={
-                      frequencyColors[schedule.frequency] ||
+                      (schedule.frequency && frequencyColors[schedule.frequency]) ||
                       "bg-muted/20 text-muted-foreground"
                     }
                   >
