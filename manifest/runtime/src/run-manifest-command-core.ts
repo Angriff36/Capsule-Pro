@@ -7,7 +7,7 @@
  */
 
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
-import type { ConstraintOutcome } from "@angriff36/manifest/ir";
+import type { ConstraintOutcome, IREntity } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
 import { resolveParentContext } from "./parent-context-resolver";
 
@@ -99,6 +99,68 @@ function deriveInstanceIdFromBody(
   return undefined;
 }
 
+type IRPropertyWithDefault = {
+  name: string;
+  default?: unknown;
+  defaultValue?: { value?: unknown };
+};
+
+type IRTransitionLike = {
+  field?: string;
+  property?: string;
+  from?: unknown;
+};
+
+function defaultForProperty(entity: IREntity, propertyName: string): unknown {
+  const property = entity.properties.find(
+    (item) => item.name === propertyName
+  ) as IRPropertyWithDefault | undefined;
+  return property?.defaultValue?.value ?? property?.default;
+}
+
+/**
+ * RuntimeEngine auto-create seeds the instance from the request body before
+ * command actions run. If a caller sends a transition-governed initial value
+ * equal to the property's default, the engine can interpret that as a no-op
+ * transition such as `planned -> planned` and reject it. Remove only those
+ * redundant create inputs; defaults still populate the created instance.
+ */
+export function sanitizeCreateInitialTransitionInput(
+  runtime: RuntimeEngine,
+  entityName: string,
+  commandName: string,
+  body: Record<string, unknown>
+): string[] {
+  if (commandName !== "create") {
+    return [];
+  }
+
+  const entity = runtime.getEntity(entityName) as IREntity | undefined;
+  if (!entity?.transitions?.length) {
+    return [];
+  }
+
+  const removed: string[] = [];
+  for (const transition of entity.transitions as IRTransitionLike[]) {
+    const propertyName = transition.property ?? transition.field;
+    if (!propertyName) {
+      continue;
+    }
+
+    const defaultValue = defaultForProperty(entity, propertyName);
+    if (
+      transition.from === defaultValue &&
+      Object.hasOwn(body, propertyName) &&
+      body[propertyName] === defaultValue
+    ) {
+      delete body[propertyName];
+      removed.push(propertyName);
+    }
+  }
+
+  return [...new Set(removed)];
+}
+
 export async function runManifestCommandCore(
   deps: RunManifestCommandCoreDeps,
   params: RunManifestCommandCoreParams
@@ -132,6 +194,7 @@ export async function runManifestCommandCore(
       } catch {
         // Inference is best-effort; proceed with the un-enriched body.
       }
+      sanitizeCreateInitialTransitionInput(runtime, entity, command, body);
     }
 
     // Resolve which instance an instance-scoped verb targets. The canonical

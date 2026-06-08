@@ -70,6 +70,13 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  dishCreate,
+  eventDishCreate,
+  eventReportCreate,
+  eventUpdate,
+  scheduleShiftCreate,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -263,24 +270,17 @@ function EventReportsTab() {
     }
     setCreating(true);
     try {
-      const res = await apiFetch("/api/manifest/EventReport/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: selectedEventId.trim() }),
-      });
-      if (!res.ok) {
-        const data = (await res.json()) as { error?: string };
-        toast.error("Failed to create report", {
-          description: data.error ?? "Unknown error",
-        });
-        return;
-      }
+      await eventReportCreate({ eventId: selectedEventId.trim() });
       toast.success("Event report created");
       setDialogOpen(false);
       setSelectedEventId("");
       loadReports();
-    } catch {
-      toast.error("Failed to create report");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create report";
+      toast.error("Failed to create report", {
+        description: message,
+      });
     } finally {
       setCreating(false);
     }
@@ -608,17 +608,7 @@ function DocumentParserTab() {
           if (details.guestCount) updatePayload.guestCount = details.guestCount;
           if (details.venue) updatePayload.venueName = details.venue;
 
-          const res = await apiFetch("/api/manifest/Event/commands/update", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatePayload),
-          });
-          if (!res.ok) {
-            const data = (await res.json().catch(() => ({}))) as {
-              error?: string;
-            };
-            throw new Error(data.error || `Update failed (${res.status})`);
-          }
+          await eventUpdate(updatePayload);
           toast.success("Event details applied", {
             description: `Updated ${selectedEventName}`,
           });
@@ -627,32 +617,14 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const item of parsed.menuItems) {
             try {
-              const dishRes = await apiFetch(
-                "/api/manifest/Dish/commands/create",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ name: item.name }),
-                }
-              );
-              if (!dishRes.ok) {
-                errors.push(item.name);
-                continue;
-              }
-              const dishData = (await dishRes.json()) as {
-                result?: { id?: string };
-              };
-              const dishId = dishData.result?.id;
+              const dish = await dishCreate({ name: item.name });
+              const dishId = dish?.id;
               if (dishId) {
-                await apiFetch("/api/manifest/EventDish/commands/create", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    eventId: selectedEventId,
-                    dishId,
-                    quantityServings: item.quantity || 1,
-                    specialInstructions: item.notes || undefined,
-                  }),
+                await eventDishCreate({
+                  eventId: selectedEventId,
+                  dishId,
+                  quantityServings: item.quantity || 1,
+                  specialInstructions: item.notes || undefined,
                 });
               }
               created++;
@@ -674,24 +646,13 @@ function DocumentParserTab() {
           const errors: string[] = [];
           for (const shift of parsed.staffShifts) {
             try {
-              const res = await apiFetch(
-                "/api/manifest/ScheduleShift/commands/create",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    eventId: selectedEventId,
-                    role: shift.role,
-                    employeeName: shift.name,
-                    shiftTime: shift.time,
-                  }),
-                }
-              );
-              if (res.ok) {
-                created++;
-              } else {
-                errors.push(shift.name);
-              }
+              await scheduleShiftCreate({
+                eventId: selectedEventId,
+                role: shift.role,
+                employeeName: shift.name,
+                shiftTime: shift.time,
+              });
+              created++;
             } catch {
               errors.push(shift.name);
             }

@@ -22,6 +22,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  userUpdateRole,
+  userDeactivate,
+  userTerminate,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -143,16 +148,7 @@ function ChangeRoleDialog({
     }
     setLoading(true);
     try {
-      const res = await apiFetch("/api/manifest/User/commands/updateRole", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: employee.id, role }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to update role");
-      }
+      await userUpdateRole({ userId: employee.id, role });
 
       toast.success(`${getDisplayName(employee)} role updated to ${role}`);
       onSaved();
@@ -486,15 +482,7 @@ export const UsersClient = () => {
     }
     setActionLoading(true);
     try {
-      const res = await apiFetch("/api/manifest/User/commands/deactivate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: confirmAction.employee.id }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to deactivate");
-      }
+      await userDeactivate({ userId: confirmAction.employee.id });
       toast.success(`${getDisplayName(confirmAction.employee)} deactivated`);
       setConfirmAction(null);
       await fetchEmployees(true);
@@ -511,15 +499,7 @@ export const UsersClient = () => {
     }
     setActionLoading(true);
     try {
-      const res = await apiFetch("/api/manifest/User/commands/terminate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: confirmAction.employee.id }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to terminate");
-      }
+      await userTerminate({ userId: confirmAction.employee.id });
       toast.success(`${getDisplayName(confirmAction.employee)} terminated`);
       setConfirmAction(null);
       await fetchEmployees(true);

@@ -42,6 +42,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  pricingTierCreate,
+  pricingTierUpdate,
+  pricingTierSoftDelete,
+} from "@/app/lib/manifest-client.generated";
 
 interface PricingTier {
   id: string;
@@ -205,15 +210,7 @@ export function PricingTiersClient({
       if (form.effectiveFrom) payload.effectiveFrom = form.effectiveFrom;
       if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
 
-      const res = await apiFetch("/api/manifest/PricingTier/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Create failed");
-      }
+      await pricingTierCreate(payload);
       toast.success("Pricing tier created");
       setCreateOpen(false);
       setForm(EMPTY_FORM);
@@ -241,15 +238,7 @@ export function PricingTiersClient({
       if (form.effectiveFrom) payload.effectiveFrom = form.effectiveFrom;
       if (form.effectiveTo) payload.effectiveTo = form.effectiveTo;
 
-      const res = await apiFetch("/api/manifest/PricingTier/commands/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Update failed");
-      }
+      await pricingTierUpdate(payload);
       toast.success("Pricing tier updated");
       setEditTarget(null);
       setForm(EMPTY_FORM);
@@ -267,18 +256,7 @@ export function PricingTiersClient({
     if (!deleteTarget) return;
     setActioning(deleteTarget.id);
     try {
-      const res = await apiFetch(
-        "/api/manifest/PricingTier/commands/softDelete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: deleteTarget.id }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Delete failed");
-      }
+      await pricingTierSoftDelete({ id: deleteTarget.id });
       toast.success("Pricing tier deleted");
       setDeleteTarget(null);
       await loadTiers();

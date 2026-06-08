@@ -51,6 +51,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { vendorUpdate, vendorAddContact, vendorRate } from "@/app/lib/manifest-client.generated";
 import { formatDate } from "../../components/po-shared";
 import {
   formatPaymentTerms,
@@ -157,20 +158,11 @@ export default function VendorDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await apiFetch("/api/manifest/Vendor/commands/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId, ...form }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setEditing(false);
-        loadVendor();
-      } else {
-        toast.error(data.error || "Failed to update vendor");
-      }
+      await vendorUpdate({ vendorId, ...form });
+      setEditing(false);
+      loadVendor();
     } catch (error) {
-      console.error("Failed to update vendor:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update vendor");
     } finally {
       setSaving(false);
     }
@@ -179,44 +171,30 @@ export default function VendorDetailPage() {
   const handleAddContact = async () => {
     if (!contactForm.contactName.trim()) return;
     try {
-      const res = await apiFetch("/api/manifest/Vendor/commands/addContact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId, ...contactForm }),
+      await vendorAddContact({ vendorId, ...contactForm });
+      setContactDialogOpen(false);
+      setContactForm({
+        contactName: "",
+        contactEmail: "",
+        contactPhone: "",
+        contactRole: "",
+        isPrimary: false,
+        notes: "",
       });
-      const data = await res.json();
-      if (data.success) {
-        setContactDialogOpen(false);
-        setContactForm({
-          contactName: "",
-          contactEmail: "",
-          contactPhone: "",
-          contactRole: "",
-          isPrimary: false,
-          notes: "",
-        });
-        loadVendor();
-      }
+      loadVendor();
     } catch (error) {
-      console.error("Failed to add contact:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add contact");
     }
   };
 
   const handleRate = async () => {
     try {
-      const res = await apiFetch("/api/manifest/Vendor/commands/rate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId, ...ratingForm }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setRatingDialogOpen(false);
-        setRatingForm({ category: "overall", rating: 5, comment: "" });
-        loadVendor();
-      }
+      await vendorRate({ vendorId, ...ratingForm });
+      setRatingDialogOpen(false);
+      setRatingForm({ category: "overall", rating: 5, comment: "" });
+      loadVendor();
     } catch (error) {
-      console.error("Failed to add rating:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add rating");
     }
   };
 

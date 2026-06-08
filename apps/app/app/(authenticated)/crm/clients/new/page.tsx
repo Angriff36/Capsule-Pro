@@ -32,7 +32,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { clientCreate } from "@/app/lib/manifest-client.generated";
 import { getAvailableTags } from "../actions";
 import { TagInput } from "../components/tag-input";
 
@@ -153,41 +153,12 @@ export default function NewClientPage() {
     setLoading(true);
     try {
       const clientId = crypto.randomUUID();
-      const res = await apiFetch("/api/manifest/Client/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          buildClientCreatePayload(clientId, clientType, formData)
-        ),
-      });
-
-      const body = (await res.json()) as {
-        success?: boolean;
-        message?: string;
-        error?: string;
-        result?: { id?: string; instanceId?: string } | number | string;
-      };
-
-      if (!res.ok || body.success === false) {
-        throw new Error(body.message ?? body.error ?? "Create failed");
-      }
-
-      const resultPayload = body.result;
-      const createdId =
-        typeof resultPayload === "object" &&
-        resultPayload !== null &&
-        "id" in resultPayload &&
-        typeof resultPayload.id === "string"
-          ? resultPayload.id
-          : typeof resultPayload === "object" &&
-              resultPayload !== null &&
-              "instanceId" in resultPayload &&
-              typeof resultPayload.instanceId === "string"
-            ? resultPayload.instanceId
-            : clientId;
+      const result = await clientCreate(
+        buildClientCreatePayload(clientId, clientType, formData)
+      );
 
       toast.success("Client created successfully");
-      router.push(`/crm/clients/${createdId}`);
+      router.push(`/crm/clients/${result?.id ?? clientId}`);
     } catch (error) {
       toast.error("Failed to create client", {
         description: error instanceof Error ? error.message : "Unknown error",

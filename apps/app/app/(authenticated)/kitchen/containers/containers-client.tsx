@@ -39,6 +39,11 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  containerCreate,
+  containerUpdate,
+  containerDeactivate,
+} from "@/app/lib/manifest-client.generated";
 
 interface ContainerRecord {
   id: string;
@@ -209,15 +214,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
       if (form.capacityPortions)
         payload.capacityPortions = Number(form.capacityPortions);
 
-      const res = await apiFetch("/api/manifest/Container/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message ?? err.error ?? "Create failed");
-      }
+      await containerCreate(payload);
       toast.success("Container created");
       setCreateOpen(false);
       resetForm();
@@ -251,15 +248,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
         payload.capacityPortions = Number(form.capacityPortions);
       else payload.capacityPortions = null;
 
-      const res = await apiFetch("/api/manifest/Container/commands/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message ?? err.error ?? "Update failed");
-      }
+      await containerUpdate(payload);
       toast.success("Container updated");
       setEditTarget(null);
       resetForm();
@@ -277,18 +266,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
     if (!deactivateTarget) return;
     setActioning(deactivateTarget.id);
     try {
-      const res = await apiFetch(
-        "/api/manifest/Container/commands/deactivate",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: deactivateTarget.id }),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.message ?? err.error ?? "Deactivate failed");
-      }
+      await containerDeactivate({ id: deactivateTarget.id });
       toast.success("Container deactivated");
       setDeactivateTarget(null);
       await loadContainers();
