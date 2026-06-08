@@ -15,8 +15,8 @@ export function ChartOfAccountsActions() {
   // Fetch accounts for parent dropdown on mount
   useEffect(() => {
     listChartOfAccounts()
-      .then((accounts) => {
-        setParentAccounts(accounts as unknown as ChartOfAccountWithParent[]);
+      .then((result) => {
+        setParentAccounts(result.data as unknown as ChartOfAccountWithParent[]);
       })
       .catch(() => {
         // Silently fail — parent dropdown just won't show

@@ -151,7 +151,7 @@ export function ContainersClient({ initialMetrics }: ContainersClientProps) {
   const loadContainers = useCallback(async () => {
     setIsLoading(true);
     try {
-      const all = await listContainers() as unknown as ContainerRecord[];
+      const all = (await listContainers()).data as unknown as ContainerRecord[];
 
       // Client-side filtering since list endpoint has no query params
       let filtered = all;

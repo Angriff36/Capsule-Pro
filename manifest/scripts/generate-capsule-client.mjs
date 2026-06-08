@@ -63,18 +63,29 @@ out.push('import { executeCommand } from "@/app/lib/manifest-client";');
 out.push("__TYPE_IMPORT__");
 out.push("");
 
+// Paginated list response type — matches API envelope from manifest read routes
+// and hand-written list routes: { data: T[], pagination: { page, limit, total, totalPages } }
+out.push("/** Paginated list response matching Capsule API envelope. */");
+out.push("export interface PaginatedResponse<T> {");
+out.push("  data: T[];");
+out.push("  pagination: { page: number; limit: number; total: number; totalPages: number };");
+out.push("}");
+out.push("");
+
 // reads (domain-mapped entities)
 for (const [entity, base] of Object.entries(ENTITY_DOMAIN_MAP)) {
   const T = typeSet.has(entity) ? entity : "Record<string, unknown>";
   if (typeSet.has(entity)) usedTypes.add(entity);
   const listKey = plural(camel(entity));
   const detailKey = camel(entity);
-  out.push(`export async function list${plural(entity)}(query?: Record<string, string | number>): Promise<${T}[]> {`);
+  out.push(`export async function list${plural(entity)}(query?: Record<string, string | number>): Promise<PaginatedResponse<${T}>> {`);
   out.push(`  const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";`);
   out.push(`  const res = await apiFetch(\`/api/${base}/list\${qs}\`);`);
   out.push(`  if (!res.ok) throw new Error(\`Failed to list ${entity} (\${res.status})\`);`);
   out.push(`  const json = await res.json();`);
-  out.push(`  return (json.${listKey} ?? json.data ?? []) as ${T}[];`);
+  out.push(`  const data = (json.${listKey} ?? json.data ?? []) as ${T}[];`);
+  out.push(`  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };`);
+  out.push(`  return { data, pagination };`);
   out.push(`}`);
   out.push(`export async function get${entity}(id: string): Promise<${T} | undefined> {`);
   out.push(`  const res = await apiFetch(\`/api/${base}/\${encodeURIComponent(id)}\`);`);

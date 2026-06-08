@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
+[proactive bridge @ 96% context — saved before compacting]
 Files (1):
-  manifest/governance/parent-context-overrides.json (edit)
+  manifest/scripts/generate-capsule-client.mjs (edit)
 
 # === END COGNILAYER ===

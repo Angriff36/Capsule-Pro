@@ -5,12 +5,20 @@ import { apiFetch } from "@/app/lib/api";
 import { executeCommand } from "@/app/lib/manifest-client";
 import type { ActionMilestone, AdminChatMessage, AdminChatParticipant, AdminChatThread, AdminTask, AiEventSetupSession, AlertsConfig, AllergenWarning, ApiKey, AuditSchedule, AutomatedFollowup, BankAccount, BattleBoard, BoardAnnotation, BoardProjection, Budget, BudgetAlert, BudgetLineItem, BulkCombineRule, BulkOrderRule, CateringOrder, ChartOfAccount, Client, ClientContact, ClientInteraction, ClientPreference, CollectionAction, CollectionCase, CollectionPaymentPlan, CommandBoard, CommandBoardCard, CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, Container, ContractSignature, CorrectiveAction, CrmScoringRule, CycleCountRecord, CycleCountSession, Deal, DeliveryRoute, DisciplinaryAction, Dish, Document, DocumentVersion, Driver, EmailTemplate, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EntityVersion, Equipment, Event, EventBudget, EventContract, EventDish, EventFollowup, EventGuest, EventImport, EventImportWorkflow, EventProfitability, EventReport, EventStaff, EventSummary, EventTimeline, EventTimelineItem, EventWaitlistEntry, Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder, ForecastInput, Ingredient, InteractionAttachment, InventoryAlert, InventoryForecast, InventoryItem, InventoryStock, InventorySupplier, InventoryTransaction, InventoryTransfer, InventoryTransferItem, Invoice, IoTAlert, IotAlertRule, KitchenTask, KitchenTaskClaim, KitchenTaskProgress, KnowledgeBaseEntry, LaborBudget, Lead, LogisticsDispatch, LogisticsRoute, MaintenanceWorkOrder, Menu, MenuDish, MethodVideo, Note, Notification, OnboardingCompletion, OnboardingTask, OpenShift, OverrideAudit, Payment, PaymentMethod, PaymentRefundAttempt, PayrollApprovalHistory, PayrollLineItem, PayrollPeriod, PayrollRun, PerformancePrediction, PerformanceReview, PrepComment, PrepList, PrepListImport, PrepListItem, PrepMethod, PrepTask, PrepTaskPlanWorkflow, PreventiveMaintenanceSchedule, PricingTier, ProcurementBudget, ProcurementBudgetAlert, Proposal, ProposalLineItem, ProposalTemplate, PurchaseOrder, PurchaseOrderItem, PurchaseRequisition, PurchaseRequisitionItem, QACheck, QACorrectiveAction, QATemperatureLog, QualityCheck, QualityCheckItem, RateLimitConfig, Recipe, RecipeIngredient, RecipeStep, RecipeVersion, ReorderSuggestion, Report, RevenueRecognitionLine, RevenueRecognitionSchedule, RolePolicy, RouteStop, SampleData, Schedule, ScheduleShift, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, Shipment, ShipmentItem, SmsAutomationRule, StaffMember, StaffPerformance, StaffTrainingSignal, Station, StorageLocation, TaskBundle, TaskBundleItem, TemperatureLog, TemperatureProbe, TemperatureReading, TimeEntry, TimeOffRequest, TimecardApproval, TimecardEditRequest, TimelineTask, TipPool, TrainingAssignment, TrainingAttempt, TrainingCompletion, TrainingModule, TrainingQuestion, User, VarianceReport, Vehicle, Vendor, VendorCatalog, VendorContact, VendorContract, VendorRating, Venue, VersionApproval, VersionedEntity, WasteEntry, WorkOrder, Workflow, WorkforceOptimization } from "./manifest-types.generated";
 
-export async function listPrepTasks(query?: Record<string, string | number>): Promise<PrepTask[]> {
+/** Paginated list response matching Capsule API envelope. */
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export async function listPrepTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-tasks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepTask (${res.status})`);
   const json = await res.json();
-  return (json.prepTasks ?? json.data ?? []) as PrepTask[];
+  const data = (json.prepTasks ?? json.data ?? []) as PrepTask[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepTask(id: string): Promise<PrepTask | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-tasks/${encodeURIComponent(id)}`);
@@ -18,12 +26,14 @@ export async function getPrepTask(id: string): Promise<PrepTask | undefined> {
   const json = await res.json();
   return (json.prepTask ?? json.data) as PrepTask | undefined;
 }
-export async function listPrepTaskPlanWorkflows(query?: Record<string, string | number>): Promise<PrepTaskPlanWorkflow[]> {
+export async function listPrepTaskPlanWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepTaskPlanWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-task-plan-workflows/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepTaskPlanWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.prepTaskPlanWorkflows ?? json.data ?? []) as PrepTaskPlanWorkflow[];
+  const data = (json.prepTaskPlanWorkflows ?? json.data ?? []) as PrepTaskPlanWorkflow[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepTaskPlanWorkflow(id: string): Promise<PrepTaskPlanWorkflow | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-task-plan-workflows/${encodeURIComponent(id)}`);
@@ -31,12 +41,14 @@ export async function getPrepTaskPlanWorkflow(id: string): Promise<PrepTaskPlanW
   const json = await res.json();
   return (json.prepTaskPlanWorkflow ?? json.data) as PrepTaskPlanWorkflow | undefined;
 }
-export async function listKitchenTasks(query?: Record<string, string | number>): Promise<KitchenTask[]> {
+export async function listKitchenTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/kitchen-tasks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KitchenTask (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTasks ?? json.data ?? []) as KitchenTask[];
+  const data = (json.kitchenTasks ?? json.data ?? []) as KitchenTask[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getKitchenTask(id: string): Promise<KitchenTask | undefined> {
   const res = await apiFetch(`/api/kitchen/kitchen-tasks/${encodeURIComponent(id)}`);
@@ -44,12 +56,14 @@ export async function getKitchenTask(id: string): Promise<KitchenTask | undefine
   const json = await res.json();
   return (json.kitchenTask ?? json.data) as KitchenTask | undefined;
 }
-export async function listRecipes(query?: Record<string, string | number>): Promise<Recipe[]> {
+export async function listRecipes(query?: Record<string, string | number>): Promise<PaginatedResponse<Recipe>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/recipes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Recipe (${res.status})`);
   const json = await res.json();
-  return (json.recipes ?? json.data ?? []) as Recipe[];
+  const data = (json.recipes ?? json.data ?? []) as Recipe[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRecipe(id: string): Promise<Recipe | undefined> {
   const res = await apiFetch(`/api/kitchen/recipes/${encodeURIComponent(id)}`);
@@ -57,12 +71,14 @@ export async function getRecipe(id: string): Promise<Recipe | undefined> {
   const json = await res.json();
   return (json.recipe ?? json.data) as Recipe | undefined;
 }
-export async function listRecipeVersions(query?: Record<string, string | number>): Promise<RecipeVersion[]> {
+export async function listRecipeVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/recipe-versions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RecipeVersion (${res.status})`);
   const json = await res.json();
-  return (json.recipeVersions ?? json.data ?? []) as RecipeVersion[];
+  const data = (json.recipeVersions ?? json.data ?? []) as RecipeVersion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRecipeVersion(id: string): Promise<RecipeVersion | undefined> {
   const res = await apiFetch(`/api/kitchen/recipe-versions/${encodeURIComponent(id)}`);
@@ -70,12 +86,14 @@ export async function getRecipeVersion(id: string): Promise<RecipeVersion | unde
   const json = await res.json();
   return (json.recipeVersion ?? json.data) as RecipeVersion | undefined;
 }
-export async function listRecipeIngredients(query?: Record<string, string | number>): Promise<RecipeIngredient[]> {
+export async function listRecipeIngredients(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeIngredient>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/recipe-ingredients/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RecipeIngredient (${res.status})`);
   const json = await res.json();
-  return (json.recipeIngredients ?? json.data ?? []) as RecipeIngredient[];
+  const data = (json.recipeIngredients ?? json.data ?? []) as RecipeIngredient[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRecipeIngredient(id: string): Promise<RecipeIngredient | undefined> {
   const res = await apiFetch(`/api/kitchen/recipe-ingredients/${encodeURIComponent(id)}`);
@@ -83,12 +101,14 @@ export async function getRecipeIngredient(id: string): Promise<RecipeIngredient 
   const json = await res.json();
   return (json.recipeIngredient ?? json.data) as RecipeIngredient | undefined;
 }
-export async function listRecipeSteps(query?: Record<string, string | number>): Promise<RecipeStep[]> {
+export async function listRecipeSteps(query?: Record<string, string | number>): Promise<PaginatedResponse<RecipeStep>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/recipe-steps/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RecipeStep (${res.status})`);
   const json = await res.json();
-  return (json.recipeSteps ?? json.data ?? []) as RecipeStep[];
+  const data = (json.recipeSteps ?? json.data ?? []) as RecipeStep[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRecipeStep(id: string): Promise<RecipeStep | undefined> {
   const res = await apiFetch(`/api/kitchen/recipe-steps/${encodeURIComponent(id)}`);
@@ -96,12 +116,14 @@ export async function getRecipeStep(id: string): Promise<RecipeStep | undefined>
   const json = await res.json();
   return (json.recipeStep ?? json.data) as RecipeStep | undefined;
 }
-export async function listIngredients(query?: Record<string, string | number>): Promise<Ingredient[]> {
+export async function listIngredients(query?: Record<string, string | number>): Promise<PaginatedResponse<Ingredient>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/ingredients/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Ingredient (${res.status})`);
   const json = await res.json();
-  return (json.ingredients ?? json.data ?? []) as Ingredient[];
+  const data = (json.ingredients ?? json.data ?? []) as Ingredient[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getIngredient(id: string): Promise<Ingredient | undefined> {
   const res = await apiFetch(`/api/kitchen/ingredients/${encodeURIComponent(id)}`);
@@ -109,12 +131,14 @@ export async function getIngredient(id: string): Promise<Ingredient | undefined>
   const json = await res.json();
   return (json.ingredient ?? json.data) as Ingredient | undefined;
 }
-export async function listDishes(query?: Record<string, string | number>): Promise<Dish[]> {
+export async function listDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<Dish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Dish (${res.status})`);
   const json = await res.json();
-  return (json.dishes ?? json.data ?? []) as Dish[];
+  const data = (json.dishes ?? json.data ?? []) as Dish[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDish(id: string): Promise<Dish | undefined> {
   const res = await apiFetch(`/api/kitchen/dishes/${encodeURIComponent(id)}`);
@@ -122,12 +146,14 @@ export async function getDish(id: string): Promise<Dish | undefined> {
   const json = await res.json();
   return (json.dish ?? json.data) as Dish | undefined;
 }
-export async function listMenus(query?: Record<string, string | number>): Promise<Menu[]> {
+export async function listMenus(query?: Record<string, string | number>): Promise<PaginatedResponse<Menu>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/menus/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Menu (${res.status})`);
   const json = await res.json();
-  return (json.menus ?? json.data ?? []) as Menu[];
+  const data = (json.menus ?? json.data ?? []) as Menu[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getMenu(id: string): Promise<Menu | undefined> {
   const res = await apiFetch(`/api/kitchen/menus/${encodeURIComponent(id)}`);
@@ -135,12 +161,14 @@ export async function getMenu(id: string): Promise<Menu | undefined> {
   const json = await res.json();
   return (json.menu ?? json.data) as Menu | undefined;
 }
-export async function listMenuDishes(query?: Record<string, string | number>): Promise<MenuDish[]> {
+export async function listMenuDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<MenuDish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/menu-dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list MenuDish (${res.status})`);
   const json = await res.json();
-  return (json.menuDishes ?? json.data ?? []) as MenuDish[];
+  const data = (json.menuDishes ?? json.data ?? []) as MenuDish[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getMenuDish(id: string): Promise<MenuDish | undefined> {
   const res = await apiFetch(`/api/kitchen/menu-dishes/${encodeURIComponent(id)}`);
@@ -148,12 +176,14 @@ export async function getMenuDish(id: string): Promise<MenuDish | undefined> {
   const json = await res.json();
   return (json.menuDish ?? json.data) as MenuDish | undefined;
 }
-export async function listPrepLists(query?: Record<string, string | number>): Promise<PrepList[]> {
+export async function listPrepLists(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepList>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-lists/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepList (${res.status})`);
   const json = await res.json();
-  return (json.prepLists ?? json.data ?? []) as PrepList[];
+  const data = (json.prepLists ?? json.data ?? []) as PrepList[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepList(id: string): Promise<PrepList | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-lists/${encodeURIComponent(id)}`);
@@ -161,12 +191,14 @@ export async function getPrepList(id: string): Promise<PrepList | undefined> {
   const json = await res.json();
   return (json.prepList ?? json.data) as PrepList | undefined;
 }
-export async function listPrepListItems(query?: Record<string, string | number>): Promise<PrepListItem[]> {
+export async function listPrepListItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepListItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-list-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepListItem (${res.status})`);
   const json = await res.json();
-  return (json.prepListItems ?? json.data ?? []) as PrepListItem[];
+  const data = (json.prepListItems ?? json.data ?? []) as PrepListItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepListItem(id: string): Promise<PrepListItem | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-list-items/${encodeURIComponent(id)}`);
@@ -174,12 +206,14 @@ export async function getPrepListItem(id: string): Promise<PrepListItem | undefi
   const json = await res.json();
   return (json.prepListItem ?? json.data) as PrepListItem | undefined;
 }
-export async function listStations(query?: Record<string, string | number>): Promise<Station[]> {
+export async function listStations(query?: Record<string, string | number>): Promise<PaginatedResponse<Station>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/stations/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Station (${res.status})`);
   const json = await res.json();
-  return (json.stations ?? json.data ?? []) as Station[];
+  const data = (json.stations ?? json.data ?? []) as Station[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getStation(id: string): Promise<Station | undefined> {
   const res = await apiFetch(`/api/kitchen/stations/${encodeURIComponent(id)}`);
@@ -187,12 +221,14 @@ export async function getStation(id: string): Promise<Station | undefined> {
   const json = await res.json();
   return (json.station ?? json.data) as Station | undefined;
 }
-export async function listInventoryItems(query?: Record<string, string | number>): Promise<InventoryItem[]> {
+export async function listInventoryItems(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/inventory/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryItem (${res.status})`);
   const json = await res.json();
-  return (json.inventoryItems ?? json.data ?? []) as InventoryItem[];
+  const data = (json.inventoryItems ?? json.data ?? []) as InventoryItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryItem(id: string): Promise<InventoryItem | undefined> {
   const res = await apiFetch(`/api/kitchen/inventory/${encodeURIComponent(id)}`);
@@ -200,12 +236,14 @@ export async function getInventoryItem(id: string): Promise<InventoryItem | unde
   const json = await res.json();
   return (json.inventoryItem ?? json.data) as InventoryItem | undefined;
 }
-export async function listPrepComments(query?: Record<string, string | number>): Promise<PrepComment[]> {
+export async function listPrepComments(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepComment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-comments/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepComment (${res.status})`);
   const json = await res.json();
-  return (json.prepComments ?? json.data ?? []) as PrepComment[];
+  const data = (json.prepComments ?? json.data ?? []) as PrepComment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepComment(id: string): Promise<PrepComment | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-comments/${encodeURIComponent(id)}`);
@@ -213,12 +251,14 @@ export async function getPrepComment(id: string): Promise<PrepComment | undefine
   const json = await res.json();
   return (json.prepComment ?? json.data) as PrepComment | undefined;
 }
-export async function listContainers(query?: Record<string, string | number>): Promise<Container[]> {
+export async function listContainers(query?: Record<string, string | number>): Promise<PaginatedResponse<Container>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/containers/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Container (${res.status})`);
   const json = await res.json();
-  return (json.containers ?? json.data ?? []) as Container[];
+  const data = (json.containers ?? json.data ?? []) as Container[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getContainer(id: string): Promise<Container | undefined> {
   const res = await apiFetch(`/api/kitchen/containers/${encodeURIComponent(id)}`);
@@ -226,12 +266,14 @@ export async function getContainer(id: string): Promise<Container | undefined> {
   const json = await res.json();
   return (json.container ?? json.data) as Container | undefined;
 }
-export async function listPrepMethods(query?: Record<string, string | number>): Promise<PrepMethod[]> {
+export async function listPrepMethods(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepMethod>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-methods/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepMethod (${res.status})`);
   const json = await res.json();
-  return (json.prepMethods ?? json.data ?? []) as PrepMethod[];
+  const data = (json.prepMethods ?? json.data ?? []) as PrepMethod[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepMethod(id: string): Promise<PrepMethod | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-methods/${encodeURIComponent(id)}`);
@@ -239,12 +281,14 @@ export async function getPrepMethod(id: string): Promise<PrepMethod | undefined>
   const json = await res.json();
   return (json.prepMethod ?? json.data) as PrepMethod | undefined;
 }
-export async function listWasteEntries(query?: Record<string, string | number>): Promise<WasteEntry[]> {
+export async function listWasteEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<WasteEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/waste-entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list WasteEntry (${res.status})`);
   const json = await res.json();
-  return (json.wasteEntries ?? json.data ?? []) as WasteEntry[];
+  const data = (json.wasteEntries ?? json.data ?? []) as WasteEntry[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getWasteEntry(id: string): Promise<WasteEntry | undefined> {
   const res = await apiFetch(`/api/kitchen/waste-entries/${encodeURIComponent(id)}`);
@@ -252,12 +296,14 @@ export async function getWasteEntry(id: string): Promise<WasteEntry | undefined>
   const json = await res.json();
   return (json.wasteEntry ?? json.data) as WasteEntry | undefined;
 }
-export async function listAllergenWarnings(query?: Record<string, string | number>): Promise<AllergenWarning[]> {
+export async function listAllergenWarnings(query?: Record<string, string | number>): Promise<PaginatedResponse<AllergenWarning>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/allergen-warnings/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AllergenWarning (${res.status})`);
   const json = await res.json();
-  return (json.allergenWarnings ?? json.data ?? []) as AllergenWarning[];
+  const data = (json.allergenWarnings ?? json.data ?? []) as AllergenWarning[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAllergenWarning(id: string): Promise<AllergenWarning | undefined> {
   const res = await apiFetch(`/api/kitchen/allergen-warnings/${encodeURIComponent(id)}`);
@@ -265,12 +311,14 @@ export async function getAllergenWarning(id: string): Promise<AllergenWarning | 
   const json = await res.json();
   return (json.allergenWarning ?? json.data) as AllergenWarning | undefined;
 }
-export async function listAlertsConfigs(query?: Record<string, string | number>): Promise<AlertsConfig[]> {
+export async function listAlertsConfigs(query?: Record<string, string | number>): Promise<PaginatedResponse<AlertsConfig>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/alerts-config/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AlertsConfig (${res.status})`);
   const json = await res.json();
-  return (json.alertsConfigs ?? json.data ?? []) as AlertsConfig[];
+  const data = (json.alertsConfigs ?? json.data ?? []) as AlertsConfig[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAlertsConfig(id: string): Promise<AlertsConfig | undefined> {
   const res = await apiFetch(`/api/kitchen/alerts-config/${encodeURIComponent(id)}`);
@@ -278,12 +326,14 @@ export async function getAlertsConfig(id: string): Promise<AlertsConfig | undefi
   const json = await res.json();
   return (json.alertsConfig ?? json.data) as AlertsConfig | undefined;
 }
-export async function listOverrideAudits(query?: Record<string, string | number>): Promise<OverrideAudit[]> {
+export async function listOverrideAudits(query?: Record<string, string | number>): Promise<PaginatedResponse<OverrideAudit>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/override-audits/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list OverrideAudit (${res.status})`);
   const json = await res.json();
-  return (json.overrideAudits ?? json.data ?? []) as OverrideAudit[];
+  const data = (json.overrideAudits ?? json.data ?? []) as OverrideAudit[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getOverrideAudit(id: string): Promise<OverrideAudit | undefined> {
   const res = await apiFetch(`/api/kitchen/override-audits/${encodeURIComponent(id)}`);
@@ -291,12 +341,14 @@ export async function getOverrideAudit(id: string): Promise<OverrideAudit | unde
   const json = await res.json();
   return (json.overrideAudit ?? json.data) as OverrideAudit | undefined;
 }
-export async function listEvents(query?: Record<string, string | number>): Promise<Event[]> {
+export async function listEvents(query?: Record<string, string | number>): Promise<PaginatedResponse<Event>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/event/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Event (${res.status})`);
   const json = await res.json();
-  return (json.events ?? json.data ?? []) as Event[];
+  const data = (json.events ?? json.data ?? []) as Event[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEvent(id: string): Promise<Event | undefined> {
   const res = await apiFetch(`/api/events/event/${encodeURIComponent(id)}`);
@@ -304,12 +356,14 @@ export async function getEvent(id: string): Promise<Event | undefined> {
   const json = await res.json();
   return (json.event ?? json.data) as Event | undefined;
 }
-export async function listEventProfitabilities(query?: Record<string, string | number>): Promise<EventProfitability[]> {
+export async function listEventProfitabilities(query?: Record<string, string | number>): Promise<PaginatedResponse<EventProfitability>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/profitability/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventProfitability (${res.status})`);
   const json = await res.json();
-  return (json.eventProfitabilities ?? json.data ?? []) as EventProfitability[];
+  const data = (json.eventProfitabilities ?? json.data ?? []) as EventProfitability[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventProfitability(id: string): Promise<EventProfitability | undefined> {
   const res = await apiFetch(`/api/events/profitability/${encodeURIComponent(id)}`);
@@ -317,12 +371,14 @@ export async function getEventProfitability(id: string): Promise<EventProfitabil
   const json = await res.json();
   return (json.eventProfitability ?? json.data) as EventProfitability | undefined;
 }
-export async function listEventSummaries(query?: Record<string, string | number>): Promise<EventSummary[]> {
+export async function listEventSummaries(query?: Record<string, string | number>): Promise<PaginatedResponse<EventSummary>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/summaries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventSummary (${res.status})`);
   const json = await res.json();
-  return (json.eventSummaries ?? json.data ?? []) as EventSummary[];
+  const data = (json.eventSummaries ?? json.data ?? []) as EventSummary[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventSummary(id: string): Promise<EventSummary | undefined> {
   const res = await apiFetch(`/api/events/summaries/${encodeURIComponent(id)}`);
@@ -330,12 +386,14 @@ export async function getEventSummary(id: string): Promise<EventSummary | undefi
   const json = await res.json();
   return (json.eventSummary ?? json.data) as EventSummary | undefined;
 }
-export async function listEventReports(query?: Record<string, string | number>): Promise<EventReport[]> {
+export async function listEventReports(query?: Record<string, string | number>): Promise<PaginatedResponse<EventReport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/reports/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventReport (${res.status})`);
   const json = await res.json();
-  return (json.eventReports ?? json.data ?? []) as EventReport[];
+  const data = (json.eventReports ?? json.data ?? []) as EventReport[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventReport(id: string): Promise<EventReport | undefined> {
   const res = await apiFetch(`/api/events/reports/${encodeURIComponent(id)}`);
@@ -343,12 +401,14 @@ export async function getEventReport(id: string): Promise<EventReport | undefine
   const json = await res.json();
   return (json.eventReport ?? json.data) as EventReport | undefined;
 }
-export async function listEventBudgets(query?: Record<string, string | number>): Promise<EventBudget[]> {
+export async function listEventBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<EventBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/budgets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventBudget (${res.status})`);
   const json = await res.json();
-  return (json.eventBudgets ?? json.data ?? []) as EventBudget[];
+  const data = (json.eventBudgets ?? json.data ?? []) as EventBudget[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventBudget(id: string): Promise<EventBudget | undefined> {
   const res = await apiFetch(`/api/events/budgets/${encodeURIComponent(id)}`);
@@ -356,12 +416,14 @@ export async function getEventBudget(id: string): Promise<EventBudget | undefine
   const json = await res.json();
   return (json.eventBudget ?? json.data) as EventBudget | undefined;
 }
-export async function listBudgetLineItems(query?: Record<string, string | number>): Promise<BudgetLineItem[]> {
+export async function listBudgetLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<BudgetLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/budget-line-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BudgetLineItem (${res.status})`);
   const json = await res.json();
-  return (json.budgetLineItems ?? json.data ?? []) as BudgetLineItem[];
+  const data = (json.budgetLineItems ?? json.data ?? []) as BudgetLineItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBudgetLineItem(id: string): Promise<BudgetLineItem | undefined> {
   const res = await apiFetch(`/api/events/budget-line-items/${encodeURIComponent(id)}`);
@@ -369,12 +431,14 @@ export async function getBudgetLineItem(id: string): Promise<BudgetLineItem | un
   const json = await res.json();
   return (json.budgetLineItem ?? json.data) as BudgetLineItem | undefined;
 }
-export async function listBudgetAlerts(query?: Record<string, string | number>): Promise<BudgetAlert[]> {
+export async function listBudgetAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<BudgetAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/budget-alerts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BudgetAlert (${res.status})`);
   const json = await res.json();
-  return (json.budgetAlerts ?? json.data ?? []) as BudgetAlert[];
+  const data = (json.budgetAlerts ?? json.data ?? []) as BudgetAlert[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBudgetAlert(id: string): Promise<BudgetAlert | undefined> {
   const res = await apiFetch(`/api/events/budget-alerts/${encodeURIComponent(id)}`);
@@ -382,12 +446,14 @@ export async function getBudgetAlert(id: string): Promise<BudgetAlert | undefine
   const json = await res.json();
   return (json.budgetAlert ?? json.data) as BudgetAlert | undefined;
 }
-export async function listCateringOrders(query?: Record<string, string | number>): Promise<CateringOrder[]> {
+export async function listCateringOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<CateringOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/catering-orders/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CateringOrder (${res.status})`);
   const json = await res.json();
-  return (json.cateringOrders ?? json.data ?? []) as CateringOrder[];
+  const data = (json.cateringOrders ?? json.data ?? []) as CateringOrder[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCateringOrder(id: string): Promise<CateringOrder | undefined> {
   const res = await apiFetch(`/api/events/catering-orders/${encodeURIComponent(id)}`);
@@ -395,12 +461,14 @@ export async function getCateringOrder(id: string): Promise<CateringOrder | unde
   const json = await res.json();
   return (json.cateringOrder ?? json.data) as CateringOrder | undefined;
 }
-export async function listBattleBoards(query?: Record<string, string | number>): Promise<BattleBoard[]> {
+export async function listBattleBoards(query?: Record<string, string | number>): Promise<PaginatedResponse<BattleBoard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/battle-boards/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BattleBoard (${res.status})`);
   const json = await res.json();
-  return (json.battleBoards ?? json.data ?? []) as BattleBoard[];
+  const data = (json.battleBoards ?? json.data ?? []) as BattleBoard[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBattleBoard(id: string): Promise<BattleBoard | undefined> {
   const res = await apiFetch(`/api/events/battle-boards/${encodeURIComponent(id)}`);
@@ -408,12 +476,14 @@ export async function getBattleBoard(id: string): Promise<BattleBoard | undefine
   const json = await res.json();
   return (json.battleBoard ?? json.data) as BattleBoard | undefined;
 }
-export async function listEventGuests(query?: Record<string, string | number>): Promise<EventGuest[]> {
+export async function listEventGuests(query?: Record<string, string | number>): Promise<PaginatedResponse<EventGuest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/guests/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventGuest (${res.status})`);
   const json = await res.json();
-  return (json.eventGuests ?? json.data ?? []) as EventGuest[];
+  const data = (json.eventGuests ?? json.data ?? []) as EventGuest[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventGuest(id: string): Promise<EventGuest | undefined> {
   const res = await apiFetch(`/api/events/guests/${encodeURIComponent(id)}`);
@@ -421,12 +491,14 @@ export async function getEventGuest(id: string): Promise<EventGuest | undefined>
   const json = await res.json();
   return (json.eventGuest ?? json.data) as EventGuest | undefined;
 }
-export async function listEventContracts(query?: Record<string, string | number>): Promise<EventContract[]> {
+export async function listEventContracts(query?: Record<string, string | number>): Promise<PaginatedResponse<EventContract>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/contracts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventContract (${res.status})`);
   const json = await res.json();
-  return (json.eventContracts ?? json.data ?? []) as EventContract[];
+  const data = (json.eventContracts ?? json.data ?? []) as EventContract[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventContract(id: string): Promise<EventContract | undefined> {
   const res = await apiFetch(`/api/events/contracts/${encodeURIComponent(id)}`);
@@ -434,12 +506,14 @@ export async function getEventContract(id: string): Promise<EventContract | unde
   const json = await res.json();
   return (json.eventContract ?? json.data) as EventContract | undefined;
 }
-export async function listContractSignatures(query?: Record<string, string | number>): Promise<ContractSignature[]> {
+export async function listContractSignatures(query?: Record<string, string | number>): Promise<PaginatedResponse<ContractSignature>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/contract-signatures/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ContractSignature (${res.status})`);
   const json = await res.json();
-  return (json.contractSignatures ?? json.data ?? []) as ContractSignature[];
+  const data = (json.contractSignatures ?? json.data ?? []) as ContractSignature[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getContractSignature(id: string): Promise<ContractSignature | undefined> {
   const res = await apiFetch(`/api/events/contract-signatures/${encodeURIComponent(id)}`);
@@ -447,12 +521,14 @@ export async function getContractSignature(id: string): Promise<ContractSignatur
   const json = await res.json();
   return (json.contractSignature ?? json.data) as ContractSignature | undefined;
 }
-export async function listEventDishes(query?: Record<string, string | number>): Promise<EventDish[]> {
+export async function listEventDishes(query?: Record<string, string | number>): Promise<PaginatedResponse<EventDish>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/event-dishes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventDish (${res.status})`);
   const json = await res.json();
-  return (json.eventDishes ?? json.data ?? []) as EventDish[];
+  const data = (json.eventDishes ?? json.data ?? []) as EventDish[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventDish(id: string): Promise<EventDish | undefined> {
   const res = await apiFetch(`/api/events/event-dishes/${encodeURIComponent(id)}`);
@@ -460,12 +536,14 @@ export async function getEventDish(id: string): Promise<EventDish | undefined> {
   const json = await res.json();
   return (json.eventDish ?? json.data) as EventDish | undefined;
 }
-export async function listEventStaffs(query?: Record<string, string | number>): Promise<EventStaff[]> {
+export async function listEventStaffs(query?: Record<string, string | number>): Promise<PaginatedResponse<EventStaff>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/staff/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventStaff (${res.status})`);
   const json = await res.json();
-  return (json.eventStaffs ?? json.data ?? []) as EventStaff[];
+  const data = (json.eventStaffs ?? json.data ?? []) as EventStaff[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventStaff(id: string): Promise<EventStaff | undefined> {
   const res = await apiFetch(`/api/events/staff/${encodeURIComponent(id)}`);
@@ -473,12 +551,14 @@ export async function getEventStaff(id: string): Promise<EventStaff | undefined>
   const json = await res.json();
   return (json.eventStaff ?? json.data) as EventStaff | undefined;
 }
-export async function listEventImportWorkflows(query?: Record<string, string | number>): Promise<EventImportWorkflow[]> {
+export async function listEventImportWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<EventImportWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/import-workflows/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventImportWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.eventImportWorkflows ?? json.data ?? []) as EventImportWorkflow[];
+  const data = (json.eventImportWorkflows ?? json.data ?? []) as EventImportWorkflow[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventImportWorkflow(id: string): Promise<EventImportWorkflow | undefined> {
   const res = await apiFetch(`/api/events/import-workflows/${encodeURIComponent(id)}`);
@@ -486,12 +566,14 @@ export async function getEventImportWorkflow(id: string): Promise<EventImportWor
   const json = await res.json();
   return (json.eventImportWorkflow ?? json.data) as EventImportWorkflow | undefined;
 }
-export async function listClients(query?: Record<string, string | number>): Promise<Client[]> {
+export async function listClients(query?: Record<string, string | number>): Promise<PaginatedResponse<Client>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/clients/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Client (${res.status})`);
   const json = await res.json();
-  return (json.clients ?? json.data ?? []) as Client[];
+  const data = (json.clients ?? json.data ?? []) as Client[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getClient(id: string): Promise<Client | undefined> {
   const res = await apiFetch(`/api/crm/clients/${encodeURIComponent(id)}`);
@@ -499,12 +581,14 @@ export async function getClient(id: string): Promise<Client | undefined> {
   const json = await res.json();
   return (json.client ?? json.data) as Client | undefined;
 }
-export async function listClientContacts(query?: Record<string, string | number>): Promise<ClientContact[]> {
+export async function listClientContacts(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientContact>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/client-contacts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ClientContact (${res.status})`);
   const json = await res.json();
-  return (json.clientContacts ?? json.data ?? []) as ClientContact[];
+  const data = (json.clientContacts ?? json.data ?? []) as ClientContact[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getClientContact(id: string): Promise<ClientContact | undefined> {
   const res = await apiFetch(`/api/crm/client-contacts/${encodeURIComponent(id)}`);
@@ -512,12 +596,14 @@ export async function getClientContact(id: string): Promise<ClientContact | unde
   const json = await res.json();
   return (json.clientContact ?? json.data) as ClientContact | undefined;
 }
-export async function listClientPreferences(query?: Record<string, string | number>): Promise<ClientPreference[]> {
+export async function listClientPreferences(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientPreference>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/client-preferences/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ClientPreference (${res.status})`);
   const json = await res.json();
-  return (json.clientPreferences ?? json.data ?? []) as ClientPreference[];
+  const data = (json.clientPreferences ?? json.data ?? []) as ClientPreference[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getClientPreference(id: string): Promise<ClientPreference | undefined> {
   const res = await apiFetch(`/api/crm/client-preferences/${encodeURIComponent(id)}`);
@@ -525,12 +611,14 @@ export async function getClientPreference(id: string): Promise<ClientPreference 
   const json = await res.json();
   return (json.clientPreference ?? json.data) as ClientPreference | undefined;
 }
-export async function listLeads(query?: Record<string, string | number>): Promise<Lead[]> {
+export async function listLeads(query?: Record<string, string | number>): Promise<PaginatedResponse<Lead>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/leads/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Lead (${res.status})`);
   const json = await res.json();
-  return (json.leads ?? json.data ?? []) as Lead[];
+  const data = (json.leads ?? json.data ?? []) as Lead[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getLead(id: string): Promise<Lead | undefined> {
   const res = await apiFetch(`/api/crm/leads/${encodeURIComponent(id)}`);
@@ -538,12 +626,14 @@ export async function getLead(id: string): Promise<Lead | undefined> {
   const json = await res.json();
   return (json.lead ?? json.data) as Lead | undefined;
 }
-export async function listProposals(query?: Record<string, string | number>): Promise<Proposal[]> {
+export async function listProposals(query?: Record<string, string | number>): Promise<PaginatedResponse<Proposal>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/proposals/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Proposal (${res.status})`);
   const json = await res.json();
-  return (json.proposals ?? json.data ?? []) as Proposal[];
+  const data = (json.proposals ?? json.data ?? []) as Proposal[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getProposal(id: string): Promise<Proposal | undefined> {
   const res = await apiFetch(`/api/crm/proposals/${encodeURIComponent(id)}`);
@@ -551,12 +641,14 @@ export async function getProposal(id: string): Promise<Proposal | undefined> {
   const json = await res.json();
   return (json.proposal ?? json.data) as Proposal | undefined;
 }
-export async function listProposalLineItems(query?: Record<string, string | number>): Promise<ProposalLineItem[]> {
+export async function listProposalLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<ProposalLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/proposal-line-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ProposalLineItem (${res.status})`);
   const json = await res.json();
-  return (json.proposalLineItems ?? json.data ?? []) as ProposalLineItem[];
+  const data = (json.proposalLineItems ?? json.data ?? []) as ProposalLineItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getProposalLineItem(id: string): Promise<ProposalLineItem | undefined> {
   const res = await apiFetch(`/api/crm/proposal-line-items/${encodeURIComponent(id)}`);
@@ -564,12 +656,14 @@ export async function getProposalLineItem(id: string): Promise<ProposalLineItem 
   const json = await res.json();
   return (json.proposalLineItem ?? json.data) as ProposalLineItem | undefined;
 }
-export async function listClientInteractions(query?: Record<string, string | number>): Promise<ClientInteraction[]> {
+export async function listClientInteractions(query?: Record<string, string | number>): Promise<PaginatedResponse<ClientInteraction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/client-interactions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ClientInteraction (${res.status})`);
   const json = await res.json();
-  return (json.clientInteractions ?? json.data ?? []) as ClientInteraction[];
+  const data = (json.clientInteractions ?? json.data ?? []) as ClientInteraction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getClientInteraction(id: string): Promise<ClientInteraction | undefined> {
   const res = await apiFetch(`/api/crm/client-interactions/${encodeURIComponent(id)}`);
@@ -577,12 +671,14 @@ export async function getClientInteraction(id: string): Promise<ClientInteractio
   const json = await res.json();
   return (json.clientInteraction ?? json.data) as ClientInteraction | undefined;
 }
-export async function listPurchaseOrders(query?: Record<string, string | number>): Promise<PurchaseOrder[]> {
+export async function listPurchaseOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/purchase-orders/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PurchaseOrder (${res.status})`);
   const json = await res.json();
-  return (json.purchaseOrders ?? json.data ?? []) as PurchaseOrder[];
+  const data = (json.purchaseOrders ?? json.data ?? []) as PurchaseOrder[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPurchaseOrder(id: string): Promise<PurchaseOrder | undefined> {
   const res = await apiFetch(`/api/inventory/purchase-orders/${encodeURIComponent(id)}`);
@@ -590,12 +686,14 @@ export async function getPurchaseOrder(id: string): Promise<PurchaseOrder | unde
   const json = await res.json();
   return (json.purchaseOrder ?? json.data) as PurchaseOrder | undefined;
 }
-export async function listPurchaseOrderItems(query?: Record<string, string | number>): Promise<PurchaseOrderItem[]> {
+export async function listPurchaseOrderItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseOrderItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/purchase-order-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PurchaseOrderItem (${res.status})`);
   const json = await res.json();
-  return (json.purchaseOrderItems ?? json.data ?? []) as PurchaseOrderItem[];
+  const data = (json.purchaseOrderItems ?? json.data ?? []) as PurchaseOrderItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPurchaseOrderItem(id: string): Promise<PurchaseOrderItem | undefined> {
   const res = await apiFetch(`/api/inventory/purchase-order-items/${encodeURIComponent(id)}`);
@@ -603,12 +701,14 @@ export async function getPurchaseOrderItem(id: string): Promise<PurchaseOrderIte
   const json = await res.json();
   return (json.purchaseOrderItem ?? json.data) as PurchaseOrderItem | undefined;
 }
-export async function listPurchaseRequisitions(query?: Record<string, string | number>): Promise<PurchaseRequisition[]> {
+export async function listPurchaseRequisitions(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseRequisition>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/procurement/requisitions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PurchaseRequisition (${res.status})`);
   const json = await res.json();
-  return (json.purchaseRequisitions ?? json.data ?? []) as PurchaseRequisition[];
+  const data = (json.purchaseRequisitions ?? json.data ?? []) as PurchaseRequisition[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPurchaseRequisition(id: string): Promise<PurchaseRequisition | undefined> {
   const res = await apiFetch(`/api/procurement/requisitions/${encodeURIComponent(id)}`);
@@ -616,12 +716,14 @@ export async function getPurchaseRequisition(id: string): Promise<PurchaseRequis
   const json = await res.json();
   return (json.purchaseRequisition ?? json.data) as PurchaseRequisition | undefined;
 }
-export async function listPurchaseRequisitionItems(query?: Record<string, string | number>): Promise<PurchaseRequisitionItem[]> {
+export async function listPurchaseRequisitionItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PurchaseRequisitionItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/procurement/requisition-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PurchaseRequisitionItem (${res.status})`);
   const json = await res.json();
-  return (json.purchaseRequisitionItems ?? json.data ?? []) as PurchaseRequisitionItem[];
+  const data = (json.purchaseRequisitionItems ?? json.data ?? []) as PurchaseRequisitionItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPurchaseRequisitionItem(id: string): Promise<PurchaseRequisitionItem | undefined> {
   const res = await apiFetch(`/api/procurement/requisition-items/${encodeURIComponent(id)}`);
@@ -629,12 +731,14 @@ export async function getPurchaseRequisitionItem(id: string): Promise<PurchaseRe
   const json = await res.json();
   return (json.purchaseRequisitionItem ?? json.data) as PurchaseRequisitionItem | undefined;
 }
-export async function listVendorContracts(query?: Record<string, string | number>): Promise<VendorContract[]> {
+export async function listVendorContracts(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorContract>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/procurement/vendor-contracts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VendorContract (${res.status})`);
   const json = await res.json();
-  return (json.vendorContracts ?? json.data ?? []) as VendorContract[];
+  const data = (json.vendorContracts ?? json.data ?? []) as VendorContract[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVendorContract(id: string): Promise<VendorContract | undefined> {
   const res = await apiFetch(`/api/procurement/vendor-contracts/${encodeURIComponent(id)}`);
@@ -642,12 +746,14 @@ export async function getVendorContract(id: string): Promise<VendorContract | un
   const json = await res.json();
   return (json.vendorContract ?? json.data) as VendorContract | undefined;
 }
-export async function listShipments(query?: Record<string, string | number>): Promise<Shipment[]> {
+export async function listShipments(query?: Record<string, string | number>): Promise<PaginatedResponse<Shipment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/shipments/shipment/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Shipment (${res.status})`);
   const json = await res.json();
-  return (json.shipments ?? json.data ?? []) as Shipment[];
+  const data = (json.shipments ?? json.data ?? []) as Shipment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getShipment(id: string): Promise<Shipment | undefined> {
   const res = await apiFetch(`/api/shipments/shipment/${encodeURIComponent(id)}`);
@@ -655,12 +761,14 @@ export async function getShipment(id: string): Promise<Shipment | undefined> {
   const json = await res.json();
   return (json.shipment ?? json.data) as Shipment | undefined;
 }
-export async function listShipmentItems(query?: Record<string, string | number>): Promise<ShipmentItem[]> {
+export async function listShipmentItems(query?: Record<string, string | number>): Promise<PaginatedResponse<ShipmentItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/shipments/shipment-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ShipmentItem (${res.status})`);
   const json = await res.json();
-  return (json.shipmentItems ?? json.data ?? []) as ShipmentItem[];
+  const data = (json.shipmentItems ?? json.data ?? []) as ShipmentItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getShipmentItem(id: string): Promise<ShipmentItem | undefined> {
   const res = await apiFetch(`/api/shipments/shipment-items/${encodeURIComponent(id)}`);
@@ -668,12 +776,14 @@ export async function getShipmentItem(id: string): Promise<ShipmentItem | undefi
   const json = await res.json();
   return (json.shipmentItem ?? json.data) as ShipmentItem | undefined;
 }
-export async function listInventoryTransactions(query?: Record<string, string | number>): Promise<InventoryTransaction[]> {
+export async function listInventoryTransactions(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransaction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/transactions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryTransaction (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransactions ?? json.data ?? []) as InventoryTransaction[];
+  const data = (json.inventoryTransactions ?? json.data ?? []) as InventoryTransaction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryTransaction(id: string): Promise<InventoryTransaction | undefined> {
   const res = await apiFetch(`/api/inventory/transactions/${encodeURIComponent(id)}`);
@@ -681,12 +791,14 @@ export async function getInventoryTransaction(id: string): Promise<InventoryTran
   const json = await res.json();
   return (json.inventoryTransaction ?? json.data) as InventoryTransaction | undefined;
 }
-export async function listInventorySuppliers(query?: Record<string, string | number>): Promise<InventorySupplier[]> {
+export async function listInventorySuppliers(query?: Record<string, string | number>): Promise<PaginatedResponse<InventorySupplier>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/suppliers/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventorySupplier (${res.status})`);
   const json = await res.json();
-  return (json.inventorySuppliers ?? json.data ?? []) as InventorySupplier[];
+  const data = (json.inventorySuppliers ?? json.data ?? []) as InventorySupplier[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventorySupplier(id: string): Promise<InventorySupplier | undefined> {
   const res = await apiFetch(`/api/inventory/suppliers/${encodeURIComponent(id)}`);
@@ -694,12 +806,14 @@ export async function getInventorySupplier(id: string): Promise<InventorySupplie
   const json = await res.json();
   return (json.inventorySupplier ?? json.data) as InventorySupplier | undefined;
 }
-export async function listCycleCountSessions(query?: Record<string, string | number>): Promise<CycleCountSession[]> {
+export async function listCycleCountSessions(query?: Record<string, string | number>): Promise<PaginatedResponse<CycleCountSession>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/cycle-count/sessions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CycleCountSession (${res.status})`);
   const json = await res.json();
-  return (json.cycleCountSessions ?? json.data ?? []) as CycleCountSession[];
+  const data = (json.cycleCountSessions ?? json.data ?? []) as CycleCountSession[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCycleCountSession(id: string): Promise<CycleCountSession | undefined> {
   const res = await apiFetch(`/api/inventory/cycle-count/sessions/${encodeURIComponent(id)}`);
@@ -707,12 +821,14 @@ export async function getCycleCountSession(id: string): Promise<CycleCountSessio
   const json = await res.json();
   return (json.cycleCountSession ?? json.data) as CycleCountSession | undefined;
 }
-export async function listCycleCountRecords(query?: Record<string, string | number>): Promise<CycleCountRecord[]> {
+export async function listCycleCountRecords(query?: Record<string, string | number>): Promise<PaginatedResponse<CycleCountRecord>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/cycle-count/records/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CycleCountRecord (${res.status})`);
   const json = await res.json();
-  return (json.cycleCountRecords ?? json.data ?? []) as CycleCountRecord[];
+  const data = (json.cycleCountRecords ?? json.data ?? []) as CycleCountRecord[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCycleCountRecord(id: string): Promise<CycleCountRecord | undefined> {
   const res = await apiFetch(`/api/inventory/cycle-count/records/${encodeURIComponent(id)}`);
@@ -720,12 +836,14 @@ export async function getCycleCountRecord(id: string): Promise<CycleCountRecord 
   const json = await res.json();
   return (json.cycleCountRecord ?? json.data) as CycleCountRecord | undefined;
 }
-export async function listVarianceReports(query?: Record<string, string | number>): Promise<VarianceReport[]> {
+export async function listVarianceReports(query?: Record<string, string | number>): Promise<PaginatedResponse<VarianceReport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/cycle-count/variance-reports/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VarianceReport (${res.status})`);
   const json = await res.json();
-  return (json.varianceReports ?? json.data ?? []) as VarianceReport[];
+  const data = (json.varianceReports ?? json.data ?? []) as VarianceReport[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVarianceReport(id: string): Promise<VarianceReport | undefined> {
   const res = await apiFetch(`/api/inventory/cycle-count/variance-reports/${encodeURIComponent(id)}`);
@@ -733,12 +851,14 @@ export async function getVarianceReport(id: string): Promise<VarianceReport | un
   const json = await res.json();
   return (json.varianceReport ?? json.data) as VarianceReport | undefined;
 }
-export async function listBulkOrderRules(query?: Record<string, string | number>): Promise<BulkOrderRule[]> {
+export async function listBulkOrderRules(query?: Record<string, string | number>): Promise<PaginatedResponse<BulkOrderRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/bulk-order-rules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BulkOrderRule (${res.status})`);
   const json = await res.json();
-  return (json.bulkOrderRules ?? json.data ?? []) as BulkOrderRule[];
+  const data = (json.bulkOrderRules ?? json.data ?? []) as BulkOrderRule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBulkOrderRule(id: string): Promise<BulkOrderRule | undefined> {
   const res = await apiFetch(`/api/inventory/bulk-order-rules/${encodeURIComponent(id)}`);
@@ -746,12 +866,14 @@ export async function getBulkOrderRule(id: string): Promise<BulkOrderRule | unde
   const json = await res.json();
   return (json.bulkOrderRule ?? json.data) as BulkOrderRule | undefined;
 }
-export async function listPricingTiers(query?: Record<string, string | number>): Promise<PricingTier[]> {
+export async function listPricingTiers(query?: Record<string, string | number>): Promise<PaginatedResponse<PricingTier>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/pricing-tiers/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PricingTier (${res.status})`);
   const json = await res.json();
-  return (json.pricingTiers ?? json.data ?? []) as PricingTier[];
+  const data = (json.pricingTiers ?? json.data ?? []) as PricingTier[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPricingTier(id: string): Promise<PricingTier | undefined> {
   const res = await apiFetch(`/api/inventory/pricing-tiers/${encodeURIComponent(id)}`);
@@ -759,12 +881,14 @@ export async function getPricingTier(id: string): Promise<PricingTier | undefine
   const json = await res.json();
   return (json.pricingTier ?? json.data) as PricingTier | undefined;
 }
-export async function listVendorCatalogs(query?: Record<string, string | number>): Promise<VendorCatalog[]> {
+export async function listVendorCatalogs(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorCatalog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/vendor-catalogs/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VendorCatalog (${res.status})`);
   const json = await res.json();
-  return (json.vendorCatalogs ?? json.data ?? []) as VendorCatalog[];
+  const data = (json.vendorCatalogs ?? json.data ?? []) as VendorCatalog[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVendorCatalog(id: string): Promise<VendorCatalog | undefined> {
   const res = await apiFetch(`/api/inventory/vendor-catalogs/${encodeURIComponent(id)}`);
@@ -772,12 +896,14 @@ export async function getVendorCatalog(id: string): Promise<VendorCatalog | unde
   const json = await res.json();
   return (json.vendorCatalog ?? json.data) as VendorCatalog | undefined;
 }
-export async function listUsers(query?: Record<string, string | number>): Promise<User[]> {
+export async function listUsers(query?: Record<string, string | number>): Promise<PaginatedResponse<User>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/employees/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list User (${res.status})`);
   const json = await res.json();
-  return (json.users ?? json.data ?? []) as User[];
+  const data = (json.users ?? json.data ?? []) as User[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getUser(id: string): Promise<User | undefined> {
   const res = await apiFetch(`/api/staff/employees/${encodeURIComponent(id)}`);
@@ -785,12 +911,14 @@ export async function getUser(id: string): Promise<User | undefined> {
   const json = await res.json();
   return (json.user ?? json.data) as User | undefined;
 }
-export async function listStaffMembers(query?: Record<string, string | number>): Promise<StaffMember[]> {
+export async function listStaffMembers(query?: Record<string, string | number>): Promise<PaginatedResponse<StaffMember>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/members/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list StaffMember (${res.status})`);
   const json = await res.json();
-  return (json.staffMembers ?? json.data ?? []) as StaffMember[];
+  const data = (json.staffMembers ?? json.data ?? []) as StaffMember[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getStaffMember(id: string): Promise<StaffMember | undefined> {
   const res = await apiFetch(`/api/staff/members/${encodeURIComponent(id)}`);
@@ -798,12 +926,14 @@ export async function getStaffMember(id: string): Promise<StaffMember | undefine
   const json = await res.json();
   return (json.staffMember ?? json.data) as StaffMember | undefined;
 }
-export async function listSchedules(query?: Record<string, string | number>): Promise<Schedule[]> {
+export async function listSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<Schedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/schedules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Schedule (${res.status})`);
   const json = await res.json();
-  return (json.schedules ?? json.data ?? []) as Schedule[];
+  const data = (json.schedules ?? json.data ?? []) as Schedule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getSchedule(id: string): Promise<Schedule | undefined> {
   const res = await apiFetch(`/api/staff/schedules/${encodeURIComponent(id)}`);
@@ -811,12 +941,14 @@ export async function getSchedule(id: string): Promise<Schedule | undefined> {
   const json = await res.json();
   return (json.schedule ?? json.data) as Schedule | undefined;
 }
-export async function listScheduleShifts(query?: Record<string, string | number>): Promise<ScheduleShift[]> {
+export async function listScheduleShifts(query?: Record<string, string | number>): Promise<PaginatedResponse<ScheduleShift>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/shifts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ScheduleShift (${res.status})`);
   const json = await res.json();
-  return (json.scheduleShifts ?? json.data ?? []) as ScheduleShift[];
+  const data = (json.scheduleShifts ?? json.data ?? []) as ScheduleShift[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getScheduleShift(id: string): Promise<ScheduleShift | undefined> {
   const res = await apiFetch(`/api/staff/shifts/${encodeURIComponent(id)}`);
@@ -824,12 +956,14 @@ export async function getScheduleShift(id: string): Promise<ScheduleShift | unde
   const json = await res.json();
   return (json.scheduleShift ?? json.data) as ScheduleShift | undefined;
 }
-export async function listTimeEntries(query?: Record<string, string | number>): Promise<TimeEntry[]> {
+export async function listTimeEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<TimeEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/timecards/entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimeEntry (${res.status})`);
   const json = await res.json();
-  return (json.timeEntries ?? json.data ?? []) as TimeEntry[];
+  const data = (json.timeEntries ?? json.data ?? []) as TimeEntry[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTimeEntry(id: string): Promise<TimeEntry | undefined> {
   const res = await apiFetch(`/api/timecards/entries/${encodeURIComponent(id)}`);
@@ -837,12 +971,14 @@ export async function getTimeEntry(id: string): Promise<TimeEntry | undefined> {
   const json = await res.json();
   return (json.timeEntry ?? json.data) as TimeEntry | undefined;
 }
-export async function listTimecardEditRequests(query?: Record<string, string | number>): Promise<TimecardEditRequest[]> {
+export async function listTimecardEditRequests(query?: Record<string, string | number>): Promise<PaginatedResponse<TimecardEditRequest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/timecards/edit-requests/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimecardEditRequest (${res.status})`);
   const json = await res.json();
-  return (json.timecardEditRequests ?? json.data ?? []) as TimecardEditRequest[];
+  const data = (json.timecardEditRequests ?? json.data ?? []) as TimecardEditRequest[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTimecardEditRequest(id: string): Promise<TimecardEditRequest | undefined> {
   const res = await apiFetch(`/api/timecards/edit-requests/${encodeURIComponent(id)}`);
@@ -850,12 +986,14 @@ export async function getTimecardEditRequest(id: string): Promise<TimecardEditRe
   const json = await res.json();
   return (json.timecardEditRequest ?? json.data) as TimecardEditRequest | undefined;
 }
-export async function listTimeOffRequests(query?: Record<string, string | number>): Promise<TimeOffRequest[]> {
+export async function listTimeOffRequests(query?: Record<string, string | number>): Promise<PaginatedResponse<TimeOffRequest>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/timecards/time-off-requests/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimeOffRequest (${res.status})`);
   const json = await res.json();
-  return (json.timeOffRequests ?? json.data ?? []) as TimeOffRequest[];
+  const data = (json.timeOffRequests ?? json.data ?? []) as TimeOffRequest[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTimeOffRequest(id: string): Promise<TimeOffRequest | undefined> {
   const res = await apiFetch(`/api/timecards/time-off-requests/${encodeURIComponent(id)}`);
@@ -863,12 +1001,14 @@ export async function getTimeOffRequest(id: string): Promise<TimeOffRequest | un
   const json = await res.json();
   return (json.timeOffRequest ?? json.data) as TimeOffRequest | undefined;
 }
-export async function listEmployeeAvailabilities(query?: Record<string, string | number>): Promise<EmployeeAvailability[]> {
+export async function listEmployeeAvailabilities(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeAvailability>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/availability/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmployeeAvailability (${res.status})`);
   const json = await res.json();
-  return (json.employeeAvailabilities ?? json.data ?? []) as EmployeeAvailability[];
+  const data = (json.employeeAvailabilities ?? json.data ?? []) as EmployeeAvailability[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEmployeeAvailability(id: string): Promise<EmployeeAvailability | undefined> {
   const res = await apiFetch(`/api/staff/availability/${encodeURIComponent(id)}`);
@@ -876,12 +1016,14 @@ export async function getEmployeeAvailability(id: string): Promise<EmployeeAvail
   const json = await res.json();
   return (json.employeeAvailability ?? json.data) as EmployeeAvailability | undefined;
 }
-export async function listEmployeeCertifications(query?: Record<string, string | number>): Promise<EmployeeCertification[]> {
+export async function listEmployeeCertifications(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeCertification>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/certifications/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmployeeCertification (${res.status})`);
   const json = await res.json();
-  return (json.employeeCertifications ?? json.data ?? []) as EmployeeCertification[];
+  const data = (json.employeeCertifications ?? json.data ?? []) as EmployeeCertification[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEmployeeCertification(id: string): Promise<EmployeeCertification | undefined> {
   const res = await apiFetch(`/api/staff/certifications/${encodeURIComponent(id)}`);
@@ -889,12 +1031,14 @@ export async function getEmployeeCertification(id: string): Promise<EmployeeCert
   const json = await res.json();
   return (json.employeeCertification ?? json.data) as EmployeeCertification | undefined;
 }
-export async function listPayrollPeriods(query?: Record<string, string | number>): Promise<PayrollPeriod[]> {
+export async function listPayrollPeriods(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollPeriod>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/payroll/periods/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PayrollPeriod (${res.status})`);
   const json = await res.json();
-  return (json.payrollPeriods ?? json.data ?? []) as PayrollPeriod[];
+  const data = (json.payrollPeriods ?? json.data ?? []) as PayrollPeriod[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPayrollPeriod(id: string): Promise<PayrollPeriod | undefined> {
   const res = await apiFetch(`/api/payroll/periods/${encodeURIComponent(id)}`);
@@ -902,12 +1046,14 @@ export async function getPayrollPeriod(id: string): Promise<PayrollPeriod | unde
   const json = await res.json();
   return (json.payrollPeriod ?? json.data) as PayrollPeriod | undefined;
 }
-export async function listPayrollRuns(query?: Record<string, string | number>): Promise<PayrollRun[]> {
+export async function listPayrollRuns(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollRun>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/payroll/runs/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PayrollRun (${res.status})`);
   const json = await res.json();
-  return (json.payrollRuns ?? json.data ?? []) as PayrollRun[];
+  const data = (json.payrollRuns ?? json.data ?? []) as PayrollRun[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPayrollRun(id: string): Promise<PayrollRun | undefined> {
   const res = await apiFetch(`/api/payroll/runs/${encodeURIComponent(id)}`);
@@ -915,12 +1061,14 @@ export async function getPayrollRun(id: string): Promise<PayrollRun | undefined>
   const json = await res.json();
   return (json.payrollRun ?? json.data) as PayrollRun | undefined;
 }
-export async function listPayrollApprovalHistories(query?: Record<string, string | number>): Promise<PayrollApprovalHistory[]> {
+export async function listPayrollApprovalHistories(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollApprovalHistory>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/payroll/approval-history/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PayrollApprovalHistory (${res.status})`);
   const json = await res.json();
-  return (json.payrollApprovalHistories ?? json.data ?? []) as PayrollApprovalHistory[];
+  const data = (json.payrollApprovalHistories ?? json.data ?? []) as PayrollApprovalHistory[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPayrollApprovalHistory(id: string): Promise<PayrollApprovalHistory | undefined> {
   const res = await apiFetch(`/api/payroll/approval-history/${encodeURIComponent(id)}`);
@@ -928,12 +1076,14 @@ export async function getPayrollApprovalHistory(id: string): Promise<PayrollAppr
   const json = await res.json();
   return (json.payrollApprovalHistory ?? json.data) as PayrollApprovalHistory | undefined;
 }
-export async function listEmployeeDeductions(query?: Record<string, string | number>): Promise<EmployeeDeduction[]> {
+export async function listEmployeeDeductions(query?: Record<string, string | number>): Promise<PaginatedResponse<EmployeeDeduction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/payroll/deductions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmployeeDeduction (${res.status})`);
   const json = await res.json();
-  return (json.employeeDeductions ?? json.data ?? []) as EmployeeDeduction[];
+  const data = (json.employeeDeductions ?? json.data ?? []) as EmployeeDeduction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEmployeeDeduction(id: string): Promise<EmployeeDeduction | undefined> {
   const res = await apiFetch(`/api/payroll/deductions/${encodeURIComponent(id)}`);
@@ -941,12 +1091,14 @@ export async function getEmployeeDeduction(id: string): Promise<EmployeeDeductio
   const json = await res.json();
   return (json.employeeDeduction ?? json.data) as EmployeeDeduction | undefined;
 }
-export async function listLaborBudgets(query?: Record<string, string | number>): Promise<LaborBudget[]> {
+export async function listLaborBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<LaborBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/payroll/labor-budgets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list LaborBudget (${res.status})`);
   const json = await res.json();
-  return (json.laborBudgets ?? json.data ?? []) as LaborBudget[];
+  const data = (json.laborBudgets ?? json.data ?? []) as LaborBudget[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getLaborBudget(id: string): Promise<LaborBudget | undefined> {
   const res = await apiFetch(`/api/payroll/labor-budgets/${encodeURIComponent(id)}`);
@@ -954,12 +1106,14 @@ export async function getLaborBudget(id: string): Promise<LaborBudget | undefine
   const json = await res.json();
   return (json.laborBudget ?? json.data) as LaborBudget | undefined;
 }
-export async function listTrainingAssignments(query?: Record<string, string | number>): Promise<TrainingAssignment[]> {
+export async function listTrainingAssignments(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingAssignment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/training/assignments/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TrainingAssignment (${res.status})`);
   const json = await res.json();
-  return (json.trainingAssignments ?? json.data ?? []) as TrainingAssignment[];
+  const data = (json.trainingAssignments ?? json.data ?? []) as TrainingAssignment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTrainingAssignment(id: string): Promise<TrainingAssignment | undefined> {
   const res = await apiFetch(`/api/training/assignments/${encodeURIComponent(id)}`);
@@ -967,12 +1121,14 @@ export async function getTrainingAssignment(id: string): Promise<TrainingAssignm
   const json = await res.json();
   return (json.trainingAssignment ?? json.data) as TrainingAssignment | undefined;
 }
-export async function listTrainingModules(query?: Record<string, string | number>): Promise<TrainingModule[]> {
+export async function listTrainingModules(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingModule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/training/modules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TrainingModule (${res.status})`);
   const json = await res.json();
-  return (json.trainingModules ?? json.data ?? []) as TrainingModule[];
+  const data = (json.trainingModules ?? json.data ?? []) as TrainingModule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTrainingModule(id: string): Promise<TrainingModule | undefined> {
   const res = await apiFetch(`/api/training/modules/${encodeURIComponent(id)}`);
@@ -980,12 +1136,14 @@ export async function getTrainingModule(id: string): Promise<TrainingModule | un
   const json = await res.json();
   return (json.trainingModule ?? json.data) as TrainingModule | undefined;
 }
-export async function listCommandBoards(query?: Record<string, string | number>): Promise<CommandBoard[]> {
+export async function listCommandBoards(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/boards/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CommandBoard (${res.status})`);
   const json = await res.json();
-  return (json.commandBoards ?? json.data ?? []) as CommandBoard[];
+  const data = (json.commandBoards ?? json.data ?? []) as CommandBoard[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCommandBoard(id: string): Promise<CommandBoard | undefined> {
   const res = await apiFetch(`/api/command-board/boards/${encodeURIComponent(id)}`);
@@ -993,12 +1151,14 @@ export async function getCommandBoard(id: string): Promise<CommandBoard | undefi
   const json = await res.json();
   return (json.commandBoard ?? json.data) as CommandBoard | undefined;
 }
-export async function listCommandBoardCards(query?: Record<string, string | number>): Promise<CommandBoardCard[]> {
+export async function listCommandBoardCards(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardCard>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/cards/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CommandBoardCard (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardCards ?? json.data ?? []) as CommandBoardCard[];
+  const data = (json.commandBoardCards ?? json.data ?? []) as CommandBoardCard[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCommandBoardCard(id: string): Promise<CommandBoardCard | undefined> {
   const res = await apiFetch(`/api/command-board/cards/${encodeURIComponent(id)}`);
@@ -1006,12 +1166,14 @@ export async function getCommandBoardCard(id: string): Promise<CommandBoardCard 
   const json = await res.json();
   return (json.commandBoardCard ?? json.data) as CommandBoardCard | undefined;
 }
-export async function listCommandBoardGroups(query?: Record<string, string | number>): Promise<CommandBoardGroup[]> {
+export async function listCommandBoardGroups(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardGroup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/groups/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CommandBoardGroup (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardGroups ?? json.data ?? []) as CommandBoardGroup[];
+  const data = (json.commandBoardGroups ?? json.data ?? []) as CommandBoardGroup[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCommandBoardGroup(id: string): Promise<CommandBoardGroup | undefined> {
   const res = await apiFetch(`/api/command-board/groups/${encodeURIComponent(id)}`);
@@ -1019,12 +1181,14 @@ export async function getCommandBoardGroup(id: string): Promise<CommandBoardGrou
   const json = await res.json();
   return (json.commandBoardGroup ?? json.data) as CommandBoardGroup | undefined;
 }
-export async function listCommandBoardConnections(query?: Record<string, string | number>): Promise<CommandBoardConnection[]> {
+export async function listCommandBoardConnections(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardConnection>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/connections/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CommandBoardConnection (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardConnections ?? json.data ?? []) as CommandBoardConnection[];
+  const data = (json.commandBoardConnections ?? json.data ?? []) as CommandBoardConnection[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCommandBoardConnection(id: string): Promise<CommandBoardConnection | undefined> {
   const res = await apiFetch(`/api/command-board/connections/${encodeURIComponent(id)}`);
@@ -1032,12 +1196,14 @@ export async function getCommandBoardConnection(id: string): Promise<CommandBoar
   const json = await res.json();
   return (json.commandBoardConnection ?? json.data) as CommandBoardConnection | undefined;
 }
-export async function listCommandBoardLayouts(query?: Record<string, string | number>): Promise<CommandBoardLayout[]> {
+export async function listCommandBoardLayouts(query?: Record<string, string | number>): Promise<PaginatedResponse<CommandBoardLayout>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/layouts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CommandBoardLayout (${res.status})`);
   const json = await res.json();
-  return (json.commandBoardLayouts ?? json.data ?? []) as CommandBoardLayout[];
+  const data = (json.commandBoardLayouts ?? json.data ?? []) as CommandBoardLayout[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCommandBoardLayout(id: string): Promise<CommandBoardLayout | undefined> {
   const res = await apiFetch(`/api/command-board/layouts/${encodeURIComponent(id)}`);
@@ -1045,12 +1211,14 @@ export async function getCommandBoardLayout(id: string): Promise<CommandBoardLay
   const json = await res.json();
   return (json.commandBoardLayout ?? json.data) as CommandBoardLayout | undefined;
 }
-export async function listWorkflows(query?: Record<string, string | number>): Promise<Workflow[]> {
+export async function listWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<Workflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/collaboration/workflows/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Workflow (${res.status})`);
   const json = await res.json();
-  return (json.workflows ?? json.data ?? []) as Workflow[];
+  const data = (json.workflows ?? json.data ?? []) as Workflow[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getWorkflow(id: string): Promise<Workflow | undefined> {
   const res = await apiFetch(`/api/collaboration/workflows/${encodeURIComponent(id)}`);
@@ -1058,12 +1226,14 @@ export async function getWorkflow(id: string): Promise<Workflow | undefined> {
   const json = await res.json();
   return (json.workflow ?? json.data) as Workflow | undefined;
 }
-export async function listNotifications(query?: Record<string, string | number>): Promise<Notification[]> {
+export async function listNotifications(query?: Record<string, string | number>): Promise<PaginatedResponse<Notification>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/collaboration/notifications/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Notification (${res.status})`);
   const json = await res.json();
-  return (json.notifications ?? json.data ?? []) as Notification[];
+  const data = (json.notifications ?? json.data ?? []) as Notification[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getNotification(id: string): Promise<Notification | undefined> {
   const res = await apiFetch(`/api/collaboration/notifications/${encodeURIComponent(id)}`);
@@ -1071,12 +1241,14 @@ export async function getNotification(id: string): Promise<Notification | undefi
   const json = await res.json();
   return (json.notification ?? json.data) as Notification | undefined;
 }
-export async function listEmailTemplates(query?: Record<string, string | number>): Promise<EmailTemplate[]> {
+export async function listEmailTemplates(query?: Record<string, string | number>): Promise<PaginatedResponse<EmailTemplate>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/communications/email-templates/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmailTemplate (${res.status})`);
   const json = await res.json();
-  return (json.emailTemplates ?? json.data ?? []) as EmailTemplate[];
+  const data = (json.emailTemplates ?? json.data ?? []) as EmailTemplate[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEmailTemplate(id: string): Promise<EmailTemplate | undefined> {
   const res = await apiFetch(`/api/communications/email-templates/${encodeURIComponent(id)}`);
@@ -1084,12 +1256,14 @@ export async function getEmailTemplate(id: string): Promise<EmailTemplate | unde
   const json = await res.json();
   return (json.emailTemplate ?? json.data) as EmailTemplate | undefined;
 }
-export async function listEmailWorkflows(query?: Record<string, string | number>): Promise<EmailWorkflow[]> {
+export async function listEmailWorkflows(query?: Record<string, string | number>): Promise<PaginatedResponse<EmailWorkflow>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/communications/email-workflows/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EmailWorkflow (${res.status})`);
   const json = await res.json();
-  return (json.emailWorkflows ?? json.data ?? []) as EmailWorkflow[];
+  const data = (json.emailWorkflows ?? json.data ?? []) as EmailWorkflow[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEmailWorkflow(id: string): Promise<EmailWorkflow | undefined> {
   const res = await apiFetch(`/api/communications/email-workflows/${encodeURIComponent(id)}`);
@@ -1097,12 +1271,14 @@ export async function getEmailWorkflow(id: string): Promise<EmailWorkflow | unde
   const json = await res.json();
   return (json.emailWorkflow ?? json.data) as EmailWorkflow | undefined;
 }
-export async function listAdminTasks(query?: Record<string, string | number>): Promise<AdminTask[]> {
+export async function listAdminTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/tasks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AdminTask (${res.status})`);
   const json = await res.json();
-  return (json.adminTasks ?? json.data ?? []) as AdminTask[];
+  const data = (json.adminTasks ?? json.data ?? []) as AdminTask[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAdminTask(id: string): Promise<AdminTask | undefined> {
   const res = await apiFetch(`/api/administrative/tasks/${encodeURIComponent(id)}`);
@@ -1110,12 +1286,14 @@ export async function getAdminTask(id: string): Promise<AdminTask | undefined> {
   const json = await res.json();
   return (json.adminTask ?? json.data) as AdminTask | undefined;
 }
-export async function listAdminChatParticipants(query?: Record<string, string | number>): Promise<AdminChatParticipant[]> {
+export async function listAdminChatParticipants(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatParticipant>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/chat/participants/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AdminChatParticipant (${res.status})`);
   const json = await res.json();
-  return (json.adminChatParticipants ?? json.data ?? []) as AdminChatParticipant[];
+  const data = (json.adminChatParticipants ?? json.data ?? []) as AdminChatParticipant[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAdminChatParticipant(id: string): Promise<AdminChatParticipant | undefined> {
   const res = await apiFetch(`/api/administrative/chat/participants/${encodeURIComponent(id)}`);
@@ -1123,12 +1301,14 @@ export async function getAdminChatParticipant(id: string): Promise<AdminChatPart
   const json = await res.json();
   return (json.adminChatParticipant ?? json.data) as AdminChatParticipant | undefined;
 }
-export async function listApiKeies(query?: Record<string, string | number>): Promise<ApiKey[]> {
+export async function listApiKeies(query?: Record<string, string | number>): Promise<PaginatedResponse<ApiKey>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/settings/api-keys/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ApiKey (${res.status})`);
   const json = await res.json();
-  return (json.apiKeies ?? json.data ?? []) as ApiKey[];
+  const data = (json.apiKeies ?? json.data ?? []) as ApiKey[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getApiKey(id: string): Promise<ApiKey | undefined> {
   const res = await apiFetch(`/api/settings/api-keys/${encodeURIComponent(id)}`);
@@ -1136,12 +1316,14 @@ export async function getApiKey(id: string): Promise<ApiKey | undefined> {
   const json = await res.json();
   return (json.apiKey ?? json.data) as ApiKey | undefined;
 }
-export async function listRateLimitConfigs(query?: Record<string, string | number>): Promise<RateLimitConfig[]> {
+export async function listRateLimitConfigs(query?: Record<string, string | number>): Promise<PaginatedResponse<RateLimitConfig>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/rate-limits/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RateLimitConfig (${res.status})`);
   const json = await res.json();
-  return (json.rateLimitConfigs ?? json.data ?? []) as RateLimitConfig[];
+  const data = (json.rateLimitConfigs ?? json.data ?? []) as RateLimitConfig[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRateLimitConfig(id: string): Promise<RateLimitConfig | undefined> {
   const res = await apiFetch(`/api/administrative/rate-limits/${encodeURIComponent(id)}`);
@@ -1149,12 +1331,14 @@ export async function getRateLimitConfig(id: string): Promise<RateLimitConfig | 
   const json = await res.json();
   return (json.rateLimitConfig ?? json.data) as RateLimitConfig | undefined;
 }
-export async function listChartOfAccounts(query?: Record<string, string | number>): Promise<ChartOfAccount[]> {
+export async function listChartOfAccounts(query?: Record<string, string | number>): Promise<PaginatedResponse<ChartOfAccount>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/chart-of-accounts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ChartOfAccount (${res.status})`);
   const json = await res.json();
-  return (json.chartOfAccounts ?? json.data ?? []) as ChartOfAccount[];
+  const data = (json.chartOfAccounts ?? json.data ?? []) as ChartOfAccount[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getChartOfAccount(id: string): Promise<ChartOfAccount | undefined> {
   const res = await apiFetch(`/api/accounting/chart-of-accounts/${encodeURIComponent(id)}`);
@@ -1162,12 +1346,14 @@ export async function getChartOfAccount(id: string): Promise<ChartOfAccount | un
   const json = await res.json();
   return (json.chartOfAccount ?? json.data) as ChartOfAccount | undefined;
 }
-export async function listRolePolicies(query?: Record<string, string | number>): Promise<RolePolicy[]> {
+export async function listRolePolicies(query?: Record<string, string | number>): Promise<PaginatedResponse<RolePolicy>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/rolepolicy/policies/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RolePolicy (${res.status})`);
   const json = await res.json();
-  return (json.rolePolicies ?? json.data ?? []) as RolePolicy[];
+  const data = (json.rolePolicies ?? json.data ?? []) as RolePolicy[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRolePolicy(id: string): Promise<RolePolicy | undefined> {
   const res = await apiFetch(`/api/rolepolicy/policies/${encodeURIComponent(id)}`);
@@ -1175,12 +1361,14 @@ export async function getRolePolicy(id: string): Promise<RolePolicy | undefined>
   const json = await res.json();
   return (json.rolePolicy ?? json.data) as RolePolicy | undefined;
 }
-export async function listBankAccounts(query?: Record<string, string | number>): Promise<BankAccount[]> {
+export async function listBankAccounts(query?: Record<string, string | number>): Promise<PaginatedResponse<BankAccount>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/bank-accounts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BankAccount (${res.status})`);
   const json = await res.json();
-  return (json.bankAccounts ?? json.data ?? []) as BankAccount[];
+  const data = (json.bankAccounts ?? json.data ?? []) as BankAccount[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBankAccount(id: string): Promise<BankAccount | undefined> {
   const res = await apiFetch(`/api/accounting/bank-accounts/${encodeURIComponent(id)}`);
@@ -1188,12 +1376,14 @@ export async function getBankAccount(id: string): Promise<BankAccount | undefine
   const json = await res.json();
   return (json.bankAccount ?? json.data) as BankAccount | undefined;
 }
-export async function listBudgets(query?: Record<string, string | number>): Promise<Budget[]> {
+export async function listBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<Budget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/budgets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Budget (${res.status})`);
   const json = await res.json();
-  return (json.budgets ?? json.data ?? []) as Budget[];
+  const data = (json.budgets ?? json.data ?? []) as Budget[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBudget(id: string): Promise<Budget | undefined> {
   const res = await apiFetch(`/api/accounting/budgets/${encodeURIComponent(id)}`);
@@ -1201,12 +1391,14 @@ export async function getBudget(id: string): Promise<Budget | undefined> {
   const json = await res.json();
   return (json.budget ?? json.data) as Budget | undefined;
 }
-export async function listCollectionCases(query?: Record<string, string | number>): Promise<CollectionCase[]> {
+export async function listCollectionCases(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionCase>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/collections/cases/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CollectionCase (${res.status})`);
   const json = await res.json();
-  return (json.collectionCases ?? json.data ?? []) as CollectionCase[];
+  const data = (json.collectionCases ?? json.data ?? []) as CollectionCase[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCollectionCase(id: string): Promise<CollectionCase | undefined> {
   const res = await apiFetch(`/api/accounting/collections/cases/${encodeURIComponent(id)}`);
@@ -1214,12 +1406,14 @@ export async function getCollectionCase(id: string): Promise<CollectionCase | un
   const json = await res.json();
   return (json.collectionCase ?? json.data) as CollectionCase | undefined;
 }
-export async function listCollectionActions(query?: Record<string, string | number>): Promise<CollectionAction[]> {
+export async function listCollectionActions(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/collections/actions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CollectionAction (${res.status})`);
   const json = await res.json();
-  return (json.collectionActions ?? json.data ?? []) as CollectionAction[];
+  const data = (json.collectionActions ?? json.data ?? []) as CollectionAction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCollectionAction(id: string): Promise<CollectionAction | undefined> {
   const res = await apiFetch(`/api/accounting/collections/actions/${encodeURIComponent(id)}`);
@@ -1227,12 +1421,14 @@ export async function getCollectionAction(id: string): Promise<CollectionAction 
   const json = await res.json();
   return (json.collectionAction ?? json.data) as CollectionAction | undefined;
 }
-export async function listCollectionPaymentPlans(query?: Record<string, string | number>): Promise<CollectionPaymentPlan[]> {
+export async function listCollectionPaymentPlans(query?: Record<string, string | number>): Promise<PaginatedResponse<CollectionPaymentPlan>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/collections/payment-plans/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CollectionPaymentPlan (${res.status})`);
   const json = await res.json();
-  return (json.collectionPaymentPlans ?? json.data ?? []) as CollectionPaymentPlan[];
+  const data = (json.collectionPaymentPlans ?? json.data ?? []) as CollectionPaymentPlan[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCollectionPaymentPlan(id: string): Promise<CollectionPaymentPlan | undefined> {
   const res = await apiFetch(`/api/accounting/collections/payment-plans/${encodeURIComponent(id)}`);
@@ -1240,12 +1436,14 @@ export async function getCollectionPaymentPlan(id: string): Promise<CollectionPa
   const json = await res.json();
   return (json.collectionPaymentPlan ?? json.data) as CollectionPaymentPlan | undefined;
 }
-export async function listInvoices(query?: Record<string, string | number>): Promise<Invoice[]> {
+export async function listInvoices(query?: Record<string, string | number>): Promise<PaginatedResponse<Invoice>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/invoices/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Invoice (${res.status})`);
   const json = await res.json();
-  return (json.invoices ?? json.data ?? []) as Invoice[];
+  const data = (json.invoices ?? json.data ?? []) as Invoice[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInvoice(id: string): Promise<Invoice | undefined> {
   const res = await apiFetch(`/api/accounting/invoices/${encodeURIComponent(id)}`);
@@ -1253,12 +1451,14 @@ export async function getInvoice(id: string): Promise<Invoice | undefined> {
   const json = await res.json();
   return (json.invoice ?? json.data) as Invoice | undefined;
 }
-export async function listPaymentMethods(query?: Record<string, string | number>): Promise<PaymentMethod[]> {
+export async function listPaymentMethods(query?: Record<string, string | number>): Promise<PaginatedResponse<PaymentMethod>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/payment-methods/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PaymentMethod (${res.status})`);
   const json = await res.json();
-  return (json.paymentMethods ?? json.data ?? []) as PaymentMethod[];
+  const data = (json.paymentMethods ?? json.data ?? []) as PaymentMethod[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPaymentMethod(id: string): Promise<PaymentMethod | undefined> {
   const res = await apiFetch(`/api/accounting/payment-methods/${encodeURIComponent(id)}`);
@@ -1266,12 +1466,14 @@ export async function getPaymentMethod(id: string): Promise<PaymentMethod | unde
   const json = await res.json();
   return (json.paymentMethod ?? json.data) as PaymentMethod | undefined;
 }
-export async function listPayments(query?: Record<string, string | number>): Promise<Payment[]> {
+export async function listPayments(query?: Record<string, string | number>): Promise<PaginatedResponse<Payment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/payments/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Payment (${res.status})`);
   const json = await res.json();
-  return (json.payments ?? json.data ?? []) as Payment[];
+  const data = (json.payments ?? json.data ?? []) as Payment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPayment(id: string): Promise<Payment | undefined> {
   const res = await apiFetch(`/api/accounting/payments/${encodeURIComponent(id)}`);
@@ -1279,12 +1481,14 @@ export async function getPayment(id: string): Promise<Payment | undefined> {
   const json = await res.json();
   return (json.payment ?? json.data) as Payment | undefined;
 }
-export async function listPaymentRefundAttempts(query?: Record<string, string | number>): Promise<PaymentRefundAttempt[]> {
+export async function listPaymentRefundAttempts(query?: Record<string, string | number>): Promise<PaginatedResponse<PaymentRefundAttempt>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/payment-refund-attempts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PaymentRefundAttempt (${res.status})`);
   const json = await res.json();
-  return (json.paymentRefundAttempts ?? json.data ?? []) as PaymentRefundAttempt[];
+  const data = (json.paymentRefundAttempts ?? json.data ?? []) as PaymentRefundAttempt[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPaymentRefundAttempt(id: string): Promise<PaymentRefundAttempt | undefined> {
   const res = await apiFetch(`/api/accounting/payment-refund-attempts/${encodeURIComponent(id)}`);
@@ -1292,12 +1496,14 @@ export async function getPaymentRefundAttempt(id: string): Promise<PaymentRefund
   const json = await res.json();
   return (json.paymentRefundAttempt ?? json.data) as PaymentRefundAttempt | undefined;
 }
-export async function listRevenueRecognitionSchedules(query?: Record<string, string | number>): Promise<RevenueRecognitionSchedule[]> {
+export async function listRevenueRecognitionSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<RevenueRecognitionSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/revenue-recognition/schedules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RevenueRecognitionSchedule (${res.status})`);
   const json = await res.json();
-  return (json.revenueRecognitionSchedules ?? json.data ?? []) as RevenueRecognitionSchedule[];
+  const data = (json.revenueRecognitionSchedules ?? json.data ?? []) as RevenueRecognitionSchedule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRevenueRecognitionSchedule(id: string): Promise<RevenueRecognitionSchedule | undefined> {
   const res = await apiFetch(`/api/accounting/revenue-recognition/schedules/${encodeURIComponent(id)}`);
@@ -1305,12 +1511,14 @@ export async function getRevenueRecognitionSchedule(id: string): Promise<Revenue
   const json = await res.json();
   return (json.revenueRecognitionSchedule ?? json.data) as RevenueRecognitionSchedule | undefined;
 }
-export async function listRevenueRecognitionLines(query?: Record<string, string | number>): Promise<RevenueRecognitionLine[]> {
+export async function listRevenueRecognitionLines(query?: Record<string, string | number>): Promise<PaginatedResponse<RevenueRecognitionLine>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/accounting/revenue-recognition/lines/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RevenueRecognitionLine (${res.status})`);
   const json = await res.json();
-  return (json.revenueRecognitionLines ?? json.data ?? []) as RevenueRecognitionLine[];
+  const data = (json.revenueRecognitionLines ?? json.data ?? []) as RevenueRecognitionLine[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRevenueRecognitionLine(id: string): Promise<RevenueRecognitionLine | undefined> {
   const res = await apiFetch(`/api/accounting/revenue-recognition/lines/${encodeURIComponent(id)}`);
@@ -1318,12 +1526,14 @@ export async function getRevenueRecognitionLine(id: string): Promise<RevenueReco
   const json = await res.json();
   return (json.revenueRecognitionLine ?? json.data) as RevenueRecognitionLine | undefined;
 }
-export async function listProposalTemplates(query?: Record<string, string | number>): Promise<ProposalTemplate[]> {
+export async function listProposalTemplates(query?: Record<string, string | number>): Promise<PaginatedResponse<ProposalTemplate>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/proposal-templates/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ProposalTemplate (${res.status})`);
   const json = await res.json();
-  return (json.proposalTemplates ?? json.data ?? []) as ProposalTemplate[];
+  const data = (json.proposalTemplates ?? json.data ?? []) as ProposalTemplate[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getProposalTemplate(id: string): Promise<ProposalTemplate | undefined> {
   const res = await apiFetch(`/api/crm/proposal-templates/${encodeURIComponent(id)}`);
@@ -1331,12 +1541,14 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate 
   const json = await res.json();
   return (json.proposalTemplate ?? json.data) as ProposalTemplate | undefined;
 }
-export async function listInteractionAttachments(query?: Record<string, string | number>): Promise<InteractionAttachment[]> {
+export async function listInteractionAttachments(query?: Record<string, string | number>): Promise<PaginatedResponse<InteractionAttachment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/interaction-attachments/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InteractionAttachment (${res.status})`);
   const json = await res.json();
-  return (json.interactionAttachments ?? json.data ?? []) as InteractionAttachment[];
+  const data = (json.interactionAttachments ?? json.data ?? []) as InteractionAttachment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInteractionAttachment(id: string): Promise<InteractionAttachment | undefined> {
   const res = await apiFetch(`/api/crm/interaction-attachments/${encodeURIComponent(id)}`);
@@ -1344,12 +1556,14 @@ export async function getInteractionAttachment(id: string): Promise<InteractionA
   const json = await res.json();
   return (json.interactionAttachment ?? json.data) as InteractionAttachment | undefined;
 }
-export async function listCrmScoringRules(query?: Record<string, string | number>): Promise<CrmScoringRule[]> {
+export async function listCrmScoringRules(query?: Record<string, string | number>): Promise<PaginatedResponse<CrmScoringRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/scoring-rules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CrmScoringRule (${res.status})`);
   const json = await res.json();
-  return (json.crmScoringRules ?? json.data ?? []) as CrmScoringRule[];
+  const data = (json.crmScoringRules ?? json.data ?? []) as CrmScoringRule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCrmScoringRule(id: string): Promise<CrmScoringRule | undefined> {
   const res = await apiFetch(`/api/crm/scoring-rules/${encodeURIComponent(id)}`);
@@ -1357,12 +1571,14 @@ export async function getCrmScoringRule(id: string): Promise<CrmScoringRule | un
   const json = await res.json();
   return (json.crmScoringRule ?? json.data) as CrmScoringRule | undefined;
 }
-export async function listDeals(query?: Record<string, string | number>): Promise<Deal[]> {
+export async function listDeals(query?: Record<string, string | number>): Promise<PaginatedResponse<Deal>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/crm/deals/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Deal (${res.status})`);
   const json = await res.json();
-  return (json.deals ?? json.data ?? []) as Deal[];
+  const data = (json.deals ?? json.data ?? []) as Deal[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDeal(id: string): Promise<Deal | undefined> {
   const res = await apiFetch(`/api/crm/deals/${encodeURIComponent(id)}`);
@@ -1370,12 +1586,14 @@ export async function getDeal(id: string): Promise<Deal | undefined> {
   const json = await res.json();
   return (json.deal ?? json.data) as Deal | undefined;
 }
-export async function listVenues(query?: Record<string, string | number>): Promise<Venue[]> {
+export async function listVenues(query?: Record<string, string | number>): Promise<PaginatedResponse<Venue>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/venues/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Venue (${res.status})`);
   const json = await res.json();
-  return (json.venues ?? json.data ?? []) as Venue[];
+  const data = (json.venues ?? json.data ?? []) as Venue[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVenue(id: string): Promise<Venue | undefined> {
   const res = await apiFetch(`/api/events/venues/${encodeURIComponent(id)}`);
@@ -1383,12 +1601,14 @@ export async function getVenue(id: string): Promise<Venue | undefined> {
   const json = await res.json();
   return (json.venue ?? json.data) as Venue | undefined;
 }
-export async function listEventTimelines(query?: Record<string, string | number>): Promise<EventTimeline[]> {
+export async function listEventTimelines(query?: Record<string, string | number>): Promise<PaginatedResponse<EventTimeline>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/timelines/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventTimeline (${res.status})`);
   const json = await res.json();
-  return (json.eventTimelines ?? json.data ?? []) as EventTimeline[];
+  const data = (json.eventTimelines ?? json.data ?? []) as EventTimeline[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventTimeline(id: string): Promise<EventTimeline | undefined> {
   const res = await apiFetch(`/api/events/timelines/${encodeURIComponent(id)}`);
@@ -1396,12 +1616,14 @@ export async function getEventTimeline(id: string): Promise<EventTimeline | unde
   const json = await res.json();
   return (json.eventTimeline ?? json.data) as EventTimeline | undefined;
 }
-export async function listTimelineTasks(query?: Record<string, string | number>): Promise<TimelineTask[]> {
+export async function listTimelineTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<TimelineTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/timeline-tasks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimelineTask (${res.status})`);
   const json = await res.json();
-  return (json.timelineTasks ?? json.data ?? []) as TimelineTask[];
+  const data = (json.timelineTasks ?? json.data ?? []) as TimelineTask[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTimelineTask(id: string): Promise<TimelineTask | undefined> {
   const res = await apiFetch(`/api/events/timeline-tasks/${encodeURIComponent(id)}`);
@@ -1409,12 +1631,14 @@ export async function getTimelineTask(id: string): Promise<TimelineTask | undefi
   const json = await res.json();
   return (json.timelineTask ?? json.data) as TimelineTask | undefined;
 }
-export async function listEventImports(query?: Record<string, string | number>): Promise<EventImport[]> {
+export async function listEventImports(query?: Record<string, string | number>): Promise<PaginatedResponse<EventImport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/imports/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventImport (${res.status})`);
   const json = await res.json();
-  return (json.eventImports ?? json.data ?? []) as EventImport[];
+  const data = (json.eventImports ?? json.data ?? []) as EventImport[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventImport(id: string): Promise<EventImport | undefined> {
   const res = await apiFetch(`/api/events/imports/${encodeURIComponent(id)}`);
@@ -1422,12 +1646,14 @@ export async function getEventImport(id: string): Promise<EventImport | undefine
   const json = await res.json();
   return (json.eventImport ?? json.data) as EventImport | undefined;
 }
-export async function listEventFollowups(query?: Record<string, string | number>): Promise<EventFollowup[]> {
+export async function listEventFollowups(query?: Record<string, string | number>): Promise<PaginatedResponse<EventFollowup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/followups/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventFollowup (${res.status})`);
   const json = await res.json();
-  return (json.eventFollowups ?? json.data ?? []) as EventFollowup[];
+  const data = (json.eventFollowups ?? json.data ?? []) as EventFollowup[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventFollowup(id: string): Promise<EventFollowup | undefined> {
   const res = await apiFetch(`/api/events/followups/${encodeURIComponent(id)}`);
@@ -1435,12 +1661,14 @@ export async function getEventFollowup(id: string): Promise<EventFollowup | unde
   const json = await res.json();
   return (json.eventFollowup ?? json.data) as EventFollowup | undefined;
 }
-export async function listEventTimelineItems(query?: Record<string, string | number>): Promise<EventTimelineItem[]> {
+export async function listEventTimelineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<EventTimelineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/timeline-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventTimelineItem (${res.status})`);
   const json = await res.json();
-  return (json.eventTimelineItems ?? json.data ?? []) as EventTimelineItem[];
+  const data = (json.eventTimelineItems ?? json.data ?? []) as EventTimelineItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventTimelineItem(id: string): Promise<EventTimelineItem | undefined> {
   const res = await apiFetch(`/api/events/timeline-items/${encodeURIComponent(id)}`);
@@ -1448,12 +1676,14 @@ export async function getEventTimelineItem(id: string): Promise<EventTimelineIte
   const json = await res.json();
   return (json.eventTimelineItem ?? json.data) as EventTimelineItem | undefined;
 }
-export async function listEventWaitlistEntries(query?: Record<string, string | number>): Promise<EventWaitlistEntry[]> {
+export async function listEventWaitlistEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<EventWaitlistEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/waitlist-entries/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EventWaitlistEntry (${res.status})`);
   const json = await res.json();
-  return (json.eventWaitlistEntries ?? json.data ?? []) as EventWaitlistEntry[];
+  const data = (json.eventWaitlistEntries ?? json.data ?? []) as EventWaitlistEntry[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEventWaitlistEntry(id: string): Promise<EventWaitlistEntry | undefined> {
   const res = await apiFetch(`/api/events/waitlist-entries/${encodeURIComponent(id)}`);
@@ -1461,12 +1691,14 @@ export async function getEventWaitlistEntry(id: string): Promise<EventWaitlistEn
   const json = await res.json();
   return (json.eventWaitlistEntry ?? json.data) as EventWaitlistEntry | undefined;
 }
-export async function listBoardProjections(query?: Record<string, string | number>): Promise<BoardProjection[]> {
+export async function listBoardProjections(query?: Record<string, string | number>): Promise<PaginatedResponse<BoardProjection>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/projections/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BoardProjection (${res.status})`);
   const json = await res.json();
-  return (json.boardProjections ?? json.data ?? []) as BoardProjection[];
+  const data = (json.boardProjections ?? json.data ?? []) as BoardProjection[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBoardProjection(id: string): Promise<BoardProjection | undefined> {
   const res = await apiFetch(`/api/command-board/projections/${encodeURIComponent(id)}`);
@@ -1474,12 +1706,14 @@ export async function getBoardProjection(id: string): Promise<BoardProjection | 
   const json = await res.json();
   return (json.boardProjection ?? json.data) as BoardProjection | undefined;
 }
-export async function listBoardAnnotations(query?: Record<string, string | number>): Promise<BoardAnnotation[]> {
+export async function listBoardAnnotations(query?: Record<string, string | number>): Promise<PaginatedResponse<BoardAnnotation>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/command-board/annotations/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BoardAnnotation (${res.status})`);
   const json = await res.json();
-  return (json.boardAnnotations ?? json.data ?? []) as BoardAnnotation[];
+  const data = (json.boardAnnotations ?? json.data ?? []) as BoardAnnotation[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBoardAnnotation(id: string): Promise<BoardAnnotation | undefined> {
   const res = await apiFetch(`/api/command-board/annotations/${encodeURIComponent(id)}`);
@@ -1487,12 +1721,14 @@ export async function getBoardAnnotation(id: string): Promise<BoardAnnotation | 
   const json = await res.json();
   return (json.boardAnnotation ?? json.data) as BoardAnnotation | undefined;
 }
-export async function listAiEventSetupSessions(query?: Record<string, string | number>): Promise<AiEventSetupSession[]> {
+export async function listAiEventSetupSessions(query?: Record<string, string | number>): Promise<PaginatedResponse<AiEventSetupSession>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/ai-setup-sessions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AiEventSetupSession (${res.status})`);
   const json = await res.json();
-  return (json.aiEventSetupSessions ?? json.data ?? []) as AiEventSetupSession[];
+  const data = (json.aiEventSetupSessions ?? json.data ?? []) as AiEventSetupSession[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAiEventSetupSession(id: string): Promise<AiEventSetupSession | undefined> {
   const res = await apiFetch(`/api/events/ai-setup-sessions/${encodeURIComponent(id)}`);
@@ -1500,12 +1736,14 @@ export async function getAiEventSetupSession(id: string): Promise<AiEventSetupSe
   const json = await res.json();
   return (json.aiEventSetupSession ?? json.data) as AiEventSetupSession | undefined;
 }
-export async function listAutomatedFollowups(query?: Record<string, string | number>): Promise<AutomatedFollowup[]> {
+export async function listAutomatedFollowups(query?: Record<string, string | number>): Promise<PaginatedResponse<AutomatedFollowup>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/events/automated-followups/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AutomatedFollowup (${res.status})`);
   const json = await res.json();
-  return (json.automatedFollowups ?? json.data ?? []) as AutomatedFollowup[];
+  const data = (json.automatedFollowups ?? json.data ?? []) as AutomatedFollowup[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAutomatedFollowup(id: string): Promise<AutomatedFollowup | undefined> {
   const res = await apiFetch(`/api/events/automated-followups/${encodeURIComponent(id)}`);
@@ -1513,12 +1751,14 @@ export async function getAutomatedFollowup(id: string): Promise<AutomatedFollowu
   const json = await res.json();
   return (json.automatedFollowup ?? json.data) as AutomatedFollowup | undefined;
 }
-export async function listTemperatureProbes(query?: Record<string, string | number>): Promise<TemperatureProbe[]> {
+export async function listTemperatureProbes(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureProbe>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/temperature-probes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TemperatureProbe (${res.status})`);
   const json = await res.json();
-  return (json.temperatureProbes ?? json.data ?? []) as TemperatureProbe[];
+  const data = (json.temperatureProbes ?? json.data ?? []) as TemperatureProbe[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTemperatureProbe(id: string): Promise<TemperatureProbe | undefined> {
   const res = await apiFetch(`/api/kitchen/temperature-probes/${encodeURIComponent(id)}`);
@@ -1526,12 +1766,14 @@ export async function getTemperatureProbe(id: string): Promise<TemperatureProbe 
   const json = await res.json();
   return (json.temperatureProbe ?? json.data) as TemperatureProbe | undefined;
 }
-export async function listTemperatureLogs(query?: Record<string, string | number>): Promise<TemperatureLog[]> {
+export async function listTemperatureLogs(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureLog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/temperature-logs/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TemperatureLog (${res.status})`);
   const json = await res.json();
-  return (json.temperatureLogs ?? json.data ?? []) as TemperatureLog[];
+  const data = (json.temperatureLogs ?? json.data ?? []) as TemperatureLog[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTemperatureLog(id: string): Promise<TemperatureLog | undefined> {
   const res = await apiFetch(`/api/kitchen/temperature-logs/${encodeURIComponent(id)}`);
@@ -1539,12 +1781,14 @@ export async function getTemperatureLog(id: string): Promise<TemperatureLog | un
   const json = await res.json();
   return (json.temperatureLog ?? json.data) as TemperatureLog | undefined;
 }
-export async function listTemperatureReadings(query?: Record<string, string | number>): Promise<TemperatureReading[]> {
+export async function listTemperatureReadings(query?: Record<string, string | number>): Promise<PaginatedResponse<TemperatureReading>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/temperature-readings/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TemperatureReading (${res.status})`);
   const json = await res.json();
-  return (json.temperatureReadings ?? json.data ?? []) as TemperatureReading[];
+  const data = (json.temperatureReadings ?? json.data ?? []) as TemperatureReading[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTemperatureReading(id: string): Promise<TemperatureReading | undefined> {
   const res = await apiFetch(`/api/kitchen/temperature-readings/${encodeURIComponent(id)}`);
@@ -1552,12 +1796,14 @@ export async function getTemperatureReading(id: string): Promise<TemperatureRead
   const json = await res.json();
   return (json.temperatureReading ?? json.data) as TemperatureReading | undefined;
 }
-export async function listIotAlertRules(query?: Record<string, string | number>): Promise<IotAlertRule[]> {
+export async function listIotAlertRules(query?: Record<string, string | number>): Promise<PaginatedResponse<IotAlertRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/iot-alert-rules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list IotAlertRule (${res.status})`);
   const json = await res.json();
-  return (json.iotAlertRules ?? json.data ?? []) as IotAlertRule[];
+  const data = (json.iotAlertRules ?? json.data ?? []) as IotAlertRule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getIotAlertRule(id: string): Promise<IotAlertRule | undefined> {
   const res = await apiFetch(`/api/kitchen/iot-alert-rules/${encodeURIComponent(id)}`);
@@ -1565,12 +1811,14 @@ export async function getIotAlertRule(id: string): Promise<IotAlertRule | undefi
   const json = await res.json();
   return (json.iotAlertRule ?? json.data) as IotAlertRule | undefined;
 }
-export async function listIoTAlerts(query?: Record<string, string | number>): Promise<IoTAlert[]> {
+export async function listIoTAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<IoTAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/iot-alerts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list IoTAlert (${res.status})`);
   const json = await res.json();
-  return (json.ioTAlerts ?? json.data ?? []) as IoTAlert[];
+  const data = (json.ioTAlerts ?? json.data ?? []) as IoTAlert[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getIoTAlert(id: string): Promise<IoTAlert | undefined> {
   const res = await apiFetch(`/api/kitchen/iot-alerts/${encodeURIComponent(id)}`);
@@ -1578,12 +1826,14 @@ export async function getIoTAlert(id: string): Promise<IoTAlert | undefined> {
   const json = await res.json();
   return (json.ioTAlert ?? json.data) as IoTAlert | undefined;
 }
-export async function listCorrectiveActions(query?: Record<string, string | number>): Promise<CorrectiveAction[]> {
+export async function listCorrectiveActions(query?: Record<string, string | number>): Promise<PaginatedResponse<CorrectiveAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/corrective-actions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list CorrectiveAction (${res.status})`);
   const json = await res.json();
-  return (json.correctiveActions ?? json.data ?? []) as CorrectiveAction[];
+  const data = (json.correctiveActions ?? json.data ?? []) as CorrectiveAction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getCorrectiveAction(id: string): Promise<CorrectiveAction | undefined> {
   const res = await apiFetch(`/api/kitchen/corrective-actions/${encodeURIComponent(id)}`);
@@ -1591,12 +1841,14 @@ export async function getCorrectiveAction(id: string): Promise<CorrectiveAction 
   const json = await res.json();
   return (json.correctiveAction ?? json.data) as CorrectiveAction | undefined;
 }
-export async function listQualityChecks(query?: Record<string, string | number>): Promise<QualityCheck[]> {
+export async function listQualityChecks(query?: Record<string, string | number>): Promise<PaginatedResponse<QualityCheck>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/quality-checks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list QualityCheck (${res.status})`);
   const json = await res.json();
-  return (json.qualityChecks ?? json.data ?? []) as QualityCheck[];
+  const data = (json.qualityChecks ?? json.data ?? []) as QualityCheck[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getQualityCheck(id: string): Promise<QualityCheck | undefined> {
   const res = await apiFetch(`/api/kitchen/quality-checks/${encodeURIComponent(id)}`);
@@ -1604,12 +1856,14 @@ export async function getQualityCheck(id: string): Promise<QualityCheck | undefi
   const json = await res.json();
   return (json.qualityCheck ?? json.data) as QualityCheck | undefined;
 }
-export async function listQualityCheckItems(query?: Record<string, string | number>): Promise<QualityCheckItem[]> {
+export async function listQualityCheckItems(query?: Record<string, string | number>): Promise<PaginatedResponse<QualityCheckItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/quality-check-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list QualityCheckItem (${res.status})`);
   const json = await res.json();
-  return (json.qualityCheckItems ?? json.data ?? []) as QualityCheckItem[];
+  const data = (json.qualityCheckItems ?? json.data ?? []) as QualityCheckItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getQualityCheckItem(id: string): Promise<QualityCheckItem | undefined> {
   const res = await apiFetch(`/api/kitchen/quality-check-items/${encodeURIComponent(id)}`);
@@ -1617,12 +1871,14 @@ export async function getQualityCheckItem(id: string): Promise<QualityCheckItem 
   const json = await res.json();
   return (json.qualityCheckItem ?? json.data) as QualityCheckItem | undefined;
 }
-export async function listKitchenTaskClaims(query?: Record<string, string | number>): Promise<KitchenTaskClaim[]> {
+export async function listKitchenTaskClaims(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTaskClaim>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/task-claims/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KitchenTaskClaim (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTaskClaims ?? json.data ?? []) as KitchenTaskClaim[];
+  const data = (json.kitchenTaskClaims ?? json.data ?? []) as KitchenTaskClaim[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getKitchenTaskClaim(id: string): Promise<KitchenTaskClaim | undefined> {
   const res = await apiFetch(`/api/kitchen/task-claims/${encodeURIComponent(id)}`);
@@ -1630,12 +1886,14 @@ export async function getKitchenTaskClaim(id: string): Promise<KitchenTaskClaim 
   const json = await res.json();
   return (json.kitchenTaskClaim ?? json.data) as KitchenTaskClaim | undefined;
 }
-export async function listKitchenTaskProgresses(query?: Record<string, string | number>): Promise<KitchenTaskProgress[]> {
+export async function listKitchenTaskProgresses(query?: Record<string, string | number>): Promise<PaginatedResponse<KitchenTaskProgress>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/task-progress/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KitchenTaskProgress (${res.status})`);
   const json = await res.json();
-  return (json.kitchenTaskProgresses ?? json.data ?? []) as KitchenTaskProgress[];
+  const data = (json.kitchenTaskProgresses ?? json.data ?? []) as KitchenTaskProgress[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getKitchenTaskProgress(id: string): Promise<KitchenTaskProgress | undefined> {
   const res = await apiFetch(`/api/kitchen/task-progress/${encodeURIComponent(id)}`);
@@ -1643,12 +1901,14 @@ export async function getKitchenTaskProgress(id: string): Promise<KitchenTaskPro
   const json = await res.json();
   return (json.kitchenTaskProgress ?? json.data) as KitchenTaskProgress | undefined;
 }
-export async function listTaskBundles(query?: Record<string, string | number>): Promise<TaskBundle[]> {
+export async function listTaskBundles(query?: Record<string, string | number>): Promise<PaginatedResponse<TaskBundle>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/task-bundles/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TaskBundle (${res.status})`);
   const json = await res.json();
-  return (json.taskBundles ?? json.data ?? []) as TaskBundle[];
+  const data = (json.taskBundles ?? json.data ?? []) as TaskBundle[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTaskBundle(id: string): Promise<TaskBundle | undefined> {
   const res = await apiFetch(`/api/kitchen/task-bundles/${encodeURIComponent(id)}`);
@@ -1656,12 +1916,14 @@ export async function getTaskBundle(id: string): Promise<TaskBundle | undefined>
   const json = await res.json();
   return (json.taskBundle ?? json.data) as TaskBundle | undefined;
 }
-export async function listTaskBundleItems(query?: Record<string, string | number>): Promise<TaskBundleItem[]> {
+export async function listTaskBundleItems(query?: Record<string, string | number>): Promise<PaginatedResponse<TaskBundleItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/task-bundle-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TaskBundleItem (${res.status})`);
   const json = await res.json();
-  return (json.taskBundleItems ?? json.data ?? []) as TaskBundleItem[];
+  const data = (json.taskBundleItems ?? json.data ?? []) as TaskBundleItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTaskBundleItem(id: string): Promise<TaskBundleItem | undefined> {
   const res = await apiFetch(`/api/kitchen/task-bundle-items/${encodeURIComponent(id)}`);
@@ -1669,12 +1931,14 @@ export async function getTaskBundleItem(id: string): Promise<TaskBundleItem | un
   const json = await res.json();
   return (json.taskBundleItem ?? json.data) as TaskBundleItem | undefined;
 }
-export async function listBulkCombineRules(query?: Record<string, string | number>): Promise<BulkCombineRule[]> {
+export async function listBulkCombineRules(query?: Record<string, string | number>): Promise<PaginatedResponse<BulkCombineRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/bulk-combine-rules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list BulkCombineRule (${res.status})`);
   const json = await res.json();
-  return (json.bulkCombineRules ?? json.data ?? []) as BulkCombineRule[];
+  const data = (json.bulkCombineRules ?? json.data ?? []) as BulkCombineRule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getBulkCombineRule(id: string): Promise<BulkCombineRule | undefined> {
   const res = await apiFetch(`/api/kitchen/bulk-combine-rules/${encodeURIComponent(id)}`);
@@ -1682,12 +1946,14 @@ export async function getBulkCombineRule(id: string): Promise<BulkCombineRule | 
   const json = await res.json();
   return (json.bulkCombineRule ?? json.data) as BulkCombineRule | undefined;
 }
-export async function listMethodVideos(query?: Record<string, string | number>): Promise<MethodVideo[]> {
+export async function listMethodVideos(query?: Record<string, string | number>): Promise<PaginatedResponse<MethodVideo>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/method-videos/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list MethodVideo (${res.status})`);
   const json = await res.json();
-  return (json.methodVideos ?? json.data ?? []) as MethodVideo[];
+  const data = (json.methodVideos ?? json.data ?? []) as MethodVideo[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getMethodVideo(id: string): Promise<MethodVideo | undefined> {
   const res = await apiFetch(`/api/kitchen/method-videos/${encodeURIComponent(id)}`);
@@ -1695,12 +1961,14 @@ export async function getMethodVideo(id: string): Promise<MethodVideo | undefine
   const json = await res.json();
   return (json.methodVideo ?? json.data) as MethodVideo | undefined;
 }
-export async function listPrepListImports(query?: Record<string, string | number>): Promise<PrepListImport[]> {
+export async function listPrepListImports(query?: Record<string, string | number>): Promise<PaginatedResponse<PrepListImport>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/prep-list-imports/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PrepListImport (${res.status})`);
   const json = await res.json();
-  return (json.prepListImports ?? json.data ?? []) as PrepListImport[];
+  const data = (json.prepListImports ?? json.data ?? []) as PrepListImport[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPrepListImport(id: string): Promise<PrepListImport | undefined> {
   const res = await apiFetch(`/api/kitchen/prep-list-imports/${encodeURIComponent(id)}`);
@@ -1708,12 +1976,14 @@ export async function getPrepListImport(id: string): Promise<PrepListImport | un
   const json = await res.json();
   return (json.prepListImport ?? json.data) as PrepListImport | undefined;
 }
-export async function listQAChecks(query?: Record<string, string | number>): Promise<QACheck[]> {
+export async function listQAChecks(query?: Record<string, string | number>): Promise<PaginatedResponse<QACheck>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/qa-checks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list QACheck (${res.status})`);
   const json = await res.json();
-  return (json.qAChecks ?? json.data ?? []) as QACheck[];
+  const data = (json.qAChecks ?? json.data ?? []) as QACheck[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getQACheck(id: string): Promise<QACheck | undefined> {
   const res = await apiFetch(`/api/kitchen/qa-checks/${encodeURIComponent(id)}`);
@@ -1721,12 +1991,14 @@ export async function getQACheck(id: string): Promise<QACheck | undefined> {
   const json = await res.json();
   return (json.qACheck ?? json.data) as QACheck | undefined;
 }
-export async function listQACorrectiveActions(query?: Record<string, string | number>): Promise<QACorrectiveAction[]> {
+export async function listQACorrectiveActions(query?: Record<string, string | number>): Promise<PaginatedResponse<QACorrectiveAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/qa-corrective-actions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list QACorrectiveAction (${res.status})`);
   const json = await res.json();
-  return (json.qACorrectiveActions ?? json.data ?? []) as QACorrectiveAction[];
+  const data = (json.qACorrectiveActions ?? json.data ?? []) as QACorrectiveAction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getQACorrectiveAction(id: string): Promise<QACorrectiveAction | undefined> {
   const res = await apiFetch(`/api/kitchen/qa-corrective-actions/${encodeURIComponent(id)}`);
@@ -1734,12 +2006,14 @@ export async function getQACorrectiveAction(id: string): Promise<QACorrectiveAct
   const json = await res.json();
   return (json.qACorrectiveAction ?? json.data) as QACorrectiveAction | undefined;
 }
-export async function listQATemperatureLogs(query?: Record<string, string | number>): Promise<QATemperatureLog[]> {
+export async function listQATemperatureLogs(query?: Record<string, string | number>): Promise<PaginatedResponse<QATemperatureLog>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/kitchen/qa-temperature-logs/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list QATemperatureLog (${res.status})`);
   const json = await res.json();
-  return (json.qATemperatureLogs ?? json.data ?? []) as QATemperatureLog[];
+  const data = (json.qATemperatureLogs ?? json.data ?? []) as QATemperatureLog[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getQATemperatureLog(id: string): Promise<QATemperatureLog | undefined> {
   const res = await apiFetch(`/api/kitchen/qa-temperature-logs/${encodeURIComponent(id)}`);
@@ -1747,12 +2021,14 @@ export async function getQATemperatureLog(id: string): Promise<QATemperatureLog 
   const json = await res.json();
   return (json.qATemperatureLog ?? json.data) as QATemperatureLog | undefined;
 }
-export async function listStorageLocations(query?: Record<string, string | number>): Promise<StorageLocation[]> {
+export async function listStorageLocations(query?: Record<string, string | number>): Promise<PaginatedResponse<StorageLocation>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/storage-locations/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list StorageLocation (${res.status})`);
   const json = await res.json();
-  return (json.storageLocations ?? json.data ?? []) as StorageLocation[];
+  const data = (json.storageLocations ?? json.data ?? []) as StorageLocation[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getStorageLocation(id: string): Promise<StorageLocation | undefined> {
   const res = await apiFetch(`/api/inventory/storage-locations/${encodeURIComponent(id)}`);
@@ -1760,12 +2036,14 @@ export async function getStorageLocation(id: string): Promise<StorageLocation | 
   const json = await res.json();
   return (json.storageLocation ?? json.data) as StorageLocation | undefined;
 }
-export async function listInventoryStocks(query?: Record<string, string | number>): Promise<InventoryStock[]> {
+export async function listInventoryStocks(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryStock>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/stock/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryStock (${res.status})`);
   const json = await res.json();
-  return (json.inventoryStocks ?? json.data ?? []) as InventoryStock[];
+  const data = (json.inventoryStocks ?? json.data ?? []) as InventoryStock[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryStock(id: string): Promise<InventoryStock | undefined> {
   const res = await apiFetch(`/api/inventory/stock/${encodeURIComponent(id)}`);
@@ -1773,12 +2051,14 @@ export async function getInventoryStock(id: string): Promise<InventoryStock | un
   const json = await res.json();
   return (json.inventoryStock ?? json.data) as InventoryStock | undefined;
 }
-export async function listInventoryAlerts(query?: Record<string, string | number>): Promise<InventoryAlert[]> {
+export async function listInventoryAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/alerts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryAlert (${res.status})`);
   const json = await res.json();
-  return (json.inventoryAlerts ?? json.data ?? []) as InventoryAlert[];
+  const data = (json.inventoryAlerts ?? json.data ?? []) as InventoryAlert[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryAlert(id: string): Promise<InventoryAlert | undefined> {
   const res = await apiFetch(`/api/inventory/alerts/${encodeURIComponent(id)}`);
@@ -1786,12 +2066,14 @@ export async function getInventoryAlert(id: string): Promise<InventoryAlert | un
   const json = await res.json();
   return (json.inventoryAlert ?? json.data) as InventoryAlert | undefined;
 }
-export async function listInventoryForecasts(query?: Record<string, string | number>): Promise<InventoryForecast[]> {
+export async function listInventoryForecasts(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryForecast>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/forecasts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryForecast (${res.status})`);
   const json = await res.json();
-  return (json.inventoryForecasts ?? json.data ?? []) as InventoryForecast[];
+  const data = (json.inventoryForecasts ?? json.data ?? []) as InventoryForecast[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryForecast(id: string): Promise<InventoryForecast | undefined> {
   const res = await apiFetch(`/api/inventory/forecasts/${encodeURIComponent(id)}`);
@@ -1799,12 +2081,14 @@ export async function getInventoryForecast(id: string): Promise<InventoryForecas
   const json = await res.json();
   return (json.inventoryForecast ?? json.data) as InventoryForecast | undefined;
 }
-export async function listForecastInputs(query?: Record<string, string | number>): Promise<ForecastInput[]> {
+export async function listForecastInputs(query?: Record<string, string | number>): Promise<PaginatedResponse<ForecastInput>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/forecast-inputs/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ForecastInput (${res.status})`);
   const json = await res.json();
-  return (json.forecastInputs ?? json.data ?? []) as ForecastInput[];
+  const data = (json.forecastInputs ?? json.data ?? []) as ForecastInput[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getForecastInput(id: string): Promise<ForecastInput | undefined> {
   const res = await apiFetch(`/api/inventory/forecast-inputs/${encodeURIComponent(id)}`);
@@ -1812,12 +2096,14 @@ export async function getForecastInput(id: string): Promise<ForecastInput | unde
   const json = await res.json();
   return (json.forecastInput ?? json.data) as ForecastInput | undefined;
 }
-export async function listReorderSuggestions(query?: Record<string, string | number>): Promise<ReorderSuggestion[]> {
+export async function listReorderSuggestions(query?: Record<string, string | number>): Promise<PaginatedResponse<ReorderSuggestion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/reorder-suggestions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ReorderSuggestion (${res.status})`);
   const json = await res.json();
-  return (json.reorderSuggestions ?? json.data ?? []) as ReorderSuggestion[];
+  const data = (json.reorderSuggestions ?? json.data ?? []) as ReorderSuggestion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getReorderSuggestion(id: string): Promise<ReorderSuggestion | undefined> {
   const res = await apiFetch(`/api/inventory/reorder-suggestions/${encodeURIComponent(id)}`);
@@ -1825,12 +2111,14 @@ export async function getReorderSuggestion(id: string): Promise<ReorderSuggestio
   const json = await res.json();
   return (json.reorderSuggestion ?? json.data) as ReorderSuggestion | undefined;
 }
-export async function listVendorContacts(query?: Record<string, string | number>): Promise<VendorContact[]> {
+export async function listVendorContacts(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorContact>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/vendor-contacts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VendorContact (${res.status})`);
   const json = await res.json();
-  return (json.vendorContacts ?? json.data ?? []) as VendorContact[];
+  const data = (json.vendorContacts ?? json.data ?? []) as VendorContact[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVendorContact(id: string): Promise<VendorContact | undefined> {
   const res = await apiFetch(`/api/inventory/vendor-contacts/${encodeURIComponent(id)}`);
@@ -1838,12 +2126,14 @@ export async function getVendorContact(id: string): Promise<VendorContact | unde
   const json = await res.json();
   return (json.vendorContact ?? json.data) as VendorContact | undefined;
 }
-export async function listVendorRatings(query?: Record<string, string | number>): Promise<VendorRating[]> {
+export async function listVendorRatings(query?: Record<string, string | number>): Promise<PaginatedResponse<VendorRating>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/vendor-ratings/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VendorRating (${res.status})`);
   const json = await res.json();
-  return (json.vendorRatings ?? json.data ?? []) as VendorRating[];
+  const data = (json.vendorRatings ?? json.data ?? []) as VendorRating[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVendorRating(id: string): Promise<VendorRating | undefined> {
   const res = await apiFetch(`/api/inventory/vendor-ratings/${encodeURIComponent(id)}`);
@@ -1851,12 +2141,14 @@ export async function getVendorRating(id: string): Promise<VendorRating | undefi
   const json = await res.json();
   return (json.vendorRating ?? json.data) as VendorRating | undefined;
 }
-export async function listInventoryTransferItems(query?: Record<string, string | number>): Promise<InventoryTransferItem[]> {
+export async function listInventoryTransferItems(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransferItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/transfer-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryTransferItem (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransferItems ?? json.data ?? []) as InventoryTransferItem[];
+  const data = (json.inventoryTransferItems ?? json.data ?? []) as InventoryTransferItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryTransferItem(id: string): Promise<InventoryTransferItem | undefined> {
   const res = await apiFetch(`/api/inventory/transfer-items/${encodeURIComponent(id)}`);
@@ -1864,12 +2156,14 @@ export async function getInventoryTransferItem(id: string): Promise<InventoryTra
   const json = await res.json();
   return (json.inventoryTransferItem ?? json.data) as InventoryTransferItem | undefined;
 }
-export async function listInventoryTransfers(query?: Record<string, string | number>): Promise<InventoryTransfer[]> {
+export async function listInventoryTransfers(query?: Record<string, string | number>): Promise<PaginatedResponse<InventoryTransfer>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/transfers/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list InventoryTransfer (${res.status})`);
   const json = await res.json();
-  return (json.inventoryTransfers ?? json.data ?? []) as InventoryTransfer[];
+  const data = (json.inventoryTransfers ?? json.data ?? []) as InventoryTransfer[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getInventoryTransfer(id: string): Promise<InventoryTransfer | undefined> {
   const res = await apiFetch(`/api/inventory/transfers/${encodeURIComponent(id)}`);
@@ -1877,12 +2171,14 @@ export async function getInventoryTransfer(id: string): Promise<InventoryTransfe
   const json = await res.json();
   return (json.inventoryTransfer ?? json.data) as InventoryTransfer | undefined;
 }
-export async function listProcurementBudgets(query?: Record<string, string | number>): Promise<ProcurementBudget[]> {
+export async function listProcurementBudgets(query?: Record<string, string | number>): Promise<PaginatedResponse<ProcurementBudget>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/procurement/budgets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ProcurementBudget (${res.status})`);
   const json = await res.json();
-  return (json.procurementBudgets ?? json.data ?? []) as ProcurementBudget[];
+  const data = (json.procurementBudgets ?? json.data ?? []) as ProcurementBudget[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getProcurementBudget(id: string): Promise<ProcurementBudget | undefined> {
   const res = await apiFetch(`/api/procurement/budgets/${encodeURIComponent(id)}`);
@@ -1890,12 +2186,14 @@ export async function getProcurementBudget(id: string): Promise<ProcurementBudge
   const json = await res.json();
   return (json.procurementBudget ?? json.data) as ProcurementBudget | undefined;
 }
-export async function listProcurementBudgetAlerts(query?: Record<string, string | number>): Promise<ProcurementBudgetAlert[]> {
+export async function listProcurementBudgetAlerts(query?: Record<string, string | number>): Promise<PaginatedResponse<ProcurementBudgetAlert>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/procurement/budget-alerts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ProcurementBudgetAlert (${res.status})`);
   const json = await res.json();
-  return (json.procurementBudgetAlerts ?? json.data ?? []) as ProcurementBudgetAlert[];
+  const data = (json.procurementBudgetAlerts ?? json.data ?? []) as ProcurementBudgetAlert[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getProcurementBudgetAlert(id: string): Promise<ProcurementBudgetAlert | undefined> {
   const res = await apiFetch(`/api/procurement/budget-alerts/${encodeURIComponent(id)}`);
@@ -1903,12 +2201,14 @@ export async function getProcurementBudgetAlert(id: string): Promise<Procurement
   const json = await res.json();
   return (json.procurementBudgetAlert ?? json.data) as ProcurementBudgetAlert | undefined;
 }
-export async function listAuditSchedules(query?: Record<string, string | number>): Promise<AuditSchedule[]> {
+export async function listAuditSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<AuditSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/audit-schedules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AuditSchedule (${res.status})`);
   const json = await res.json();
-  return (json.auditSchedules ?? json.data ?? []) as AuditSchedule[];
+  const data = (json.auditSchedules ?? json.data ?? []) as AuditSchedule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAuditSchedule(id: string): Promise<AuditSchedule | undefined> {
   const res = await apiFetch(`/api/inventory/audit-schedules/${encodeURIComponent(id)}`);
@@ -1916,12 +2216,14 @@ export async function getAuditSchedule(id: string): Promise<AuditSchedule | unde
   const json = await res.json();
   return (json.auditSchedule ?? json.data) as AuditSchedule | undefined;
 }
-export async function listVendors(query?: Record<string, string | number>): Promise<Vendor[]> {
+export async function listVendors(query?: Record<string, string | number>): Promise<PaginatedResponse<Vendor>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/inventory/vendors/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Vendor (${res.status})`);
   const json = await res.json();
-  return (json.vendors ?? json.data ?? []) as Vendor[];
+  const data = (json.vendors ?? json.data ?? []) as Vendor[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVendor(id: string): Promise<Vendor | undefined> {
   const res = await apiFetch(`/api/inventory/vendors/${encodeURIComponent(id)}`);
@@ -1929,12 +2231,14 @@ export async function getVendor(id: string): Promise<Vendor | undefined> {
   const json = await res.json();
   return (json.vendor ?? json.data) as Vendor | undefined;
 }
-export async function listEquipments(query?: Record<string, string | number>): Promise<Equipment[]> {
+export async function listEquipments(query?: Record<string, string | number>): Promise<PaginatedResponse<Equipment>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/equipment/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Equipment (${res.status})`);
   const json = await res.json();
-  return (json.equipments ?? json.data ?? []) as Equipment[];
+  const data = (json.equipments ?? json.data ?? []) as Equipment[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEquipment(id: string): Promise<Equipment | undefined> {
   const res = await apiFetch(`/api/facilities/equipment/${encodeURIComponent(id)}`);
@@ -1942,12 +2246,14 @@ export async function getEquipment(id: string): Promise<Equipment | undefined> {
   const json = await res.json();
   return (json.equipment ?? json.data) as Equipment | undefined;
 }
-export async function listMaintenanceWorkOrders(query?: Record<string, string | number>): Promise<MaintenanceWorkOrder[]> {
+export async function listMaintenanceWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<MaintenanceWorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/maintenance-work-orders/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list MaintenanceWorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.maintenanceWorkOrders ?? json.data ?? []) as MaintenanceWorkOrder[];
+  const data = (json.maintenanceWorkOrders ?? json.data ?? []) as MaintenanceWorkOrder[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getMaintenanceWorkOrder(id: string): Promise<MaintenanceWorkOrder | undefined> {
   const res = await apiFetch(`/api/facilities/maintenance-work-orders/${encodeURIComponent(id)}`);
@@ -1955,12 +2261,14 @@ export async function getMaintenanceWorkOrder(id: string): Promise<MaintenanceWo
   const json = await res.json();
   return (json.maintenanceWorkOrder ?? json.data) as MaintenanceWorkOrder | undefined;
 }
-export async function listFacilities(query?: Record<string, string | number>): Promise<Facility[]> {
+export async function listFacilities(query?: Record<string, string | number>): Promise<PaginatedResponse<Facility>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/facilities/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Facility (${res.status})`);
   const json = await res.json();
-  return (json.facilities ?? json.data ?? []) as Facility[];
+  const data = (json.facilities ?? json.data ?? []) as Facility[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getFacility(id: string): Promise<Facility | undefined> {
   const res = await apiFetch(`/api/facilities/facilities/${encodeURIComponent(id)}`);
@@ -1968,12 +2276,14 @@ export async function getFacility(id: string): Promise<Facility | undefined> {
   const json = await res.json();
   return (json.facility ?? json.data) as Facility | undefined;
 }
-export async function listFacilityAreas(query?: Record<string, string | number>): Promise<FacilityArea[]> {
+export async function listFacilityAreas(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityArea>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/areas/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list FacilityArea (${res.status})`);
   const json = await res.json();
-  return (json.facilityAreas ?? json.data ?? []) as FacilityArea[];
+  const data = (json.facilityAreas ?? json.data ?? []) as FacilityArea[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getFacilityArea(id: string): Promise<FacilityArea | undefined> {
   const res = await apiFetch(`/api/facilities/areas/${encodeURIComponent(id)}`);
@@ -1981,12 +2291,14 @@ export async function getFacilityArea(id: string): Promise<FacilityArea | undefi
   const json = await res.json();
   return (json.facilityArea ?? json.data) as FacilityArea | undefined;
 }
-export async function listFacilityAssets(query?: Record<string, string | number>): Promise<FacilityAsset[]> {
+export async function listFacilityAssets(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityAsset>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/assets/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list FacilityAsset (${res.status})`);
   const json = await res.json();
-  return (json.facilityAssets ?? json.data ?? []) as FacilityAsset[];
+  const data = (json.facilityAssets ?? json.data ?? []) as FacilityAsset[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getFacilityAsset(id: string): Promise<FacilityAsset | undefined> {
   const res = await apiFetch(`/api/facilities/assets/${encodeURIComponent(id)}`);
@@ -1994,12 +2306,14 @@ export async function getFacilityAsset(id: string): Promise<FacilityAsset | unde
   const json = await res.json();
   return (json.facilityAsset ?? json.data) as FacilityAsset | undefined;
 }
-export async function listFacilitySchedules(query?: Record<string, string | number>): Promise<FacilitySchedule[]> {
+export async function listFacilitySchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilitySchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/schedules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list FacilitySchedule (${res.status})`);
   const json = await res.json();
-  return (json.facilitySchedules ?? json.data ?? []) as FacilitySchedule[];
+  const data = (json.facilitySchedules ?? json.data ?? []) as FacilitySchedule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getFacilitySchedule(id: string): Promise<FacilitySchedule | undefined> {
   const res = await apiFetch(`/api/facilities/schedules/${encodeURIComponent(id)}`);
@@ -2007,12 +2321,14 @@ export async function getFacilitySchedule(id: string): Promise<FacilitySchedule 
   const json = await res.json();
   return (json.facilitySchedule ?? json.data) as FacilitySchedule | undefined;
 }
-export async function listFacilityWorkOrders(query?: Record<string, string | number>): Promise<FacilityWorkOrder[]> {
+export async function listFacilityWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<FacilityWorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/work-orders/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list FacilityWorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.facilityWorkOrders ?? json.data ?? []) as FacilityWorkOrder[];
+  const data = (json.facilityWorkOrders ?? json.data ?? []) as FacilityWorkOrder[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getFacilityWorkOrder(id: string): Promise<FacilityWorkOrder | undefined> {
   const res = await apiFetch(`/api/facilities/work-orders/${encodeURIComponent(id)}`);
@@ -2020,12 +2336,14 @@ export async function getFacilityWorkOrder(id: string): Promise<FacilityWorkOrde
   const json = await res.json();
   return (json.facilityWorkOrder ?? json.data) as FacilityWorkOrder | undefined;
 }
-export async function listPreventiveMaintenanceSchedules(query?: Record<string, string | number>): Promise<PreventiveMaintenanceSchedule[]> {
+export async function listPreventiveMaintenanceSchedules(query?: Record<string, string | number>): Promise<PaginatedResponse<PreventiveMaintenanceSchedule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/preventive-maintenance/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PreventiveMaintenanceSchedule (${res.status})`);
   const json = await res.json();
-  return (json.preventiveMaintenanceSchedules ?? json.data ?? []) as PreventiveMaintenanceSchedule[];
+  const data = (json.preventiveMaintenanceSchedules ?? json.data ?? []) as PreventiveMaintenanceSchedule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPreventiveMaintenanceSchedule(id: string): Promise<PreventiveMaintenanceSchedule | undefined> {
   const res = await apiFetch(`/api/facilities/preventive-maintenance/${encodeURIComponent(id)}`);
@@ -2033,12 +2351,14 @@ export async function getPreventiveMaintenanceSchedule(id: string): Promise<Prev
   const json = await res.json();
   return (json.preventiveMaintenanceSchedule ?? json.data) as PreventiveMaintenanceSchedule | undefined;
 }
-export async function listWorkOrders(query?: Record<string, string | number>): Promise<WorkOrder[]> {
+export async function listWorkOrders(query?: Record<string, string | number>): Promise<PaginatedResponse<WorkOrder>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/facilities/general-work-orders/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list WorkOrder (${res.status})`);
   const json = await res.json();
-  return (json.workOrders ?? json.data ?? []) as WorkOrder[];
+  const data = (json.workOrders ?? json.data ?? []) as WorkOrder[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getWorkOrder(id: string): Promise<WorkOrder | undefined> {
   const res = await apiFetch(`/api/facilities/general-work-orders/${encodeURIComponent(id)}`);
@@ -2046,12 +2366,14 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | undefined> {
   const json = await res.json();
   return (json.workOrder ?? json.data) as WorkOrder | undefined;
 }
-export async function listDrivers(query?: Record<string, string | number>): Promise<Driver[]> {
+export async function listDrivers(query?: Record<string, string | number>): Promise<PaginatedResponse<Driver>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/drivers/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Driver (${res.status})`);
   const json = await res.json();
-  return (json.drivers ?? json.data ?? []) as Driver[];
+  const data = (json.drivers ?? json.data ?? []) as Driver[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDriver(id: string): Promise<Driver | undefined> {
   const res = await apiFetch(`/api/logistics/drivers/${encodeURIComponent(id)}`);
@@ -2059,12 +2381,14 @@ export async function getDriver(id: string): Promise<Driver | undefined> {
   const json = await res.json();
   return (json.driver ?? json.data) as Driver | undefined;
 }
-export async function listVehicles(query?: Record<string, string | number>): Promise<Vehicle[]> {
+export async function listVehicles(query?: Record<string, string | number>): Promise<PaginatedResponse<Vehicle>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/vehicles/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Vehicle (${res.status})`);
   const json = await res.json();
-  return (json.vehicles ?? json.data ?? []) as Vehicle[];
+  const data = (json.vehicles ?? json.data ?? []) as Vehicle[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVehicle(id: string): Promise<Vehicle | undefined> {
   const res = await apiFetch(`/api/logistics/vehicles/${encodeURIComponent(id)}`);
@@ -2072,12 +2396,14 @@ export async function getVehicle(id: string): Promise<Vehicle | undefined> {
   const json = await res.json();
   return (json.vehicle ?? json.data) as Vehicle | undefined;
 }
-export async function listLogisticsRoutes(query?: Record<string, string | number>): Promise<LogisticsRoute[]> {
+export async function listLogisticsRoutes(query?: Record<string, string | number>): Promise<PaginatedResponse<LogisticsRoute>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/routes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list LogisticsRoute (${res.status})`);
   const json = await res.json();
-  return (json.logisticsRoutes ?? json.data ?? []) as LogisticsRoute[];
+  const data = (json.logisticsRoutes ?? json.data ?? []) as LogisticsRoute[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getLogisticsRoute(id: string): Promise<LogisticsRoute | undefined> {
   const res = await apiFetch(`/api/logistics/routes/${encodeURIComponent(id)}`);
@@ -2085,12 +2411,14 @@ export async function getLogisticsRoute(id: string): Promise<LogisticsRoute | un
   const json = await res.json();
   return (json.logisticsRoute ?? json.data) as LogisticsRoute | undefined;
 }
-export async function listLogisticsDispatches(query?: Record<string, string | number>): Promise<LogisticsDispatch[]> {
+export async function listLogisticsDispatches(query?: Record<string, string | number>): Promise<PaginatedResponse<LogisticsDispatch>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/dispatches/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list LogisticsDispatch (${res.status})`);
   const json = await res.json();
-  return (json.logisticsDispatches ?? json.data ?? []) as LogisticsDispatch[];
+  const data = (json.logisticsDispatches ?? json.data ?? []) as LogisticsDispatch[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getLogisticsDispatch(id: string): Promise<LogisticsDispatch | undefined> {
   const res = await apiFetch(`/api/logistics/dispatches/${encodeURIComponent(id)}`);
@@ -2098,12 +2426,14 @@ export async function getLogisticsDispatch(id: string): Promise<LogisticsDispatc
   const json = await res.json();
   return (json.logisticsDispatch ?? json.data) as LogisticsDispatch | undefined;
 }
-export async function listDeliveryRoutes(query?: Record<string, string | number>): Promise<DeliveryRoute[]> {
+export async function listDeliveryRoutes(query?: Record<string, string | number>): Promise<PaginatedResponse<DeliveryRoute>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/delivery-routes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list DeliveryRoute (${res.status})`);
   const json = await res.json();
-  return (json.deliveryRoutes ?? json.data ?? []) as DeliveryRoute[];
+  const data = (json.deliveryRoutes ?? json.data ?? []) as DeliveryRoute[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDeliveryRoute(id: string): Promise<DeliveryRoute | undefined> {
   const res = await apiFetch(`/api/logistics/delivery-routes/${encodeURIComponent(id)}`);
@@ -2111,12 +2441,14 @@ export async function getDeliveryRoute(id: string): Promise<DeliveryRoute | unde
   const json = await res.json();
   return (json.deliveryRoute ?? json.data) as DeliveryRoute | undefined;
 }
-export async function listRouteStops(query?: Record<string, string | number>): Promise<RouteStop[]> {
+export async function listRouteStops(query?: Record<string, string | number>): Promise<PaginatedResponse<RouteStop>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/logistics/route-stops/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list RouteStop (${res.status})`);
   const json = await res.json();
-  return (json.routeStops ?? json.data ?? []) as RouteStop[];
+  const data = (json.routeStops ?? json.data ?? []) as RouteStop[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getRouteStop(id: string): Promise<RouteStop | undefined> {
   const res = await apiFetch(`/api/logistics/route-stops/${encodeURIComponent(id)}`);
@@ -2124,12 +2456,14 @@ export async function getRouteStop(id: string): Promise<RouteStop | undefined> {
   const json = await res.json();
   return (json.routeStop ?? json.data) as RouteStop | undefined;
 }
-export async function listTimecardApprovals(query?: Record<string, string | number>): Promise<TimecardApproval[]> {
+export async function listTimecardApprovals(query?: Record<string, string | number>): Promise<PaginatedResponse<TimecardApproval>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/timecard-approvals/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TimecardApproval (${res.status})`);
   const json = await res.json();
-  return (json.timecardApprovals ?? json.data ?? []) as TimecardApproval[];
+  const data = (json.timecardApprovals ?? json.data ?? []) as TimecardApproval[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTimecardApproval(id: string): Promise<TimecardApproval | undefined> {
   const res = await apiFetch(`/api/staff/timecard-approvals/${encodeURIComponent(id)}`);
@@ -2137,12 +2471,14 @@ export async function getTimecardApproval(id: string): Promise<TimecardApproval 
   const json = await res.json();
   return (json.timecardApproval ?? json.data) as TimecardApproval | undefined;
 }
-export async function listPayrollLineItems(query?: Record<string, string | number>): Promise<PayrollLineItem[]> {
+export async function listPayrollLineItems(query?: Record<string, string | number>): Promise<PaginatedResponse<PayrollLineItem>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/payroll-line-items/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PayrollLineItem (${res.status})`);
   const json = await res.json();
-  return (json.payrollLineItems ?? json.data ?? []) as PayrollLineItem[];
+  const data = (json.payrollLineItems ?? json.data ?? []) as PayrollLineItem[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPayrollLineItem(id: string): Promise<PayrollLineItem | undefined> {
   const res = await apiFetch(`/api/staff/payroll-line-items/${encodeURIComponent(id)}`);
@@ -2150,12 +2486,14 @@ export async function getPayrollLineItem(id: string): Promise<PayrollLineItem | 
   const json = await res.json();
   return (json.payrollLineItem ?? json.data) as PayrollLineItem | undefined;
 }
-export async function listTipPools(query?: Record<string, string | number>): Promise<TipPool[]> {
+export async function listTipPools(query?: Record<string, string | number>): Promise<PaginatedResponse<TipPool>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/tip-pools/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TipPool (${res.status})`);
   const json = await res.json();
-  return (json.tipPools ?? json.data ?? []) as TipPool[];
+  const data = (json.tipPools ?? json.data ?? []) as TipPool[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTipPool(id: string): Promise<TipPool | undefined> {
   const res = await apiFetch(`/api/staff/tip-pools/${encodeURIComponent(id)}`);
@@ -2163,12 +2501,14 @@ export async function getTipPool(id: string): Promise<TipPool | undefined> {
   const json = await res.json();
   return (json.tipPool ?? json.data) as TipPool | undefined;
 }
-export async function listDisciplinaryActions(query?: Record<string, string | number>): Promise<DisciplinaryAction[]> {
+export async function listDisciplinaryActions(query?: Record<string, string | number>): Promise<PaginatedResponse<DisciplinaryAction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/disciplinary-actions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list DisciplinaryAction (${res.status})`);
   const json = await res.json();
-  return (json.disciplinaryActions ?? json.data ?? []) as DisciplinaryAction[];
+  const data = (json.disciplinaryActions ?? json.data ?? []) as DisciplinaryAction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDisciplinaryAction(id: string): Promise<DisciplinaryAction | undefined> {
   const res = await apiFetch(`/api/staff/disciplinary-actions/${encodeURIComponent(id)}`);
@@ -2176,12 +2516,14 @@ export async function getDisciplinaryAction(id: string): Promise<DisciplinaryAct
   const json = await res.json();
   return (json.disciplinaryAction ?? json.data) as DisciplinaryAction | undefined;
 }
-export async function listActionMilestones(query?: Record<string, string | number>): Promise<ActionMilestone[]> {
+export async function listActionMilestones(query?: Record<string, string | number>): Promise<PaginatedResponse<ActionMilestone>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/action-milestones/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list ActionMilestone (${res.status})`);
   const json = await res.json();
-  return (json.actionMilestones ?? json.data ?? []) as ActionMilestone[];
+  const data = (json.actionMilestones ?? json.data ?? []) as ActionMilestone[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getActionMilestone(id: string): Promise<ActionMilestone | undefined> {
   const res = await apiFetch(`/api/staff/action-milestones/${encodeURIComponent(id)}`);
@@ -2189,12 +2531,14 @@ export async function getActionMilestone(id: string): Promise<ActionMilestone | 
   const json = await res.json();
   return (json.actionMilestone ?? json.data) as ActionMilestone | undefined;
 }
-export async function listPerformanceReviews(query?: Record<string, string | number>): Promise<PerformanceReview[]> {
+export async function listPerformanceReviews(query?: Record<string, string | number>): Promise<PaginatedResponse<PerformanceReview>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/performance-reviews/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PerformanceReview (${res.status})`);
   const json = await res.json();
-  return (json.performanceReviews ?? json.data ?? []) as PerformanceReview[];
+  const data = (json.performanceReviews ?? json.data ?? []) as PerformanceReview[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPerformanceReview(id: string): Promise<PerformanceReview | undefined> {
   const res = await apiFetch(`/api/staff/performance-reviews/${encodeURIComponent(id)}`);
@@ -2202,12 +2546,14 @@ export async function getPerformanceReview(id: string): Promise<PerformanceRevie
   const json = await res.json();
   return (json.performanceReview ?? json.data) as PerformanceReview | undefined;
 }
-export async function listTrainingCompletions(query?: Record<string, string | number>): Promise<TrainingCompletion[]> {
+export async function listTrainingCompletions(query?: Record<string, string | number>): Promise<PaginatedResponse<TrainingCompletion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/training-completions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list TrainingCompletion (${res.status})`);
   const json = await res.json();
-  return (json.trainingCompletions ?? json.data ?? []) as TrainingCompletion[];
+  const data = (json.trainingCompletions ?? json.data ?? []) as TrainingCompletion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getTrainingCompletion(id: string): Promise<TrainingCompletion | undefined> {
   const res = await apiFetch(`/api/staff/training-completions/${encodeURIComponent(id)}`);
@@ -2215,12 +2561,14 @@ export async function getTrainingCompletion(id: string): Promise<TrainingComplet
   const json = await res.json();
   return (json.trainingCompletion ?? json.data) as TrainingCompletion | undefined;
 }
-export async function listOnboardingTasks(query?: Record<string, string | number>): Promise<OnboardingTask[]> {
+export async function listOnboardingTasks(query?: Record<string, string | number>): Promise<PaginatedResponse<OnboardingTask>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/onboarding-tasks/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list OnboardingTask (${res.status})`);
   const json = await res.json();
-  return (json.onboardingTasks ?? json.data ?? []) as OnboardingTask[];
+  const data = (json.onboardingTasks ?? json.data ?? []) as OnboardingTask[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getOnboardingTask(id: string): Promise<OnboardingTask | undefined> {
   const res = await apiFetch(`/api/staff/onboarding-tasks/${encodeURIComponent(id)}`);
@@ -2228,12 +2576,14 @@ export async function getOnboardingTask(id: string): Promise<OnboardingTask | un
   const json = await res.json();
   return (json.onboardingTask ?? json.data) as OnboardingTask | undefined;
 }
-export async function listOnboardingCompletions(query?: Record<string, string | number>): Promise<OnboardingCompletion[]> {
+export async function listOnboardingCompletions(query?: Record<string, string | number>): Promise<PaginatedResponse<OnboardingCompletion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/onboarding-completions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list OnboardingCompletion (${res.status})`);
   const json = await res.json();
-  return (json.onboardingCompletions ?? json.data ?? []) as OnboardingCompletion[];
+  const data = (json.onboardingCompletions ?? json.data ?? []) as OnboardingCompletion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getOnboardingCompletion(id: string): Promise<OnboardingCompletion | undefined> {
   const res = await apiFetch(`/api/staff/onboarding-completions/${encodeURIComponent(id)}`);
@@ -2241,12 +2591,14 @@ export async function getOnboardingCompletion(id: string): Promise<OnboardingCom
   const json = await res.json();
   return (json.onboardingCompletion ?? json.data) as OnboardingCompletion | undefined;
 }
-export async function listOpenShifts(query?: Record<string, string | number>): Promise<OpenShift[]> {
+export async function listOpenShifts(query?: Record<string, string | number>): Promise<PaginatedResponse<OpenShift>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/open-shifts/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list OpenShift (${res.status})`);
   const json = await res.json();
-  return (json.openShifts ?? json.data ?? []) as OpenShift[];
+  const data = (json.openShifts ?? json.data ?? []) as OpenShift[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getOpenShift(id: string): Promise<OpenShift | undefined> {
   const res = await apiFetch(`/api/staff/open-shifts/${encodeURIComponent(id)}`);
@@ -2254,12 +2606,14 @@ export async function getOpenShift(id: string): Promise<OpenShift | undefined> {
   const json = await res.json();
   return (json.openShift ?? json.data) as OpenShift | undefined;
 }
-export async function listStaffPerformances(query?: Record<string, string | number>): Promise<StaffPerformance[]> {
+export async function listStaffPerformances(query?: Record<string, string | number>): Promise<PaginatedResponse<StaffPerformance>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/performance/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list StaffPerformance (${res.status})`);
   const json = await res.json();
-  return (json.staffPerformances ?? json.data ?? []) as StaffPerformance[];
+  const data = (json.staffPerformances ?? json.data ?? []) as StaffPerformance[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getStaffPerformance(id: string): Promise<StaffPerformance | undefined> {
   const res = await apiFetch(`/api/staff/performance/${encodeURIComponent(id)}`);
@@ -2267,12 +2621,14 @@ export async function getStaffPerformance(id: string): Promise<StaffPerformance 
   const json = await res.json();
   return (json.staffPerformance ?? json.data) as StaffPerformance | undefined;
 }
-export async function listWorkforceOptimizations(query?: Record<string, string | number>): Promise<WorkforceOptimization[]> {
+export async function listWorkforceOptimizations(query?: Record<string, string | number>): Promise<PaginatedResponse<WorkforceOptimization>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/workforce-optimization/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list WorkforceOptimization (${res.status})`);
   const json = await res.json();
-  return (json.workforceOptimizations ?? json.data ?? []) as WorkforceOptimization[];
+  const data = (json.workforceOptimizations ?? json.data ?? []) as WorkforceOptimization[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getWorkforceOptimization(id: string): Promise<WorkforceOptimization | undefined> {
   const res = await apiFetch(`/api/staff/workforce-optimization/${encodeURIComponent(id)}`);
@@ -2280,12 +2636,14 @@ export async function getWorkforceOptimization(id: string): Promise<WorkforceOpt
   const json = await res.json();
   return (json.workforceOptimization ?? json.data) as WorkforceOptimization | undefined;
 }
-export async function listPerformancePredictions(query?: Record<string, string | number>): Promise<PerformancePrediction[]> {
+export async function listPerformancePredictions(query?: Record<string, string | number>): Promise<PaginatedResponse<PerformancePrediction>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/staff/performance-predictions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list PerformancePrediction (${res.status})`);
   const json = await res.json();
-  return (json.performancePredictions ?? json.data ?? []) as PerformancePrediction[];
+  const data = (json.performancePredictions ?? json.data ?? []) as PerformancePrediction[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getPerformancePrediction(id: string): Promise<PerformancePrediction | undefined> {
   const res = await apiFetch(`/api/staff/performance-predictions/${encodeURIComponent(id)}`);
@@ -2293,12 +2651,14 @@ export async function getPerformancePrediction(id: string): Promise<PerformanceP
   const json = await res.json();
   return (json.performancePrediction ?? json.data) as PerformancePrediction | undefined;
 }
-export async function listReports(query?: Record<string, string | number>): Promise<Report[]> {
+export async function listReports(query?: Record<string, string | number>): Promise<PaginatedResponse<Report>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/reports/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Report (${res.status})`);
   const json = await res.json();
-  return (json.reports ?? json.data ?? []) as Report[];
+  const data = (json.reports ?? json.data ?? []) as Report[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getReport(id: string): Promise<Report | undefined> {
   const res = await apiFetch(`/api/administrative/reports/${encodeURIComponent(id)}`);
@@ -2306,12 +2666,14 @@ export async function getReport(id: string): Promise<Report | undefined> {
   const json = await res.json();
   return (json.report ?? json.data) as Report | undefined;
 }
-export async function listDocuments(query?: Record<string, string | number>): Promise<Document[]> {
+export async function listDocuments(query?: Record<string, string | number>): Promise<PaginatedResponse<Document>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/documents/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Document (${res.status})`);
   const json = await res.json();
-  return (json.documents ?? json.data ?? []) as Document[];
+  const data = (json.documents ?? json.data ?? []) as Document[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDocument(id: string): Promise<Document | undefined> {
   const res = await apiFetch(`/api/administrative/documents/${encodeURIComponent(id)}`);
@@ -2319,12 +2681,14 @@ export async function getDocument(id: string): Promise<Document | undefined> {
   const json = await res.json();
   return (json.document ?? json.data) as Document | undefined;
 }
-export async function listDocumentVersions(query?: Record<string, string | number>): Promise<DocumentVersion[]> {
+export async function listDocumentVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<DocumentVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/document-versions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list DocumentVersion (${res.status})`);
   const json = await res.json();
-  return (json.documentVersions ?? json.data ?? []) as DocumentVersion[];
+  const data = (json.documentVersions ?? json.data ?? []) as DocumentVersion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getDocumentVersion(id: string): Promise<DocumentVersion | undefined> {
   const res = await apiFetch(`/api/administrative/document-versions/${encodeURIComponent(id)}`);
@@ -2332,12 +2696,14 @@ export async function getDocumentVersion(id: string): Promise<DocumentVersion | 
   const json = await res.json();
   return (json.documentVersion ?? json.data) as DocumentVersion | undefined;
 }
-export async function listAdminChatThreads(query?: Record<string, string | number>): Promise<AdminChatThread[]> {
+export async function listAdminChatThreads(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatThread>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/chat/threads/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AdminChatThread (${res.status})`);
   const json = await res.json();
-  return (json.adminChatThreads ?? json.data ?? []) as AdminChatThread[];
+  const data = (json.adminChatThreads ?? json.data ?? []) as AdminChatThread[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAdminChatThread(id: string): Promise<AdminChatThread | undefined> {
   const res = await apiFetch(`/api/administrative/chat/threads/${encodeURIComponent(id)}`);
@@ -2345,12 +2711,14 @@ export async function getAdminChatThread(id: string): Promise<AdminChatThread | 
   const json = await res.json();
   return (json.adminChatThread ?? json.data) as AdminChatThread | undefined;
 }
-export async function listAdminChatMessages(query?: Record<string, string | number>): Promise<AdminChatMessage[]> {
+export async function listAdminChatMessages(query?: Record<string, string | number>): Promise<PaginatedResponse<AdminChatMessage>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/chat/messages/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list AdminChatMessage (${res.status})`);
   const json = await res.json();
-  return (json.adminChatMessages ?? json.data ?? []) as AdminChatMessage[];
+  const data = (json.adminChatMessages ?? json.data ?? []) as AdminChatMessage[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getAdminChatMessage(id: string): Promise<AdminChatMessage | undefined> {
   const res = await apiFetch(`/api/administrative/chat/messages/${encodeURIComponent(id)}`);
@@ -2358,12 +2726,14 @@ export async function getAdminChatMessage(id: string): Promise<AdminChatMessage 
   const json = await res.json();
   return (json.adminChatMessage ?? json.data) as AdminChatMessage | undefined;
 }
-export async function listNotes(query?: Record<string, string | number>): Promise<Note[]> {
+export async function listNotes(query?: Record<string, string | number>): Promise<PaginatedResponse<Note>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/notes/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list Note (${res.status})`);
   const json = await res.json();
-  return (json.notes ?? json.data ?? []) as Note[];
+  const data = (json.notes ?? json.data ?? []) as Note[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getNote(id: string): Promise<Note | undefined> {
   const res = await apiFetch(`/api/administrative/notes/${encodeURIComponent(id)}`);
@@ -2371,12 +2741,14 @@ export async function getNote(id: string): Promise<Note | undefined> {
   const json = await res.json();
   return (json.note ?? json.data) as Note | undefined;
 }
-export async function listKnowledgeBaseEntries(query?: Record<string, string | number>): Promise<KnowledgeBaseEntry[]> {
+export async function listKnowledgeBaseEntries(query?: Record<string, string | number>): Promise<PaginatedResponse<KnowledgeBaseEntry>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/knowledge-base/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list KnowledgeBaseEntry (${res.status})`);
   const json = await res.json();
-  return (json.knowledgeBaseEntries ?? json.data ?? []) as KnowledgeBaseEntry[];
+  const data = (json.knowledgeBaseEntries ?? json.data ?? []) as KnowledgeBaseEntry[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getKnowledgeBaseEntry(id: string): Promise<KnowledgeBaseEntry | undefined> {
   const res = await apiFetch(`/api/administrative/knowledge-base/${encodeURIComponent(id)}`);
@@ -2384,12 +2756,14 @@ export async function getKnowledgeBaseEntry(id: string): Promise<KnowledgeBaseEn
   const json = await res.json();
   return (json.knowledgeBaseEntry ?? json.data) as KnowledgeBaseEntry | undefined;
 }
-export async function listSampleDatas(query?: Record<string, string | number>): Promise<SampleData[]> {
+export async function listSampleDatas(query?: Record<string, string | number>): Promise<PaginatedResponse<SampleData>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/sample-data/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list SampleData (${res.status})`);
   const json = await res.json();
-  return (json.sampleDatas ?? json.data ?? []) as SampleData[];
+  const data = (json.sampleDatas ?? json.data ?? []) as SampleData[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getSampleData(id: string): Promise<SampleData | undefined> {
   const res = await apiFetch(`/api/administrative/sample-data/${encodeURIComponent(id)}`);
@@ -2397,12 +2771,14 @@ export async function getSampleData(id: string): Promise<SampleData | undefined>
   const json = await res.json();
   return (json.sampleData ?? json.data) as SampleData | undefined;
 }
-export async function listSmsAutomationRules(query?: Record<string, string | number>): Promise<SmsAutomationRule[]> {
+export async function listSmsAutomationRules(query?: Record<string, string | number>): Promise<PaginatedResponse<SmsAutomationRule>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/sms-automation-rules/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list SmsAutomationRule (${res.status})`);
   const json = await res.json();
-  return (json.smsAutomationRules ?? json.data ?? []) as SmsAutomationRule[];
+  const data = (json.smsAutomationRules ?? json.data ?? []) as SmsAutomationRule[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getSmsAutomationRule(id: string): Promise<SmsAutomationRule | undefined> {
   const res = await apiFetch(`/api/administrative/sms-automation-rules/${encodeURIComponent(id)}`);
@@ -2410,12 +2786,14 @@ export async function getSmsAutomationRule(id: string): Promise<SmsAutomationRul
   const json = await res.json();
   return (json.smsAutomationRule ?? json.data) as SmsAutomationRule | undefined;
 }
-export async function listVersionedEntities(query?: Record<string, string | number>): Promise<VersionedEntity[]> {
+export async function listVersionedEntities(query?: Record<string, string | number>): Promise<PaginatedResponse<VersionedEntity>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/versioned-entities/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VersionedEntity (${res.status})`);
   const json = await res.json();
-  return (json.versionedEntities ?? json.data ?? []) as VersionedEntity[];
+  const data = (json.versionedEntities ?? json.data ?? []) as VersionedEntity[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVersionedEntity(id: string): Promise<VersionedEntity | undefined> {
   const res = await apiFetch(`/api/administrative/versioned-entities/${encodeURIComponent(id)}`);
@@ -2423,12 +2801,14 @@ export async function getVersionedEntity(id: string): Promise<VersionedEntity | 
   const json = await res.json();
   return (json.versionedEntity ?? json.data) as VersionedEntity | undefined;
 }
-export async function listEntityVersions(query?: Record<string, string | number>): Promise<EntityVersion[]> {
+export async function listEntityVersions(query?: Record<string, string | number>): Promise<PaginatedResponse<EntityVersion>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/entity-versions/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list EntityVersion (${res.status})`);
   const json = await res.json();
-  return (json.entityVersions ?? json.data ?? []) as EntityVersion[];
+  const data = (json.entityVersions ?? json.data ?? []) as EntityVersion[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getEntityVersion(id: string): Promise<EntityVersion | undefined> {
   const res = await apiFetch(`/api/administrative/entity-versions/${encodeURIComponent(id)}`);
@@ -2436,12 +2816,14 @@ export async function getEntityVersion(id: string): Promise<EntityVersion | unde
   const json = await res.json();
   return (json.entityVersion ?? json.data) as EntityVersion | undefined;
 }
-export async function listVersionApprovals(query?: Record<string, string | number>): Promise<VersionApproval[]> {
+export async function listVersionApprovals(query?: Record<string, string | number>): Promise<PaginatedResponse<VersionApproval>> {
   const qs = query ? "?" + new URLSearchParams(Object.entries(query).map(([k, v]) => [k, String(v)])).toString() : "";
   const res = await apiFetch(`/api/administrative/version-approvals/list${qs}`);
   if (!res.ok) throw new Error(`Failed to list VersionApproval (${res.status})`);
   const json = await res.json();
-  return (json.versionApprovals ?? json.data ?? []) as VersionApproval[];
+  const data = (json.versionApprovals ?? json.data ?? []) as VersionApproval[];
+  const pagination = json.pagination ?? { page: 1, limit: data.length, total: data.length, totalPages: 1 };
+  return { data, pagination };
 }
 export async function getVersionApproval(id: string): Promise<VersionApproval | undefined> {
   const res = await apiFetch(`/api/administrative/version-approvals/${encodeURIComponent(id)}`);

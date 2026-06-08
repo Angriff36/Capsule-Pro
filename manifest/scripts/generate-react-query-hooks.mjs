@@ -55,6 +55,7 @@ lines.push("");
 // Imports
 lines.push('import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from "@tanstack/react-query";');
 lines.push('import * as client from "@/app/lib/manifest-client.generated";');
+lines.push('import type { PaginatedResponse } from "@/app/lib/manifest-client.generated";');
 lines.push('import { executeCommand, type CommandEnvelope } from "@/app/lib/manifest-client";');
 lines.push('import type {');
 for (const entity of entities) {
@@ -92,7 +93,7 @@ for (const entity of entities) {
   const listFn = `list${name}s`;
 
   lines.push(`export function use${name}List(`);
-  lines.push(`  options?: Omit<UseQueryOptions<${name}[], Error>, "queryKey" | "queryFn">,`);
+  lines.push(`  options?: Omit<UseQueryOptions<PaginatedResponse<${name}>, Error>, "queryKey" | "queryFn">,`);
   lines.push(`) {`);
   lines.push(`  return useQuery({`);
   lines.push(`    queryKey: queryKeys.${camel}.lists(),`);

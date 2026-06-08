@@ -124,7 +124,7 @@ export default function AllergenManagementPage() {
   const fetchWarnings = useCallback(async () => {
     try {
       const data = await listAllergenWarnings();
-      setWarnings((data || []) as unknown as AllergenWarning[]);
+      setWarnings((data.data || []) as unknown as AllergenWarning[]);
     } catch (error) {
       // Network errors or other issues - handle gracefully
       logger.warn(logger.fmt`Error fetching warnings: ${String(error)}`);
@@ -135,7 +135,7 @@ export default function AllergenManagementPage() {
   const fetchEvents = useCallback(async () => {
     try {
       const data = await listEvents({ limit: 50 });
-      setEvents((data || []) as unknown as Event[]);
+      setEvents((data.data || []) as unknown as Event[]);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching events: ${String(error)}`);
       setEvents([]);
@@ -146,7 +146,7 @@ export default function AllergenManagementPage() {
     try {
       const data = await listDishes({ limit: 100 });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setDishes((data || []) as any);
+      setDishes((data.data || []) as any);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching dishes: ${String(error)}`);
       setDishes([]);
@@ -157,7 +157,7 @@ export default function AllergenManagementPage() {
     try {
       const data = await listRecipes({ limit: 100 });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setRecipes((data || []) as any);
+      setRecipes((data.data || []) as any);
     } catch (error) {
       logger.warn(logger.fmt`Error fetching recipes: ${String(error)}`);
       setRecipes([]);

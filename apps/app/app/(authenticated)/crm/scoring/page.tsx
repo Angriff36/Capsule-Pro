@@ -9,9 +9,9 @@ import {
 } from "./components/scoring-rules-client";
 
 async function fetchRules(): Promise<ScoringRule[]> {
-  const rules = await listCrmScoringRules();
+  const result = await listCrmScoringRules();
   // Map generated camelCase fields to snake_case expected by the UI
-  return rules.map((r) => ({
+  return result.data.map((r) => ({
     id: r.id,
     rule_name: r.ruleName ?? "",
     field: r.field ?? "",
