@@ -394,7 +394,6 @@ entity Document {
     mutate documentType = documentType
     mutate fileUrl = fileUrl
     mutate fileSizeBytes = fileSizeBytes
-    mutate status = "uploaded"
     mutate entityType = entityType
     mutate entityId = entityId
     mutate uploadedBy = uploadedBy
@@ -465,7 +464,6 @@ entity AdminChatThread {
     mutate threadType = threadType
     mutate slug = slug
     mutate directKey = directKey
-    mutate status = "open"
     mutate createdBy = createdBy
 
     emit AdminChatThreadCreated

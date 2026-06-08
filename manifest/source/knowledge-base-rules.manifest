@@ -37,7 +37,6 @@ entity KnowledgeBaseEntry {
     mutate content = content
     mutate tags = tags
     mutate authorId = authorId
-    mutate status = "draft"
     mutate viewCount = 0
 
     emit KnowledgeBaseEntryCreated

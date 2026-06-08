@@ -29,7 +29,6 @@ entity PayrollPeriod {
 
     mutate periodStart = periodStart
     mutate periodEnd = periodEnd
-    mutate status = "open"
 
     emit PayrollPeriodCreated
   }
@@ -207,7 +206,6 @@ entity PayrollRun {
 
     mutate payrollPeriodId = payrollPeriodId
     mutate runDate = runDate
-    mutate status = "pending"
 
     emit PayrollRunCreated
   }

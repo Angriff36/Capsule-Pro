@@ -12,6 +12,7 @@
 
 import { formatCurrency as _formatCurrency } from "@repo/design-system/lib/format-currency";
 import { apiFetch } from "@/app/lib/api";
+import { leadCreate } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -129,17 +130,7 @@ export async function createLead(data: {
   estimatedValue?: number;
   notes?: string;
 }): Promise<void> {
-  const response = await apiFetch("/api/manifest/Lead/commands/create", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(
-      (error as { message?: string }).message || "Failed to create lead"
-    );
-  }
+  await leadCreate(data);
 }
 
 export async function updateLead(

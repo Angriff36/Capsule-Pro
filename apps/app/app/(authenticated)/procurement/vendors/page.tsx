@@ -50,6 +50,10 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  vendorCreate,
+  vendorRemove,
+} from "@/app/lib/manifest-client.generated";
+import {
   formatPaymentTerms,
   PAYMENT_TERMS_OPTIONS,
   RatingStars,
@@ -103,36 +107,27 @@ export default function VendorsPage() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/manifest/Vendor/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      await vendorCreate(form);
+      setDialogOpen(false);
+      setForm({
+        name: "",
+        contactPerson: "",
+        email: "",
+        phone: "",
+        paymentTerms: "NET_30",
+        addressLine1: "",
+        addressLine2: "",
+        city: "",
+        state: "",
+        postalCode: "",
+        country: "US",
+        taxId: "",
+        website: "",
+        notes: "",
       });
-      const data = await res.json();
-      if (data.success) {
-        setDialogOpen(false);
-        setForm({
-          name: "",
-          contactPerson: "",
-          email: "",
-          phone: "",
-          paymentTerms: "NET_30",
-          addressLine1: "",
-          addressLine2: "",
-          city: "",
-          state: "",
-          postalCode: "",
-          country: "US",
-          taxId: "",
-          website: "",
-          notes: "",
-        });
-        loadVendors();
-      } else {
-        console.error("Create failed:", data.error);
-      }
+      loadVendors();
     } catch (error) {
-      console.error("Failed to create vendor:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create vendor");
     } finally {
       setSaving(false);
     }
@@ -146,19 +141,10 @@ export default function VendorsPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await apiFetch("/api/manifest/Vendor/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId: deleteTarget.id }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        loadVendors();
-      } else {
-        toast.error(data.error || "Failed to delete vendor");
-      }
+      await vendorRemove({ vendorId: deleteTarget.id });
+      loadVendors();
     } catch (error) {
-      console.error("Failed to delete vendor:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete vendor");
     } finally {
       setDeleteTarget(null);
     }

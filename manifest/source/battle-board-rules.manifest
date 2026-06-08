@@ -77,7 +77,6 @@ entity BattleBoard {
     mutate isTemplate = isTemplate
     mutate notes = notes
     mutate tags = tags
-    mutate status = "draft"
     mutate boardData = "{}"
 
     emit BattleBoardCreated

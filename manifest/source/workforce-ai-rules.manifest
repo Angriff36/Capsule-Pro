@@ -30,7 +30,6 @@ entity WorkforceOptimization {
 
     mutate locationId = locationId
     mutate optimizationType = optimizationType
-    mutate status = "pending"
 
     emit WorkforceOptimizationCreated
   }

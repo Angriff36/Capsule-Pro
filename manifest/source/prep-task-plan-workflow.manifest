@@ -68,8 +68,6 @@ entity PrepTaskPlanWorkflow {
     guard self.status == "" or self.status == null "Workflow already initialized"
     guard eventId != "" "Event ID is required"
     guard idempotencyKey != "" "Idempotency key is required"
-
-    mutate status = "created"
     mutate eventId = eventId
     mutate idempotencyKey = idempotencyKey
     mutate generationOptions = generationOptions

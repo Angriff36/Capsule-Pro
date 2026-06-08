@@ -156,7 +156,6 @@ entity RecipeVersion {
     mutate difficultyLevel = difficulty
     mutate instructions = instructionsText
     mutate notes = notesText
-    mutate status = "draft"
 
     emit RecipeVersionCreated
   }

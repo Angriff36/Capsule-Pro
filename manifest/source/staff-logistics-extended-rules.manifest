@@ -34,7 +34,6 @@ entity TimecardApproval {
     mutate employeeId = employeeId
     mutate payrollPeriodId = payrollPeriodId
     mutate notes = notes
-    mutate status = "pending"
 
     emit TimecardApprovalCreated
   }
@@ -197,7 +196,6 @@ entity TipPool {
     mutate eventId = eventId
     mutate totalTips = totalTips
     mutate distributedAmount = 0
-    mutate status = "open"
 
     emit TipPoolCreated
   }
@@ -295,7 +293,6 @@ entity DisciplinaryAction {
     mutate actionType = actionType
     mutate reason = reason
     mutate severity = severity
-    mutate status = "open"
     mutate issuedBy = issuedBy
     mutate issuedAt = now()
 
@@ -367,7 +364,6 @@ entity ActionMilestone {
     mutate disciplinaryActionId = disciplinaryActionId
     mutate title = title
     mutate dueAt = dueAt
-    mutate status = "pending"
 
     emit ActionMilestoneCreated
   }
@@ -428,7 +424,6 @@ entity PerformanceReview {
     mutate reviewerId = reviewerId
     mutate reviewPeriod = reviewPeriod
     mutate overallRating = 0
-    mutate status = "draft"
 
     emit PerformanceReviewCreated
   }
@@ -575,7 +570,6 @@ entity OnboardingCompletion {
 
     mutate employeeId = employeeId
     mutate onboardingTaskId = onboardingTaskId
-    mutate status = "pending"
 
     emit OnboardingCompletionCreated
   }
@@ -627,7 +621,6 @@ entity OpenShift {
     mutate role = role
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
-    mutate status = "open"
     mutate claimedBy = ""
 
     emit OpenShiftCreated
@@ -692,7 +685,6 @@ entity DeliveryRoute {
     mutate routeDate = routeDate
     mutate totalStops = totalStops
     mutate distanceMiles = distanceMiles
-    mutate status = "planned"
 
     emit DeliveryRouteCreated
   }
@@ -764,7 +756,6 @@ entity RouteStop {
     mutate address = address
     mutate sequence = sequence
     mutate scheduledAt = scheduledAt
-    mutate status = "pending"
 
     emit RouteStopCreated
   }
@@ -830,7 +821,6 @@ entity PaymentRefundAttempt {
     mutate paymentId = paymentId
     mutate amount = amount
     mutate reason = reason
-    mutate status = "pending"
     mutate attemptedAt = now()
 
     emit PaymentRefundAttemptCreated
@@ -901,7 +891,6 @@ entity PreventiveMaintenanceSchedule {
     mutate estimatedHours = estimatedHours
     mutate estimatedCost = estimatedCost
     mutate scheduleNumber = "PM-" + substring(id, 0, 8)
-    mutate status = "active"
     mutate isActive = true
 
     emit MaintenanceScheduleCreated

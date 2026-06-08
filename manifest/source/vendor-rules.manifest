@@ -58,7 +58,6 @@ entity Vendor {
     mutate taxId = taxId
     mutate paymentTerms = paymentTerms
     mutate notes = notes
-    mutate status = "active"
     mutate rating = 0
     mutate ratingCount = 0
 

@@ -25,6 +25,7 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { notificationMarkDismissed, notificationMarkRead, notificationRemove } from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -171,21 +172,7 @@ export function NotificationsClient({
   const handleMarkRead = useCallback(async (id: string) => {
     setActioningId(id);
     try {
-      const res = await apiFetch(
-        "/api/manifest/Notification/commands/markRead",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error("Failed to mark as read", {
-          description: data.message || "Unknown error",
-        });
-        return;
-      }
+      await notificationMarkRead({ id });
       setNotifications((prev) =>
         prev.map((n) =>
           n.id === id
@@ -204,21 +191,7 @@ export function NotificationsClient({
   const handleDismiss = useCallback(async (id: string) => {
     setActioningId(id);
     try {
-      const res = await apiFetch(
-        "/api/manifest/Notification/commands/markDismissed",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id }),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error("Failed to dismiss", {
-          description: data.message || "Unknown error",
-        });
-        return;
-      }
+      await notificationMarkDismissed({ id });
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       toast.success("Notification dismissed");
     } catch {
@@ -234,18 +207,7 @@ export function NotificationsClient({
     }
     setActioningId(removeId);
     try {
-      const res = await apiFetch("/api/manifest/Notification/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: removeId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error("Failed to remove", {
-          description: data.message || "Unknown error",
-        });
-        return;
-      }
+      await notificationRemove({ id: removeId });
       setNotifications((prev) => prev.filter((n) => n.id !== removeId));
       setRemoveId(null);
       toast.success("Notification removed");
@@ -266,11 +228,7 @@ export function NotificationsClient({
     try {
       const results = await Promise.allSettled(
         unread.map((n) =>
-          apiFetch("/api/manifest/Notification/commands/markRead", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: n.id }),
-          })
+          notificationMarkRead({ id: n.id })
         )
       );
       const failed = results.filter((r) => r.status === "rejected").length;

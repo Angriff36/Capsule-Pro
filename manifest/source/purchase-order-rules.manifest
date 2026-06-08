@@ -54,7 +54,6 @@ entity PurchaseOrder {
     mutate vendorId = vendorId
     mutate locationId = locationId
     mutate notes = notes
-    mutate status = "draft"
     mutate subtotal = 0
     mutate taxAmount = 0
     mutate shippingAmount = 0

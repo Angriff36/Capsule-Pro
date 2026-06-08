@@ -174,7 +174,6 @@ entity KitchenTask {
 
     mutate title = title
     mutate summary = summary
-    mutate status = "pending"
     mutate priority = priority
     mutate complexity = complexity
     mutate tags = tags

@@ -60,7 +60,6 @@ entity Shipment {
     mutate carrier = carrier
     mutate shippingMethod = shippingMethod
     mutate notes = notes
-    mutate status = "draft"
     mutate totalItems = 0
     mutate shippingCost = 0
     mutate totalValue = 0

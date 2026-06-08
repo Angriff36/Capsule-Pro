@@ -80,7 +80,6 @@ entity EventReport {
     mutate checklistData = checklistData
     mutate reportConfig = reportConfig
     mutate reviewNotes = notes
-    mutate status = "draft"
     mutate completion = 0
 
     emit EventReportCreated

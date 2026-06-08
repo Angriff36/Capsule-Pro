@@ -54,7 +54,6 @@ entity CycleCountSession {
     mutate scheduledDate = scheduledDate
     mutate notes = notes
     mutate createdById = userId
-    mutate status = "draft"
     mutate totalItems = 0
     mutate countedItems = 0
     mutate totalVariance = 0
@@ -321,7 +320,6 @@ entity VarianceReport {
     mutate variance = variance
     mutate variancePct = variancePct
     mutate accuracyScore = accuracyScore
-    mutate status = "pending"
     mutate notes = notes
     mutate generatedAt = now()
 

@@ -109,7 +109,6 @@ entity Proposal {
     mutate taxAmount = 0
     mutate discountAmount = 0
     mutate total = 0
-    mutate status = "draft"
     mutate lineItemCount = 0
 
     emit ProposalCreated

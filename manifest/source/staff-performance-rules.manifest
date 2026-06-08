@@ -54,7 +54,6 @@ entity StaffPerformance {
     mutate improvements = improvements
     mutate goals = goals
     mutate notes = notes
-    mutate status = "draft"
     mutate rating = 0
 
     emit PerformanceReviewCreated

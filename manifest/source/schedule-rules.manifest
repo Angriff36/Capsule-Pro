@@ -42,7 +42,6 @@ entity Schedule {
     mutate locationId = locationId
     mutate scheduleDate = scheduleDate
     mutate notes = notes
-    mutate status = "draft"
     mutate shiftCount = 0
 
     emit ScheduleCreated

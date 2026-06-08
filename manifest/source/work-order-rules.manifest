@@ -67,7 +67,6 @@ entity WorkOrder {
     mutate priority = priority
     mutate description = description
     mutate scheduledDate = scheduledDate
-    mutate status = "open"
 
     emit WorkOrderCreated
   }

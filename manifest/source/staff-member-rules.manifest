@@ -34,7 +34,6 @@ entity StaffMember {
     mutate email = email
     mutate phone = phone
     mutate role = role
-    mutate status = "active"
 
     emit StaffMemberCreated
   }

@@ -82,7 +82,6 @@ entity RevenueRecognitionSchedule {
     mutate recognizedAmount = 0
     mutate remainingAmount = totalAmount
     mutate method = method != null and method != "" ? method : "IMMEDIATE"
-    mutate status = "PENDING"
     mutate startDate = startDate
     mutate endDate = endDate
     mutate recognitionPeriod = recognitionPeriod

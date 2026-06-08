@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { kitchenTaskRelease, kitchenTaskStart } from "@/app/lib/manifest-client.generated";
 import type { OfflineQueueItem, Task } from "../types";
 import { priorityConfig } from "../types";
 
@@ -79,25 +80,12 @@ async function syncSingleItem(
   item: OfflineQueueItem
 ): Promise<{ success: boolean }> {
   try {
-    let response: Response | undefined;
     if (item.action === "start") {
-      response = await apiFetch("/api/manifest/KitchenTask/commands/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item.taskId }),
-      });
+      await kitchenTaskStart({ id: item.taskId });
     } else if (item.action === "release") {
-      response = await apiFetch("/api/manifest/KitchenTask/commands/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: item.taskId, reason: "" }),
-      });
+      await kitchenTaskRelease({ id: item.taskId, reason: "" });
     }
-
-    if (response?.ok) {
-      return { success: true };
-    }
-    return { success: false };
+    return { success: true };
   } catch {
     return { success: false };
   }
@@ -337,22 +325,8 @@ export default function MobileMyWorkPage() {
       }
 
       try {
-        const response = await apiFetch(
-          "/api/manifest/KitchenTask/commands/start",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: taskId }),
-          }
-        );
-
-        if (response.ok) {
-          await fetchMyWork();
-        } else {
-          const errData = await response.json();
-          setError(errData.message || "Failed to start task");
-          setState((prev) => ({ ...prev, isLoading: false }));
-        }
+        await kitchenTaskStart({ id: taskId });
+        await fetchMyWork();
       } catch (err) {
         captureException(err);
         setError("Failed to start task. Please try again.");
@@ -412,22 +386,8 @@ export default function MobileMyWorkPage() {
       }
 
       try {
-        const response = await apiFetch(
-          "/api/manifest/KitchenTask/commands/release",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: taskId, reason: "" }),
-          }
-        );
-
-        if (response.ok) {
-          await fetchMyWork();
-        } else {
-          const errData = await response.json();
-          setError(errData.message || "Failed to release task");
-          setState((prev) => ({ ...prev, isLoading: false }));
-        }
+        await kitchenTaskRelease({ id: taskId, reason: "" });
+        await fetchMyWork();
       } catch (err) {
         captureException(err);
         setError("Failed to release task. Please try again.");

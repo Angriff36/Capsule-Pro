@@ -55,7 +55,6 @@ entity EventContract {
     mutate documentType = documentType
     mutate notes = notes
     mutate expiresAt = expiresAt
-    mutate status = "draft"
 
     emit ContractCreated
   }

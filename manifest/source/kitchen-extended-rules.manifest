@@ -295,7 +295,6 @@ entity IoTAlert {
     mutate severity = severity
     mutate message = message
     mutate value = value
-    mutate status = "active"
     mutate triggeredAt = triggeredAt
     mutate alertNumber = alertNumber
     mutate alertType = alertType
@@ -365,7 +364,6 @@ entity CorrectiveAction {
     mutate sourceType = sourceType
     mutate sourceId = sourceId
     mutate description = description
-    mutate status = "open"
     mutate dueAt = dueAt
 
     emit CorrectiveActionCreated
@@ -437,7 +435,6 @@ entity QualityCheck {
     mutate checkType = checkType
     mutate performedBy = performedBy
     mutate notes = notes
-    mutate status = "pending"
 
     emit QualityCheckCreated
   }
@@ -647,7 +644,6 @@ entity TaskBundle {
     mutate name = name
     mutate eventId = eventId
     mutate description = description
-    mutate status = "active"
 
     emit TaskBundleCreated
   }
@@ -853,7 +849,6 @@ entity PrepListImport {
 
     mutate source = source
     mutate fileName = fileName
-    mutate status = "pending"
 
     emit PrepListImportCreated
   }

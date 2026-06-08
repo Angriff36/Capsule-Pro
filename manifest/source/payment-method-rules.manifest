@@ -77,7 +77,6 @@ entity PaymentMethod {
     mutate walletProvider = walletProvider
     mutate walletEmail = walletEmail
     mutate nickname = nickname
-    mutate status = "ACTIVE"
     mutate isDefault = false
     mutate fraudFlagged = false
 

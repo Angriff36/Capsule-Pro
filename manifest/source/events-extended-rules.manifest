@@ -284,7 +284,6 @@ entity TimelineTask {
     mutate eventId = eventId
     mutate title = title
     mutate dueAt = dueAt
-    mutate status = "pending"
     mutate assignedTo = assignedTo
     mutate sortOrder = sortOrder
     emit TimelineTaskCreated
@@ -434,7 +433,6 @@ entity EventImport {
     mutate totalRows = totalRows
     mutate importedRows = 0
     mutate skippedRows = 0
-    mutate status = "pending"
     mutate errorMessage = ""
     emit EventImportCreated
   }
@@ -544,7 +542,6 @@ entity EventFollowup {
     mutate eventId = eventId
     mutate type = type
     mutate dueAt = dueAt
-    mutate status = "pending"
     mutate assignedTo = assignedTo
     mutate notes = notes
     emit EventFollowupCreated

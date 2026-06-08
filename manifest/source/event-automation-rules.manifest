@@ -39,7 +39,6 @@ entity AutomatedFollowup {
     mutate subject = subject
     mutate body = body
     mutate templateId = templateId
-    mutate status = "pending"
 
     emit FollowupCreated
   }

@@ -37,7 +37,6 @@ entity QACheck {
     mutate inspector = inspector
     mutate notes = notes
     mutate result = "pass"
-    mutate status = "pending"
 
     emit QACheckCreated
   }
@@ -141,7 +140,6 @@ entity QACorrectiveAction {
     mutate assignedTo = assignedTo
     mutate priority = priority
     mutate dueDate = dueDate
-    mutate status = "open"
 
     emit CorrectiveActionCreated
   }

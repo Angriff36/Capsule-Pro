@@ -161,7 +161,6 @@ entity PrepList {
     mutate totalItems = totalItems
     mutate totalEstimatedTime = totalEstimatedTime
     mutate notes = notes
-    mutate status = "draft"
     mutate generatedAt = now()
     mutate isActive = true
 

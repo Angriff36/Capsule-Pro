@@ -85,7 +85,6 @@ entity ClientInteraction {
     mutate description = description
     mutate followUpDate = followUpDate
     mutate followUpCompleted = false
-    mutate status = "open"
     mutate correlationId = correlationId
 
     emit ClientInteractionCreated

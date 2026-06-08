@@ -165,7 +165,6 @@ entity Equipment {
     mutate maintenanceIntervalDays = maintenanceIntervalDays
     mutate maxUsageHours = maxUsageHours
     mutate notes = notes
-    mutate status = "active"
     mutate condition = "good"
     mutate usageHours = 0
     mutate lastMaintenanceDate = null

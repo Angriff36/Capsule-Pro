@@ -48,7 +48,6 @@ entity DocumentVersion {
     mutate changeDescription = changeDescription
     mutate createdBy = createdBy
     mutate versionNumber = 1
-    mutate status = "draft"
 
     emit DocumentVersionCreated
   }

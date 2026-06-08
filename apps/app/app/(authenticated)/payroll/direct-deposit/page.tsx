@@ -61,6 +61,13 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  bankAccountCreate,
+  bankAccountRemove,
+  bankAccountUpdate,
+  bankAccountVerify,
+} from "@/app/lib/manifest-client.generated";
+import { executeCommand } from "@/app/lib/manifest-client";
 
 interface Employee {
   id: string;
@@ -199,18 +206,7 @@ export default function DirectDepositPage() {
 
       if (editingAccount) {
         body.id = editingAccount.id;
-        const res = await apiFetch(
-          "/api/manifest/BankAccount/commands/update",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          }
-        );
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Failed to update");
-        }
+        await bankAccountUpdate(body);
         toast.success("Bank account updated");
       } else {
         body.employeeId = selectedEmployeeId;
@@ -220,18 +216,7 @@ export default function DirectDepositPage() {
           setActionLoading(null);
           return;
         }
-        const res = await apiFetch(
-          "/api/manifest/BankAccount/commands/create",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          }
-        );
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || "Failed to create");
-        }
+        await bankAccountCreate(body);
         toast.success("Bank account added");
       }
 
@@ -249,12 +234,7 @@ export default function DirectDepositPage() {
     if (!confirm("Delete this bank account?")) return;
     setActionLoading(accountId);
     try {
-      const res = await apiFetch("/api/manifest/BankAccount/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: accountId }),
-      });
-      if (!res.ok) throw new Error("Failed to delete");
+      await bankAccountRemove({ id: accountId });
       toast.success("Bank account removed");
       fetchData();
     } catch {
@@ -267,15 +247,7 @@ export default function DirectDepositPage() {
   async function handleSetDefault(accountId: string) {
     setActionLoading(accountId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/BankAccount/commands/setDefault",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: accountId }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to set default");
+      await executeCommand("BankAccount", "setDefault", { id: accountId });
       toast.success("Default account updated");
       fetchData();
     } catch {
@@ -289,12 +261,7 @@ export default function DirectDepositPage() {
     if (!verifyTarget) return;
     setActionLoading("verify");
     try {
-      const res = await apiFetch("/api/manifest/BankAccount/commands/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: verifyTarget.id, method: verifyMethod }),
-      });
-      if (!res.ok) throw new Error("Failed to verify");
+      await bankAccountVerify({ id: verifyTarget.id, method: verifyMethod });
       toast.success("Bank account verified");
       setVerifyModalOpen(false);
       setVerifyTarget(null);

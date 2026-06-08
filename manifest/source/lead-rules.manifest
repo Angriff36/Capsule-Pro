@@ -80,7 +80,6 @@ entity Lead {
     mutate estimatedValue = estimatedValue
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate status = "new"
 
     emit LeadCreated
   }

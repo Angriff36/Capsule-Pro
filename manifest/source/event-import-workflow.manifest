@@ -51,8 +51,6 @@ entity EventImportWorkflow {
   command create(idempotencyKey: string, inputData: string) {
     guard self.status == "" or self.status == null "Workflow already initialized"
     guard idempotencyKey != "" "Idempotency key is required"
-
-    mutate status = "created"
     mutate idempotencyKey = idempotencyKey
     mutate inputData = inputData
     mutate currentStep = 0

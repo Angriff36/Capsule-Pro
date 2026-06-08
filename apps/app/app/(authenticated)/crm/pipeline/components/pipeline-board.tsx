@@ -14,6 +14,7 @@ import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { dealUpdateStage } from "@/app/lib/manifest-client.generated";
 
 const fmtCurrency = (v: string | number | null) =>
   formatCurrency(v, { fractionDigits: 0, nullDisplay: "\u2014" });
@@ -259,13 +260,7 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
 
       setIsUpdating(true);
       try {
-        const res = await apiFetch("/api/manifest/Deal/commands/updateStage", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ dealId: draggingDeal.id, stage: targetStage }),
-        });
-
-        if (!res.ok) throw new Error("Failed to update stage");
+        await dealUpdateStage({ dealId: draggingDeal.id, stage: targetStage });
 
         // Optimistically update local state
         setDeals((prev) =>

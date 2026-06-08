@@ -51,6 +51,11 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  budgetCreate,
+  budgetRefresh,
+  budgetRemove,
+} from "@/app/lib/manifest-client.generated";
+import {
   type Budget,
   type BudgetAlert,
   type BudgetSpend,
@@ -124,16 +129,12 @@ export default function BudgetPage() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await apiFetch("/api/manifest/Budget/commands/refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
+      await budgetRefresh({});
       await loadBudgets();
       // Also refresh detail if open
       if (selectedBudget) loadDetail(selectedBudget);
     } catch (error) {
-      console.error("Failed to refresh:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to refresh");
     } finally {
       setRefreshing(false);
     }
@@ -143,39 +144,30 @@ export default function BudgetPage() {
     if (!(form.name.trim() && form.budgetAmount)) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/manifest/Budget/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          fiscalYear: Number.parseInt(form.fiscalYear),
-          budgetAmount: Number.parseFloat(form.budgetAmount),
-          thresholdWarningPct: Number.parseInt(form.thresholdWarningPct),
-          thresholdCriticalPct: Number.parseInt(form.thresholdCriticalPct),
-        }),
+      await budgetCreate({
+        ...form,
+        fiscalYear: Number.parseInt(form.fiscalYear),
+        budgetAmount: Number.parseFloat(form.budgetAmount),
+        thresholdWarningPct: Number.parseInt(form.thresholdWarningPct),
+        thresholdCriticalPct: Number.parseInt(form.thresholdCriticalPct),
       });
-      const data = await res.json();
-      if (data.success) {
-        setDialogOpen(false);
-        setForm({
-          name: "",
-          description: "",
-          category: "",
-          fiscalYear: String(currentYear),
-          periodType: "annual",
-          periodStart: `${currentYear}-01-01`,
-          periodEnd: `${currentYear}-12-31`,
-          budgetAmount: "",
-          thresholdWarningPct: "80",
-          thresholdCriticalPct: "100",
-          notes: "",
-        });
-        loadBudgets();
-      } else {
-        toast.error(data.error || "Failed to create budget");
-      }
+      setDialogOpen(false);
+      setForm({
+        name: "",
+        description: "",
+        category: "",
+        fiscalYear: String(currentYear),
+        periodType: "annual",
+        periodStart: `${currentYear}-01-01`,
+        periodEnd: `${currentYear}-12-31`,
+        budgetAmount: "",
+        thresholdWarningPct: "80",
+        thresholdCriticalPct: "100",
+        notes: "",
+      });
+      loadBudgets();
     } catch (error) {
-      console.error("Failed to create budget:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create budget");
     } finally {
       setSaving(false);
     }
@@ -189,23 +181,14 @@ export default function BudgetPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      const res = await apiFetch("/api/manifest/Budget/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ budgetId: deleteTarget.id }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        if (selectedBudget === deleteTarget.id) {
-          setSelectedBudget(null);
-          setDetailData(null);
-        }
-        loadBudgets();
-      } else {
-        toast.error(data.error || "Failed to delete budget");
+      await budgetRemove({ budgetId: deleteTarget.id });
+      if (selectedBudget === deleteTarget.id) {
+        setSelectedBudget(null);
+        setDetailData(null);
       }
+      loadBudgets();
     } catch (error) {
-      console.error("Failed to delete budget:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete budget");
     } finally {
       setDeleteTarget(null);
     }

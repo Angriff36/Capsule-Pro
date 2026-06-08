@@ -46,6 +46,8 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { executeCommand } from "@/app/lib/manifest-client";
+import { equipmentCreate, equipmentScheduleMaintenance, facilityWorkOrderCreate } from "@/app/lib/manifest-client.generated";
 
 interface Equipment {
   id: string;
@@ -239,14 +241,7 @@ export function EquipmentPageClient() {
       if (formData.warrantyExpiry) {
         body.warrantyExpiry = formData.warrantyExpiry;
       }
-      const res = await apiFetch("/api/manifest/Equipment/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        throw new Error("Failed to create equipment");
-      }
+      await equipmentCreate(body);
       toast.success("Equipment created successfully");
       setIsAddDialogOpen(false);
       setFormData({
@@ -279,12 +274,7 @@ export function EquipmentPageClient() {
     }
     setSubmitting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/Equipment/commands/scheduleMaintenance",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+      await equipmentScheduleMaintenance({
             equipmentId: selectedEquipment.id,
             title: maintenanceForm.title,
             description: maintenanceForm.description || undefined,
@@ -293,12 +283,7 @@ export function EquipmentPageClient() {
             estimatedCost: maintenanceForm.estimatedCost
               ? Number.parseFloat(maintenanceForm.estimatedCost)
               : undefined,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to schedule maintenance");
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed");
+          });
       toast.success("Maintenance scheduled successfully");
       setIsScheduleDialogOpen(false);
       setMaintenanceForm({
@@ -324,24 +309,14 @@ export function EquipmentPageClient() {
     }
     setSubmitting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/FacilityWorkOrder/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+      await facilityWorkOrderCreate({
             title: workOrderForm.title,
             workOrderType: workOrderForm.workOrderType,
             priority: workOrderForm.priority,
             description: workOrderForm.description || undefined,
             scheduledDate: workOrderForm.scheduledDate || undefined,
             equipmentId: selectedEquipment?.id || undefined,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to create work order");
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed");
+          });
       toast.success("Work order created successfully");
       setIsNewWorkOrderOpen(false);
       setWorkOrderForm({
@@ -364,21 +339,11 @@ export function EquipmentPageClient() {
     if (!selectedWorkOrder) return;
     setSubmitting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/FacilityWorkOrder/commands/updateStatus",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+      await executeCommand("FacilityWorkOrder", "updateStatus", {
             workOrderId: selectedWorkOrder.id,
             status: statusForm.status,
             notes: statusForm.notes || undefined,
-          }),
-        }
-      );
-      if (!res.ok) throw new Error("Failed to update status");
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || "Failed");
+          });
       toast.success("Status updated successfully");
       setIsUpdateStatusOpen(false);
       setStatusForm({ status: "in_progress", notes: "" });

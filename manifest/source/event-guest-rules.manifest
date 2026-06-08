@@ -59,7 +59,6 @@ entity EventGuest {
     mutate specialMealNotes = specialMealNotes
     mutate tableAssignment = tableAssignment
     mutate mealPreference = mealPreference
-    mutate rsvpStatus = "pending"
 
     emit EventGuestCreated
   }

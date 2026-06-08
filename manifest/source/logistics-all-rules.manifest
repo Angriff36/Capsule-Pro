@@ -51,7 +51,6 @@ entity Driver {
     mutate licenseNumber = licenseNumber
     mutate licenseExpiry = licenseExpiry
     mutate vehicleId = vehicleId
-    mutate status = status
     mutate notes = notes
 
     emit DriverCreated
@@ -155,7 +154,6 @@ entity Vehicle {
     mutate capacityVolume = capacityVolume
     mutate fuelType = fuelType
     mutate mileage = mileage
-    mutate status = status
     mutate notes = notes
 
     emit VehicleCreated
@@ -269,7 +267,6 @@ entity LogisticsRoute {
     mutate estimatedDuration = estimatedDuration
     mutate stops = stops
     mutate notes = notes
-    mutate status = "planned"
     mutate completedStops = 0
     mutate delayMinutes = 0
 

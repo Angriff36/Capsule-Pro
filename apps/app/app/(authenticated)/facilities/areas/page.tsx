@@ -42,6 +42,7 @@ import {
 import { LayoutGrid, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { facilityAreaEdit, facilityAreaRemove } from "@/app/lib/manifest-client.generated";
 import { createFacilityArea } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -115,25 +116,19 @@ export default function AreasPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/manifest/FacilityArea/commands/edit", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            areaId: editing.id,
-            name: form.name,
-            code: form.code || null,
-            areaType: form.areaType,
-            floor: form.floor || null,
-            squareFeet: form.squareFeet
-              ? Number.parseInt(form.squareFeet)
-              : null,
-            description: form.description || null,
-          }),
+        await facilityAreaEdit({
+          areaId: editing.id,
+          name: form.name,
+          code: form.code || null,
+          areaType: form.areaType,
+          floor: form.floor || null,
+          squareFeet: form.squareFeet
+            ? Number.parseInt(form.squareFeet)
+            : null,
+          description: form.description || null,
         });
-        if (res.ok) {
-          await loadAreas();
-          setShowDialog(false);
-        }
+        await loadAreas();
+        setShowDialog(false);
       } else {
         await createFacilityArea({
           name: form.name,
@@ -158,11 +153,7 @@ export default function AreasPage() {
   const handleDelete = async (areaId: string) => {
     setDeleting(areaId);
     try {
-      await apiFetch("/api/manifest/FacilityArea/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ areaId }),
-      });
+      await facilityAreaRemove({ areaId });
       setAreas((prev) => prev.filter((a) => a.id !== areaId));
       setDeleteDialogOpen(false);
       setAreaToDelete(null);

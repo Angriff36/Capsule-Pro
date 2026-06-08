@@ -77,7 +77,6 @@ entity Menu {
     mutate minGuests = minGuests
     mutate maxGuests = maxGuests
     mutate isActive = true
-    mutate status = "draft"
 
     emit MenuCreated
   }

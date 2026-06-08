@@ -68,7 +68,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { facilityScheduleEdit, facilityScheduleRemove } from "@/app/lib/manifest-client.generated";
 import {
   completeSchedule,
   createPMSchedule,
@@ -200,31 +200,22 @@ export default function SchedulesPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch(
-          "/api/manifest/FacilitySchedule/commands/edit",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              scheduleId: editing.id,
-              title: form.title,
-              description: form.description || null,
-              frequency: form.frequency,
-              nextDueDate:
-                form.nextDueDate || new Date().toISOString().split("T")[0],
-              estimatedHours: form.estimatedHours
-                ? Number.parseFloat(form.estimatedHours)
-                : null,
-              estimatedCost: form.estimatedCost
-                ? Number.parseFloat(form.estimatedCost)
-                : null,
-            }),
-          }
-        );
-        if (res.ok) {
-          await loadData();
-          setShowDialog(false);
-        }
+        await facilityScheduleEdit({
+          scheduleId: editing.id,
+          title: form.title,
+          description: form.description || null,
+          frequency: form.frequency,
+          nextDueDate:
+            form.nextDueDate || new Date().toISOString().split("T")[0],
+          estimatedHours: form.estimatedHours
+            ? Number.parseFloat(form.estimatedHours)
+            : null,
+          estimatedCost: form.estimatedCost
+            ? Number.parseFloat(form.estimatedCost)
+            : null,
+        });
+        await loadData();
+        setShowDialog(false);
       } else {
         await createPMSchedule({
           title: form.title,
@@ -252,11 +243,7 @@ export default function SchedulesPage() {
   const handleDelete = async (scheduleId: string) => {
     setDeleting(scheduleId);
     try {
-      await apiFetch("/api/manifest/FacilitySchedule/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduleId }),
-      });
+      await facilityScheduleRemove({ scheduleId });
       setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
       setDeleteDialogOpen(false);
       setScheduleToDelete(null);

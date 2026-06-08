@@ -50,7 +50,6 @@ entity Deal {
     mutate expectedCloseDate = expectedCloseDate
     mutate assignedTo = assignedTo
     mutate notes = notes
-    mutate status = "open"
 
     emit DealCreated
   }

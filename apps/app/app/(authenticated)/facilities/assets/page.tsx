@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { facilityAssetRemove, facilityAssetUpdate } from "@/app/lib/manifest-client.generated";
 import { createFacilityAsset } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -234,8 +235,7 @@ export default function AssetsPage() {
     setSaving(true);
     try {
       if (editing) {
-        const endpoint = "/api/manifest/FacilityAsset/commands/update";
-        const body = {
+        await facilityAssetUpdate({
           assetId: editing.id,
           name: form.name,
           assetType: form.assetType,
@@ -250,16 +250,9 @@ export default function AssetsPage() {
           status: form.status,
           areaId: form.areaId || null,
           notes: form.notes || null,
-        };
-        const res = await apiFetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
         });
-        if (res.ok) {
-          await loadData();
-          setShowDialog(false);
-        }
+        await loadData();
+        setShowDialog(false);
       } else {
         await createFacilityAsset({
           name: form.name,
@@ -288,11 +281,7 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await apiFetch("/api/manifest/FacilityAsset/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assetId }),
-      });
+      await facilityAssetRemove({ assetId });
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       setDeleteDialogOpen(false);
       setAssetToDelete(null);

@@ -52,7 +52,6 @@ entity Budget {
     mutate totalAmount = totalAmount
     mutate category = category
     mutate departmentId = departmentId
-    mutate status = "draft"
     mutate allocatedAmount = totalAmount
     mutate spentAmount = 0
 

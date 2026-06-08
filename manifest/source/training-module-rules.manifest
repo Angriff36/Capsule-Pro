@@ -440,7 +440,6 @@ entity TrainingAssignment {
     mutate firstShiftAt = firstShiftAt
     mutate dueAt = dueAt
     mutate dueDateReviewNeeded = dueDateReviewNeeded
-    mutate status = "assigned"
     mutate attemptCount = 0
     mutate managerReviewRequired = false
 

@@ -6,7 +6,7 @@
  * Lists every top-level facility (building/site) the tenant has registered,
  * plus the four domain links (Work Orders, PM Schedules, Areas, Assets).
  * The "Add Facility" CTA opens the create dialog and persists via
- * POST /api/manifest/Facility/commands/create.
+ * the Manifest runtime (Facility.create command).
  */
 
 import {
@@ -63,7 +63,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { facilityEdit, facilityRemove } from "@/app/lib/manifest-client.generated";
 import { createFacility, getFacilities } from "./actions";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
@@ -193,26 +193,20 @@ export default function FacilitiesPage() {
     if (!(form.name.trim() && editing)) return;
     setSaving(true);
     try {
-      const res = await apiFetch("/api/manifest/Facility/commands/edit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          facilityId: editing.id,
-          name: form.name,
-          code: form.code || null,
-          facilityType: form.facilityType,
-          addressLine1: form.addressLine1 || null,
-          city: form.city || null,
-          state: form.state || null,
-          postalCode: form.postalCode || null,
-          phone: form.phone || null,
-          notes: form.notes || null,
-        }),
+      await facilityEdit({
+        facilityId: editing.id,
+        name: form.name,
+        code: form.code || null,
+        facilityType: form.facilityType,
+        addressLine1: form.addressLine1 || null,
+        city: form.city || null,
+        state: form.state || null,
+        postalCode: form.postalCode || null,
+        phone: form.phone || null,
+        notes: form.notes || null,
       });
-      if (res.ok) {
-        await loadFacilities();
-        setShowDialog(false);
-      }
+      await loadFacilities();
+      setShowDialog(false);
     } catch {
       // Graceful fallback
     } finally {
@@ -223,11 +217,7 @@ export default function FacilitiesPage() {
   const handleDelete = async (facilityId: string) => {
     setDeleting(facilityId);
     try {
-      await apiFetch("/api/manifest/Facility/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ facilityId }),
-      });
+      await facilityRemove({ facilityId });
       setFacilities((prev) => prev.filter((f) => f.id !== facilityId));
       setDeleteDialogOpen(false);
       setFacilityToDelete(null);

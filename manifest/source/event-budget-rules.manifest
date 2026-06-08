@@ -68,7 +68,6 @@ entity EventBudget {
     mutate totalActualAmount = 0
     mutate varianceAmount = 0
     mutate notes = notes
-    mutate status = "draft"
     mutate version = 1
 
     emit EventBudgetCreated

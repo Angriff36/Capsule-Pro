@@ -196,7 +196,6 @@ entity InventoryAlert {
     mutate alertType = alertType
     mutate severity = severity
     mutate message = message
-    mutate status = "active"
     mutate triggeredAt = now()
 
     emit InventoryAlertTriggered
@@ -283,7 +282,6 @@ entity InventoryForecast {
     mutate forecastDate = forecastDate
     mutate projectedQuantity = projectedQuantity
     mutate confidence = confidence
-    mutate status = "draft"
 
     emit InventoryForecastCreated
   }
@@ -404,7 +402,6 @@ entity ReorderSuggestion {
     mutate inventoryItemId = inventoryItemId
     mutate suggestedQuantity = suggestedQuantity
     mutate reason = reason
-    mutate status = "pending"
 
     emit ReorderSuggestionCreated
   }
@@ -670,7 +667,6 @@ entity ProcurementBudget {
     mutate periodEnd = periodEnd
     mutate budgetAmount = budgetAmount
     mutate spentAmount = 0
-    mutate status = "active"
 
     emit ProcurementBudgetCreated
   }

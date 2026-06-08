@@ -116,7 +116,6 @@ entity CateringOrder {
     mutate specialInstructions = specialInstructions
     mutate dietaryRestrictions = dietaryRestrictions
     mutate staffRequired = staffRequired
-    mutate orderStatus = "draft"
     mutate orderDate = now()
 
     emit CateringOrderCreated

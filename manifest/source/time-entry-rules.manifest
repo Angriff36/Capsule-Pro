@@ -148,7 +148,6 @@ entity TimecardEditRequest {
     mutate requestedClockOut = requestedClockOut
     mutate requestedBreakMinutes = requestedBreakMinutes
     mutate reason = reason
-    mutate status = "pending"
 
     emit TimecardEditRequested
   }
