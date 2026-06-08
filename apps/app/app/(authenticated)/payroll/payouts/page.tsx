@@ -34,7 +34,7 @@ import {
 } from "@repo/design-system/components/ui/empty";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { listPayrollRuns } from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandActions,
@@ -112,17 +112,12 @@ const PayrollPayoutsPage = () => {
   const loadRuns = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "50" });
+      const query: Record<string, string | number> = { limit: 50 };
       if (statusFilter !== "all") {
-        params.set("status", statusFilter);
+        query.status = statusFilter;
       }
-      const response = await apiFetch(`/api/payroll/runs?${params}`);
-      if (!response.ok) {
-        toast.error("Failed to load payout runs");
-        return;
-      }
-      const result = await response.json();
-      setRuns(result.data ?? []);
+      const result = await listPayrollRuns(query);
+      setRuns(result.data as unknown as PayrollRun[]);
     } catch {
       toast.error("Failed to load payout runs");
     } finally {

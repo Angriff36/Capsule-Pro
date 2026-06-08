@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { kitchenTaskClaim, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
+import { kitchenTaskCancel, kitchenTaskClaim, kitchenTaskComplete, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
 
 type UserSelect = Pick<
   DbUser,
@@ -288,22 +288,28 @@ export function TaskCard({
   const handleStatusChange = async (newStatus: string) => {
     setIsLoading(true);
     try {
-      const response = await apiFetch(`/api/kitchen/tasks/${task.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      if (!response.ok) {
-        // Get actual error details from API
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: "Unknown error" }));
-        captureException(
-          new Error(`Task status update failed: ${JSON.stringify(errorData)}`)
-        );
-        throw new Error(
-          `Failed to update task status: ${JSON.stringify(errorData)}`
-        );
+      if (newStatus === "done" || newStatus === "completed") {
+        await kitchenTaskComplete({ id: task.id });
+      } else if (newStatus === "cancelled") {
+        await kitchenTaskCancel({ id: task.id });
+      } else {
+        // Reopen and other status changes fall back to direct API patch
+        const response = await apiFetch(`/api/kitchen/tasks/${task.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        if (!response.ok) {
+          const errorData = await response
+            .json()
+            .catch(() => ({ message: "Unknown error" }));
+          captureException(
+            new Error(`Task status update failed: ${JSON.stringify(errorData)}`)
+          );
+          throw new Error(
+            `Failed to update task status: ${JSON.stringify(errorData)}`
+          );
+        }
       }
       router.refresh();
     } catch (error) {

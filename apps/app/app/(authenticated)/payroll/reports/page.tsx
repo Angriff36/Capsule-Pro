@@ -35,6 +35,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { listPayrollPeriods } from "@/app/lib/manifest-client.generated";
 import {
   CommandBand,
   CommandBandBody,
@@ -111,14 +112,8 @@ export default function PayrollReportsPage() {
   const fetchPeriods = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await apiFetch("/api/payroll/periods?limit=50");
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch payroll periods");
-      }
-
-      const data = await response.json();
-      setPeriods(data.data || []);
+      const result = await listPayrollPeriods({ limit: 50 });
+      setPeriods(result.data as unknown as PayrollPeriod[]);
     } catch (error) {
       console.error("Error fetching payroll periods:", error);
       toast.error("Failed to load payroll periods");

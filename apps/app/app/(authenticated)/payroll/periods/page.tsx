@@ -63,7 +63,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { listPayrollPeriods, payrollPeriodCreate } from "@/app/lib/manifest-client.generated";
 
 interface PayrollPeriod {
   id: string;
@@ -142,26 +142,18 @@ export default function PayrollPeriodsPage() {
   const fetchPeriods = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
-      });
+      const query: Record<string, string | number> = {
+        page: pagination.page,
+        limit: pagination.limit,
+      };
 
       if (statusFilter !== "all") {
-        params.set("status", statusFilter);
+        query.status = statusFilter;
       }
 
-      const response = await apiFetch(
-        `/api/payroll/periods?${params.toString()}`
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch payroll periods");
-      }
-
-      const data = await response.json();
-      setPeriods(data.data || []);
-      setPagination((previous) => data.pagination ?? previous);
+      const result = await listPayrollPeriods(query);
+      setPeriods(result.data as unknown as PayrollPeriod[]);
+      setPagination((previous) => result.pagination ?? previous);
     } catch (error) {
       console.error("Error fetching payroll periods:", error);
       toast.error("Failed to load payroll periods");
@@ -177,19 +169,10 @@ export default function PayrollPeriodsPage() {
   const handleCreatePeriod = async () => {
     setActionLoading(true);
     try {
-      const response = await apiFetch("/api/payroll/periods", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          periodStart,
-          periodEnd,
-        }),
+      await payrollPeriodCreate({
+        periodStart,
+        periodEnd,
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create payroll period");
-      }
 
       toast.success("Payroll period created successfully");
       setCreateDialogOpen(false);

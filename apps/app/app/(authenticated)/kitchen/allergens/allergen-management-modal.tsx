@@ -26,7 +26,7 @@ import { captureException } from "@sentry/nextjs";
 import { EditIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { dishUpdate } from "@/app/lib/manifest-client.generated";
 
 const COMMON_ALLERGENS = [
   { id: "peanuts", label: "Peanuts", description: "Legumes including peanuts" },
@@ -136,21 +136,12 @@ export function AllergenManagementModal({
         return;
       }
 
-      const response = await apiFetch("/api/kitchen/allergens/update-dish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id,
-          tenantId, // Server validates tenantId from auth
-          allergens: selectedAllergens,
-          dietaryTags: selectedDietaryTags,
-        }),
+      await dishUpdate({
+        id,
+        tenantId, // Server validates tenantId from auth
+        allergens: JSON.stringify(selectedAllergens),
+        dietaryTags: JSON.stringify(selectedDietaryTags),
       });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to update allergen information");
-      }
 
       toast.success(`Allergen information updated for dish: ${name}`);
       setOpen(false);

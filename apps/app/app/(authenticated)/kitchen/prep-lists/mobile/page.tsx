@@ -21,7 +21,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { listPrepLists } from "@/app/lib/manifest-client.generated";
 import { Header } from "../../../components/header";
 
 interface PrepListItem {
@@ -85,11 +85,8 @@ export default function PrepListsMobilePage() {
   const fetchPrepLists = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await apiFetch("/api/kitchen/prep-lists");
-      if (response.ok) {
-        const data = await response.json();
-        setPrepLists(data.prepLists || []);
-      }
+      const result = await listPrepLists();
+      setPrepLists(result.data as unknown as PrepList[]);
     } catch (error) {
       captureException(error);
     } finally {
