@@ -1,5 +1,5 @@
 {
-  "$schema": "Manifest ↔ Prisma schema-drift allowlist. See scripts/manifest/audit-schema-drift.mjs for semantics.",
+  "$schema": "Manifest ↔ Prisma schema-drift allowlist. See manifest/scripts/audit-schema-drift.mjs for semantics.",
   "_doc": {
     "globalAdapterDerived": "Cross-cutting fields that EVERY Prisma store adapter injects from runtime context, not from command input. Applies to every governed entity.",
     "adapterDerived": "Per-entity fields that the entity's Prisma store adapter derives via a documented rule (e.g. looking up a parent entity).",
@@ -51,10 +51,84 @@
         "rule": "Manifest IR grammar cannot express Json/array-of-object types. Manifest declares permissions as string; the dispatcher passes the array verbatim which Prisma stores as Json. Prisma column is @db.Json.",
         "owner": "platform",
         "reviewBy": "2027-01-01"
+      },
+      "trigger_type": {
+        "rule": "Adapter-derived from the manifest command context. The workflow engine sets trigger_type based on the event that triggered the workflow creation. Prisma column is String.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "RolePolicy": {
+      "permissions": {
+        "rule": "Manifest IR grammar cannot express Json/array-of-object types. Manifest declares permissions as array; the dispatcher serializes the array to Json for Prisma storage. Same grammar-blocked pattern as Workflow.permissions.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "EmployeeAvailability": {
+      "startTime": {
+        "rule": "Manifest declares startTime as string (HH:MM format). GenericPrismaStore coerces to Date for Prisma @db.DateTime column via new Date(`1970-01-01T${startTime}`). See memory: GenericPrismaStore @db.Time/@db.Date coercion drift.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "endTime": {
+        "rule": "Manifest declares endTime as string (HH:MM format). GenericPrismaStore coerces to Date for Prisma @db.DateTime column via new Date(`1970-01-01T${endTime}`). Same coercion pattern as startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "EmployeeCertification": {
+      "issuedDate": {
+        "rule": "Manifest declares issuedDate as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "PayrollPeriod": {
+      "periodStart": {
+        "rule": "Manifest declares periodStart as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "periodEnd": {
+        "rule": "Manifest declares periodEnd as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "EmployeeDeduction": {
+      "effectiveDate": {
+        "rule": "Manifest declares effectiveDate as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
+    "TimeOffRequest": {
+      "startDate": {
+        "rule": "Manifest declares startDate as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      },
+      "endDate": {
+        "rule": "Manifest declares endDate as string (ISO date). GenericPrismaStore coerces to Date for Prisma @db.DateTime column. Same coercion pattern as EmployeeAvailability.startTime.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
       }
     }
   },
   "nonconforming": {},
   "ignoredEntities": [],
-  "ignoredFields": {}
+  "ignoredFields": {
+    "AutomatedFollowup": ["id"],
+    "Budget": ["id"],
+    "Deal": ["id"],
+    "EntityVersion": ["id"],
+    "FacilitySchedule": ["id"],
+    "FacilityWorkOrder": ["id"],
+    "PerformancePrediction": ["id"],
+    "StaffPerformance": ["id"],
+    "Vendor": ["id"],
+    "VersionApproval": ["id"],
+    "WorkforceOptimization": ["id"]
+  }
 }
