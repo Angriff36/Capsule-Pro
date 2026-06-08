@@ -204,6 +204,13 @@
         "reviewBy": "2027-01-01"
       }
     },
+    "ScheduleShift": {
+      "locationId": {
+        "rule": "Parent-context propagated from the parent Schedule entity. ScheduleShift belongs to Schedule and inherits locationId server-side. The ScheduleShift.create command does not accept locationId as input — it is resolved from the linked Schedule. See Task 8.10, commit 1bba3a9f9.",
+        "owner": "platform",
+        "reviewBy": "2027-01-01"
+      }
+    },
     "VersionApproval": {
       "status": {
         "rule": "Hardcoded to 'pending' in manifest create via mutate status = 'pending'. Initial status of an approval request is always pending, never user-supplied.",

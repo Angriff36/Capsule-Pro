@@ -671,7 +671,7 @@ entity ProcurementBudget {
     mutate budgetAmount = budgetAmount
     mutate spentAmount = 0
 
-    emit ProcurementBudgetCreated
+    emit BudgetCreated
   }
 
   command update(name: string, budgetAmount: money) {
@@ -691,7 +691,7 @@ entity ProcurementBudget {
     mutate name = name
     mutate budgetAmount = budgetAmount
 
-    emit ProcurementBudgetUpdated
+    emit BudgetUpdated
   }
 
   command recordSpend(amount: money, reference: string) {

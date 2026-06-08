@@ -457,7 +457,7 @@ entity TrainingAssignment {
     mutate status = "in_progress"
     mutate startedAt = now()
 
-    emit TrainingAssignmentStarted
+    emit TrainingStarted
   }
 
   command submitPassingAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
@@ -478,7 +478,7 @@ entity TrainingAssignment {
 
     emit TrainingAttemptSubmitted
     emit TrainingAttemptPassed
-    emit TrainingAssignmentCompleted
+    emit TrainingCompleted
   }
 
   command submitFailedAttempt(assignmentId: string, attemptId: string, moduleId: string, staffMemberId: string, scorePercent: number, answersJson: string) {
@@ -563,7 +563,7 @@ entity TrainingAssignment {
     mutate waiverApprovedBy = approvedBy
     mutate managerReviewRequired = false
 
-    emit TrainingAssignmentWaived
+    emit TrainingWaived
   }
 
   store TrainingAssignment in durable
@@ -686,7 +686,7 @@ on TrainingAttemptSubmitted run TrainingAttempt.create
     answersJson: payload.answersJson
   }
 
-on TrainingAssignmentCompleted run StaffTrainingSignal.recordSchedulabilityGranted
+on TrainingCompleted run StaffTrainingSignal.recordSchedulabilityGranted
   resolve uuid()
   params {
     id: uuid()
@@ -696,7 +696,7 @@ on TrainingAssignmentCompleted run StaffTrainingSignal.recordSchedulabilityGrant
     reason: "training_completed"
   }
 
-on TrainingAssignmentWaived run StaffTrainingSignal.recordSchedulabilityGranted
+on TrainingWaived run StaffTrainingSignal.recordSchedulabilityGranted
   resolve uuid()
   params {
     id: uuid()
@@ -706,7 +706,7 @@ on TrainingAssignmentWaived run StaffTrainingSignal.recordSchedulabilityGranted
     reason: "training_waived"
   }
 
-on TrainingAssignmentWaived run StaffTrainingSignal.recordWaiverLogged
+on TrainingWaived run StaffTrainingSignal.recordWaiverLogged
   resolve uuid()
   params {
     id: uuid()
