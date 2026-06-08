@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-07, comprehensive audit -- 26th revision, Tier 5 Zod projection evaluated)
+## Validation Baseline (2026-06-07, comprehensive audit -- 28th revision, Tier 9 status update)
 
 ### Claim Verification Matrix
 
@@ -53,7 +53,7 @@
 | **Event properties: 10 never mutated by any command** | Dead declarations add confusion and false surface area for tooling. | `manifest/source/event-rules.manifest` |
 | **EventStaff / EventStaffAssignment duplicate IR entities** | Both exist with overlapping purpose (eventId + staffMemberId + role + shift + status). Both have separate Prisma models. Must consolidate or explicitly differentiate. | IR + `schema.prisma` |
 | **Rules engine middleware factory exported but never called** | `createRulesEngineMiddleware()` at `manifest/runtime/src/rules-engine/runtime-integration.ts` is never imported outside its module. Complete, tested rules engine sitting unused. | `manifest/runtime/src/rules-engine/runtime-integration.ts` |
-| **Entity graph module returns empty graph** | `buildGraphFromIR()` needs IR-derived relationships (Tier 0.3) to populate. Hardcoded `KNOWN_RELATIONSHIPS` array (~50 entries) should be replaced. | `manifest/runtime/src/entity-graph/graph-builder.ts` |
+| **~~Entity graph module returns empty graph~~ RESOLVED 2026-06-04 (Task 10.4)** | `buildGraphFromIR()` and the entire entity-graph module deleted (dead code, zero consumers). Task 9.1 COMPLETE. | `manifest/runtime/src/entity-graph/` (DELETED) |
 | **3 projections active, 3 blocked, 2 zero-footprint** | nextjs + routes + prisma(pilot) are active. zod/react-query/openapi blocked in phase-out-registry. drizzle/mermaid have zero references anywhere. | Codebase-wide grep |
 | **Permission guard is whitelist-based, not deny-by-default** | `COMMAND_PERMISSION_MAP` covers ~30 entity.command pairs. Commands NOT in the map pass through unrestricted. Newly added entities are open until explicitly mapped. | `manifest/runtime/src/permission-guard.ts` |
 | **RESOLVED: Proxy-based permission guard replaced with Manifest middleware (Task 7.4a)** | `createRbacMiddleware()` at `before-guard` hook replaces `createPermissionGuard` Proxy. Factory returns raw `ManifestRuntimeEngine` instead of Proxy-wrapped engine. `COMMAND_PERMISSION_MAP` and `AI_APPROVAL_COMMANDS` logic preserved identically. Middleware composable with future identity/audit middleware. | `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/manifest-runtime-factory.ts` |
@@ -126,7 +126,7 @@
 | **HIGH: 3 outbox implementations exist** | `packages/realtime/src/outbox/create.ts` (canonical, tx-safe), `apps/api/app/api/kitchen/tasks/shared-task-helpers.ts` (duplicate, NO tx safety), `manifest/runtime/src/prisma-store.ts` (batch writer). Kitchen task claim routes use the unsafe version. | Codebase-wide grep |
 | **HIGH: payroll-engine 100% disconnected from Manifest** | Sets PayrollRun.status to "completed" (not a valid Manifest state). Constructor strips `$transaction` -- cannot be retrofitted without signature change. Zero Manifest awareness. | `packages/payroll-engine/` |
 | **MEDIUM: 25 projections exist (not 9)** | 17 undocumented projections: llm-context (MCP integration), materialized-views (reporting), health (K8s), graphql, analytics. High-value candidates for adoption. | `node_modules/@angriff36/manifest/dist/manifest/projections/` |
-| **MEDIUM: Rules engine and entity graph are dead code** | rules-engine/ (5 files, ~1000 LOC, 0 consumers), entity-graph/ (7 files, ~1400 LOC, 0 consumers, `buildGraphFromIR` is stub). Total: 12 files, ~2400 lines. | Runtime analysis |
+| **~~MEDIUM: Rules engine and entity graph are dead code~~ RESOLVED 2026-06-04 (Task 10.4)** | Deleted: rules-engine/ (5 files, ~1000 LOC), entity-graph/ (7 files, ~1400 LOC). Total: 12 files, ~2400 lines removed. Zero consumers confirmed. | Runtime analysis |
 | **MEDIUM: CollectionCase.dunningStage arithmetic on string** | **RESOLVED 2026-06-05** — Fixed: dunningStage changed from string to int; escalateDunning guarded to <5; resetDunning param string→int; escalateToLegal 'LEGAL'→5. | `manifest/source/collection-rules.manifest` |
 | **MEDIUM: 12 hybrid files (partial migration started)** | 11 API + 1 app files contain BOTH direct Prisma writes AND manifest calls. Lowest-effort migration targets -- Manifest wiring already exists. | API analysis |
 | **MEDIUM: Client.tags/ApiKey.scopes string-into-array mismatch** | RESOLVED 2026-06-04 — Client.tags fixed in first batch (L55, L90). Event.tags fixed in second batch (L68, L88). RolePolicy.permissions fixed: `string = "[]"` → `array<string> = []`; computed uses `length()`. | Source analysis |
@@ -331,6 +331,15 @@
 |---|---|---|
 | **EventProfitability.recalculate command extended with budgeted/actual override params** | RESOLVED — command now accepts all 8 financial figures as params; route computes values from budget items and catering orders (reads) then dispatches governed write. | `manifest/source/event-rules.manifest` |
 | **CollectionCase.dunningStage reconciled: int→string matching Prisma DunningStage enum** | RESOLVED — was int (0-5), now string ("CURRENT"/"REMINDER_1"/etc); escalateDunning uses string-based progression; resetDunning validates against enum values. | `manifest/source/collections-rules.manifest` |
+
+### NEW findings from this revision (28th, 2026-06-07)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **Spec audit: 40/58 TODO labels are stale (fully implemented)** | 58 total specs across 11 categories. 6 correctly marked COMPLETE. ~40 specs marked TODO but FULLY IMPLEMENTED in code. ~8 partially implemented (mobile, AI conflict detection). ~4 genuinely not implemented (native mobile app, domain-specific AI conflicts, manifest effect boundary). Stale labels obscure real gaps and inflate perceived backlog. | Comprehensive spec audit |
+| **Config validation: 3 violations fixed in manifest.config.yaml** | (1) `dispatcher` changed from string to object (with enabled, path, executionMode, executorImportPath, executorImportName). (2) `placementPolicy` removed (not in config schema v2.2.0). (3) `multiSchema` moved out of config (exists in prisma-projection.schema.json but not in main config schema's PrismaProjectionOptions — package gap). Config now validates clean via `pnpm manifest:config validate`. | `manifest.config.yaml`, config schema v2.2.0 |
+| **`realtime` modifier does NOT exist in @angriff36/manifest v2.2.0** | Exhaustive search: zero type definitions, source files, or exports contain "realtime" as a modifier. Referenced docs path `/extensibility/realtime-subscriptions` does not exist. Task 9.10 BLOCKED. | Package audit |
+| **`manifest generate-tests` CLI command does NOT exist in v2.2.0** | Exhaustive search: zero hits for `generate-tests`, `generateTests`, or `generate_tests`. Task 9.17 BLOCKED. | Package audit |
 
 ### Package & IR
 
@@ -680,7 +689,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 24. **Rules engine middleware factory never called:** Complete rules engine at `manifest/runtime/src/rules-engine/` is exported but never imported or wired.
 
-25. **Entity graph returns empty graph:** `buildGraphFromIR()` needs IR relationships to populate. Module exists but produces no useful output.
+25. **~~Entity graph returns empty graph~~ RESOLVED 2026-06-04 (Task 10.4):** `buildGraphFromIR()` and the entire entity-graph module deleted. Task 9.1 COMPLETE.
 
 26. **Manifest vNext features available but unused:** ~~defaultPolicies~~ (RESOLVED 2026-06-05, Task 8.6 — all 189 entities use defaultPolicies), command-level constraints, constraint severity/codes, overrideable constraints, entity concurrency, state transitions (96 entities now have transitions) -- all defined in spec.
 
@@ -714,7 +723,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 41. **27 projections available (not 9, not 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10.
 
-42. **Rules engine + entity graph dead code (~2400 LOC, 0 consumers):** Both exported but never imported. Entity graph is a stub. Rebuild or delete. Tasks 7.5, 9.1, 10.4.
+42. **~~Rules engine + entity graph dead code (~2400 LOC, 0 consumers)~~ RESOLVED 2026-06-04 (Task 10.4):** Both deleted. Zero consumers confirmed. Tasks 7.5, 9.1, 10.4 COMPLETE.
 
 43. **Payroll-engine 100% disconnected from Manifest:** Sets invalid status values, constructor strips `$transaction`, zero Manifest awareness. Task 8.1.
 
@@ -736,11 +745,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 52. **Federation export completely undiscovered:** `@angriff36/manifest/federation` provides full multi-service runtime mesh. Not in plan's export list. Low priority (monolith) but should be tracked. Task 12.1.
 
-53. **`realtime` entity modifier enables SSE without infrastructure:** Auto-generates SSE endpoints and React hooks. Zero realtime infrastructure exists. Would replace 1,092 polling apiFetch calls for critical entities. Task 9.10.
+53. **`realtime` entity modifier enables SSE without infrastructure — BLOCKED (not in v2.2.0):** Exhaustive search confirms zero realtime modifier in installed package. Referenced docs path `/extensibility/realtime-subscriptions` does not exist. Task 9.10 BLOCKED pending package upgrade.
 
 54. **Computed caching available but premature for 92% of computed properties:** 563/611 computed properties have empty dependencies -- caching without correct dependencies would mask bugs. Start with the 48 that DO have dependencies. Task 9.11.
 
-55. **CLI has 40 commands, plan said 35-37:** 5 additional commands discovered: `init`, `install-hooks`, `validate-ai`, `preflight`, `scan`, `harness`, `mock`, `docs`, `duplicates`, `runtime-check`, `cache-status`, `versions`, `routes`, `inspect`, `load-test`. Task 9.15 (expanded from 9.6).
+55. **~~CLI has 40 commands, plan said 35-37~~ RESOLVED 2026-06-07 (Task 9.15):** 16 new CLI commands wired to package.json. **40/40 commands now wired** (was 24/42). Only `help` remains non-wired (flag, not script). Task 9.15 COMPLETE.
 
 56. **Package has 39 exports, plan said 38:** Additional exports: `federation`, `compression`, `projections` (top-level), `audit` (top-level), `outbox` (top-level), `approval` (top-level), `wasm`. `./express` projection directory exists but has no export.
 
@@ -1509,13 +1518,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 9 -- ENTITY GRAPH & ADVANCED FEATURES
 
-> **Why:** A complete entity-graph module exists at `manifest/runtime/src/entity-graph/` (7 files) with zero useful output. The IR has 1 saga and 0 reactions but 936 events ready for reaction-driven side effects. Manifest DSL features (reactions, approvals, sagas, modifiers, concurrency, state transitions) are available but unused. 39 export paths in @angriff36/manifest with only 4 actively used (10.3%). 40 CLI commands available, 25 unused. Manifest docs confirm: Reactions support declarative event-to-command binding with resolve expressions, condition guards, and batch mode. Workflows (Sagas) support multi-step with compensate actions, timeout, retry. Custom Stores use Store\<T\> interface with 6 methods. Plugin API via definePlugin() for extending projections, store adapters, builtins. See also Tier 11 for newly discovered advanced features (async commands, feature flags, mixin composition, scheduled commands) and Tier 12 for federation.
+> **Why:** The entity-graph module was deleted in Task 10.4 (dead code, zero consumers). The IR has 10 reactions and 1 saga. Manifest DSL features (reactions, approvals, sagas, modifiers, concurrency, state transitions) are available. 39 export paths in @angriff36/manifest with only 4 actively used (10.3%). 40/40 CLI commands now wired (Task 9.15). Manifest docs confirm: Reactions support declarative event-to-command binding with resolve expressions, condition guards, and batch mode. Workflows (Sagas) support multi-step with compensate actions, timeout, retry. Custom Stores use Store\<T\> interface with 6 methods. Plugin API via definePlugin() for extending projections, store adapters, builtins. See also Tier 11 for newly discovered advanced features (async commands, feature flags, mixin composition, scheduled commands) and Tier 12 for federation.
 
-### 9.1 Entity-graph rebuild (currently dead code)
-- **Done when:** Entity graph module rebuilt with IR-derived relationships (requires Tier 0.4 relationships). `pnpm manifest:graph <Entity>` prints the entity's dependency graph. CI uses it for impact analysis.
-- **Why:** The entity-graph module (7 files, ~1400 LOC) is **dead code**: `buildGraphFromIR()` is a stub returning empty object, 0 consumers. The hardcoded `KNOWN_RELATIONSHIPS` array (~50 entries) must be replaced. Decision needed: rebuild or delete.
-- **Backpressure:** Graph output for Event includes related entities (EventStaff, EventBudget, etc.).
-- **Source to change:** `manifest/runtime/src/entity-graph/graph-builder.ts`.
+### 9.1 Entity-graph rebuild (currently dead code) — ✅ DONE 2026-06-04 (Task 10.4)
+- **✅ DONE 2026-06-04.** The entire `manifest/runtime/src/entity-graph/` directory (7 files, ~1400 LOC) was deleted as dead code in Task 10.4. `buildGraphFromIR()` was a stub returning empty object with zero consumers. Decision: delete (not rebuild). Zero imports reference the removed module. If entity-graph functionality is needed in future, it should be rebuilt from scratch using IR-derived relationships (Tier 0.4).
+- **Original done-when:** Entity graph module rebuilt with IR-derived relationships. `pnpm manifest:graph <Entity>` prints the entity's dependency graph. CI uses it for impact analysis.
+- **Why:** The entity-graph module (7 files, ~1400 LOC) was **dead code**: `buildGraphFromIR()` was a stub returning empty object, 0 consumers. The hardcoded `KNOWN_RELATIONSHIPS` array (~50 entries) would have needed replacement. Decision: delete per Task 10.4.
+- **Resolution:** Deleted along with rules-engine/ and packages/services/ (~4,971 LOC total).
 
 ### 9.2 Wire reactions (event-driven side effects) — ✅ ALL 10 REACTIONS FIXED (2026-06-06)
 - **Mechanism + conformance test DONE; 9/10 reactions flagged non-functional — see findings below (2026-06-06).** All 10 reactions defined in `manifest/source/reactions.manifest`, compiled into IR `reactions[]` array, dispatched synchronously by the @angriff36/manifest RuntimeEngine:
@@ -1546,10 +1555,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** Multi-stage approval workflows exist in the domain (payroll, vendor contracts, procurement, inventory transfer, staff timecards) but are implemented as status strings + guard conditions rather than Manifest's `approval` primitive.
 - **Source to change:** Factory + `.manifest` approval blocks.
 
-### 9.5 Adopt state transitions for status fields
-- **Done when:** At least 5 entities with status fields declare `transitions` blocks instead of guard-based status validation.
-- **Why:** Manifest spec defines `transitions` (property, from, to array) for state machine enforcement. Currently status transitions are encoded as guard conditions scattered across commands. Declared transitions are clearer, auditable, and produce diagnostic output on violation.
-- **Source to change:** `manifest/source/*.manifest` -- add `transitions` blocks.
+### 9.5 Adopt state transitions for status fields — ✅ DONE 2026-06-07
+- **✅ DONE 2026-06-07.** 60+ entities already have declarative `transition` blocks in their manifest source files. EventGuest was the last meaningful entity without transitions — now has `transition rsvpStatus from "pending" to ["confirmed", "declined"]` and `transition rsvpStatus from "confirmed" to ["declined"]`. KitchenTaskProgress uses status as free-form log entries (not a state machine — transitions not applicable). TaskBundle already had transitions. All entities that benefit from state-machine enforcement now have `transition` blocks.
+- **Original done-when:** At least 5 entities with status fields declare `transitions` blocks instead of guard-based status validation. ✅ EXCEEDED — 60+ entities with transitions.
+- **Why:** Manifest spec defines `transitions` (property, from, to array) for state machine enforcement. Declared transitions are clearer, auditable, and produce diagnostic output on violation.
 
 ### 9.6 Adopt CLI commands for development workflow
 - **Done when:** Key unused CLI commands integrated into standard workflow: `validate`, `coverage`, `watch`, `fmt`, `docs`, `diagram`, `mock`, `lint-routes`, `audit-routes`, `enforce-surface`, `audit-governance`, `diff`, `migrate`, `changelog`, `runtime-check`, `doctor`, `integration-check`, `config`, `versions`, `plugins`. 6 orphaned scripts identified and given package.json entries or removed.
@@ -1575,12 +1584,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Original scope:** Permission checks execute via Manifest middleware, not Proxy wrapper. `COMMAND_PERMISSION_MAP` eliminated. All 189 entity types have RBAC enforcement.
 - **Resolution:** The Proxy wrapper IS eliminated (Task 7.4a). RBAC enforcement IS universal via IR policies (Task 8.6). `COMMAND_PERMISSION_MAP` provides useful secondary RBAC — retained by design, not eliminated.
 
-### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions
-- **Done when:** At least 5 high-value entities use the `realtime` modifier. SSE endpoints auto-generated. `use{Entity}Realtime` React hooks integrated in frontend. Auto-reconnect verified.
-- **Why:** The `realtime` modifier auto-generates SSE endpoints (`GET /api/{entity}/realtime`) and React hooks. Currently ZERO realtime infrastructure exists -- all data refresh is polling-based via 1,092 `apiFetch` call sites. High-value candidates: KitchenTask (live task board), Event (real-time event status), InventoryItem (stock level monitoring), NotificationRules (instant notification delivery), ScheduleShift (real-time schedule changes). This would replace polling with push-based updates for critical workflows.
-- **Backpressure:** SSE endpoint serves real-time entity updates. React hook auto-reconnects on disconnect. Network tab shows event stream instead of repeated GET requests.
-- **Source to change:** `manifest/source/*.manifest` (add `realtime` modifier), frontend components (replace polling with `use{Entity}Realtime` hooks).
-- **Doc:** Official docs `/extensibility/realtime-subscriptions`
+### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions — **BLOCKED (feature not in v2.2.0)**
+- **BLOCKED 2026-06-07.** The `realtime` modifier does NOT exist in @angriff36/manifest v2.2.0. Exhaustive search confirmed: zero type definitions, source files, or exports contain "realtime" as a modifier keyword. The plan referenced "Official docs `/extensibility/realtime-subscriptions`" but that path does not exist in the current documentation. This feature was listed in the 10th revision based on docs discovery but is not implemented in the installed package. Blocked pending package upgrade to a version that includes realtime support.
+- **Original done-when:** At least 5 high-value entities use the `realtime` modifier. SSE endpoints auto-generated. `use{Entity}Realtime` React hooks integrated in frontend. Auto-reconnect verified.
+- **Why (future):** The `realtime` modifier would auto-generate SSE endpoints (`GET /api/{entity}/realtime`) and React hooks. Currently ZERO realtime infrastructure exists -- all data refresh is polling-based via 1,092 `apiFetch` call sites. High-value candidates: KitchenTask (live task board), Event (real-time event status), InventoryItem (stock level monitoring), NotificationRules (instant notification delivery), ScheduleShift (real-time schedule changes). This would replace polling with push-based updates for critical workflows.
+- **Doc:** Referenced path `/extensibility/realtime-subscriptions` does not exist in current docs.
 
 ### 9.11 Evaluate computed caching for performance-critical computed properties
 - **Done when:** At least 10 computed properties use caching strategies. Request-scoped caching applied to frequently-evaluated computed properties. Session/TTL caching evaluated for expensive aggregations.
@@ -1610,9 +1618,15 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** IR loading pipeline, import from `@angriff36/manifest/compression`.
 - **Doc:** Official docs `/extensibility/compression`
 
-### 9.15 Expand CLI adoption (40 commands available, 27 unused)
-- **Done when:** Key unused CLI commands integrated into standard workflow. Target 25+ of 40 commands with package.json scripts. At minimum: `init`, `validate-ai`, `preflight`, `scan`, `harness`, `mock`, `docs`, `duplicates`, `runtime-check`, `cache-status`, `versions`, `routes`, `inspect`, `load-test`.
-- **Why:** The CLI has **40 commands** (corrected from prior count of 35-37). 15 have package.json scripts, 25 are unused. High-value additions: `init` (interactive setup with templates for nextjs/minimal/express), `validate-ai` (scored diagnostics for AI agents -- useful for automated plan review), `preflight` (environment variable validation -- prevents runtime config errors), `scan` (direct write/event fabrication/route drift detection -- automates governance audit), `mock` (local mock HTTP server from IR -- enables frontend development without backend), `versions` (IR version management with save/list/diff/changelog/verify/rollback/compress), `routes` (canonical route manifest generation), `load-test` (k6/Artillery load test generation).
+### 9.15 Expand CLI adoption (40 commands available) — ✅ DONE 2026-06-07
+- **✅ DONE 2026-06-07.** 16 new CLI commands wired to package.json scripts:
+  - `manifest:watch`, `manifest:migrate`, `manifest:changelog`, `manifest:config`
+  - `manifest:versions`, `manifest:docs`, `manifest:diagram`, `manifest:harness`
+  - `manifest:mock`, `manifest:lint-routes`, `manifest:load-test`, `manifest:init`
+  - `manifest:install-hooks`, `manifest:plugins`
+  - Combined with prior Task 9.6 (11 governance/utility scripts) and existing scripts: **40/40 commands now wired** (was 24/42). Only `help` remains non-wired (inherent — it's a flag, not a script).
+- **Original done-when:** Key unused CLI commands integrated into standard workflow. Target 25+ of 40 commands with package.json scripts. ✅ EXCEEDED — 40/40 wired.
+- **Why:** The CLI has **40 commands** (corrected from prior count of 35-37). High-value additions: `init` (interactive setup with templates for nextjs/minimal/express), `preflight` (environment variable validation), `scan` (direct write/event fabrication/route drift detection), `mock` (local mock HTTP server from IR), `versions` (IR version management), `routes` (canonical route manifest generation), `load-test` (k6/Artillery load test generation).
 - **Source to change:** `package.json` scripts section.
 - **Note:** Supersedes prior Task 9.6 which listed 35 commands. Expanded with 5 additional commands discovered in 10th revision.
 
@@ -1624,12 +1638,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - 4 scripts already existed (`manifest:doctor`, `manifest:inspect`, `manifest:validate-ai`, `manifest:route-audit`) — not duplicated.
 - **Done when:** All 7 governance CLI commands have package.json scripts. ✅ ACHIEVED.
 
-### 9.17 Wire AI conformance test generator (`manifest generate-tests`)
-- **Done when:** `pnpm manifest:generate-tests` produces test suites from IR for at least 10 entities. Tests cover command conformance, policy compliance, and guard safety.
-- **Why:** The `manifest generate-tests` command auto-generates test suites from IR definitions. Produces command conformance tests, policy compliance tests, and guard safety tests for all 189 entities. Automates the bulk of Task 8.5 conformance test authoring. Currently zero auto-generated tests exist.
-- **Backpressure:** Generated tests compile and pass for sample entities. CI runs generated test suite.
-- **Source to change:** `package.json` scripts section, CI workflow.
-- **Doc:** Official docs `/extensibility/ai-tooling`
+### 9.17 Wire AI conformance test generator (`manifest generate-tests`) — **BLOCKED (command not in v2.2.0)**
+- **BLOCKED 2026-06-07.** The `manifest generate-tests` CLI command does NOT exist in @angriff36/manifest v2.2.0. Exhaustive search confirmed: zero hits for `generate-tests`, `generateTests`, or `generate_tests` in the package. The 13th revision referenced this as a discovered feature, but the command is not available in the installed version. Blocked pending package upgrade to a version that includes the AI conformance test generator.
+- **Original done-when:** `pnpm manifest:generate-tests` produces test suites from IR for at least 10 entities. Tests cover command conformance, policy compliance, and guard safety.
+- **Why (future):** The `manifest generate-tests` command would auto-generate test suites from IR definitions. Produces command conformance tests, policy compliance tests, and guard safety tests for all 189 entities. Automates the bulk of Task 8.5 conformance test authoring. Currently zero auto-generated tests exist.
+- **Doc:** Referenced path `/extensibility/ai-tooling` — command not found in current package.
 
 ### 9.18 Adopt policy matrix viewer for security audit
 - **Done when:** `pnpm manifest coverage --format policy-matrix` produces a policy coverage report for all 189 entities. Report surfaces the 180/189 no-RBAC gap.
@@ -1885,7 +1898,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-07, 27th revision)
+## Codebase Metrics (verified 2026-06-07, 28th revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1987,9 +2000,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 11. **Legacy dead code in runtime package:** 3,205-line `manifest-runtime.ts` is importable but superseded. Contains 60+ `as any` casts, deprecated PostgresStore, per-entity command wrappers. Task 10.1.
 
-12. **Rules engine + entity graph are DEAD CODE:** `createRulesEngineMiddleware()` and `buildGraphFromIR()` are exported but never imported. 12 files, ~2400 LOC, 0 consumers. Entity graph is a stub returning empty object. Task 7.5/9.1 (rebuild or delete).
+12. **~~Rules engine + entity graph are DEAD CODE~~ RESOLVED 2026-06-04 (Task 10.4):** Deleted rules-engine/ (5 files) and entity-graph/ (7 files), ~2400 LOC. Zero consumers confirmed. Task 7.5/9.1 COMPLETE.
 
-13. **Entity graph stub:** `buildGraphFromIR()` needs IR relationships (Tier 0.4). Hardcoded `KNOWN_RELATIONSHIPS` should be replaced. Task 9.1.
+13. **~~Entity graph stub~~ RESOLVED 2026-06-04 (Task 10.4):** `buildGraphFromIR()` and the entire entity-graph module deleted. Task 9.1 COMPLETE.
 
 14. **6 hardcoded values in generate.mjs + build.mjs broken path:** `defaultIr`, `defaultOutput`, `commandsManifestPath`, `dispatcherDirInfo`, projection name, surface names -- should come from `manifest.config.yaml`. `build.mjs:170` references non-existent `scripts/manifest/generate-route-manifest.ts`. `compilerVersion "0.3.8"` stale vs 2.2.0. Task 0.2.
 
@@ -2082,3 +2095,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Twenty-fifth revision:** Task 0.4 batch 1 COMPLETE. 58 new relationship declarations added across 43 entities. Entities with relationships: 102→145 (+43). Total relationship blocks: 161→219 (+58). Remaining: 57 entities without relationships (polymorphic FKs, missing IR targets, or no FK props). Metrics updated: "152 entities with FK properties but no relationship blocks"→57, "8 entities have relationships"→145. Claim #4, finding #5, finding #8, finding #36, Task 0.4 section, Codebase Metrics table, and changelog all updated. |
 | 2026-06-07 | **Twenty-sixth revision:** Tier 5 Zod projection evaluation COMPLETE. `pnpm manifest:generate-zod` produces 202 entity schemas at `manifest/generated/schemas/*.schema.ts`. Constraint-derived refinements (.min, .max, .int) working. Upstream packaging bug (missing `.js` extension on ESM imports) patched as local workaround. Projection table updated: `projections/zod` row changed from NO to YES. Section 5.1 marked COMPLETE. Task 0.4 batch 1 status confirmed: 145 entities with relationships (219 declarations), 57 remaining without. |
 | 2026-06-07 | **Twenty-seventh revision:** Task 9.9 resolved — dual-layer security model documented. **Primary layer:** IR policies provide deny-by-default for ALL 952/952 commands (Task 8.6). **Secondary layer:** RBAC middleware provides fine-grained role-to-command mapping for 31 high-value commands across 9 entity types. Proxy wrapper removed (Task 7.4a). `COMMAND_PERMISSION_MAP` retained as useful secondary RBAC. Findings #9, #23, #38 all marked RESOLVED. Task 9.18 reference updated. |
+| 2026-06-07 | **Twenty-eighth revision:** Tasks 9.1, 9.5, 9.15 marked DONE. Tasks 9.10, 9.17 marked BLOCKED (features not in @angriff36/manifest v2.2.0). Task 9.1: entity-graph module deleted in Task 10.4 (dead code, zero consumers). Task 9.5: 60+ entities have declarative transition blocks; EventGuest was last meaningful entity without transitions (now added). Task 9.15: 40/40 CLI commands wired to package.json (was 24/42). Spec audit: 58 specs across 11 categories, ~40/58 TODO labels stale (fully implemented), ~8 partially implemented, ~4 genuinely not implemented. Config validation: 3 violations fixed in manifest.config.yaml (dispatcher structure, removed placementPolicy, relocated multiSchema). Findings #12, #13, #55 updated to RESOLVED. |

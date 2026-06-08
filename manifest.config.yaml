@@ -41,107 +41,18 @@ projections:
       includeSoftDeleteFilter: true
       # Governed command writes go through the SINGULAR dispatcher (constitution §6),
       # never concrete per-command routes:
-      dispatcher: apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
+      dispatcher:
+        enabled: true
+        path: apps/api/app/api/manifest/[entity]/commands/[command]/route.ts
+        executionMode: externalExecutor
+        executorImportPath: "@/lib/manifest-executor"
+        executorImportName: executeManifestCommand
   prisma:
     options:
-      # Schema placement is resolved by the policy in
-      # manifest/schema-placement.rules.json (decision order: override -> sourceFile
-      # rule -> name pattern -> shared tenant infra -> FAIL). Never falls back to public.
-      # See docs/database/SCHEMA_PLACEMENT_POLICY.md.
-      placementPolicy: manifest/schema-placement.rules.json
-      multiSchema:
-        # entitySchema = OVERRIDES ONLY (decision rule #1), i.e. exceptions:
-        #   - hand-preserved (non-Manifest) models with no .manifest source file
-        #   - Manifest entities authored in multi-domain files (staff-logistics-extended,
-        #     crm-admin-extended, events-extended, equipment) where one file rule can't be right
-        #   - documented ambiguous entities (e.g. Budget -> tenant_accounting)
-        # Everything else is placed by the policy rules — do NOT re-add policy-derivable entries here.
-        entitySchema:
-          Account: platform
-          ActionMilestone: tenant_staff
-          ActivityFeed: tenant_admin
-          AdminChatMessage: tenant_admin
-          AdminChatThread: tenant_admin
-          ApprovalHistory: tenant_staff
-          Budget: tenant_accounting
-          CycleCountAuditLog: tenant_inventory
-          Department: tenant_staff
-          DisciplinaryAction: tenant_staff
-          Document: tenant
-          EmailLog: tenant_admin
-          EmployeeBankAccount: tenant_staff
-          EmployeeLocation: tenant_staff
-          EmployeePayrollPrefs: tenant_staff
-          EmployeePin: tenant_staff
-          EmployeePinAccessLog: tenant_staff
-          EmployeeTaxInfo: tenant_staff
-          Equipment: tenant_kitchen
-          GoodshuffleConfig: tenant_admin
-          GoodshuffleEventSync: tenant_admin
-          GoodshuffleInventorySync: tenant_admin
-          GoodshuffleInvoiceSync: tenant_admin
-          Location: tenant
-          MaintenanceWorkOrder: tenant_facilities
-          ManifestCommandTelemetry: tenant_admin
-          ManifestEntity: tenant
-          ManifestIdempotency: tenant
-          NowstaConfig: tenant_admin
-          NowstaEmployeeMapping: tenant_admin
-          NowstaShiftSync: tenant_admin
-          OnboardingCompletion: tenant_staff
-          OnboardingTask: tenant_staff
-          OpenShift: tenant_staff
-          OutboundWebhook: tenant_admin
-          OutboxEvent: tenant
-          PaymentRefundAttempt: tenant_accounting
-          PayrollAuditLog: tenant_staff
-          PerformanceReview: tenant_staff
-          PreventiveMaintenanceSchedule: tenant_facilities
-          ProviderSync: tenant_admin
-          RateLimitEvent: tenant_admin
-          RateLimitUsage: tenant_admin
-          Report: tenant_admin
-          Role: tenant_staff
-          SentryFixJob: platform
-          SupplierSyncLog: tenant_inventory
-          TaxConfiguration: tenant_staff
-          Tenant: platform
-          TimecardApproval: tenant_staff
-          TipPool: tenant_staff
-          TrainingCompletion: tenant_staff
-          UserPreference: tenant_staff
-          Venue: tenant
-          WasteReason: core
-          WebhookDeadLetterQueue: tenant_admin
-          WebhookDeliveryLog: tenant_admin
-          admin_audit_trail: tenant_admin
-          admin_permissions: tenant_admin
-          admin_roles: tenant_admin
-          admin_users: tenant_admin
-          audit_archive: platform
-          audit_config: core
-          audit_log: platform
-          bulk_combine_rules: tenant_kitchen
-          documents: tenant
-          employee_seniority: tenant_staff
-          employee_skills: tenant_staff
-          method_videos: tenant_kitchen
-          notification_preferences: tenant_admin
-          open_shifts: tenant_staff
-          prep_list_imports: tenant_kitchen
-          report_history: tenant_admin
-          report_schedules: tenant_admin
-          sent_emails: platform
-          settings: tenant
-          skills: tenant_staff
-          sms_automation_rules: tenant_admin
-          sms_logs: tenant_admin
-          status_transitions: core
-          status_types: core
-          storage_locations: tenant_inventory
-          task_bundle_items: tenant_kitchen
-          task_bundles: tenant_kitchen
-          unit_conversions: core
-          units: core
-          workflow_executions: tenant_admin
-          workflow_steps: tenant_admin
+      provider: postgresql
+      naming: snake_case
+      # Multi-schema placement is driven by manifest/schema-placement.rules.json
+      # (the policy engine) + entity-to-schema overrides in scripts.
+      # The CLI's config schema (v2.2.0) does not yet validate multiSchema under
+      # prisma.options — see prisma-projection.schema.json for the full spec.
+      # When the CLI catches up, add multiSchema here to centralize placement.

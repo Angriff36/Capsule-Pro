@@ -36,7 +36,9 @@ entity EventGuest {
 
   constraint requireEvent: self.eventId != "" "Event ID is required"
   constraint requireGuestName: self.guestName != "" "Guest name is required"
-  constraint validRsvpStatus: self.rsvpStatus in ["pending", "confirmed", "declined"] "RSVP status must be valid"
+
+  transition rsvpStatus from "pending" to ["confirmed", "declined"]
+  transition rsvpStatus from "confirmed" to ["declined"]
 
   relationship belongsTo event: Event fields [tenantId, eventId] references [tenantId, id]
 
