@@ -8,12 +8,6 @@ on:
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
-    inputs:
-      snapcheck:
-        description: "Run snapshot check mode (fail if snapshots out of date)"
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: manifest-ci-${{ github.ref }}
@@ -715,10 +709,10 @@ jobs:
           echo "::notice::enforce-surface findings above are advisory until raw-SQL detection lands and known violations are exempted."
 
   snapshot-check:
-    name: Snapshot Check
+    name: Projection Snapshot Check
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    if: github.event.inputs.snapcheck == 'true'
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
