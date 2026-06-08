@@ -43,9 +43,9 @@ import { createLead } from "../../app/(authenticated)/marketing/leads/actions";
 
 const leadFindFirst = database.lead.findFirst as ReturnType<typeof vi.fn>;
 const clientFindFirst = database.client.findFirst as ReturnType<typeof vi.fn>;
-const runCommand = runManifestCommand as unknown as ReturnType<typeof vi.fn>;
-const requireUser = requireCurrentUser as unknown as ReturnType<typeof vi.fn>;
-const revalidate = revalidatePath as unknown as ReturnType<typeof vi.fn>;
+const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
+const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
+const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
 
 const LEAD_ID = "lead-1";
 const TENANT_ID = "tenant-1";

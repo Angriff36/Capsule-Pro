@@ -50,7 +50,7 @@ const EMPLOYEE_ID = "11111111-1111-1111-1111-111111111111";
 const AVAILABILITY_ID = "22222222-2222-2222-2222-222222222222";
 
 const queryRawMock = vi.mocked(
-  database.$queryRaw as unknown as (...args: unknown[]) => Promise<unknown>
+  database.$queryRaw as (...args: unknown[]) => Promise<unknown>
 );
 
 /**

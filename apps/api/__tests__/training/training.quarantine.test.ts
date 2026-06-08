@@ -61,7 +61,7 @@ vi.mock("@sentry/nextjs", () => ({
 
 import { database } from "@repo/database";
 
-const queryRawMock = database.$queryRaw as unknown as ReturnType<typeof vi.fn>;
+const queryRawMock = database.$queryRaw as ReturnType<typeof vi.fn>;
 
 import { auth } from "@repo/auth/server";
 import {

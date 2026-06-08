@@ -222,7 +222,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
           templateType: tpl.templateType,
           subject: tpl.subject,
           body: tpl.body,
-          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          mergeFields: JSON.stringify(tpl.mergeFields as string[] | null ?? []),
           isActive: tpl.isActive,
           isDefault: false,
         },
@@ -242,7 +242,7 @@ export async function createEmailTemplate(input: CreateEmailTemplateInput) {
       // Manifest declares mergeFields: string, but the Prisma column is Json.
       // GenericPrismaStore's asJsonInput passes the value through verbatim,
       // so we pass the array directly (same as prior direct-write behavior).
-      mergeFields: (input.mergeFields ?? []) as unknown as string,
+      mergeFields: JSON.stringify(input.mergeFields ?? []),
       isActive: true,
       isDefault: input.isDefault ?? false,
     },
@@ -328,7 +328,7 @@ export async function updateEmailTemplate(
           templateType: tpl.templateType,
           subject: tpl.subject,
           body: tpl.body,
-          mergeFields: (tpl.mergeFields as string[] | null ?? []) as unknown as string,
+          mergeFields: JSON.stringify(tpl.mergeFields as string[] | null ?? []),
           isActive: tpl.isActive,
           isDefault: false,
         },
@@ -351,7 +351,7 @@ export async function updateEmailTemplate(
       body: input.body ?? existing.body,
       // Manifest declares mergeFields: string, Prisma column is Json.
       // Pass array directly — GenericPrismaStore handles coercion.
-      mergeFields: (input.mergeFields ?? (existing.mergeFields as string[] | null) ?? []) as unknown as string,
+      mergeFields: JSON.stringify(input.mergeFields ?? (existing.mergeFields as string[] | null) ?? []),
       isActive: input.isActive ?? existing.isActive,
       isDefault: input.isDefault ?? existing.isDefault,
     },

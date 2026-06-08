@@ -7,7 +7,7 @@ describe("expressionToString", () => {
     const expr = {
       kind: "literal",
       value: { kind: "null" },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe("null");
   });
@@ -16,7 +16,7 @@ describe("expressionToString", () => {
     const expr = {
       kind: "literal",
       value: { kind: "string", value: "" },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe('""');
   });
@@ -25,7 +25,7 @@ describe("expressionToString", () => {
     const expr = {
       kind: "literal",
       value: { kind: "string", value: "open" },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe('"open"');
   });
@@ -34,7 +34,7 @@ describe("expressionToString", () => {
     const expr = {
       kind: "literal",
       value: { kind: "number", value: 42 },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe("42");
   });
@@ -43,7 +43,7 @@ describe("expressionToString", () => {
     const expr = {
       kind: "literal",
       value: { kind: "boolean", value: false },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe("false");
   });
@@ -64,7 +64,7 @@ describe("expressionToString", () => {
         left: { kind: "identifier", name: "userId" },
         right: { kind: "literal", value: { kind: "null" } },
       },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe('userId != "" and userId != null');
   });
@@ -96,7 +96,7 @@ describe("expressionToString", () => {
           value: { kind: "string", value: "pending" },
         },
       },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe(
       'self.status == "open" or self.status == "pending"'
@@ -113,7 +113,7 @@ describe("expressionToString", () => {
         property: "claimedBy",
       },
       right: { kind: "literal", value: { kind: "string", value: "" } },
-    } as unknown as IRExpression;
+    } as IRExpression;
 
     expect(expressionToString(expr)).toBe('self.claimedBy == ""');
   });

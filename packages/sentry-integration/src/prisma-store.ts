@@ -135,7 +135,7 @@ export class PrismaJobStore implements JobQueueStore {
       issueUrl: job.issueUrl,
       status: job.status,
       payloadSnapshot:
-        job.payloadSnapshot as unknown as SentryIssueAlertPayload,
+        job.payloadSnapshot as SentryIssueAlertPayload,
       branchName: job.branchName,
       prUrl: job.prUrl,
       prNumber: job.prNumber,

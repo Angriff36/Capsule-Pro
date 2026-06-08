@@ -213,7 +213,7 @@ describe("Recipes API", () => {
       unauthed();
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request
+        makeRequest("/api/kitchen/recipes") as Request
       );
 
       expect(res.status).toBe(401);
@@ -229,7 +229,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request
+        makeRequest("/api/kitchen/recipes") as Request
       );
 
       expect(res.status).toBe(200);
@@ -249,7 +249,7 @@ describe("Recipes API", () => {
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
-      await GET(makeRequest("/api/kitchen/recipes") as unknown as Request);
+      await GET(makeRequest("/api/kitchen/recipes") as Request);
 
       const arg = rootFindManyArg();
       // Pin tenant + soft-delete defenses — a regression here either leaks
@@ -264,7 +264,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?category=sauce") as unknown as Request
+        makeRequest("/api/kitchen/recipes?category=sauce") as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({ category: "sauce" });
@@ -278,7 +278,7 @@ describe("Recipes API", () => {
       await GET(
         makeRequest(
           "/api/kitchen/recipes?cuisineType=italian"
-        ) as unknown as Request
+        ) as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({
@@ -292,7 +292,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?search=Caesar") as unknown as Request
+        makeRequest("/api/kitchen/recipes?search=Caesar") as Request
       );
 
       const ands = rootFindManyArg().where.AND as Array<
@@ -313,7 +313,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?tag=staff-meal") as unknown as Request
+        makeRequest("/api/kitchen/recipes?tag=staff-meal") as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({
@@ -327,7 +327,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?isActive=true") as unknown as Request
+        makeRequest("/api/kitchen/recipes?isActive=true") as Request
       );
 
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: true });
@@ -339,7 +339,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?isActive=false") as unknown as Request
+        makeRequest("/api/kitchen/recipes?isActive=false") as Request
       );
 
       // Pin: regex match on the AND clause — a regression that compares the
@@ -353,7 +353,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?limit=999999") as unknown as Request
+        makeRequest("/api/kitchen/recipes?limit=999999") as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -370,7 +370,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       await GET(
-        makeRequest("/api/kitchen/recipes?limit=0") as unknown as Request
+        makeRequest("/api/kitchen/recipes?limit=0") as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -387,7 +387,7 @@ describe("Recipes API", () => {
       await GET(
         makeRequest(
           "/api/kitchen/recipes?page=3&limit=10"
-        ) as unknown as Request
+        ) as Request
       );
 
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
@@ -405,7 +405,7 @@ describe("Recipes API", () => {
 
       const { GET } = await import("@/app/api/kitchen/recipes/route");
       const res = await GET(
-        makeRequest("/api/kitchen/recipes") as unknown as Request
+        makeRequest("/api/kitchen/recipes") as Request
       );
 
       expect(res.status).toBe(500);

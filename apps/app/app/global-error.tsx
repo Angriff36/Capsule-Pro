@@ -31,7 +31,7 @@ const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
     if (isNextHTTPErrorFallback(error)) return;
     captureException(error);
     posthog?.capture("error:boundary_triggered", {
-      error_message: String((error as unknown as Error).message).slice(0, 200),
+      error_message: String(error instanceof Error ? error.message : String(error)).slice(0, 200),
     });
   }, [error]);
 

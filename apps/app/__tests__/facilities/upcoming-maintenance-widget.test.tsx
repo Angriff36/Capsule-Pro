@@ -33,7 +33,7 @@ describe("UpcomingMaintenanceWidget", () => {
           success: true,
           assets: [{ id: "asset-1", name: "Main Oven" }],
         }),
-      }) as unknown as typeof fetch;
+      }) as typeof fetch;
 
     render(<UpcomingMaintenanceWidget />);
 

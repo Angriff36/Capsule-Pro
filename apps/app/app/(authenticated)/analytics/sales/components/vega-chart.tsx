@@ -175,7 +175,8 @@ export function VegaChart({
           return;
         }
 
-        resultRef.current = result as unknown as EmbedResult;
+        // vega-embed returns API spec type; cast to our minimal EmbedResult surface
+        resultRef.current = result as EmbedResult;
       } catch (err) {
         if (!cancelled) {
           const message =

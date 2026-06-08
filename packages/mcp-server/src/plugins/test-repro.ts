@@ -78,7 +78,7 @@ async function runTests(
       env,
       shell: true,
       stdio: "pipe",
-    }) as unknown as {
+    }) as {
       stdout: import("node:stream").Readable;
       stderr: import("node:stream").Readable;
       on(event: "close", listener: (code: number | null) => void): void;

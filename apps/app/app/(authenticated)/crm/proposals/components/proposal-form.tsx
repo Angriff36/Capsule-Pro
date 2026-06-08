@@ -170,7 +170,7 @@ export function ProposalForm({
     async function fetchClients() {
       try {
         const data = await getClients({}, 1, 200);
-        setClients(data.data as unknown as ClientOption[]);
+        setClients(data.data as ClientOption[]);
       } catch (error) {
         console.error("Error fetching clients:", error);
         toast.error("Failed to load clients", {

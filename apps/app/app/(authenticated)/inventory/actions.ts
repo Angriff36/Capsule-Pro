@@ -236,7 +236,7 @@ export const updateInventoryItem = async (
       parLevel: parLevel ?? Number(existing.parLevel),
       reorder_level: reorder_level ?? Number(existing.reorder_level),
       supplierId: supplierId !== undefined ? (supplierId ?? "") : (existing.supplierId ?? ""),
-      tags: tags.length > 0 ? tags.join(",") : (existing.tags as unknown as string ?? ""),
+      tags: tags.length > 0 ? tags.join(",") : (String(existing.tags ?? "")),
       fsa_status: fsa_status !== undefined ? (fsa_status ?? "") : (existing.fsa_status ?? ""),
       fsa_temp_logged: existing.fsa_temp_logged,
       fsa_allergen_info: existing.fsa_allergen_info,

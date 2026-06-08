@@ -131,7 +131,7 @@ export async function getProposalTemplateById(id: string) {
     return null;
   }
 
-  return serializeDecimals(template) as unknown as ProposalTemplate;
+  return serializeDecimals(template) as ProposalTemplate;
 }
 
 /**
@@ -154,7 +154,7 @@ export async function getDefaultTemplateForEventType(eventType: string) {
   });
 
   if (eventTypeTemplate) {
-    return serializeDecimals(eventTypeTemplate) as unknown as ProposalTemplate;
+    return serializeDecimals(eventTypeTemplate) as ProposalTemplate;
   }
 
   // Fall back to the global default template
@@ -170,7 +170,7 @@ export async function getDefaultTemplateForEventType(eventType: string) {
   });
 
   return defaultTemplate
-    ? (serializeDecimals(defaultTemplate) as unknown as ProposalTemplate)
+    ? (serializeDecimals(defaultTemplate) as ProposalTemplate)
     : null;
 }
 
@@ -232,7 +232,7 @@ export async function createProposalTemplate(
   revalidatePath("/crm/proposals/templates");
   revalidatePath("/crm/proposals/new");
 
-  return serializeDecimals(template) as unknown as ProposalTemplate;
+  return serializeDecimals(template) as ProposalTemplate;
 }
 
 /**
@@ -296,7 +296,7 @@ export async function updateProposalTemplate(
   revalidatePath("/crm/proposals/new");
   revalidatePath(`/crm/proposals/templates/${id}`);
 
-  return serializeDecimals(template) as unknown as ProposalTemplate;
+  return serializeDecimals(template) as ProposalTemplate;
 }
 
 /**
@@ -386,5 +386,5 @@ export async function duplicateProposalTemplate(id: string) {
 
   revalidatePath("/crm/proposals/templates");
 
-  return serializeDecimals(newTemplate) as unknown as ProposalTemplate;
+  return serializeDecimals(newTemplate) as ProposalTemplate;
 }

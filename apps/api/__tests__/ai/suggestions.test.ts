@@ -152,7 +152,7 @@ describe("AI Suggestions API", () => {
     it("should accept valid maxSuggestions", async () => {
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       const response = await GET(
         new Request("http://localhost/api/ai/suggestions?maxSuggestions=10")
@@ -184,7 +184,7 @@ describe("AI Suggestions API", () => {
       );
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       await GET(new Request("http://localhost/api/ai/suggestions"));
 
@@ -220,7 +220,7 @@ describe("AI Suggestions API", () => {
       );
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       await GET(new Request("http://localhost/api/ai/suggestions"));
 
@@ -253,7 +253,7 @@ describe("AI Suggestions API", () => {
 
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       await GET(new Request("http://localhost/api/ai/suggestions"));
 
@@ -288,7 +288,7 @@ describe("AI Suggestions API", () => {
 
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify(aiResponse),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       const response = await GET(
         new Request("http://localhost/api/ai/suggestions")
@@ -445,7 +445,7 @@ describe("AI Suggestions API", () => {
     it("should return correct response structure", async () => {
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       const response = await GET(
         new Request("http://localhost/api/ai/suggestions")
@@ -465,7 +465,7 @@ describe("AI Suggestions API", () => {
     it("should respect timeframe parameter", async () => {
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       await GET(
         new Request("http://localhost/api/ai/suggestions?timeframe=today")
@@ -492,7 +492,7 @@ describe("AI Suggestions API", () => {
     it("should handle malformed AI response", async () => {
       mockGenerateText.mockResolvedValue({
         text: "invalid json",
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       // Should fallback to rule-based suggestions
       const response = await GET(
@@ -548,7 +548,7 @@ describe("AI Suggestion Types", () => {
             },
           ],
         }),
-      } as Awaited<ReturnType<typeof generateText>>);
+      } as unknown as Awaited<ReturnType<typeof generateText>>);
 
       const response = await GET(
         new Request("http://localhost/api/ai/suggestions")

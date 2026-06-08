@@ -46,9 +46,9 @@ import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { updateAdminTaskStatus } from "../../app/(authenticated)/administrative/kanban/actions";
 
-const runCommand = runManifestCommand as unknown as ReturnType<typeof vi.fn>;
-const requireUser = requireCurrentUser as unknown as ReturnType<typeof vi.fn>;
-const revalidate = revalidatePath as unknown as ReturnType<typeof vi.fn>;
+const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
+const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
+const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
 const findFirst = database.adminTask.findFirst as ReturnType<typeof vi.fn>;
 const adminTaskUpdate = database.adminTask.update as ReturnType<typeof vi.fn>;
 

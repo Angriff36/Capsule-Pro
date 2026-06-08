@@ -38,7 +38,7 @@
  *   at all — so we never make availability worse by adding it.
  */
 
-import { database } from "@repo/database";
+import { Prisma, database } from "@repo/database";
 
 /** Default TTL for cached HTTP responses: 24 hours (matches Stripe). */
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000;
@@ -172,11 +172,11 @@ export async function storeIdempotentResponse(
       create: {
         tenantId,
         key: composite,
-        result: response as unknown as object,
+        result: response as unknown as Prisma.InputJsonValue,
         expiresAt,
       },
       update: {
-        result: response as unknown as object,
+        result: response as unknown as Prisma.InputJsonValue,
         expiresAt,
       },
     });

@@ -155,7 +155,7 @@ export async function extractPdfText(
 
   if (inputType === "Buffer") {
     console.log("[extractPdfText] Converting Buffer to Uint8Array");
-    const buffer = pdfBuffer as unknown as Buffer & {
+    const buffer = pdfBuffer as Buffer & {
       buffer: ArrayBufferLike;
       byteOffset: number;
       byteLength: number;

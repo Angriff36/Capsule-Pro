@@ -48,7 +48,7 @@ function synthEvent(value: string): React.ChangeEvent<HTMLInputElement> {
   return {
     target: { value },
     currentTarget: { value },
-  } as unknown as React.ChangeEvent<HTMLInputElement>;
+  } as React.ChangeEvent<HTMLInputElement>;
 }
 
 /**

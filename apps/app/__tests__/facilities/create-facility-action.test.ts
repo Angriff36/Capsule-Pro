@@ -40,9 +40,9 @@ import { runManifestCommand } from "@/lib/manifest-command";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createFacility } from "../../app/(authenticated)/facilities/actions";
 
-const runCommand = runManifestCommand as unknown as ReturnType<typeof vi.fn>;
-const requireUser = requireCurrentUser as unknown as ReturnType<typeof vi.fn>;
-const revalidate = revalidatePath as unknown as ReturnType<typeof vi.fn>;
+const runCommand = runManifestCommand as ReturnType<typeof vi.fn>;
+const requireUser = requireCurrentUser as ReturnType<typeof vi.fn>;
+const revalidate = revalidatePath as ReturnType<typeof vi.fn>;
 const facilityCreate = database.facility.create as ReturnType<typeof vi.fn>;
 
 const TENANT_ID = "tenant-1";

@@ -90,7 +90,7 @@ describe("UnifiedCalendar", () => {
           },
         ],
       }),
-    }) as unknown as typeof fetch;
+    }) as typeof fetch;
 
     const user = userEvent.setup();
 
@@ -119,7 +119,7 @@ describe("UnifiedCalendar", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ events: [] }),
-    }) as unknown as typeof fetch;
+    }) as typeof fetch;
 
     const user = userEvent.setup();
 
@@ -141,7 +141,7 @@ describe("UnifiedCalendar", () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ events: [] }),
-    }) as unknown as typeof fetch;
+    }) as typeof fetch;
 
     const user = userEvent.setup();
 
