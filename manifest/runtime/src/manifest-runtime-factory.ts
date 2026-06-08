@@ -346,7 +346,7 @@ export async function createManifestRuntime(
   const storeProvider: RuntimeOptions["storeProvider"] = (
     entityName: string
   ) => {
-    if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
+    if (hasTypedStore(entityName)) {
       const outboxWriter = createPrismaOutboxWriter(
         entityName,
         user.tenantId
