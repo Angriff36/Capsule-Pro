@@ -496,6 +496,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-04 | **Task 0.4: ~104 relationship declarations across 60+ entities** | Expanded from 12 to ~104 declarations. Event pilot (27), kitchen (30), inventory (25), staff/logistics/CRM/finance/collections/facilities/command-board (37). Batch 3 (2026-06-07): +3 declarations, +3 entities, 16 documented no-FK entities. Total: 222 declarations across 148 entities. Remaining: only entities with polymorphic FKs, missing IR targets, or no FK properties. |
 | 2026-06-08 | **Task 0.4 COMPLETE: 68 belongsTo relationship declarations across 48 entities** | Final batch: 68 new belongsTo declarations added to 48 entities across 32 .manifest source files. All 68 target entities existed in the IR. Domains: Inventory (22), Staff (14), Kitchen (10), Finance (5), Events (6), CRM (3), Facilities (4), Admin (4). IR recompiled: 202 entities, 999 commands, 979 events. v0.12.177. |
 | 2026-06-08 | **3 pre-existing typecheck errors fixed in flip-durable tests** | flip-durable-smoke.test.ts: `isEnum` on FieldMeta (method exists, not a property). flip-durable-smoke.integration.test.ts: `entityName` placement in `createManifestRuntime` args. Both test files now pass with 0 typecheck errors. |
+| 2026-06-08 | **Task 9.7 DONE: Property modifier adoption** | 534 modifier annotations across 94 files: indexed(92), searchable(73), unique(18), encrypted(32), private(7). Parser accepts without error. IR compiler does not yet emit modifiers to JSON. |
 | 2026-06-04 | **Task 7.4c: Audit/outbox middleware replaces telemetry-embedded outbox writes** | `createAuditOutboxMiddleware()` at `after-emit` hook persists emitted events to outbox. Factory telemetry hooks simplified to caller-provided hooks only. Outbox logic moved from post-hoc telemetry to engine lifecycle. 2560/2560 tests pass. |
 | 2026-06-04 | **Task 10.4: Delete dead code (~4,971 LOC removed)** | rules-engine/ (5 files), entity-graph/ (7 files), packages/services/ all deleted. Zero consumers confirmed. Re-exports removed from index.ts. |
 | 2026-06-05 | **Task 3.1: Generic Manifest read routes (list + detail)** | List route at `manifest/[entity]/route.ts` and detail route at `manifest/[entity]/[id]/route.ts`. Entity resolution via `entity-accessor.ts` with accessor overrides (30 remaps, 17 drops), tenant isolation (tenantIdField), soft-delete filtering, pagination (page/limit/total/totalPages), snake_case field handling, composite-PK rejection. 17 tests pass. API typecheck 0. |
@@ -753,7 +754,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 49. **build.mjs duplicates compile.mjs logic:** Design debt. Also has dead `CODE_OUTPUT_DIR` variable declared but unused. Task 0.2.
 
-50. **Manifest advanced features with zero adoption:** Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable) -- all fully implemented in the package but unused. Tasks 11.1-11.4, 9.7.
+50. **Manifest advanced features with zero adoption:** Async Commands, Feature Flags, Mixin Composition, Scheduled Commands -- all fully implemented in the package but unused. Entity Property Modifiers now adopted (Task 9.7: 534 annotations). Tasks 11.1-11.4.
 
 51. **`timestamps` entity modifier prevents datetime-as-number recurrence:** Official docs confirm auto-injection of createdAt/updatedAt with proper datetime types, runtime population, and Prisma projection. Zero adoption. Root fix for 559+ bug class. Task 2.8.
 
@@ -1625,10 +1626,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why:** 35 CLI commands available, 15 have package.json scripts, 20 unused. 6 scripts have no package.json entry at all (orphaned). Many provide direct value (validate, coverage, watch, fmt, diff, audit-governance, doctor).
 - **Source to change:** `package.json` scripts section, orphaned script cleanup.
 
-### 9.7 Property modifier adoption
+### 9.7 Property modifier adoption -- DONE (2026-06-08)
 - **Done when:** At least `unique` and `indexed` adopted on clear candidates. `encrypted` evaluated for PII fields (email, phone, SSN). `masked` evaluated for sensitive fields with appropriate strategies (redact, partial, tokenize, email, phone, ssn, creditCard). `searchable` evaluated for text fields. Decision documented per modifier.
 - **Why:** IR schema defines property modifiers: `encrypted` (via EncryptionProvider), `masked` (redact/partial/tokenize/email/phone/ssn/creditCard), `searchable` (full-text search), `indexed`, `unique`, `readonly`. Only `required`/`optional` are used. Candidates: `unique` on ApiKeyName/VendorCatalog.itemNumber, `indexed` on frequently queried fields, `encrypted` on PII, `searchable` on text fields, `masked` on SSN/creditCard fields.
 - **Source to change:** `manifest/source/*.manifest`.
+- **Result:** 534 modifier annotations across 94 files: 92 `indexed`, 73 `searchable`, 18 `unique`, 32 `encrypted`, 7 `private`. Parser accepts without error. Note: IR compiler does not yet emit modifiers to JSON (future package upgrade needed).
 
 ### 9.8 Overrideable constraints
 - **Done when:** Decision documented on which warn-level constraints should be overrideable. At least 3 warn constraints enabled for override with policy-gated bypass.
@@ -1957,22 +1959,24 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-07, 31st revision)
+## Codebase Metrics (verified 2026-06-08, 33rd revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
-| IR entities | 189 (ALL durable) | 189 | -- |
+| IR entities | **202** (ALL durable) | 189 | UPDATED: Task 0.4 final batch + entity additions |
 | IR commands | **999** (905 with guards, 950 with emits, 2 without emits) | 952 | UPDATED: Task 8.2/8.3 batches |
 | IR events | **981** | 979 | UPDATED: Task 9.3 saga expansion |
 | IR sagas | **6** (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList, + 3) | 1 | UPDATED: Task 9.3 DONE — 5 new sagas added |
 | IR reactions | **10** (finance: 3, inventory: 1, events: 1, equipment: 2, crm: 1, events: 1) | 0 | Target 5+ EXCEEDED |
+| IR approval blocks | **3** (PurchaseOrder, VendorContract, PurchaseRequisition) | 0 | NEW: Task 9.4 DONE |
 | IR relationships | **170 entities (290 declarations)** | 8 (12 declarations) | UPDATED: Task 0.4 COMPLETE — 68 belongsTo across 48 entities |
 | IR entities with FK props but no relationship | **32** | 152 | UPDATED: Task 0.4 COMPLETE — remaining are polymorphic FKs / non-IR targets |
 | IR entities with transitions | 96 | 96 | -- |
 | IR status entities lacking transitions | 4 | 4 | -- |
 | IR computed properties with empty dependencies | 563/611 (92.1%) | 563/611 | -- |
 | IR overrideable constraints | 0/583 | 0/583 | -- |
-| IR source files | 92 | 92 | -- |
+| IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
+| IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32) private(7) | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future package upgrade) |
 | IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 559 | CONFIRMED across ALL domains |
 | IR event payload timestamps as `number` | **916 fields across 936 events** | 916 | NEW: 12th revision root cause discovery |
 | IR entity property timestamps as `datetime` | **741 fields** | 741 | NEW: correctly declared, mismatch is in events only |
@@ -2170,3 +2174,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.2 PLATEAU:** 94 files migrated, ~107 remaining categorized as non-migratable | Further apiFetch migration blocked by: custom endpoints with no generated equivalent, FormData/multipart uploads, binary downloads, enriched joined responses, composite commands. Task 6.2 marked plateau. |
 | 2026-06-08 | **Task 9.4 DONE: Approval workflows wired** | 3 entities with Manifest approval blocks: PurchaseOrder (1-stage manager, 48h timeout), VendorContract (2-stage procurement + conditional finance >=$50k), PurchaseRequisition (2-stage manager + conditional finance >=$5k). PostgresApprovalStore wired in runtime factory. |
 | 2026-06-08 | **Task 9.12 DONE: Snapshot testing adopted** | 8 snapshot tests covering 5 entities across 2 projection surfaces (nextjs.dispatcher + nextjs.route). CI job on every PR/push. 6 golden-file snapshots. |
+| 2026-06-08 | **Task 9.7 DONE: Property modifier adoption** | 534 modifier annotations across 94 manifest source files: 92 `indexed`, 73 `searchable`, 18 `unique`, 32 `encrypted`, 7 `private`. Parser accepts without error. Finding #50 updated. IR compiler does not yet emit modifiers to JSON (future package upgrade needed). |
