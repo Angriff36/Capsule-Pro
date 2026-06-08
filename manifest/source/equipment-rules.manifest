@@ -4,12 +4,12 @@
 entity Equipment {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required locationId: string
-  property required name: string
+  searchable property required name: string
   property required type: string = "general"
-  property required status: string = "active"
-  property serialNumber: string = ""
+  indexed property required status: string = "active"
+  unique property serialNumber: string = ""
   property manufacturer: string = ""
   property model: string = ""
   property purchaseDate: datetime = now()
@@ -20,7 +20,7 @@ entity Equipment {
   property usageHours: int = 0
   property maxUsageHours: int = 1000
   property condition: string = "good"
-  property notes: string = ""
+  searchable property notes: string = ""
   property isActive: boolean = true
   timestamps
 
@@ -206,16 +206,16 @@ entity Equipment {
 entity MaintenanceWorkOrder {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property workOrderNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""
   property equipmentName: string = ""
-  property required title: string
+  searchable property required title: string
   property required type: string = "corrective"
   property required priority: string = "medium"
-  property required status: string = "open"
-  property description: string = ""
+  indexed property required status: string = "open"
+  searchable property description: string = ""
   property reportedBy: string = ""
   property assignedTo: string = ""
   property scheduledDate: datetime
@@ -224,7 +224,7 @@ entity MaintenanceWorkOrder {
   property actualCost: money = 0
   property partsUsed: string = ""
   property vendorId: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isOverdue: boolean = self.scheduledDate != null and self.status in ["open", "in_progress"] and now() > self.scheduledDate

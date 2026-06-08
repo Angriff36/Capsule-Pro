@@ -17,7 +17,7 @@ entity SampleData {
   key [tenantId, id]
   property required id: string
   // The tenant this sample data belongs to
-  property required tenantId: string
+  indexed property required tenantId: string
   
   // Timestamps for tracking
   property seededAt: datetime = now()

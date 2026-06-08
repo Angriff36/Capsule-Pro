@@ -4,8 +4,8 @@
 entity EmailWorkflow {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
   property triggerType: string = "custom"
   property triggerConfig: string = "{}"
   property emailTemplateId: string = ""

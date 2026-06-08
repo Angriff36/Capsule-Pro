@@ -5,7 +5,7 @@
 entity EmployeeAvailability {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property employeeId: string = ""
   property dayOfWeek: int = 0
   property startTime: string = ""

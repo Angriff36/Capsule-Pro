@@ -5,10 +5,10 @@ entity AdminTask {
   // No relationships: assignedTo/createdBy are user identifier strings, not entity FKs
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property title: string = ""
-  property description: string = ""
-  property status: string = "backlog"
+  indexed property required tenantId: string
+  searchable property title: string = ""
+  searchable property description: string = ""
+  indexed property status: string = "backlog"
   property priority: string = "medium"
   property category: string = ""
   property assignedTo: string = ""

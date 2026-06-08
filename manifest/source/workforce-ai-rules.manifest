@@ -4,10 +4,10 @@
 entity WorkforceOptimization {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property locationId: string = ""
   property optimizationType: string = "" // "schedule", "assignment", "performance"
-  property status: string = "pending" // "pending", "in_progress", "completed", "failed"
+  indexed property status: string = "pending" // "pending", "in_progress", "completed", "failed"
   timestamps
   property completedAt: datetime
 
@@ -65,7 +65,7 @@ entity WorkforceOptimization {
 entity PerformancePrediction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property employeeId: string = ""
   property predictionType: string = "" // "productivity", "attendance", "overtime_risk", "skill_match"
   property predictionHorizon: int = 0 // days

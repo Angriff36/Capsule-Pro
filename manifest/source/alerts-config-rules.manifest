@@ -5,7 +5,7 @@ entity AlertsConfig {
   // No relationships: channel/destination are value strings, no entity FKs
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property channel: string = ""
   property destination: string = ""
 

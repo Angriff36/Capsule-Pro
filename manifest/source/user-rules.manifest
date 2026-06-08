@@ -4,14 +4,14 @@
 entity User {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required email: string
+  indexed property required tenantId: string
+  encrypted required property email: string
   property required firstName: string = ""
   property required lastName: string = ""
   property required role: string = "staff"
   property authUserId: string = ""
-  property employeeNumber: string = ""
-  property phone: string = ""
+  unique property employeeNumber: string = ""
+  encrypted property phone: string = ""
   property employmentType: string = "full_time"
   property hourlyRate: money = 0
   property salaryAnnual: decimal = 0

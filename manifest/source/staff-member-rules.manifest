@@ -7,13 +7,13 @@ entity StaffMember {
   // No relationships: role is a value string, no entity FKs beyond tenantId
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required displayName: string = "Unnamed"
-  property email: string = ""
-  property phone: string = ""
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property role: string = "server"
-  property required status: string = "active"
-  property notes: string = ""
+  indexed property required status: string = "active"
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

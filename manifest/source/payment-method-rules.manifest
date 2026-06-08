@@ -4,7 +4,7 @@
 entity PaymentMethod {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
 
   // Client and reference
   property required clientId: string = ""
@@ -21,16 +21,16 @@ entity PaymentMethod {
   property cardHolderName: string = ""
 
   // Bank account details (ACH/Wire)
-  property bankAccountLastFour: string = ""
+  private property bankAccountLastFour: string = ""
   property bankAccountType: string = ""
-  property bankRoutingNumber: string = ""
+  private encrypted property bankRoutingNumber: string = ""
 
   // Digital wallet
   property walletProvider: string = ""
   property walletEmail: string = ""
 
   // Status
-  property required status: string = "ACTIVE"
+  indexed property required status: string = "ACTIVE"
   property required isDefault: boolean = false
   property fraudFlagged: boolean = false
 
@@ -39,7 +39,7 @@ entity PaymentMethod {
   property verificationMethod: string = ""
 
   // Metadata
-  property nickname: string = ""
+  searchable property nickname: string = ""
   property metadata: string = "{}"
 
   // Timestamps

@@ -4,10 +4,10 @@
 entity Notification {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required recipientEmployeeId: string
   property notificationType: string = ""
-  property title: string = ""
+  searchable property title: string = ""
   property body: string = ""
   property actionUrl: string = ""
   property isRead: boolean = false

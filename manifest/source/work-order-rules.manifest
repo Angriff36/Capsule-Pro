@@ -5,14 +5,14 @@
 entity WorkOrder {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required equipmentId: string
   property equipmentName: string = ""
-  property required title: string
+  searchable property required title: string
   property type: string = "repair"
   property priority: string = "medium"
-  property status: string = "open"
-  property description: string = ""
+  indexed property status: string = "open"
+  searchable property description: string = ""
   // scheduledDate: nullable — no default; set when known
   property scheduledDate: datetime
   property assignedTo: string = ""

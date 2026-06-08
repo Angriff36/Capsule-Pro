@@ -161,11 +161,11 @@ event StaffTrainingWaiverLogged: "staff.training.waiver-logged" {
 entity TrainingModule {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property code: string = ""
-  property title: string = ""
-  property description: string = ""
+  searchable property title: string = ""
+  searchable property description: string = ""
   property contentUrl: string = ""
   property contentType: string = "document"
   property durationMinutes: int = 0
@@ -175,11 +175,11 @@ entity TrainingModule {
   property maxAttempts: int = 3
   property requiredRole: string = "staff"
   property isActive: boolean = true
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property version: int = 1
   property publishedAt: datetime
   property archivedAt: datetime
-  property notes: string = ""
+  searchable property notes: string = ""
   property createdBy: string = ""
   property deletedAt: datetime
 
@@ -315,7 +315,7 @@ entity TrainingModule {
 entity TrainingQuestion {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property required moduleId: string
   property code: string = ""
@@ -376,14 +376,14 @@ entity TrainingQuestion {
 entity TrainingAssignment {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property required moduleId: string
   property moduleCode: string = ""
   property moduleTitle: string = ""
   property required staffMemberId: string
   property staffRole: string = "staff"
-  property status: string = "assigned"
+  indexed property status: string = "assigned"
   property dueAt: datetime
   property dueDateReviewNeeded: boolean = false
   property firstShiftAt: datetime
@@ -572,7 +572,7 @@ entity TrainingAssignment {
 entity TrainingAttempt {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property required assignmentId: string
   property required moduleId: string
@@ -621,7 +621,7 @@ entity TrainingAttempt {
 entity StaffTrainingSignal {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property required staffMemberId: string
   property required moduleId: string

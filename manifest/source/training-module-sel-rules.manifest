@@ -24,12 +24,12 @@ event SelOnboardingTrainingQuestionDefinitionCreated: "training.sel-onboarding.q
 entity SelOnboardingTrainingModuleDefinition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property moduleId: string = "training-module-sel-event-staff-onboarding"
   property code: string = "sel_event_staff_onboarding"
-  property title: string = "SEL Event Staff — Onboarding Training"
-  property description: string = "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
+  searchable property title: string = "SEL Event Staff — Onboarding Training"
+  searchable property description: string = "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
   property contentType: string = "interactive"
   property contentUrl: string = "TBD"
   property durationMinutes: int = 20
@@ -55,7 +55,7 @@ entity SelOnboardingTrainingModuleDefinition {
 entity SelOnboardingTrainingQuestion01Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q1"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -88,7 +88,7 @@ entity SelOnboardingTrainingQuestion01Definition {
 entity SelOnboardingTrainingQuestion02Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q2"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -121,7 +121,7 @@ entity SelOnboardingTrainingQuestion02Definition {
 entity SelOnboardingTrainingQuestion03Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q3"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -154,7 +154,7 @@ entity SelOnboardingTrainingQuestion03Definition {
 entity SelOnboardingTrainingQuestion04Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q4"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -187,7 +187,7 @@ entity SelOnboardingTrainingQuestion04Definition {
 entity SelOnboardingTrainingQuestion05Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q5"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -220,7 +220,7 @@ entity SelOnboardingTrainingQuestion05Definition {
 entity SelOnboardingTrainingQuestion06Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q6"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -253,7 +253,7 @@ entity SelOnboardingTrainingQuestion06Definition {
 entity SelOnboardingTrainingQuestion07Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q7"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -286,7 +286,7 @@ entity SelOnboardingTrainingQuestion07Definition {
 entity SelOnboardingTrainingQuestion08Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q8"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -319,7 +319,7 @@ entity SelOnboardingTrainingQuestion08Definition {
 entity SelOnboardingTrainingQuestion09Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q9"
   property moduleId: string = "training-module-sel-event-staff-onboarding"
@@ -352,7 +352,7 @@ entity SelOnboardingTrainingQuestion09Definition {
 entity SelOnboardingTrainingQuestion10Definition {
   key [tenantId, id]
 
-  property required tenantId: string
+  indexed property required tenantId: string
   property required id: string
   property questionId: string = "sel-event-staff-onboarding-q10"
   property moduleId: string = "training-module-sel-event-staff-onboarding"

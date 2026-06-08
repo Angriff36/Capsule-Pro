@@ -4,12 +4,12 @@
 entity KnowledgeBaseEntry {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required title: string
+  indexed property required tenantId: string
+  searchable property required title: string
   property category: string = "general"
   property content: string = ""
   property tags: string = ""
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property authorId: string = ""
   property publishedAt: datetime
   property viewCount: int = 0

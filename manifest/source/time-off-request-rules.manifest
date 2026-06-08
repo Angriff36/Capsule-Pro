@@ -6,13 +6,13 @@
 entity TimeOffRequest {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property employeeId: string = ""
   property startDate: string = ""
   property endDate: string = ""
   property reason: string = ""
   property requestType: string = ""
-  property status: string = "PENDING"
+  indexed property status: string = "PENDING"
   property processedBy: string = ""
   // Bug fix: processedAt is a lifecycle timestamp — must be nullable
   property processedAt: datetime

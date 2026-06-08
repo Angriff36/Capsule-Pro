@@ -6,8 +6,8 @@
 entity Ingredient {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property category: string = ""
   property defaultUnitId: int = 0
   property densityGPerMl: decimal = 0

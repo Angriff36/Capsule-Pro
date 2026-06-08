@@ -8,7 +8,7 @@
 entity PrepComment {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required taskId: string
   property required employeeId: string
   property required commentText: string

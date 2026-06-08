@@ -10,9 +10,9 @@
 entity StorageLocation {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required locationId: string
-  property required name: string
+  searchable property required name: string
   property required storageType: string
   property temperatureZone: string = ""
   property isActive: boolean = true
@@ -73,7 +73,7 @@ entity StorageLocation {
 entity InventoryStock {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryItemId: string
   property required storageLocationId: string
   property required quantityOnHand: decimal = 0
@@ -160,12 +160,12 @@ entity InventoryStock {
 entity InventoryAlert {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryItemId: string
   property required alertType: string
   property required severity: string
   property required message: string
-  property required status: string = "active"
+  indexed property required status: string = "active"
   property triggeredAt: datetime
   property acknowledgedAt: datetime
   property resolvedAt: datetime
@@ -247,12 +247,12 @@ entity InventoryAlert {
 entity InventoryForecast {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryItemId: string
   property required forecastDate: datetime
   property required projectedQuantity: decimal = 0
   property required confidence: decimal = 0
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property publishedAt: datetime
   property approvedAt: datetime
   property approvedBy: string = ""
@@ -339,7 +339,7 @@ entity InventoryForecast {
 entity ForecastInput {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryItemId: string
   property required inputDate: datetime
   property required actualUsage: decimal = 0
@@ -376,11 +376,11 @@ entity ForecastInput {
 entity ReorderSuggestion {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryItemId: string
   property required suggestedQuantity: decimal = 0
   property required reason: string
-  property required status: string = "pending"
+  indexed property required status: string = "pending"
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -447,11 +447,11 @@ entity ReorderSuggestion {
 entity VendorContact {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventorySupplierId: string
-  property required name: string
-  property email: string = ""
-  property phone: string = ""
+  searchable property required name: string
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property role: string = ""
   property isPrimary: boolean = false
   timestamps
@@ -507,7 +507,7 @@ entity VendorContact {
 entity VendorRating {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventorySupplierId: string
   property required category: string
   property required score: decimal = 0
@@ -569,7 +569,7 @@ entity VendorRating {
 entity InventoryTransferItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required inventoryTransferId: string
   property required inventoryItemId: string
   property required quantity: decimal = 0
@@ -625,13 +625,13 @@ entity InventoryTransferItem {
 entity ProcurementBudget {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required periodStart: datetime
   property required periodEnd: datetime
   property required budgetAmount: money = 0
   property spentAmount: money = 0
-  property required status: string = "active"
+  indexed property required status: string = "active"
   timestamps
 
   computed remainingAmount: decimal = self.budgetAmount - self.spentAmount
@@ -721,7 +721,7 @@ entity ProcurementBudget {
 entity ProcurementBudgetAlert {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required procurementBudgetId: string
   property required thresholdPct: decimal = 0
   property required message: string
@@ -774,8 +774,8 @@ entity ProcurementBudgetAlert {
 entity AuditSchedule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required frequency: string
   property nextRunAt: datetime
   property lastRunAt: datetime

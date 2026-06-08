@@ -8,15 +8,15 @@
 
 entity PurchaseRequisition {
   property required id: string
-  property required tenantId: string
-  property required requisitionNumber: string
+  indexed property required tenantId: string
+  unique property required requisitionNumber: string
   property required requestedBy: string = ""
   property required requestDate: datetime = now()
   property requiredBy: datetime
   property locationId: string = ""
   property department: string = ""
   property justification: string = ""
-  property required status: string = "draft"
+  indexed property required status: string = "draft"
   property required subtotal: money = 0
   property required estimatedTax: money = 0
   property required estimatedShipping: money = 0
@@ -30,7 +30,7 @@ entity PurchaseRequisition {
   property convertedToPoId: string = ""
   property convertedAt: datetime
   property rejectionReason: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property submittedAt: datetime
   property itemCategory: string = ""
   property required priority: string = "normal"
@@ -216,7 +216,7 @@ entity PurchaseRequisition {
 
 entity PurchaseRequisitionItem {
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required requisitionId: string
   property required itemId: string
   property itemName: string = ""
@@ -227,7 +227,7 @@ entity PurchaseRequisitionItem {
   property suggestedVendorId: string = ""
   property suggestedVendorName: string = ""
   property specifications: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

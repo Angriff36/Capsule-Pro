@@ -4,7 +4,7 @@
 entity RevenueRecognitionSchedule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
 
   // Reference information
   property required invoiceId: string
@@ -19,7 +19,7 @@ entity RevenueRecognitionSchedule {
 
   // Recognition configuration
   property required method: string = "IMMEDIATE"
-  property required status: string = "PENDING"
+  indexed property required status: string = "PENDING"
 
   // Timing
   property required startDate: datetime = now()
@@ -35,8 +35,8 @@ entity RevenueRecognitionSchedule {
   property completedMilestones: int = 0
 
   // Metadata
-  property description: string = ""
-  property notes: string = ""
+  searchable property description: string = ""
+  searchable property notes: string = ""
   property metadata: string = ""
 
   // Timestamps
@@ -211,14 +211,14 @@ entity RevenueRecognitionSchedule {
 entity RevenueRecognitionLine {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required scheduleId: string
 
   // Line details
   property required sequence: int = 0
   property required amount: money = 0
   property required recognizedAmount: money = 0
-  property required status: string = "PENDING"
+  indexed property required status: string = "PENDING"
 
   // Timing
   property required dueDate: datetime = now()
@@ -230,8 +230,8 @@ entity RevenueRecognitionLine {
   property milestoneDescription: string = ""
 
   // Metadata
-  property description: string = ""
-  property notes: string = ""
+  searchable property description: string = ""
+  searchable property notes: string = ""
   property metadata: string = ""
 
   // Timestamps

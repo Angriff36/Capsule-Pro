@@ -4,15 +4,15 @@
 entity PrepList {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
-  property required name: string
+  searchable property required name: string
   property batchMultiplier: decimal = 1
   property dietaryRestrictions: string = ""
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property totalItems: int = 0
   property totalEstimatedTime: decimal = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property generatedAt: datetime
   property finalizedAt: datetime
   property isActive: boolean = true
@@ -209,7 +209,7 @@ entity PrepList {
 entity PrepListItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required prepListId: string
   property required stationId: string
   property required stationName: string

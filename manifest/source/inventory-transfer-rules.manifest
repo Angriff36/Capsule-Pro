@@ -4,10 +4,10 @@
 entity InventoryTransfer {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property fromLocationId: string = ""
   property toLocationId: string = ""
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property requestedBy: string = ""
   property approvedBy: string = ""
   property shippedBy: string = ""
@@ -16,7 +16,7 @@ entity InventoryTransfer {
   property receiveDate: datetime
   property discrepancyNotes: string = ""
   property hasDiscrepancy: boolean = false
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   // items: JSON-array-as-string payload. The InventoryTransferPrismaStore
   // accepts both a real array (from the UI dispatcher) and a JSON string

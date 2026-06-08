@@ -5,14 +5,14 @@
 entity EventStaff {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property required staffMemberId: string
   property role: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property shiftStart: int = 0
   property shiftEnd: int = 0
-  property status: string = "assigned"
+  indexed property status: string = "assigned"
   // Day-of attendance timestamps — null until the transition actually happens.
   property confirmedAt: datetime
   property checkedInAt: datetime

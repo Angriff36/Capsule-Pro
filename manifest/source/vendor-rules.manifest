@@ -5,22 +5,22 @@ entity Vendor {
   // No relationships: approvedBy/suspendedBy/blacklistedBy are user identifier strings, no entity FKs
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property type: string = "supplier"
-  property status: string = "active"
-  property email: string = ""
-  property phone: string = ""
+  indexed property status: string = "active"
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property website: string = ""
   property address: string = ""
   property city: string = ""
   property state: string = ""
   property zip: string = ""
-  property taxId: string = ""
+  private encrypted property taxId: string = ""
   property paymentTerms: string = "net30"
   property rating: decimal = 0
   property ratingCount: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property approvedAt: datetime
   property approvedBy: string = ""
   property suspendedAt: datetime

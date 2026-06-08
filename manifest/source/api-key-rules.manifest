@@ -5,8 +5,8 @@
 entity ApiKey {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string = ""
+  indexed property required tenantId: string
+  searchable property required name: string = ""
   readonly property required keyPrefix: string = ""
   readonly property required hashedKey: string = ""
   property required scopes: array<string>

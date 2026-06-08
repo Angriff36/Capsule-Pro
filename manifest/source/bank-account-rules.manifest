@@ -4,15 +4,15 @@
 entity BankAccount {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
-  property required accountHolderName: string
-  property required accountNumber: string
-  property required routingNumber: string
+  encrypted required property accountHolderName: string
+  encrypted required property accountNumber: string
+  encrypted required property routingNumber: string
   property accountType: string = "checking"
   property bankName: string = ""
   property isDefault: boolean = false
-  property status: string = "active"
+  indexed property status: string = "active"
   readonly property verifiedAt: datetime
   property verificationFailedAt: datetime
   property verificationFailureReason: string = ""

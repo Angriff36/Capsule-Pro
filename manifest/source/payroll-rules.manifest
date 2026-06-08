@@ -5,10 +5,10 @@
 entity PayrollPeriod {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property periodStart: string = ""
   property periodEnd: string = ""
-  property status: string = "open"
+  indexed property status: string = "open"
   timestamps
   property deletedAt: datetime
 
@@ -65,10 +65,10 @@ entity PayrollPeriod {
 entity EmployeeDeduction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property employeeId: string = ""
   property type: string = ""
-  property name: string = ""
+  searchable property name: string = ""
   property amount: money = 0
   property percentage: decimal = 0
   property isPreTax: boolean = false
@@ -137,7 +137,7 @@ entity EmployeeDeduction {
 entity PayrollApprovalHistory {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property payrollRunId: string = ""
   property action: string = ""
   property previousStatus: string = ""
@@ -170,10 +170,10 @@ entity PayrollApprovalHistory {
 entity PayrollRun {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property payrollPeriodId: string = ""
   property runDate: string = ""
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property totalGross: money = 0
   property totalDeductions: money = 0
   property totalNet: money = 0

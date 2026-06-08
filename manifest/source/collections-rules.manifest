@@ -4,11 +4,11 @@
 entity CollectionCase {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
 
   // Reference information
   property required invoiceId: string = ""
-  property required invoiceNumber: string = ""
+  unique property required invoiceNumber: string = ""
   property required eventId: string = ""
   property required clientId: string = ""
   property required clientName: string = ""
@@ -19,7 +19,7 @@ entity CollectionCase {
   property required collectedAmount: money = 0
 
   // Collection status
-  property required status: string = "ACTIVE"
+  indexed property required status: string = "ACTIVE"
   property required priority: string = "MEDIUM"
   property required dunningStage: string = "CURRENT"
 
@@ -47,7 +47,7 @@ entity CollectionCase {
   property legalFirm: string = ""
 
   // Metadata
-  property notes: string = ""
+  searchable property notes: string = ""
   property internalNotes: string = ""
   property lastActivityAt: datetime = now()
   property metadata: string = "{}"
@@ -218,13 +218,13 @@ entity CollectionCase {
 entity CollectionAction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required caseId: string = ""
 
   // Action details
   property required actionType: string = ""
   property required direction: string = ""
-  property required status: string = "PENDING"
+  indexed property required status: string = "PENDING"
 
   // Contact information
   property contactedBy: string = ""
@@ -233,7 +233,7 @@ entity CollectionAction {
 
   // Action content
   property subject: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property outcome: string = ""
   property nextActionDate: datetime = now()
 
@@ -242,7 +242,7 @@ entity CollectionAction {
   property promiseDate: datetime = now()
 
   // Metadata
-  property notes: string = ""
+  searchable property notes: string = ""
   property metadata: string = "{}"
 
   // Timestamps
@@ -305,7 +305,7 @@ entity CollectionAction {
 entity CollectionPaymentPlan {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required caseId: string = ""
 
   // Plan details
@@ -315,7 +315,7 @@ entity CollectionPaymentPlan {
   property required completedInstallments: int = 0
 
   // Status
-  property required status: string = "ACTIVE"
+  indexed property required status: string = "ACTIVE"
 
   // Schedule
   property required startDate: datetime = now()
@@ -324,7 +324,7 @@ entity CollectionPaymentPlan {
   property nextPaymentDate: datetime = now()
 
   // Metadata
-  property notes: string = ""
+  searchable property notes: string = ""
   property metadata: string = "{}"
 
   // Timestamps

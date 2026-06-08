@@ -3,19 +3,19 @@
 
 entity PurchaseOrder {
   property required id: string
-  property required tenantId: string
-  property required poNumber: string
+  indexed property required tenantId: string
+  unique property required poNumber: string
   property required vendorId: string
   property required locationId: string
   property required orderDate: datetime = now()
   property expectedDeliveryDate: datetime
   property actualDeliveryDate: datetime
-  property required status: string = "draft"
+  indexed property required status: string = "draft"
   property required subtotal: money = 0
   property required taxAmount: money = 0
   property required shippingAmount: money = 0
   property required total: money = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property submittedBy: string = ""
   property submittedAt: datetime
   property receivedBy: string = ""
@@ -189,7 +189,7 @@ entity PurchaseOrder {
 
 entity PurchaseOrderItem {
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required purchaseOrderId: string
   property required itemId: string
   property required quantityOrdered: decimal = 0
@@ -200,7 +200,7 @@ entity PurchaseOrderItem {
   property qualityStatus: string = "pending"
   property discrepancyType: string = ""
   property discrepancyAmount: money = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

@@ -4,7 +4,7 @@
 entity CycleCountSession {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required locationId: string
   property required sessionId: string
   property required sessionName: string
@@ -13,12 +13,12 @@ entity CycleCountSession {
   property startedAt: datetime
   property completedAt: datetime
   property finalizedAt: datetime
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property totalItems: int = 0
   property countedItems: int = 0
   property totalVariance: decimal = 0
   property variancePercentage: decimal = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property createdById: string = ""
   property approvedById: string = ""
   timestamps
@@ -162,7 +162,7 @@ entity CycleCountSession {
 entity CycleCountRecord {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required sessionId: string
   property required itemId: string
   property required itemNumber: string
@@ -175,7 +175,7 @@ entity CycleCountRecord {
   property countDate: datetime
   property countedById: string = ""
   property barcode: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property isVerified: boolean = false
   property verifiedById: string = ""
   property verifiedAt: datetime
@@ -270,7 +270,7 @@ entity CycleCountRecord {
 entity VarianceReport {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required sessionId: string
   property required reportType: string
   property required itemId: string
@@ -281,14 +281,14 @@ entity VarianceReport {
   property variance: decimal = 0
   property variancePct: decimal = 0
   property accuracyScore: decimal = 0
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property adjustmentType: string = ""
   property adjustmentAmount: money = 0
   property adjustmentDate: datetime
   property rejectedAt: datetime
   property rejectedBy: string = ""
   property rejectionReason: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property rootCause: string = ""
   property resolutionNotes: string = ""
   property resolvedById: string = ""

@@ -5,10 +5,10 @@
 entity StaffPerformance {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property reviewType: string = "quarterly"
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property rating: decimal = 0
   property reviewerId: string = ""
   property periodStart: datetime
@@ -16,7 +16,7 @@ entity StaffPerformance {
   property strengths: string = ""
   property improvements: string = ""
   property goals: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property acknowledgementNotes: string = ""
   // Bug fix: completedAt is a lifecycle timestamp — must be nullable
   property completedAt: datetime

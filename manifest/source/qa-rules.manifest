@@ -3,13 +3,13 @@
 entity QACheck {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property location: string = ""
   property required checkType: string
   property result: string = "pass"
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property inspector: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   // Bug fix: lifecycle timestamps must be nullable (no = now() default)
   property completedAt: datetime
   property reinspectedAt: datetime
@@ -101,12 +101,12 @@ entity QACheck {
 entity QACorrectiveAction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required checkId: string
-  property required description: string
+  searchable property required description: string
   property assignedTo: string = ""
   property priority: string = "medium"
-  property status: string = "open"
+  indexed property status: string = "open"
   property resolutionNotes: string = ""
   property escalatedTo: string = ""
   property escalationReason: string = ""
@@ -199,13 +199,13 @@ entity QACorrectiveAction {
 entity QATemperatureLog {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required location: string
   property required temperature: decimal
   property unit: string = "fahrenheit"
   property equipment: string = ""
   property recordedBy: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   // Bug fix: lifecycle datetime must be nullable
   property loggedAt: datetime
   timestamps

@@ -5,7 +5,7 @@ entity OverrideAudit {
   // No relationships: entityType/entityId are polymorphic references, not direct FKs to a single entity
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property entityType: string = ""
   property entityId: string = ""
   property constraintId: string = ""

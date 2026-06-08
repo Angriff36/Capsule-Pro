@@ -4,7 +4,7 @@
 entity AiEventSetupSession {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required userId: string
   property originalInput: string = ""
   property parsedTitle: string = ""
@@ -15,7 +15,7 @@ entity AiEventSetupSession {
   property parsedVenueAddress: string = ""
   property parsedNotes: string = ""
   property parsedTags: string = ""
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property confidence: decimal = 0
   property missingFields: string = "[]"
   property suggestions: string = "[]"

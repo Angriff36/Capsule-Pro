@@ -3,15 +3,15 @@
 entity Driver {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
-  property email: string = ""
-  property phone: string = ""
-  property licenseNumber: string = ""
+  indexed property required tenantId: string
+  searchable property required name: string
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
+  private encrypted property licenseNumber: string = ""
   property licenseExpiry: datetime
   property vehicleId: string = ""
-  property status: string = "available"
-  property notes: string = ""
+  indexed property status: string = "available"
+  searchable property notes: string = ""
   timestamps
 
   computed isActive: boolean = self.status in ["available", "on_route"]
@@ -115,18 +115,18 @@ entity Driver {
 entity Vehicle {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required make: string
   property required model: string
   property year: int = 0
-  property plateNumber: string = ""
+  unique property plateNumber: string = ""
   property vin: string = ""
   property capacityWeight: decimal = 0
   property capacityVolume: decimal = 0
   property fuelType: string = ""
   property mileage: decimal = 0
-  property status: string = "available"
-  property notes: string = ""
+  indexed property status: string = "available"
+  searchable property notes: string = ""
   timestamps
 
   computed isAvailable: boolean = self.status == "available"
@@ -220,9 +220,9 @@ entity Vehicle {
 entity LogisticsRoute {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
-  property status: string = "planned"
+  indexed property required tenantId: string
+  searchable property required name: string
+  indexed property status: string = "planned"
   property vehicleId: string = ""
   property driverId: string = ""
   property startLocation: string = ""
@@ -237,7 +237,7 @@ entity LogisticsRoute {
   property stops: decimal = 0
   property completedStops: int = 0
   property delayMinutes: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isActive: boolean = self.status == "in_progress"
@@ -361,18 +361,18 @@ entity LogisticsRoute {
 entity LogisticsDispatch {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required routeId: string
   property driverId: string = ""
   property vehicleId: string = ""
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property priority: string = "normal"
   // estimatedDeliveryTime / actualDeliveryTime / departedAt: lifecycle — no = now() default
   property estimatedDeliveryTime: datetime
   property actualDeliveryTime: datetime
   property departedAt: datetime
   property failureReason: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isInTransit: boolean = self.status == "in_transit"

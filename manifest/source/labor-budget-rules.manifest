@@ -4,15 +4,15 @@
 entity LaborBudget {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property locationId: string = ""
   property periodStart: string = ""
   property periodEnd: string = ""
   property budgetAmount: money = 0
   property actualAmount: money = 0
   property budgetType: string = "weekly"
-  property status: string = "draft"
-  property notes: string = ""
+  indexed property status: string = "draft"
+  searchable property notes: string = ""
   property createdBy: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
@@ -125,7 +125,7 @@ entity LaborBudget {
 entity BudgetAlert {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property budgetId: string = ""
   property alertType: string = ""
   property thresholdPct: decimal = 0

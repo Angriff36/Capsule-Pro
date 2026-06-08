@@ -4,17 +4,17 @@
 entity ClientInteraction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property clientId: string = ""
   property leadId: string = ""
   property employeeId: string = ""
   property interactionType: string = "note"
   property interactionDate: datetime = now()
   property subject: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property followUpDate: datetime
   property followUpCompleted: boolean = false
-  property status: string = "open"
+  indexed property status: string = "open"
   property priority: string = "normal"
   property escalatedAt: datetime
   property escalatedTo: string = ""

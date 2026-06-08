@@ -6,10 +6,10 @@
 entity Dish {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required recipeId: string
-  property required name: string
-  property description: string = ""
+  searchable property required name: string
+  searchable property description: string = ""
   property category: string = ""
   property serviceStyle: string = ""
   property defaultContainerId: string = ""

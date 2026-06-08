@@ -4,15 +4,15 @@
 entity EventContract {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property required clientId: string
-  property contractNumber: string = ""
-  property title: string = "Untitled Contract"
-  property status: string = "draft"
+  unique property contractNumber: string = ""
+  searchable property title: string = "Untitled Contract"
+  indexed property status: string = "draft"
   property documentUrl: string = ""
   property documentType: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   // Bug fix: expiresAt is a lifecycle datetime — no default
   property expiresAt: datetime
   property sentAt: datetime
@@ -131,7 +131,7 @@ entity EventContract {
 entity ContractSignature {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required contractId: string
   // Bug fix: signedAt is a lifecycle datetime — no default
   property signedAt: datetime

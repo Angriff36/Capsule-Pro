@@ -6,11 +6,11 @@ entity RolePolicy {
   // No relationships: roleId is a role identifier string, not a FK to a separate Role entity
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required roleId: string
   property roleName: string = ""
   property permissions: array<string> = []
-  property description: string = ""
+  searchable property description: string = ""
   property isActive: boolean = true
   timestamps
   property deletedAt: datetime

@@ -4,12 +4,12 @@
 entity Proposal {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property proposalNumber: string = ""
+  indexed property required tenantId: string
+  unique property proposalNumber: string = ""
   property clientId: string = ""
   property leadId: string = ""
   property eventId: string = ""
-  property title: string = ""
+  searchable property title: string = ""
   property eventDate: datetime
   property eventType: string = ""
   property guestCount: int = 0
@@ -20,13 +20,13 @@ entity Proposal {
   property taxAmount: money = 0
   property discountAmount: money = 0
   property total: money = 0
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property validUntil: datetime
   property sentAt: datetime
   property viewedAt: datetime
   property acceptedAt: datetime
   property rejectedAt: datetime
-  property notes: string = ""
+  searchable property notes: string = ""
   property termsAndConditions: string = ""
   property lineItemCount: int = 0
   property publicToken: string = ""
@@ -258,18 +258,18 @@ entity Proposal {
 entity ProposalLineItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required proposalId: string
   property itemType: string = ""
   property category: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property quantity: int = 0
   property unitOfMeasure: string = ""
   property unitPrice: money = 0
   property total: money = 0
   property totalPrice: money = 0
   property sortOrder: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

@@ -4,7 +4,7 @@
 entity WasteEntry {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property inventoryItemId: string = ""
   property reasonId: int = 0
   property quantity: int = 0
@@ -15,10 +15,10 @@ entity WasteEntry {
   property loggedAt: datetime
   property approvedBy: string = ""
   property approvedAt: datetime
-  property status: string = "logged"
+  indexed property status: string = "logged"
   property unitCost: money = 0
   property totalCost: money = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

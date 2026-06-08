@@ -9,13 +9,13 @@
 entity TimecardApproval {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property required payrollPeriodId: string
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property approvedBy: string = ""
   property approvedAt: datetime
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -85,7 +85,7 @@ entity TimecardApproval {
 entity PayrollLineItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required payrollRunId: string
   property required employeeId: string
   property grossPay: money = 0
@@ -155,13 +155,13 @@ entity PayrollLineItem {
 entity TipPool {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property periodStart: datetime
   property periodEnd: datetime
   property periodId: string = ""
   property eventId: string = ""
   property totalTips: money = 0
-  property status: string = "open"
+  indexed property status: string = "open"
   // Allocation
   property allocationRule: string = "by_hours"
   property fixedShares: string = "{}"
@@ -254,12 +254,12 @@ entity TipPool {
 entity DisciplinaryAction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property actionType: string = ""
   property reason: string = ""
   property severity: string = "low"
-  property status: string = "open"
+  indexed property status: string = "open"
   property issuedBy: string = ""
   property escalatedTo: string = ""
   property escalationReason: string = ""
@@ -337,11 +337,11 @@ entity DisciplinaryAction {
 entity ActionMilestone {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required disciplinaryActionId: string
-  property title: string = ""
+  searchable property title: string = ""
   property dueAt: datetime
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property completedAt: datetime
   timestamps
 
@@ -393,12 +393,12 @@ entity ActionMilestone {
 entity PerformanceReview {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property required reviewerId: string
   property reviewPeriod: string = ""
   property overallRating: decimal = 0
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property submittedAt: datetime
   property signedOffAt: datetime
   timestamps
@@ -465,7 +465,7 @@ entity PerformanceReview {
 entity TrainingCompletion {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property required trainingModuleId: string
   property completedAt: datetime
@@ -502,9 +502,9 @@ entity TrainingCompletion {
 entity OnboardingTask {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property title: string = ""
-  property description: string = ""
+  indexed property required tenantId: string
+  searchable property title: string = ""
+  searchable property description: string = ""
   property sortOrder: int = 0
   property isRequired: boolean = true
   timestamps
@@ -549,11 +549,11 @@ entity OnboardingTask {
 entity OnboardingCompletion {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property required onboardingTaskId: string
   property completedAt: datetime
-  property status: string = "pending"
+  indexed property status: string = "pending"
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -593,12 +593,12 @@ entity OnboardingCompletion {
 entity OpenShift {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required scheduleId: string
   property role: string = ""
   property shiftStart: datetime
   property shiftEnd: datetime
-  property status: string = "open"
+  indexed property status: string = "open"
   property claimedBy: string = ""
   timestamps
 
@@ -656,11 +656,11 @@ entity OpenShift {
 entity DeliveryRoute {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
   property driverId: string = ""
   property routeDate: datetime
-  property status: string = "planned"
+  indexed property status: string = "planned"
   property totalStops: int = 0
   property distanceMiles: decimal = 0
   timestamps
@@ -725,13 +725,13 @@ entity DeliveryRoute {
 entity RouteStop {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required deliveryRouteId: string
   property eventId: string = ""
   property address: string = ""
   property sequence: int = 0
   property scheduledAt: datetime
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property arrivedAt: datetime
   timestamps
 
@@ -797,11 +797,11 @@ entity RouteStop {
 entity PaymentRefundAttempt {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required paymentId: string
   property amount: money = 0
   property reason: string = ""
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property attemptedAt: datetime
   timestamps
 
@@ -853,12 +853,12 @@ entity PaymentRefundAttempt {
 entity PreventiveMaintenanceSchedule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property scheduleNumber: string = ""
   property areaId: string = ""
   property equipmentId: string = ""
-  property title: string = ""
-  property description: string = ""
+  searchable property title: string = ""
+  searchable property description: string = ""
   property frequency: string = "monthly"
   property intervalDays: int = 30
   property nextDueAt: datetime
@@ -866,7 +866,7 @@ entity PreventiveMaintenanceSchedule {
   property assignedTo: string = ""
   property estimatedHours: decimal = 0
   property estimatedCost: money = 0
-  property status: string = "active"
+  indexed property status: string = "active"
   property isActive: boolean = true
   timestamps
 

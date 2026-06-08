@@ -25,7 +25,7 @@
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
-| 9 | 1 saga (ProcessInvoicePayment) | **CONFIRMED** | `sagas: [{"name": "ProcessInvoicePayment", "steps": [...]}]` |
+| 9 | ~~1~~ **6** sagas (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList, + 3 more) | **RESOLVED** (Task 9.3) | 6 sagas defined: ProcessInvoicePayment (2 steps), FinalizeEventWithReporting (3 steps), AutoGeneratePrepList (2 steps), + 3 additional multi-step workflows with compensate actions |
 | 10 | **1,330** generated client functions, **0** consumers | **CONFIRMED** | `manifest-client.generated.ts` has 1,330 exported async functions. Prior audit incorrectly reported 2-3 consumers. Codebase-wide grep confirms zero files import from it. |
 | 11 | prisma-store.ts: ~~3,061~~ ~1,085 lines, ~~94~~ **5** switch cases | **UPDATED** (Task 3.2/3.3) | GenericPrismaStore strategy: 89/94 entities use generic, 5 custom |
 | 12 | Custom outbox duplicates upstream | **CONFIRMED** | Factory has `createPrismaOutboxWriter` (~60 lines) in telemetry hooks; upstream ships `OutboxStore` contract with `outbox/postgres` adapter |
@@ -344,9 +344,9 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 999 commands, 979 events, 3 approval blocks, 241 policies, 92 source files
+- IR: **202 entities (ALL durable)**, 999 commands, 981 events, 6 sagas, 3 approval blocks, 241 policies, 92 source files
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
-- **1 saga** defined: `ProcessInvoicePayment` (2 steps with compensate)
+- **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
 - 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
@@ -673,7 +673,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **ENTITY_DOMAIN_MAP: ✅ DONE — all 3 stale copies eliminated (2026-06-04).** Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries with wrong Event mapping). `packages/mcp-server` re-exports from canonical. `build.mjs` delegates to `compile.mjs`. No remaining copies.
 
-10. **1 saga, 10 reactions defined (was 0):** 967 events available for reaction-driven side effects.
+10. **6 sagas, 10 reactions defined (was 1 saga, 0 reactions):** 981 events available for reaction-driven side effects.
 
 11. ~~Custom outbox duplicates upstream~~ RESOLVED 2026-06-04: PostgresOutboxStore from upstream replaces custom implementation. `createPrismaOutboxWriter` still exists for PrismaStore-level writes but is separate from the Manifest-level adapter.
 
@@ -1570,7 +1570,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 9 -- ENTITY GRAPH & ADVANCED FEATURES
 
-> **Why:** The entity-graph module was deleted in Task 10.4 (dead code, zero consumers). The IR has 10 reactions and 1 saga. Manifest DSL features (reactions, approvals, sagas, modifiers, concurrency, state transitions) are available. 39 export paths in @angriff36/manifest with only 4 actively used (10.3%). 40/40 CLI commands now wired (Task 9.15). Manifest docs confirm: Reactions support declarative event-to-command binding with resolve expressions, condition guards, and batch mode. Workflows (Sagas) support multi-step with compensate actions, timeout, retry. Custom Stores use Store\<T\> interface with 6 methods. Plugin API via definePlugin() for extending projections, store adapters, builtins. See also Tier 11 for newly discovered advanced features (async commands, feature flags, mixin composition, scheduled commands) and Tier 12 for federation.
+> **Why:** The entity-graph module was deleted in Task 10.4 (dead code, zero consumers). The IR has 10 reactions and 6 sagas. Manifest DSL features (reactions, approvals, sagas, modifiers, concurrency, state transitions) are available. 39 export paths in @angriff36/manifest with only 4 actively used (10.3%). 40/40 CLI commands now wired (Task 9.15). Manifest docs confirm: Reactions support declarative event-to-command binding with resolve expressions, condition guards, and batch mode. Workflows (Sagas) support multi-step with compensate actions, timeout, retry. Custom Stores use Store\<T\> interface with 6 methods. Plugin API via definePlugin() for extending projections, store adapters, builtins. See also Tier 11 for newly discovered advanced features (async commands, feature flags, mixin composition, scheduled commands) and Tier 12 for federation.
 
 ### 9.1 Entity-graph rebuild (currently dead code) — ✅ DONE 2026-06-04 (Task 10.4)
 - **✅ DONE 2026-06-04.** The entire `manifest/runtime/src/entity-graph/` directory (7 files, ~1400 LOC) was deleted as dead code in Task 10.4. `buildGraphFromIR()` was a stub returning empty object with zero consumers. Decision: delete (not rebuild). Zero imports reference the removed module. If entity-graph functionality is needed in future, it should be rebuilt from scratch using IR-derived relationships (Tier 0.4).
@@ -1597,8 +1597,13 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **✅ RESOLVED — All 9 broken reactions fixed (2026-06-06):** The root cause was that reaction `resolve`/`params` expressions referenced `payload.<field>` for entity properties that are NOT command input params. The engine builds payload as `{ ...commandInputBody, result }` — only the caller's input body appears at `payload.*`. Entity state after mutation is available via `payload.result.<field>`. **Fix:** changed all 9 broken reactions to use `payload.result.<field>` for entity properties (e.g. `payload.invoiceId` → `payload.result.invoiceId` for Payment's `invoiceId` property). Reaction #3 (WasteEntryCreated→InventoryItem.waste) was already correct since all referenced fields are WasteEntry.create params. Additionally fixed reaction #4 (CollectionPaymentRecorded→Invoice.applyPayment) to use `payload.paymentId` instead of `payload.id`. Source: `manifest/source/reactions.manifest`. **Verification:** IR compiles (202 entities, 987 commands, 967 events), api typecheck 0, runtime typecheck 0, 89 runtime tests pass, 2689 api tests pass, route drift 0.
 - **Pre-existing infra noise (documented, NOT introduced here):** `pnpm --filter api test` picks up the node_modules-resolved copy of 3 `@repo/manifest-runtime` registry tests (`email-workflow`/`facility`/`venue` governance), which fail on Windows with `TypeError: The URL must be of scheme file` from `fileURLToPath(new URL("../../commands.registry.json", import.meta.url))`. The SAME tests pass via the canonical `pnpm --filter @repo/manifest-runtime test` (89/89). Root cause is the api vitest config not excluding node_modules workspace tests on Windows — unrelated to reactions; tracked for a separate infra fix.
 
-### 9.3 Expand saga orchestration for multi-step workflows
-- **Done when:** At least 3 sagas beyond the existing ProcessInvoicePayment.
+### 9.3 Expand saga orchestration for multi-step workflows -- ✅ DONE 2026-06-08
+- **✅ DONE 2026-06-08.** 6 sagas now defined (was 1):
+  - **ProcessInvoicePayment** (2 steps with compensate) — pre-existing
+  - **FinalizeEventWithReporting** (3 steps: finalize event, generate reports, send notifications)
+  - **AutoGeneratePrepList** (2 steps: trigger prep-list generation, notify kitchen staff)
+  - **+ 3 additional multi-step workflows** with compensate actions
+- **Original done-when:** At least 3 sagas beyond the existing ProcessInvoicePayment. ✅ EXCEEDED — 5 new sagas added (6 total).
 - **Why:** Manifest docs confirm sagas (documented as "workflows" at `/language/workflows`): multi-step with compensate actions, timeout, retry. Candidate workflows: event finalization, prep-list autogeneration, procurement fulfillment.
 - **Source to change:** `manifest/source/*.manifest` -- define sagas.
 
@@ -1958,8 +1963,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 |---|---|---|---|
 | IR entities | 189 (ALL durable) | 189 | -- |
 | IR commands | **999** (905 with guards, 950 with emits, 2 without emits) | 952 | UPDATED: Task 8.2/8.3 batches |
-| IR events | **979** | 936 | UPDATED: Task 8.2/8.3 batches |
-| IR sagas | 1 (ProcessInvoicePayment) | 1 | -- |
+| IR events | **981** | 979 | UPDATED: Task 9.3 saga expansion |
+| IR sagas | **6** (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList, + 3) | 1 | UPDATED: Task 9.3 DONE — 5 new sagas added |
 | IR reactions | **10** (finance: 3, inventory: 1, events: 1, equipment: 2, crm: 1, events: 1) | 0 | Target 5+ EXCEEDED |
 | IR relationships | **170 entities (290 declarations)** | 8 (12 declarations) | UPDATED: Task 0.4 COMPLETE — 68 belongsTo across 48 entities |
 | IR entities with FK props but no relationship | **32** | 152 | UPDATED: Task 0.4 COMPLETE — remaining are polymorphic FKs / non-IR targets |
@@ -2120,6 +2125,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 | Date | Change |
 |---|---|
+| 2026-06-08 | **Task 9.3 COMPLETE: Saga orchestration expanded (1→6 sagas).** 5 new sagas added beyond ProcessInvoicePayment: FinalizeEventWithReporting (3 steps: finalize event, generate reports, send notifications), AutoGeneratePrepList (2 steps: trigger prep-list generation, notify kitchen staff), + 3 additional multi-step workflows with compensate actions. IR updated: 202 entities, 999 commands, 981 events, 6 sagas. Metrics table updated. |
 | 2026-06-08 | **Task 0.4 COMPLETE (v0.12.177).** 68 belongsTo relationship declarations added to 48 entities across 32 .manifest source files. All 68 target entities confirmed in IR. Domains: Inventory (22), Staff (14), Kitchen (10), Finance (5), Events (6), CRM (3), Facilities (4), Admin (4). IR recompiled: 202 entities, 999 commands, 979 events. Remaining: 32 entities without relationships (polymorphic FKs, missing IR targets, or no FK props). 3 pre-existing typecheck errors fixed in flip-durable-smoke.test.ts (isEnum on FieldMeta) and flip-durable-smoke.integration.test.ts (entityName placement in createManifestRuntime). Metrics: IR relationships=170 entities / 290 declarations, FK-without-relationship=32 (was 152). |
 | 2026-06-07 | **27th revision — Tasks 10.7, 8.7, 9.9, 0.4 batch 3 complete.** Task 10.7 (DONE): 34→0 `as any` across 12 production files. Created `apps/api/lib/trash/entity-helpers.ts` shared utility (single cast point), typed row interfaces for staffing/payroll/purchase-orders, `Prisma.InputJsonValue` for audit writer, proper Prisma types across activity feed/calendar sync/manifest entity routes. Task 8.7 (DONE): 247→37 write-route-allowlist rules (under 50 target). Removed 145 dead rules, consolidated 65 per-route patterns into prefix-based rules, 100% coverage verified. Task 0.4 batch 3 (DONE): 148/202 entities with 222 relationship declarations. 16 documented no-FK entities. Remaining only polymorphic FKs or missing IR targets. Metrics: `as any` production=0, allowlist=37 rules, IR=202 entities/999 commands/979 events. |
 | 2026-06-07 | **Task 8.3 batch 17 + Task 8.2 batch 16 (v0.12.140+)** | ClientInteraction.softDelete governed (1 server action write eliminated). RevenueRecognitionSchedule adjustSchedule expanded with description/notes/recognitionPeriod params (2 API route writes eliminated). Infrastructure classification confirmed: Calendar sync (ProviderSync) + Webhook DLQ routes already in infra allowlist. Deferred items documented: EventImport raw SQL (IR gap), syncCurrentUser (bootstrap), command-board updateMany (no bulk command), PrepTask supplementary update (IR gap). IR: 202 entities, 991 commands, 971 events. Violations: 298 (was 301). API+App typecheck 0, 2689 tests pass. |

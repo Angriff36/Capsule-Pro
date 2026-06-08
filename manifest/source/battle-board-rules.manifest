@@ -4,7 +4,7 @@
 entity BattleBoard {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property eventId: string = ""
   property boardName: string = ""
   property boardType: string = "event-specific"
@@ -13,10 +13,10 @@ entity BattleBoard {
   property documentUrl: string = ""
   property sourceDocumentType: string = ""
   property documentImportedAt: datetime = now()
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property isTemplate: boolean = false
-  property description: string = ""
-  property notes: string = ""
+  searchable property description: string = ""
+  searchable property notes: string = ""
   property tags: string = ""
   timestamps
   property dishCount: int = 0

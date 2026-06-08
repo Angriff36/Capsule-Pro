@@ -4,12 +4,12 @@
 entity Payment {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
 
   // Payment details
   property required amount: money = 0
   property required currency: string = "USD"
-  property required status: string = "PENDING"
+  indexed property required status: string = "PENDING"
   property required methodType: string = "CREDIT_CARD"
 
   // Reference information
@@ -37,7 +37,7 @@ entity Payment {
   property reviewedBy: string = ""
 
   // Metadata
-  property description: string = ""
+  searchable property description: string = ""
   property externalReference: string = ""
   property metadata: string = "{}"
 

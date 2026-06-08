@@ -4,7 +4,7 @@
 entity AdminChatParticipant {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property threadId: string = ""
   property userId: string = ""
   property archivedAt: datetime

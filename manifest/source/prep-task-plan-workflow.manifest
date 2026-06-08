@@ -5,10 +5,10 @@
 entity PrepTaskPlanWorkflow {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property eventId: string = ""
   property idempotencyKey: string = ""
-  property status: string = "created"
+  indexed property status: string = "created"
   property currentStep: int = 0
   property totalSteps: int = 5
   property generationOptions: string = "{}"

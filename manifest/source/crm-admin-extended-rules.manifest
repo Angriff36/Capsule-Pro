@@ -9,9 +9,9 @@
 entity ProposalTemplate {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
-  property description: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
+  searchable property description: string = ""
   property eventType: string = ""
   property defaultTerms: string = ""
   property defaultTaxRate: decimal = 0
@@ -119,7 +119,7 @@ entity ProposalTemplate {
 entity InteractionAttachment {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property clientInteractionId: string = ""
   property fileName: string = ""
   property fileUrl: string = ""
@@ -182,7 +182,7 @@ entity InteractionAttachment {
 entity CrmScoringRule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property ruleName: string = ""
   property field: string = ""
   property condition: string = ""
@@ -278,8 +278,8 @@ entity CrmScoringRule {
 entity Report {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
   property reportType: string = ""
   property queryConfig: string = "{}"
   property displayConfig: string = "{}"
@@ -349,12 +349,12 @@ entity Report {
 entity Document {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
   property documentType: string = ""
   property fileUrl: string = ""
   property fileSizeBytes: int = 0
-  property status: string = "uploaded"
+  indexed property status: string = "uploaded"
   property entityType: string = ""
   property entityId: string = ""
   property uploadedBy: string = ""
@@ -437,11 +437,11 @@ entity Document {
 entity AdminChatThread {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property threadType: string = "direct"
-  property slug: string = ""
+  unique property slug: string = ""
   property directKey: string = ""
-  property status: string = "open"
+  indexed property status: string = "open"
   property createdBy: string = ""
   property lastMessageAt: datetime
   timestamps
@@ -495,7 +495,7 @@ entity AdminChatThread {
 entity AdminChatMessage {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property threadId: string = ""
   property authorId: string = ""
   property authorName: string = ""

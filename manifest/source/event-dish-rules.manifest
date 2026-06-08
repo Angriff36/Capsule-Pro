@@ -5,11 +5,11 @@
 entity EventDish {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property required dishId: string
   property quantity: int = 1
-  property notes: string = ""
+  searchable property notes: string = ""
   property courseLabel: string = ""
   property sortOrder: int = 0
   timestamps

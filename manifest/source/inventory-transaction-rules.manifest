@@ -4,7 +4,7 @@
 entity InventoryTransaction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required itemId: string
   property required transactionType: string
   property quantity: int = 0
@@ -13,7 +13,7 @@ entity InventoryTransaction {
   property reference: string = ""
   property referenceType: string = ""
   property referenceId: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property reason: string = ""
   property employeeId: string = ""
   property storageLocationId: string = ""

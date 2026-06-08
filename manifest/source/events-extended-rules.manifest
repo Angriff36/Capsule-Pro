@@ -4,16 +4,16 @@
 entity Venue {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string = ""
+  indexed property required tenantId: string
+  searchable property required name: string = ""
   // Columns reconciled with the real `venues` table (packages/database/prisma/
   // schema.prisma) so the governed create/update commands carry the FULL field
   // surface the CRM venue UI writes — no silent field loss when crm/venues
   // server actions route through Manifest (constitution §9). Property names match
   // the Prisma model field names so GenericPrismaStore maps them 1:1.
   property venueType: string = "other"
-  property addressLine1: string = ""
-  property addressLine2: string = ""
+  encrypted property addressLine1: string = ""
+  encrypted property addressLine2: string = ""
   property city: string = ""
   property stateProvince: string = ""
   property postalCode: string = ""
@@ -160,13 +160,13 @@ event VenueDeleted: "events.venue.deleted" {
 entity EventTimeline {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
-  property required title: string = ""
+  searchable property required title: string = ""
   // Bug fix: lifecycle datetime — no default
   property scheduledAt: datetime
   property durationMinutes: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property sortOrder: int = 0
   timestamps
   property deletedAt: datetime
@@ -248,14 +248,14 @@ event EventTimelineRemoved: "events.timeline.removed" {
 entity TimelineTask {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
-  property required title: string = ""
+  searchable property required title: string = ""
   // Bug fix: lifecycle datetime — no default
   property dueAt: datetime
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property assignedTo: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property sortOrder: int = 0
   property completedAt: datetime
   timestamps
@@ -396,10 +396,10 @@ event TimelineTaskRemoved: "events.timeline_task.removed" {
 entity EventImport {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required source: string = ""
   property required fileName: string = ""
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property totalRows: int = 0
   property importedRows: int = 0
   property skippedRows: int = 0
@@ -510,14 +510,14 @@ event EventImportRetried: "events.import.retried" {
 entity EventFollowup {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property required type: string = ""
   // Bug fix: lifecycle datetime — no default
   property dueAt: datetime
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property assignedTo: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property completedAt: datetime
   timestamps
   property deletedAt: datetime
@@ -607,7 +607,7 @@ event EventFollowupCancelled: "events.followup.cancelled" {
 entity BoardProjection {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
   property required entityType: string = ""
   property required entityId: string = ""
@@ -700,7 +700,7 @@ event BoardProjectionRemoved: "board.projection.removed" {
 entity BoardAnnotation {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
   property text: string = ""
   property positionX: decimal = 0
@@ -763,8 +763,8 @@ event BoardAnnotationRemoved: "board.annotation.removed" {
 entity Note {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required title: string = ""
+  indexed property required tenantId: string
+  searchable property required title: string = ""
   property content: string = ""
   property color: string = ""
   // Bug fix: array<string> is not valid DSL — use string[]

@@ -6,16 +6,16 @@
 entity Schedule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property locationId: string = ""
   // Bug fix: scheduleDate and publishedAt are lifecycle timestamps — must be nullable
   property scheduleDate: datetime
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property publishedAt: datetime
   property publishedBy: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
-  property notes: string = ""
+  searchable property notes: string = ""
   property shiftCount: int = 0
   timestamps
   property deletedAt: datetime
@@ -114,14 +114,14 @@ entity Schedule {
 entity ScheduleShift {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required scheduleId: string
   property required employeeId: string
   property required locationId: string
   property optional shiftStart: datetime
   property optional shiftEnd: datetime
   property roleDuringShift: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   // Swap offer fields
   property swapOfferedTo: string = ""
   property swapStatus: string = "none"

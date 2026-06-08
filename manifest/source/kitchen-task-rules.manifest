@@ -5,10 +5,10 @@
 entity KitchenTask {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required title: string
+  indexed property required tenantId: string
+  searchable property required title: string
   property required summary: string
-  property required status: string = "pending"
+  indexed property required status: string = "pending"
   property priority: int = 5
   property complexity: decimal = 5
   property tags: string = ""

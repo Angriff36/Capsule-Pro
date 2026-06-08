@@ -4,9 +4,9 @@
 entity Shipment {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required shipmentNumber: string
-  property status: string = "draft"
+  indexed property required tenantId: string
+  unique property required shipmentNumber: string
+  indexed property status: string = "draft"
   property purchaseOrderId: string = ""
   property eventId: string = ""
   property supplierId: string = ""
@@ -24,7 +24,7 @@ entity Shipment {
   property deliveredBy: string = ""
   property receivedBy: string = ""
   property signatureData: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property internalNotes: string = ""
   property reference: string = ""
   timestamps
@@ -168,7 +168,7 @@ entity Shipment {
 entity ShipmentItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required shipmentId: string
   property required itemId: string
   property quantityShipped: int = 0

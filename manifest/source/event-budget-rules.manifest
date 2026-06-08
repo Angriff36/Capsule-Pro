@@ -4,15 +4,15 @@
 entity EventBudget {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property version: int = 1
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property totalBudgetAmount: money = 0
   property totalActualAmount: money = 0
   property varianceAmount: money = 0
   computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount)
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -131,16 +131,16 @@ entity EventBudget {
 entity BudgetLineItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required budgetId: string
   property required category: string
-  property required name: string
-  property description: string = ""
+  searchable property required name: string
+  searchable property description: string = ""
   property budgetedAmount: money = 0
   property actualAmount: money = 0
   property varianceAmount: money = 0
   property sortOrder: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

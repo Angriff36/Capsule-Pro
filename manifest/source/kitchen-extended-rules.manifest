@@ -8,8 +8,8 @@
 entity TemperatureProbe {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required equipmentId: string
   property required location: string
   property required minThreshold: decimal
@@ -81,13 +81,13 @@ entity TemperatureProbe {
 entity TemperatureLog {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required equipmentId: string
   property required recordedBy: string
   property required temperature: decimal
   property required recordedAt: datetime
   property required withinRange: boolean
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
@@ -128,7 +128,7 @@ entity TemperatureLog {
 entity TemperatureReading {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required probeId: string
   property required temperature: decimal
   property required recordedAt: datetime
@@ -168,8 +168,8 @@ entity TemperatureReading {
 entity IotAlertRule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required equipmentId: string
   property required metric: string
   property required sensorType: string
@@ -184,7 +184,7 @@ entity IotAlertRule {
   property isActive: boolean = true
   property notifyRoles: string = ""
   property notifyChannels: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   timestamps
 
   constraint requireEquipment: self.equipmentId != "" "Equipment ID is required"
@@ -253,17 +253,17 @@ entity IotAlertRule {
 entity IoTAlert {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required probeId: string
   property ruleId: string = ""
   property required severity: string
   property required message: string
   property required value: decimal
-  property required status: string = "active"
+  indexed property required status: string = "active"
   property required triggeredAt: datetime
   property alertNumber: string = ""
   property alertType: string = ""
-  property title: string = ""
+  searchable property title: string = ""
   property temperature: decimal = 0
   property acknowledgedBy: string = ""
   property resolvedBy: string = ""
@@ -333,12 +333,12 @@ entity IoTAlert {
 entity CorrectiveAction {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required sourceType: string
   property required sourceId: string
-  property required description: string
+  searchable property required description: string
   property assignedTo: string = ""
-  property required status: string = "open"
+  indexed property required status: string = "open"
   property dueAt: datetime
   property resolvedAt: datetime
   timestamps
@@ -405,12 +405,12 @@ entity CorrectiveAction {
 entity QualityCheck {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required checkType: string
   property required performedBy: string
-  property required status: string = "pending"
+  indexed property required status: string = "pending"
   property performedAt: datetime = now()
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isPending: boolean = self.status == "pending"
@@ -479,11 +479,11 @@ entity QualityCheck {
 entity QualityCheckItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required qualityCheckId: string
   property required criterion: string
   property passed: boolean = false
-  property notes: string = ""
+  searchable property notes: string = ""
   property sortOrder: int = 0
   timestamps
 
@@ -526,11 +526,11 @@ entity QualityCheckItem {
 entity KitchenTaskClaim {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required kitchenTaskId: string
   property required employeeId: string
   property required claimedAt: datetime
-  property required status: string = "active"
+  indexed property required status: string = "active"
   property releasedAt: datetime
   property releaseReason: string = ""
   timestamps
@@ -580,10 +580,10 @@ entity KitchenTaskClaim {
 entity KitchenTaskProgress {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required kitchenTaskId: string
   property required employeeId: string
-  property required status: string
+  indexed property required status: string
   property required progressPct: decimal
   property note: string = ""
   property required recordedAt: datetime
@@ -622,11 +622,11 @@ entity KitchenTaskProgress {
 entity TaskBundle {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property eventId: string = ""
-  property description: string = ""
-  property required status: string = "active"
+  searchable property description: string = ""
+  indexed property required status: string = "active"
   timestamps
 
   computed isArchived: boolean = self.status == "archived"
@@ -678,7 +678,7 @@ entity TaskBundle {
 entity TaskBundleItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required taskBundleId: string
   property required kitchenTaskId: string
   property sortOrder: int = 0
@@ -720,8 +720,8 @@ entity TaskBundleItem {
 entity BulkCombineRule {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required matchCriteria: string
   property isActive: boolean = true
   timestamps
@@ -769,9 +769,9 @@ entity BulkCombineRule {
 entity MethodVideo {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required prepMethodId: string
-  property required title: string
+  searchable property required title: string
   property required url: string
   property durationSeconds: int = 0
   timestamps
@@ -827,10 +827,10 @@ entity MethodVideo {
 entity PrepListImport {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required source: string
   property required fileName: string
-  property required status: string = "pending"
+  indexed property required status: string = "pending"
   property importedAt: datetime
   property errorMessage: string = ""
   timestamps

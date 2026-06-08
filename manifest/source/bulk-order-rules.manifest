@@ -9,7 +9,7 @@ entity BulkOrderRule {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required catalogEntryId: string
   property ruleName: string = ""
   property required minimumQuantity: int = 1

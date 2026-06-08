@@ -9,12 +9,12 @@
 entity VendorContract {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required contractNumber: string
+  indexed property required tenantId: string
+  unique property required contractNumber: string
   property required vendorId: string
   property vendorName: string = ""
   property contractType: string = "purchase"
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property startDate: datetime = now()
   property endDate: datetime
   property autoRenew: boolean = false
@@ -32,7 +32,7 @@ entity VendorContract {
   property terminatedAt: datetime
   property terminationReason: string = ""
   property contractUrl: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property complianceScore: decimal = 100
   property lastComplianceReview: datetime
   property slaBreachCount: int = 0

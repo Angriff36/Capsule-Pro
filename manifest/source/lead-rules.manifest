@@ -4,7 +4,7 @@
 entity Lead {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property source: string = ""
   searchable property companyName: string = ""
   searchable property contactName: string = ""
@@ -14,7 +14,7 @@ entity Lead {
   property eventDate: datetime
   property estimatedGuests: int = 0
   property estimatedValue: decimal = 0
-  property status: string = "new"
+  indexed property status: string = "new"
   property assignedTo: string = ""
   searchable property notes: string = ""
   property convertedToClientId: string = ""

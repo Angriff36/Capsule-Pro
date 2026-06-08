@@ -4,14 +4,14 @@
 entity TimeEntry {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required employeeId: string
   property locationId: string = ""
   property shiftId: string = ""
   property clockIn: datetime
   property clockOut: datetime
   property breakMinutes: int = 0
-  property notes: string = ""
+  searchable property notes: string = ""
   property approvedBy: string = ""
   property approvedAt: datetime
   timestamps
@@ -116,14 +116,14 @@ entity TimeEntry {
 entity TimecardEditRequest {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required timeEntryId: string
   property required employeeId: string
   property requestedClockIn: datetime
   property requestedClockOut: datetime
   property requestedBreakMinutes: int = 0
   property required reason: string
-  property status: string = "pending"
+  indexed property status: string = "pending"
   timestamps
 
   computed isPending: boolean = self.status == "pending"

@@ -6,11 +6,11 @@
 entity Recipe {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property category: string = ""
   property cuisineType: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property required tags: string[]
   property required isActive: boolean = true
   timestamps
@@ -79,12 +79,12 @@ entity RecipeVersion {
   key [tenantId, id]
   property required id: string
   property required recipeId: string
-  property required tenantId: string
-  property required name: string
+  indexed property required tenantId: string
+  searchable property required name: string
   property required versionNumber: int
   property category: string = ""
   property cuisineType: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property required tags: string = ""
   property yieldQuantity: int = 1
   property yieldUnitId: int = 1
@@ -94,13 +94,13 @@ entity RecipeVersion {
   property restTimeMinutes: int = 0
   property difficultyLevel: int = 1
   property instructions: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property ingredientCount: int = 0
   property stepCount: int = 0
   property totalCost: money = 0
   property costPerYield: money = 0
   // Status lifecycle: draft -> published. Approved is a separate flag on top of published.
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property publishedAt: datetime
   property approvedAt: datetime
   property approvedBy: string = ""
@@ -239,7 +239,7 @@ entity RecipeVersion {
 entity RecipeIngredient {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required recipeVersionId: string
   property required ingredientId: string
   property required quantity: int
@@ -322,7 +322,7 @@ entity RecipeIngredient {
 entity RecipeStep {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required recipeVersionId: string
   property required stepNumber: int
   property required instruction: string

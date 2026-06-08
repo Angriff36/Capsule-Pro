@@ -4,12 +4,12 @@
 entity ChartOfAccount {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property accountNumber: string = ""
   property accountName: string = ""
   property accountType: string = ""
   property parentId: string = ""
-  property description: string = ""
+  searchable property description: string = ""
   property isActive: boolean = true
   timestamps
 

@@ -4,11 +4,11 @@
 entity CommandBoard {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property eventId: string = ""
-  property name: string = ""
-  property description: string = ""
-  property status: string = "draft"
+  searchable property name: string = ""
+  searchable property description: string = ""
+  indexed property status: string = "draft"
   property isTemplate: boolean = false
   property tags: array<string> = []
   property autoPopulate: boolean = false
@@ -94,12 +94,12 @@ entity CommandBoard {
 entity CommandBoardCard {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
-  property title: string = ""
+  searchable property title: string = ""
   property content: string = ""
   property cardType: string = "task"
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property positionX: decimal = 0
   property positionY: decimal = 0
   property width: decimal = 200
@@ -215,9 +215,9 @@ entity CommandBoardCard {
 entity CommandBoardGroup {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
-  property name: string = ""
+  searchable property name: string = ""
   property color: string = ""
   property collapsed: boolean = false
   property positionX: decimal = 0
@@ -283,7 +283,7 @@ entity CommandBoardGroup {
 entity CommandBoardConnection {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
   property required fromCardId: string
   property required toCardId: string
@@ -336,10 +336,10 @@ entity CommandBoardConnection {
 entity CommandBoardLayout {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required boardId: string
   property required userId: string
-  property name: string = ""
+  searchable property name: string = ""
   property viewport: string = "{}"
   property visibleCards: string = ""
   property gridSize: int = 40

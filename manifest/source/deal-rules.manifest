@@ -5,18 +5,18 @@
 entity Deal {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required leadId: string
-  property required title: string
+  searchable property required title: string
   property value: decimal = 0
   property currency: string = "USD"
   property stage: string = "new"
-  property status: string = "open"
+  indexed property status: string = "open"
   property probability: decimal = 0
   property expectedCloseDate: datetime
   property actualCloseDate: datetime
   property assignedTo: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
 
   computed isWon: boolean = self.status == "won"

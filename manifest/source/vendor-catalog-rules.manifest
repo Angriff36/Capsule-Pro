@@ -5,11 +5,11 @@
 entity VendorCatalog {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required supplierId: string
-  property required itemNumber: string = ""
-  searchable property required itemName: string = ""
-  property description: string = ""
+  unique property required itemNumber: string = ""
+  searchable searchable property required itemName: string = ""
+  searchable property description: string = ""
   property category: string = ""
   property required baseUnitCost: money = 0
   property required currency: string = "USD"
@@ -23,7 +23,7 @@ entity VendorCatalog {
   property effectiveFrom: datetime
   property effectiveTo: datetime
   property supplierSku: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property required tags: array<string>
   property lastCostUpdate: datetime
   timestamps

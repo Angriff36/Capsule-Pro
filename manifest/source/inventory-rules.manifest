@@ -4,10 +4,10 @@
 entity InventoryItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required item_number: string
-  property required name: string
-  property description: string = ""
+  searchable property required name: string
+  searchable property description: string = ""
   property required category: string
   property unitOfMeasure: string = "each"
   property unitCost: money = 0

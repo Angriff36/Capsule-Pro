@@ -9,7 +9,7 @@ entity PricingTier {
   // No relationships: catalogEntryId references a catalog entry not modeled as a Manifest entity
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required catalogEntryId: string
   property tierName: string = ""
   property required minQuantity: int = 1

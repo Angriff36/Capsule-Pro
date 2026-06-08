@@ -4,14 +4,14 @@
 entity Event {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property clientId: string = ""
-  property eventNumber: string = ""
+  unique property eventNumber: string = ""
   searchable property required title: string = "Untitled Event"
   property required eventType: string = "general"
   property required eventDate: datetime
   property required guestCount: int = 1
-  property required status: string = "draft"
+  indexed property required status: string = "draft"
   property budget: money = 0
   property ticketPrice: money = 0
   property ticketTier: string = ""
@@ -24,7 +24,7 @@ entity Event {
   property assignedTo: string = ""
   property venueName: string = ""
   property venueAddress: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property required tags: array<string>
   timestamps
   property deletedAt: datetime
@@ -265,7 +265,7 @@ entity Event {
 entity EventProfitability {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property budgetedRevenue: money = 0
   property budgetedFoodCost: money = 0
@@ -288,7 +288,7 @@ entity EventProfitability {
   property marginVariancePct: decimal = 0
   property calculatedAt: datetime
   property calculationMethod: string = "auto"
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -380,7 +380,7 @@ entity EventProfitability {
 entity EventSummary {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property highlights: string = "[]"
   property issues: string = "[]"

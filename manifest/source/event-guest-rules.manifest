@@ -5,7 +5,7 @@
 entity EventGuest {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property eventId: string = ""
   property guestName: string = ""
   property guestEmail: string = ""
@@ -13,7 +13,7 @@ entity EventGuest {
   property isPrimaryContact: boolean = false
   property dietaryRestrictions: string = ""
   property allergenRestrictions: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   property declineReason: string = ""
   property specialMealRequired: boolean = false
   property specialMealNotes: string = ""

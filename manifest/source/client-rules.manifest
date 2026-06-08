@@ -4,24 +4,24 @@
 entity Client {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required clientType: string = "company"
   searchable property companyName: string = ""
   property firstName: string = ""
   property lastName: string = ""
-  property email: string = ""
-  property phone: string = ""
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property website: string = ""
-  property addressLine1: string = ""
-  property addressLine2: string = ""
+  encrypted property addressLine1: string = ""
+  encrypted property addressLine2: string = ""
   property city: string = ""
   property stateProvince: string = ""
   property postalCode: string = ""
   property countryCode: string = ""
   property defaultPaymentTerms: decimal = 30
   property required taxExempt: boolean = false
-  property taxId: string = ""
-  searchable property notes: string = ""
+  private encrypted property taxId: string = ""
+  searchable searchable property notes: string = ""
   property required tags: array<string>
   property source: string = ""
   property assignedTo: string = ""
@@ -142,17 +142,17 @@ entity Client {
 entity ClientContact {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required clientId: string
   property firstName: string = ""
   property lastName: string = ""
-  property title: string = ""
-  property email: string = ""
-  property phone: string = ""
+  searchable property title: string = ""
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property phoneMobile: string = ""
   property isPrimary: boolean = false
   property isBillingContact: boolean = false
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -239,12 +239,12 @@ entity ClientContact {
 entity ClientPreference {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required clientId: string
   property preferenceType: string = ""
   property preferenceKey: string = ""
   property preferenceValue: string = ""
-  property notes: string = ""
+  searchable property notes: string = ""
   timestamps
   property deletedAt: datetime
 

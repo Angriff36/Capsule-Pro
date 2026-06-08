@@ -4,8 +4,8 @@
 entity CateringOrder {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property required orderNumber: string
+  indexed property required tenantId: string
+  unique property required orderNumber: string
   property customerId: string = ""
   property eventId: string = ""
   property orderStatus: string = "draft"

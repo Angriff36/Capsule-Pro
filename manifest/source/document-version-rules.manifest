@@ -4,13 +4,13 @@
 entity DocumentVersion {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required documentId: string
-  property required versionNumber: int
+  unique property required versionNumber: int
   property required content: string
   property changeDescription: string = ""
   property createdBy: string = ""
-  property status: string = "draft"
+  indexed property status: string = "draft"
   property approvedBy: string = ""
   property publishedBy: string = ""
   property supersededBy: string = ""

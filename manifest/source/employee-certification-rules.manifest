@@ -4,14 +4,14 @@
 entity EmployeeCertification {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property employeeId: string = ""
   property certificationType: string = ""
   property certificationName: string = ""
   property issuedDate: string = ""
   property expiryDate: string = ""
   property documentUrl: string = ""
-  property status: string = "active"
+  indexed property status: string = "active"
   timestamps
   property deletedAt: datetime
 

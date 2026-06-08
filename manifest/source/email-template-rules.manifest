@@ -5,8 +5,8 @@ entity EmailTemplate {
   // No relationships: templateType/category are value strings, no entity FKs
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
-  property name: string = ""
+  indexed property required tenantId: string
+  searchable property name: string = ""
   property templateType: string = "custom"
   property subject: string = ""
   property body: string = ""

@@ -4,12 +4,12 @@
 entity Invoice {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
 
   // Invoice details
-  property required invoiceNumber: string = ""
+  unique property required invoiceNumber: string = ""
   property required type: string = "FINAL_PAYMENT"
-  property required status: string = "DRAFT"
+  indexed property required status: string = "DRAFT"
   property required clientId: string = ""
   property required eventId: string = ""
 
@@ -47,7 +47,7 @@ entity Invoice {
   property externalSyncStatus: string = ""
 
   // Metadata
-  property notes: string = ""
+  searchable property notes: string = ""
   property internalNotes: string = ""
   property lineItems: string = "[]"
   property required metadata: string = "{}"

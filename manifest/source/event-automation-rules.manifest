@@ -3,10 +3,10 @@
 entity AutomatedFollowup {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property type: string = "email"
-  property status: string = "pending"
+  indexed property status: string = "pending"
   // Bug fix: lifecycle datetimes — no default
   property scheduledDate: datetime
   property sentDate: datetime
@@ -97,12 +97,12 @@ entity AutomatedFollowup {
 entity EventTimelineItem {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
-  property required title: string
-  property description: string = ""
+  searchable property required title: string
+  searchable property description: string = ""
   property itemType: string = "task"
-  property status: string = "pending"
+  indexed property status: string = "pending"
   property assignedTo: string = ""
   // Bug fix: lifecycle datetime — no default
   property dueDate: datetime
@@ -211,14 +211,14 @@ entity EventTimelineItem {
 entity EventWaitlistEntry {
   key [tenantId, id]
   property required id: string
-  property required tenantId: string
+  indexed property required tenantId: string
   property required eventId: string
   property required guestName: string
-  property email: string = ""
-  property phone: string = ""
+  encrypted property email: string = ""
+  encrypted property phone: string = ""
   property partySize: int = 1
-  property status: string = "waiting"
-  property notes: string = ""
+  indexed property status: string = "waiting"
+  searchable property notes: string = ""
   // Bug fix: lifecycle datetimes — no default
   property joinedAt: datetime
   property notifiedAt: datetime
