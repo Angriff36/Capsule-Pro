@@ -55,6 +55,13 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  inventoryTransferApprove,
+  inventoryTransferCancel,
+  inventoryTransferCreate,
+  inventoryTransferReceive,
+  inventoryTransferShip,
+} from "@/app/lib/manifest-client.generated";
 
 interface TransferItem {
   id: string;
@@ -128,29 +135,17 @@ export function InventoryTransfersClient() {
 
   const handleCreateTransfer = async () => {
     try {
-      const response = await apiFetch(
-        "/api/manifest/InventoryTransfer/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fromLocationId: fromLocation,
-            toLocationId: toLocation,
-            notes,
-            items: transferItems.filter((i) => i.itemId && i.quantity),
-          }),
-        }
-      );
+      await inventoryTransferCreate({
+        fromLocationId: fromLocation,
+        toLocationId: toLocation,
+        notes,
+        items: transferItems.filter((i) => i.itemId && i.quantity),
+      });
 
-      if (response.ok) {
-        toast.success("Transfer created successfully");
-        setIsCreateOpen(false);
-        resetForm();
-        fetchTransfers();
-      } else {
-        const data = await response.json();
-        toast.error(data.error || "Failed to create transfer");
-      }
+      toast.success("Transfer created successfully");
+      setIsCreateOpen(false);
+      resetForm();
+      fetchTransfers();
     } catch (error) {
       console.error("Failed to create transfer:", error);
       toast.error("Failed to create transfer");
@@ -159,22 +154,21 @@ export function InventoryTransfersClient() {
 
   const handleAction = async (action: string, transferId: string) => {
     try {
-      const response = await apiFetch(
-        `/api/manifest/InventoryTransfer/commands/${action}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ transferId }),
-        }
-      );
+      const fn = {
+        approve: inventoryTransferApprove,
+        cancel: inventoryTransferCancel,
+        ship: inventoryTransferShip,
+        receive: inventoryTransferReceive,
+      }[action];
 
-      if (response.ok) {
-        toast.success(`Transfer ${action}d successfully`);
-        fetchTransfers();
-      } else {
-        const data = await response.json();
-        toast.error(data.error || `Failed to ${action} transfer`);
+      if (!fn) {
+        toast.error(`Unknown action: ${action}`);
+        return;
       }
+
+      await fn({ transferId });
+      toast.success(`Transfer ${action}d successfully`);
+      fetchTransfers();
     } catch (error) {
       console.error(`Failed to ${action} transfer:`, error);
       toast.error(`Failed to ${action} transfer`);

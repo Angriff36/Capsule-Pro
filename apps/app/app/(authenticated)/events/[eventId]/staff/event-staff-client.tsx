@@ -29,6 +29,7 @@ import {
 import { Loader2, Plus, UserMinus } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { eventStaffAssign, eventStaffUnassign } from "@/app/lib/manifest-client.generated";
 
 interface Assignment {
   id: string;
@@ -130,9 +131,9 @@ export function EventStaffClient({
       try {
         const [assignRes, _availRes] = await Promise.all([
           fetch(`/api/events/staff/list?eventId=${eventId}`),
-          fetch("/api/manifest/EventStaff/commands/assign", {
-            method: "GET",
-          }).catch(() => null),
+          fetch(`/api/events/staff/available?eventId=${eventId}`).catch(
+            () => null
+          ),
         ]);
 
         const assignJson = await assignRes.json();
@@ -174,22 +175,12 @@ export function EventStaffClient({
 
     startTransition(async () => {
       try {
-        const res = await fetch("/api/manifest/EventStaff/commands/assign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            employeeId: selectedEmployee,
-            role: assignRole,
-            notes: assignNotes.trim() || undefined,
-          }),
+        const result = await eventStaffAssign({
+          eventId,
+          employeeId: selectedEmployee,
+          role: assignRole,
+          notes: assignNotes.trim() || undefined,
         });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            json.message || json.error || "Failed to assign staff"
-          );
-        }
 
         const emp = available.find((e) => e.id === selectedEmployee);
         toast.success(`${emp?.name ?? "Staff"} assigned as ${assignRole}`);
@@ -203,7 +194,7 @@ export function EventStaffClient({
           setAssignments((prev) => [
             ...prev,
             {
-              id: json.result?.id ?? crypto.randomUUID(),
+              id: result?.id ?? crypto.randomUUID(),
               employeeId: selectedEmployee,
               employeeName: emp.name,
               role: assignRole,
@@ -225,17 +216,7 @@ export function EventStaffClient({
   const handleUnassign = (assignmentId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/manifest/EventStaff/commands/unassign", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: assignmentId }),
-        });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            json.message || json.error || "Failed to unassign staff"
-          );
-        }
+        await eventStaffUnassign({ id: assignmentId });
 
         toast.success("Staff unassigned");
         setDeleteTarget(null);

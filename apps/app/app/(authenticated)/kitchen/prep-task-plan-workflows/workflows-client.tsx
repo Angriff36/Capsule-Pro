@@ -38,6 +38,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { prepTaskPlanWorkflowCreate } from "@/app/lib/manifest-client.generated";
 
 interface Workflow {
   id: string;
@@ -260,18 +261,7 @@ export function WorkflowsClient({ initialMetrics }: WorkflowsClientProps) {
         }
       }
 
-      const res = await apiFetch(
-        "/api/manifest/PrepTaskPlanWorkflow/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "Create failed");
-      }
+      await prepTaskPlanWorkflowCreate(body);
       toast.success("Workflow created");
       setCreateOpen(false);
       setForm({ eventId: "", idempotencyKey: "", generationOptions: "" });

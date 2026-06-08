@@ -40,6 +40,7 @@ import type { PrismaStoreConfig } from "./prisma-store";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
 import { loadMergedPrecompiledIR, loadPrecompiledIR } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
+import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -214,6 +215,55 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "Driver",
   "Vehicle",
 ]);
+
+/**
+ * Entities that can be served by the metadata-driven GenericPrismaStore
+ * (real typed Prisma tables) without a hand-written store class.
+ *
+ * Computed once at module load from the generated Prisma metadata. An entity
+ * qualifies only when its model is tenant-scoped and uses the key shape
+ * GenericPrismaStore assumes:
+ *   - a `tenantId` column (the store always filters/injects tenantId), AND
+ *   - a primary key of either `[id]` or `[tenantId, id]`
+ *     (matches GenericPrismaStore.whereUnique()).
+ *
+ * Models without `tenantId` (e.g. Account, Tenant, settings, units, the
+ * admin_* tables) or with other composite keys (EmployeeLocation, *Config
+ * singletons) are deliberately EXCLUDED — routing them through the generic
+ * store would emit `where: { tenantId }` against a column that doesn't exist
+ * and throw at query time. Those remain on PrismaJsonStore until they get a
+ * bespoke store or a non-tenant-scoped generic variant.
+ *
+ * This is intentionally derived, not a hand-maintained list, so it can never
+ * drift from schema.prisma: regenerating the metadata
+ * (`pnpm manifest:gen-prisma-meta`) updates the set automatically.
+ */
+const GENERIC_STORE_SAFE_ENTITIES: ReadonlySet<string> = (() => {
+  const safe = new Set<string>();
+  for (const [name, meta] of Object.entries(PRISMA_MODEL_METADATA)) {
+    const fieldNames = new Set(meta.fields.map((f) => f.name));
+    const pk = meta.pkFields;
+    const pkOk =
+      (pk.length === 1 && pk[0] === "id") ||
+      (pk.length === 2 && pk.includes("tenantId") && pk.includes("id"));
+    if (fieldNames.has("tenantId") && pkOk) {
+      safe.add(name);
+    }
+  }
+  return safe;
+})();
+
+/**
+ * True when an entity should be backed by a real typed Prisma table
+ * (bespoke store via the switch, or the generic metadata-driven store)
+ * rather than the JSON-blob fallback.
+ */
+function hasTypedStore(entityName: string): boolean {
+  return (
+    ENTITIES_WITH_SPECIFIC_STORES.has(entityName) ||
+    GENERIC_STORE_SAFE_ENTITIES.has(entityName)
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers

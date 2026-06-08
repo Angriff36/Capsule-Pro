@@ -33,7 +33,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { battleBoardCreate } from "@/app/lib/manifest-client.generated";
 import { Header } from "../../../components/header";
 
 const BOARD_TYPES = [
@@ -42,12 +42,6 @@ const BOARD_TYPES = [
   { value: "tasting", label: "Tasting" },
   { value: "custom", label: "Custom" },
 ] as const;
-
-interface CreateResult {
-  id?: string;
-  instanceId?: string;
-  [key: string]: unknown;
-}
 
 export default function NewBattleBoardPage() {
   const router = useRouter();
@@ -79,25 +73,9 @@ export default function NewBattleBoardPage() {
         payload.eventId = eventId.trim();
       }
 
-      const response = await apiFetch(
-        "/api/manifest/BattleBoard/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      const result = await battleBoardCreate(payload);
 
-      const data = await response.json();
-
-      if (!(response.ok && data.success)) {
-        throw new Error(
-          data.message || data.error || "Failed to create battle board"
-        );
-      }
-
-      const result = data.result as CreateResult | undefined;
-      const newId = result?.id || result?.instanceId;
+      const newId = result?.id;
 
       toast.success("Battle board created successfully");
 

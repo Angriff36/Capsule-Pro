@@ -43,6 +43,13 @@ import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import {
+  qACheckCreate,
+  qACheckComplete,
+  qATemperatureLogLog,
+  qACorrectiveActionCreate,
+  qACorrectiveActionMarkResolved,
+} from "@/app/lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Shared types
@@ -133,27 +140,6 @@ const actionStatusLabel: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// API helper
-// ---------------------------------------------------------------------------
-
-async function submitCommand(path: string, body: unknown): Promise<Response> {
-  const res = await fetch(path, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({}));
-    throw new Error(
-      (errorData as { error?: string }).error ??
-        `Request failed (${res.status})`
-    );
-  }
-  return res;
-}
-
-// ---------------------------------------------------------------------------
 // 1. Create Quality Check Dialog
 // ---------------------------------------------------------------------------
 
@@ -218,7 +204,7 @@ export function CreateCheckDialog({ onSuccess }: { onSuccess: () => void }) {
         if (filtered.length > 0) {
           body.checklistItems = filtered;
         }
-        await submitCommand("/api/manifest/QACheck/commands/create", body);
+        await qACheckCreate(body);
         toast.success("Quality check created");
         setOpen(false);
         resetForm();
@@ -459,7 +445,7 @@ export function CompleteCheckDialog({
         if (results.length > 0) {
           body.itemResults = results;
         }
-        await submitCommand("/api/manifest/QACheck/commands/complete", body);
+        await qACheckComplete(body);
         toast.success("Check completed");
         setOpen(false);
         onSuccess();
@@ -658,10 +644,7 @@ export function LogTemperatureDialog({ onSuccess }: { onSuccess: () => void }) {
         if (notes.trim()) {
           body.notes = notes.trim();
         }
-        await submitCommand(
-          "/api/manifest/QATemperatureLog/commands/log",
-          body
-        );
+        await qATemperatureLogLog(body);
         toast.success("Temperature logged");
         setOpen(false);
         resetForm();
@@ -891,10 +874,7 @@ export function CreateCorrectiveActionDialog({
         if (dueDate) {
           body.dueDate = dueDate;
         }
-        await submitCommand(
-          "/api/manifest/QACorrectiveAction/commands/create",
-          body
-        );
+        await qACorrectiveActionCreate(body);
         toast.success("Corrective action created");
         setOpen(false);
         resetForm();
@@ -1089,10 +1069,7 @@ export function ResolveActionDialog({
         if (status === "verified" && verificationMethod.trim()) {
           body.verificationMethod = verificationMethod.trim();
         }
-        await submitCommand(
-          "/api/manifest/QACorrectiveAction/commands/resolve",
-          body
-        );
+        await qACorrectiveActionMarkResolved(body);
         toast.success("Action resolved");
         setOpen(false);
         onSuccess();

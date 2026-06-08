@@ -47,6 +47,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { staffPerformanceCreate, staffPerformanceComplete } from "@/app/lib/manifest-client.generated";
 
 // Types matching the PerformanceReview model
 interface Employee {
@@ -211,24 +212,14 @@ export default function PerformancePageClient() {
     if (!(createForm.employeeId && createForm.scheduledDate)) return;
     setCreating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/StaffPerformance/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(createForm),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadData();
-        setShowCreateDialog(false);
-        setCreateForm({
-          employeeId: "",
-          reviewType: "SIX_MONTH",
-          scheduledDate: "",
-        });
-      }
+      await staffPerformanceCreate(createForm);
+      await loadData();
+      setShowCreateDialog(false);
+      setCreateForm({
+        employeeId: "",
+        reviewType: "SIX_MONTH",
+        scheduledDate: "",
+      });
     } catch (error) {
       console.error("Failed to create review:", error);
     } finally {
@@ -241,34 +232,24 @@ export default function PerformancePageClient() {
     if (!selectedReview || completeForm.rating === 0) return;
     setCompleting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/StaffPerformance/commands/complete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reviewId: selectedReview.id,
-            rating: completeForm.rating,
-            strengths: completeForm.strengths || null,
-            areasForImprovement: completeForm.areasForImprovement || null,
-            goalsNextPeriod: completeForm.goalsNextPeriod || null,
-            managerComments: completeForm.managerComments || null,
-          }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        await loadData();
-        setShowCompleteDialog(false);
-        setSelectedReview(null);
-        setCompleteForm({
-          rating: 0,
-          strengths: "",
-          areasForImprovement: "",
-          goalsNextPeriod: "",
-          managerComments: "",
-        });
-      }
+      await staffPerformanceComplete({
+        reviewId: selectedReview.id,
+        rating: completeForm.rating,
+        strengths: completeForm.strengths || null,
+        areasForImprovement: completeForm.areasForImprovement || null,
+        goalsNextPeriod: completeForm.goalsNextPeriod || null,
+        managerComments: completeForm.managerComments || null,
+      });
+      await loadData();
+      setShowCompleteDialog(false);
+      setSelectedReview(null);
+      setCompleteForm({
+        rating: 0,
+        strengths: "",
+        areasForImprovement: "",
+        goalsNextPeriod: "",
+        managerComments: "",
+      });
     } catch (error) {
       console.error("Failed to complete review:", error);
     } finally {

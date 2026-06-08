@@ -65,6 +65,14 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "../../../lib/api";
+import {
+  vendorCatalogCreate,
+  vendorCatalogDeactivate,
+  vendorCatalogReactivate,
+  vendorCatalogSoftDelete,
+  vendorCatalogUpdate,
+  vendorCatalogUpdatePrice,
+} from "../../../lib/manifest-client.generated";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -375,23 +383,10 @@ export function VendorCatalogsClient() {
         notes: formData.notes || undefined,
       };
 
-      const endpoint = editingCatalog
-        ? "/api/manifest/VendorCatalog/commands/update"
-        : "/api/manifest/VendorCatalog/commands/create";
-
-      const body = editingCatalog
-        ? { id: editingCatalog.id, ...payload }
-        : payload;
-
-      const res = await apiFetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error ?? `Request failed (${res.status})`);
+      if (editingCatalog) {
+        await vendorCatalogUpdate({ id: editingCatalog.id, ...payload });
+      } else {
+        await vendorCatalogCreate(payload);
       }
 
       toast.success(
@@ -418,18 +413,7 @@ export function VendorCatalogsClient() {
     if (!deleteTarget) return;
     setIsDeleting(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/VendorCatalog/commands/softDelete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: deleteTarget.id }),
-        }
-      );
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error ?? `Delete failed (${res.status})`);
-      }
+      await vendorCatalogSoftDelete({ id: deleteTarget.id });
       toast.success("Catalog entry deleted");
       setDeleteTarget(null);
       loadCatalogs();
@@ -452,17 +436,10 @@ export function VendorCatalogsClient() {
     if (!deactivateTarget) return;
     setIsDeactivating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/VendorCatalog/commands/deactivate",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: deactivateTarget.id }),
-        }
-      );
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error ?? `Deactivate failed (${res.status})`);
+      if (deactivateTarget.isActive) {
+        await vendorCatalogDeactivate({ id: deactivateTarget.id });
+      } else {
+        await vendorCatalogReactivate({ id: deactivateTarget.id });
       }
       toast.success(
         deactivateTarget.isActive
@@ -504,29 +481,15 @@ export function VendorCatalogsClient() {
 
     setIsUpdatingCost(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/VendorCatalog/commands/updateCost",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: costTarget.id,
-            newBaseUnitCost: parsedCost,
-            oldCost: Number(costTarget.baseUnitCost),
-            reason: costReason,
-          }),
-        }
-      );
+      const result = await vendorCatalogUpdatePrice({
+        id: costTarget.id,
+        newBaseUnitCost: parsedCost,
+        oldCost: Number(costTarget.baseUnitCost),
+        reason: costReason,
+      });
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.error ?? `Cost update failed (${res.status})`
-        );
-      }
-
-      const data = await res.json();
-      const propagation = data?.result?.costPropagation;
+      const propagation = (result as Record<string, unknown> | undefined)
+        ?.costPropagation as Record<string, unknown> | undefined;
       if (propagation) {
         toast.success(
           `Cost updated. ${propagation.itemsUpdated ?? 0} inventory items affected.`

@@ -259,8 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 93% context — saved before compacting]
-Files (1):
-  manifest/scripts/generate-react-query-hooks.mjs (create)
+[auto-bridge snapshot @ 10 changes]
+Files: IMPLEMENTATION_PLAN.md (edit), packages/database/src/__tests__/ingredient-resolution.test.ts (edit)
 
 # === END COGNILAYER ===

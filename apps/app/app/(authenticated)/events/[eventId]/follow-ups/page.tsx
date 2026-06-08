@@ -22,6 +22,7 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { automatedFollowupGenerate, automatedFollowupComplete, automatedFollowupSkip } from "@/app/lib/manifest-client.generated";
 
 interface Followup {
   id: string;
@@ -80,18 +81,8 @@ export default function EventFollowUpsPage() {
   const generateFollowups = async () => {
     setGenerating(true);
     try {
-      const res = await apiFetch(
-        "/api/manifest/AutomatedFollowup/commands/generate",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId }),
-        }
-      );
-      const data = await res.json();
-      if (data.success) {
-        fetchFollowups();
-      }
+      await automatedFollowupGenerate({ eventId });
+      fetchFollowups();
     } catch (e) {
       console.error("Failed to generate followups:", e);
     } finally {
@@ -102,17 +93,8 @@ export default function EventFollowUpsPage() {
   const completeFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/AutomatedFollowup/commands/complete",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ followupId }),
-        }
-      );
-      if (res.ok) {
-        fetchFollowups();
-      }
+      await automatedFollowupComplete({ followupId });
+      fetchFollowups();
     } catch (e) {
       console.error("Failed to complete followup:", e);
     } finally {
@@ -123,17 +105,8 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await apiFetch(
-        "/api/manifest/AutomatedFollowup/commands/skip",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ followupId, reason: "Skipped by user" }),
-        }
-      );
-      if (res.ok) {
-        fetchFollowups();
-      }
+      await automatedFollowupSkip({ followupId, reason: "Skipped by user" });
+      fetchFollowups();
     } catch (e) {
       console.error("Failed to skip followup:", e);
     } finally {

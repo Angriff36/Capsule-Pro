@@ -36,6 +36,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Header } from "@/app/(authenticated)/components/header";
 import { apiFetch } from "@/app/lib/api";
+import { timeEntryClockIn } from "@/app/lib/manifest-client.generated";
 
 // Types
 interface Employee {
@@ -218,15 +219,9 @@ export default function MobileTimeClockPage() {
       for (const item of offlineQueue) {
         try {
           if (item.action === "clockIn") {
-            const response = await apiFetch(
-              "/api/manifest/TimeEntry/commands/clockIn",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(item.data),
-              }
-            );
-            if (!response.ok) {
+            try {
+              await timeEntryClockIn(item.data);
+            } catch {
               failedItems.push(item);
             }
           } else if (item.action === "clockOut" && activeTimeEntry) {
@@ -357,25 +352,11 @@ export default function MobileTimeClockPage() {
     }
 
     try {
-      const response = await apiFetch(
-        "/api/manifest/TimeEntry/commands/clockIn",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(clockInData),
-        }
-      );
-
-      if (response.ok) {
-        toast.success("Clocked in successfully");
-        await fetchStatus();
-        setShowClockInDialog(false);
-        resetClockInForm();
-      } else {
-        const errData = await response.json();
-        setError(errData.message || "Failed to clock in");
-        toast.error("Failed to clock in");
-      }
+      await timeEntryClockIn(clockInData);
+      toast.success("Clocked in successfully");
+      await fetchStatus();
+      setShowClockInDialog(false);
+      resetClockInForm();
     } catch (err) {
       captureException(err);
       console.error("[MobileTimeClock] Clock in failed:", err);

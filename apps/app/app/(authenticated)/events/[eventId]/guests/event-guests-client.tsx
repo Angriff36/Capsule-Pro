@@ -30,6 +30,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { eventGuestUpdate, eventGuestSoftDelete } from "@/app/lib/manifest-client.generated";
 
 interface Guest {
   id: string;
@@ -380,17 +381,7 @@ export function EventGuestsClient({
   const handleUpdateRSVP = (guestId: string, status: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch("/api/manifest/EventGuest/commands/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: guestId, rsvpStatus: status }),
-        });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            json.message || json.error || "Failed to update RSVP"
-          );
-        }
+        await eventGuestUpdate({ id: guestId, rsvpStatus: status });
         toast.success("RSVP updated");
         refreshGuests();
       } catch (err) {
@@ -404,20 +395,7 @@ export function EventGuestsClient({
   const handleDeleteGuest = (guestId: string) => {
     startTransition(async () => {
       try {
-        const res = await fetch(
-          "/api/manifest/EventGuest/commands/softDelete",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id: guestId }),
-          }
-        );
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            json.message || json.error || "Failed to remove guest"
-          );
-        }
+        await eventGuestSoftDelete({ id: guestId });
         toast.success("Guest removed");
         setDeleteTarget(null);
         refreshGuests();
@@ -447,17 +425,7 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        const res = await fetch("/api/manifest/EventGuest/commands/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingId, ...editForm }),
-        });
-        const json = await res.json();
-        if (!res.ok) {
-          throw new Error(
-            json.message || json.error || "Failed to update guest"
-          );
-        }
+        await eventGuestUpdate({ id: editingId, ...editForm });
         toast.success("Guest updated");
         setEditingId(null);
         setEditForm({});

@@ -17,6 +17,7 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { eventTimelineItemCreateItem, eventTimelineItemCompleteItem, eventTimelineItemDeleteItem } from "@/app/lib/manifest-client.generated";
 
 interface TimelineItem {
   id: string;
@@ -76,31 +77,17 @@ export function EventTimelineClient({
     }
 
     try {
-      const response = await fetch(
-        "/api/manifest/EventTimelineItem/commands/createItem",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            timelineTime: draft.timelineTime,
-            description: draft.description.trim(),
-            responsibleRole: draft.responsibleRole.trim() || null,
-            notes: draft.notes.trim() || null,
-          }),
-        }
-      );
+      const result = await eventTimelineItemCreateItem({
+        eventId,
+        timelineTime: draft.timelineTime,
+        description: draft.description.trim(),
+        responsibleRole: draft.responsibleRole.trim() || null,
+        notes: draft.notes.trim() || null,
+      });
 
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setError(data?.error ?? "Failed to add item");
-        return;
+      if (result) {
+        setItems((current) => mergeAndSort([...current, result as unknown as TimelineItem]));
       }
-
-      const payload = (await response.json()) as { data: TimelineItem };
-      setItems((current) => mergeAndSort([...current, payload.data]));
       setDraft(EMPTY_DRAFT);
       refresh();
     } catch (err) {
@@ -124,29 +111,7 @@ export function EventTimelineClient({
     );
 
     try {
-      const response = await fetch(
-        "/api/manifest/EventTimelineItem/commands/completeItem",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId, itemId }),
-        }
-      );
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setError(data?.error ?? "Failed to update item");
-        // Revert
-        setItems((current) =>
-          current.map((item) =>
-            item.id === itemId ? { ...item, isCompleted: !isCompleted } : item
-          )
-        );
-        return;
-      }
-
+      await eventTimelineItemCompleteItem({ eventId, itemId });
       refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -173,24 +138,7 @@ export function EventTimelineClient({
     setItemToDelete(null);
 
     try {
-      const response = await fetch(
-        "/api/manifest/EventTimelineItem/commands/deleteItem",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId, itemId }),
-        }
-      );
-
-      if (!response.ok) {
-        const data = (await response.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setError(data?.error ?? "Failed to remove item");
-        setItems(previous);
-        return;
-      }
-
+      await eventTimelineItemDeleteItem({ eventId, itemId });
       refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");

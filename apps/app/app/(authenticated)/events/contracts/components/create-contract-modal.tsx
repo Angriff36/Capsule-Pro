@@ -33,7 +33,7 @@ import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { eventContractCreate } from "@/app/lib/manifest-client.generated";
 
 interface EventOption {
   id: string;
@@ -97,32 +97,18 @@ export function CreateContractModal({
 
     setLoading(true);
     try {
-      const response = await apiFetch(
-        "/api/manifest/EventContract/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            clientId,
-            title: title.trim(),
-            contractNumber: contractNumber.trim() || undefined,
-            documentUrl: "",
-            documentType: "",
-            notes: notes.trim() || undefined,
-            expiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
-          }),
-        }
-      );
+      const result = await eventContractCreate({
+        eventId,
+        clientId,
+        title: title.trim(),
+        contractNumber: contractNumber.trim() || undefined,
+        documentUrl: "",
+        documentType: "",
+        notes: notes.trim() || undefined,
+        expiresAt: expiresAt ? new Date(expiresAt).getTime() : 0,
+      });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to create contract");
-      }
-
-      const data = await response.json();
-      const contractId =
-        data.result?.id || data.result?.contractId || data.result?.id;
+      const contractId = result?.id;
 
       toast.success("Contract created successfully");
       onOpenChange(false);

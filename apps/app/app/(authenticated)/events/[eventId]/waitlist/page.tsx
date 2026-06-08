@@ -47,6 +47,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { eventWaitlistEntryAddGuest, eventWaitlistEntryUpdateRsvp, eventWaitlistEntryPromote } from "@/app/lib/manifest-client.generated";
 
 interface Guest {
   id: string;
@@ -151,34 +152,25 @@ export default function WaitlistPage() {
     }
     setAdding(true);
     try {
-      const res = await fetch(
-        "/api/manifest/EventWaitlistEntry/commands/addGuest",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventId,
-            guestName: form.guestName.trim(),
-            guestEmail: form.guestEmail.trim() || null,
-            guestPhone: form.guestPhone.trim() || null,
-            dietaryRestrictions: form.dietaryRestrictions.trim()
-              ? form.dietaryRestrictions.split(",").map((s) => s.trim())
-              : [],
-            specialMealRequired: form.specialMealRequired,
-            specialMealNotes: form.specialMealNotes.trim() || null,
-          }),
-        }
-      );
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to add guest");
+      const result = await eventWaitlistEntryAddGuest({
+        eventId,
+        guestName: form.guestName.trim(),
+        guestEmail: form.guestEmail.trim() || null,
+        guestPhone: form.guestPhone.trim() || null,
+        dietaryRestrictions: form.dietaryRestrictions.trim()
+          ? form.dietaryRestrictions.split(",").map((s) => s.trim())
+          : [],
+        specialMealRequired: form.specialMealRequired,
+        specialMealNotes: form.specialMealNotes.trim() || null,
+      });
 
-      const guest = json.data;
-      if (guest.rsvp_status === "waitlisted") {
+      const guest = result as Record<string, unknown> | undefined;
+      if (guest && guest.rsvp_status === "waitlisted") {
         toast.info(
           `${guest.guest_name} added to waitlist (position #${guest.waitlist_position})`
         );
       } else {
-        toast.success(`${guest.guest_name} added as confirmed`);
+        toast.success(`${form.guestName.trim()} added as confirmed`);
       }
 
       setForm({
@@ -201,20 +193,12 @@ export default function WaitlistPage() {
   const handleUpdateRSVP = async (guestId: string, status: string) => {
     setUpdating(guestId);
     try {
-      const res = await fetch(
-        "/api/manifest/EventWaitlistEntry/commands/updateRsvp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ guestId, status }),
-        }
-      );
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to update RSVP");
+      const result = await eventWaitlistEntryUpdateRsvp({ guestId, status });
 
-      if (json.autoPromoted) {
+      const promoted = (result as Record<string, unknown> | undefined)?.autoPromoted as Record<string, unknown> | undefined;
+      if (promoted) {
         toast.success(
-          `Auto-promoted ${json.autoPromoted.guest_name} from waitlist!`
+          `Auto-promoted ${promoted.guest_name} from waitlist!`
         );
       }
       fetchGuests();
@@ -228,17 +212,7 @@ export default function WaitlistPage() {
   const handlePromote = async (guestId: string, guestName: string) => {
     setUpdating(guestId);
     try {
-      const res = await fetch(
-        "/api/manifest/EventWaitlistEntry/commands/promote",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ eventId, guestId }),
-        }
-      );
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Failed to promote");
-
+      await eventWaitlistEntryPromote({ eventId, guestId });
       toast.success(`${guestName} promoted to confirmed`);
       fetchGuests();
     } catch (err) {

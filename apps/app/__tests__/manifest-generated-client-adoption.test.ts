@@ -28,9 +28,23 @@ const migratedFiles = [
   "apps/app/app/(authenticated)/procurement/vendors/[id]/page.tsx",
   "apps/app/app/(authenticated)/crm/clients/new/page.tsx",
   "apps/app/app/(authenticated)/tools/autofill-reports/autofill-reports-client.tsx",
+  "apps/app/app/(authenticated)/inventory/transfers/inventory-transfers-client.tsx",
+  "apps/app/app/(authenticated)/inventory/vendor-catalogs/vendor-catalogs-client.tsx",
+  "apps/app/app/(authenticated)/kitchen/quality-assurance/qa-actions-client.tsx",
+  "apps/app/app/(authenticated)/kitchen/prep-task-plan-workflows/workflows-client.tsx",
+  "apps/app/app/(authenticated)/kitchen/task-card.tsx",
+  "apps/app/app/(authenticated)/staff/performance/page.tsx",
+  "apps/app/app/(authenticated)/staff/mobile/timeclock/page.tsx",
+  "apps/app/app/(authenticated)/events/contracts/components/create-contract-modal.tsx",
+  "apps/app/app/(authenticated)/events/battle-boards/new/page.tsx",
+  "apps/app/app/(authenticated)/events/[eventId]/follow-ups/page.tsx",
+  "apps/app/app/(authenticated)/events/[eventId]/waitlist/page.tsx",
+  "apps/app/app/(authenticated)/events/[eventId]/guests/event-guests-client.tsx",
+  "apps/app/app/(authenticated)/events/[eventId]/staff/event-staff-client.tsx",
+  "apps/app/app/(authenticated)/events/[eventId]/timeline/event-timeline-client.tsx",
 ];
 
-describe("manifest generated client adoption (20 migrated files)", () => {
+describe("manifest generated client adoption (34 migrated files)", () => {
   it("keeps migrated frontend pages from calling Manifest command URLs directly", () => {
     const missing = migratedFiles.filter(
       (file) => !existsSync(resolve(repoRoot, file))

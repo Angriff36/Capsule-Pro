@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import { kitchenTaskClaim, kitchenTaskRelease } from "@/app/lib/manifest-client.generated";
 
 type UserSelect = Pick<
   DbUser,
@@ -246,24 +247,7 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      // Manifest route: /api/manifest/KitchenTask/commands/claim
-      const response = await apiFetch(
-        "/api/manifest/KitchenTask/commands/claim",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: task.id, userId: currentUserId }),
-        }
-      );
-      if (!response.ok) {
-        const errBody = await response
-          .json()
-          .catch(() => ({ error: "Unknown error" }));
-        console.error("[handleClaim] Failed:", response.status, errBody);
-        throw new Error(
-          `Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
-        );
-      }
+      await kitchenTaskClaim({ id: task.id, userId: currentUserId });
       router.refresh();
     } catch (error) {
       captureException(error);
@@ -283,28 +267,11 @@ export function TaskCard({
     }
     setIsLoading(true);
     try {
-      // Manifest route: /api/manifest/KitchenTask/commands/release
-      const response = await apiFetch(
-        "/api/manifest/KitchenTask/commands/release",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: task.id,
-            userId: currentUserId,
-            reason: "",
-          }),
-        }
-      );
-      if (!response.ok) {
-        const errBody = await response
-          .json()
-          .catch(() => ({ error: "Unknown error" }));
-        console.error("[handleRelease] Failed:", response.status, errBody);
-        throw new Error(
-          `Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
-        );
-      }
+      await kitchenTaskRelease({
+        id: task.id,
+        userId: currentUserId,
+        reason: "",
+      });
       router.refresh();
     } catch (error) {
       captureException(error);
