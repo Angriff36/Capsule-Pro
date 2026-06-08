@@ -600,3 +600,26 @@ event EventSummaryRefreshed: "events.summary.refreshed" {
   eventId: string
   generatedAt: datetime
 }
+
+// Saga: Finalize event → calculate profitability → generate summary
+// Compensation: unfinalize reverts event to confirmed status
+saga FinalizeEventWithReporting {
+  step finalize {
+    command: Event.finalize
+    compensate: Event.unfinalize
+  }
+  step calculateProfitability {
+    command: EventProfitability.recalculate
+  }
+  step generateSummary {
+    command: EventSummary.create
+  }
+  on_failure: "compensate"
+  emit EventFinalizationSagaCompleted
+}
+
+event EventFinalizationSagaCompleted: "events.finalization_saga.completed" {
+  eventId: string
+  tenantId: string
+  completedAt: datetime
+}
