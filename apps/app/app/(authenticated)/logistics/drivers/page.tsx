@@ -60,6 +60,10 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  driverRemove,
+  driverUpdate,
+} from "@/app/lib/manifest-client.generated";
 import { createDriver } from "../actions";
 
 interface Driver {
@@ -194,20 +198,15 @@ export default function DriversPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/manifest/Driver/commands/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            driverId: editing.id,
-            ...form,
-            vehicleId: form.vehicleId === "__none__" ? null : form.vehicleId || null,
-          }),
+        await driverUpdate({
+          driverId: editing.id,
+          ...form,
+          vehicleId:
+            form.vehicleId === "__none__" ? null : form.vehicleId || null,
         });
-        if (res.ok) {
-          toast.success("Driver updated successfully");
-          await loadData();
-          setShowDialog(false);
-        }
+        toast.success("Driver updated successfully");
+        await loadData();
+        setShowDialog(false);
       } else {
         // Use the server action for creation
         const fd = new FormData();
@@ -239,11 +238,7 @@ export default function DriversPage() {
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
-      await apiFetch("/api/manifest/Driver/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ driverId }),
-      });
+      await driverRemove({ driverId });
       setDrivers((prev) => prev.filter((d) => d.id !== driverId));
     } catch (e) {
       console.error("Failed to delete:", e);

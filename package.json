@@ -110,6 +110,7 @@
     "manifest:try-prisma": "node manifest/scripts/try-prisma.mjs",
     "manifest:derive-options": "node manifest/scripts/derive-prisma-options.mjs",
     "manifest:generate-zod": "node manifest/scripts/generate-zod-schemas.mjs",
+    "manifest:generate-hooks": "node manifest/scripts/generate-react-query-hooks.mjs",
     "manifest:generate-schema": "node manifest/scripts/generate-full-schema.mjs",
     "manifest:schema:full": "node manifest/scripts/derive-prisma-options.mjs && node manifest/scripts/generate-full-schema.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",

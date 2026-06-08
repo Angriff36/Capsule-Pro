@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: IMPLEMENTATION_PLAN.md (edit), manifest/source/event-guest-rules.manifest (edit), manifest.config.yaml (edit), package.json (edit)
+[proactive bridge @ 93% context — saved before compacting]
+Files (1):
+  manifest/scripts/generate-react-query-hooks.mjs (create)
 
 # === END COGNILAYER ===

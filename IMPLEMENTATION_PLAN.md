@@ -579,6 +579,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Task 6.5: Rename misleading use-*.ts files** | 10 files renamed from use-*.ts to *.ts in apps/app/app/lib/. 23 import paths updated. All typechecks clean (app, api, mcp-server). |
 | 2026-06-07 | **Schema drift audit fix: allowlist path + semantic aliases** | Fixed allowlist path from stale `scripts/manifest/` to `manifest/governance/`. Added MANIFEST_SEMANTIC_ALIASES normalization (datetime→number, money→number, int→number, decimal→number, etc.). Results: 179→51 violations (72% reduction), 76 clean entities (was 0). **RESOLVED in follow-up:** camelCase field matching + adapter-derived rules added → 0 violations (110/110 clean). |
 | 2026-06-07 | **Task 10.8 batch 2: `as unknown as` double-cast cleanup** | 157→91 (54 removed, 42% reduction). 28 files fixed across apps/api, apps/app, packages/ai, packages/design-system, packages/event-parser, packages/mcp-server, packages/sentry-integration. Remaining 91 are architecturally necessary (test mocks, Prisma JSON, Vega-Lite specs). |
+| 2026-06-07 | **Task 6.2 phase 1: React Query hooks generator + 2 page migrations** | Generator: `manifest/scripts/generate-react-query-hooks.mjs` → `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, all IR entities). Migrated: drivers/page.tsx + vehicles/page.tsx from apiFetch to generated client. Adoption guard test: `apps/app/__tests__/manifest-generated-client-adoption.test.ts`. Pre-existing fix: ingredient-resolution.test.ts double cast. API+app typecheck 0, 3080+ tests pass (app: 308, api: 2772). |
 | 2026-06-07 | **Task 6.1: Frontend Data Layer Decision** | DECISION: Adopt TanStack Query wrapping generated client as `queryFn` sources. QueryProvider already live. 1,328 generated functions → 3 consumers. Migration path defined for Tasks 6.2-6.4. |
 | 2026-06-07 | **Schema drift allowlist: Json type entries** | Added adapter-derived rules for ClientPreference.preferenceValue, CommandBoardLayout.viewport, Workflow.permissions. 51→49 violations. **RESOLVED in follow-up:** all remaining violations fixed (0 violations, 110/110 clean). |
 
@@ -1123,7 +1124,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## TIER 6 -- FRONTEND CLIENT STRATEGY
 
-> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 0 consumers**. The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it; 167 other apiFetch files get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
+> **Why:** The generated `manifest-client.generated.ts` has **1,330 functions with 2 consumers** (drivers + vehicles logistics pages, Task 6.2 phase 1). The app uses 4 coexisting patterns. TanStack Query IS installed with QueryProvider — 7 files now use it (5 events + 2 logistics); 165 other apiFetch files still get zero caching. 81% of API URLs are hardcoded strings (211 paths vs ~50 typed path builders). Before adopting or extending the generated client, decide whether it is the right abstraction.
 
 ### 6.1 Frontend data layer decision — ✅ DONE 2026-06-07
 - **✅ DECISION: Adopt TanStack Query wrapping the generated client as `queryFn` sources.**
@@ -1134,7 +1135,17 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
   - Phase 3 (Task 6.4): Remove unused `apiFetch` call sites and per-domain fetch wrappers
 - **Key constraint:** Command functions must NOT be called directly from components. Wrap in `useMutation` hooks calling `executeCommand` from `manifest-client.ts` to preserve governed write path.
 
-### 6.2 Add data caching/deduplication layer
+### 6.2 Add data caching/deduplication layer — IN PROGRESS (phase 1 done 2026-06-07)
+- **Phase 1 DONE (2026-06-07):**
+  - React Query hooks generator created: `manifest/scripts/generate-react-query-hooks.mjs`
+  - Generated hooks output: `manifest/generated/hooks/manifest-hooks.generated.ts` (628KB, covers all IR entities)
+  - Package script added: `manifest:generate-hooks`
+  - 2 logistics pages migrated from `apiFetch` to generated client: `drivers/page.tsx`, `vehicles/page.tsx`
+  - Adoption guard test created: `apps/app/__tests__/manifest-generated-client-adoption.test.ts`
+  - Verified: generated client throws on HTTP errors (removing `if (res.ok)` was correct)
+  - Verified: import paths resolve correctly via tsconfig `@/*` → `./*` (rooted at `apps/app/`)
+  - QueryProvider already live in `layout.tsx` with proper config (staleTime 60s, gcTime 5min, retry 1)
+  - TanStack Query v5.100.14 installed
 - **Done when:** TanStack Query wraps apiFetch as the universal fetcher beyond just the events domain. Component re-mounts do not trigger fresh API calls.
 - **Why:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. 167 other apiFetch files (1,092 call sites) get zero caching. Every component mount in those files triggers a fresh API call via uncached `apiFetch()`.
 - **Backpressure:** Network tab shows cached responses on re-mount for non-event domains.
@@ -1911,7 +1922,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ---
 
-## Codebase Metrics (verified 2026-06-07, 28th revision)
+## Codebase Metrics (verified 2026-06-07, 31st revision)
 
 | Metric | Value | Prior Value | Change |
 |---|---|---|---|
@@ -1943,9 +1954,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `manifest-runtime.ts` (API shim) | 376 lines | 376 | -- |
 | `manifest-command-handler.ts` (legacy) | ~~Monolithic handler, SHOULD BE DELETED~~ DELETED (Task 10.13) | N/A | RESOLVED 2026-06-04 |
 | `execute-command.ts` (canonical) | Single canonical handler, used by all 71 routes + dispatcher | N/A | RESOLVED 2026-06-04 |
-| `manifest-client.generated.ts` | **1,330 functions, 0 consumers** | 1,330/3 | CORRECTED (9th rev confirms 0 consumers) |
+| `manifest-client.generated.ts` | **1,330 functions, 2 consumers** (drivers + vehicles logistics pages) | 1,330/0 | UPDATED (Task 6.2 phase 1) |
 | `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
-| API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED 2026-06-06; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes (2026-06-04) + `deletedAt` branch in applyFieldOverrides() for 6 models (2026-06-06) |
+| API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED 2026-06-06; ingredient-resolution test fix 2026-06-07; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes (2026-06-04) + `deletedAt` branch in applyFieldOverrides() for 6 models (2026-06-06) |
 | Runtime typecheck errors | **0** | 0 | -- |
 | Entity graph module | 7 files, **DEAD CODE** (0 consumers, stub) | same | -- |
 | Rules Engine module | 5 files, 10 rules, **DEAD CODE** (0 consumers) | same | -- |
@@ -1965,7 +1976,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Schema drift violations | **0** (110/110 entities clean, strict mode exit 0) | 179 | RESOLVED (v0.12.170) |
 | describe.skip test suites | 1 (sales-reporting) | 1 | -- |
 | apiFetch call sites | **1,092** across **167 files** | 1,098/169 | CORRECTED (9th rev) |
-| Frontend data caching | TanStack Query installed, **5 files, 31 uses** | 6/32 | CORRECTED (9th rev) |
+| Frontend data caching | TanStack Query installed, **7 files** (5 events + 2 logistics), hooks generator live | 5/31 | UPDATED (Task 6.2 phase 1) |
 | use-*.ts files | **11** (10 renamed to `*.ts` in Task 6.5, 1 TanStack Query) | 21 | RESOLVED (Task 6.5, 2026-06-07) |
 | Hardcoded API URL paths | ~1,092 (81% of total) | ~1,098 | CORRECTED (9th rev) |
 | Typed path builders | ~50 | ~50 | -- |
@@ -2030,7 +2041,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 
-20. **Frontend caching gap:** TanStack Query IS installed with QueryProvider but only 5 files (31 uses) use it. 167 other apiFetch files (1,092 call sites) get zero caching. Task 6.2.
+20. **~~Frontend caching gap~~ IN PROGRESS (Task 6.2 phase 1 DONE):** TanStack Query IS installed with QueryProvider. Phase 1: hooks generator created + 2 logistics pages migrated (drivers/vehicles). 165 other apiFetch files still get zero caching. Task 6.2 phases 2-3 remaining.
 
 21. **build.mjs broken path (CONFIRMED):** Line 170 references `scripts/manifest/generate-route-manifest.ts` which doesn't exist. `pnpm manifest:build` Step 3 will fail. Task 0.2.
 
@@ -2112,3 +2123,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-07 | **Twenty-eighth revision:** Tasks 9.1, 9.5, 9.15 marked DONE. Tasks 9.10, 9.17 marked BLOCKED (features not in @angriff36/manifest v2.2.0). Task 9.1: entity-graph module deleted in Task 10.4 (dead code, zero consumers). Task 9.5: 60+ entities have declarative transition blocks; EventGuest was last meaningful entity without transitions (now added). Task 9.15: 40/40 CLI commands wired to package.json (was 24/42). Spec audit: 58 specs across 11 categories, ~40/58 TODO labels stale (fully implemented), ~8 partially implemented, ~4 genuinely not implemented. Config validation: 3 violations fixed in manifest.config.yaml (dispatcher structure, removed placementPolicy, relocated multiSchema). Findings #12, #13, #55 updated to RESOLVED. |
 | 2026-06-07 | **Twenty-ninth revision (v0.12.166 target):** Tasks 10.6, 6.5 marked DONE. Schema drift audit fix applied. **Task 10.6:** MCP server entity-domain-map.ts converted from require() CJS hack to proper ESM re-export (14→8 lines). **Task 6.5:** 10 misleading use-*.ts files renamed to *.ts (plain functions, not hooks); 23 import paths updated. **Schema drift audit:** Fixed allowlist path from stale `scripts/manifest/` to `manifest/governance/`; added MANIFEST_SEMANTIC_ALIASES normalization (datetime→number, money→number, int→number, decimal→number, etc.). Results: 179→51 violations (72% reduction), 76 clean entities (was 0). |
 | 2026-06-07 | **Thirtieth revision (v0.12.170 target):** Schema drift RESOLVED — **0 violations (110/110 entities clean)**. Added camelCase field matching in audit script, documented all adapter-derived rules (Json type, set-defaults, soft-delete, computed properties). Strict mode passes (exit 0). Codebase Metrics table updated with schema-drift row (RESOLVED). Completed Milestones table updated. |
+| 2026-06-07 | **Thirty-first revision:** Task 6.2 phase 1 DONE — React Query hooks generator (`manifest/scripts/generate-react-query-hooks.mjs`) produces 628KB generated hooks covering all IR entities. 2 logistics pages migrated from apiFetch to generated client (drivers, vehicles). Adoption guard test created. Pre-existing fix: ingredient-resolution.test.ts `File as string` → `File as unknown as string`. Typecheck errors: 0. All tests: 3080+ passing (app: 308, api: 2772). |

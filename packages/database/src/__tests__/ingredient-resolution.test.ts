@@ -160,7 +160,7 @@ describe("parseIngredientInput", () => {
   it("returns empty array for undefined (via FormDataEntryValue type)", () => {
     // FormDataEntryValue can be File | string, but parseIngredientInput checks typeof
     const file = new File(["test"], "test.txt", { type: "text/plain" });
-    expect(parseIngredientInput(file as string)).toEqual([]);
+    expect(parseIngredientInput(file as unknown as string)).toEqual([]);
   });
 
   it("returns empty array for empty string", () => {

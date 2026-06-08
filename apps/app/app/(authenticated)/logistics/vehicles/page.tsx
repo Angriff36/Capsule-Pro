@@ -60,6 +60,10 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
+import {
+  vehicleRemove,
+  vehicleUpdate,
+} from "@/app/lib/manifest-client.generated";
 import { createVehicle } from "../actions";
 
 interface Vehicle {
@@ -193,33 +197,27 @@ export default function VehiclesPage() {
     setSaving(true);
     try {
       if (editing) {
-        const res = await apiFetch("/api/manifest/Vehicle/commands/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            vehicleId: editing.id,
-            make: form.make,
-            model: form.model,
-            year: form.year ? Number.parseInt(form.year) : null,
-            plateNumber: form.plateNumber || null,
-            vin: form.vin || null,
-            capacityWeight: form.capacityWeight
-              ? Number.parseFloat(form.capacityWeight)
-              : null,
-            capacityVolume: form.capacityVolume
-              ? Number.parseFloat(form.capacityVolume)
-              : null,
-            fuelType: form.fuelType || null,
-            mileage: form.mileage ? Number.parseFloat(form.mileage) : null,
-            status: form.status,
-            notes: form.notes || null,
-          }),
+        await vehicleUpdate({
+          vehicleId: editing.id,
+          make: form.make,
+          model: form.model,
+          year: form.year ? Number.parseInt(form.year) : null,
+          plateNumber: form.plateNumber || null,
+          vin: form.vin || null,
+          capacityWeight: form.capacityWeight
+            ? Number.parseFloat(form.capacityWeight)
+            : null,
+          capacityVolume: form.capacityVolume
+            ? Number.parseFloat(form.capacityVolume)
+            : null,
+          fuelType: form.fuelType || null,
+          mileage: form.mileage ? Number.parseFloat(form.mileage) : null,
+          status: form.status,
+          notes: form.notes || null,
         });
-        if (res.ok) {
-          toast.success("Vehicle updated successfully");
-          await loadVehicles();
-          setShowDialog(false);
-        }
+        toast.success("Vehicle updated successfully");
+        await loadVehicles();
+        setShowDialog(false);
       } else {
         // Use the server action for creation
         const fd = new FormData();
@@ -254,11 +252,7 @@ export default function VehiclesPage() {
   const handleDelete = async (vehicleId: string) => {
     setDeleting(vehicleId);
     try {
-      await apiFetch("/api/manifest/Vehicle/commands/remove", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vehicleId }),
-      });
+      await vehicleRemove({ vehicleId });
       setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
     } catch (e) {
       console.error("Failed to delete:", e);
