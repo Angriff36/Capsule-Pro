@@ -129,6 +129,7 @@ entity ScheduleShift {
   property swapAcceptedAt: datetime
   versionProperty version: number
   versionAtProperty versionAt: number
+  property inheritedContext: string = ""
   timestamps
   property deletedAt: datetime
 
@@ -154,16 +155,14 @@ entity ScheduleShift {
   }
 
   default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
-  command create(scheduleId: string, employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
+  command create(scheduleId: string, employeeId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard locationId != null and locationId != "" "Location ID is required"
     guard shiftStart != null and shiftStart > 0 "Shift start time is required"
     guard shiftEnd != null and shiftEnd > shiftStart "Shift end must be after shift start"
 
     mutate scheduleId = scheduleId
     mutate employeeId = employeeId
-    mutate locationId = locationId
     mutate shiftStart = shiftStart
     mutate shiftEnd = shiftEnd
     mutate roleDuringShift = roleDuringShift

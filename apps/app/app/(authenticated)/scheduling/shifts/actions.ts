@@ -310,7 +310,6 @@ export async function createShift(formData: FormData) {
 
   const scheduleId = formData.get("scheduleId") as string;
   const employeeId = formData.get("employeeId") as string;
-  const locationId = formData.get("locationId") as string;
   const shiftStart = formData.get("shiftStart") as string;
   const shiftEnd = formData.get("shiftEnd") as string;
   const roleDuringShift = formData.get("roleDuringShift") as string | null;
@@ -319,8 +318,9 @@ export async function createShift(formData: FormData) {
   const allowOverlap = formData.get("allowOverlap") === "true";
 
   // Basic required-field guard (fast-fail before hitting the DB)
-  if (!(scheduleId && employeeId && locationId && shiftStart && shiftEnd)) {
-    throw new Error("Schedule, employee, location, and times are required");
+  // Note: locationId is auto-inherited from parent Schedule via parent-context propagation
+  if (!(scheduleId && employeeId && shiftStart && shiftEnd)) {
+    throw new Error("Schedule, employee, and times are required");
   }
 
   const startDate = new Date(shiftStart);
@@ -358,7 +358,6 @@ export async function createShift(formData: FormData) {
   const body = {
     scheduleId,
     employeeId,
-    locationId,
     shiftStart: startDate.getTime(),
     shiftEnd: endDate.getTime(),
     roleDuringShift: roleDuringShift || "",

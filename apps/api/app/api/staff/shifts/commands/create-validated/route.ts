@@ -13,6 +13,10 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import {
+  resolveParentContext,
+  sanitizeCreateInitialTransitionInput,
+} from "@repo/manifest-runtime/run-manifest-command-core";
 import { validateShift } from "../../validation";
 
 export const runtime = "nodejs";
@@ -104,6 +108,24 @@ export async function POST(request: NextRequest) {
       user: { id: currentUser.id, tenantId, role: currentUser.role },
       entityName: "ScheduleShift",
     });
+
+    // Parent-context propagation: load parent-owned fields (e.g. from Schedule)
+    // before the engine snapshots the create body. Matches runManifestCommandCore.
+    try {
+      await resolveParentContext(runtime, {
+        entity: "ScheduleShift",
+        command: "create",
+        body,
+      });
+    } catch {
+      // Inference is best-effort; proceed with the un-enriched body.
+    }
+    sanitizeCreateInitialTransitionInput(
+      runtime,
+      "ScheduleShift",
+      "create",
+      body
+    );
 
     const result = await runtime.runCommand("create", body, {
       entityName: "ScheduleShift",

@@ -148,13 +148,6 @@
       "owner": "accounting",
       "reviewed": "2026-06-05"
     },
-    "ScheduleShift": {
-      "fields": ["locationId"],
-      "category": "BASELINE",
-      "reason": "PRE-EXISTING (2026-06-05): locationId inferable from the parent Schedule. Candidate for propagation; tracked in IMPLEMENTATION_PLAN.md.",
-      "owner": "staff",
-      "reviewed": "2026-06-05"
-    },
     "TrainingQuestion": {
       "fields": ["code"],
       "category": "FALSE_POSITIVE",

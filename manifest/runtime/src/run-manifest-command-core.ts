@@ -10,6 +10,7 @@ import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type { ConstraintOutcome, IREntity } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
 import { resolveParentContext } from "./parent-context-resolver";
+export { resolveParentContext } from "./parent-context-resolver";
 
 export interface ManifestUserContext {
   id: string;

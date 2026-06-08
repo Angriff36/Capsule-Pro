@@ -2723,6 +2723,7 @@ model ScheduleShift {
   deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
   version           Int       @default(0)
   versionAt         DateTime?
+  inherited_context String?
   tenant            Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
