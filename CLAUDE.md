@@ -259,10 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 100% context — saved before compacting]
-Files (3):
-  apps/app/app/(authenticated)/events/contracts/[contractId]/contract-detail-client.tsx (edit)
-  apps/app/app/(authenticated)/events/components/guest-management.tsx (edit)
-  IMPLEMENTATION_PLAN.md (edit)
+[proactive bridge @ 95% context — saved before compacting]
+Files (2):
+  apps/api/lib/manifest-response.ts (edit)
+  apps/api/lib/manifest-runtime.ts (edit)
 
 # === END COGNILAYER ===
