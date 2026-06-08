@@ -149,6 +149,9 @@ describe("Command Board CRUD Tests", () => {
           // runtime.createInstance(...) (execute-command.ts) before
           // runCommand. The mock runtime must expose it (and getInstance, used as a
           // success-path fallback) or the create throws "createInstance is not a function".
+          // getEntity + getCommand required by resolveParentContext + sanitizeCreateInitialTransitionInput.
+          getEntity: vi.fn().mockReturnValue(undefined),
+          getCommand: vi.fn().mockReturnValue(undefined),
           createInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           getInstance: vi.fn().mockResolvedValue({ id: TEST_BOARD_ID }),
           runCommand: vi.fn().mockResolvedValue({
@@ -214,6 +217,9 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // getEntity + getCommand required by resolveParentContext + sanitizeCreateInitialTransitionInput.
+          getEntity: vi.fn().mockReturnValue(undefined),
+          getCommand: vi.fn().mockReturnValue(undefined),
           // The canonical runManifestCommand create path seeds the instance via
           // runtime.createInstance(...) (execute-command.ts) before
           // runCommand. The mock runtime must expose it (and getInstance, used as a
@@ -254,6 +260,9 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // getEntity + getCommand required by resolveParentContext + sanitizeCreateInitialTransitionInput.
+          getEntity: vi.fn().mockReturnValue(undefined),
+          getCommand: vi.fn().mockReturnValue(undefined),
           // The canonical runManifestCommand create path seeds the instance via
           // runtime.createInstance(...) (execute-command.ts) before
           // runCommand. The mock runtime must expose it (and getInstance, used as a
@@ -309,6 +318,9 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // getEntity + getCommand required by resolveParentContext + sanitizeCreateInitialTransitionInput.
+          getEntity: vi.fn().mockReturnValue(undefined),
+          getCommand: vi.fn().mockReturnValue(undefined),
           // The canonical runManifestCommand create path seeds the instance via
           // runtime.createInstance(...) (execute-command.ts) before
           // runCommand. The mock runtime must expose it (and getInstance, used as a
@@ -351,6 +363,9 @@ describe("Command Board CRUD Tests", () => {
         });
 
         const mockRuntime = {
+          // getEntity + getCommand required by resolveParentContext + sanitizeCreateInitialTransitionInput.
+          getEntity: vi.fn().mockReturnValue(undefined),
+          getCommand: vi.fn().mockReturnValue(undefined),
           // The canonical runManifestCommand create path seeds the instance via
           // runtime.createInstance(...) (execute-command.ts) before
           // runCommand. The mock runtime must expose it (and getInstance, used as a
@@ -697,6 +712,8 @@ describe("Command Board CRUD Tests", () => {
       });
 
       const mockRuntime = {
+        getEntity: vi.fn().mockReturnValue(undefined),
+        getCommand: vi.fn().mockReturnValue(undefined),
         runCommand: vi.fn().mockResolvedValue({
           success: true,
           result: { id: TEST_BOARD_ID, deletedAt: new Date().toISOString() },
@@ -739,6 +756,8 @@ describe("Command Board CRUD Tests", () => {
       });
 
       const mockRuntime = {
+        getEntity: vi.fn().mockReturnValue(undefined),
+        getCommand: vi.fn().mockReturnValue(undefined),
         runCommand: vi.fn().mockResolvedValue({
           success: false,
           policyDenial: { policyName: "AdminOnly" },
@@ -771,6 +790,8 @@ describe("Command Board CRUD Tests", () => {
       });
 
       const mockRuntime = {
+        getEntity: vi.fn().mockReturnValue(undefined),
+        getCommand: vi.fn().mockReturnValue(undefined),
         runCommand: vi.fn().mockResolvedValue({
           success: false,
           error: "Board not found",

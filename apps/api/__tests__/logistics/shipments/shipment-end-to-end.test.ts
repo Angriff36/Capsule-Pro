@@ -293,6 +293,9 @@ describe("Shipment Persistence (write → read alignment)", () => {
       } as any);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
+        // getEntity required by resolveParentContext + sanitizeCreateInitialTransitionInput for create commands.
+        getEntity: vi.fn().mockReturnValue(undefined),
+        getCommand: vi.fn().mockReturnValue(undefined),
         runCommand: mockRunCommand,
       } as any);
     });

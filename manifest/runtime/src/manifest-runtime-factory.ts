@@ -238,9 +238,35 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
  * drift from schema.prisma: regenerating the metadata
  * (`pnpm manifest:gen-prisma-meta`) updates the set automatically.
  */
+/**
+ * Entities that PASS the metadata shape check (tenantId + [id]/[tenantId,id])
+ * but are nevertheless KNOWN-BROKEN through GenericPrismaStore today, so they
+ * are force-kept on PrismaJsonStore until the store gains the missing capability.
+ *
+ * ⚠️ TODO(manifest-flip): each entry here is a real bug to fix, not a permanent
+ * exclusion. Remove an entry only after its create round-trips through
+ * GenericPrismaStore to the real table (durable smoke green).
+ *
+ *   - "PrepList": Prisma's create for tenant_kitchen.prep_lists requires the
+ *     `tenant` RELATION, but GenericPrismaStore only supplies the scalar
+ *     `tenantId`, so create() throws:
+ *         "Argument `tenant` is missing."
+ *     Verified failing by the durable smoke on 2026-06-08. Fixing it means
+ *     teaching GenericPrismaStore to connect required relations (out of scope
+ *     for this task) OR giving PrepList a bespoke store. Until then it MUST
+ *     stay on PrismaJsonStore so creates don't 500.
+ */
+const EXCLUDED_FROM_GENERIC_STORE: ReadonlySet<string> = new Set([
+  "PrepList",
+]);
+
 const GENERIC_STORE_SAFE_ENTITIES: ReadonlySet<string> = (() => {
   const safe = new Set<string>();
   for (const [name, meta] of Object.entries(PRISMA_MODEL_METADATA)) {
+    // Honor the known-broken exclusion list even when the shape check passes.
+    if (EXCLUDED_FROM_GENERIC_STORE.has(name)) {
+      continue;
+    }
     const fieldNames = new Set(meta.fields.map((f) => f.name));
     const pk = meta.pkFields;
     const pkOk =
@@ -257,12 +283,20 @@ const GENERIC_STORE_SAFE_ENTITIES: ReadonlySet<string> = (() => {
  * True when an entity should be backed by a real typed Prisma table
  * (bespoke store via the switch, or the generic metadata-driven store)
  * rather than the JSON-blob fallback.
+ *
+ * A bespoke store (ENTITIES_WITH_SPECIFIC_STORES) always wins — even over the
+ * known-broken exclusion list — because those entities have hand-written stores
+ * that don't rely on GenericPrismaStore. Otherwise, an explicit exclusion forces
+ * the JSON fallback regardless of metadata shape.
  */
 function hasTypedStore(entityName: string): boolean {
-  return (
-    ENTITIES_WITH_SPECIFIC_STORES.has(entityName) ||
-    GENERIC_STORE_SAFE_ENTITIES.has(entityName)
-  );
+  if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
+    return true;
+  }
+  if (EXCLUDED_FROM_GENERIC_STORE.has(entityName)) {
+    return false;
+  }
+  return GENERIC_STORE_SAFE_ENTITIES.has(entityName);
 }
 
 // ---------------------------------------------------------------------------

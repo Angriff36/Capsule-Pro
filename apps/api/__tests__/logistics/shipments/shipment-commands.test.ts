@@ -117,6 +117,9 @@ function authedAsAdmin() {
 
 function mockRuntime(runCommand: ReturnType<typeof vi.fn>) {
   vi.mocked(createManifestRuntime).mockResolvedValue({
+    // getEntity required by resolveParentContext + sanitizeCreateInitialTransitionInput for create commands.
+    getEntity: vi.fn().mockReturnValue(undefined),
+    getCommand: vi.fn().mockReturnValue(undefined),
     runCommand,
   } as never);
 }

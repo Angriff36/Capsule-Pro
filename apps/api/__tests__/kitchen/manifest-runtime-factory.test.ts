@@ -351,13 +351,15 @@ describe("createManifestRuntime (shared factory)", () => {
       // Regression guard for the PrismaJsonStore→GenericPrismaStore flip:
       // every tenant-scoped entity with a real [id] or [tenantId,id] model now
       // goes through PrismaStore (→ GenericPrismaStore → real typed table)
-      // instead of the JSON blob. These six previously emitted
-      // store_json_fallback and silently wrote to manifest_entity.
+      // instead of the JSON blob. These previously emitted store_json_fallback
+      // and silently wrote to manifest_entity.
+      // NOTE: PrepList is deliberately NOT here — it is in
+      // EXCLUDED_FROM_GENERIC_STORE (required `tenant` relation bug); see the
+      // dedicated PrepList test below.
       const flippedEntities = [
         "Venue",
         "Event",
         "Dish",
-        "PrepList",
         "TrainingModule",
         "StaffMember",
       ];
@@ -380,6 +382,34 @@ describe("createManifestRuntime (shared factory)", () => {
         );
         expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
       }
+    });
+
+    it("keeps PrepList on PrismaJsonStore for now (EXCLUDED_FROM_GENERIC_STORE — required `tenant` relation bug)", async () => {
+      // PrepList has valid metadata (tenantId + [tenantId,id]) and PASSES the
+      // shape check, but GenericPrismaStore.create currently throws
+      // "Argument `tenant` is missing" because the prep_lists model requires the
+      // tenant RELATION, not just the scalar tenantId. Until that is fixed it is
+      // force-excluded and MUST route to PrismaJsonStore so creates don't 500.
+      // TODO(manifest-flip): flip PrepList back to PrismaStore once
+      // GenericPrismaStore connects required relations (durable smoke green).
+      const deps = makeDeps();
+
+      const runtime = await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+
+      prismaStoreConstructorSpy.mockClear();
+      prismaJsonStoreConstructorSpy.mockClear();
+
+      const engineOptions = (runtime as unknown as { options: unknown })
+        .options as { storeProvider: (name: string) => unknown };
+
+      engineOptions.storeProvider("PrepList");
+      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
+      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ tenantId: "tenant-1", entityType: "PrepList" })
+      );
+      expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
     it("routes all 5 dedicated entities to PrismaStore", async () => {
