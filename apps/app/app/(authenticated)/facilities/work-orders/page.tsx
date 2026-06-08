@@ -39,8 +39,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
-import { facilityWorkOrderStart, facilityWorkOrderComplete } from "@/app/lib/manifest-client.generated";
+import { listFacilityWorkOrders, facilityWorkOrderStart, facilityWorkOrderComplete } from "@/app/lib/manifest-client.generated";
 import { createWorkOrder } from "../actions";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
@@ -107,11 +106,8 @@ export default function FacilitiesWorkOrdersPage() {
 
   const loadWorkOrders = async () => {
     try {
-      const res = await apiFetch("/api/facilities/work-orders/list?status=all");
-      const data = await res.json();
-      if (data.success) {
-        setWorkOrders(data.data.workOrders || []);
-      }
+      const result = await listFacilityWorkOrders({ status: "all" });
+      setWorkOrders(result.data as unknown as WorkOrder[]);
     } catch (error) {
       console.error("Failed to load work orders:", error);
     } finally {

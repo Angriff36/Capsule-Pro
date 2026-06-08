@@ -22,7 +22,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { getPayrollPeriod } from "@/app/lib/manifest-client.generated";
 
 interface PayrollPeriod {
   tenant_id: string;
@@ -83,13 +83,11 @@ export default function PayrollPeriodDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiFetch(`/api/payroll/periods/${id}`);
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to load payroll period");
+      const data = await getPayrollPeriod(id);
+      setPeriod(data as unknown as PayrollPeriod | null);
+      if (!data) {
+        setError("Payroll period not found");
       }
-      const data = await response.json();
-      setPeriod(data.payrollPeriod || data);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to load period";

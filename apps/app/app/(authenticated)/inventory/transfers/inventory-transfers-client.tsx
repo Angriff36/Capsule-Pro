@@ -54,8 +54,8 @@ import {
 } from "@repo/design-system/components/ui/empty";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import {
+  listInventoryTransfers,
   inventoryTransferApprove,
   inventoryTransferCancel,
   inventoryTransferCreate,
@@ -117,15 +117,12 @@ export function InventoryTransfersClient() {
   const fetchTransfers = async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
+      const query: Record<string, string | number> = {};
       if (statusFilter !== "all") {
-        params.append("status", statusFilter);
+        query.status = statusFilter;
       }
-      const response = await apiFetch(
-        `/api/inventory/transfers/list?${params}`
-      );
-      const data = await response.json();
-      setTransfers(data.transfers || []);
+      const result = await listInventoryTransfers(Object.keys(query).length > 0 ? query : undefined);
+      setTransfers(result.data as unknown as Transfer[]);
     } catch (error) {
       console.error("Failed to fetch transfers:", error);
     } finally {
