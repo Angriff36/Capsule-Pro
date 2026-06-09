@@ -69,7 +69,7 @@
 | **Manifest spec: overrideable constraints (vNext) available** | Constraints may be marked `overrideable: true` with policy-gated bypass and justification tracking. **5/583 constraints now overrideable** (was 0/583). Task 9.8 DONE. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: entity concurrency (vNext) available** | Optimistic concurrency via `versionProperty`/`versionAtProperty` with `ConcurrencyConflict` result. Currently unused. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
 | **Manifest spec: state transitions (vNext) available** | Entities may define `transitions` for state machine enforcement. Currently status changes are guarded but not declared as transitions. | `node_modules/@angriff36/manifest/docs/spec/semantics.md` |
-| **generate.mjs has 6 hardcoded values** | `defaultIr`, `defaultOutput`, `commandsManifestPath`, `dispatcherDirInfo`, projection name, surface names -- all hardcoded. Should come from `manifest.config.yaml`. | `manifest/scripts/generate.mjs` |
+| ~~**generate.mjs has 6 hardcoded values**~~ **CORRECTED 2026-06-09** | The 4 path values (`defaultIr`, `defaultOutput`, `commandsManifestPath`, `dispatcherDirInfo`) now come from `manifest.config.yaml` via `read-config.mjs`. **`projection name` + `surface names` CANNOT be config** — the v2.2.0 config schema has no such fields (projection = the `projections.<name>` key; surfaces are CLI internals). Verified against bundled `manifest.config.schema.json`. They remain code literals by necessity. | `manifest/scripts/generate.mjs` |
 | **compile.mjs uses programmatic API workaround** | Uses programmatic API instead of CLI due to a `--glob` bug. | `manifest/scripts/compile.mjs` |
 
 ### NEW findings from this revision (6th)
@@ -96,7 +96,7 @@
 | **MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`** | Inconsistent with all other stores. | `manifest/runtime/src/prisma-stores/` |
 | **build.mjs line 170 has BROKEN PATH** | References `scripts/manifest/generate-route-manifest.ts` which doesn't exist (should be `manifest/scripts/generate-route-manifest.ts`). `pnpm manifest:build` Step 3 will fail. | `manifest/scripts/build.mjs:170` |
 | **compilerVersion "0.3.8" is stale** | Installed package is 2.2.0. Stale version in build config. | `manifest/scripts/build.mjs` |
-| **manifest.config.yaml is ENTIRELY DECORATIVE** | 148 lines of config but no scripts read it despite 6 hardcoded values in generate.mjs. | `manifest.config.yaml`, `manifest/scripts/generate.mjs` |
+| ~~**manifest.config.yaml is ENTIRELY DECORATIVE**~~ **RESOLVED 2026-06-09** | Config IS consumed by `compile.mjs`, `generate.mjs`, and `generate-route-manifest.ts` via `read-config.mjs`. Consumed values: `src`/`output`/`prismaSchema`, `nextjs.output`, `appDir`, `readRoutes.{enabled,directDbReads}`, `dispatcher.path` + executor import path/name, `routes.options.basePath`. Verified via `read-config.mjs --dump`. | `manifest.config.yaml`, `manifest/scripts/generate.mjs` |
 | **ENTITY_DOMAIN_MAP: ✅ DONE — all stale copies eliminated** | Canonical `entity-domain-map.mjs` covers ALL 189 entities. `generate-route-manifest.ts` now imports canonical (was 90 entries). `mcp-server/entity-domain-map.ts` re-exports canonical. `build.mjs` delegates to `compile.mjs`. | `manifest/scripts/entity-domain-map.mjs`, `manifest/scripts/generate-route-manifest.ts`, `packages/mcp-server/src/lib/entity-domain-map.ts`, `manifest/scripts/build.mjs` |
 | **generate-route-manifest.ts Event mapping fixed** | ✅ DONE — Event now resolves to "events/event" (canonical). | `manifest/scripts/generate-route-manifest.ts` |
 | **6 scripts have no package.json entry** | Orphaned scripts not reachable via standard workflow. | `package.json` |
@@ -673,7 +673,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 6. **Non-transactional writes in payroll:** `savePayrollRecords()` can leave partial state.
 
-7. **manifest.config.yaml not consumed by scripts:** File is descriptive/forward-looking. 6 hardcoded values in `generate.mjs` should come from config.
+7. **~~manifest.config.yaml not consumed by scripts~~ RESOLVED 2026-06-09:** Config is consumed by `compile.mjs`, `generate.mjs`, and `generate-route-manifest.ts` via `read-config.mjs` (paths + `appDir` + `readRoutes` + `dispatcher` executor import + `routes.options.basePath`). The only "hardcoded" values left — projection name + surface names — are NOT config-expressible (no schema field); they are CLI internals, not a wiring gap.
 
 8. **Relationship gap: 219 declarations across 145 entities (was 12 across 8):** Batch 1 added 58 declarations across 43 entities. 57 entities remain without relationships (polymorphic FKs, missing IR targets, or no FK props).
 
@@ -725,7 +725,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 32. **~~compilerVersion "0.3.8" is stale~~ RESOLVED 2026-06-04:** Updated to 2.2.0 in both build.mjs and compile.mjs.
 
-33. **manifest.config.yaml is ENTIRELY DECORATIVE:** 148 lines of config, zero scripts read it.
+33. **~~manifest.config.yaml is ENTIRELY DECORATIVE~~ RESOLVED 2026-06-09:** Three scripts read it via `read-config.mjs` (`compile.mjs`, `generate.mjs`, `generate-route-manifest.ts`). Config also no longer names a phantom executor module — `dispatcher.executorImportPath` was `@/lib/manifest-executor` (does not exist); corrected to `@/lib/manifest/execute-command` / `runManifestCommand` and now drives the generated dispatcher's import.
 
 34. **PayrollLineItem has ZERO commands:** Declared `store ... in durable` but no command exists. All writes bypass runtime.
 
@@ -1696,7 +1696,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | Projections NOT in prior plan | **12**: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform | N/A | NEW |
 | Projections active | 2 (nextjs, routes) + 1 pilot (prisma) | same | -- |
 | Projections unevaluated | **22** (12 new + 10 from prior plan) | 20 | CORRECTED |
-| Manifest config consumed | 0 of 148 lines | same | -- |
+| Manifest config consumed | **YES** — paths + appDir + readRoutes + dispatcher executor import + routes basePath (via read-config.mjs in compile/generate/generate-route-manifest) | 0 of 148 lines | RESOLVED 2026-06-09 |
 | irHash / contentHash | EMPTY (no integrity verification) | same | -- |
 | Outbox implementations | **3** (realtime canonical, kitchen helpers unsafe, manifest batch) | same | -- |
 | Snake_case Prisma model names | **30 models** | same | -- |
@@ -1716,7 +1716,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 3. **ENTITY_DOMAIN_MAP duplication (3 stale copies of canonical 189-entry map):** Canonical `entity-domain-map.mjs` now covers ALL 189 entities. Stale copies: `generate-route-manifest.ts` (**90 entries of 189**, Event mapped as "manifest/Event"), `mcp-server/entity-domain-map.ts` (~92 entries, severely stale), and `build.mjs` (duplicates compile logic). 99 entities missing from route manifest map. Task 2.4.
 
-4. **Hardcoded CLI flags bypass manifest.config.yaml:** `compile.mjs` and `generate.mjs` pass 6 explicit flags that override the 147-line config file. Task 2.3.
+4. **~~Hardcoded CLI flags bypass manifest.config.yaml~~ RESOLVED 2026-06-09:** `compile.mjs`/`generate.mjs`/`generate-route-manifest.ts` now read config via `read-config.mjs`. The `--output <staging>` flag still overrides config output by design (the wrapper stages then domain-remaps — the CLI can't). Projection/surface flags are not config-expressible (no schema field). Task 2.3 + 2026-06-09 follow-up.
 
 5. **Relationship gap in IR sources:** 170/202 entities now have relationships defined (290 declarations). 32 entities with FK properties still lack relationship blocks (polymorphic FKs, missing IR targets, or no FK props). Blocks PrismaProjection, entity graph, cascade analysis, relationship traversal in expressions. Task 0.4 COMPLETE.
 
@@ -1736,7 +1736,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 13. **~~Entity graph stub~~ RESOLVED 2026-06-04 (Task 10.4):** `buildGraphFromIR()` and the entire entity-graph module deleted. Task 9.1 COMPLETE.
 
-14. **6 hardcoded values in generate.mjs + build.mjs broken path:** `defaultIr`, `defaultOutput`, `commandsManifestPath`, `dispatcherDirInfo`, projection name, surface names -- should come from `manifest.config.yaml`. `build.mjs:170` references non-existent `scripts/manifest/generate-route-manifest.ts`. `compilerVersion "0.3.8"` stale vs 2.2.0. Task 0.2.
+14. **~~6 hardcoded values in generate.mjs~~ CORRECTED 2026-06-09 + build.mjs broken path (RESOLVED):** The 4 path values now come from `manifest.config.yaml` via `read-config.mjs`; `appDir`, `readRoutes`, dispatcher executor import, and `routes.options.basePath` were additionally wired (2026-06-09). **`projection name` + `surface names` are NOT config-expressible** — the v2.2.0 schema has no such fields; they are CLI internals and correctly remain code literals (this part of the original finding was wrong). `build.mjs:170` path + `compilerVersion "0.3.8"` already RESOLVED (Task 0.2). Task 0.2 + Task 2.3.
 
 15. **Source-level type mismatches (UNIVERSAL -- 559+ datetime-as-number + domain-specific type bugs):** The 8th revision confirmed this pattern exists in EVERY domain. Not just datetime: number into decimal/money/int, string into array, string instead of datetime, inverted boolean logic. Task 0.6 + 2.7.
 
@@ -1797,6 +1797,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 | Date | Change |
 |---|---|
+| 2026-06-09 | **Config wiring extended + stale entries corrected.** Wired real schema-valid config keys into the build scripts (commits `ed5938eb9`, `53d10b45f`, `9ec9d6d14`): `projections.nextjs.options.appDir` (drives generate.mjs route prefix), `readRoutes.{enabled,directDbReads}` (gates read-route generation), `dispatcher` executor import path/name (corrected the phantom `@/lib/manifest-executor` → real `@/lib/manifest/execute-command` / `runManifestCommand`), and `projections.routes.options.basePath` (drives generate-route-manifest.ts). Removed two invalid keys (`projection`/`surfaces`) that were breaking `manifest:config validate`. KEY CORRECTION: projection name + surface names are NOT config-expressible in v2.2.0 (no schema field) — the original "6 hardcoded values" finding (Root Cause #14) was wrong about those two. All changes verified byte-identical (zero route/dispatcher drift); config validates clean. Corrected stale/contradictory entries: Blocker #7, #33, Root Cause #4/#14, finding rows (lines 72/99), Metrics "config consumed". |
 | 2026-06-08 | **Task 9.3 COMPLETE: Saga orchestration expanded (1→6 sagas).** 5 new sagas added beyond ProcessInvoicePayment: FinalizeEventWithReporting (3 steps: finalize event, generate reports, send notifications), AutoGeneratePrepList (2 steps: trigger prep-list generation, notify kitchen staff), + 3 additional multi-step workflows with compensate actions. IR updated: 202 entities, 999 commands, 981 events, 6 sagas. Metrics table updated. |
 | 2026-06-08 | **Task 0.4 COMPLETE (v0.12.177).** 68 belongsTo relationship declarations added to 48 entities across 32 .manifest source files. All 68 target entities confirmed in IR. Domains: Inventory (22), Staff (14), Kitchen (10), Finance (5), Events (6), CRM (3), Facilities (4), Admin (4). IR recompiled: 202 entities, 999 commands, 979 events. Remaining: 32 entities without relationships (polymorphic FKs, missing IR targets, or no FK props). 3 pre-existing typecheck errors fixed in flip-durable-smoke.test.ts (isEnum on FieldMeta) and flip-durable-smoke.integration.test.ts (entityName placement in createManifestRuntime). Metrics: IR relationships=170 entities / 290 declarations, FK-without-relationship=32 (was 152). |
 | 2026-06-07 | **27th revision — Tasks 10.7, 8.7, 9.9, 0.4 batch 3 complete.** Task 10.7 (DONE): 34→0 `as any` across 12 production files. Created `apps/api/lib/trash/entity-helpers.ts` shared utility (single cast point), typed row interfaces for staffing/payroll/purchase-orders, `Prisma.InputJsonValue` for audit writer, proper Prisma types across activity feed/calendar sync/manifest entity routes. Task 8.7 (DONE): 247→37 write-route-allowlist rules (under 50 target). Removed 145 dead rules, consolidated 65 per-route patterns into prefix-based rules, 100% coverage verified. Task 0.4 batch 3 (DONE): 148/202 entities with 222 relationship declarations. 16 documented no-FK entities. Remaining only polymorphic FKs or missing IR targets. Metrics: `as any` production=0, allowlist=37 rules, IR=202 entities/999 commands/979 events. |
