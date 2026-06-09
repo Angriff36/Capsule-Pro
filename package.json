@@ -120,6 +120,7 @@
     "manifest:generate-schema": "node manifest/scripts/generate-full-schema.mjs",
     "manifest:schema:full": "node manifest/scripts/derive-prisma-options.mjs && node manifest/scripts/generate-full-schema.mjs",
     "manifest:openapi": "node manifest/scripts/generate-openapi.mjs",
+    "manifest:kysely": "node manifest/scripts/generate-kysely.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:inspect": "pnpm exec manifest inspect entity",
     "manifest:diff": "pnpm exec manifest diff source-vs-ir",

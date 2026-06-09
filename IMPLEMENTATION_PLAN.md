@@ -54,7 +54,7 @@
 | **EventStaff / EventStaffAssignment duplicate IR entities** | Both exist with overlapping purpose (eventId + staffMemberId + role + shift + status). Both have separate Prisma models. Must consolidate or explicitly differentiate. | IR + `schema.prisma` |
 | **Rules engine middleware factory exported but never called** | `createRulesEngineMiddleware()` at `manifest/runtime/src/rules-engine/runtime-integration.ts` is never imported outside its module. Complete, tested rules engine sitting unused. | `manifest/runtime/src/rules-engine/runtime-integration.ts` |
 | **~~Entity graph module returns empty graph~~ RESOLVED 2026-06-04 (Task 10.4)** | `buildGraphFromIR()` and the entire entity-graph module deleted (dead code, zero consumers). Task 9.1 COMPLETE. | `manifest/runtime/src/entity-graph/` (DELETED) |
-| **3 projections active, 3 blocked, 2 zero-footprint** | nextjs + routes + prisma(pilot) are active. zod/react-query/openapi blocked in phase-out-registry. drizzle/mermaid have zero references anywhere. | Codebase-wide grep |
+| **5 projections active, 3 blocked, 2 zero-footprint** | nextjs + routes + prisma(pilot) + mermaid + kysely are active. zod/react-query/openapi blocked in phase-out-registry. drizzle/express have zero references anywhere. | Codebase-wide grep |
 | **Permission guard is whitelist-based, not deny-by-default** | `COMMAND_PERMISSION_MAP` covers ~30 entity.command pairs. Commands NOT in the map pass through unrestricted. Newly added entities are open until explicitly mapped. | `manifest/runtime/src/permission-guard.ts` |
 | **RESOLVED: Proxy-based permission guard replaced with Manifest middleware (Task 7.4a)** | `createRbacMiddleware()` at `before-guard` hook replaces `createPermissionGuard` Proxy. Factory returns raw `ManifestRuntimeEngine` instead of Proxy-wrapped engine. `COMMAND_PERMISSION_MAP` and `AI_APPROVAL_COMMANDS` logic preserved identically. Middleware composable with future identity/audit middleware. | `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **API shim is 376 lines, not a thin wrapper** | **RESOLVED 2026-06-07:** Shim is **99 lines** — a thin dependency-injection wrapper (Sentry telemetry, issue log, store reporter, logger) delegating to the shared factory. Prior "376 lines" was a stale measurement. | `apps/api/lib/manifest-runtime.ts` |
@@ -607,6 +607,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.4 Phase 2: Strict typed command inputs** | Removed [key: string]: unknown from 833 input interfaces, | null from 12,997 fields. 988 typed inputs enforce compile-time checking. API+App typecheck 0, 2863 tests pass. | v0.12.206 |
 | 2026-06-08 | **CrmScoringRule/EventFollowup soft-delete drift resolved** | Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES workarounds removed. | v0.12.205 |
 | 2026-06-09 | **Task 5.4: Mermaid ER diagram projection wired** | `manifest/scripts/generate-mermaid.mjs` generates ER (202 entities, 273 edges), state (263 transitions), sequence (8 entities) diagrams from IR via `MermaidProjection`. pnpm script: `manifest:mermaid`. Output: `manifest/reports/diagrams/` (10 files, 106KB ER). Stale findings corrected: PayrollLineItem (commands exist), User/ShipmentItem (no latent bugs), Time-Travel Debugger (not shipped, blocked). |
+| 2026-06-09 | **Task 5.11: Evaluate new projections — DONE** | All 12 projections evaluated. ADOPT: kysely (191 entity types, 3,918-line database.ts). DEFER: jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic. REJECT: dart, dynamodb, mongoose, sveltekit. |
 
 ---
 
@@ -647,26 +648,26 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `projections/react-query` | React Query hooks | NO -- blocked (Phase 5 eval) |
 | `projections/openapi` | OpenAPI spec generation | NO -- blocked (Phase 5 eval) |
 | `projections/drizzle` | Drizzle ORM schema | NO -- zero references |
-| `projections/mermaid` | Mermaid diagram generation | NO -- zero references |
+| `projections/mermaid` | Mermaid diagram generation | YES -- active, `pnpm manifest:mermaid`, generates ER/state/sequence diagrams (Task 5.4) |
 | `projections/llm-context` | Structured JSON for LLM agent injection | NO -- candidate for MCP server (Task 5.7) |
 | `projections/materialized-views` | PostgreSQL materialized view DDL | NO -- candidate for reporting (Task 5.8) |
 | `projections/health` | K8s health check endpoints | NO -- zero health infra exists (Task 5.9) |
 | `projections/graphql` | Full SDL + resolver stubs | NO -- not evaluated |
 | `projections/analytics` | Typed tracking event schemas | NO -- zero analytics instrumentation (Task 5.10) |
-| `projections/dart` | Dart/Flutter model generation | NO -- not evaluated |
-| `projections/dynamodb` | DynamoDB table definitions | NO -- not evaluated |
-| `projections/elasticsearch` | Elasticsearch index mappings | NO -- not evaluated |
-| `projections/hono` | Hono framework routes | NO -- not evaluated |
-| `projections/jsonschema` | JSON Schema output | NO -- not evaluated |
-| `projections/kysely` | Kysely ORM types | NO -- not evaluated |
-| `projections/mongoose` | Mongoose ODM schemas | NO -- not evaluated |
-| `projections/pydantic` | Pydantic model generation | NO -- not evaluated |
-| `projections/remix` | Remix framework routes | NO -- not evaluated |
-| `projections/storybook` | Storybook story generation | NO -- not evaluated |
-| `projections/sveltekit` | SvelteKit routes | NO -- not evaluated |
-| `projections/terraform` | Terraform infrastructure definitions | NO -- not evaluated |
+| `projections/dart` | Dart/Flutter model generation | NO -- REJECTED (no Dart targets) |
+| `projections/dynamodb` | DynamoDB table definitions | NO -- REJECTED (uses PostgreSQL) |
+| `projections/elasticsearch` | Elasticsearch index mappings | NO -- DEFERRED (no ES infra) |
+| `projections/hono` | Hono framework routes | NO -- DEFERRED (runtime uses Hono but routes are Next.js) |
+| `projections/jsonschema` | JSON Schema output | NO -- DEFERRED (Zod already covers this) |
+| `projections/kysely` | Kysely ORM types | YES -- active, `pnpm manifest:kysely`, generates 3,918-line `database.ts` with 191 table interfaces (Task 5.11) |
+| `projections/mongoose` | Mongoose ODM schemas | NO -- REJECTED (incomplete + wrong DB) |
+| `projections/pydantic` | Pydantic model generation | NO -- DEFERRED (no Python runtime) |
+| `projections/remix` | Remix framework routes | NO -- DEFERRED (uses Next.js) |
+| `projections/storybook` | Storybook story generation | NO -- DEFERRED (useful but secondary) |
+| `projections/sveltekit` | SvelteKit routes | NO -- REJECTED (uses Next.js) |
+| `projections/terraform` | Terraform infrastructure definitions | NO -- DEFERRED (no IaC pipeline) |
 | `projections/shared` | Shared projection utilities | Internal |
-| `projections/express` | Express.js route generation | NO -- not evaluated |
+| `projections/express` | Express.js route generation | NO -- not evaluated (uses Next.js API routes) |
 
 **Other package exports available but unused (39 total, only 4 actively used = 10.3%):** compiler, ir-compiler, audit/postgres (PostgresAuditSink with ON CONFLICT DO NOTHING idempotency), audit/memory, outbox/postgres (production-grade with FOR UPDATE SKIP LOCKED), outbox/memory, approval/postgres, approval/memory, agent-sdk (generates AI tool definitions from IR: toAnthropicTools, toOpenAITools, toVercelAITools, listEntities, describeEntity, findMatchingCommands, irTypeToJsonSchema), ir-diff (structured diff + breaking change classification + migration DDL generation), breaking-change (PR gating with breaking-change detection), wasm, profiling (per-phase timing for 13 execution phases with toFlameGraph), plugin-api, plugin-loader, multi-compiler, module-resolver, parser, lexer, types, config, stores, ir, ir-version-store, registry/emit, **federation** (multi-service mesh: FederationRegistry, FederationClient, buildDescriptor, policy bridge, HTTP adapter generation), **compression** (binary IR serialization: compressIR/decompressIR, 60-80% size reduction, lossless roundtrip), **projections** (top-level projection utilities), **audit** (top-level audit utilities), **outbox** (top-level outbox utilities), **approval** (top-level approval utilities). Prisma projection uses dist-path bypass instead of canonical export.
 
@@ -997,8 +998,12 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - **Done when:** Decision documented on using typed tracking event schemas from IR commands.
 - **Why:** Capsule has zero analytics instrumentation today. Projection generates typed schemas from command definitions.
 
-### 5.11 Evaluate new projections (12 not in prior plan)
-- **Done when:** Each of the 12 new projections evaluated for capsule-pro applicability: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Decision documented per projection.
+### 5.11 Evaluate new projections (12 not in prior plan) — ✅ DONE 2026-06-09
+- **✅ DONE 2026-06-09.** All 12 projections evaluated for capsule-pro applicability.
+  - **ADOPT (1):** kysely — HIGH value. PostgreSQL type-safe query builder complement to Prisma. Generated 3,918-line `database.ts` with 191 table interfaces + DB interface. Script: `manifest:kysely`. Output: `manifest/generated/kysely/database.ts`.
+  - **DEFER (7):** jsonschema (Zod already covers this), elasticsearch (no ES infra), hono (runtime uses Hono but routes are Next.js), storybook (useful but secondary), terraform (no IaC pipeline), remix (uses Next.js), pydantic (no Python runtime)
+  - **REJECT (4):** dart (no Dart targets), dynamodb (uses PostgreSQL), mongoose (incomplete + wrong DB), sveltekit (uses Next.js)
+  - Key findings: Only kysely warranted immediate adoption. Most projections target different stacks (Dart, SvelteKit, Remix, MongoDB, DynamoDB). Several are not in package.json exports (experimental). Feature adoption metric unchanged (kysely accessed via projection registry, not new export).
 - **Why:** 8th revision audit found 27 projections (not 25). 12 were not in prior plan. Some may have high value (e.g., jsonschema for API contract validation, elasticsearch for search indexing, terraform for infra-as-code).
 - **Backpressure:** Each projection evaluated with a one-paragraph assessment.
 
@@ -1783,7 +1788,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 24. **Payroll 100% disconnected (CONFIRMED):** Sets invalid status values, constructor strips `$transaction`, zero Manifest awareness. Task 8.1.
 
-25. **27 projections available (CORRECTED from 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10, 5.11.
+25. **27 projections available (CORRECTED from 25):** 12 NOT in prior plan — ALL EVALUATED (Task 5.11 DONE): ADOPT kysely (191 entity types generated), DEFER 7 (jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic), REJECT 4 (dart, dynamodb, mongoose, sveltekit). 5 projections now active: nextjs, routes, prisma(pilot), mermaid, kysely.
 
 26. ~~**Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:**~~ RESOLVED 2026-06-04 (Task 10.13). Legacy handler deleted, all 71 routes migrated to canonical handler.
 
