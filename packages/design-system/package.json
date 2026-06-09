@@ -28,9 +28,12 @@
     "@repo/typescript-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.0",
     "@tailwindcss/typography": "^0.5.19",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "postcss": "^8.5.15",
+    "postcss-load-config": "^6.0.1",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3"
   },
