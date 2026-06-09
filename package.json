@@ -224,6 +224,7 @@
     "manifest:versions": "pnpm exec manifest versions",
     "manifest:docs": "pnpm exec manifest docs",
     "manifest:diagram": "pnpm exec manifest diagram",
+    "manifest:mermaid": "node manifest/scripts/generate-mermaid.mjs",
     "manifest:harness": "pnpm exec manifest harness",
     "manifest:mock": "pnpm exec manifest mock",
     "manifest:lint-routes": "pnpm exec manifest lint-routes",

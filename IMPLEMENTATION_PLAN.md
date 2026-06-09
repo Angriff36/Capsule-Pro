@@ -83,7 +83,7 @@
 | **CRITICAL: VendorContract lastComplianceReview typed decimal but mutated to now()** | RESOLVED 2026-06-04 — Fixed: `lastComplianceReview: decimal = 0` → `datetime` in vendor-contract-rules.manifest:37. | `manifest/source/vendor-contract-rules.manifest:37` |
 | **CRITICAL: ProcurementBudget periodStart/periodEnd type mismatch** | RESOLVED 2026-06-04 — Fixed: `periodStart: decimal, periodEnd: decimal` → `datetime` in inventory-extended-rules.manifest:666; guard `periodStart > 0` → `periodStart != null`. | `manifest/source/inventory-extended-rules.manifest:666` |
 | **HIGH: Client tags string-into-array mismatch** | RESOLVED 2026-06-04 — Fixed: `tags: string` → `tags: array<string>` in client-rules.manifest create (L55) and update (L90). | `manifest/source/client-rules.manifest:25,80` |
-| **HIGH: PayrollLineItem has ZERO commands** | Declared `store ... in durable` but no command to create through governance. All writes bypass runtime. | `manifest/source/payroll-rules.manifest:270-292` |
+| ~~**HIGH: PayrollLineItem has ZERO commands**~~ **RESOLVED 2026-06-09** | Commands exist (`create`, `update`) in `manifest/source/staff-logistics-extended-rules.manifest`. Main write path governed via `ManifestPayrollDataSource`. Remaining `PrismaPayrollDataSource` instantiations are read-only. | IR analysis |
 | **HIGH: PayrollRun reject overwrites approvedBy** | `reject` command mutates `approvedBy = rejectedBy`, losing original approver. | `manifest/source/payroll-rules.manifest:250-255` |
 | **HIGH: VendorContract startDate/endDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `startDate: number, endDate: number` → `datetime` in create (L65), update (L96), renew (L176); guard `startDate > 0` → `startDate != null`. | `manifest/source/vendor-contract-rules.manifest:64,73` |
 | **HIGH: CateringOrder deliveryDate number into datetime** | RESOLVED 2026-06-04 — Fixed: `deliveryDate: number` → `datetime` in create (L94) and scheduleDelivery (L182). | `manifest/source/catering-order-rules.manifest:96` |
@@ -92,7 +92,7 @@
 | **MEDIUM: Recipe hasVersion always returns true** | **RESOLVED 2026-06-09** — Fixed: `= true` → `= count_of(self.versions) > 0` using count_of() aggregate on hasMany relationship. | `manifest/source/recipe-rules.manifest` |
 | ~~**MEDIUM: InventoryItem totalValue typed number**~~ **RESOLVED 2026-06-09** | Was already fixed to `money` (v0.12.212 fixed remaining event payload fields). | IR analysis |
 | ~~**MEDIUM: Dish margin/marginPercent bare number arithmetic**~~ **RESOLVED 2026-06-09** | Already fixed to `money`/`decimal` types (v0.12.212 verified). | IR analysis |
-| **User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case** | Fall back to GenericPrismaStore which lacks EmploymentType default (User) and proper item handling (ShipmentItem). Latent bugs. | `manifest/runtime/src/prisma-store.ts` |
+| ~~**User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case**~~ **RESOLVED** | Neither entity is in `ENTITIES_WITH_SPECIFIC_STORES` anymore. Both route through GenericPrismaStore via `GENERIC_STORE_SAFE_ENTITIES`. DB defaults handle EmploymentType for User; ShipmentItem has no special handling needs. No latent bugs. | `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`** | Inconsistent with all other stores. | `manifest/runtime/src/prisma-stores/` |
 | **build.mjs line 170 has BROKEN PATH** | References `scripts/manifest/generate-route-manifest.ts` which doesn't exist (should be `manifest/scripts/generate-route-manifest.ts`). `pnpm manifest:build` Step 3 will fail. | `manifest/scripts/build.mjs:170` |
 | **compilerVersion "0.3.8" is stale** | Installed package is 2.2.0. Stale version in build config. | `manifest/scripts/build.mjs` |
@@ -229,12 +229,12 @@
 | **Tenant isolation is TWO layers** | IR-level declaration (`tenant tenantId: string from context.tenantId`) + RuntimeOption (`requireTenantContext: true`). Plan only covers RuntimeOption. Both should be active. | Official docs `/language/tenancy` |
 | **Policy matrix viewer** (`manifest coverage --format policy-matrix`) | Visualizes which entities/commands have policies. Surfaces 180/189 no-RBAC gap immediately. | Official docs `/cli/governance` |
 | **Runtime REPL** (`manifest repl`) | Interactive debugging of Manifest runtime. Inspect entity state, evaluate expressions, test guards/policies. Not in plan. | Official docs `/extensibility/runtime-tooling` |
-| **Time-travel debugger** (`@angriff36/manifest/debug`) | Records state mutations during command execution with replay. Step forward/backward through state changes. Was "planned" in FEATURE-LIST, now SHIPPED. | Official docs `/extensibility/runtime-tooling` |
+| **Time-travel debugger** (`@angriff36/manifest/debug`) | ~~Records state mutations during command execution with replay. Was "planned" in FEATURE-LIST, now SHIPPED.~~ **CORRECTED 2026-06-09:** Export does NOT exist in v2.2.0. Package.json exports map has 28 entries, no `./debug`. BLOCKED until upstream ships it. | Official docs `/extensibility/runtime-tooling` |
 | **Entity inheritance** (`extends`) | Single inheritance for entities. Eliminates repetition across hierarchies. Complements mixin composition (Task 11.3). | Official docs `/language/advanced-entities` |
 | **LLM IR validator/repair** (`manifest validate-ir`) | Auto-repairs malformed IR. Detects orphaned references, malformed entity structure. Not in plan. | Official docs `/extensibility/ai-tooling` |
 | **CORRECTED: /features/security-features URL returns 404** | Security features distributed across command-level and entity-level pages. Task 11.5/11.6 doc refs must be corrected. | Official docs fetch |
 | **CORRECTED: Profiling is a SEPARATE EXPORT, not just RuntimeOption** | `@angriff36/manifest/profiler` is standalone. Task 7.6 `profiling` entry incomplete without wiring the export. | Official docs `/extensibility/runtime-tooling` |
-| **Runtime tooling = 3 tools: REPL + time-travel debugger + profiler** | Not just "profiling" as a RuntimeOption. Three distinct developer tools with separate exports. | Official docs `/extensibility/runtime-tooling` |
+| **Runtime tooling = 3 tools: REPL + time-travel debugger + profiler** | Not just "profiling" as a RuntimeOption. Three distinct developer tools with separate exports. **UPDATE 2026-06-09:** Time-travel debugger export does NOT exist in v2.2.0 — only REPL and profiler are confirmed. | Official docs `/extensibility/runtime-tooling` |
 | **AI tooling = 3 tools: conformance test generator + IR validator + NL transpiler** | Only agent-sdk was tracked. NL transpiler converts natural language to Manifest DSL. | Official docs `/extensibility/ai-tooling` |
 | **CORRECTED: TS2353 = 7 created_at + 2 absent (was 6+3)** | One entity re-verified as created_at case, not absent. ForecastInput confirmed absent. | Typecheck output analysis |
 | **compilerVersion in IR provenance is `0.3.8`** despite installed package being 2.2.0 | Provenance records are useless for integrity verification. `irHash` and `contentHash` are also EMPTY. `requireValidProvenance` RuntimeOption would fail if wired. | `ir.provenance.compilerVersion = "0.3.8"` |
@@ -437,7 +437,7 @@
 - `ShipmentPrismaStore` uses `as any` cast on status field
 - `BattleBoardPrismaStore` uses snake_case field names inconsistent with all other stores
 - `AllergenWarningPrismaStore` has dead-code `toCommaString` method never called
-- **User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case** -- fall back to GenericPrismaStore which lacks EmploymentType default (User) and proper item handling (ShipmentItem). Latent bugs.
+- ~~**User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case**~~ **RESOLVED** -- neither entity is in that set anymore. Both route through GenericPrismaStore successfully via `GENERIC_STORE_SAFE_ENTITIES`.
 - **MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`** -- inconsistent with all other stores
 
 ### Governance
@@ -606,6 +606,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 6.4 (typed inputs phase 1)** | Array generics fixed (string[] vs unknown[]), client regenerated, 0 typecheck errors | v0.12.200 |
 | 2026-06-08 | **Task 6.4 Phase 2: Strict typed command inputs** | Removed [key: string]: unknown from 833 input interfaces, | null from 12,997 fields. 988 typed inputs enforce compile-time checking. API+App typecheck 0, 2863 tests pass. | v0.12.206 |
 | 2026-06-08 | **CrmScoringRule/EventFollowup soft-delete drift resolved** | Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES workarounds removed. | v0.12.205 |
+| 2026-06-09 | **Task 5.4: Mermaid ER diagram projection wired** | `manifest/scripts/generate-mermaid.mjs` generates ER (202 entities, 273 edges), state (263 transitions), sequence (8 entities) diagrams from IR via `MermaidProjection`. pnpm script: `manifest:mermaid`. Output: `manifest/reports/diagrams/` (10 files, 106KB ER). Stale findings corrected: PayrollLineItem (commands exist), User/ShipmentItem (no latent bugs), Time-Travel Debugger (not shipped, blocked). |
 
 ---
 
@@ -739,7 +740,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 33. **~~manifest.config.yaml is ENTIRELY DECORATIVE~~ RESOLVED 2026-06-09:** Three scripts read it via `read-config.mjs` (`compile.mjs`, `generate.mjs`, `generate-route-manifest.ts`). Config also no longer names a phantom executor module — `dispatcher.executorImportPath` was `@/lib/manifest-executor` (does not exist); corrected to `@/lib/manifest/execute-command` / `runManifestCommand` and now drives the generated dispatcher's import.
 
-34. **PayrollLineItem has ZERO commands:** Declared `store ... in durable` but no command exists. All writes bypass runtime.
+34. ~~**PayrollLineItem has ZERO commands:**~~ **RESOLVED 2026-06-09:** Commands exist (`create`, `update`) in staff-logistics-extended-rules.manifest. Main write path governed via `ManifestPayrollDataSource`.
 
 35. ~~**notifications package has 9+ direct DB writes** across 4 files -- not listed in prior governance audit.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (Task 8.4). Remaining writes are infrastructure logs (not governed entities).
 
@@ -960,8 +961,16 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - **Done when:** OpenAPI spec generated covering all manifest routes. Validates in OpenAPI linter. ✅ ACHIEVED.
 - **Evidence:** OpenAPI 3.1.0 spec generated from IR via `@angriff36/manifest/projections/openapi`. 202 entities (404 GET paths), 999 commands (999 POST paths) = 1,403 total paths + 1,240 schemas. Post-processing rewrites list paths (`/entity/list` → `/entity`) and command paths (`/entity/cmd` → `/entity/commands/cmd`) to match the actual dispatcher. Script: `manifest/scripts/generate-openapi.mjs`, output: `manifest/api-docs/openapi.json` (4 MB). pnpm script: `manifest:openapi`.
 
-### 5.4 Evaluate Mermaid projection for architecture docs
-- **Done when:** ER diagrams generated from IR covering all 189 entities with relationships.
+### 5.4 Evaluate Mermaid projection for architecture docs — ✅ DONE 2026-06-09
+- **✅ DONE 2026-06-09.** Mermaid projection wired end-to-end.
+- **What was done:**
+  - `manifest/scripts/generate-mermaid.mjs` wraps `MermaidProjection` from `@angriff36/manifest/projections/mermaid`.
+  - Generates 4 diagram types: ER (202 entities, 273 relationship edges), state machines (263 transitions), sequence flows (8 high-value entities), and per-entity ER.
+  - Output: `manifest/reports/diagrams/` (10 files, 106KB ER diagram).
+  - pnpm script: `manifest:mermaid`.
+  - CLI flags: `--er`, `--state`, `--sequence`, `--entity=<Name>`.
+- **Evaluation:** Mermaid projection is production-quality. Supports `mermaid.er`, `mermaid.state`, `mermaid.sequence`, `mermaid.all` surfaces. Options: `markdown`, `includeProperties`, `entity` filter. The upstream CLI does not list "mermaid" as a built-in projection, but the programmatic API works perfectly.
+- **Done when:** ER diagrams generated from IR covering all 202 entities with relationships. ✅ ACHIEVED.
 
 ### 5.5 Evaluate Routes projection for typed path builders
 - **Done when:** Generated typed path builders compared against ~1,092 hardcoded `apiFetch("/api/...")` string paths across 167 files. Decision documented.
@@ -1549,12 +1558,13 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 - **Source to change:** `package.json` scripts section.
 - **Doc:** Official docs `/extensibility/runtime-tooling`
 
-### 11.10 Evaluate Time-Travel Debugger for command debugging
-- **Done when:** Decision documented on adopting `@angriff36/manifest/debug` export for state mutation recording with replay. If adopted, wired to factory for at least development environments.
-- **Why:** The time-travel debugger (`@angriff36/manifest/debug`) records every `mutate` during command execution and enables stepping forward/backward through state changes. Was listed as "planned" in FEATURE-LIST but is now SHIPPED. Invaluable for debugging complex multi-step commands (VendorContract lifecycle, PayrollRun processing, EventGuest RSVP flow).
+### 11.10 Evaluate Time-Travel Debugger for command debugging — BLOCKED (not in v2.2.0)
+- **BLOCKED 2026-06-09.** The `@angriff36/manifest/debug` export does NOT exist in v2.2.0 despite prior plan claim. The package.json exports map has 28 entries — no `./debug`. No file in `dist/manifest/` contains "debug" or "time-travel". The `serialize()`/`restore()` API exists for single-point snapshots but is not step-by-step replay.
+- **Done when:** `@angriff36/manifest/debug` export exists and is verified functional.
+- **Why:** A time-travel debugger would record every `mutate` during command execution and enable stepping forward/backward through state changes. Invaluable for debugging complex multi-step commands (VendorContract lifecycle, PayrollRun processing, EventGuest RSVP flow).
 - **Backpressure:** Command execution recorded. State replay produces identical final state.
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`. Import from `@angriff36/manifest/debug`.
-- **Doc:** Official docs `/extensibility/runtime-tooling`
+- **Doc:** Official docs `/extensibility/runtime-tooling` (NOTE: may also be aspirational, not shipped)
 
 ### 11.11 Evaluate entity inheritance (`extends`) for entity hierarchies
 - **Done when:** Decision documented on using entity inheritance to reduce repetition across entity families. If adopted, identify entity hierarchies and create base entities.
@@ -1635,7 +1645,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 22. **Federation capability assessed** -- architecture fit documented for future multi-service decomposition.
 23. **~~ENTITY_ACCESSOR_OVERRIDES complete~~ RESOLVED 2026-06-08 (Task 2.1)** -- consolidated from 32→1 entry (QACheck). 15 remaps auto-resolved via metadata bridge. 16 stale drops removed. Zero generated routes reference non-existent Prisma accessors.
 24. **Governance CLI suite adopted** -- at least 5 of 7 governance commands (`scan`, `audit-governance`, `audit-bypasses`, `enforce-surface`, `doctor`) have package.json scripts and CI integration.
-25. **Runtime tooling wired** -- Profiler export wired to factory (not just RuntimeOption). REPL available via `pnpm manifest:repl`. Time-travel debugger evaluated with adoption decision.
+25. **Runtime tooling wired** -- Profiler export wired to factory (not just RuntimeOption). REPL available via `pnpm manifest:repl`. Time-travel debugger **BLOCKED** (not in v2.2.0).
 26. **~~Tenant isolation dual-layer~~ COMPLETE (2026-06-09)** -- IR-level `tenant` declaration added to all 94 manifest source files (`tenant tenantId : string from context.tenantId`). Fixed `mergeIrs()` in `ir-utils.mjs` to propagate the `tenant` field from per-file IRs to the merged IR. Updated 12 test files to pass `tenantId` at the top level of RuntimeEngine context. Fixed 3 pre-existing test failures (stale route allowlist, fast-check date invalid value, tenant gate interaction). `requireTenantContext: true` RuntimeOption already wired (confirmed 2026-06-05). All 147 test files pass, 0 typecheck errors.
 27. **AI tooling evaluated** -- conformance test generator, IR validator, and NL transpiler assessed for adoption with decisions documented.
 28. **Outbox consolidation** — ✅ unsafe standalone `createOutboxEvent` removed; bundle-claim route uses transactional outbox; 3 implementations → 2.
@@ -1755,7 +1765,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 15. **Source-level type mismatches (UNIVERSAL -- 559+ datetime-as-number + domain-specific type bugs):** The 8th revision confirmed this pattern exists in EVERY domain. Not just datetime: number into decimal/money/int, string into array, string instead of datetime, inverted boolean logic. **Event payload datetime-as-number subset RESOLVED 2026-06-09:** 21 fields fixed across 7 manifest source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Task 0.6 + 2.7.
 
-16. **Store layer gaps:** User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case (latent bugs). MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`. Task 3.4.
+16. **~~Store layer gaps~~ RESOLVED:** ~~User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case (latent bugs).~~ Neither entity is in that set anymore. MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`. Task 3.4.
 
 17. ~~**notifications package ungoverned:** 9+ direct DB writes across 4 files (emailLog, sms_logs, notification_preferences, emailWorkflow) bypassing Manifest. Task 8.4.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (callback pattern). emailLog/sms_logs/notification_preferences are infrastructure logs, not governed entities. Task 8.4 COMPLETE.
 
@@ -1812,6 +1822,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 | Date | Change |
 |---|---|
+| 2026-06-09 | **Task 5.4 DONE + Stale findings corrected.** Mermaid ER diagram projection wired: `manifest/scripts/generate-mermaid.mjs` generates ER (202 entities, 273 edges), state (263 transitions), sequence (8 entities) from IR. pnpm script `manifest:mermaid` added. Output at `manifest/reports/diagrams/` (10 files, 106KB ER diagram). Stale findings corrected: (1) PayrollLineItem "zero commands" → commands exist in `staff-logistics-extended-rules.manifest`, main write path governed; (2) User/ShipmentItem "no switch case" → removed from ENTITIES_WITH_SPECIFIC_STORES, both route through GenericPrismaStore, no latent bugs; (3) Task 11.10 Time-Travel Debugger → `@angriff36/manifest/debug` export does NOT exist in v2.2.0, marked BLOCKED. API typecheck 0, 2880 tests pass, 0 route drift. |
 | 2026-06-09 | **Exit Criterion 26 COMPLETE: IR-level tenant declarations.** Added `tenant tenantId : string from context.tenantId` to all 94 manifest source files. Fixed `mergeIrs()` in `ir-utils.mjs` to propagate the `tenant` field from per-file IRs to the merged IR. Updated 12 test files to pass `tenantId` at the top level of RuntimeEngine context. Fixed 3 pre-existing test failures (stale route allowlist, fast-check date invalid value, tenant gate interaction). All 147 test files pass, 0 typecheck errors. |
 | 2026-06-09 | **Config wiring extended + stale entries corrected.** Wired real schema-valid config keys into the build scripts (commits `ed5938eb9`, `53d10b45f`, `9ec9d6d14`): `projections.nextjs.options.appDir` (drives generate.mjs route prefix), `readRoutes.{enabled,directDbReads}` (gates read-route generation), `dispatcher` executor import path/name (corrected the phantom `@/lib/manifest-executor` → real `@/lib/manifest/execute-command` / `runManifestCommand`), and `projections.routes.options.basePath` (drives generate-route-manifest.ts). Removed two invalid keys (`projection`/`surfaces`) that were breaking `manifest:config validate`. KEY CORRECTION: projection name + surface names are NOT config-expressible in v2.2.0 (no schema field) — the original "6 hardcoded values" finding (Root Cause #14) was wrong about those two. All changes verified byte-identical (zero route/dispatcher drift); config validates clean. Corrected stale/contradictory entries: Blocker #7, #33, Root Cause #4/#14, finding rows (lines 72/99), Metrics "config consumed". |
 | 2026-06-08 | **Task 9.3 COMPLETE: Saga orchestration expanded (1→6 sagas).** 5 new sagas added beyond ProcessInvoicePayment: FinalizeEventWithReporting (3 steps: finalize event, generate reports, send notifications), AutoGeneratePrepList (2 steps: trigger prep-list generation, notify kitchen staff), + 3 additional multi-step workflows with compensate actions. IR updated: 202 entities, 999 commands, 981 events, 6 sagas. Metrics table updated. |

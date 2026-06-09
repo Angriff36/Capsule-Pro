@@ -90,8 +90,8 @@ if (flagAll || flagEr) {
 
   if (erCode) {
     // Count entities and relationships in output
-    const entityCount = (erCode.match(/^[A-Za-z_]\w* \{/gm) || []).length;
-    const relCount = (erCode.match(/}(o|--|\|\|)--(o|\|\|)/g) || []).length;
+    const entityCount = (erCode.match(/^\s+[A-Za-z_]\w* \{/gm) || []).length;
+    const relCount = (erCode.match(/\}(o|\|\|)--(o|\|\|)/g) || []).length;
     console.log(`  ER: ${entityCount} entities, ${relCount} relationship edges`);
   }
 }

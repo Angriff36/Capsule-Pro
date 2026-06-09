@@ -259,8 +259,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 99% context — saved before compacting]
-Files (1):
-  manifest/scripts/generate-mermaid.mjs (create)
+[proactive bridge @ 86% context — saved before compacting]
+Files (4):
+  packages/database/prisma/schema.prisma (edit)
+  manifest/scripts/entity-domain-map.mjs (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/v0.12.216-qacheck-189-189-coverage.md (create)
 
 # === END COGNILAYER ===
