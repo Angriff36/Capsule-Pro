@@ -142,10 +142,18 @@ export function getConfigPaths() {
   // Canonical command dispatcher route. The official schema key is
   // projections.nextjs.options.dispatcher.path; keep a legacy nextjs.dispatcher
   // fallback and a hardcoded default so generation still works with no config.
+  const dispatcher = nextjsOptions.dispatcher || {};
   const nextjsDispatcher =
-    (nextjsOptions.dispatcher && nextjsOptions.dispatcher.path) ||
+    dispatcher.path ||
     nextjs.dispatcher ||
     "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts";
+
+  // Executor the generated dispatcher delegates to. These drive the hand-written
+  // dispatcher template's import + call in generate.mjs (defaults = the real module).
+  const dispatcherExecutorImportPath =
+    dispatcher.executorImportPath || "@/lib/manifest/execute-command";
+  const dispatcherExecutorImportName =
+    dispatcher.executorImportName || "runManifestCommand";
 
   // IR file names (project-specific, not configurable — kitchen.* naming is Capsule's convention)
   const irFile = join(outputDir, "kitchen.ir.json");
@@ -179,6 +187,10 @@ export function getConfigPaths() {
 
     // Canonical Routes projection base path.
     routesBasePath,
+
+    // Dispatcher executor import (consumed by generate.mjs's dispatcher template).
+    dispatcherExecutorImportPath,
+    dispatcherExecutorImportName,
 
     // Raw config for projection options etc.
     config: cfg,
