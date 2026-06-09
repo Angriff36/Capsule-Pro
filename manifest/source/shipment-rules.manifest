@@ -71,7 +71,7 @@ entity Shipment {
     emit ShipmentCreated
   }
 
-  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: datetime, shippingCost: number, notes: string) {
+  command update(trackingNumber: string, carrier: string, shippingMethod: string, estimatedDeliveryDate: datetime, shippingCost: money, notes: string) {
     guard self.status != "delivered" "Cannot update a delivered shipment"
     guard self.status != "cancelled" "Cannot update a cancelled shipment"
 
@@ -195,7 +195,7 @@ entity ShipmentItem {
   relationship belongsTo item: InventoryItem fields [tenantId, itemId] references [tenantId, id]
 
   default policy ShipmentItemDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Shipment management"
-  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: number, lotNumber: string, expirationDate: datetime) {
+  command create(shipmentId: string, itemId: string, quantityShipped: number, unitId: number, unitCost: money, lotNumber: string, expirationDate: datetime) {
     guard shipmentId != null and shipmentId != "" "Shipment ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityShipped != null and quantityShipped > 0 "Quantity shipped must be positive"
@@ -245,7 +245,7 @@ entity ShipmentItem {
     emit ShipmentItemReceived
   }
 
-  command update(quantityShipped: number, unitId: number, unitCost: number, condition: string, conditionNotes: string, lotNumber: string, expirationDate: datetime) {
+  command update(quantityShipped: number, unitId: number, unitCost: money, condition: string, conditionNotes: string, lotNumber: string, expirationDate: datetime) {
     guard quantityShipped == null or quantityShipped > 0 "Quantity shipped must be positive"
 
     mutate quantityShipped = quantityShipped

@@ -91,7 +91,7 @@ entity EmployeeDeduction {
   relationship belongsTo employee: User with employeeId
 
   default policy EmployeeDeductionDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Payroll management"
-  command create(employeeId: string, type: string, name: string, amount: number, percentage: number, isPreTax: boolean, effectiveDate: string, endDate: string, maxAnnualAmount: number) {
+  command create(employeeId: string, type: string, name: string, amount: money, percentage: number, isPreTax: boolean, effectiveDate: string, endDate: string, maxAnnualAmount: money) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard type != null and type != "" "Deduction type is required"
     guard name != null and name != "" "Deduction name is required"
@@ -110,7 +110,7 @@ entity EmployeeDeduction {
     emit EmployeeDeductionCreated
   }
 
-  command update(amount: number, percentage: number, endDate: string, maxAnnualAmount: number) {
+  command update(amount: money, percentage: number, endDate: string, maxAnnualAmount: money) {
     guard self.deletedAt == null "Cannot update a removed deduction"
     guard amount >= 0 "Deduction amount cannot be negative"
 
@@ -212,7 +212,7 @@ entity PayrollRun {
   }
 
   // Calculate gross/deductions/net for the run and move it into review.
-  command process(totalGross: number, totalDeductions: number, totalNet: number) {
+  command process(totalGross: money, totalDeductions: number, totalNet: money) {
     guard !flag("payroll.maintenance_mode") "Payroll processing is temporarily disabled for maintenance"
     guard self.status == "pending" "Only a pending run can be processed"
     guard self.deletedAt == null "Cannot process a deleted payroll run"

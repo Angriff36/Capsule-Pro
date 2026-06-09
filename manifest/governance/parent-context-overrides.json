@@ -198,11 +198,11 @@
       "reviewed": "2026-06-08"
     },
     "InventoryTransaction": {
-      "fields": ["itemId", "transactionType", "referenceType", "referenceId", "reason", "employeeId", "storageLocationId"],
+      "fields": ["itemId", "transactionType", "referenceType", "referenceId", "reason", "employeeId", "storageLocationId", "unitCost"],
       "category": "FALSE_POSITIVE",
-      "reason": "Self-referencing back-link via reverseOfTransactionId. This FK is empty at creation (set only by the reverse() command). All 7 fields are the transaction's own core identity — a reversal copies and inverts explicitly, not via parent-context inheritance. Inheriting would be circular: the original transaction authored these values.",
+      "reason": "Self-referencing back-link via reverseOfTransactionId. This FK is empty at creation (set only by the reverse() command). All 8 fields are the transaction's own core identity — unitCost is the per-transaction cost (may differ from InventoryItem's standard cost due to vendor pricing, bulk discounts, etc.). A reversal copies and inverts explicitly, not via parent-context inheritance.",
       "owner": "inventory",
-      "reviewed": "2026-06-08"
+      "reviewed": "2026-06-09"
     },
     "PurchaseOrderItem": {
       "fields": ["unitCost"],
@@ -217,6 +217,27 @@
       "reason": "Inverted relationship direction: TrainingAssignment is the PARENT of TrainingAttempt (not the child). The lastAttemptId FK is empty at creation and only set after an attempt is submitted. moduleId and staffMemberId are the assignment's own defining identity — which module is assigned to which staff member. Inheriting from TrainingAttempt would be circular.",
       "owner": "training",
       "reviewed": "2026-06-08"
+    },
+    "ShipmentItem": {
+      "fields": ["unitCost"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Shipment line unitCost is the per-shipment negotiated price with the supplier, not inherited from InventoryItem's standard cost. Shipping pricing varies by order, contract terms, and market conditions — the name match is structural, not semantic.",
+      "owner": "logistics",
+      "reviewed": "2026-06-09"
+    },
+    "PaymentRefundAttempt": {
+      "fields": ["amount"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Refund amount is authored per attempt (may be partial, may differ from the Payment's full amount). A $1000 payment can have a $200 refund — the amount is semantically independent of the parent payment's total.",
+      "owner": "finance",
+      "reviewed": "2026-06-09"
+    },
+    "WasteEntry": {
+      "fields": ["unitCost"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Waste entry unitCost is the cost at the time of waste recording, which may differ from InventoryItem's current unitCost due to price changes over time. Historical cost tracking requires explicit per-entry values.",
+      "owner": "inventory",
+      "reviewed": "2026-06-09"
     }
   }
 }

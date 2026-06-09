@@ -65,7 +65,7 @@ entity VendorContract {
   relationship belongsTo vendor: Vendor with vendorId
 
   default policy VendorContractDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor contract management"
-  command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: datetime, endDate: datetime, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, currencyCode: string, contractUrl: string, notes: string) {
+  command create(contractNumber: string, vendorId: string, vendorName: string, contractType: string, startDate: datetime, endDate: datetime, autoRenew: boolean, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: money, currencyCode: string, contractUrl: string, notes: string) {
     guard contractNumber != null and contractNumber != "" "Contract number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
     guard startDate != null "Start date is required"
@@ -93,7 +93,7 @@ entity VendorContract {
     emit VendorContractCreated
   }
 
-  command update(endDate: datetime, autoRenew: boolean, renewalTermDays: number, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: number, contractUrl: string, notes: string) {
+  command update(endDate: datetime, autoRenew: boolean, renewalTermDays: number, paymentTerms: string, deliveryTerms: string, minimumOrderQuantity: number, annualSpendCommitment: money, contractUrl: string, notes: string) {
     guard self.status == "draft" "Can only update draft contracts"
 
     mutate endDate = endDate

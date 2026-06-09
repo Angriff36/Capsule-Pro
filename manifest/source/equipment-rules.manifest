@@ -95,7 +95,7 @@ entity Equipment {
     emit EquipmentMaintenanceScheduled
   }
 
-  command recordMaintenance(maintenanceDate: datetime, maintenanceType: string, performedBy: string, cost: number, notes: string) {
+  command recordMaintenance(maintenanceDate: datetime, maintenanceType: string, performedBy: string, cost: money, notes: string) {
     guard maintenanceDate != null and maintenanceDate > 0 "Maintenance date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
 
@@ -246,7 +246,7 @@ entity MaintenanceWorkOrder {
   }
 
   default policy MaintenanceWorkOrderDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
-  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: number) {
+  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: money) {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
     guard self.status == "open" "Can only assign open work orders"
 
@@ -266,7 +266,7 @@ entity MaintenanceWorkOrder {
     emit MaintenanceWorkOrderStarted
   }
 
-  command completeWork(actualCost: number, partsUsed: string, notes: string, userId: string) {
+  command completeWork(actualCost: money, partsUsed: string, notes: string, userId: string) {
     guard self.status == "in_progress" "Work order must be in progress to complete"
 
     mutate status = "completed"

@@ -108,7 +108,7 @@ entity PayrollLineItem {
   constraint hoursWorkedPositive: self.hoursWorked >= 0 "Hours worked cannot be negative"
 
   default policy PayrollLineItemDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(payrollRunId: string, employeeId: string, grossPay: number, netPay: number, totalDeductions: number, hoursWorked: number, hoursRegular: number, hoursOvertime: number, rateRegular: number, rateOvertime: number) {
+  command create(payrollRunId: string, employeeId: string, grossPay: money, netPay: number, totalDeductions: number, hoursWorked: number, hoursRegular: number, hoursOvertime: number, rateRegular: number, rateOvertime: number) {
     guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard grossPay >= 0 "Gross pay cannot be negative"
@@ -129,7 +129,7 @@ entity PayrollLineItem {
     emit PayrollLineItemCreated
   }
 
-  command update(grossPay: number, netPay: number, totalDeductions: number, hoursWorked: number, hoursRegular: number, hoursOvertime: number, rateRegular: number, rateOvertime: number) {
+  command update(grossPay: money, netPay: number, totalDeductions: number, hoursWorked: number, hoursRegular: number, hoursOvertime: number, rateRegular: number, rateOvertime: number) {
     guard self.deletedAt == null "Cannot update a deleted line item"
     guard grossPay >= 0 "Gross pay cannot be negative"
     guard netPay >= 0 "Net pay cannot be negative"
@@ -189,7 +189,7 @@ entity TipPool {
   relationship belongsTo event: Event with eventId
 
   default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(periodStart: number, periodEnd: number, eventId: string, totalTips: number) {
+  command create(periodStart: number, periodEnd: number, eventId: string, totalTips: money) {
     guard periodStart != null and periodStart > 0 "Period start is required"
     guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
     guard totalTips >= 0 "Total tips cannot be negative"
@@ -203,7 +203,7 @@ entity TipPool {
     emit TipPoolCreated
   }
 
-  command allocate(totalTips: number) {
+  command allocate(totalTips: money) {
     guard self.status == "open" "Only open tip pools can be allocated"
     guard totalTips >= 0 "Total tips cannot be negative"
 
@@ -215,7 +215,7 @@ entity TipPool {
 
   // Record per-employee distribution of tips from this pool.
   // Callers invoke once per employee — amount is additive against the pool total.
-  command distribute(employeeId: string, amount: number, distributedBy: string) {
+  command distribute(employeeId: string, amount: money, distributedBy: string) {
     guard self.status == "allocated" "Only allocated tip pools can be distributed"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard amount > 0 "Distribution amount must be positive"
@@ -819,7 +819,7 @@ entity PaymentRefundAttempt {
   relationship belongsTo payment: Payment with paymentId
 
   default policy PaymentRefundAttemptDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(paymentId: string, amount: number, reason: string) {
+  command create(paymentId: string, amount: money, reason: string) {
     guard paymentId != null and paymentId != "" "Payment ID is required"
     guard amount > 0 "Refund amount must be positive"
     guard reason != null and reason != "" "Reason is required"

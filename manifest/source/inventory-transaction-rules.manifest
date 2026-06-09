@@ -50,7 +50,7 @@ entity InventoryTransaction {
   }
 
   default policy InventoryTransactionDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(itemId: string, transactionType: string, quantity: number, unitCost: number, referenceType: string, referenceId: string, reason: string, notes: string, employeeId: string, storageLocationId: string) {
+  command create(itemId: string, transactionType: string, quantity: number, unitCost: money, referenceType: string, referenceId: string, reason: string, notes: string, employeeId: string, storageLocationId: string) {
     guard itemId != null and itemId != "" "Item ID is required"
     guard transactionType != null and transactionType != "" "Transaction type is required"
     guard quantity != null and quantity != 0 "Quantity must not be zero"
@@ -115,7 +115,7 @@ entity InventoryTransaction {
   // Adjust the cost or notes on a transaction without reversing quantity impact.
   // Only allowed before the transaction date is more than 24 h in the past (enforced
   // upstream) and only by a manager.
-  command adjustCost(newUnitCost: number, reason: string) {
+  command adjustCost(newUnitCost: money, reason: string) {
     guard self.isReversed == false "Cannot adjust a reversed transaction"
     guard newUnitCost >= 0 "Unit cost cannot be negative"
     guard reason != null and reason != "" "Adjustment reason is required"

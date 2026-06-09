@@ -217,7 +217,7 @@ entity RecipeVersion {
     emit RecipeVersionRestored
   }
 
-  command updateCosts(newTotalCost: number, newCostPerYield: number) {
+  command updateCosts(newTotalCost: money, newCostPerYield: money) {
     guard newTotalCost != null and newTotalCost >= 0 "Total cost cannot be negative"
 
     constraint warnHighCost:warn newTotalCost > 1000 {

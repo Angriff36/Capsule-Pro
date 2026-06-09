@@ -44,7 +44,7 @@ entity PricingTier {
   }
 
   default policy PricingTierDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Pricing tier management"
-  command create(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number) {
+  command create(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: money, discountPercent: number, effectiveFrom: number, effectiveTo: number) {
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"
     guard unitCost >= 0 "Unit cost must be non-negative"
@@ -63,7 +63,7 @@ entity PricingTier {
     emit PricingTierCreated
   }
 
-  command update(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
+  command update(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: money, discountPercent: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted pricing tier"
     guard tierName != null and tierName != "" "Tier name is required"
     guard minQuantity >= 1 "Minimum quantity must be at least 1"

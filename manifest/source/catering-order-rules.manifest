@@ -123,7 +123,7 @@ entity CateringOrder {
     emit CateringOrderCreated
   }
 
-  command update(guestCount: number, subtotalAmount: number, taxAmount: number, discountAmount: number, serviceChargeAmount: number, totalAmount: number, depositRequired: boolean, depositAmount: number, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  command update(guestCount: number, subtotalAmount: money, taxAmount: money, discountAmount: money, serviceChargeAmount: money, totalAmount: money, depositRequired: boolean, depositAmount: money, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
     guard self.orderStatus != "completed" "Cannot update completed order"
     guard self.orderStatus != "cancelled" "Cannot update cancelled order"
 

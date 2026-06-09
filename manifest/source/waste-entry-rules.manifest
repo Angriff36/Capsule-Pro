@@ -51,7 +51,7 @@ entity WasteEntry {
   // never re-asks for the location the Event already owns. A standalone waste
   // entry (no eventId) simply has no inherited location. See
   // specs/parent-context-propagation.md.
-  command create(inventoryItemId: string, reasonId: int, quantity: number, unitId: number, eventId: string, loggedBy: string, unitCost: number, notes: string) {
+  command create(inventoryItemId: string, reasonId: int, quantity: number, unitId: number, eventId: string, loggedBy: string, unitCost: money, notes: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item is required"
     guard reasonId != null and reasonId > 0 "Waste reason is required"
     guard quantity != null and quantity > 0 "Quantity must be positive"
@@ -113,7 +113,7 @@ entity WasteEntry {
     emit WasteEntryVoided
   }
 
-  command update(quantity: number, unitId: number, locationId: string, notes: string, unitCost: number) {
+  command update(quantity: number, unitId: number, locationId: string, notes: string, unitCost: money) {
     guard self.deletedAt == null "Cannot update a deleted waste entry"
     guard quantity != null and quantity > 0 "Quantity must be positive"
     guard unitCost >= 0 "Unit cost cannot be negative"

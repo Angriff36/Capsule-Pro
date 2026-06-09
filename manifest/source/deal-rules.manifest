@@ -25,7 +25,7 @@ entity Deal {
   computed isAbandoned: boolean = self.status == "abandoned"
   computed isActive: boolean = self.status == "open"
   computed isClosed: boolean = self.status != "open"
-  computed weightedValue: number = self.value * self.probability / 100
+  computed weightedValue: money = self.value * self.probability / 100
   computed isUnassigned: boolean = self.assignedTo == ""
 
   constraint validStage: self.stage in ["new", "contacted", "qualified", "proposal", "negotiation", "closed"] "Invalid deal stage"
@@ -36,7 +36,7 @@ entity Deal {
   relationship belongsTo lead: Lead with leadId
 
   default policy DealDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Deal management"
-  command create(leadId: string, title: string, value: number, currency: string, stage: string, probability: number, expectedCloseDate: datetime, assignedTo: string, notes: string) {
+  command create(leadId: string, title: string, value: money, currency: string, stage: string, probability: number, expectedCloseDate: datetime, assignedTo: string, notes: string) {
     guard leadId != null and leadId != "" "Lead ID is required"
     guard title != null and title != "" "Deal title is required"
     guard value >= 0 "Deal value cannot be negative"
@@ -65,7 +65,7 @@ entity Deal {
     emit DealStageUpdated
   }
 
-  command updateValue(value: number) {
+  command updateValue(value: money) {
     guard self.status == "open" "Cannot change value of a closed deal"
     guard value >= 0 "Deal value cannot be negative"
 

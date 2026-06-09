@@ -73,7 +73,7 @@ entity RevenueRecognitionSchedule {
   // ONLY to fence the generic resolver: Invoice also owns a `metadata` string, and
   // the schedule's metadata is its own — listing it as a param excludes it from
   // inheritance so the invoice's metadata never bleeds onto the schedule.
-  command create(invoiceId: string, contractId: string, totalAmount: number, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: string) {
+  command create(invoiceId: string, contractId: string, totalAmount: money, method: string, startDate: datetime, endDate: datetime, recognitionPeriod: number, description: string, notes: string, metadata: string) {
     guard invoiceId != null and invoiceId != "" "Invoice ID is required"
     guard contractId != null and contractId != "" "Contract ID is required"
     guard totalAmount > 0 "Total amount must be positive"
@@ -254,7 +254,7 @@ entity RevenueRecognitionLine {
 
   // Commands
   default policy RevenueRecognitionLineDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Revenue recognition"
-  command create(scheduleId: string, sequence: number, amount: number, dueDate: datetime, milestoneId: string, milestoneName: string, description: string, notes: string) {
+  command create(scheduleId: string, sequence: number, amount: money, dueDate: datetime, milestoneId: string, milestoneName: string, description: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard amount > 0 "Line amount must be positive"
     guard sequence >= 0 "Sequence must be non-negative"

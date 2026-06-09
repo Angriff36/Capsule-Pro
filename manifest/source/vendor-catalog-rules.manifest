@@ -40,7 +40,7 @@ entity VendorCatalog {
   constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
 
   default policy VendorCatalogDefaultAccess execute: user.role in ["procurement_manager", "manager", "admin"] "Vendor catalog"
-  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string) {
+  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string) {
     guard itemNumber != null and itemNumber != "" "Item number is required"
     guard itemName != null and itemName != "" "Item name is required"
     guard unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
@@ -69,7 +69,7 @@ entity VendorCatalog {
     emit VendorCatalogCreated
   }
 
-  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, isActive: boolean, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string, lastCostUpdate: number) {
+  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: money, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, isActive: boolean, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string, lastCostUpdate: number) {
     guard self.deletedAt == null "Cannot update a deleted catalog entry"
 
     mutate supplierId = supplierId
@@ -98,7 +98,7 @@ entity VendorCatalog {
 
   // Update price with an automatic warn when the change exceeds 10% — surfaces
   // unexpected cost spikes before they flow into event budgets.
-  command updatePrice(newBaseUnitCost: number, effectiveFrom: number, reason: string) {
+  command updatePrice(newBaseUnitCost: money, effectiveFrom: number, reason: string) {
     guard self.deletedAt == null "Cannot update price on a deleted catalog entry"
     guard self.isActive "Cannot update price on an inactive catalog entry"
     guard newBaseUnitCost >= 0 "Unit cost must be non-negative"

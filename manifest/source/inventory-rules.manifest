@@ -186,7 +186,7 @@ entity InventoryItem {
     emit InventoryAdjusted
   }
 
-  command restock(quantity: number, costPerUnit: number, userId: string) {
+  command restock(quantity: number, costPerUnit: money, userId: string) {
     guard quantity != null and quantity > 0
     guard costPerUnit != null and costPerUnit >= 0
 
@@ -226,7 +226,7 @@ entity InventoryItem {
     emit InventoryReservationReleased
   }
 
-  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: number, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
+  command create(item_number: string, name: string, category: string, description: string, unitOfMeasure: string, unitCost: money, quantityOnHand: number, parLevel: number, reorder_level: number, supplierId: string, tags: string, fsa_status: string, fsa_temp_logged: boolean, fsa_allergen_info: boolean, fsa_traceable: boolean) {
     guard item_number != null and item_number != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
     guard category != null and category != "" "Category is required"

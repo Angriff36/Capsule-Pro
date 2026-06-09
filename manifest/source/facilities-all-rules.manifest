@@ -235,7 +235,7 @@ entity FacilityAsset {
   }
 
   default policy FacilityAssetDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Facilities management"
-  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: number, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
+  command create(facilityId: string, areaId: string, name: string, assetType: string, purchaseDate: datetime, purchasePrice: money, serialNumber: string, manufacturer: string, model: string, warrantyExpiry: datetime, notes: string) {
     guard name != null and name != "" "Asset name is required"
 
     mutate facilityId = facilityId
@@ -260,7 +260,7 @@ entity FacilityAsset {
     emit FacilityAssetDeleted
   }
 
-  command update(name: string, assetType: string, currentValue: number, serialNumber: string, notes: string) {
+  command update(name: string, assetType: string, currentValue: money, serialNumber: string, notes: string) {
     mutate name = name
     mutate assetType = assetType
     mutate currentValue = currentValue
@@ -467,7 +467,7 @@ entity FacilityWorkOrder {
   // (specs/parent-context-propagation.md, Task 8.10). The caller supplies only the
   // assetId link; the resolver loads the asset and copies its facilityId/areaId onto
   // the work order, so the form never re-enters facility/area the asset already owns.
-  command create(assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: number, scheduledDate: datetime, notes: string) {
+  command create(assetId: string, title: string, description: string, priority: string, category: string, requestedBy: string, estimatedCost: money, scheduledDate: datetime, notes: string) {
     guard title != null and title != "" "Work order title is required"
 
     mutate assetId = assetId
@@ -485,7 +485,7 @@ entity FacilityWorkOrder {
   }
 
   // Assign to a maintenance tech and lock in the scheduled date
-  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: number) {
+  command assign(assignedTo: string, scheduledDate: datetime, estimatedCost: money) {
     guard assignedTo != null and assignedTo != "" "Assignee is required"
     guard self.status == "open" "Work order must be open to assign"
 
@@ -509,7 +509,7 @@ entity FacilityWorkOrder {
   }
 
   // Work is done; record actual cost and close the order
-  command complete(actualCost: number, completionNotes: string) {
+  command complete(actualCost: money, completionNotes: string) {
     guard self.status == "in_progress" "Work order must be in progress to complete"
     guard actualCost >= 0 "Actual cost cannot be negative"
 

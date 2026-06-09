@@ -94,7 +94,7 @@ entity Invoice {
     emit InvoiceViewed
   }
 
-  command applyPayment(paymentAmount: number, paymentId: string) {
+  command applyPayment(paymentAmount: money, paymentId: string) {
     guard self.status in ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] "Cannot apply payment to invoice in current status"
     guard paymentAmount > 0 "Payment amount must be positive"
     guard paymentAmount <= self.amountDue "Payment amount cannot exceed amount due"
@@ -111,7 +111,7 @@ entity Invoice {
     emit PaymentApplied
   }
 
-  command recordRefund(refundAmount: number, paymentId: string) {
+  command recordRefund(refundAmount: money, paymentId: string) {
     guard refundAmount > 0 "Refund amount must be positive"
     guard refundAmount <= self.amountPaid "Refund amount cannot exceed amount paid"
     mutate amountPaid = self.amountPaid - refundAmount
@@ -144,7 +144,7 @@ entity Invoice {
     emit InvoiceVoided
   }
 
-  command writeOff(reason: string, writeOffAmount: number) {
+  command writeOff(reason: string, writeOffAmount: money) {
     guard self.status in ["OVERDUE", "PARTIALLY_PAID"] "Can only write off overdue or partially paid invoices"
     guard writeOffAmount <= self.amountDue "Write off amount must not exceed amount due"
     mutate status = "WRITE_OFF"

@@ -315,7 +315,7 @@ entity VarianceReport {
   transition status from "reviewed" to ["approved", "rejected"]
 
   default policy VarianceReportDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Cycle count management"
-  command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: number, variancePct: number, accuracyScore: number, notes: string) {
+  command create(sessionId: string, reportType: string, itemId: string, itemNumber: string, itemName: string, expectedQuantity: number, countedQuantity: number, variance: money, variancePct: number, accuracyScore: number, notes: string) {
     guard sessionId != null and sessionId != "" "Session ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
 
@@ -356,7 +356,7 @@ entity VarianceReport {
     emit VarianceReportReviewed
   }
 
-  command approve(userId: string, adjustmentType: string, adjustmentAmount: number) {
+  command approve(userId: string, adjustmentType: string, adjustmentAmount: money) {
     guard self.status == "reviewed" "Can only approve reviewed reports"
 
     constraint warnHighVariance:warn self.isHighVariance {

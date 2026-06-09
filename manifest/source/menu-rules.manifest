@@ -63,7 +63,7 @@ entity Menu {
   }
 
   default policy MenuDefaultAccess execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Menu management"
-  command create(name: string, description: string, category: string, basePrice: number, pricePerPerson: number, minGuests: number, maxGuests: number) {
+  command create(name: string, description: string, category: string, basePrice: money, pricePerPerson: money, minGuests: number, maxGuests: number) {
     guard name != null and name != "" "Menu name is required"
     guard basePrice >= 0 "Base price must be non-negative"
     guard pricePerPerson >= 0 "Price per person must be non-negative"
@@ -82,7 +82,7 @@ entity Menu {
     emit MenuCreated
   }
 
-  command update(newName: string, newDescription: string, newCategory: string, newBasePrice: number, newPricePerPerson: number, newMinGuests: number, newMaxGuests: number) {
+  command update(newName: string, newDescription: string, newCategory: string, newBasePrice: money, newPricePerPerson: money, newMinGuests: number, newMaxGuests: number) {
     guard newName != null and newName != "" "Menu name is required"
     guard self.status != "archived" "Cannot update an archived menu"
 
@@ -116,7 +116,7 @@ entity Menu {
   }
 
   // Update pricing independently — tracked with its own event for audit/history.
-  command updatePricing(newBasePrice: number, newPricePerPerson: number) {
+  command updatePricing(newBasePrice: money, newPricePerPerson: money) {
     guard self.status != "archived" "Cannot update pricing on an archived menu"
     guard newBasePrice >= 0 "Base price must be non-negative"
     guard newPricePerPerson >= 0 "Price per person must be non-negative"
@@ -256,7 +256,7 @@ entity MenuDish {
   }
 
   // Set a per-menu price override for this dish (e.g. premium upcharge for this menu only).
-  command setPriceOverride(priceOverride: number) {
+  command setPriceOverride(priceOverride: money) {
     guard self.deletedAt == null "Cannot update a removed menu dish"
     guard priceOverride >= 0 "Price override cannot be negative"
 

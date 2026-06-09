@@ -116,7 +116,7 @@ entity Proposal {
     emit ProposalCreated
   }
 
-  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: datetime, notes: string, termsAndConditions: string) {
+  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: money, taxRate: number, taxAmount: money, discountAmount: money, total: number, validUntil: datetime, notes: string, termsAndConditions: string) {
     guard self.deletedAt == null "Cannot update a deleted proposal"
     guard self.isDraft "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
@@ -294,7 +294,7 @@ entity ProposalLineItem {
   }
 
   default policy ProposalLineItemDefaultAccess execute: user.role in ["sales", "sales_rep", "sales_manager", "manager", "admin"] "Proposal management"
-  command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
+  command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: money, sortOrder: number, notes: string) {
     guard proposalId != null and proposalId != "" "Proposal ID is required"
     guard description != null and description != "" "Description is required"
     guard quantity > 0 "Quantity must be positive"
@@ -315,7 +315,7 @@ entity ProposalLineItem {
     emit ProposalLineItemCreated
   }
 
-  command update(itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
+  command update(itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: money, sortOrder: number, notes: string) {
     guard self.deletedAt == null "Cannot update a removed line item"
     guard description != null and description != "" "Description is required"
     guard quantity > 0 "Quantity must be positive"

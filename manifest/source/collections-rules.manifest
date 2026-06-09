@@ -93,7 +93,7 @@ entity CollectionCase {
     emit CollectionStatusChanged
   }
 
-  command recordPayment(amount: number, paymentId: string, paymentDate: datetime) {
+  command recordPayment(amount: money, paymentId: string, paymentDate: datetime) {
     guard amount > 0 "Payment amount must be positive"
     guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
     mutate collectedAmount = self.collectedAmount + amount
@@ -178,7 +178,7 @@ entity CollectionCase {
     emit EscalatedToLegal
   }
 
-  command writeOff(amount: number, reason: string, approvedBy: string) {
+  command writeOff(amount: money, reason: string, approvedBy: string) {
     guard self.status in ["ACTIVE", "IN_PROGRESS", "LEGAL"] "Cannot write off resolved cases"
     guard amount <= self.outstandingAmount "Write-off amount cannot exceed outstanding"
     mutate collectedAmount = self.collectedAmount + (self.outstandingAmount - amount)
@@ -267,7 +267,7 @@ entity CollectionAction {
 
   // Commands
   default policy CollectionActionDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
-  command complete(outcome: string, promiseAmount: number, promiseDate: datetime, nextActionDate: datetime) {
+  command complete(outcome: string, promiseAmount: money, promiseDate: datetime, nextActionDate: datetime) {
     guard self.status == "PENDING" "Can only complete pending actions"
     mutate status = "COMPLETED"
     mutate completedAt = now()
@@ -337,8 +337,8 @@ entity CollectionPaymentPlan {
   computed isCompleted: boolean = self.status == "COMPLETED"
   computed isDefaulted: boolean = self.status == "DEFAULTED"
   computed completionPercentage: number = percent(self.completedInstallments, self.installmentCount)
-  computed remainingAmount: number = (self.installmentCount - self.completedInstallments) * self.installmentAmount
-  computed paidAmount: number = self.completedInstallments * self.installmentAmount
+  computed remainingAmount: money = (self.installmentCount - self.completedInstallments) * self.installmentAmount
+  computed paidAmount: money = self.completedInstallments * self.installmentAmount
 
   // Constraints
   relationship belongsTo case: CollectionCase fields [tenantId, caseId] references [tenantId, id]
@@ -352,7 +352,7 @@ entity CollectionPaymentPlan {
 
   // Commands
   default policy CollectionPaymentPlanDefaultAccess execute: user.role in ["finance", "finance_manager", "manager", "admin"] "Collections management"
-  command recordInstallment(amount: number, paymentDate: datetime) {
+  command recordInstallment(amount: money, paymentDate: datetime) {
     guard self.status == "ACTIVE" "Can only record payments for active plans"
     guard amount == self.installmentAmount "Payment must match installment amount"
     mutate completedInstallments = self.completedInstallments + 1
@@ -379,7 +379,7 @@ entity CollectionPaymentPlan {
     emit PaymentPlanCancelled
   }
 
-  command modify(newInstallmentAmount: number, newInstallmentCount: number, reason: string) {
+  command modify(newInstallmentAmount: money, newInstallmentCount: number, reason: string) {
     guard self.status == "ACTIVE" "Can only modify active plans"
     mutate installmentAmount = newInstallmentAmount
     mutate installmentCount = newInstallmentCount

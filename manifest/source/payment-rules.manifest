@@ -79,7 +79,7 @@ entity Payment {
     emit PaymentProcessed
   }
 
-  command refund(refundAmount: number, reason: string) {
+  command refund(refundAmount: money, reason: string) {
     guard self.isRefundable "Payment must be completed to be refunded"
     guard refundAmount <= self.amount "Refund amount cannot exceed payment amount"
     guard self.status != "REFUNDED" "Already fully refunded"
@@ -89,7 +89,7 @@ entity Payment {
     emit PaymentRefunded
   }
 
-  command partialRefund(refundAmount: number, reason: string) {
+  command partialRefund(refundAmount: money, reason: string) {
     guard self.isRefundable "Payment must be completed to be refunded"
     guard refundAmount <= self.amount "Refund amount cannot exceed payment amount"
     guard self.status != "REFUNDED" "Already fully refunded"
