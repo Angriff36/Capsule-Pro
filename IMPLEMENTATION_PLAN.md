@@ -357,13 +357,13 @@
 - 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
 - **5 overrideable constraints out of 583 total** (Task 9.8 DONE: 5 overrideable warn constraints across 5 entities)
 - **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
-- **Event payload money fields: FIXED (v0.12.212)** — 153 fields typed `number` changed to `money` across 34 source files (was ~232 suspected, 153 confirmed financial after excluding percentages/counts/quantities)
+- **Event payload + command param money fields: FIXED (v0.12.212–213)** — 153 event payload + 95 command param fields typed `number` changed to `money` across 34+25 source files (248 total financial fields fixed)
 - **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
 ### Property types (all resolved)
 
 - string(1,584), datetime(741), int(158), money(109), decimal(102), boolean(94), array(7), float(1)
 - **0 number-typed properties** (was 17 -- all fixed to proper types)
-- **0 number-typed event payload financial fields** (was ~153 — all fixed to `money` in v0.12.212)
+- **0 number-typed financial fields** (was ~248 across event payloads + command params — all fixed to `money` in v0.12.212–213)
 
 ### Prisma & Database
 
@@ -1864,3 +1864,4 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-09 | **Event payload datetime-as-number fix** | 21 event payload timestamp fields corrected from `number` to `datetime` across 7 manifest source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Remaining event payloads audited and confirmed already correct. IR event payload timestamp count: 916 → 0. |
 | 2026-06-09 | **Task 11.9 BLOCKED: Runtime REPL** | The `repl` command does not exist in `@angriff36/manifest@2.2.0`. CLI has no REPL functionality. Blocked on upstream implementation. |
 | 2026-06-09 | **153 money-as-number type mismatches fixed across 34 manifest sources (v0.12.212)** | 144 event payload + command param fields via automated script (fix-money-as-number.mjs) + 9 manual fixes (proposal/purchase-order totals, invoice newBalance, payroll totalDeductions). Financial fields (amount, cost, price, value, budget, revenue, gross, net, tips, etc.) now correctly typed as `money` instead of `number`. IR 202/999/981. API+runtime typecheck 0. 2880 tests pass. 0 route drift. |
+| 2026-06-09 | **95 command-param money-as-number fixes + 4 parent-context overrides (v0.12.213)** | 95 command parameters across 25 source files fixed `number`→`money` (catering, collections, deals, equipment, events, facilities, inventory, invoices, leads, menus, payments, payroll, pricing, procurement, proposals, recipes, revenue, shipments, staff, users, vendor catalogs/contracts, waste). 4 parent-context overrides added (ShipmentItem.unitCost, PaymentRefundAttempt.amount, WasteEntry.unitCost, InventoryTransaction.unitCost). IR 202/999/981. 2880 tests pass. |
