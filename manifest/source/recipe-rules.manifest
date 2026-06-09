@@ -16,8 +16,8 @@ entity Recipe {
   property required isActive: boolean = true
   timestamps
 
-  computed hasVersion: boolean = true
-  computed tagCount: int = 0
+  computed hasVersion: boolean = count_of(self.versions) > 0
+  computed tagCount: int = count(self.tags)
 
   relationship hasMany versions: RecipeVersion
 
