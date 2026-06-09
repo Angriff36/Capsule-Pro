@@ -47,7 +47,7 @@ entity CateringOrder {
   computed isCompleted: boolean = self.orderStatus == "completed"
   computed isCancelled: boolean = self.orderStatus == "cancelled"
   computed isActive: boolean = self.orderStatus == "draft" or self.orderStatus == "confirmed" or self.orderStatus == "in_progress"
-  computed balanceDue: number = self.totalAmount - (self.depositPaid == true ? self.depositAmount : 0)
+  computed balanceDue: money = self.totalAmount - (self.depositPaid == true ? self.depositAmount : 0)
   computed isFullyStaffed: boolean = self.staffAssigned >= self.staffRequired
   computed hasDeposit: boolean = self.depositRequired and self.depositPaid
 
@@ -100,7 +100,7 @@ entity CateringOrder {
   // no protection is lost. See apps/api/__tests__/events/catering-order-lifecycle.test.ts.
 
   default policy CateringOrderDefaultAccess execute: user.role in ["event_coordinator", "catering_manager", "manager", "admin"] "Catering order management"
-  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: number, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  command create(orderNumber: string, customerId: string, eventId: string, deliveryDate: datetime, deliveryTime: string, guestCount: int, venueCity: string, venueState: string, venueZip: string, venueContactName: string, venueContactPhone: string, specialInstructions: string, dietaryRestrictions: string, staffRequired: int) {
     guard orderNumber != null and orderNumber != "" "Order number is required"
     guard customerId != null and customerId != "" "Customer ID is required"
 
@@ -123,7 +123,7 @@ entity CateringOrder {
     emit CateringOrderCreated
   }
 
-  command update(guestCount: number, subtotalAmount: money, taxAmount: money, discountAmount: money, serviceChargeAmount: money, totalAmount: money, depositRequired: boolean, depositAmount: money, specialInstructions: string, dietaryRestrictions: string, staffRequired: number) {
+  command update(guestCount: int, subtotalAmount: money, taxAmount: money, discountAmount: money, serviceChargeAmount: money, totalAmount: money, depositRequired: boolean, depositAmount: money, specialInstructions: string, dietaryRestrictions: string, staffRequired: int) {
     guard self.orderStatus != "completed" "Cannot update completed order"
     guard self.orderStatus != "cancelled" "Cannot update cancelled order"
 
@@ -257,7 +257,7 @@ event CateringOrderCreated: "events.catering_order.created" {
   orderNumber: string
   customerId: string
   eventId: string
-  guestCount: number
+  guestCount: int
   deliveryDate: datetime
   createdAt: datetime
 }
@@ -267,7 +267,7 @@ event CateringOrderUpdated: "events.catering_order.updated" {
   tenantId: string
   orderNumber: string
   totalAmount: money
-  guestCount: number
+  guestCount: int
   updatedAt: datetime
 }
 

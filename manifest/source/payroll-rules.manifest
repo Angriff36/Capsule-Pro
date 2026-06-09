@@ -212,7 +212,7 @@ entity PayrollRun {
   }
 
   // Calculate gross/deductions/net for the run and move it into review.
-  command process(totalGross: money, totalDeductions: number, totalNet: money) {
+  command process(totalGross: money, totalDeductions: money, totalNet: money) {
     guard !flag("payroll.maintenance_mode") "Payroll processing is temporarily disabled for maintenance"
     guard self.status == "pending" "Only a pending run can be processed"
     guard self.deletedAt == null "Cannot process a deleted payroll run"

@@ -78,7 +78,7 @@ entity Event {
   // status != completed/archived/cancelled; `archive` guards status == completed.
 
   default policy EventDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
+  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
     // All params are optional — AI and forms can provide any subset
     // Defaults are applied at the store layer (EventPrismaStore.create)
     mutate clientId = clientId
@@ -102,7 +102,7 @@ entity Event {
     emit EventCreated
   }
 
-  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
+  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: array<string>, status: string, budget: money, ticketPrice: money, ticketTier: string, eventFormat: string, accessibilityOptions: array<string>, featuredMediaUrl: string) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
@@ -179,7 +179,7 @@ entity Event {
     emit EventBudgetUpdated
   }
 
-  command updateGuestCount(newGuestCount: number) {
+  command updateGuestCount(newGuestCount: int) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard newGuestCount > 0 "Guest count must be positive"
@@ -451,7 +451,7 @@ event EventConfirmed: "events.event.confirmed" {
   eventId: string
   tenantId: string
   eventName: string
-  guestCount: number
+  guestCount: int
   userId: string
   confirmedAt: datetime
 }
@@ -463,7 +463,7 @@ event EventCreated: "events.event.created" {
   title: string
   eventType: string
   eventDate: datetime
-  guestCount: number
+  guestCount: int
   clientId: string
   createdAt: datetime
 }
@@ -473,7 +473,7 @@ event EventUpdated: "events.event.updated" {
   tenantId: string
   title: string
   eventType: string
-  guestCount: number
+  guestCount: int
   updatedAt: datetime
 }
 
@@ -496,8 +496,8 @@ event EventGuestCountUpdated: "events.event.guest_count_updated" {
   eventId: string
   tenantId: string
   title: string
-  oldGuestCount: number
-  newGuestCount: number
+  oldGuestCount: int
+  newGuestCount: int
   updatedAt: datetime
 }
 

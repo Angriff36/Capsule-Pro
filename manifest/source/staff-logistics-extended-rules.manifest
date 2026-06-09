@@ -189,8 +189,8 @@ entity TipPool {
   relationship belongsTo event: Event with eventId
 
   default policy TipPoolDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(periodStart: number, periodEnd: number, eventId: string, totalTips: money) {
-    guard periodStart != null and periodStart > 0 "Period start is required"
+  command create(periodStart: datetime, periodEnd: datetime, eventId: string, totalTips: money) {
+    guard periodStart != null "Period start is required"
     guard periodEnd != null and periodEnd > periodStart "Period end must be after period start"
     guard totalTips >= 0 "Total tips cannot be negative"
 
@@ -362,7 +362,7 @@ entity ActionMilestone {
   command create(disciplinaryActionId: string, title: string, dueAt: datetime) {
     guard disciplinaryActionId != null and disciplinaryActionId != "" "Disciplinary action ID is required"
     guard title != null and title != "" "Milestone title is required"
-    guard dueAt != null and dueAt > 0 "Due date is required"
+    guard dueAt != null "Due date is required"
 
     mutate disciplinaryActionId = disciplinaryActionId
     mutate title = title
@@ -683,7 +683,7 @@ entity DeliveryRoute {
   default policy DeliveryRouteDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
   command create(name: string, driverId: string, routeDate: datetime, totalStops: number, distanceMiles: number) {
     guard name != null and name != "" "Route name is required"
-    guard routeDate != null and routeDate > 0 "Route date is required"
+    guard routeDate != null "Route date is required"
 
     mutate name = name
     mutate driverId = driverId
@@ -755,7 +755,7 @@ entity RouteStop {
   command create(deliveryRouteId: string, eventId: string, address: string, sequence: number, scheduledAt: datetime) {
     guard deliveryRouteId != null and deliveryRouteId != "" "Delivery route ID is required"
     guard address != null and address != "" "Address is required"
-    guard scheduledAt != null and scheduledAt > 0 "Scheduled arrival time is required"
+    guard scheduledAt != null "Scheduled arrival time is required"
 
     mutate deliveryRouteId = deliveryRouteId
     mutate eventId = eventId
@@ -884,7 +884,7 @@ entity PreventiveMaintenanceSchedule {
   command create(title: string, areaId: string, equipmentId: string, description: string, frequency: string, intervalDays: int, nextDueAt: datetime, assignedTo: string, estimatedHours: decimal, estimatedCost: money) {
     guard title != null and title != "" "Schedule title is required"
     guard frequency != null and frequency != "" "Frequency is required"
-    guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
+    guard nextDueAt != null "Next due date is required"
 
     mutate title = title
     mutate areaId = areaId
@@ -906,7 +906,7 @@ entity PreventiveMaintenanceSchedule {
     guard self.isActive "Cannot update an inactive maintenance schedule"
     guard title != null and title != "" "Schedule title is required"
     guard frequency != null and frequency != "" "Frequency is required"
-    guard nextDueAt != null and nextDueAt > 0 "Next due date is required"
+    guard nextDueAt != null "Next due date is required"
 
     mutate title = title
     mutate description = description
@@ -922,7 +922,7 @@ entity PreventiveMaintenanceSchedule {
 
   command complete(nextDueAt: datetime) {
     guard self.isActive "Cannot complete an inactive maintenance schedule"
-    guard nextDueAt != null and nextDueAt > 0 "Next due date is required for recurrence"
+    guard nextDueAt != null "Next due date is required for recurrence"
 
     mutate nextDueAt = nextDueAt
     mutate lastCompletedAt = now()

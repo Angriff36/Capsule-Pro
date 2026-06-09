@@ -238,6 +238,13 @@
       "reason": "Waste entry unitCost is the cost at the time of waste recording, which may differ from InventoryItem's current unitCost due to price changes over time. Historical cost tracking requires explicit per-entry values.",
       "owner": "inventory",
       "reviewed": "2026-06-09"
+    },
+    "CateringOrder": {
+      "fields": ["guestCount"],
+      "category": "FALSE_POSITIVE",
+      "reason": "CateringOrder.guestCount is the meal headcount (may be less than the event total — e.g., vendor/staff meals, dietary-specific orders). Semantically independent of Event.guestCount (total event attendees). The name match is coincidental — the catering count is authored per order.",
+      "owner": "events",
+      "reviewed": "2026-06-09"
     }
   }
 }
