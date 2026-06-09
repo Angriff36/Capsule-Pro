@@ -1509,6 +1509,18 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
   - Migration pattern: routes now call `resolveCurrentUser(request)` + `runManifestCommand({ entity, command, body, user })` instead of `executeManifestCommand(request, { entityName, commandName, transformBody })`. All `transformBody` callbacks inlined into `body` parameter. All `ctx.userId`/`ctx.tenantId`/`ctx.role` replaced with `user.id`/`user.tenantId`/`user.role`.
 - **Verification:** API typecheck 0 errors. 2574 tests pass (117 files, payment-create-idempotency fixed). 0 remaining consumers of legacy handler. Single canonical command path through full middleware pipeline (identity, RBAC, audit, outbox).
 
+### 10.14 Test infrastructure improvements — DONE (2026-06-09, v0.12.224-225)
+- **Done when:** Global mocks eliminate per-file boilerplate; quarantine drain analysis complete.
+- **What was done:**
+  - Added global `vi.mock("@repo/observability/log")` to `apps/api/test/setup.ts` — eliminates per-file mock boilerplate for 345+ source files that transitively import the log module.
+  - Added global `vi.mock("@/app/lib/tenant")` with all 4 exports — fixes mock drift from governance migration where 56/58 quarantine files were missing `resolveCurrentUser`.
+  - Both mocks delegate to real implementations where possible; per-file mocks override global stubs automatically.
+  - Quarantine drain analysis: 66 quarantined test files have 3 remaining systemic issues:
+    1. `params` destructuring (341 test failures) — tests don't provide Next.js App Router context params.
+    2. Missing `workforceoptimization` routes (36 test failures) — route files don't exist.
+    3. Various assertion drift from governance migration (status code changes, mock call patterns).
+  - These are per-file fixes requiring individual attention per `ci/DRAIN.md` process.
+
 ---
 
 ## TIER 11 -- ADVANCED MANIFEST FEATURES (9TH REVISION + 12TH REVISION ADDITIONS)
