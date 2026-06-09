@@ -49,7 +49,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -92,7 +92,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -189,7 +189,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -268,7 +268,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -361,7 +361,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -431,7 +431,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -501,7 +501,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -542,7 +542,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -587,7 +587,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -640,7 +640,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -678,7 +678,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -727,7 +727,7 @@ jobs:
       # and fails with "Unable to locate executable file: pnpm" if pnpm isn't
       # on PATH yet. See https://github.com/pnpm/action-setup#use-cache-to-reduce-installation-time
       - name: Setup pnpm
-        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
