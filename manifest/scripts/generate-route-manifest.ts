@@ -1,16 +1,14 @@
 #!/usr/bin/env -S node --import tsx
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { RoutesProjection } from "@angriff36/manifest/projections/routes";
 import { ENTITY_DOMAIN_MAP } from "./entity-domain-map.mjs";
+import { getConfigPaths } from "./read-config.mjs";
 
-const repoRoot = resolve(process.cwd());
-const irPath = join(
-  repoRoot,
-  "manifest/ir/kitchen.ir.json"
-);
-const outDir = join(repoRoot, "manifest/runtime");
+// Paths + routes base path come from manifest.config.yaml (via read-config) instead of
+// being hardcoded here. irPath/registryDir are absolute; routesBasePath defaults to "/api".
+const { irPath, registryDir: outDir, routesBasePath } = getConfigPaths();
 const manifestOut = join(outDir, "routes.manifest.json");
 const routesTsOut = join(outDir, "routes.ts");
 
@@ -94,11 +92,11 @@ function main() {
 
   const manifestResult = projection.generate(ir, {
     surface: "routes.manifest",
-    options: { basePath: "/api" },
+    options: { basePath: routesBasePath },
   });
   const routesTsResult = projection.generate(ir, {
     surface: "routes.ts",
-    options: { basePath: "/api" },
+    options: { basePath: routesBasePath },
   });
 
   const diagnostics = [
