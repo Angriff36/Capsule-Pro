@@ -591,6 +591,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Idempotent command core + allergen acknowledge idempotency** | run-manifest-command-core: IDEMPOTENT_COMMANDS registry, noop flag on success, tryGetInstance helper. 3 allergen commands registered. execute-command skips webhooks on noop. New test: allergen-acknowledge-idempotency (4 cases). |
 | 2026-06-08 | **Task 8.10 (ScheduleShift parent-context)** | ScheduleShift inherits locationId from Schedule via parent-context propagation | v0.12.198 |
 | 2026-06-08 | **manifest:check score fix** | Aligned event names in ProcurementBudget + TrainingAssignment; added 7 allowlist entries; score 75→100 | v0.12.199 |
+| 2026-06-08 | **Task 6.4 (typed inputs phase 1)** | Array generics fixed (string[] vs unknown[]), client regenerated, 0 typecheck errors | v0.12.200 |
 
 ---
 
@@ -1187,8 +1188,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Done when:** Single consistent frontend data access pattern. Dead code eliminated.
 - **Backpressure:** `grep -r 'from.*manifest-client.generated' apps/app/` returns only intended consumers. Sample CRUD flow works end-to-end.
 
-### 6.4 Typed command input generation
-- **Done when:** All 952 command functions have typed input parameters derived from IR (not `Record<string, unknown>`).
+### 6.4 Typed command input generation — PARTIAL (phase 1 done 2026-06-08, phase 2 deferred)
+- **Phase 1 DONE (2026-06-08):** Array generics fixed (string[] instead of unknown[]). Client regenerated from updated IR with 999 commands and 833 typed inputs. ScheduleShiftCreateInput correctly excludes locationId. 0 typecheck errors.
+- **Phase 2 deferred:** Removing `[key: string]: unknown` index signature and `| null` from fields requires fixing 147 caller sites — deferred to a future pass.
+- **Done when:** All 999 command functions have typed input parameters derived from IR (not `Record<string, unknown>`).
 - **Why:** The IR defines per-command input schemas with required/optional fields and types, but the generated client projects all commands as `(input: Record<string, unknown>)`.
 - **Source to change:** `manifest/scripts/generate-capsule-client.mjs`.
 
@@ -2219,3 +2222,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 9.7 DONE: Property modifier adoption** | 534 modifier annotations across 94 manifest source files: 92 `indexed`, 73 `searchable`, 18 `unique`, 32 `encrypted`, 7 `private`. Parser accepts without error. Finding #50 updated. IR compiler does not yet emit modifiers to JSON (future package upgrade needed). |
 | 2026-06-08 | **Task 8.10 ScheduleShift parent-context propagation (8th adopter).** locationId inherited from Schedule on create. v0.12.198. |
 | 2026-06-08 | **v0.12.199: manifest:check score 75→100.** Aligned ProcurementBudget and TrainingAssignment event names with merge-kept definitions. Added ScheduleShift.locationId and 7 duplicate-drop allowlist entries. |
+| 2026-06-08 | **v0.12.200: Task 6.4 phase 1.** Fix array generics in generated command inputs (string[] vs unknown[]). Client regenerated from IR with 999 commands and 833 typed inputs. |
