@@ -955,7 +955,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Backpressure:** Adding a new entity+table requires zero manual mapping updates.
 - **Source to change:** `manifest/scripts/generate.mjs`.
 
-### 2.2 Add ENTITIES_WITHOUT_TABLE filtering at projection time
+### 2.2 Add ENTITIES_WITHOUT_TABLE filtering at projection time — ✅ DONE 2026-06-08
+- **✅ DONE 2026-06-08.** No additional filtering code needed. `resolveAccessor()` step 3 already auto-drops entities absent from `PRISMA_MODEL_METADATA`. 14 entities (training/onboarding) + QACheck have no metadata entry and are automatically excluded. The 16 entities that previously needed null-valued drops now have Prisma models (Task 0.3) and generate routes correctly.
 - **Done when:** Generator drops routes for entities with no backing Prisma model.
 - **Why:** ROOT CAUSE -- Upstream projection emits routes for ALL entities regardless of table existence. ~30 of the ~80 typecheck errors are from routes referencing non-existent Prisma models.
 - **Backpressure:** Zero `database.<entity>.findMany is not a function` errors for tableless entities.
@@ -1086,8 +1087,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Done when:** Decision documented: adopt React Query projection for typed data fetching hooks. At least 3 entity domains use generated hooks. ✅ ACHIEVED.
 - **Next steps:** Full domain migration (replace raw apiFetch calls in 105 files with generated hooks), per-entity optimistic update patterns, typed mutation inputs from IR command params.
 
-### 5.3 Evaluate OpenAPI projection for API documentation
-- **Done when:** OpenAPI spec generated covering all manifest routes. Validates in OpenAPI linter.
+### 5.3 Evaluate OpenAPI projection for API documentation — DONE
+- **Done when:** OpenAPI spec generated covering all manifest routes. Validates in OpenAPI linter. ✅ ACHIEVED.
+- **Evidence:** OpenAPI 3.1.0 spec generated from IR via `@angriff36/manifest/projections/openapi`. 202 entities (404 GET paths), 999 commands (999 POST paths) = 1,403 total paths + 1,240 schemas. Post-processing rewrites list paths (`/entity/list` → `/entity`) and command paths (`/entity/cmd` → `/entity/commands/cmd`) to match the actual dispatcher. Script: `manifest/scripts/generate-openapi.mjs`, output: `manifest/api-docs/openapi.json` (4 MB). pnpm script: `manifest:openapi`.
 
 ### 5.4 Evaluate Mermaid projection for architecture docs
 - **Done when:** ER diagrams generated from IR covering all 189 entities with relationships.
@@ -2104,7 +2106,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 1. **~~Naive camelCase accessor derivation (upstream)~~ RESOLVED 2026-06-08 (Task 2.1):** ENTITY_ACCESSOR_OVERRIDES consolidated from 32 entries to 1 (QACheck). 15 remaps auto-resolved via ENTITY_TO_PRISMA_MODEL bridge + PRISMA_MODEL_METADATA. 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed (QACorrectiveAction, QATemperatureLog).
 
-2. **No ENTITIES_WITHOUT_TABLE filtering at projection time (upstream):** The upstream projection emits routes for ALL entities regardless of Prisma table existence. Now 23 entities (not 32). Task 2.2.
+2. **~~No ENTITIES_WITHOUT_TABLE filtering at projection time (upstream)~~ RESOLVED 2026-06-08 (Task 2.2):** `resolveAccessor()` step 3 already auto-drops entities absent from `PRISMA_MODEL_METADATA`. 14 training/onboarding entities + QACheck excluded automatically. 16 previously-tableless entities now have Prisma models (Task 0.3). No additional filtering code needed.
 
 3. **ENTITY_DOMAIN_MAP duplication (3 stale copies of canonical 189-entry map):** Canonical `entity-domain-map.mjs` now covers ALL 189 entities. Stale copies: `generate-route-manifest.ts` (**90 entries of 189**, Event mapped as "manifest/Event"), `mcp-server/entity-domain-map.ts` (~92 entries, severely stale), and `build.mjs` (duplicates compile logic). 99 entities missing from route manifest map. Task 2.4.
 
@@ -2240,3 +2242,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **v0.12.200: Task 6.4 phase 1.** Fix array generics in generated command inputs (string[] vs unknown[]). Client regenerated from IR with 999 commands and 833 typed inputs. |
 | 2026-06-08 | **Duplicate event/policy cleanup + test fixes** | Removed 11 duplicate event definitions from 3 source files (recipe-rules, inventory-extended-rules, training-module-rules) + 1 duplicate policy (FinanceCanManageBudgets). Cleaned 22 stale allowlist keys (27→4). manifest doctor warnings 16→4. Fixed 2 pre-existing app test failures (settings-workflow apiFetch assertion, upcoming-maintenance-widget mock). Added coverage CLI variants (json, strict) + emit script. IR: 202 entities, 999 commands, 981 events (-18). All 3308 tests pass, 0 typecheck errors. |
 | 2026-06-08 | **Task 2.1: Route generator accessor-aware from metadata** | ENTITY_ACCESSOR_OVERRIDES 32→1 entries. 15 remaps auto-resolved via metadata (step 2). 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed (QACorrectiveAction, QATemperatureLog). SampleData field override added. 0 typecheck, 0 drift, 2863 tests pass. |
+| 2026-06-08 | **Task 5.3 DONE: OpenAPI 3.1.0 projection** | OpenAPI spec generated from IR via `@angriff36/manifest/projections/openapi`. 202 entities (404 GET), 999 commands (999 POST) = 1,403 paths + 1,240 schemas. Output: `manifest/api-docs/openapi.json` (4 MB). Script: `manifest/scripts/generate-openapi.mjs`, pnpm: `manifest:openapi`. |

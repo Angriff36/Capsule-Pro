@@ -114,6 +114,7 @@
     "manifest:generate-hooks": "node manifest/scripts/generate-react-query-hooks.mjs",
     "manifest:generate-schema": "node manifest/scripts/generate-full-schema.mjs",
     "manifest:schema:full": "node manifest/scripts/derive-prisma-options.mjs && node manifest/scripts/generate-full-schema.mjs",
+    "manifest:openapi": "node manifest/scripts/generate-openapi.mjs",
     "manifest:doctor": "pnpm exec manifest doctor",
     "manifest:inspect": "pnpm exec manifest inspect entity",
     "manifest:diff": "pnpm exec manifest diff source-vs-ir",
