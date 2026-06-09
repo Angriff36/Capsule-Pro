@@ -20,7 +20,13 @@ import {
 } from "./entity-domain-map.mjs";
 import { getConfigPaths } from "./read-config.mjs";
 
-const { repoRoot, irPath: defaultIr, nextjsOutput: defaultOutput } = getConfigPaths();
+const {
+  repoRoot,
+  irPath: defaultIr,
+  nextjsOutput: defaultOutput,
+  appDirPrefix,
+  readRoutesEnabled,
+} = getConfigPaths();
 
 const userArgs = process.argv.slice(2);
 
@@ -69,7 +75,7 @@ function remapToDomainPath(relativePath) {
   const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
 
   // Strip the apps/api/app/api/ prefix that the CLI adds
-  const apiPrefix = "apps/api/app/api/";
+  const apiPrefix = appDirPrefix;
   if (!normalized.startsWith(apiPrefix)) {
     return null; // Not an API route — skip (types, client, etc.)
   }
@@ -121,7 +127,7 @@ function remapToDomainPath(relativePath) {
  */
 function entityForStagedPath(relativePath) {
   const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
-  const apiPrefix = "apps/api/app/api/";
+  const apiPrefix = appDirPrefix;
   if (!normalized.startsWith(apiPrefix)) return null;
   const segment = normalized.slice(apiPrefix.length).split("/")[0];
   return FLAT_SEGMENT_TO_ENTITY[segment] ?? null;
@@ -431,14 +437,24 @@ const routeArgs = [
   ...setOutputDirInArgs(baseArgs, stagingDir),
 ];
 
-console.log(
-  "[manifest/generate] Generating list routes (nextjs.route surface)..."
-);
-const routeResult = spawnSync(pnpmBin, routeArgs, {
-  stdio: "inherit",
-  shell: process.platform === "win32",
-  cwd: repoRoot,
-});
+// readRoutes.enabled (manifest.config.yaml → projections.nextjs.options.readRoutes)
+// gates direct DB read-route generation. When false, no list/detail routes are emitted;
+// the command dispatcher (below) is unaffected.
+let routeResult = { status: 0 };
+if (readRoutesEnabled) {
+  console.log(
+    "[manifest/generate] Generating list routes (nextjs.route surface)..."
+  );
+  routeResult = spawnSync(pnpmBin, routeArgs, {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+    cwd: repoRoot,
+  });
+} else {
+  console.log(
+    "[manifest/generate] readRoutes.enabled=false — skipping read-route generation."
+  );
+}
 
 // Run 2: Generate detail routes (nextjs.detail surface)
 // The installed CLI (0.3.37) supportss the surface through its projection class,
@@ -478,16 +494,19 @@ async function main() {
 main().catch(e => { console.error(e); process.exit(1); });
 `;
 const detailScriptPath = join(stagingDir, "_detail-gen.mjs");
-writeFileSync(detailScriptPath, detailScript, "utf8");
 
-console.log(
-  "[manifest/generate] Generating detail routes (nextjs.detail surface)..."
-);
-const detailResult = spawnSync("node", [detailScriptPath], {
-  stdio: "inherit",
-  shell: process.platform === "win32",
-  cwd: repoRoot,
-});
+let detailResult = { status: 0 };
+if (readRoutesEnabled) {
+  writeFileSync(detailScriptPath, detailScript, "utf8");
+  console.log(
+    "[manifest/generate] Generating detail routes (nextjs.detail surface)..."
+  );
+  detailResult = spawnSync("node", [detailScriptPath], {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+    cwd: repoRoot,
+  });
+}
 
 // Run 3: Generate the singular dynamic command dispatcher
 // This is a single route at apps/api/app/api/manifest/[entity]/commands/[command]/route.ts

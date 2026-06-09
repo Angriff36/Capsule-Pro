@@ -31,23 +31,25 @@ projections:
   nextjs:
     # Generated read routes land under apps/api/app/api/ (after generate.mjs domain remap).
     output: apps/api/app/api/
-    # CLI projection identifier + generation surfaces consumed by
-    # manifest/scripts/generate.mjs. These live here so the projection/surface
-    # names are part of the build contract instead of string literals in the script.
-    projection: nextjs
-    surfaces:
-      # List/collection read routes — CLI `manifest generate --surface <route>`.
-      route: route
-      # Per-id detail read routes — NextJsProjection surface, invoked directly.
-      detail: nextjs.detail
+    # NOTE: the projection is selected by THIS key name (`nextjs`); Manifest's config
+    # schema has no field for projection name or surface strings (route/detail) — those
+    # are CLI/wrapper internals. See https://manifest-b1e8623f.mintlify.app/cli/configuration
     options:
       # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
       authProvider: clerk
       # App-local DB + runtime + response import paths used by generated routes.
       databaseImportPath: "@repo/database"
+      # App Router base directory. generate.mjs derives its staged-route prefix from this
+      # instead of hardcoding "apps/api/app/api/".
+      appDir: apps/api/app/api
       # Tenant scoping + soft-delete are enforced on read surfaces.
       includeTenantFilter: true
       includeSoftDeleteFilter: true
+      # Direct DB read routes (GET list + detail). Defaults shown; flip enabled:false to
+      # suppress read-route generation entirely (honored by both the CLI and generate.mjs).
+      readRoutes:
+        enabled: true
+        directDbReads: true
       # Governed command writes go through the SINGULAR dispatcher (constitution §6),
       # never concrete per-command routes:
       dispatcher:

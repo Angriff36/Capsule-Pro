@@ -121,8 +121,26 @@ export function getConfigPaths() {
   // Projection config
   const projections = cfg.projections || {};
   const nextjs = projections.nextjs || {};
+  const nextjsOptions = nextjs.options || {};
   const nextjsOutput = nextjs.output || "apps/api/app/api/";
-  const nextjsDispatcher = nextjs.dispatcher || "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts";
+
+  // App Router base directory (schema key: projections.nextjs.options.appDir).
+  // generate.mjs uses this for the staged-route path prefix instead of a literal.
+  const appDir = nextjsOptions.appDir || "apps/api/app/api";
+
+  // Direct DB read-route policy (schema key: projections.nextjs.options.readRoutes).
+  // enabled:false suppresses list/detail read-route generation.
+  const readRoutes = nextjsOptions.readRoutes || {};
+  const readRoutesEnabled = readRoutes.enabled !== false; // default true
+  const readRoutesDirectDbReads = readRoutes.directDbReads !== false; // default true
+
+  // Canonical command dispatcher route. The official schema key is
+  // projections.nextjs.options.dispatcher.path; keep a legacy nextjs.dispatcher
+  // fallback and a hardcoded default so generation still works with no config.
+  const nextjsDispatcher =
+    (nextjsOptions.dispatcher && nextjsOptions.dispatcher.path) ||
+    nextjs.dispatcher ||
+    "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts";
 
   // IR file names (project-specific, not configurable — kitchen.* naming is Capsule's convention)
   const irFile = join(outputDir, "kitchen.ir.json");
@@ -145,6 +163,14 @@ export function getConfigPaths() {
     nextjsOutput:    resolve(repoRoot, nextjsOutput),
     dispatcherPath:  resolve(repoRoot, nextjsDispatcher),
     dispatcherDir:   resolve(repoRoot, dirname(nextjsDispatcher)),
+
+    // App Router base prefix (string, normalized with a trailing slash) — consumed by
+    // generate.mjs to strip the staged-route prefix the CLI emits.
+    appDirPrefix:    `${appDir.replace(/\/+$/, "")}/`,
+
+    // Read-route generation policy.
+    readRoutesEnabled,
+    readRoutesDirectDbReads,
 
     // Raw config for projection options etc.
     config: cfg,
