@@ -22,7 +22,7 @@ entity Budget {
   timestamps
 
   computed remainingAmount: money = self.allocatedAmount - self.spentAmount
-  computed percentUsed: number = percent(self.spentAmount, self.allocatedAmount)
+  computed percentUsed: number = percent(self.spentAmount, self.allocatedAmount) cache request
   computed isOverBudget: boolean = self.spentAmount > self.allocatedAmount
 
   constraint validStatus: self.status in ["draft", "active", "closed", "archived"] "Invalid budget status"

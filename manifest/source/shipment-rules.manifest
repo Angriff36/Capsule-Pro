@@ -187,7 +187,7 @@ entity ShipmentItem {
 
   computed isFullyReceived: boolean = self.quantityReceived >= self.quantityShipped
   computed hasDamage: boolean = self.quantityDamaged > 0
-  computed receivedPercentage: number = percent(self.quantityReceived, self.quantityShipped)
+  computed receivedPercentage: number = percent(self.quantityReceived, self.quantityShipped) cache request
 
   constraint positiveQuantityShipped: self.quantityShipped >= 0 "Quantity shipped cannot be negative"
 

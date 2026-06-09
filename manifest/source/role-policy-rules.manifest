@@ -17,7 +17,7 @@ entity RolePolicy {
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
-  computed hasPermissions: boolean = length(self.permissions) > 0
+  computed hasPermissions: boolean = length(self.permissions) > 0 cache request
 
   constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
 

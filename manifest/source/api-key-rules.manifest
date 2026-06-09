@@ -19,9 +19,9 @@ entity ApiKey {
   property deletedAt: datetime
 
   computed isRevoked: boolean = self.revokedAt != null
-  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now()
+  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request
   computed isDeleted: boolean = self.deletedAt != null
-  computed isActive: boolean = self.revokedAt == null and self.deletedAt == null and (self.expiresAt == null or self.expiresAt > now())
+  computed isActive: boolean = self.revokedAt == null and self.deletedAt == null and (self.expiresAt == null or self.expiresAt > now()) cache request
   computed isUsable: boolean = self.isActive and self.hashedKey != ""
 
   constraint requireName: self.name != null and self.name != "" "API key name is required"

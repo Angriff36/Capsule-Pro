@@ -56,7 +56,7 @@ entity Invoice {
   timestamps
   // Computed properties
   computed isPaidInFull: boolean = self.amountDue <= 0
-  computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now()
+  computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now() cache request
 
   relationship belongsTo linkedEvent: Event fields [tenantId, eventId] references [tenantId, id]
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]

@@ -39,7 +39,7 @@ entity Proposal {
   computed isAccepted: boolean = self.status == "accepted"
   computed isRejected: boolean = self.status == "rejected"
   computed isWithdrawn: boolean = self.status == "withdrawn"
-  computed isExpired: boolean = self.validUntil != null and self.validUntil < now()
+  computed isExpired: boolean = self.validUntil != null and self.validUntil < now() cache request
   computed isFinalized: boolean = self.status in ["accepted", "rejected", "withdrawn", "expired"]
   computed hasLineItems: boolean = self.lineItemCount > 0
   computed hasDiscount: boolean = self.discountAmount > 0

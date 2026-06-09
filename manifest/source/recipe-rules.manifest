@@ -16,8 +16,8 @@ entity Recipe {
   property required isActive: boolean = true
   timestamps
 
-  computed hasVersion: boolean = count_of(self.versions) > 0
-  computed tagCount: int = count(self.tags)
+  computed hasVersion: boolean = count_of(self.versions) > 0 cache request
+  computed tagCount: int = count(self.tags) cache request
 
   relationship hasMany versions: RecipeVersion
 

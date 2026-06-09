@@ -101,7 +101,7 @@ entity EntityVersion {
 
   computed isInitialVersion: boolean = self.versionNumber == 1
   computed isPendingApproval: boolean = self.isApproved == false
-  computed timeSinceCreated: number = now() - self.createdAt
+  computed timeSinceCreated: number = now() - self.createdAt cache request
 
   constraint validVersionNumber: self.versionNumber > 0 "Version number must be positive"
   constraint validChangeType: self.changeType in ["create", "update", "restore", "approve", "auto"] "Change type must be valid"
@@ -176,7 +176,7 @@ entity VersionApproval {
   computed isPending: boolean = self.status == "pending"
   computed isApproved: boolean = self.status == "approved"
   computed isRejected: boolean = self.status == "rejected"
-  computed waitingTime: number = now() - self.createdAt
+  computed waitingTime: number = now() - self.createdAt cache request
 
   constraint validStatus: self.status in ["pending", "approved", "rejected"] "Status must be pending, approved, or rejected"
 

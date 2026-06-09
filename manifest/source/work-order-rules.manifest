@@ -26,7 +26,7 @@ entity WorkOrder {
   computed isAssigned: boolean = self.assignedTo != ""
   // null-safe datetime checks (fixes original != 0 bug on datetime)
   computed isScheduled: boolean = self.scheduledDate != null
-  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])
+  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"]) cache request
   computed isCritical: boolean = self.priority == "critical"
 
   transition status from "open" to ["assigned", "in_progress", "cancelled"]

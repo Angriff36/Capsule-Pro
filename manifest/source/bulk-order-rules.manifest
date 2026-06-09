@@ -30,7 +30,7 @@ entity BulkOrderRule {
 
   computed isDeleted: boolean = self.deletedAt != null
   // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
-  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now()) cache request
   computed hasDiscountAction: boolean = self.action == "discount" and self.discountPercent > 0
   computed hasFreeShipping: boolean = self.action == "free_shipping" or self.shippingIncluded
 

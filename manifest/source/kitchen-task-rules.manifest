@@ -18,7 +18,7 @@ entity KitchenTask {
   property completedAt: datetime
   timestamps
 
-  computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done"
+  computed isOverdue: boolean = self.dueDate != null and now() > self.dueDate and self.status != "done" cache request
   computed isCompleted: boolean = self.status == "done"
   computed isPending: boolean = self.status == "pending"
   computed isInProgress: boolean = self.status == "in_progress"

@@ -24,7 +24,7 @@ entity ClientInteraction {
   property deletedAt: datetime
 
   computed hasFollowUp: boolean = self.followUpDate != null
-  computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false
+  computed isFollowUpOverdue: boolean = self.followUpDate != null and self.followUpDate < now() and self.followUpCompleted == false cache request
   computed isEscalated: boolean = self.escalatedAt != null
   computed isCompleted: boolean = self.followUpCompleted == true
   computed hasSubject: boolean = self.subject != null and self.subject != ""

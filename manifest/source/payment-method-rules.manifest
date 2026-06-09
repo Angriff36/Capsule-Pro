@@ -48,7 +48,7 @@ entity PaymentMethod {
   property expiresAt: datetime
 
   // Computed properties
-  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now()
+  computed isExpired: boolean = self.expiresAt != null and self.expiresAt < now() cache request
   computed isUsable: boolean = self.status == "ACTIVE" and self.isExpired == false and self.fraudFlagged == false
 
   // Constraints

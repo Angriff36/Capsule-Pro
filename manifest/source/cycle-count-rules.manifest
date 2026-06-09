@@ -29,7 +29,7 @@ entity CycleCountSession {
   computed isInProgress: boolean = self.status == "in_progress"
   computed isCompleted: boolean = self.status == "completed"
   computed isCancelled: boolean = self.status == "cancelled"
-  computed countProgress: number = percent(self.countedItems, self.totalItems)
+  computed countProgress: number = percent(self.countedItems, self.totalItems) cache request
   computed hasVariance: boolean = self.totalVariance != 0
 
   belongsTo location: Facility with locationId

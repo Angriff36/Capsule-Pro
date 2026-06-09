@@ -214,7 +214,7 @@ entity FacilityAsset {
 
   computed isOperational: boolean = self.status == "operational"
   computed isUnderMaintenance: boolean = self.status == "maintenance"
-  computed maintenanceOverdue: boolean = self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational"
+  computed maintenanceOverdue: boolean = self.nextMaintenanceAt != null and now() > self.nextMaintenanceAt and self.status == "operational" cache request
 
   constraint validAssetType: self.assetType in ["equipment", "furniture", "vehicle", "technology", "other"] "Invalid asset type"
 
@@ -438,7 +438,7 @@ entity FacilityWorkOrder {
 
   computed isOpen: boolean = self.status == "open"
   computed isAssigned: boolean = self.assignedTo != ""
-  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"])
+  computed isOverdue: boolean = self.scheduledDate != null and now() > self.scheduledDate and not (self.status in ["completed", "cancelled"]) cache request
 
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
   constraint validStatus: self.status in ["open", "assigned", "in_progress", "completed", "cancelled"] "Invalid work order status"

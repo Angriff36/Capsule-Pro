@@ -871,7 +871,7 @@ entity PreventiveMaintenanceSchedule {
   property isActive: boolean = true
   timestamps
 
-  computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt
+  computed isDue: boolean = self.nextDueAt != null and now() >= self.nextDueAt cache request
   computed isActiveSchedule: boolean = self.isActive == true and self.status == "active"
 
   constraint requireTitle: self.title != "" "Schedule title is required"

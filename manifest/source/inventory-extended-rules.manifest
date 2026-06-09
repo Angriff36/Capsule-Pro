@@ -636,7 +636,7 @@ entity ProcurementBudget {
   timestamps
 
   computed remainingAmount: decimal = self.budgetAmount - self.spentAmount
-  computed utilizationPct: decimal = percent(self.spentAmount, self.budgetAmount)
+  computed utilizationPct: decimal = percent(self.spentAmount, self.budgetAmount) cache request
   computed isOverBudget: boolean = self.spentAmount > self.budgetAmount
   computed isActive: boolean = self.status == "active"
   computed isClosed: boolean = self.status == "closed"

@@ -12,7 +12,7 @@ entity EventBudget {
   property totalBudgetAmount: money = 0
   property totalActualAmount: money = 0
   property varianceAmount: money = 0
-  computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount)
+  computed variancePercentage: decimal = percent(self.varianceAmount, self.totalBudgetAmount) cache request
   searchable property notes: string = ""
   timestamps
   property deletedAt: datetime

@@ -134,7 +134,7 @@ entity ScheduleShift {
   timestamps
   property deletedAt: datetime
 
-  computed durationHours: number = self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0
+  computed durationHours: number = self.shiftEnd > self.shiftStart ? hoursBetween(self.shiftStart, self.shiftEnd) : 0 cache request
   computed isAssigned: boolean = self.employeeId != ""
   computed hasRole: boolean = self.roleDuringShift != ""
   computed hasSwapPending: boolean = self.swapStatus == "offered"

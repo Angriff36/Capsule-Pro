@@ -45,10 +45,10 @@ entity RevenueRecognitionSchedule {
   property completedAt: datetime
 
   // Computed properties
-  computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount)
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.totalAmount) cache request
   computed isFullyRecognized: boolean = self.recognizedAmount >= self.totalAmount - 0.01
-  computed milestonePercentage: number = percent(self.completedMilestones, self.totalMilestones)
-  computed daysRemaining: number = self.endDate > now() ? self.endDate - now() : 0
+  computed milestonePercentage: number = percent(self.completedMilestones, self.totalMilestones) cache request
+  computed daysRemaining: number = self.endDate > now() ? self.endDate - now() : 0 cache request
   computed totalDays: number = self.endDate - self.startDate
 
   // Constraints
@@ -240,9 +240,9 @@ entity RevenueRecognitionLine {
 
   // Computed properties
   computed isRecognized: boolean = self.status == "RECOGNIZED"
-  computed isOverdue: boolean = self.status == "PENDING" and self.dueDate < now()
-  computed daysUntilDue: number = self.dueDate - now()
-  computed recognitionPercentage: number = percent(self.recognizedAmount, self.amount)
+  computed isOverdue: boolean = self.status == "PENDING" and self.dueDate < now() cache request
+  computed daysUntilDue: number = self.dueDate - now() cache request
+  computed recognitionPercentage: number = percent(self.recognizedAmount, self.amount) cache request
 
   // Constraints
   relationship belongsTo schedule: RevenueRecognitionSchedule fields [tenantId, scheduleId] references [tenantId, id]

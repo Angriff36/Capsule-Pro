@@ -274,14 +274,14 @@ entity EventProfitability {
   property budgetedOverhead: decimal = 0
   property budgetedTotalCost: money = 0
   property budgetedGrossMargin: decimal = 0
-  computed budgetedGrossMarginPct: decimal = percent(self.budgetedGrossMargin, self.budgetedRevenue)
+  computed budgetedGrossMarginPct: decimal = percent(self.budgetedGrossMargin, self.budgetedRevenue) cache request
   property actualRevenue: money = 0
   property actualFoodCost: money = 0
   property actualLaborCost: money = 0
   property actualOverhead: decimal = 0
   property actualTotalCost: money = 0
   property actualGrossMargin: decimal = 0
-  computed actualGrossMarginPct: decimal = percent(self.actualGrossMargin, self.actualRevenue)
+  computed actualGrossMarginPct: decimal = percent(self.actualGrossMargin, self.actualRevenue) cache request
   property revenueVariance: decimal = 0
   property foodCostVariance: decimal = 0
   property laborCostVariance: decimal = 0

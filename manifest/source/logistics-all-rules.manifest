@@ -16,8 +16,8 @@ entity Driver {
   timestamps
 
   computed isActive: boolean = self.status in ["available", "on_route"]
-  computed licenseExpiring: boolean = self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry
-  computed licenseExpired: boolean = self.licenseExpiry != null and now() > self.licenseExpiry
+  computed licenseExpiring: boolean = self.licenseExpiry != null and addDays(now(), 30) > self.licenseExpiry cache request
+  computed licenseExpired: boolean = self.licenseExpiry != null and now() > self.licenseExpiry cache request
 
   constraint validStatus: self.status in ["available", "on_route", "off_duty", "inactive"] "Invalid driver status"
 
@@ -242,7 +242,7 @@ entity LogisticsRoute {
   timestamps
 
   computed isActive: boolean = self.status == "in_progress"
-  computed completionPercent: number = percent(self.completedStops, self.stops)
+  computed completionPercent: number = percent(self.completedStops, self.stops) cache request
   computed isDelayed: boolean = self.delayMinutes > 0 and self.status == "in_progress"
 
   constraint validStatus: self.status in ["planned", "in_progress", "completed", "cancelled"] "Invalid route status"

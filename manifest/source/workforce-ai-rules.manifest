@@ -76,7 +76,7 @@ entity PerformancePrediction {
   timestamps
   property expiresAt: datetime = now()
 
-  computed isExpired: boolean = self.expiresAt < now()
+  computed isExpired: boolean = self.expiresAt < now() cache request
 
   constraint validPredictionType: self.predictionType in ["productivity", "attendance", "overtime_risk", "skill_match"] "Invalid prediction type"
   constraint validConfidence: self.confidence in ["low", "medium", "high"] "Invalid confidence level"

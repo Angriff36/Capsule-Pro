@@ -31,7 +31,7 @@ entity VendorCatalog {
   property deletedAt: datetime
 
   computed isDeleted: boolean = self.deletedAt != null
-  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now()) cache request
 
   constraint requireItemNumber: self.itemNumber != null and self.itemNumber != "" "Item number is required"
   constraint requireItemName: self.itemName != null and self.itemName != "" "Item name is required"

@@ -28,7 +28,7 @@ entity EventImportWorkflow {
   computed isFailed: boolean = self.status == "failed"
   computed isPaused: boolean = self.status == "paused"
   computed canRetry: boolean = self.status == "failed" or self.status == "paused"
-  computed progress: number = percent(self.currentStep, self.totalSteps)
+  computed progress: number = percent(self.currentStep, self.totalSteps) cache request
 
   // Constraints
   constraint validStatus: self.status in ["created", "parsing", "extracting", "validating", "proposing", "reserving", "activating", "completed", "failed", "paused", "cancelled"]

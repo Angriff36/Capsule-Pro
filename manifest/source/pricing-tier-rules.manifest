@@ -26,7 +26,7 @@ entity PricingTier {
 
   computed isDeleted: boolean = self.deletedAt != null
   // BUG FIX: original used == 0 on datetime (invalid) — null means "not set / unbounded"
-  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now())
+  computed isEffective: boolean = (self.effectiveFrom == null or self.effectiveFrom <= now()) and (self.effectiveTo == null or self.effectiveTo >= now()) cache request
   computed hasQuantityCap: boolean = self.maxQuantity > 0
 
   constraint requireTierName: self.tierName != null and self.tierName != "" "Tier name is required"
