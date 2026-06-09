@@ -303,12 +303,9 @@ export function toCamelCase(value) {
 // of the drops were made redundant by Task 0.3 (created Prisma models) + the metadata
 // resolution path. Consolidated in Task 2.1.
 export const ENTITY_ACCESSOR_OVERRIDES = {
-  // QACheck: model QualityCheck exists but is a DIFFERENT concept (QC session with itemized
-  //   QualityCheckItem children, status passed/failed/needs_review), whereas IR QACheck is a single
-  //   inspection task (result pass/fail/na, reinspectedAt, checkTypes temperature/sanitation/...).
-  //   Remapping would invent semantics over a mismatched table (constitution §10), so DROP rather
-  //   than remap. If business confirms equivalence, create a dedicated mapping/table (Task 0.3).
-  QACheck: null,
+  // QACheck: dedicated Prisma model added (tenant_kitchen.qa_checks, v0.12.216).
+  //   Previously dropped because only QualityCheck existed (different concept — QC session with
+  //   itemized QualityCheckItem children). The accessor `qaCheck` now auto-resolves via metadata.
 };
 
 // Per-entity Prisma FIELD-name corrections for generated read routes.

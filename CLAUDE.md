@@ -259,18 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 75% context — saved before compacting]
-Files (11):
-  manifest/scripts/fix-money-as-number.mjs (create)
-  manifest/scripts/fix-money-as-number.mjs (edit)
-  manifest/source/invoice-rules.manifest (edit)
-  manifest/source/payroll-rules.manifest (edit)
-  manifest/source/proposal-rules.manifest (edit)
-  manifest/source/purchase-order-rules.manifest (edit)
-  IMPLEMENTATION_PLAN.md (edit)
-  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/money-as-number-fix-v0.12.212.md (create)
-  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/MEMORY.md (edit)
-  manifest/scripts/fix-cmd-money-as-number.mjs (create)
-  manifest/scripts/fix-cmd-money-as-number.mjs (edit)
+[proactive bridge @ 99% context — saved before compacting]
+Files (1):
+  manifest/scripts/generate-mermaid.mjs (create)
 
 # === END COGNILAYER ===

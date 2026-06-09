@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 1 | 189 entities, ALL durable | **CONFIRMED** | `stores[]` in IR: 189 entries, all `target: "durable"`, 0 memory |
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
-| 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). ~~15 entities had wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge. |
+| 3 | ~~32~~ ~~**1**~~ **0** IR entities without Prisma model — ALL 189 MATCHED | **RESOLVED** | **All 189 IR entities match a Prisma model.** QACheck was the last unmatched entity — a dedicated `QACheck` model was added to `tenant_kitchen.qa_checks` (schema.prisma:5932) with accessor `qACheck`. QACheck ≠ QualityCheck (different concepts: inspection checklist vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). ~~15 entities had wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge. |
 | 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1 added 58 declarations across 43 entities. 57 entities without relationships (polymorphic FKs, missing targets, or no FK props). |
 | 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported: **0 governed-entity violations**, 47 ungoverned infrastructure (entities with no Manifest IR definition), 14 documented bypasses in `bypasses.json`. Governance migration COMPLETE for governed entities. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
@@ -173,7 +173,7 @@
 | **Scheduled Commands: `schedule <name> { cron ... }`** | Next.js projection generates cron routes automatically. Zero scheduled commands exist. Candidates: daily reconciliation, nightly inventory sync, expiration checks. | Official docs `/language/workflows` |
 | **Entity Property Modifiers: encrypted, masked, searchable, indexed, unique, readonly** | Only `required`/`optional` used. `encrypted` on PII, `masked` (redact/partial/tokenize/email/phone/ssn/creditCard), `searchable` (full-text), `indexed`, `unique` on ApiKeyName/VendorCatalog.itemNumber. | Official docs entity modifiers |
 | **build.mjs duplicates compile.mjs logic** | Instead of delegating to compile.mjs. Design debt. Also has dead `CODE_OUTPUT_DIR` variable. | `manifest/scripts/build.mjs` |
-| **generate-route-manifest.ts has only 90/189 ENTITY_DOMAIN_MAP entries** | Canonical map now covers 189 entities. Stale copy has 90. Event mapped as "manifest/Event" vs canonical "events/event". | `manifest/scripts/generate-route-manifest.ts` |
+| **generate-route-manifest.ts has only 90/189 ENTITY_DOMAIN_MAP entries** | ✅ RESOLVED 2026-06-09 — Canonical map now covers all 189 entities. Route manifest imports canonical. | `manifest/scripts/generate-route-manifest.ts` |
 | **prisma-projection-options.mjs EventStaff table wrong** | RESOLVED 2026-06-05 (Task 2.5 Phase 3) — derive-prisma-options.mjs now uses ENTITY_ACCESSOR_OVERRIDES for fallback lookup. 188/189 entities matched (was 173/189). | `manifest/scripts/derive-prisma-options.mjs` |
 | **generate-all-routes.mjs is orphaned** | No pnpm script entry at all. Completely unreachable from standard workflow. | `manifest/scripts/generate-all-routes.mjs` |
 | **generate.mjs has stale comment** | References "CLI (0.3.37)". Installed version is 2.2.0. | `manifest/scripts/generate.mjs` |
@@ -199,6 +199,16 @@
 | **Package has 39 exports (plan said 44 -- corrected)** | Complete export list verified from package.json `exports` field. New exports NOT in prior plan: `./federation`, `./compression`, `./projections` (top-level), `./audit` (top-level), `./outbox` (top-level), `./approval` (top-level). The `./wasm` export was NOT in prior count. No `./express` export exists despite projection directory. | Package export analysis |
 | **Adapter doc pages not in plan** | DynamoDB adapter (`/adapters/dynamodb`), Redis adapter (`/adapters/redis`), Turso adapter (`/adapters/turso`), Event sourcing adapter (`/adapters/event-sourcing`). | Official docs sidebar |
 | **Additional doc pages not analyzed** | Roles (`/language/roles`), Modules (`/language/modules`), More projections (`/projections/more-projections`), AI tooling (`/extensibility/ai-tooling`), Runtime tooling (`/extensibility/runtime-tooling`). | Official docs sidebar |
+
+### NEW findings from this revision (11th)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **QACheck now has a dedicated Prisma model** | 189/189 IR entities matched (was 188). Phase-Out Registry Section B nearly complete. Model at `tenant_kitchen.qa_checks`, accessor `qACheck`. | schema.prisma:5932 |
+| **Phase-Out Registry Section A is stale** | Marked BLOCKED but all Tier 3 tasks are DONE. 89/94 entities use GenericPrismaStore, 5 custom by design. Status updated to NEAR-DONE. | Phase-Out Registry |
+| **Routes projection evaluation: DEFER** | Generates 8,447-line typed path builders but covers only canonical `/api/manifest/` paths. 81% of hardcoded paths are custom domain routes not derived from IR. Valuable when app migrates reads to canonical paths. | Task 5.5 evaluation |
+| **Health projection evaluation: REJECT** | Generates trivial health checks (all stores are in-memory/durable, not postgres/supabase). Existing `/health` endpoint is more honest. contentHash/irHash are empty so provenance check is useless. | Task 5.9 evaluation |
+| **Prisma model metadata now covers 245 models (was 244)** | `generate-prisma-model-metadata.mjs` regenerated with QACheck. Route generator picks up QACheck correctly. | manifest/runtime/src/generated/ |
 
 ### NEW findings from this revision (12th)
 
@@ -956,6 +966,7 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 ### 5.5 Evaluate Routes projection for typed path builders
 - **Done when:** Generated typed path builders compared against ~1,092 hardcoded `apiFetch("/api/...")` string paths across 167 files. Decision documented.
 - **Why:** The `projections/routes` export produces canonical route manifests + typed path builders. 81% of API URLs are hardcoded strings (211 paths). Only ~50 typed path builders and 7 files use typed routes despite `routes.ts` having 218 lines of hand-maintained helpers.
+- **Evaluation: DEFER.** RoutesProjection generates 8,447-line typed path builders covering 1,403 routes (404 reads + 999 commands). However, the generated paths follow the canonical `/api/manifest/{entity}` pattern while 81% of Capsule's hardcoded API paths (211 of 260) are custom domain routes (`/api/kitchen/recipes`, `/api/analytics/kitchen`, `/api/events/:eventId/export/csv`) NOT derived from the IR. The projection would add 8K+ lines of dead code for negligible coverage today. Will be valuable when the app migrates reads to canonical manifest paths. Decision: DEFER.
 
 ### 5.6 Evaluate Drizzle projection as Prisma alternative
 - **Done when:** Drizzle schema generated from IR. Compared against Prisma output for coverage.
@@ -971,6 +982,7 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 ### 5.9 Evaluate health projection for K8s readiness
 - **Done when:** Decision documented on using health check endpoints (liveness, readiness checking IR integrity, store connectivity, outbox depth) instead of zero health infrastructure.
 - **Why:** Zero health check infrastructure exists today. Projection has a Next.js surface.
+- **Evaluation: REJECT.** HealthCheckProjection generates a Next.js GET handler at `/api/manifest/health`. However: (1) all 202 stores target "durable"/"memory" (not postgres/supabase), so store checks are trivially healthy, (2) contentHash/irHash are empty so provenance check is useless, (3) outbox check is omitted (no postgres/supabase stores), (4) Capsule already has a health endpoint at `/health`. The projection would produce a false sense of depth. Decision: REJECT — existing endpoint is more honest.
 
 ### 5.10 Evaluate analytics projection for tracking events
 - **Done when:** Decision documented on using typed tracking event schemas from IR commands.
@@ -1592,8 +1604,8 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 | Section | Target | Status |
 |---|---|---|
-| A | Hand-rolled Prisma stores -> GenericPrismaStore or codegen | BLOCKED (Tier 3) |
-| B | Hand-authored Prisma schema -> PrismaProjection + mapping config | IN PROGRESS (Tier 2.5 Phase 3 DONE — 188/189 matched, 251 models, prisma validate passes) |
+| A | Hand-rolled Prisma stores -> GenericPrismaStore or codegen | NEAR-DONE (89/94 use GenericPrismaStore, 5 custom by design) |
+| B | Hand-authored Prisma schema -> PrismaProjection + mapping config | IN PROGRESS (189/189 matched, 252 models, prisma validate passes — QACheck model added v0.12.216) |
 | C | Route accessor hack -> schema-aware accessor resolution | DONE (2026-05-30) |
 | D | ENTITY_DOMAIN_MAP consolidation | DONE (2026-06-04) |
 | E | Explicitly NOT for phase-out (keep) | N/A |

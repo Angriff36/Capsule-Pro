@@ -170,6 +170,7 @@ model Account {
   tipPools                       TipPool[]
   departments                    Department[]
   interactionAttachments         InteractionAttachment[]
+  qachecks                       QACheck[]
 
   @@map("accounts")
   @@schema("platform")
@@ -1020,17 +1021,17 @@ model InteractionAttachment {
 }
 
 model CrmScoringRule {
-  tenantId  String   @map("tenant_id") @db.Uuid
-  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  ruleName  String   @map("rule_name") @db.VarChar(255)
-  field     String   @db.VarChar(100)
-  condition String   @db.VarChar(50)
-  value     String   @db.VarChar(255)
+  tenantId  String    @map("tenant_id") @db.Uuid
+  id        String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleName  String    @map("rule_name") @db.VarChar(255)
+  field     String    @db.VarChar(100)
+  condition String    @db.VarChar(50)
+  value     String    @db.VarChar(255)
   points    Int
-  isActive  Boolean  @default(true) @map("is_active")
-  priority  Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive  Boolean   @default(true) @map("is_active")
+  priority  Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
@@ -5924,6 +5925,31 @@ model QualityCheckItem {
   @@id([tenantId, id])
   @@index([tenantId, checkId])
   @@map("quality_check_items")
+  @@schema("tenant_kitchen")
+}
+
+/// Kitchen QA inspection checklist (temperature, sanitation, storage, labeling, equipment checks)
+model QACheck {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  location      String    @default("")
+  checkType     String    @map("check_type") // temperature, sanitation, storage, labeling, equipment
+  result        String    @default("pass") // pass, fail, na
+  status        String    @default("pending") // pending, completed, reinspection_required
+  inspector     String    @default("")
+  notes         String?   @db.Text
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz(6)
+  reinspectedAt DateTime? @map("reinspected_at") @db.Timestamptz(6)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, checkType])
+  @@map("qa_checks")
   @@schema("tenant_kitchen")
 }
 

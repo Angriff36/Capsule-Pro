@@ -2276,7 +2276,7 @@
   },
   "CrmScoringRule": {
     "accessor": "crmScoringRule",
-    "hasDeletedAt": false,
+    "hasDeletedAt": true,
     "pkFields": [
       "tenantId",
       "id"
@@ -2325,6 +2325,10 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
       }
     ]
   },
@@ -6793,6 +6797,10 @@
       {
         "name": "versionAt",
         "irName": "versionAt"
+      },
+      {
+        "name": "inherited_context",
+        "irName": "inheritedContext"
       }
     ]
   },
@@ -10955,6 +10963,10 @@
       {
         "name": "updated_at",
         "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
       }
     ]
   },
@@ -14094,6 +14106,68 @@
       {
         "name": "updatedAt",
         "irName": "updatedAt"
+      }
+    ]
+  },
+  "QACheck": {
+    "accessor": "qACheck",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "location",
+        "irName": "location"
+      },
+      {
+        "name": "checkType",
+        "irName": "checkType"
+      },
+      {
+        "name": "result",
+        "irName": "result"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "inspector",
+        "irName": "inspector"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
+      },
+      {
+        "name": "reinspectedAt",
+        "irName": "reinspectedAt"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
       }
     ]
   },
