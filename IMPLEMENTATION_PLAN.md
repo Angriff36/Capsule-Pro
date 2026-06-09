@@ -11,7 +11,7 @@
 
 ---
 
-## Validation Baseline (2026-06-09, comprehensive audit -- 31st revision, v0.12.214 target)
+## Validation Baseline (2026-06-09, comprehensive audit -- 31st revision, v0.12.215 target)
 
 ### Claim Verification Matrix
 
@@ -1866,3 +1866,4 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-09 | **153 money-as-number type mismatches fixed across 34 manifest sources (v0.12.212)** | 144 event payload + command param fields via automated script (fix-money-as-number.mjs) + 9 manual fixes (proposal/purchase-order totals, invoice newBalance, payroll totalDeductions). Financial fields (amount, cost, price, value, budget, revenue, gross, net, tips, etc.) now correctly typed as `money` instead of `number`. IR 202/999/981. API+runtime typecheck 0. 2880 tests pass. 0 route drift. |
 | 2026-06-09 | **95 command-param money-as-number fixes + 4 parent-context overrides (v0.12.213)** | 95 command parameters across 25 source files fixed `number`→`money` (catering, collections, deals, equipment, events, facilities, inventory, invoices, leads, menus, payments, payroll, pricing, procurement, proposals, recipes, revenue, shipments, staff, users, vendor catalogs/contracts, waste). 4 parent-context overrides added (ShipmentItem.unitCost, PaymentRefundAttempt.amount, WasteEntry.unitCost, InventoryTransaction.unitCost). IR 202/999/981. 2880 tests pass. |
 | 2026-06-09 | **54 command-param type mismatches resolved across 14 sources (v0.12.214)** | 54 command-parameter parent-context type mismatches fixed (datetime, money, int, decimal corrections) across vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and 3 additional sources. All command params now match their target property types. IR 202/999/981. API+runtime typecheck 0. Tests pass. |
+| 2026-06-09 | **Remaining command-param type mismatches + datetime guard fixes (v0.12.215)** | Resolved remaining command-param type mismatches: catering-order (guestCount/staffRequired/balanceDue), event (guestCount), payroll (totalDeductions), staff-logistics (periodStart/periodEnd). 12 datetime guard `>0`/`==0` fixes across 9 files. CateringOrder.guestCount parent-context override added. IR 202/999/981. API+runtime typecheck 0. Tests pass. |
