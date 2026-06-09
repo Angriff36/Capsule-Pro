@@ -19,7 +19,7 @@ export async function POST(
     const currentUser = await requireCurrentUser();
     const body = await request.json().catch(() => ({}));
 
-    return runManifestCommand({
+    return await runManifestCommand({
       entity,
       command: commandSlug,
       body,
