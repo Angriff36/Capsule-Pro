@@ -110,9 +110,9 @@ function paramTsType(p) {
   // Resolve array generic type (e.g., tags: string[] instead of unknown[])
   if (base === "unknown[]" && typeObj.generic) {
     const innerType = SCALAR_TO_TS[typeObj.generic.name || typeObj.generic] || "unknown";
-    return `${innerType}[]`;
+    return `${innerType}[] | null`;
   }
-  return base;
+  return `${base} | null`;
 }
 
 // Generate per-command typed input interfaces
@@ -139,7 +139,7 @@ for (const c of ir.commands) {
       const ts = paramTsType(p);
       return `  ${p.name}?: ${ts};`;
     });
-    interfaces.push(`export interface ${iName} {\n${fields.join("\n")}\n}`);
+    interfaces.push(`export interface ${iName} {\n  [key: string]: unknown;\n${fields.join("\n")}\n}`);
     inputType = iName;
   }
 

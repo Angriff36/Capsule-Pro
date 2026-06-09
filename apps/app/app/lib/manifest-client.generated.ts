@@ -6829,5336 +6829,6169 @@ export async function performancePredictionCreate(input: PerformancePredictionCr
 }
 // Command input types (generated from IR parameters)
 export interface AdminChatParticipantCreateInput {
-  threadId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  threadId?: string | null;
+  userId?: string | null;
 }
 
 export interface AdminTaskCreateInput {
-  title?: string;
-  description?: string;
-  status?: string;
-  priority?: string;
-  category?: string;
-  assignedTo?: string;
-  dueDate?: string;
-  createdBy?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  status?: string | null;
+  priority?: string | null;
+  category?: string | null;
+  assignedTo?: string | null;
+  dueDate?: string | null;
+  createdBy?: string | null;
 }
 
 export interface AdminTaskUpdateInput {
-  title?: string;
-  description?: string;
-  priority?: string;
-  category?: string;
-  assignedTo?: string;
-  dueDate?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  priority?: string | null;
+  category?: string | null;
+  assignedTo?: string | null;
+  dueDate?: string | null;
 }
 
 export interface AiEventSetupSessionParseInput {
-  originalInput?: string;
+  [key: string]: unknown;
+  originalInput?: string | null;
 }
 
 export interface AiEventSetupSessionConfirmInput {
-  title?: string;
-  eventType?: string;
-  eventDate?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  notes?: string;
-  tags?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  notes?: string | null;
+  tags?: string | null;
 }
 
 export interface AiEventSetupSessionMarkCreatedInput {
-  eventId?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
 }
 
 export interface AiEventSetupSessionCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface AiEventSetupSessionUpdateConfidenceInput {
-  confidence?: number;
-  missingFields?: string;
-  suggestions?: string;
+  [key: string]: unknown;
+  confidence?: number | null;
+  missingFields?: string | null;
+  suggestions?: string | null;
 }
 
 export interface AlertsConfigCreateInput {
-  channel?: string;
-  destination?: string;
+  [key: string]: unknown;
+  channel?: string | null;
+  destination?: string | null;
 }
 
 export interface AlertsConfigUpdateInput {
-  channel?: string;
-  destination?: string;
+  [key: string]: unknown;
+  channel?: string | null;
+  destination?: string | null;
 }
 
 export interface AlertsConfigRemoveInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface AllergenWarningCreateInput {
-  eventId?: string;
-  dishId?: string;
-  warningType?: string;
-  allergens?: string;
-  affectedGuests?: string;
-  severity?: string;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  dishId?: string | null;
+  warningType?: string | null;
+  allergens?: string | null;
+  affectedGuests?: string | null;
+  severity?: string | null;
+  notes?: string | null;
 }
 
 export interface AllergenWarningAcknowledgeInput {
-  acknowledgedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  acknowledgedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface AllergenWarningMarkResolvedInput {
-  resolvedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  resolvedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface AllergenWarningApplyOverrideInput {
-  overrideReason?: string;
-  acknowledgedBy?: string;
+  [key: string]: unknown;
+  overrideReason?: string | null;
+  acknowledgedBy?: string | null;
 }
 
 export interface AllergenWarningEscalateInput {
-  escalatedTo?: string;
-  reason?: string;
+  [key: string]: unknown;
+  escalatedTo?: string | null;
+  reason?: string | null;
 }
 
 export interface AllergenWarningSoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ApiKeyCreateInput {
-  name?: string;
-  keyPrefix?: string;
-  hashedKey?: string;
-  scopes?: string[];
-  expiresAt?: string;
-  createdByUserId?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  keyPrefix?: string | null;
+  hashedKey?: string | null;
+  scopes?: string[] | null;
+  expiresAt?: string | null;
+  createdByUserId?: string | null;
 }
 
 export interface ApiKeyUpdateInput {
-  name?: string;
-  scopes?: string[];
-  expiresAt?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  scopes?: string[] | null;
+  expiresAt?: string | null;
 }
 
 export interface ApiKeyRotateInput {
-  keyPrefix?: string;
-  hashedKey?: string;
+  [key: string]: unknown;
+  keyPrefix?: string | null;
+  hashedKey?: string | null;
 }
 
 export interface ApiKeyRevokeInput {
-  reason?: string;
-  revokedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  revokedBy?: string | null;
 }
 
 export interface ApiKeySoftDeleteInput {
-  reason?: string;
-  deletedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  deletedBy?: string | null;
 }
 
 export interface BankAccountCreateInput {
-  employeeId?: string;
-  accountHolderName?: string;
-  accountNumber?: string;
-  routingNumber?: string;
-  accountType?: string;
-  bankName?: string;
-  isDefault?: boolean;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  accountHolderName?: string | null;
+  accountNumber?: string | null;
+  routingNumber?: string | null;
+  accountType?: string | null;
+  bankName?: string | null;
+  isDefault?: boolean | null;
 }
 
 export interface BankAccountUpdateInput {
-  accountHolderName?: string;
-  accountNumber?: string;
-  routingNumber?: string;
-  accountType?: string;
-  bankName?: string;
+  [key: string]: unknown;
+  accountHolderName?: string | null;
+  accountNumber?: string | null;
+  routingNumber?: string | null;
+  accountType?: string | null;
+  bankName?: string | null;
 }
 
 export interface BankAccountVerifyFailedInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface BattleBoardCreateInput {
-  boardName?: string;
-  boardType?: string;
-  eventId?: string;
-  description?: string;
-  isTemplate?: boolean;
-  notes?: string;
-  tags?: string;
+  [key: string]: unknown;
+  boardName?: string | null;
+  boardType?: string | null;
+  eventId?: string | null;
+  description?: string | null;
+  isTemplate?: boolean | null;
+  notes?: string | null;
+  tags?: string | null;
 }
 
 export interface BattleBoardOpenInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface BattleBoardStartVotingInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface BattleBoardAddDishInput {
-  dishData?: string;
-  userId?: string;
+  [key: string]: unknown;
+  dishData?: string | null;
+  userId?: string | null;
 }
 
 export interface BattleBoardRemoveDishInput {
-  dishId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  dishId?: string | null;
+  userId?: string | null;
 }
 
 export interface BattleBoardVoteInput {
-  voteData?: string;
-  userId?: string;
+  [key: string]: unknown;
+  voteData?: string | null;
+  userId?: string | null;
 }
 
 export interface BattleBoardFinalizeInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface BattleBoardUpdateInput {
-  boardName?: string;
-  status?: string;
-  notes?: string;
-  boardData?: string;
+  [key: string]: unknown;
+  boardName?: string | null;
+  status?: string | null;
+  notes?: string | null;
+  boardData?: string | null;
 }
 
 export interface BattleBoardRecordImportInput {
-  boardData?: string;
+  [key: string]: unknown;
+  boardData?: string | null;
 }
 
 export interface BudgetCreateInput {
-  name?: string;
-  description?: string;
-  fiscalYear?: number;
-  totalAmount?: number;
-  category?: string;
-  departmentId?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  fiscalYear?: number | null;
+  totalAmount?: number | null;
+  category?: string | null;
+  departmentId?: string | null;
 }
 
 export interface BudgetUpdateInput {
-  name?: string;
-  description?: string;
-  fiscalYear?: number;
-  allocatedAmount?: number;
-  category?: string;
-  departmentId?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  fiscalYear?: number | null;
+  allocatedAmount?: number | null;
+  category?: string | null;
+  departmentId?: string | null;
 }
 
 export interface BudgetApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface BudgetLockInput {
-  lockedBy?: string;
+  [key: string]: unknown;
+  lockedBy?: string | null;
 }
 
 export interface BudgetAddLineItemInput {
-  lineItemName?: string;
-  amount?: number;
-  category?: string;
+  [key: string]: unknown;
+  lineItemName?: string | null;
+  amount?: number | null;
+  category?: string | null;
 }
 
 export interface BudgetRecordVarianceInput {
-  actualSpent?: number;
-  note?: string;
+  [key: string]: unknown;
+  actualSpent?: number | null;
+  note?: string | null;
 }
 
 export interface BulkOrderRuleCreateInput {
-  catalogEntryId?: string;
-  ruleName?: string;
-  minimumQuantity?: number;
-  ruleType?: string;
-  action?: string;
-  thresholdQuantity?: number;
-  discountPercent?: number;
-  freeItemQuantity?: number;
-  shippingIncluded?: boolean;
-  priority?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  [key: string]: unknown;
+  catalogEntryId?: string | null;
+  ruleName?: string | null;
+  minimumQuantity?: number | null;
+  ruleType?: string | null;
+  action?: string | null;
+  thresholdQuantity?: number | null;
+  discountPercent?: number | null;
+  freeItemQuantity?: number | null;
+  shippingIncluded?: boolean | null;
+  priority?: number | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
 }
 
 export interface BulkOrderRuleUpdateInput {
-  catalogEntryId?: string;
-  ruleName?: string;
-  minimumQuantity?: number;
-  ruleType?: string;
-  action?: string;
-  thresholdQuantity?: number;
-  discountPercent?: number;
-  freeItemQuantity?: number;
-  shippingIncluded?: boolean;
-  priority?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
-  isActive?: boolean;
+  [key: string]: unknown;
+  catalogEntryId?: string | null;
+  ruleName?: string | null;
+  minimumQuantity?: number | null;
+  ruleType?: string | null;
+  action?: string | null;
+  thresholdQuantity?: number | null;
+  discountPercent?: number | null;
+  freeItemQuantity?: number | null;
+  shippingIncluded?: boolean | null;
+  priority?: number | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
+  isActive?: boolean | null;
 }
 
 export interface BulkOrderRuleDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface BulkOrderRuleAdjustPriorityInput {
-  newPriority?: number;
+  [key: string]: unknown;
+  newPriority?: number | null;
 }
 
 export interface BulkOrderRuleSoftDeleteInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CateringOrderCreateInput {
-  orderNumber?: string;
-  customerId?: string;
-  eventId?: string;
-  deliveryDate?: string;
-  deliveryTime?: string;
-  guestCount?: number;
-  venueCity?: string;
-  venueState?: string;
-  venueZip?: string;
-  venueContactName?: string;
-  venueContactPhone?: string;
-  specialInstructions?: string;
-  dietaryRestrictions?: string;
-  staffRequired?: number;
+  [key: string]: unknown;
+  orderNumber?: string | null;
+  customerId?: string | null;
+  eventId?: string | null;
+  deliveryDate?: string | null;
+  deliveryTime?: string | null;
+  guestCount?: number | null;
+  venueCity?: string | null;
+  venueState?: string | null;
+  venueZip?: string | null;
+  venueContactName?: string | null;
+  venueContactPhone?: string | null;
+  specialInstructions?: string | null;
+  dietaryRestrictions?: string | null;
+  staffRequired?: number | null;
 }
 
 export interface CateringOrderUpdateInput {
-  guestCount?: number;
-  subtotalAmount?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  serviceChargeAmount?: number;
-  totalAmount?: number;
-  depositRequired?: boolean;
-  depositAmount?: number;
-  specialInstructions?: string;
-  dietaryRestrictions?: string;
-  staffRequired?: number;
+  [key: string]: unknown;
+  guestCount?: number | null;
+  subtotalAmount?: number | null;
+  taxAmount?: number | null;
+  discountAmount?: number | null;
+  serviceChargeAmount?: number | null;
+  totalAmount?: number | null;
+  depositRequired?: boolean | null;
+  depositAmount?: number | null;
+  specialInstructions?: string | null;
+  dietaryRestrictions?: string | null;
+  staffRequired?: number | null;
 }
 
 export interface CateringOrderConfirmInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CateringOrderRecordDepositInput {
-  paymentReference?: string;
+  [key: string]: unknown;
+  paymentReference?: string | null;
 }
 
 export interface CateringOrderScheduleDeliveryInput {
-  deliveryDate?: string;
-  deliveryTime?: string;
+  [key: string]: unknown;
+  deliveryDate?: string | null;
+  deliveryTime?: string | null;
 }
 
 export interface CateringOrderCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CateringOrderStartPrepInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CateringOrderDeliverInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CateringOrderMarkCompleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ChartOfAccountCreateInput {
-  accountNumber?: string;
-  accountName?: string;
-  accountType?: string;
-  parentId?: string;
-  description?: string;
+  [key: string]: unknown;
+  accountNumber?: string | null;
+  accountName?: string | null;
+  accountType?: string | null;
+  parentId?: string | null;
+  description?: string | null;
 }
 
 export interface ChartOfAccountUpdateInput {
-  accountName?: string;
-  accountNumber?: string;
-  accountType?: string;
-  parentId?: string;
-  description?: string;
-  isActive?: boolean;
+  [key: string]: unknown;
+  accountName?: string | null;
+  accountNumber?: string | null;
+  accountType?: string | null;
+  parentId?: string | null;
+  description?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface ClientInteractionCreateInput {
-  clientId?: string;
-  leadId?: string;
-  employeeId?: string;
-  interactionType?: string;
-  interactionDate?: string;
-  subject?: string;
-  description?: string;
-  followUpDate?: string;
-  correlationId?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  leadId?: string | null;
+  employeeId?: string | null;
+  interactionType?: string | null;
+  interactionDate?: string | null;
+  subject?: string | null;
+  description?: string | null;
+  followUpDate?: string | null;
+  correlationId?: string | null;
 }
 
 export interface ClientInteractionUpdateInput {
-  interactionType?: string;
-  interactionDate?: string;
-  subject?: string;
-  description?: string;
-  followUpDate?: string;
-  correlationId?: string;
+  [key: string]: unknown;
+  interactionType?: string | null;
+  interactionDate?: string | null;
+  subject?: string | null;
+  description?: string | null;
+  followUpDate?: string | null;
+  correlationId?: string | null;
 }
 
 export interface ClientInteractionCompleteInput {
-  completionNotes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  completionNotes?: string | null;
+  userId?: string | null;
 }
 
 export interface ClientInteractionScheduleInput {
-  followUpDate?: string;
-  assignedTo?: string;
+  [key: string]: unknown;
+  followUpDate?: string | null;
+  assignedTo?: string | null;
 }
 
 export interface ClientInteractionEscalateInput {
-  escalatedTo?: string;
-  reason?: string;
+  [key: string]: unknown;
+  escalatedTo?: string | null;
+  reason?: string | null;
 }
 
 export interface ClientCreateInput {
-  clientType?: string;
-  companyName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  defaultPaymentTerms?: number;
-  taxExempt?: boolean;
-  taxId?: string;
-  notes?: string;
-  tags?: string[];
-  source?: string;
-  assignedTo?: string;
+  [key: string]: unknown;
+  clientType?: string | null;
+  companyName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  defaultPaymentTerms?: number | null;
+  taxExempt?: boolean | null;
+  taxId?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  source?: string | null;
+  assignedTo?: string | null;
 }
 
 export interface ClientUpdateInput {
-  companyName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  defaultPaymentTerms?: number;
-  taxExempt?: boolean;
-  taxId?: string;
-  notes?: string;
-  tags?: string[];
-  source?: string;
-  assignedTo?: string;
+  [key: string]: unknown;
+  companyName?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  defaultPaymentTerms?: number | null;
+  taxExempt?: boolean | null;
+  taxId?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  source?: string | null;
+  assignedTo?: string | null;
 }
 
 export interface ClientArchiveInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ClientReactivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ClientContactCreateInput {
-  clientId?: string;
-  firstName?: string;
-  lastName?: string;
-  title?: string;
-  email?: string;
-  phone?: string;
-  phoneMobile?: string;
-  isPrimary?: boolean;
-  isBillingContact?: boolean;
-  notes?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  title?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  phoneMobile?: string | null;
+  isPrimary?: boolean | null;
+  isBillingContact?: boolean | null;
+  notes?: string | null;
 }
 
 export interface ClientContactUpdateInput {
-  firstName?: string;
-  lastName?: string;
-  title?: string;
-  email?: string;
-  phone?: string;
-  phoneMobile?: string;
-  isBillingContact?: boolean;
-  notes?: string;
+  [key: string]: unknown;
+  firstName?: string | null;
+  lastName?: string | null;
+  title?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  phoneMobile?: string | null;
+  isBillingContact?: boolean | null;
+  notes?: string | null;
 }
 
 export interface ClientContactRemoveInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ClientContactSetPrimaryInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ClientPreferenceCreateInput {
-  clientId?: string;
-  preferenceType?: string;
-  preferenceKey?: string;
-  preferenceValue?: string;
-  notes?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  preferenceType?: string | null;
+  preferenceKey?: string | null;
+  preferenceValue?: string | null;
+  notes?: string | null;
 }
 
 export interface ClientPreferenceUpdateInput {
-  preferenceValue?: string;
-  notes?: string;
+  [key: string]: unknown;
+  preferenceValue?: string | null;
+  notes?: string | null;
 }
 
 export interface ClientPreferenceRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CollectionCaseAssignToInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CollectionCaseUpdateStatusInput {
-  newStatus?: string;
-  newNotes?: string;
+  [key: string]: unknown;
+  newStatus?: string | null;
+  newNotes?: string | null;
 }
 
 export interface CollectionCaseSettleInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface CollectionCaseRecordPaymentInput {
-  amount?: number;
-  paymentId?: string;
-  paymentDate?: string;
+  [key: string]: unknown;
+  amount?: number | null;
+  paymentId?: string | null;
+  paymentDate?: string | null;
 }
 
 export interface CollectionCaseResetDunningInput {
-  stage?: string;
-  reason?: string;
+  [key: string]: unknown;
+  stage?: string | null;
+  reason?: string | null;
 }
 
 export interface CollectionCaseCreatePaymentPlanInput {
-  planId?: string;
-  nextPaymentDue?: number;
+  [key: string]: unknown;
+  planId?: string | null;
+  nextPaymentDue?: number | null;
 }
 
 export interface CollectionCaseMarkDisputedInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CollectionCaseResolveDisputeInput {
-  resolutionNotes?: string;
+  [key: string]: unknown;
+  resolutionNotes?: string | null;
 }
 
 export interface CollectionCaseEscalateToLegalWithDetailsInput {
-  legalCaseNumber?: string;
-  legalFirm?: string;
+  [key: string]: unknown;
+  legalCaseNumber?: string | null;
+  legalFirm?: string | null;
 }
 
 export interface CollectionCaseWriteOffInput {
-  amount?: number;
-  reason?: string;
-  approvedBy?: string;
+  [key: string]: unknown;
+  amount?: number | null;
+  reason?: string | null;
+  approvedBy?: string | null;
 }
 
 export interface CollectionCaseUpdateAgingInput {
-  daysOverdue?: number;
-  agingBucket?: string;
+  [key: string]: unknown;
+  daysOverdue?: number | null;
+  agingBucket?: string | null;
 }
 
 export interface CollectionCaseSetPriorityInput {
-  newPriority?: string;
-  reason?: string;
+  [key: string]: unknown;
+  newPriority?: string | null;
+  reason?: string | null;
 }
 
 export interface CollectionCaseCloseInput {
-  resolution?: string;
+  [key: string]: unknown;
+  resolution?: string | null;
 }
 
 export interface CollectionActionCompleteInput {
-  outcome?: string;
-  promiseAmount?: number;
-  promiseDate?: string;
-  nextActionDate?: string;
+  [key: string]: unknown;
+  outcome?: string | null;
+  promiseAmount?: number | null;
+  promiseDate?: string | null;
+  nextActionDate?: string | null;
 }
 
 export interface CollectionActionFailInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CollectionActionSkipInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CollectionActionRescheduleInput {
-  newScheduledFor?: number;
-  reason?: string;
+  [key: string]: unknown;
+  newScheduledFor?: number | null;
+  reason?: string | null;
 }
 
 export interface CollectionPaymentPlanRecordInstallmentInput {
-  amount?: number;
-  paymentDate?: string;
+  [key: string]: unknown;
+  amount?: number | null;
+  paymentDate?: string | null;
 }
 
 export interface CollectionPaymentPlanMarkDefaultedInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CollectionPaymentPlanCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface CollectionPaymentPlanModifyInput {
-  newInstallmentAmount?: number;
-  newInstallmentCount?: number;
-  reason?: string;
+  [key: string]: unknown;
+  newInstallmentAmount?: number | null;
+  newInstallmentCount?: number | null;
+  reason?: string | null;
 }
 
 export interface CommandBoardCreateInput {
-  name?: string;
-  description?: string;
-  eventId?: string;
-  isTemplate?: boolean;
-  tags?: string[];
-  autoPopulate?: boolean;
-  scope?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  eventId?: string | null;
+  isTemplate?: boolean | null;
+  tags?: string[] | null;
+  autoPopulate?: boolean | null;
+  scope?: string | null;
 }
 
 export interface CommandBoardUpdateInput {
-  newName?: string;
-  newDescription?: string;
-  newTags?: string[];
+  [key: string]: unknown;
+  newName?: string | null;
+  newDescription?: string | null;
+  newTags?: string[] | null;
 }
 
 export interface CommandBoardActivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CommandBoardDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface CommandBoardCardCreateInput {
-  boardId?: string;
-  title?: string;
-  content?: string;
-  cardType?: string;
-  status?: string;
-  positionX?: number;
-  positionY?: number;
-  width?: number;
-  height?: number;
-  color?: string;
-  metadata?: string;
-  groupId?: string;
-  entityId?: string;
-  entityType?: string;
+  [key: string]: unknown;
+  boardId?: string | null;
+  title?: string | null;
+  content?: string | null;
+  cardType?: string | null;
+  status?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  width?: number | null;
+  height?: number | null;
+  color?: string | null;
+  metadata?: string | null;
+  groupId?: string | null;
+  entityId?: string | null;
+  entityType?: string | null;
 }
 
 export interface CommandBoardCardUpdateInput {
-  newTitle?: string;
-  newContent?: string;
-  newCardType?: string;
-  newStatus?: string;
-  newColor?: string;
-  newMetadata?: string;
-  newGroupId?: string;
+  [key: string]: unknown;
+  newTitle?: string | null;
+  newContent?: string | null;
+  newCardType?: string | null;
+  newStatus?: string | null;
+  newColor?: string | null;
+  newMetadata?: string | null;
+  newGroupId?: string | null;
 }
 
 export interface CommandBoardCardMoveInput {
-  newPositionX?: number;
-  newPositionY?: number;
-  newZIndex?: number;
+  [key: string]: unknown;
+  newPositionX?: number | null;
+  newPositionY?: number | null;
+  newZIndex?: number | null;
 }
 
 export interface CommandBoardCardResizeInput {
-  newWidth?: number;
-  newHeight?: number;
+  [key: string]: unknown;
+  newWidth?: number | null;
+  newHeight?: number | null;
 }
 
 export interface CommandBoardCardRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CommandBoardGroupCreateInput {
-  boardId?: string;
-  name?: string;
-  color?: string;
-  positionX?: number;
-  positionY?: number;
-  width?: number;
-  height?: number;
+  [key: string]: unknown;
+  boardId?: string | null;
+  name?: string | null;
+  color?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface CommandBoardGroupUpdateInput {
-  newName?: string;
-  newColor?: string;
-  newCollapsed?: boolean;
-  newPositionX?: number;
-  newPositionY?: number;
-  newWidth?: number;
-  newHeight?: number;
+  [key: string]: unknown;
+  newName?: string | null;
+  newColor?: string | null;
+  newCollapsed?: boolean | null;
+  newPositionX?: number | null;
+  newPositionY?: number | null;
+  newWidth?: number | null;
+  newHeight?: number | null;
 }
 
 export interface CommandBoardGroupRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CommandBoardConnectionCreateInput {
-  boardId?: string;
-  fromCardId?: string;
-  toCardId?: string;
-  relationshipType?: string;
-  label?: string;
+  [key: string]: unknown;
+  boardId?: string | null;
+  fromCardId?: string | null;
+  toCardId?: string | null;
+  relationshipType?: string | null;
+  label?: string | null;
 }
 
 export interface CommandBoardConnectionRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CommandBoardLayoutCreateInput {
-  boardId?: string;
-  userId?: string;
-  name?: string;
-  viewport?: string;
-  visibleCards?: string;
-  gridSize?: number;
-  showGrid?: boolean;
-  snapToGrid?: boolean;
+  [key: string]: unknown;
+  boardId?: string | null;
+  userId?: string | null;
+  name?: string | null;
+  viewport?: string | null;
+  visibleCards?: string | null;
+  gridSize?: number | null;
+  showGrid?: boolean | null;
+  snapToGrid?: boolean | null;
 }
 
 export interface CommandBoardLayoutUpdateInput {
-  newName?: string;
-  newViewport?: string;
-  newVisibleCards?: string;
-  newGridSize?: number;
-  newShowGrid?: boolean;
-  newSnapToGrid?: boolean;
+  [key: string]: unknown;
+  newName?: string | null;
+  newViewport?: string | null;
+  newVisibleCards?: string | null;
+  newGridSize?: number | null;
+  newShowGrid?: boolean | null;
+  newSnapToGrid?: boolean | null;
 }
 
 export interface CommandBoardLayoutRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ContainerCreateInput {
-  name?: string;
-  containerType?: string;
-  locationId?: string;
-  sizeDescription?: string;
-  capacityVolumeMl?: number;
-  capacityWeightG?: number;
-  capacityPortions?: number;
-  isReusable?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  containerType?: string | null;
+  locationId?: string | null;
+  sizeDescription?: string | null;
+  capacityVolumeMl?: number | null;
+  capacityWeightG?: number | null;
+  capacityPortions?: number | null;
+  isReusable?: boolean | null;
 }
 
 export interface ContainerUpdateInput {
-  name?: string;
-  containerType?: string;
-  locationId?: string;
-  sizeDescription?: string;
-  capacityVolumeMl?: number;
-  capacityWeightG?: number;
-  capacityPortions?: number;
-  isReusable?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  containerType?: string | null;
+  locationId?: string | null;
+  sizeDescription?: string | null;
+  capacityVolumeMl?: number | null;
+  capacityWeightG?: number | null;
+  capacityPortions?: number | null;
+  isReusable?: boolean | null;
 }
 
 export interface ContainerDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ContainerReactivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ContainerRelocateInput {
-  newLocationId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newLocationId?: string | null;
+  userId?: string | null;
 }
 
 export interface ProposalTemplateCreateInput {
-  name?: string;
-  description?: string;
-  eventType?: string;
-  defaultTerms?: string;
-  defaultTaxRate?: number;
-  defaultNotes?: string;
-  defaultLineItems?: string;
-  isActive?: boolean;
-  isDefault?: boolean;
-  logoUrl?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  fontFamily?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  eventType?: string | null;
+  defaultTerms?: string | null;
+  defaultTaxRate?: number | null;
+  defaultNotes?: string | null;
+  defaultLineItems?: string | null;
+  isActive?: boolean | null;
+  isDefault?: boolean | null;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
+  fontFamily?: string | null;
 }
 
 export interface ProposalTemplateUpdateInput {
-  name?: string;
-  description?: string;
-  eventType?: string;
-  defaultTerms?: string;
-  defaultTaxRate?: number;
-  defaultNotes?: string;
-  defaultLineItems?: string;
-  isActive?: boolean;
-  isDefault?: boolean;
-  logoUrl?: string;
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-  fontFamily?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  eventType?: string | null;
+  defaultTerms?: string | null;
+  defaultTaxRate?: number | null;
+  defaultNotes?: string | null;
+  defaultLineItems?: string | null;
+  isActive?: boolean | null;
+  isDefault?: boolean | null;
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
+  fontFamily?: string | null;
 }
 
 export interface InteractionAttachmentCreateInput {
-  clientInteractionId?: string;
-  fileName?: string;
-  fileUrl?: string;
-  fileType?: string;
-  fileSizeBytes?: number;
-  uploadedBy?: string;
+  [key: string]: unknown;
+  clientInteractionId?: string | null;
+  fileName?: string | null;
+  fileUrl?: string | null;
+  fileType?: string | null;
+  fileSizeBytes?: number | null;
+  uploadedBy?: string | null;
 }
 
 export interface InteractionAttachmentRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CrmScoringRuleCreateInput {
-  ruleName?: string;
-  field?: string;
-  condition?: string;
-  value?: string;
-  points?: number;
-  isActive?: boolean;
-  priority?: number;
+  [key: string]: unknown;
+  ruleName?: string | null;
+  field?: string | null;
+  condition?: string | null;
+  value?: string | null;
+  points?: number | null;
+  isActive?: boolean | null;
+  priority?: number | null;
 }
 
 export interface CrmScoringRuleUpdateInput {
-  ruleName?: string;
-  field?: string;
-  condition?: string;
-  value?: string;
-  points?: number;
-  isActive?: boolean;
-  priority?: number;
+  [key: string]: unknown;
+  ruleName?: string | null;
+  field?: string | null;
+  condition?: string | null;
+  value?: string | null;
+  points?: number | null;
+  isActive?: boolean | null;
+  priority?: number | null;
 }
 
 export interface ReportCreateInput {
-  name?: string;
-  reportType?: string;
-  queryConfig?: string;
-  displayConfig?: string;
-  isShared?: boolean;
-  createdBy?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  reportType?: string | null;
+  queryConfig?: string | null;
+  displayConfig?: string | null;
+  isShared?: boolean | null;
+  createdBy?: string | null;
 }
 
 export interface ReportUpdateInput {
-  name?: string;
-  reportType?: string;
-  queryConfig?: string;
-  displayConfig?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  reportType?: string | null;
+  queryConfig?: string | null;
+  displayConfig?: string | null;
 }
 
 export interface ReportShareInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ReportRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface DocumentCreateInput {
-  name?: string;
-  documentType?: string;
-  fileUrl?: string;
-  fileSizeBytes?: number;
-  entityType?: string;
-  entityId?: string;
-  uploadedBy?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  documentType?: string | null;
+  fileUrl?: string | null;
+  fileSizeBytes?: number | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  uploadedBy?: string | null;
 }
 
 export interface DocumentMarkParsedInput {
-  extractedText?: string;
+  [key: string]: unknown;
+  extractedText?: string | null;
 }
 
 export interface DocumentMarkFailedInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface DocumentRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface AdminChatThreadCreateInput {
-  threadType?: string;
-  slug?: string;
-  directKey?: string;
-  createdBy?: string;
+  [key: string]: unknown;
+  threadType?: string | null;
+  slug?: string | null;
+  directKey?: string | null;
+  createdBy?: string | null;
 }
 
 export interface AdminChatThreadArchiveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface AdminChatThreadReopenInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface AdminChatMessageCreateInput {
-  threadId?: string;
-  authorId?: string;
-  authorName?: string;
-  text?: string;
+  [key: string]: unknown;
+  threadId?: string | null;
+  authorId?: string | null;
+  authorName?: string | null;
+  text?: string | null;
 }
 
 export interface AdminChatMessageRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CycleCountSessionCreateInput {
-  locationId?: string;
-  sessionId?: string;
-  sessionName?: string;
-  countType?: string;
-  scheduledDate?: string;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  sessionId?: string | null;
+  sessionName?: string | null;
+  countType?: string | null;
+  scheduledDate?: string | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface CycleCountSessionUpdateInput {
-  sessionName?: string;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  sessionName?: string | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface CycleCountSessionStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CycleCountSessionCompleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CycleCountSessionFinalizeInput {
-  userId?: string;
-  notes?: string;
-  totalVariance?: number;
-  variancePercentage?: number;
-  countedItems?: number;
-  totalItems?: number;
+  [key: string]: unknown;
+  userId?: string | null;
+  notes?: string | null;
+  totalVariance?: number | null;
+  variancePercentage?: number | null;
+  countedItems?: number | null;
+  totalItems?: number | null;
 }
 
 export interface CycleCountSessionCancelInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface CycleCountSessionSoftDeleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CycleCountRecordCreateInput {
-  sessionId?: string;
-  itemId?: string;
-  itemNumber?: string;
-  itemName?: string;
-  storageLocationId?: string;
-  expectedQuantity?: number;
-  countedQuantity?: number;
-  userId?: string;
-  barcode?: string;
-  notes?: string;
+  [key: string]: unknown;
+  sessionId?: string | null;
+  itemId?: string | null;
+  itemNumber?: string | null;
+  itemName?: string | null;
+  storageLocationId?: string | null;
+  expectedQuantity?: number | null;
+  countedQuantity?: number | null;
+  userId?: string | null;
+  barcode?: string | null;
+  notes?: string | null;
 }
 
 export interface CycleCountRecordUpdateInput {
-  countedQuantity?: number;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  countedQuantity?: number | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface CycleCountRecordVerifyInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface CycleCountRecordRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface VarianceReportCreateInput {
-  sessionId?: string;
-  reportType?: string;
-  itemId?: string;
-  itemNumber?: string;
-  itemName?: string;
-  expectedQuantity?: number;
-  countedQuantity?: number;
-  variance?: number;
-  variancePct?: number;
-  accuracyScore?: number;
-  notes?: string;
+  [key: string]: unknown;
+  sessionId?: string | null;
+  reportType?: string | null;
+  itemId?: string | null;
+  itemNumber?: string | null;
+  itemName?: string | null;
+  expectedQuantity?: number | null;
+  countedQuantity?: number | null;
+  variance?: number | null;
+  variancePct?: number | null;
+  accuracyScore?: number | null;
+  notes?: string | null;
 }
 
 export interface VarianceReportRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface VarianceReportReviewInput {
-  userId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  notes?: string | null;
 }
 
 export interface VarianceReportApproveInput {
-  userId?: string;
-  adjustmentType?: string;
-  adjustmentAmount?: number;
+  [key: string]: unknown;
+  userId?: string | null;
+  adjustmentType?: string | null;
+  adjustmentAmount?: number | null;
 }
 
 export interface VarianceReportUpdateDiscrepancyInput {
-  notes?: string;
-  rootCause?: string;
-  resolutionNotes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
+  rootCause?: string | null;
+  resolutionNotes?: string | null;
 }
 
 export interface DealCreateInput {
-  leadId?: string;
-  title?: string;
-  value?: number;
-  currency?: string;
-  stage?: string;
-  probability?: number;
-  expectedCloseDate?: string;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  leadId?: string | null;
+  title?: string | null;
+  value?: number | null;
+  currency?: string | null;
+  stage?: string | null;
+  probability?: number | null;
+  expectedCloseDate?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface DealUpdateStageInput {
-  stage?: string;
-  notes?: string;
+  [key: string]: unknown;
+  stage?: string | null;
+  notes?: string | null;
 }
 
 export interface DealUpdateValueInput {
-  value?: number;
+  [key: string]: unknown;
+  value?: number | null;
 }
 
 export interface DealUpdateProbabilityInput {
-  probability?: number;
+  [key: string]: unknown;
+  probability?: number | null;
 }
 
 export interface DealAssignInput {
-  assignedTo?: string;
-  assignedBy?: string;
+  [key: string]: unknown;
+  assignedTo?: string | null;
+  assignedBy?: string | null;
 }
 
 export interface DealCloseInput {
-  status?: string;
+  [key: string]: unknown;
+  status?: string | null;
 }
 
 export interface DealAbandonInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface DealReopenInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface DishCreateInput {
-  recipeId?: string;
-  name?: string;
-  description?: string;
-  category?: string;
-  serviceStyle?: string;
-  defaultContainerId?: string;
-  presentationImageUrl?: string;
-  minPrepLeadDays?: number;
-  maxPrepLeadDays?: number;
-  portionSizeDescription?: string;
-  dietaryTags?: string;
-  allergens?: string;
-  pricePerPerson?: number;
-  costPerPerson?: number;
+  [key: string]: unknown;
+  recipeId?: string | null;
+  name?: string | null;
+  description?: string | null;
+  category?: string | null;
+  serviceStyle?: string | null;
+  defaultContainerId?: string | null;
+  presentationImageUrl?: string | null;
+  minPrepLeadDays?: number | null;
+  maxPrepLeadDays?: number | null;
+  portionSizeDescription?: string | null;
+  dietaryTags?: string | null;
+  allergens?: string | null;
+  pricePerPerson?: number | null;
+  costPerPerson?: number | null;
 }
 
 export interface DishUpdateInput {
-  name?: string;
-  description?: string;
-  category?: string;
-  serviceStyle?: string;
-  defaultContainerId?: string;
-  presentationImageUrl?: string;
-  portionSizeDescription?: string;
-  dietaryTags?: string;
-  allergens?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  category?: string | null;
+  serviceStyle?: string | null;
+  defaultContainerId?: string | null;
+  presentationImageUrl?: string | null;
+  portionSizeDescription?: string | null;
+  dietaryTags?: string | null;
+  allergens?: string | null;
 }
 
 export interface DishDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface DishUpdatePricingInput {
-  pricePerPerson?: number;
-  costPerPerson?: number;
-  userId?: string;
+  [key: string]: unknown;
+  pricePerPerson?: number | null;
+  costPerPerson?: number | null;
+  userId?: string | null;
 }
 
 export interface DishUpdateLeadTimeInput {
-  minPrepLeadDays?: number;
-  maxPrepLeadDays?: number;
-  userId?: string;
+  [key: string]: unknown;
+  minPrepLeadDays?: number | null;
+  maxPrepLeadDays?: number | null;
+  userId?: string | null;
 }
 
 export interface DishMarkSeasonalInput {
-  seasonLabel?: string;
-  seasonStartMonth?: number;
-  seasonEndMonth?: number;
+  [key: string]: unknown;
+  seasonLabel?: string | null;
+  seasonStartMonth?: number | null;
+  seasonEndMonth?: number | null;
 }
 
 export interface DishEightySixInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface DishReinstateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface DocumentVersionCreateInput {
-  documentId?: string;
-  content?: string;
-  changeDescription?: string;
-  createdBy?: string;
+  [key: string]: unknown;
+  documentId?: string | null;
+  content?: string | null;
+  changeDescription?: string | null;
+  createdBy?: string | null;
 }
 
 export interface DocumentVersionUpdateContentInput {
-  content?: string;
-  changeDescription?: string;
+  [key: string]: unknown;
+  content?: string | null;
+  changeDescription?: string | null;
 }
 
 export interface DocumentVersionApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface DocumentVersionMarkPublishedInput {
-  publishedBy?: string;
+  [key: string]: unknown;
+  publishedBy?: string | null;
 }
 
 export interface DocumentVersionSupersedeInput {
-  newVersionId?: string;
+  [key: string]: unknown;
+  newVersionId?: string | null;
 }
 
 export interface EmailTemplateCreateInput {
-  name?: string;
-  templateType?: string;
-  subject?: string;
-  body?: string;
-  mergeFields?: string;
-  isActive?: boolean;
-  isDefault?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  templateType?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  mergeFields?: string | null;
+  isActive?: boolean | null;
+  isDefault?: boolean | null;
 }
 
 export interface EmailTemplateUpdateInput {
-  name?: string;
-  templateType?: string;
-  subject?: string;
-  body?: string;
-  mergeFields?: string;
-  isActive?: boolean;
-  isDefault?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  templateType?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  mergeFields?: string | null;
+  isActive?: boolean | null;
+  isDefault?: boolean | null;
 }
 
 export interface EmailWorkflowCreateInput {
-  name?: string;
-  triggerType?: string;
-  triggerConfig?: string;
-  emailTemplateId?: string;
-  emailTemplateTenantId?: string;
-  recipientConfig?: string;
-  isActive?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  triggerType?: string | null;
+  triggerConfig?: string | null;
+  emailTemplateId?: string | null;
+  emailTemplateTenantId?: string | null;
+  recipientConfig?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface EmailWorkflowUpdateInput {
-  name?: string;
-  triggerType?: string;
-  triggerConfig?: string;
-  emailTemplateId?: string;
-  emailTemplateTenantId?: string;
-  recipientConfig?: string;
-  isActive?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  triggerType?: string | null;
+  triggerConfig?: string | null;
+  emailTemplateId?: string | null;
+  emailTemplateTenantId?: string | null;
+  recipientConfig?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface EmailWorkflowSetActiveInput {
-  isActive?: boolean;
+  [key: string]: unknown;
+  isActive?: boolean | null;
 }
 
 export interface EmployeeAvailabilityCreateInput {
-  employeeId?: string;
-  dayOfWeek?: number;
-  startTime?: string;
-  endTime?: string;
-  isAvailable?: boolean;
-  effectiveFrom?: string;
-  effectiveUntil?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  dayOfWeek?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  isAvailable?: boolean | null;
+  effectiveFrom?: string | null;
+  effectiveUntil?: string | null;
 }
 
 export interface EmployeeAvailabilityUpdateInput {
-  dayOfWeek?: number;
-  startTime?: string;
-  endTime?: string;
-  isAvailable?: boolean;
-  effectiveFrom?: string;
-  effectiveUntil?: string;
+  [key: string]: unknown;
+  dayOfWeek?: number | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  isAvailable?: boolean | null;
+  effectiveFrom?: string | null;
+  effectiveUntil?: string | null;
 }
 
 export interface EmployeeAvailabilitySuspendInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EmployeeCertificationCreateInput {
-  employeeId?: string;
-  certificationType?: string;
-  certificationName?: string;
-  issuedDate?: string;
-  expiryDate?: string;
-  documentUrl?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  certificationType?: string | null;
+  certificationName?: string | null;
+  issuedDate?: string | null;
+  expiryDate?: string | null;
+  documentUrl?: string | null;
 }
 
 export interface EmployeeCertificationUpdateInput {
-  certificationType?: string;
-  certificationName?: string;
-  issuedDate?: string;
-  expiryDate?: string;
-  documentUrl?: string;
+  [key: string]: unknown;
+  certificationType?: string | null;
+  certificationName?: string | null;
+  issuedDate?: string | null;
+  expiryDate?: string | null;
+  documentUrl?: string | null;
 }
 
 export interface EmployeeCertificationRenewInput {
-  issuedDate?: string;
-  expiryDate?: string;
-  documentUrl?: string;
+  [key: string]: unknown;
+  issuedDate?: string | null;
+  expiryDate?: string | null;
+  documentUrl?: string | null;
 }
 
 export interface EmployeeCertificationRevokeInput {
-  reason?: string;
-  revokedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  revokedBy?: string | null;
 }
 
 export interface EquipmentScheduleMaintenanceInput {
-  scheduledDate?: string;
-  maintenanceType?: string;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  scheduledDate?: string | null;
+  maintenanceType?: string | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface EquipmentRecordMaintenanceInput {
-  maintenanceDate?: string;
-  maintenanceType?: string;
-  performedBy?: string;
-  cost?: number;
-  notes?: string;
+  [key: string]: unknown;
+  maintenanceDate?: string | null;
+  maintenanceType?: string | null;
+  performedBy?: string | null;
+  cost?: number | null;
+  notes?: string | null;
 }
 
 export interface EquipmentUpdateStatusInput {
-  newStatus?: string;
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newStatus?: string | null;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface EquipmentUpdateConditionInput {
-  newCondition?: string;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newCondition?: string | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface EquipmentRecordUsageInput {
-  hours?: number;
-  userId?: string;
+  [key: string]: unknown;
+  hours?: number | null;
+  userId?: string | null;
 }
 
 export interface EquipmentCreateInput {
-  locationId?: string;
-  name?: string;
-  type?: string;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  purchaseDate?: string;
-  warrantyExpiry?: number;
-  maintenanceIntervalDays?: number;
-  maxUsageHours?: number;
-  notes?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  name?: string | null;
+  type?: string | null;
+  serialNumber?: string | null;
+  manufacturer?: string | null;
+  model?: string | null;
+  purchaseDate?: string | null;
+  warrantyExpiry?: number | null;
+  maintenanceIntervalDays?: number | null;
+  maxUsageHours?: number | null;
+  notes?: string | null;
 }
 
 export interface EquipmentRetireInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface MaintenanceWorkOrderAssignInput {
-  assignedTo?: string;
-  scheduledDate?: string;
-  estimatedCost?: number;
+  [key: string]: unknown;
+  assignedTo?: string | null;
+  scheduledDate?: string | null;
+  estimatedCost?: number | null;
 }
 
 export interface MaintenanceWorkOrderStartWorkInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface MaintenanceWorkOrderCompleteWorkInput {
-  actualCost?: number;
-  partsUsed?: string;
-  notes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  actualCost?: number | null;
+  partsUsed?: string | null;
+  notes?: string | null;
+  userId?: string | null;
 }
 
 export interface MaintenanceWorkOrderUpdateStatusInput {
-  newStatus?: string;
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newStatus?: string | null;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface MaintenanceWorkOrderCreateInput {
-  title?: string;
-  type?: string;
-  priority?: string;
-  description?: string;
-  areaId?: string;
-  equipmentId?: string;
-  assignedTo?: string;
-  reportedBy?: string;
-  scheduledDate?: string;
-  notes?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  type?: string | null;
+  priority?: string | null;
+  description?: string | null;
+  areaId?: string | null;
+  equipmentId?: string | null;
+  assignedTo?: string | null;
+  reportedBy?: string | null;
+  scheduledDate?: string | null;
+  notes?: string | null;
 }
 
 export interface AutomatedFollowupCreateInput {
-  eventId?: string;
-  type?: string;
-  scheduledDate?: string;
-  recipientId?: string;
-  subject?: string;
-  body?: string;
-  templateId?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  type?: string | null;
+  scheduledDate?: string | null;
+  recipientId?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  templateId?: string | null;
 }
 
 export interface AutomatedFollowupCompleteInput {
-  sentDate?: string;
+  [key: string]: unknown;
+  sentDate?: string | null;
 }
 
 export interface AutomatedFollowupFailInput {
-  errorMessage?: string;
+  [key: string]: unknown;
+  errorMessage?: string | null;
 }
 
 export interface AutomatedFollowupRetryInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface AutomatedFollowupSkipInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventTimelineItemCreateItemInput {
-  eventId?: string;
-  title?: string;
-  description?: string;
-  itemType?: string;
-  assignedTo?: string;
-  dueDate?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  title?: string | null;
+  description?: string | null;
+  itemType?: string | null;
+  assignedTo?: string | null;
+  dueDate?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface EventTimelineItemStartItemInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventTimelineItemBlockItemInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventTimelineItemUnblockItemInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventTimelineItemReorderItemInput {
-  newSortOrder?: number;
+  [key: string]: unknown;
+  newSortOrder?: number | null;
 }
 
 export interface EventTimelineItemUpdateItemInput {
-  title?: string;
-  description?: string;
-  itemType?: string;
-  assignedTo?: string;
-  dueDate?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  itemType?: string | null;
+  assignedTo?: string | null;
+  dueDate?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface EventWaitlistEntryAddGuestInput {
-  eventId?: string;
-  guestName?: string;
-  email?: string;
-  phone?: string;
-  partySize?: number;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  guestName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  partySize?: number | null;
+  notes?: string | null;
 }
 
 export interface EventWaitlistEntryNotifyInput {
-  message?: string;
+  [key: string]: unknown;
+  message?: string | null;
 }
 
 export interface EventWaitlistEntrySeatInput {
-  tableNumber?: string;
+  [key: string]: unknown;
+  tableNumber?: string | null;
 }
 
 export interface EventWaitlistEntryCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventWaitlistEntryUpdateRsvpInput {
-  status?: string;
+  [key: string]: unknown;
+  status?: string | null;
 }
 
 export interface EventBudgetCreateInput {
-  eventId?: string;
-  totalBudgetAmount?: number;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  totalBudgetAmount?: number | null;
+  notes?: string | null;
 }
 
 export interface EventBudgetUpdateInput {
-  totalBudgetAmount?: number;
-  totalActualAmount?: number;
-  notes?: string;
+  [key: string]: unknown;
+  totalBudgetAmount?: number | null;
+  totalActualAmount?: number | null;
+  notes?: string | null;
 }
 
 export interface EventBudgetApproveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventBudgetFinalizeInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface BudgetLineItemCreateInput {
-  budgetId?: string;
-  category?: string;
-  name?: string;
-  description?: string;
-  budgetedAmount?: number;
-  sortOrder?: number;
-  notes?: string;
+  [key: string]: unknown;
+  budgetId?: string | null;
+  category?: string | null;
+  name?: string | null;
+  description?: string | null;
+  budgetedAmount?: number | null;
+  sortOrder?: number | null;
+  notes?: string | null;
 }
 
 export interface BudgetLineItemUpdateInput {
-  budgetedAmount?: number;
-  actualAmount?: number;
-  description?: string;
-  notes?: string;
+  [key: string]: unknown;
+  budgetedAmount?: number | null;
+  actualAmount?: number | null;
+  description?: string | null;
+  notes?: string | null;
 }
 
 export interface BudgetLineItemRemoveInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventContractCreateInput {
-  eventId?: string;
-  clientId?: string;
-  contractNumber?: string;
-  title?: string;
-  documentUrl?: string;
-  documentType?: string;
-  notes?: string;
-  expiresAt?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  clientId?: string | null;
+  contractNumber?: string | null;
+  title?: string | null;
+  documentUrl?: string | null;
+  documentType?: string | null;
+  notes?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface EventContractUpdateInput {
-  title?: string;
-  documentUrl?: string;
-  documentType?: string;
-  notes?: string;
-  expiresAt?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  documentUrl?: string | null;
+  documentType?: string | null;
+  notes?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface EventContractSendInput {
-  sentBy?: string;
+  [key: string]: unknown;
+  sentBy?: string | null;
 }
 
 export interface EventContractCancelInput {
-  reason?: string;
-  canceledBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  canceledBy?: string | null;
 }
 
 export interface EventContractSoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ContractSignatureCreateInput {
-  contractId?: string;
-  signatureData?: string;
-  signerName?: string;
-  signerEmail?: string;
-  signerRole?: string;
-  ipAddress?: string;
+  [key: string]: unknown;
+  contractId?: string | null;
+  signatureData?: string | null;
+  signerName?: string | null;
+  signerEmail?: string | null;
+  signerRole?: string | null;
+  ipAddress?: string | null;
 }
 
 export interface ContractSignatureVerifyInput {
-  verifiedBy?: string;
+  [key: string]: unknown;
+  verifiedBy?: string | null;
 }
 
 export interface ContractSignatureInvalidateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ContractSignatureSoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface EventDishCreateInput {
-  eventId?: string;
-  dishId?: string;
-  quantity?: number;
-  notes?: string;
-  courseLabel?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  dishId?: string | null;
+  quantity?: number | null;
+  notes?: string | null;
+  courseLabel?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface EventDishUpdateQuantityInput {
-  quantity?: number;
+  [key: string]: unknown;
+  quantity?: number | null;
 }
 
 export interface EventDishUpdateCourseInput {
-  courseLabel?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  courseLabel?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface EventDishUpdateNotesInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface EventDishRemoveInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface EventGuestCreateInput {
-  eventId?: string;
-  guestName?: string;
-  guestEmail?: string;
-  guestPhone?: string;
-  isPrimaryContact?: boolean;
-  dietaryRestrictions?: string;
-  allergenRestrictions?: string;
-  notes?: string;
-  specialMealRequired?: boolean;
-  specialMealNotes?: string;
-  tableAssignment?: string;
-  mealPreference?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  isPrimaryContact?: boolean | null;
+  dietaryRestrictions?: string | null;
+  allergenRestrictions?: string | null;
+  notes?: string | null;
+  specialMealRequired?: boolean | null;
+  specialMealNotes?: string | null;
+  tableAssignment?: string | null;
+  mealPreference?: string | null;
 }
 
 export interface EventGuestUpdateInput {
-  guestName?: string;
-  guestEmail?: string;
-  guestPhone?: string;
-  isPrimaryContact?: boolean;
-  dietaryRestrictions?: string;
-  allergenRestrictions?: string;
-  notes?: string;
-  specialMealRequired?: boolean;
-  specialMealNotes?: string;
-  tableAssignment?: string;
-  mealPreference?: string;
+  [key: string]: unknown;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  guestPhone?: string | null;
+  isPrimaryContact?: boolean | null;
+  dietaryRestrictions?: string | null;
+  allergenRestrictions?: string | null;
+  notes?: string | null;
+  specialMealRequired?: boolean | null;
+  specialMealNotes?: string | null;
+  tableAssignment?: string | null;
+  mealPreference?: string | null;
 }
 
 export interface EventGuestRsvpDeclineInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventGuestAssignTableInput {
-  tableAssignment?: string;
+  [key: string]: unknown;
+  tableAssignment?: string | null;
 }
 
 export interface EventGuestSoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface EventImportWorkflowCreateInput {
-  idempotencyKey?: string;
-  inputData?: string;
+  [key: string]: unknown;
+  idempotencyKey?: string | null;
+  inputData?: string | null;
 }
 
 export interface EventImportWorkflowCompleteParsingInput {
-  extractedData?: string;
-  confidence?: number;
+  [key: string]: unknown;
+  extractedData?: string | null;
+  confidence?: number | null;
 }
 
 export interface EventImportWorkflowCompleteExtractionInput {
-  eventData?: string;
+  [key: string]: unknown;
+  eventData?: string | null;
 }
 
 export interface EventImportWorkflowCompleteValidationInput {
-  validationErrors?: string;
-  validationWarnings?: string;
+  [key: string]: unknown;
+  validationErrors?: string | null;
+  validationWarnings?: string | null;
 }
 
 export interface EventImportWorkflowCompleteProposingInput {
-  proposedTasks?: string;
+  [key: string]: unknown;
+  proposedTasks?: string | null;
 }
 
 export interface EventImportWorkflowCompleteReservingInput {
-  reservationResults?: string;
+  [key: string]: unknown;
+  reservationResults?: string | null;
 }
 
 export interface EventImportWorkflowCompleteActivatingInput {
-  eventId?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
 }
 
 export interface EventImportWorkflowFailInput {
-  errorList?: string;
-  step?: number;
+  [key: string]: unknown;
+  errorList?: string | null;
+  step?: number | null;
 }
 
 export interface EventImportWorkflowPauseInput {
-  reasonList?: string;
+  [key: string]: unknown;
+  reasonList?: string | null;
 }
 
 export interface EventImportWorkflowCancelInput {
-  reasonList?: string;
+  [key: string]: unknown;
+  reasonList?: string | null;
 }
 
 export interface EventReportCreateInput {
-  eventId?: string;
-  name?: string;
-  version?: string;
-  checklistData?: string;
-  reportConfig?: string;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  name?: string | null;
+  version?: string | null;
+  checklistData?: string | null;
+  reportConfig?: string | null;
+  notes?: string | null;
 }
 
 export interface EventReportSubmitInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventReportApproveInput {
-  userId?: string;
-  reviewNotes?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reviewNotes?: string | null;
 }
 
 export interface EventReportRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface EventReportCompleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventReportUpdateProgressInput {
-  completion?: number;
-  checklistData?: string;
+  [key: string]: unknown;
+  completion?: number | null;
+  checklistData?: string | null;
 }
 
 export interface EventCreateInput {
-  clientId?: string;
-  eventNumber?: string;
-  title?: string;
-  eventType?: string;
-  eventDate?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  notes?: string;
-  tags?: string[];
-  status?: string;
-  budget?: number;
-  ticketPrice?: number;
-  ticketTier?: string;
-  eventFormat?: string;
-  accessibilityOptions?: string[];
-  featuredMediaUrl?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  eventNumber?: string | null;
+  title?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  status?: string | null;
+  budget?: number | null;
+  ticketPrice?: number | null;
+  ticketTier?: string | null;
+  eventFormat?: string | null;
+  accessibilityOptions?: string[] | null;
+  featuredMediaUrl?: string | null;
 }
 
 export interface EventUpdateInput {
-  clientId?: string;
-  eventNumber?: string;
-  title?: string;
-  eventType?: string;
-  eventDate?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  notes?: string;
-  tags?: string[];
-  status?: string;
-  budget?: number;
-  ticketPrice?: number;
-  ticketTier?: string;
-  eventFormat?: string;
-  accessibilityOptions?: string[];
-  featuredMediaUrl?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  eventNumber?: string | null;
+  title?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  notes?: string | null;
+  tags?: string[] | null;
+  status?: string | null;
+  budget?: number | null;
+  ticketPrice?: number | null;
+  ticketTier?: string | null;
+  eventFormat?: string | null;
+  accessibilityOptions?: string[] | null;
+  featuredMediaUrl?: string | null;
 }
 
 export interface EventConfirmInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventUpdateBudgetInput {
-  newBudget?: number;
+  [key: string]: unknown;
+  newBudget?: number | null;
 }
 
 export interface EventUpdateGuestCountInput {
-  newGuestCount?: number;
+  [key: string]: unknown;
+  newGuestCount?: number | null;
 }
 
 export interface EventUpdateDateInput {
-  newEventDate?: string;
+  [key: string]: unknown;
+  newEventDate?: string | null;
 }
 
 export interface EventUpdateLocationInput {
-  newLocationId?: string;
-  newVenueId?: string;
-  newVenueName?: string;
-  newVenueAddress?: string;
+  [key: string]: unknown;
+  newLocationId?: string | null;
+  newVenueId?: string | null;
+  newVenueName?: string | null;
+  newVenueAddress?: string | null;
 }
 
 export interface EventFinalizeInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventUnfinalizeInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface EventProfitabilityCreateInput {
-  eventId?: string;
-  budgetedRevenue?: number;
-  budgetedFoodCost?: number;
-  budgetedLaborCost?: number;
-  budgetedOverhead?: number;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  budgetedRevenue?: number | null;
+  budgetedFoodCost?: number | null;
+  budgetedLaborCost?: number | null;
+  budgetedOverhead?: number | null;
+  notes?: string | null;
 }
 
 export interface EventProfitabilityUpdateInput {
-  actualRevenue?: number;
-  actualFoodCost?: number;
-  actualLaborCost?: number;
-  actualOverhead?: number;
-  notes?: string;
+  [key: string]: unknown;
+  actualRevenue?: number | null;
+  actualFoodCost?: number | null;
+  actualLaborCost?: number | null;
+  actualOverhead?: number | null;
+  notes?: string | null;
 }
 
 export interface EventProfitabilityRecalculateInput {
-  calculationMethod?: string;
-  budgetedRevenue?: number;
-  budgetedFoodCost?: number;
-  budgetedLaborCost?: number;
-  budgetedOverhead?: number;
-  actualRevenue?: number;
-  actualFoodCost?: number;
-  actualLaborCost?: number;
-  actualOverhead?: number;
+  [key: string]: unknown;
+  calculationMethod?: string | null;
+  budgetedRevenue?: number | null;
+  budgetedFoodCost?: number | null;
+  budgetedLaborCost?: number | null;
+  budgetedOverhead?: number | null;
+  actualRevenue?: number | null;
+  actualFoodCost?: number | null;
+  actualLaborCost?: number | null;
+  actualOverhead?: number | null;
 }
 
 export interface EventSummaryCreateInput {
-  eventId?: string;
-  highlights?: string;
-  issues?: string;
-  financialPerformance?: string;
-  clientFeedback?: string;
-  insights?: string;
-  overallSummary?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  highlights?: string | null;
+  issues?: string | null;
+  financialPerformance?: string | null;
+  clientFeedback?: string | null;
+  insights?: string | null;
+  overallSummary?: string | null;
 }
 
 export interface EventSummaryUpdateInput {
-  highlights?: string;
-  issues?: string;
-  financialPerformance?: string;
-  clientFeedback?: string;
-  insights?: string;
-  overallSummary?: string;
+  [key: string]: unknown;
+  highlights?: string | null;
+  issues?: string | null;
+  financialPerformance?: string | null;
+  clientFeedback?: string | null;
+  insights?: string | null;
+  overallSummary?: string | null;
 }
 
 export interface EventStaffAssignInput {
-  eventId?: string;
-  staffMemberId?: string;
-  role?: string;
-  notes?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  staffMemberId?: string | null;
+  role?: string | null;
+  notes?: string | null;
+  shiftStart?: number | null;
+  shiftEnd?: number | null;
 }
 
 export interface EventStaffUpdateShiftInput {
-  shiftStart?: number;
-  shiftEnd?: number;
+  [key: string]: unknown;
+  shiftStart?: number | null;
+  shiftEnd?: number | null;
 }
 
 export interface EventStaffUpdateRoleInput {
-  role?: string;
+  [key: string]: unknown;
+  role?: string | null;
 }
 
 export interface EventStaffMarkNoShowInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EventStaffUnassignInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VenueCreateInput {
-  name?: string;
-  venueType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  capacity?: number;
-  contactName?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  accessNotes?: string;
-  cateringNotes?: string;
-  layoutImageUrl?: string;
-  tags?: string[];
+  [key: string]: unknown;
+  name?: string | null;
+  venueType?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  capacity?: number | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  accessNotes?: string | null;
+  cateringNotes?: string | null;
+  layoutImageUrl?: string | null;
+  tags?: string[] | null;
 }
 
 export interface VenueUpdateInput {
-  name?: string;
-  venueType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  capacity?: number;
-  contactName?: string;
-  contactPhone?: string;
-  contactEmail?: string;
-  accessNotes?: string;
-  cateringNotes?: string;
-  layoutImageUrl?: string;
-  tags?: string[];
-  isActive?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  venueType?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  countryCode?: string | null;
+  capacity?: number | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  accessNotes?: string | null;
+  cateringNotes?: string | null;
+  layoutImageUrl?: string | null;
+  tags?: string[] | null;
+  isActive?: boolean | null;
 }
 
 export interface VenueDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VenueUpdateCapacityInput {
-  capacity?: number;
+  [key: string]: unknown;
+  capacity?: number | null;
 }
 
 export interface EventTimelineCreateInput {
-  eventId?: string;
-  title?: string;
-  scheduledAt?: string;
-  durationMinutes?: number;
-  notes?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  title?: string | null;
+  scheduledAt?: string | null;
+  durationMinutes?: number | null;
+  notes?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface EventTimelineUpdateInput {
-  title?: string;
-  scheduledAt?: string;
-  durationMinutes?: number;
-  notes?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  scheduledAt?: string | null;
+  durationMinutes?: number | null;
+  notes?: string | null;
 }
 
 export interface EventTimelineReorderInput {
-  newSortOrder?: number;
+  [key: string]: unknown;
+  newSortOrder?: number | null;
 }
 
 export interface EventTimelineRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimelineTaskCreateInput {
-  eventId?: string;
-  title?: string;
-  dueAt?: string;
-  assignedTo?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  title?: string | null;
+  dueAt?: string | null;
+  assignedTo?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface TimelineTaskStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimelineTaskCompleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimelineTaskBlockTaskInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface TimelineTaskUnblockTaskInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimelineTaskReorderInput {
-  newSortOrder?: number;
+  [key: string]: unknown;
+  newSortOrder?: number | null;
 }
 
 export interface TimelineTaskReassignInput {
-  newAssignedTo?: string;
+  [key: string]: unknown;
+  newAssignedTo?: string | null;
 }
 
 export interface TimelineTaskRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventImportCreateInput {
-  source?: string;
-  fileName?: string;
-  totalRows?: number;
+  [key: string]: unknown;
+  source?: string | null;
+  fileName?: string | null;
+  totalRows?: number | null;
 }
 
 export interface EventImportStartProcessingInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventImportCompleteInput {
-  importedRows?: number;
-  skippedRows?: number;
+  [key: string]: unknown;
+  importedRows?: number | null;
+  skippedRows?: number | null;
 }
 
 export interface EventImportFailInput {
-  errorMessage?: string;
+  [key: string]: unknown;
+  errorMessage?: string | null;
 }
 
 export interface EventImportRetryInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface EventFollowupCreateInput {
-  eventId?: string;
-  type?: string;
-  dueAt?: string;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  type?: string | null;
+  dueAt?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface EventFollowupCompleteInput {
-  userId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  notes?: string | null;
 }
 
 export interface EventFollowupRescheduleInput {
-  newDueAt?: string;
-  reason?: string;
+  [key: string]: unknown;
+  newDueAt?: string | null;
+  reason?: string | null;
 }
 
 export interface EventFollowupCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface BoardProjectionCreateInput {
-  boardId?: string;
-  entityType?: string;
-  entityId?: string;
-  positionX?: number;
-  positionY?: number;
-  width?: number;
-  height?: number;
+  [key: string]: unknown;
+  boardId?: string | null;
+  entityType?: string | null;
+  entityId?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface BoardProjectionMoveInput {
-  positionX?: number;
-  positionY?: number;
+  [key: string]: unknown;
+  positionX?: number | null;
+  positionY?: number | null;
 }
 
 export interface BoardProjectionResizeInput {
-  width?: number;
-  height?: number;
+  [key: string]: unknown;
+  width?: number | null;
+  height?: number | null;
 }
 
 export interface BoardProjectionRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface BoardAnnotationCreateInput {
-  boardId?: string;
-  text?: string;
-  positionX?: number;
-  positionY?: number;
-  color?: string;
+  [key: string]: unknown;
+  boardId?: string | null;
+  text?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  color?: string | null;
 }
 
 export interface BoardAnnotationUpdateInput {
-  text?: string;
-  positionX?: number;
-  positionY?: number;
-  color?: string;
+  [key: string]: unknown;
+  text?: string | null;
+  positionX?: number | null;
+  positionY?: number | null;
+  color?: string | null;
 }
 
 export interface BoardAnnotationRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface NoteCreateInput {
-  title?: string;
-  content?: string;
-  color?: string;
-  tags?: string[];
-  entityType?: string;
-  entityId?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  content?: string | null;
+  color?: string | null;
+  tags?: string[] | null;
+  entityType?: string | null;
+  entityId?: string | null;
 }
 
 export interface NoteUpdateInput {
-  title?: string;
-  content?: string;
-  color?: string;
-  tags?: string[];
+  [key: string]: unknown;
+  title?: string | null;
+  content?: string | null;
+  color?: string | null;
+  tags?: string[] | null;
 }
 
 export interface NoteRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface FacilityCreateInput {
-  name?: string;
-  code?: string;
-  facilityType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  phone?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  code?: string | null;
+  facilityType?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  phone?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityEditInput {
-  name?: string;
-  code?: string;
-  facilityType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  phone?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  code?: string | null;
+  facilityType?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  state?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  phone?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilitySendToMaintenanceInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface FacilityAreaCreateInput {
-  venueId?: string;
-  name?: string;
-  code?: string;
-  areaType?: string;
-  floor?: string;
-  description?: string;
-  squareFeet?: number;
+  [key: string]: unknown;
+  venueId?: string | null;
+  name?: string | null;
+  code?: string | null;
+  areaType?: string | null;
+  floor?: string | null;
+  description?: string | null;
+  squareFeet?: number | null;
 }
 
 export interface FacilityAreaEditInput {
-  name?: string;
-  code?: string;
-  areaType?: string;
-  floor?: string;
-  description?: string;
-  squareFeet?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  code?: string | null;
+  areaType?: string | null;
+  floor?: string | null;
+  description?: string | null;
+  squareFeet?: number | null;
 }
 
 export interface FacilityAreaCloseForMaintenanceInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface FacilityAssetCreateInput {
-  facilityId?: string;
-  areaId?: string;
-  name?: string;
-  assetType?: string;
-  purchaseDate?: string;
-  purchasePrice?: number;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  warrantyExpiry?: string;
-  notes?: string;
+  [key: string]: unknown;
+  facilityId?: string | null;
+  areaId?: string | null;
+  name?: string | null;
+  assetType?: string | null;
+  purchaseDate?: string | null;
+  purchasePrice?: number | null;
+  serialNumber?: string | null;
+  manufacturer?: string | null;
+  model?: string | null;
+  warrantyExpiry?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityAssetUpdateInput {
-  name?: string;
-  assetType?: string;
-  currentValue?: number;
-  serialNumber?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  assetType?: string | null;
+  currentValue?: number | null;
+  serialNumber?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityAssetSendToMaintenanceInput {
-  reason?: string;
-  nextMaintenanceAt?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  nextMaintenanceAt?: string | null;
 }
 
 export interface FacilityAssetReturnFromMaintenanceInput {
-  maintenanceNotes?: string;
-  nextMaintenanceAt?: string;
+  [key: string]: unknown;
+  maintenanceNotes?: string | null;
+  nextMaintenanceAt?: string | null;
 }
 
 export interface FacilityAssetRetireInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface FacilityScheduleCreateInput {
-  facilityId?: string;
-  areaId?: string;
-  title?: string;
-  description?: string;
-  scheduleType?: string;
-  startDate?: string;
-  endDate?: string;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  facilityId?: string | null;
+  areaId?: string | null;
+  title?: string | null;
+  description?: string | null;
+  scheduleType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityScheduleEditInput {
-  title?: string;
-  description?: string;
-  scheduleType?: string;
-  startDate?: string;
-  endDate?: string;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  scheduleType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityScheduleStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface FacilityScheduleCompleteInput {
-  completionNotes?: string;
+  [key: string]: unknown;
+  completionNotes?: string | null;
 }
 
 export interface FacilityScheduleCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface FacilityWorkOrderCreateInput {
-  assetId?: string;
-  title?: string;
-  description?: string;
-  priority?: string;
-  category?: string;
-  requestedBy?: string;
-  estimatedCost?: number;
-  scheduledDate?: string;
-  notes?: string;
+  [key: string]: unknown;
+  assetId?: string | null;
+  title?: string | null;
+  description?: string | null;
+  priority?: string | null;
+  category?: string | null;
+  requestedBy?: string | null;
+  estimatedCost?: number | null;
+  scheduledDate?: string | null;
+  notes?: string | null;
 }
 
 export interface FacilityWorkOrderAssignInput {
-  assignedTo?: string;
-  scheduledDate?: string;
-  estimatedCost?: number;
+  [key: string]: unknown;
+  assignedTo?: string | null;
+  scheduledDate?: string | null;
+  estimatedCost?: number | null;
 }
 
 export interface FacilityWorkOrderStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface FacilityWorkOrderCompleteInput {
-  actualCost?: number;
-  completionNotes?: string;
+  [key: string]: unknown;
+  actualCost?: number | null;
+  completionNotes?: string | null;
 }
 
 export interface FacilityWorkOrderCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface IngredientCreateInput {
-  name?: string;
-  category?: string;
-  defaultUnitId?: number;
-  densityGPerMl?: number;
-  shelfLifeDays?: number;
-  storageInstructions?: string;
-  allergens?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  category?: string | null;
+  defaultUnitId?: number | null;
+  densityGPerMl?: number | null;
+  shelfLifeDays?: number | null;
+  storageInstructions?: string | null;
+  allergens?: string | null;
 }
 
 export interface IngredientUpdateInput {
-  name?: string;
-  category?: string;
-  defaultUnitId?: number;
-  densityGPerMl?: number;
-  storageInstructions?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  category?: string | null;
+  defaultUnitId?: number | null;
+  densityGPerMl?: number | null;
+  storageInstructions?: string | null;
 }
 
 export interface IngredientDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientReactivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface IngredientUpdateAllergensInput {
-  allergens?: string;
-  userId?: string;
+  [key: string]: unknown;
+  allergens?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientUpdateShelfLifeInput {
-  shelfLifeDays?: number;
-  storageInstructions?: string;
-  userId?: string;
+  [key: string]: unknown;
+  shelfLifeDays?: number | null;
+  storageInstructions?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientLinkInventoryItemInput {
-  inventoryItemId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientUnlinkInventoryItemInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientRecordLotInput {
-  lotNumber?: string;
-  receivedAt?: string;
-  expiresAt?: string;
+  [key: string]: unknown;
+  lotNumber?: string | null;
+  receivedAt?: string | null;
+  expiresAt?: string | null;
 }
 
 export interface IngredientFlagRecallInput {
-  recallReason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  recallReason?: string | null;
+  userId?: string | null;
 }
 
 export interface IngredientClearRecallInput {
-  clearanceNote?: string;
-  userId?: string;
+  [key: string]: unknown;
+  clearanceNote?: string | null;
+  userId?: string | null;
 }
 
 export interface StorageLocationCreateInput {
-  locationId?: string;
-  name?: string;
-  storageType?: string;
-  temperatureZone?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  name?: string | null;
+  storageType?: string | null;
+  temperatureZone?: string | null;
 }
 
 export interface StorageLocationUpdateInput {
-  name?: string;
-  storageType?: string;
-  temperatureZone?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  storageType?: string | null;
+  temperatureZone?: string | null;
 }
 
 export interface StorageLocationDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface InventoryStockCreateInput {
-  inventoryItemId?: string;
-  storageLocationId?: string;
-  quantityOnHand?: number;
-  unitId?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  storageLocationId?: string | null;
+  quantityOnHand?: number | null;
+  unitId?: string | null;
 }
 
 export interface InventoryStockAdjustInput {
-  delta?: number;
-  reason?: string;
+  [key: string]: unknown;
+  delta?: number | null;
+  reason?: string | null;
 }
 
 export interface InventoryStockRecountInput {
-  newQuantity?: number;
-  countedBy?: string;
+  [key: string]: unknown;
+  newQuantity?: number | null;
+  countedBy?: string | null;
 }
 
 export interface InventoryAlertCreateInput {
-  inventoryItemId?: string;
-  alertType?: string;
-  severity?: string;
-  message?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  alertType?: string | null;
+  severity?: string | null;
+  message?: string | null;
 }
 
 export interface InventoryAlertEscalateInput {
-  escalatedBy?: string;
-  newSeverity?: string;
+  [key: string]: unknown;
+  escalatedBy?: string | null;
+  newSeverity?: string | null;
 }
 
 export interface InventoryAlertAcknowledgeInput {
-  acknowledgedBy?: string;
+  [key: string]: unknown;
+  acknowledgedBy?: string | null;
 }
 
 export interface InventoryAlertMarkResolvedInput {
-  resolvedBy?: string;
+  [key: string]: unknown;
+  resolvedBy?: string | null;
 }
 
 export interface InventoryForecastCreateInput {
-  inventoryItemId?: string;
-  forecastDate?: string;
-  projectedQuantity?: number;
-  confidence?: number;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  forecastDate?: string | null;
+  projectedQuantity?: number | null;
+  confidence?: number | null;
 }
 
 export interface InventoryForecastUpdateInput {
-  projectedQuantity?: number;
-  confidence?: number;
+  [key: string]: unknown;
+  projectedQuantity?: number | null;
+  confidence?: number | null;
 }
 
 export interface InventoryForecastApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface ForecastInputCreateInput {
-  inventoryItemId?: string;
-  inputDate?: string;
-  actualUsage?: number;
-  source?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  inputDate?: string | null;
+  actualUsage?: number | null;
+  source?: string | null;
 }
 
 export interface ReorderSuggestionCreateInput {
-  inventoryItemId?: string;
-  suggestedQuantity?: number;
-  reason?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  suggestedQuantity?: number | null;
+  reason?: string | null;
 }
 
 export interface ReorderSuggestionAcceptInput {
-  acceptedBy?: string;
+  [key: string]: unknown;
+  acceptedBy?: string | null;
 }
 
 export interface ReorderSuggestionDismissInput {
-  dismissedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  dismissedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface ReorderSuggestionAutoAcceptInput {
-  triggeredBy?: string;
+  [key: string]: unknown;
+  triggeredBy?: string | null;
 }
 
 export interface VendorContactCreateInput {
-  inventorySupplierId?: string;
-  name?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
-  isPrimary?: boolean;
+  [key: string]: unknown;
+  inventorySupplierId?: string | null;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
+  isPrimary?: boolean | null;
 }
 
 export interface VendorContactUpdateInput {
-  name?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
-  isPrimary?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
+  isPrimary?: boolean | null;
 }
 
 export interface VendorContactRemoveInput {
-  removedBy?: string;
+  [key: string]: unknown;
+  removedBy?: string | null;
 }
 
 export interface VendorRatingCreateInput {
-  inventorySupplierId?: string;
-  category?: string;
-  score?: number;
-  comment?: string;
-  ratedBy?: string;
+  [key: string]: unknown;
+  inventorySupplierId?: string | null;
+  category?: string | null;
+  score?: number | null;
+  comment?: string | null;
+  ratedBy?: string | null;
 }
 
 export interface VendorRatingUpdateInput {
-  score?: number;
-  comment?: string;
+  [key: string]: unknown;
+  score?: number | null;
+  comment?: string | null;
 }
 
 export interface InventoryTransferItemAddItemInput {
-  inventoryTransferId?: string;
-  inventoryItemId?: string;
-  quantity?: number;
-  unitId?: string;
+  [key: string]: unknown;
+  inventoryTransferId?: string | null;
+  inventoryItemId?: string | null;
+  quantity?: number | null;
+  unitId?: string | null;
 }
 
 export interface InventoryTransferItemUpdateQuantityInput {
-  quantity?: number;
+  [key: string]: unknown;
+  quantity?: number | null;
 }
 
 export interface InventoryTransferItemRemoveItemInput {
-  removedBy?: string;
+  [key: string]: unknown;
+  removedBy?: string | null;
 }
 
 export interface ProcurementBudgetCreateInput {
-  name?: string;
-  periodStart?: string;
-  periodEnd?: string;
-  budgetAmount?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  budgetAmount?: number | null;
 }
 
 export interface ProcurementBudgetUpdateInput {
-  name?: string;
-  budgetAmount?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  budgetAmount?: number | null;
 }
 
 export interface ProcurementBudgetRecordSpendInput {
-  amount?: number;
-  reference?: string;
+  [key: string]: unknown;
+  amount?: number | null;
+  reference?: string | null;
 }
 
 export interface ProcurementBudgetCloseInput {
-  closedBy?: string;
+  [key: string]: unknown;
+  closedBy?: string | null;
 }
 
 export interface ProcurementBudgetAlertCreateInput {
-  procurementBudgetId?: string;
-  thresholdPct?: number;
-  message?: string;
+  [key: string]: unknown;
+  procurementBudgetId?: string | null;
+  thresholdPct?: number | null;
+  message?: string | null;
 }
 
 export interface ProcurementBudgetAlertAcknowledgeInput {
-  acknowledgedBy?: string;
+  [key: string]: unknown;
+  acknowledgedBy?: string | null;
 }
 
 export interface AuditScheduleCreateInput {
-  name?: string;
-  frequency?: string;
-  nextRunAt?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  frequency?: string | null;
+  nextRunAt?: number | null;
 }
 
 export interface AuditScheduleUpdateInput {
-  name?: string;
-  frequency?: string;
-  nextRunAt?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  frequency?: string | null;
+  nextRunAt?: number | null;
 }
 
 export interface AuditScheduleDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface AuditScheduleRecordRunInput {
-  nextRunAt?: string;
+  [key: string]: unknown;
+  nextRunAt?: string | null;
 }
 
 export interface InventoryItemReserveInput {
-  quantity?: number;
-  eventId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  eventId?: string | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemConsumeInput {
-  quantity?: number;
-  lotId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  lotId?: string | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemWasteInput {
-  quantity?: number;
-  reason?: string;
-  lotId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  reason?: string | null;
+  lotId?: string | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemAdjustInput {
-  quantity?: number;
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemRestockInput {
-  quantity?: number;
-  costPerUnit?: number;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  costPerUnit?: number | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemReleaseReservationInput {
-  quantity?: number;
-  eventId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantity?: number | null;
+  eventId?: string | null;
+  userId?: string | null;
 }
 
 export interface InventoryItemCreateInput {
-  item_number?: string;
-  name?: string;
-  category?: string;
-  description?: string;
-  unitOfMeasure?: string;
-  unitCost?: number;
-  quantityOnHand?: number;
-  parLevel?: number;
-  reorder_level?: number;
-  supplierId?: string;
-  tags?: string;
-  fsa_status?: string;
-  fsa_temp_logged?: boolean;
-  fsa_allergen_info?: boolean;
-  fsa_traceable?: boolean;
+  [key: string]: unknown;
+  item_number?: string | null;
+  name?: string | null;
+  category?: string | null;
+  description?: string | null;
+  unitOfMeasure?: string | null;
+  unitCost?: number | null;
+  quantityOnHand?: number | null;
+  parLevel?: number | null;
+  reorder_level?: number | null;
+  supplierId?: string | null;
+  tags?: string | null;
+  fsa_status?: string | null;
+  fsa_temp_logged?: boolean | null;
+  fsa_allergen_info?: boolean | null;
+  fsa_traceable?: boolean | null;
 }
 
 export interface InventoryItemUpdateInput {
-  name?: string;
-  description?: string;
-  category?: string;
-  unitOfMeasure?: string;
-  unitCost?: number;
-  quantityOnHand?: number;
-  parLevel?: number;
-  reorder_level?: number;
-  supplierId?: string;
-  tags?: string;
-  fsa_status?: string;
-  fsa_temp_logged?: string;
-  fsa_allergen_info?: string;
-  fsa_traceable?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  category?: string | null;
+  unitOfMeasure?: string | null;
+  unitCost?: number | null;
+  quantityOnHand?: number | null;
+  parLevel?: number | null;
+  reorder_level?: number | null;
+  supplierId?: string | null;
+  tags?: string | null;
+  fsa_status?: string | null;
+  fsa_temp_logged?: string | null;
+  fsa_allergen_info?: string | null;
+  fsa_traceable?: string | null;
 }
 
 export interface InventorySupplierCreateInput {
-  name?: string;
-  supplierNumber?: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
-  paymentTerms?: string;
-  notes?: string;
-  tags?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  supplierNumber?: string | null;
+  contactPerson?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
+  tags?: string | null;
 }
 
 export interface InventorySupplierUpdateInput {
-  name?: string;
-  contactPerson?: string;
-  email?: string;
-  phone?: string;
-  paymentTerms?: string;
-  notes?: string;
-  tags?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  contactPerson?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
+  tags?: string | null;
 }
 
 export interface InventorySupplierDeactivateInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface InventorySupplierApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface InventorySupplierSuspendInput {
-  suspendedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  suspendedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface InventorySupplierReinstateInput {
-  reinstatedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  reinstatedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface InventorySupplierBlacklistInput {
-  blacklistedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  blacklistedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface InventoryTransactionCreateInput {
-  itemId?: string;
-  transactionType?: string;
-  quantity?: number;
-  unitCost?: number;
-  referenceType?: string;
-  referenceId?: string;
-  reason?: string;
-  notes?: string;
-  employeeId?: string;
-  storageLocationId?: string;
+  [key: string]: unknown;
+  itemId?: string | null;
+  transactionType?: string | null;
+  quantity?: number | null;
+  unitCost?: number | null;
+  referenceType?: string | null;
+  referenceId?: string | null;
+  reason?: string | null;
+  notes?: string | null;
+  employeeId?: string | null;
+  storageLocationId?: string | null;
 }
 
 export interface InventoryTransactionReverseInput {
-  reversedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  reversedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface InventoryTransactionAdjustCostInput {
-  newUnitCost?: number;
-  reason?: string;
+  [key: string]: unknown;
+  newUnitCost?: number | null;
+  reason?: string | null;
 }
 
 export interface InventoryTransferCreateInput {
-  fromLocationId?: string;
-  toLocationId?: string;
-  notes?: string;
-  items?: string;
+  [key: string]: unknown;
+  fromLocationId?: string | null;
+  toLocationId?: string | null;
+  notes?: string | null;
+  items?: string | null;
 }
 
 export interface InventoryTransferApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface InventoryTransferShipInput {
-  shippedBy?: string;
+  [key: string]: unknown;
+  shippedBy?: string | null;
 }
 
 export interface InventoryTransferReceiveInput {
-  receivedBy?: string;
+  [key: string]: unknown;
+  receivedBy?: string | null;
 }
 
 export interface InventoryTransferCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface InventoryTransferPartialReceiveInput {
-  receivedBy?: string;
-  receivedItems?: string;
-  notes?: string;
+  [key: string]: unknown;
+  receivedBy?: string | null;
+  receivedItems?: string | null;
+  notes?: string | null;
 }
 
 export interface InventoryTransferFlagDiscrepancyInput {
-  reportedBy?: string;
-  discrepancyNotes?: string;
+  [key: string]: unknown;
+  reportedBy?: string | null;
+  discrepancyNotes?: string | null;
 }
 
 export interface InvoiceUpdateInput {
-  subtotal?: number;
-  taxAmount?: number;
-  total?: number;
-  amountDue?: number;
-  notes?: string;
-  internalNotes?: string;
-  dueDate?: string;
-  paymentTerms?: number;
-  lineItems?: string;
+  [key: string]: unknown;
+  subtotal?: number | null;
+  taxAmount?: number | null;
+  total?: number | null;
+  amountDue?: number | null;
+  notes?: string | null;
+  internalNotes?: string | null;
+  dueDate?: string | null;
+  paymentTerms?: number | null;
+  lineItems?: string | null;
 }
 
 export interface InvoiceSendInput {
-  clientContactId?: string;
+  [key: string]: unknown;
+  clientContactId?: string | null;
 }
 
 export interface InvoiceApplyPaymentInput {
-  paymentAmount?: number;
-  paymentId?: string;
+  [key: string]: unknown;
+  paymentAmount?: number | null;
+  paymentId?: string | null;
 }
 
 export interface InvoiceRecordRefundInput {
-  refundAmount?: number;
-  paymentId?: string;
+  [key: string]: unknown;
+  refundAmount?: number | null;
+  paymentId?: string | null;
 }
 
 export interface InvoiceVoidInvoiceInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface InvoiceWriteOffInput {
-  reason?: string;
-  writeOffAmount?: number;
+  [key: string]: unknown;
+  reason?: string | null;
+  writeOffAmount?: number | null;
 }
 
 export interface InvoiceUpdateLineItemsInput {
-  lineItems?: string;
+  [key: string]: unknown;
+  lineItems?: string | null;
 }
 
 export interface TemperatureProbeCreateInput {
-  name?: string;
-  equipmentId?: string;
-  location?: string;
-  minThreshold?: number;
-  maxThreshold?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  equipmentId?: string | null;
+  location?: string | null;
+  minThreshold?: number | null;
+  maxThreshold?: number | null;
 }
 
 export interface TemperatureProbeCalibrateInput {
-  calibratedBy?: string;
+  [key: string]: unknown;
+  calibratedBy?: string | null;
 }
 
 export interface TemperatureProbeUpdateThresholdsInput {
-  minThreshold?: number;
-  maxThreshold?: number;
+  [key: string]: unknown;
+  minThreshold?: number | null;
+  maxThreshold?: number | null;
 }
 
 export interface TemperatureProbeDeactivateInput {
-  reason?: string;
-  deactivatedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  deactivatedBy?: string | null;
 }
 
 export interface TemperatureLogCreateInput {
-  equipmentId?: string;
-  recordedBy?: string;
-  temperature?: number;
-  recordedAt?: string;
-  withinRange?: boolean;
-  notes?: string;
+  [key: string]: unknown;
+  equipmentId?: string | null;
+  recordedBy?: string | null;
+  temperature?: number | null;
+  recordedAt?: string | null;
+  withinRange?: boolean | null;
+  notes?: string | null;
 }
 
 export interface TemperatureReadingCreateInput {
-  probeId?: string;
-  temperature?: number;
-  recordedAt?: string;
-  withinRange?: boolean;
+  [key: string]: unknown;
+  probeId?: string | null;
+  temperature?: number | null;
+  recordedAt?: string | null;
+  withinRange?: boolean | null;
 }
 
 export interface IotAlertRuleCreateInput {
-  name?: string;
-  equipmentId?: string;
-  metric?: string;
-  sensorType?: string;
-  condition?: string;
-  threshold?: number;
-  thresholdMin?: number;
-  thresholdMax?: number;
-  comparison?: string;
-  severity?: string;
-  durationMs?: number;
-  alertAction?: string;
-  isActive?: boolean;
-  notifyRoles?: string;
-  notifyChannels?: string;
-  description?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  equipmentId?: string | null;
+  metric?: string | null;
+  sensorType?: string | null;
+  condition?: string | null;
+  threshold?: number | null;
+  thresholdMin?: number | null;
+  thresholdMax?: number | null;
+  comparison?: string | null;
+  severity?: string | null;
+  durationMs?: number | null;
+  alertAction?: string | null;
+  isActive?: boolean | null;
+  notifyRoles?: string | null;
+  notifyChannels?: string | null;
+  description?: string | null;
 }
 
 export interface IotAlertRuleUpdateInput {
-  metric?: string;
-  threshold?: number;
-  comparison?: string;
-  severity?: string;
+  [key: string]: unknown;
+  metric?: string | null;
+  threshold?: number | null;
+  comparison?: string | null;
+  severity?: string | null;
 }
 
 export interface IotAlertRuleDeactivateInput {
-  reason?: string;
-  deactivatedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  deactivatedBy?: string | null;
 }
 
 export interface IoTAlertCreateInput {
-  probeId?: string;
-  ruleId?: string;
-  severity?: string;
-  message?: string;
-  value?: number;
-  triggeredAt?: string;
-  alertNumber?: string;
-  alertType?: string;
-  title?: string;
-  temperature?: number;
+  [key: string]: unknown;
+  probeId?: string | null;
+  ruleId?: string | null;
+  severity?: string | null;
+  message?: string | null;
+  value?: number | null;
+  triggeredAt?: string | null;
+  alertNumber?: string | null;
+  alertType?: string | null;
+  title?: string | null;
+  temperature?: number | null;
 }
 
 export interface IoTAlertAcknowledgeInput {
-  acknowledgedBy?: string;
+  [key: string]: unknown;
+  acknowledgedBy?: string | null;
 }
 
 export interface IoTAlertMarkResolvedInput {
-  resolvedBy?: string;
+  [key: string]: unknown;
+  resolvedBy?: string | null;
 }
 
 export interface CorrectiveActionCreateInput {
-  sourceType?: string;
-  sourceId?: string;
-  description?: string;
-  dueAt?: string;
+  [key: string]: unknown;
+  sourceType?: string | null;
+  sourceId?: string | null;
+  description?: string | null;
+  dueAt?: string | null;
 }
 
 export interface CorrectiveActionAssignInput {
-  assignedTo?: string;
-  assignedBy?: string;
+  [key: string]: unknown;
+  assignedTo?: string | null;
+  assignedBy?: string | null;
 }
 
 export interface CorrectiveActionStartProgressInput {
-  startedBy?: string;
+  [key: string]: unknown;
+  startedBy?: string | null;
 }
 
 export interface CorrectiveActionCloseInput {
-  resolvedBy?: string;
-  resolutionNotes?: string;
+  [key: string]: unknown;
+  resolvedBy?: string | null;
+  resolutionNotes?: string | null;
 }
 
 export interface QualityCheckCreateInput {
-  checkType?: string;
-  performedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  checkType?: string | null;
+  performedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface QualityCheckPassInput {
-  passedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  passedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface QualityCheckFailInput {
-  failedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  failedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface QualityCheckReinspectInput {
-  requestedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  requestedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface QualityCheckItemCreateInput {
-  qualityCheckId?: string;
-  criterion?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  qualityCheckId?: string | null;
+  criterion?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface QualityCheckItemRecordResultInput {
-  passed?: boolean;
-  notes?: string;
-  recordedBy?: string;
+  [key: string]: unknown;
+  passed?: boolean | null;
+  notes?: string | null;
+  recordedBy?: string | null;
 }
 
 export interface KitchenTaskClaimClaimInput {
-  kitchenTaskId?: string;
-  employeeId?: string;
-  claimedAt?: string;
+  [key: string]: unknown;
+  kitchenTaskId?: string | null;
+  employeeId?: string | null;
+  claimedAt?: string | null;
 }
 
 export interface KitchenTaskClaimReleaseInput {
-  releasedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  releasedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface KitchenTaskProgressCreateInput {
-  kitchenTaskId?: string;
-  employeeId?: string;
-  status?: string;
-  progressPct?: number;
-  note?: string;
-  recordedAt?: string;
+  [key: string]: unknown;
+  kitchenTaskId?: string | null;
+  employeeId?: string | null;
+  status?: string | null;
+  progressPct?: number | null;
+  note?: string | null;
+  recordedAt?: string | null;
 }
 
 export interface TaskBundleCreateInput {
-  name?: string;
-  eventId?: string;
-  description?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  eventId?: string | null;
+  description?: string | null;
 }
 
 export interface TaskBundleUpdateInput {
-  name?: string;
-  description?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
 }
 
 export interface TaskBundleArchiveInput {
-  archivedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  archivedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface TaskBundleItemAddItemInput {
-  taskBundleId?: string;
-  kitchenTaskId?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  taskBundleId?: string | null;
+  kitchenTaskId?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface TaskBundleItemRemoveItemInput {
-  removedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  removedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface BulkCombineRuleCreateInput {
-  name?: string;
-  matchCriteria?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  matchCriteria?: string | null;
 }
 
 export interface BulkCombineRuleUpdateInput {
-  name?: string;
-  matchCriteria?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  matchCriteria?: string | null;
 }
 
 export interface BulkCombineRuleDeactivateInput {
-  reason?: string;
-  deactivatedBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  deactivatedBy?: string | null;
 }
 
 export interface MethodVideoCreateInput {
-  prepMethodId?: string;
-  title?: string;
-  url?: string;
-  durationSeconds?: number;
+  [key: string]: unknown;
+  prepMethodId?: string | null;
+  title?: string | null;
+  url?: string | null;
+  durationSeconds?: number | null;
 }
 
 export interface MethodVideoUpdateInput {
-  title?: string;
-  url?: string;
-  durationSeconds?: number;
+  [key: string]: unknown;
+  title?: string | null;
+  url?: string | null;
+  durationSeconds?: number | null;
 }
 
 export interface MethodVideoRemoveInput {
-  removedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  removedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface PrepListImportCreateInput {
-  source?: string;
-  fileName?: string;
+  [key: string]: unknown;
+  source?: string | null;
+  fileName?: string | null;
 }
 
 export interface PrepListImportCompleteInput {
-  rowsImported?: number;
+  [key: string]: unknown;
+  rowsImported?: number | null;
 }
 
 export interface PrepListImportFailInput {
-  errorMessage?: string;
+  [key: string]: unknown;
+  errorMessage?: string | null;
 }
 
 export interface KitchenTaskClaimInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface KitchenTaskStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface KitchenTaskCompleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface KitchenTaskReleaseInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface KitchenTaskReassignInput {
-  newUserId?: string;
-  requestedBy?: string;
+  [key: string]: unknown;
+  newUserId?: string | null;
+  requestedBy?: string | null;
 }
 
 export interface KitchenTaskUpdatePriorityInput {
-  priority?: number;
+  [key: string]: unknown;
+  priority?: number | null;
 }
 
 export interface KitchenTaskUpdateComplexityInput {
-  complexity?: number;
+  [key: string]: unknown;
+  complexity?: number | null;
 }
 
 export interface KitchenTaskUpdateTitleInput {
-  title?: string;
+  [key: string]: unknown;
+  title?: string | null;
 }
 
 export interface KitchenTaskUpdateSummaryInput {
-  summary?: string;
+  [key: string]: unknown;
+  summary?: string | null;
 }
 
 export interface KitchenTaskUpdateDueDateInput {
-  dueDate?: string;
+  [key: string]: unknown;
+  dueDate?: string | null;
 }
 
 export interface KitchenTaskUpdateTagsInput {
-  tags?: string;
+  [key: string]: unknown;
+  tags?: string | null;
 }
 
 export interface KitchenTaskAddTagInput {
-  tag?: string;
+  [key: string]: unknown;
+  tag?: string | null;
 }
 
 export interface KitchenTaskRemoveTagInput {
-  tag?: string;
+  [key: string]: unknown;
+  tag?: string | null;
 }
 
 export interface KitchenTaskCancelInput {
-  reason?: string;
-  canceledBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  canceledBy?: string | null;
 }
 
 export interface KitchenTaskCreateInput {
-  title?: string;
-  summary?: string;
-  priority?: number;
-  complexity?: number;
-  tags?: string;
-  dueDate?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  summary?: string | null;
+  priority?: number | null;
+  complexity?: number | null;
+  tags?: string | null;
+  dueDate?: string | null;
 }
 
 export interface KnowledgeBaseEntryCreateInput {
-  title?: string;
-  category?: string;
-  content?: string;
-  tags?: string;
-  authorId?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  category?: string | null;
+  content?: string | null;
+  tags?: string | null;
+  authorId?: string | null;
 }
 
 export interface KnowledgeBaseEntryUpdateInput {
-  title?: string;
-  category?: string;
-  content?: string;
-  tags?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  category?: string | null;
+  content?: string | null;
+  tags?: string | null;
 }
 
 export interface KnowledgeBaseEntryUnpublishInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface LaborBudgetCreateInput {
-  locationId?: string;
-  periodStart?: string;
-  periodEnd?: string;
-  budgetAmount?: number;
-  budgetType?: string;
-  notes?: string;
-  createdBy?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  budgetAmount?: number | null;
+  budgetType?: string | null;
+  notes?: string | null;
+  createdBy?: string | null;
 }
 
 export interface LaborBudgetUpdateInput {
-  locationId?: string;
-  periodStart?: string;
-  periodEnd?: string;
-  budgetAmount?: number;
-  budgetType?: string;
-  notes?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  periodStart?: string | null;
+  periodEnd?: string | null;
+  budgetAmount?: number | null;
+  budgetType?: string | null;
+  notes?: string | null;
 }
 
 export interface LaborBudgetApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface LaborBudgetRecordActualInput {
-  actualAmount?: number;
+  [key: string]: unknown;
+  actualAmount?: number | null;
 }
 
 export interface BudgetAlertCreateInput {
-  budgetId?: string;
-  alertType?: string;
-  thresholdPct?: number;
-  actualPct?: number;
-  message?: string;
+  [key: string]: unknown;
+  budgetId?: string | null;
+  alertType?: string | null;
+  thresholdPct?: number | null;
+  actualPct?: number | null;
+  message?: string | null;
 }
 
 export interface BudgetAlertAcknowledgeInput {
-  acknowledgedBy?: string;
+  [key: string]: unknown;
+  acknowledgedBy?: string | null;
 }
 
 export interface LeadCreateInput {
-  source?: string;
-  companyName?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  eventType?: string;
-  eventDate?: string;
-  estimatedGuests?: number;
-  estimatedValue?: number;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  source?: string | null;
+  companyName?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  estimatedGuests?: number | null;
+  estimatedValue?: number | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface LeadUpdateInput {
-  companyName?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  eventType?: string;
-  eventDate?: string;
-  estimatedGuests?: number;
-  estimatedValue?: number;
-  status?: string;
-  assignedTo?: string;
-  notes?: string;
+  [key: string]: unknown;
+  companyName?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  eventType?: string | null;
+  eventDate?: string | null;
+  estimatedGuests?: number | null;
+  estimatedValue?: number | null;
+  status?: string | null;
+  assignedTo?: string | null;
+  notes?: string | null;
 }
 
 export interface LeadConvertToClientInput {
-  clientId?: string;
-  userId?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  userId?: string | null;
 }
 
 export interface LeadDisqualifyInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface LeadArchiveInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface DriverCreateInput {
-  name?: string;
-  email?: string;
-  phone?: string;
-  licenseNumber?: string;
-  licenseExpiry?: string;
-  vehicleId?: string;
-  status?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
+  vehicleId?: string | null;
+  status?: string | null;
+  notes?: string | null;
 }
 
 export interface DriverUpdateInput {
-  name?: string;
-  email?: string;
-  phone?: string;
-  licenseNumber?: string;
-  licenseExpiry?: string;
-  vehicleId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
+  vehicleId?: string | null;
+  notes?: string | null;
 }
 
 export interface DriverRenewLicenseInput {
-  licenseNumber?: string;
-  licenseExpiry?: string;
+  [key: string]: unknown;
+  licenseNumber?: string | null;
+  licenseExpiry?: string | null;
 }
 
 export interface DriverSetOffDutyInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface DriverReactivateInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface VehicleCreateInput {
-  make?: string;
-  model?: string;
-  year?: number;
-  plateNumber?: string;
-  vin?: string;
-  capacityWeight?: number;
-  capacityVolume?: number;
-  fuelType?: string;
-  mileage?: number;
-  status?: string;
-  notes?: string;
+  [key: string]: unknown;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  plateNumber?: string | null;
+  vin?: string | null;
+  capacityWeight?: number | null;
+  capacityVolume?: number | null;
+  fuelType?: string | null;
+  mileage?: number | null;
+  status?: string | null;
+  notes?: string | null;
 }
 
 export interface VehicleUpdateInput {
-  make?: string;
-  model?: string;
-  year?: number;
-  plateNumber?: string;
-  vin?: string;
-  capacityWeight?: number;
-  capacityVolume?: number;
-  fuelType?: string;
-  mileage?: number;
-  notes?: string;
+  [key: string]: unknown;
+  make?: string | null;
+  model?: string | null;
+  year?: number | null;
+  plateNumber?: string | null;
+  vin?: string | null;
+  capacityWeight?: number | null;
+  capacityVolume?: number | null;
+  fuelType?: string | null;
+  mileage?: number | null;
+  notes?: string | null;
 }
 
 export interface VehicleSendToMaintenanceInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VehicleReturnFromMaintenanceInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface VehicleDecommissionInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface LogisticsRouteCreateInput {
-  name?: string;
-  vehicleId?: string;
-  driverId?: string;
-  startLocation?: string;
-  endLocation?: string;
-  scheduledStart?: number;
-  scheduledEnd?: number;
-  distance?: number;
-  estimatedDuration?: number;
-  stops?: number;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  vehicleId?: string | null;
+  driverId?: string | null;
+  startLocation?: string | null;
+  endLocation?: string | null;
+  scheduledStart?: number | null;
+  scheduledEnd?: number | null;
+  distance?: number | null;
+  estimatedDuration?: number | null;
+  stops?: number | null;
+  notes?: string | null;
 }
 
 export interface LogisticsRouteUpdateInput {
-  name?: string;
-  vehicleId?: string;
-  driverId?: string;
-  startLocation?: string;
-  endLocation?: string;
-  scheduledStart?: number;
-  scheduledEnd?: number;
-  distance?: number;
-  estimatedDuration?: number;
-  stops?: number;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  vehicleId?: string | null;
+  driverId?: string | null;
+  startLocation?: string | null;
+  endLocation?: string | null;
+  scheduledStart?: number | null;
+  scheduledEnd?: number | null;
+  distance?: number | null;
+  estimatedDuration?: number | null;
+  stops?: number | null;
+  notes?: string | null;
 }
 
 export interface LogisticsRouteCompleteStopInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface LogisticsRouteRecordDelayInput {
-  delayMinutes?: number;
-  reason?: string;
+  [key: string]: unknown;
+  delayMinutes?: number | null;
+  reason?: string | null;
 }
 
 export interface LogisticsRouteCompleteInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface LogisticsRouteCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface LogisticsDispatchAssignInput {
-  routeId?: string;
-  driverId?: string;
-  vehicleId?: string;
-  priority?: string;
-  estimatedDeliveryTime?: number;
-  notes?: string;
+  [key: string]: unknown;
+  routeId?: string | null;
+  driverId?: string | null;
+  vehicleId?: string | null;
+  priority?: string | null;
+  estimatedDeliveryTime?: number | null;
+  notes?: string | null;
 }
 
 export interface LogisticsDispatchDepartInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface LogisticsDispatchDeliverInput {
-  notes?: string;
+  [key: string]: unknown;
+  notes?: string | null;
 }
 
 export interface LogisticsDispatchFailInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface LogisticsDispatchReassignInput {
-  driverId?: string;
-  vehicleId?: string;
-  estimatedDeliveryTime?: number;
-  notes?: string;
+  [key: string]: unknown;
+  driverId?: string | null;
+  vehicleId?: string | null;
+  estimatedDeliveryTime?: number | null;
+  notes?: string | null;
 }
 
 export interface MenuCreateInput {
-  name?: string;
-  description?: string;
-  category?: string;
-  basePrice?: number;
-  pricePerPerson?: number;
-  minGuests?: number;
-  maxGuests?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  category?: string | null;
+  basePrice?: number | null;
+  pricePerPerson?: number | null;
+  minGuests?: number | null;
+  maxGuests?: number | null;
 }
 
 export interface MenuUpdateInput {
-  newName?: string;
-  newDescription?: string;
-  newCategory?: string;
-  newBasePrice?: number;
-  newPricePerPerson?: number;
-  newMinGuests?: number;
-  newMaxGuests?: number;
+  [key: string]: unknown;
+  newName?: string | null;
+  newDescription?: string | null;
+  newCategory?: string | null;
+  newBasePrice?: number | null;
+  newPricePerPerson?: number | null;
+  newMinGuests?: number | null;
+  newMaxGuests?: number | null;
 }
 
 export interface MenuUpdatePricingInput {
-  newBasePrice?: number;
-  newPricePerPerson?: number;
+  [key: string]: unknown;
+  newBasePrice?: number | null;
+  newPricePerPerson?: number | null;
 }
 
 export interface MenuMarkPublishedInput {
-  publishedBy?: string;
+  [key: string]: unknown;
+  publishedBy?: string | null;
 }
 
 export interface MenuUnpublishInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface MenuArchiveInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface MenuRestoreInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface MenuMarkSeasonalInput {
-  seasonLabel?: string;
-  seasonYear?: number;
+  [key: string]: unknown;
+  seasonLabel?: string | null;
+  seasonYear?: number | null;
 }
 
 export interface MenuDishCreateInput {
-  menuId?: string;
-  dishId?: string;
-  course?: string;
-  sortOrder?: number;
-  isOptional?: boolean;
+  [key: string]: unknown;
+  menuId?: string | null;
+  dishId?: string | null;
+  course?: string | null;
+  sortOrder?: number | null;
+  isOptional?: boolean | null;
 }
 
 export interface MenuDishUpdateCourseInput {
-  newCourse?: string;
-  newSortOrder?: number;
-  newIsOptional?: boolean;
+  [key: string]: unknown;
+  newCourse?: string | null;
+  newSortOrder?: number | null;
+  newIsOptional?: boolean | null;
 }
 
 export interface MenuDishSetPriceOverrideInput {
-  priceOverride?: number;
+  [key: string]: unknown;
+  priceOverride?: number | null;
 }
 
 export interface MenuDishRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface NotificationCreateInput {
-  recipientEmployeeId?: string;
-  notificationType?: string;
-  title?: string;
-  body?: string;
-  actionUrl?: string;
-  correlationId?: string;
+  [key: string]: unknown;
+  recipientEmployeeId?: string | null;
+  notificationType?: string | null;
+  title?: string | null;
+  body?: string | null;
+  actionUrl?: string | null;
+  correlationId?: string | null;
 }
 
 export interface NotificationMarkReadInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface NotificationMarkDismissedInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface NotificationRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface OverrideAuditCreateInput {
-  entityType?: string;
-  entityId?: string;
-  constraintId?: string;
-  guardExpression?: string;
-  overriddenBy?: string;
-  overrideReason?: string;
+  [key: string]: unknown;
+  entityType?: string | null;
+  entityId?: string | null;
+  constraintId?: string | null;
+  guardExpression?: string | null;
+  overriddenBy?: string | null;
+  overrideReason?: string | null;
 }
 
 export interface OverrideAuditAuthorizeInput {
-  authorizedBy?: string;
+  [key: string]: unknown;
+  authorizedBy?: string | null;
 }
 
 export interface PaymentMethodCreateInput {
-  clientId?: string;
-  type?: string;
-  externalMethodId?: string;
-  cardLastFour?: string;
-  cardNetwork?: string;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-  cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  bankRoutingNumber?: string;
-  walletProvider?: string;
-  walletEmail?: string;
-  nickname?: string;
+  [key: string]: unknown;
+  clientId?: string | null;
+  type?: string | null;
+  externalMethodId?: string | null;
+  cardLastFour?: string | null;
+  cardNetwork?: string | null;
+  cardExpiryMonth?: number | null;
+  cardExpiryYear?: number | null;
+  cardHolderName?: string | null;
+  bankAccountLastFour?: string | null;
+  bankAccountType?: string | null;
+  bankRoutingNumber?: string | null;
+  walletProvider?: string | null;
+  walletEmail?: string | null;
+  nickname?: string | null;
 }
 
 export interface PaymentMethodMarkInvalidInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PaymentMethodFlagForFraudInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PaymentMethodVerifyInput {
-  method?: string;
+  [key: string]: unknown;
+  method?: string | null;
 }
 
 export interface PaymentMethodMarkVerificationFailedInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PaymentMethodUpdateTokenInput {
-  newToken?: string;
+  [key: string]: unknown;
+  newToken?: string | null;
 }
 
 export interface PaymentMethodUpdateInput {
-  cardLastFour?: string;
-  cardNetwork?: string;
-  isDefault?: boolean;
+  [key: string]: unknown;
+  cardLastFour?: string | null;
+  cardNetwork?: string | null;
+  isDefault?: boolean | null;
 }
 
 export interface PaymentProcessInput {
-  gatewayTransactionId?: string;
+  [key: string]: unknown;
+  gatewayTransactionId?: string | null;
 }
 
 export interface PaymentRefundInput {
-  refundAmount?: number;
-  reason?: string;
+  [key: string]: unknown;
+  refundAmount?: number | null;
+  reason?: string | null;
 }
 
 export interface PaymentPartialRefundInput {
-  refundAmount?: number;
-  reason?: string;
+  [key: string]: unknown;
+  refundAmount?: number | null;
+  reason?: string | null;
 }
 
 export interface PaymentMarkChargebackInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PaymentUpdateFraudStatusInput {
-  newFraudStatus?: string;
-  score?: number;
+  [key: string]: unknown;
+  newFraudStatus?: string | null;
+  score?: number | null;
 }
 
 export interface PaymentMarkFraudReviewedInput {
-  approved?: boolean;
-  reviewer?: string;
+  [key: string]: unknown;
+  approved?: boolean | null;
+  reviewer?: string | null;
 }
 
 export interface PaymentMarkFraudPassedInput {
-  reviewer?: string;
+  [key: string]: unknown;
+  reviewer?: string | null;
 }
 
 export interface PaymentMarkFraudFailedInput {
-  reviewer?: string;
+  [key: string]: unknown;
+  reviewer?: string | null;
 }
 
 export interface PayrollPeriodCreateInput {
-  periodStart?: string;
-  periodEnd?: string;
+  [key: string]: unknown;
+  periodStart?: string | null;
+  periodEnd?: string | null;
 }
 
 export interface PayrollPeriodReopenInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface EmployeeDeductionCreateInput {
-  employeeId?: string;
-  type?: string;
-  name?: string;
-  amount?: number;
-  percentage?: number;
-  isPreTax?: boolean;
-  effectiveDate?: string;
-  endDate?: string;
-  maxAnnualAmount?: number;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  type?: string | null;
+  name?: string | null;
+  amount?: number | null;
+  percentage?: number | null;
+  isPreTax?: boolean | null;
+  effectiveDate?: string | null;
+  endDate?: string | null;
+  maxAnnualAmount?: number | null;
 }
 
 export interface EmployeeDeductionUpdateInput {
-  amount?: number;
-  percentage?: number;
-  endDate?: string;
-  maxAnnualAmount?: number;
+  [key: string]: unknown;
+  amount?: number | null;
+  percentage?: number | null;
+  endDate?: string | null;
+  maxAnnualAmount?: number | null;
 }
 
 export interface EmployeeDeductionDeactivateInput {
-  reason?: string;
-  endDate?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  endDate?: string | null;
 }
 
 export interface PayrollApprovalHistoryCreateInput {
-  payrollRunId?: string;
-  action?: string;
-  previousStatus?: string;
-  newStatus?: string;
-  performedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  payrollRunId?: string | null;
+  action?: string | null;
+  previousStatus?: string | null;
+  newStatus?: string | null;
+  performedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface PayrollRunCreateInput {
-  payrollPeriodId?: string;
-  runDate?: string;
+  [key: string]: unknown;
+  payrollPeriodId?: string | null;
+  runDate?: string | null;
 }
 
 export interface PayrollRunProcessInput {
-  totalGross?: number;
-  totalDeductions?: number;
-  totalNet?: number;
+  [key: string]: unknown;
+  totalGross?: number | null;
+  totalDeductions?: number | null;
+  totalNet?: number | null;
 }
 
 export interface PayrollRunApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface PayrollRunRejectInput {
-  rejectedBy?: string;
-  rejectReason?: string;
+  [key: string]: unknown;
+  rejectedBy?: string | null;
+  rejectReason?: string | null;
 }
 
 export interface PrepCommentCreateInput {
-  taskId?: string;
-  employeeId?: string;
-  commentText?: string;
+  [key: string]: unknown;
+  taskId?: string | null;
+  employeeId?: string | null;
+  commentText?: string | null;
 }
 
 export interface PrepCommentEditInput {
-  newText?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newText?: string | null;
+  userId?: string | null;
 }
 
 export interface PrepCommentMarkResolvedInput {
-  resolvedBy?: string;
+  [key: string]: unknown;
+  resolvedBy?: string | null;
 }
 
 export interface PrepCommentUnresolveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PrepCommentSoftDeleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PrepListUpdateInput {
-  newName?: string;
-  newDietaryRestrictions?: string;
-  newNotes?: string;
+  [key: string]: unknown;
+  newName?: string | null;
+  newDietaryRestrictions?: string | null;
+  newNotes?: string | null;
 }
 
 export interface PrepListUpdateBatchMultiplierInput {
-  newMultiplier?: number;
+  [key: string]: unknown;
+  newMultiplier?: number | null;
 }
 
 export interface PrepListCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PrepListCreateInput {
-  eventId?: string;
-  name?: string;
-  batchMultiplier?: number;
-  dietaryRestrictions?: string;
-  totalItems?: number;
-  totalEstimatedTime?: number;
-  notes?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  name?: string | null;
+  batchMultiplier?: number | null;
+  dietaryRestrictions?: string | null;
+  totalItems?: number | null;
+  totalEstimatedTime?: number | null;
+  notes?: string | null;
 }
 
 export interface PrepListCreateFromSeedInput {
-  eventId?: string;
-  name?: string;
-  batchMultiplier?: number;
-  dietaryRestrictions?: string;
-  notes?: string;
-  menuGroupsJson?: string;
-  totalInstructionLines?: number;
-  validInstructionLines?: number;
+  [key: string]: unknown;
+  eventId?: string | null;
+  name?: string | null;
+  batchMultiplier?: number | null;
+  dietaryRestrictions?: string | null;
+  notes?: string | null;
+  menuGroupsJson?: string | null;
+  totalInstructionLines?: number | null;
+  validInstructionLines?: number | null;
 }
 
 export interface PrepListReopenInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PrepListItemUpdateQuantityInput {
-  newBaseQuantity?: number;
-  newScaledQuantity?: number;
-  newBaseUnit?: string;
-  newScaledUnit?: string;
+  [key: string]: unknown;
+  newBaseQuantity?: number | null;
+  newScaledQuantity?: number | null;
+  newBaseUnit?: string | null;
+  newScaledUnit?: string | null;
 }
 
 export interface PrepListItemUpdateStationInput {
-  newStationId?: string;
-  newStationName?: string;
+  [key: string]: unknown;
+  newStationId?: string | null;
+  newStationName?: string | null;
 }
 
 export interface PrepListItemUpdatePrepNotesInput {
-  newNotes?: string;
-  newDietarySubstitutions?: string;
+  [key: string]: unknown;
+  newNotes?: string | null;
+  newDietarySubstitutions?: string | null;
 }
 
 export interface PrepListItemMarkCompletedInput {
-  completedByUserId?: string;
+  [key: string]: unknown;
+  completedByUserId?: string | null;
 }
 
 export interface PrepListItemCreateInput {
-  prepListId?: string;
-  stationId?: string;
-  stationName?: string;
-  ingredientId?: string;
-  ingredientName?: string;
-  category?: string;
-  baseQuantity?: number;
-  baseUnit?: string;
-  scaledQuantity?: number;
-  scaledUnit?: string;
-  isOptional?: boolean;
-  preparationNotes?: string;
-  allergens?: string;
-  dietarySubstitutions?: string;
-  dishId?: string;
-  dishName?: string;
-  recipeVersionId?: string;
-  sortOrder?: number;
+  [key: string]: unknown;
+  prepListId?: string | null;
+  stationId?: string | null;
+  stationName?: string | null;
+  ingredientId?: string | null;
+  ingredientName?: string | null;
+  category?: string | null;
+  baseQuantity?: number | null;
+  baseUnit?: string | null;
+  scaledQuantity?: number | null;
+  scaledUnit?: string | null;
+  isOptional?: boolean | null;
+  preparationNotes?: string | null;
+  allergens?: string | null;
+  dietarySubstitutions?: string | null;
+  dishId?: string | null;
+  dishName?: string | null;
+  recipeVersionId?: string | null;
+  sortOrder?: number | null;
 }
 
 export interface PrepMethodCreateInput {
-  name?: string;
-  category?: string;
-  description?: string;
-  estimatedDurationMinutes?: number;
-  requiresCertification?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  category?: string | null;
+  description?: string | null;
+  estimatedDurationMinutes?: number | null;
+  requiresCertification?: string | null;
 }
 
 export interface PrepMethodUpdateInput {
-  name?: string;
-  category?: string;
-  description?: string;
-  estimatedDurationMinutes?: number;
-  requiresCertification?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  category?: string | null;
+  description?: string | null;
+  estimatedDurationMinutes?: number | null;
+  requiresCertification?: string | null;
 }
 
 export interface PrepMethodDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface PrepMethodReactivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowCreateInput {
-  eventId?: string;
-  idempotencyKey?: string;
-  generationOptions?: string;
+  [key: string]: unknown;
+  eventId?: string | null;
+  idempotencyKey?: string | null;
+  generationOptions?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowCompleteGenerationInput {
-  generatedTasks?: string;
-  generatedCount?: number;
-  constraintOutcomes?: string;
+  [key: string]: unknown;
+  generatedTasks?: string | null;
+  generatedCount?: number | null;
+  constraintOutcomes?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowStartReviewingInput {
-  reviewerId?: string;
+  [key: string]: unknown;
+  reviewerId?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowCompleteReviewInput {
-  reviewedTasks?: string;
-  approvedIds?: string;
-  rejectedIds?: string;
-  approvedCount?: number;
-  reviewWarnings?: string;
+  [key: string]: unknown;
+  reviewedTasks?: string | null;
+  approvedIds?: string | null;
+  rejectedIds?: string | null;
+  approvedCount?: number | null;
+  reviewWarnings?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowStartApprovingInput {
-  approverId?: string;
+  [key: string]: unknown;
+  approverId?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowRejectPlanInput {
-  reasonList?: string;
+  [key: string]: unknown;
+  reasonList?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowCompleteInstantiationInput {
-  instantiatedIds?: string;
-  instantiatedCount?: number;
-  instantiationErrors?: string;
+  [key: string]: unknown;
+  instantiatedIds?: string | null;
+  instantiatedCount?: number | null;
+  instantiationErrors?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowCompleteSchedulingInput {
-  scheduledWindows?: string;
+  [key: string]: unknown;
+  scheduledWindows?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowFailInput {
-  errorList?: string;
-  step?: number;
+  [key: string]: unknown;
+  errorList?: string | null;
+  step?: number | null;
 }
 
 export interface PrepTaskPlanWorkflowCancelInput {
-  reasonList?: string;
+  [key: string]: unknown;
+  reasonList?: string | null;
 }
 
 export interface PrepTaskPlanWorkflowQuickApproveInput {
-  approverId?: string;
+  [key: string]: unknown;
+  approverId?: string | null;
 }
 
 export interface PrepTaskClaimInput {
-  userId?: string;
-  stationId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  stationId?: string | null;
 }
 
 export interface PrepTaskUnclaimInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PrepTaskStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PrepTaskCompleteInput {
-  quantityCompleted?: number;
-  userId?: string;
-  completedAt?: string;
+  [key: string]: unknown;
+  quantityCompleted?: number | null;
+  userId?: string | null;
+  completedAt?: string | null;
 }
 
 export interface PrepTaskReleaseInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PrepTaskReassignInput {
-  newUserId?: string;
-  requestedBy?: string;
+  [key: string]: unknown;
+  newUserId?: string | null;
+  requestedBy?: string | null;
 }
 
 export interface PrepTaskUpdateQuantityInput {
-  quantityTotal?: number;
-  quantityCompleted?: number;
+  [key: string]: unknown;
+  quantityTotal?: number | null;
+  quantityCompleted?: number | null;
 }
 
 export interface PrepTaskCancelInput {
-  reason?: string;
-  canceledBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  canceledBy?: string | null;
 }
 
 export interface PrepTaskCreateInput {
-  name?: string;
-  eventId?: string;
-  prepListId?: string;
-  taskType?: string;
-  priority?: number;
-  quantityTotal?: number;
-  quantityUnitId?: string;
-  servingsTotal?: number;
-  startByDate?: string;
-  dueByDate?: string;
-  notes?: string;
-  ingredients?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  eventId?: string | null;
+  prepListId?: string | null;
+  taskType?: string | null;
+  priority?: number | null;
+  quantityTotal?: number | null;
+  quantityUnitId?: string | null;
+  servingsTotal?: number | null;
+  startByDate?: string | null;
+  dueByDate?: string | null;
+  notes?: string | null;
+  ingredients?: string | null;
 }
 
 export interface PrepTaskUpdateStatusInput {
-  status?: string;
+  [key: string]: unknown;
+  status?: string | null;
 }
 
 export interface PrepTaskUpdatePriorityInput {
-  priority?: number;
+  [key: string]: unknown;
+  priority?: number | null;
 }
 
 export interface PrepTaskUpdateAssignmentInput {
-  claimedBy?: string;
+  [key: string]: unknown;
+  claimedBy?: string | null;
 }
 
 export interface PrepTaskUpdateDueDateInput {
-  dueByDate?: string;
+  [key: string]: unknown;
+  dueByDate?: string | null;
 }
 
 export interface PrepTaskUpdateDetailsInput {
-  dishId?: string;
-  locationId?: string;
-  estimatedMinutes?: number;
-  dueByTime?: string;
+  [key: string]: unknown;
+  dishId?: string | null;
+  locationId?: string | null;
+  estimatedMinutes?: number | null;
+  dueByTime?: string | null;
 }
 
 export interface PricingTierCreateInput {
-  catalogEntryId?: string;
-  tierName?: string;
-  minQuantity?: number;
-  maxQuantity?: number;
-  unitCost?: number;
-  discountPercent?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  [key: string]: unknown;
+  catalogEntryId?: string | null;
+  tierName?: string | null;
+  minQuantity?: number | null;
+  maxQuantity?: number | null;
+  unitCost?: number | null;
+  discountPercent?: number | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
 }
 
 export interface PricingTierUpdateInput {
-  catalogEntryId?: string;
-  tierName?: string;
-  minQuantity?: number;
-  maxQuantity?: number;
-  unitCost?: number;
-  discountPercent?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
-  isActive?: boolean;
+  [key: string]: unknown;
+  catalogEntryId?: string | null;
+  tierName?: string | null;
+  minQuantity?: number | null;
+  maxQuantity?: number | null;
+  unitCost?: number | null;
+  discountPercent?: number | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
+  isActive?: boolean | null;
 }
 
 export interface PricingTierDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PricingTierSoftDeleteInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface PurchaseRequisitionCreateInput {
-  requisitionNumber?: string;
-  locationId?: string;
-  department?: string;
-  requestedBy?: string;
-  requiredBy?: number;
-  justification?: string;
-  priority?: string;
-  itemCategory?: string;
+  [key: string]: unknown;
+  requisitionNumber?: string | null;
+  locationId?: string | null;
+  department?: string | null;
+  requestedBy?: string | null;
+  requiredBy?: number | null;
+  justification?: string | null;
+  priority?: string | null;
+  itemCategory?: string | null;
 }
 
 export interface PurchaseRequisitionUpdateInput {
-  justification?: string;
-  requiredBy?: number;
-  priority?: string;
-  department?: string;
+  [key: string]: unknown;
+  justification?: string | null;
+  requiredBy?: number | null;
+  priority?: string | null;
+  department?: string | null;
 }
 
 export interface PurchaseRequisitionCompleteDraftFromPrepDemandInput {
-  itemCount?: number;
-  subtotal?: number;
-  estimatedTax?: number;
-  estimatedShipping?: number;
-  estimatedTotal?: number;
-  notes?: string;
+  [key: string]: unknown;
+  itemCount?: number | null;
+  subtotal?: number | null;
+  estimatedTax?: number | null;
+  estimatedShipping?: number | null;
+  estimatedTotal?: number | null;
+  notes?: string | null;
 }
 
 export interface PurchaseRequisitionSubmitInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseRequisitionApproveManagerInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseRequisitionApproveFinanceInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseRequisitionRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PurchaseRequisitionConvertToPoInput {
-  userId?: string;
-  purchaseOrderId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  purchaseOrderId?: string | null;
 }
 
 export interface PurchaseRequisitionCancelInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PurchaseRequisitionItemCreateInput {
-  requisitionId?: string;
-  itemId?: string;
-  itemName?: string;
-  quantityRequested?: number;
-  unitId?: number;
-  estimatedUnitCost?: number;
-  suggestedVendorId?: string;
-  suggestedVendorName?: string;
-  specifications?: string;
-  notes?: string;
+  [key: string]: unknown;
+  requisitionId?: string | null;
+  itemId?: string | null;
+  itemName?: string | null;
+  quantityRequested?: number | null;
+  unitId?: number | null;
+  estimatedUnitCost?: number | null;
+  suggestedVendorId?: string | null;
+  suggestedVendorName?: string | null;
+  specifications?: string | null;
+  notes?: string | null;
 }
 
 export interface PurchaseRequisitionItemUpdateInput {
-  quantityRequested?: number;
-  estimatedUnitCost?: number;
-  suggestedVendorId?: string;
-  suggestedVendorName?: string;
-  specifications?: string;
-  notes?: string;
+  [key: string]: unknown;
+  quantityRequested?: number | null;
+  estimatedUnitCost?: number | null;
+  suggestedVendorId?: string | null;
+  suggestedVendorName?: string | null;
+  specifications?: string | null;
+  notes?: string | null;
 }
 
 export interface PurchaseRequisitionItemRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ProposalCreateInput {
-  proposalNumber?: string;
-  leadId?: string;
-  eventId?: string;
-  title?: string;
-  guestCount?: number;
-  taxRate?: number;
-  validUntil?: number;
-  notes?: string;
-  termsAndConditions?: string;
+  [key: string]: unknown;
+  proposalNumber?: string | null;
+  leadId?: string | null;
+  eventId?: string | null;
+  title?: string | null;
+  guestCount?: number | null;
+  taxRate?: number | null;
+  validUntil?: number | null;
+  notes?: string | null;
+  termsAndConditions?: string | null;
 }
 
 export interface ProposalUpdateInput {
-  title?: string;
-  eventDate?: string;
-  eventType?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  subtotal?: number;
-  taxRate?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  total?: number;
-  validUntil?: number;
-  notes?: string;
-  termsAndConditions?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  eventDate?: string | null;
+  eventType?: string | null;
+  guestCount?: number | null;
+  venueName?: string | null;
+  venueAddress?: string | null;
+  subtotal?: number | null;
+  taxRate?: number | null;
+  taxAmount?: number | null;
+  discountAmount?: number | null;
+  total?: number | null;
+  validUntil?: number | null;
+  notes?: string | null;
+  termsAndConditions?: string | null;
 }
 
 export interface ProposalSendInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ProposalMarkViewedInput {
-  viewedByInfo?: string;
+  [key: string]: unknown;
+  viewedByInfo?: string | null;
 }
 
 export interface ProposalAcceptInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ProposalRejectInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ProposalWithdrawInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface ProposalRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ProposalGeneratePublicLinkInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ProposalLineItemCreateInput {
-  proposalId?: string;
-  itemType?: string;
-  category?: string;
-  description?: string;
-  quantity?: number;
-  unitOfMeasure?: string;
-  unitPrice?: number;
-  sortOrder?: number;
-  notes?: string;
+  [key: string]: unknown;
+  proposalId?: string | null;
+  itemType?: string | null;
+  category?: string | null;
+  description?: string | null;
+  quantity?: number | null;
+  unitOfMeasure?: string | null;
+  unitPrice?: number | null;
+  sortOrder?: number | null;
+  notes?: string | null;
 }
 
 export interface ProposalLineItemUpdateInput {
-  itemType?: string;
-  category?: string;
-  description?: string;
-  quantity?: number;
-  unitOfMeasure?: string;
-  unitPrice?: number;
-  sortOrder?: number;
-  notes?: string;
+  [key: string]: unknown;
+  itemType?: string | null;
+  category?: string | null;
+  description?: string | null;
+  quantity?: number | null;
+  unitOfMeasure?: string | null;
+  unitPrice?: number | null;
+  sortOrder?: number | null;
+  notes?: string | null;
 }
 
 export interface ProposalLineItemRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseOrderCreateInput {
-  poNumber?: string;
-  vendorId?: string;
-  locationId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  poNumber?: string | null;
+  vendorId?: string | null;
+  locationId?: string | null;
+  notes?: string | null;
 }
 
 export interface PurchaseOrderSubmitInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseOrderApproveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseOrderRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PurchaseOrderCancelInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface PurchaseOrderMarkOrderedInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseOrderMarkReceivedInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface PurchaseOrderUpdateTotalsInput {
-  subtotal?: number;
-  total?: number;
-  itemCount?: number;
-  expectedDeliveryDate?: string;
+  [key: string]: unknown;
+  subtotal?: number | null;
+  total?: number | null;
+  itemCount?: number | null;
+  expectedDeliveryDate?: string | null;
 }
 
 export interface PurchaseOrderItemCreateInput {
-  purchaseOrderId?: string;
-  itemId?: string;
-  quantityOrdered?: number;
-  unitId?: number;
-  unitCost?: number;
-  notes?: string;
+  [key: string]: unknown;
+  purchaseOrderId?: string | null;
+  itemId?: string | null;
+  quantityOrdered?: number | null;
+  unitId?: number | null;
+  unitCost?: number | null;
+  notes?: string | null;
 }
 
 export interface PurchaseOrderItemUpdateInput {
-  quantityOrdered?: number;
-  unitCost?: number;
-  notes?: string;
+  [key: string]: unknown;
+  quantityOrdered?: number | null;
+  unitCost?: number | null;
+  notes?: string | null;
 }
 
 export interface PurchaseOrderItemRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface QACheckCreateInput {
-  location?: string;
-  checkType?: string;
-  inspector?: string;
-  notes?: string;
+  [key: string]: unknown;
+  location?: string | null;
+  checkType?: string | null;
+  inspector?: string | null;
+  notes?: string | null;
 }
 
 export interface QACheckCompleteInput {
-  result?: string;
-  inspector?: string;
-  notes?: string;
+  [key: string]: unknown;
+  result?: string | null;
+  inspector?: string | null;
+  notes?: string | null;
 }
 
 export interface QACheckFailInput {
-  inspector?: string;
-  notes?: string;
+  [key: string]: unknown;
+  inspector?: string | null;
+  notes?: string | null;
 }
 
 export interface QACheckRequireReinspectionInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface QACheckReinspectInput {
-  result?: string;
-  inspector?: string;
-  notes?: string;
+  [key: string]: unknown;
+  result?: string | null;
+  inspector?: string | null;
+  notes?: string | null;
 }
 
 export interface QACorrectiveActionCreateInput {
-  checkId?: string;
-  description?: string;
-  assignedTo?: string;
-  priority?: string;
-  dueDate?: string;
+  [key: string]: unknown;
+  checkId?: string | null;
+  description?: string | null;
+  assignedTo?: string | null;
+  priority?: string | null;
+  dueDate?: string | null;
 }
 
 export interface QACorrectiveActionAssignInput {
-  assignedTo?: string;
+  [key: string]: unknown;
+  assignedTo?: string | null;
 }
 
 export interface QACorrectiveActionEscalateInput {
-  escalatedTo?: string;
-  escalationReason?: string;
+  [key: string]: unknown;
+  escalatedTo?: string | null;
+  escalationReason?: string | null;
 }
 
 export interface QACorrectiveActionMarkResolvedInput {
-  resolutionNotes?: string;
+  [key: string]: unknown;
+  resolutionNotes?: string | null;
 }
 
 export interface QACorrectiveActionDismissInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface QATemperatureLogLogInput {
-  location?: string;
-  temperature?: number;
-  unit?: string;
-  equipment?: string;
-  recordedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  location?: string | null;
+  temperature?: number | null;
+  unit?: string | null;
+  equipment?: string | null;
+  recordedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface RateLimitConfigCreateInput {
-  name?: string;
-  endpointPattern?: string;
-  windowMs?: number;
-  maxRequests?: number;
-  burstAllowance?: number;
-  priority?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  endpointPattern?: string | null;
+  windowMs?: number | null;
+  maxRequests?: number | null;
+  burstAllowance?: number | null;
+  priority?: number | null;
 }
 
 export interface RateLimitConfigUpdateInput {
-  name?: string;
-  endpointPattern?: string;
-  windowMs?: number;
-  maxRequests?: number;
-  burstAllowance?: number;
-  priority?: number;
-  isActive?: boolean;
+  [key: string]: unknown;
+  name?: string | null;
+  endpointPattern?: string | null;
+  windowMs?: number | null;
+  maxRequests?: number | null;
+  burstAllowance?: number | null;
+  priority?: number | null;
+  isActive?: boolean | null;
 }
 
 export interface RateLimitConfigSoftDeleteInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface RecipeUpdateInput {
-  newName?: string;
-  newCategory?: string;
-  newCuisineType?: string;
-  newDescription?: string;
-  newTags?: string[];
+  [key: string]: unknown;
+  newName?: string | null;
+  newCategory?: string | null;
+  newCuisineType?: string | null;
+  newDescription?: string | null;
+  newTags?: string[] | null;
 }
 
 export interface RecipeDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface RecipeCreateInput {
-  name?: string;
-  category?: string;
-  cuisineType?: string;
-  description?: string;
-  tags?: string[];
+  [key: string]: unknown;
+  name?: string | null;
+  category?: string | null;
+  cuisineType?: string | null;
+  description?: string | null;
+  tags?: string[] | null;
 }
 
 export interface RecipeVersionCreateInput {
-  yieldQty?: number;
-  yieldUnit?: number;
-  prepTime?: number;
-  cookTime?: number;
-  restTime?: number;
-  difficulty?: number;
-  instructionsText?: string;
-  notesText?: string;
+  [key: string]: unknown;
+  yieldQty?: number | null;
+  yieldUnit?: number | null;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  difficulty?: number | null;
+  instructionsText?: string | null;
+  notesText?: string | null;
 }
 
 export interface RecipeVersionMarkPublishedInput {
-  publishedBy?: string;
+  [key: string]: unknown;
+  publishedBy?: string | null;
 }
 
 export interface RecipeVersionRetractInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface RecipeVersionApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface RecipeVersionRestoreInput {
-  sourceId?: string;
-  newVersionNum?: number;
+  [key: string]: unknown;
+  sourceId?: string | null;
+  newVersionNum?: number | null;
 }
 
 export interface RecipeVersionUpdateCostsInput {
-  newTotalCost?: number;
-  newCostPerYield?: number;
+  [key: string]: unknown;
+  newTotalCost?: number | null;
+  newCostPerYield?: number | null;
 }
 
 export interface RecipeIngredientUpdateQuantityInput {
-  newQuantity?: number;
-  newUnit?: number;
+  [key: string]: unknown;
+  newQuantity?: number | null;
+  newUnit?: number | null;
 }
 
 export interface RecipeIngredientUpdateWasteFactorInput {
-  newWasteFactor?: number;
+  [key: string]: unknown;
+  newWasteFactor?: number | null;
 }
 
 export interface RecipeIngredientCreateInput {
-  recipeVersionId?: string;
-  ingredientId?: string;
-  quantity?: number;
-  unitId?: number;
-  sortOrder?: number;
-  preparationNotes?: string;
-  isOptional?: boolean;
+  [key: string]: unknown;
+  recipeVersionId?: string | null;
+  ingredientId?: string | null;
+  quantity?: number | null;
+  unitId?: number | null;
+  sortOrder?: number | null;
+  preparationNotes?: string | null;
+  isOptional?: boolean | null;
 }
 
 export interface RecipeIngredientRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface RecipeStepCreateInput {
-  recipeVersionId?: string;
-  stepNumber?: number;
-  instruction?: string;
-  durationMinutes?: number;
-  temperatureValue?: number;
-  temperatureUnit?: string;
-  equipmentNeeded?: string;
-  tips?: string;
-  videoUrl?: string;
-  imageUrl?: string;
+  [key: string]: unknown;
+  recipeVersionId?: string | null;
+  stepNumber?: number | null;
+  instruction?: string | null;
+  durationMinutes?: number | null;
+  temperatureValue?: number | null;
+  temperatureUnit?: string | null;
+  equipmentNeeded?: string | null;
+  tips?: string | null;
+  videoUrl?: string | null;
+  imageUrl?: string | null;
 }
 
 export interface RecipeStepUpdateInstructionInput {
-  newInstruction?: string;
-  newDurationMinutes?: number;
-  newTips?: string;
+  [key: string]: unknown;
+  newInstruction?: string | null;
+  newDurationMinutes?: number | null;
+  newTips?: string | null;
 }
 
 export interface RecipeStepRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface RevenueRecognitionScheduleCreateInput {
-  invoiceId?: string;
-  contractId?: string;
-  totalAmount?: number;
-  method?: string;
-  startDate?: string;
-  endDate?: string;
-  recognitionPeriod?: number;
-  description?: string;
-  notes?: string;
-  metadata?: string;
+  [key: string]: unknown;
+  invoiceId?: string | null;
+  contractId?: string | null;
+  totalAmount?: number | null;
+  method?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  recognitionPeriod?: number | null;
+  description?: string | null;
+  notes?: string | null;
+  metadata?: string | null;
 }
 
 export interface RevenueRecognitionScheduleRecognizeAmountInput {
-  amount?: number;
-  recognizedAt?: unknown;
+  [key: string]: unknown;
+  amount?: number | null;
+  recognizedAt?: unknown | null;
 }
 
 export interface RevenueRecognitionScheduleRecognizeMilestoneInput {
-  milestoneId?: string;
-  amount?: number;
+  [key: string]: unknown;
+  milestoneId?: string | null;
+  amount?: number | null;
 }
 
 export interface RevenueRecognitionScheduleRecognizePercentageInput {
-  percentage?: number;
+  [key: string]: unknown;
+  percentage?: number | null;
 }
 
 export interface RevenueRecognitionScheduleCancelInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface RevenueRecognitionScheduleAdjustScheduleInput {
-  newEndDate?: unknown;
-  newTotalAmount?: number;
-  description?: string;
-  notes?: string;
-  recognitionPeriod?: number;
+  [key: string]: unknown;
+  newEndDate?: unknown | null;
+  newTotalAmount?: number | null;
+  description?: string | null;
+  notes?: string | null;
+  recognitionPeriod?: number | null;
 }
 
 export interface RevenueRecognitionScheduleReverseRecognitionInput {
-  recognizedAmount?: number;
-  remainingAmount?: number;
+  [key: string]: unknown;
+  recognizedAmount?: number | null;
+  remainingAmount?: number | null;
 }
 
 export interface RevenueRecognitionLineCreateInput {
-  scheduleId?: string;
-  sequence?: number;
-  amount?: number;
-  dueDate?: string;
-  milestoneId?: string;
-  milestoneName?: string;
-  description?: string;
-  notes?: string;
+  [key: string]: unknown;
+  scheduleId?: string | null;
+  sequence?: number | null;
+  amount?: number | null;
+  dueDate?: string | null;
+  milestoneId?: string | null;
+  milestoneName?: string | null;
+  description?: string | null;
+  notes?: string | null;
 }
 
 export interface RevenueRecognitionLineRecognizeInput {
-  amount?: number;
-  recognizedAt?: unknown;
+  [key: string]: unknown;
+  amount?: number | null;
+  recognizedAt?: unknown | null;
 }
 
 export interface RevenueRecognitionLineSkipInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface RolePolicyCreateInput {
-  roleId?: string;
-  roleName?: string;
-  permissions?: string[];
-  description?: string;
+  [key: string]: unknown;
+  roleId?: string | null;
+  roleName?: string | null;
+  permissions?: string[] | null;
+  description?: string | null;
 }
 
 export interface RolePolicyUpdateInput {
-  roleName?: string;
-  permissions?: string[];
-  description?: string;
-  isActive?: boolean;
+  [key: string]: unknown;
+  roleName?: string | null;
+  permissions?: string[] | null;
+  description?: string | null;
+  isActive?: boolean | null;
 }
 
 export interface RolePolicyGrantInput {
-  permission?: string;
-  grantedBy?: string;
+  [key: string]: unknown;
+  permission?: string | null;
+  grantedBy?: string | null;
 }
 
 export interface RolePolicyRevokeInput {
-  permission?: string;
-  revokedBy?: string;
+  [key: string]: unknown;
+  permission?: string | null;
+  revokedBy?: string | null;
 }
 
 export interface SampleDataSeedInput {
-  requestedBy?: string;
+  [key: string]: unknown;
+  requestedBy?: string | null;
 }
 
 export interface SampleDataClearInput {
-  requestedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  requestedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface SampleDataReseedInput {
-  requestedBy?: string;
+  [key: string]: unknown;
+  requestedBy?: string | null;
 }
 
 export interface ScheduleCreateInput {
-  locationId?: string;
-  scheduleDate?: string;
-  notes?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  scheduleDate?: string | null;
+  notes?: string | null;
 }
 
 export interface ScheduleUpdateInput {
-  scheduleDate?: string;
-  locationId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  scheduleDate?: string | null;
+  locationId?: string | null;
+  notes?: string | null;
 }
 
 export interface ScheduleApproveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ScheduleReopenInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface ScheduleReleaseInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ScheduleCloseInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ScheduleShiftCreateInput {
-  scheduleId?: string;
-  employeeId?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
-  roleDuringShift?: string;
-  notes?: string;
+  [key: string]: unknown;
+  scheduleId?: string | null;
+  employeeId?: string | null;
+  shiftStart?: number | null;
+  shiftEnd?: number | null;
+  roleDuringShift?: string | null;
+  notes?: string | null;
 }
 
 export interface ScheduleShiftUpdateInput {
-  employeeId?: string;
-  locationId?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
-  roleDuringShift?: string;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  locationId?: string | null;
+  shiftStart?: number | null;
+  shiftEnd?: number | null;
+  roleDuringShift?: string | null;
+  notes?: string | null;
 }
 
 export interface ScheduleShiftOfferSwapInput {
-  swapOfferedTo?: string;
+  [key: string]: unknown;
+  swapOfferedTo?: string | null;
 }
 
 export interface ScheduleShiftAcceptSwapInput {
-  acceptingEmployeeId?: string;
+  [key: string]: unknown;
+  acceptingEmployeeId?: string | null;
 }
 
 export interface ScheduleShiftRemoveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ShipmentCreateInput {
-  shipmentNumber?: string;
-  supplierId?: string;
-  eventId?: string;
-  scheduledDate?: string;
-  carrier?: string;
-  shippingMethod?: string;
-  notes?: string;
+  [key: string]: unknown;
+  shipmentNumber?: string | null;
+  supplierId?: string | null;
+  eventId?: string | null;
+  scheduledDate?: string | null;
+  carrier?: string | null;
+  shippingMethod?: string | null;
+  notes?: string | null;
 }
 
 export interface ShipmentUpdateInput {
-  trackingNumber?: string;
-  carrier?: string;
-  shippingMethod?: string;
-  estimatedDeliveryDate?: string;
-  shippingCost?: number;
-  notes?: string;
+  [key: string]: unknown;
+  trackingNumber?: string | null;
+  carrier?: string | null;
+  shippingMethod?: string | null;
+  estimatedDeliveryDate?: string | null;
+  shippingCost?: number | null;
+  notes?: string | null;
 }
 
 export interface ShipmentScheduleInput {
-  userId?: string;
-  scheduledDate?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  scheduledDate?: string | null;
 }
 
 export interface ShipmentStartPreparingInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface ShipmentShipInput {
-  userId?: string;
-  trackingNumber?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  trackingNumber?: string | null;
 }
 
 export interface ShipmentMarkDeliveredInput {
-  userId?: string;
-  receivedBy?: string;
-  signatureData?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  receivedBy?: string | null;
+  signatureData?: string | null;
 }
 
 export interface ShipmentCancelInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface ShipmentItemCreateInput {
-  shipmentId?: string;
-  itemId?: string;
-  quantityShipped?: number;
-  unitId?: number;
-  unitCost?: number;
-  lotNumber?: string;
-  expirationDate?: string;
+  [key: string]: unknown;
+  shipmentId?: string | null;
+  itemId?: string | null;
+  quantityShipped?: number | null;
+  unitId?: number | null;
+  unitCost?: number | null;
+  lotNumber?: string | null;
+  expirationDate?: string | null;
 }
 
 export interface ShipmentItemUpdateReceivedInput {
-  quantityReceived?: number;
-  quantityDamaged?: number;
-  condition?: string;
-  conditionNotes?: string;
-  userId?: string;
+  [key: string]: unknown;
+  quantityReceived?: number | null;
+  quantityDamaged?: number | null;
+  condition?: string | null;
+  conditionNotes?: string | null;
+  userId?: string | null;
 }
 
 export interface ShipmentItemUpdateInput {
-  quantityShipped?: number;
-  unitId?: number;
-  unitCost?: number;
-  condition?: string;
-  conditionNotes?: string;
-  lotNumber?: string;
-  expirationDate?: string;
+  [key: string]: unknown;
+  quantityShipped?: number | null;
+  unitId?: number | null;
+  unitCost?: number | null;
+  condition?: string | null;
+  conditionNotes?: string | null;
+  lotNumber?: string | null;
+  expirationDate?: string | null;
 }
 
 export interface ShipmentItemSoftDeleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface SmsAutomationRuleCreateInput {
-  name?: string;
-  description?: string;
-  triggerType?: string;
-  triggerConfig?: string;
-  templateId?: string;
-  customMessage?: string;
-  recipientType?: string;
-  recipientConfig?: string;
-  isActive?: boolean;
-  priority?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  triggerType?: string | null;
+  triggerConfig?: string | null;
+  templateId?: string | null;
+  customMessage?: string | null;
+  recipientType?: string | null;
+  recipientConfig?: string | null;
+  isActive?: boolean | null;
+  priority?: number | null;
 }
 
 export interface SmsAutomationRuleUpdateInput {
-  name?: string;
-  description?: string;
-  triggerConfig?: string;
-  templateId?: string;
-  customMessage?: string;
-  recipientType?: string;
-  recipientConfig?: string;
-  isActive?: boolean;
-  priority?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  triggerConfig?: string | null;
+  templateId?: string | null;
+  customMessage?: string | null;
+  recipientType?: string | null;
+  recipientConfig?: string | null;
+  isActive?: boolean | null;
+  priority?: number | null;
 }
 
 export interface TimecardApprovalCreateInput {
-  employeeId?: string;
-  payrollPeriodId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  payrollPeriodId?: string | null;
+  notes?: string | null;
 }
 
 export interface TimecardApprovalApproveInput {
-  approvedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface TimecardApprovalRejectInput {
-  approvedBy?: string;
-  notes?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
+  notes?: string | null;
 }
 
 export interface TimecardApprovalBulkApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface PayrollLineItemCreateInput {
-  payrollRunId?: string;
-  employeeId?: string;
-  grossPay?: number;
-  netPay?: number;
-  totalDeductions?: number;
-  hoursWorked?: number;
-  hoursRegular?: number;
-  hoursOvertime?: number;
-  rateRegular?: number;
-  rateOvertime?: number;
+  [key: string]: unknown;
+  payrollRunId?: string | null;
+  employeeId?: string | null;
+  grossPay?: number | null;
+  netPay?: number | null;
+  totalDeductions?: number | null;
+  hoursWorked?: number | null;
+  hoursRegular?: number | null;
+  hoursOvertime?: number | null;
+  rateRegular?: number | null;
+  rateOvertime?: number | null;
 }
 
 export interface PayrollLineItemUpdateInput {
-  grossPay?: number;
-  netPay?: number;
-  totalDeductions?: number;
-  hoursWorked?: number;
-  hoursRegular?: number;
-  hoursOvertime?: number;
-  rateRegular?: number;
-  rateOvertime?: number;
+  [key: string]: unknown;
+  grossPay?: number | null;
+  netPay?: number | null;
+  totalDeductions?: number | null;
+  hoursWorked?: number | null;
+  hoursRegular?: number | null;
+  hoursOvertime?: number | null;
+  rateRegular?: number | null;
+  rateOvertime?: number | null;
 }
 
 export interface TipPoolCreateInput {
-  periodStart?: number;
-  periodEnd?: number;
-  eventId?: string;
-  totalTips?: number;
+  [key: string]: unknown;
+  periodStart?: number | null;
+  periodEnd?: number | null;
+  eventId?: string | null;
+  totalTips?: number | null;
 }
 
 export interface TipPoolAllocateInput {
-  totalTips?: number;
+  [key: string]: unknown;
+  totalTips?: number | null;
 }
 
 export interface TipPoolDistributeInput {
-  employeeId?: string;
-  amount?: number;
-  distributedBy?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  amount?: number | null;
+  distributedBy?: string | null;
 }
 
 export interface TipPoolFinalizeDistributionInput {
-  distributedBy?: string;
+  [key: string]: unknown;
+  distributedBy?: string | null;
 }
 
 export interface DisciplinaryActionCreateInput {
-  employeeId?: string;
-  actionType?: string;
-  reason?: string;
-  severity?: string;
-  issuedBy?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  actionType?: string | null;
+  reason?: string | null;
+  severity?: string | null;
+  issuedBy?: string | null;
 }
 
 export interface DisciplinaryActionAcknowledgeInput {
-  employeeId?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
 }
 
 export interface DisciplinaryActionEscalateInput {
-  escalatedTo?: string;
-  escalationReason?: string;
+  [key: string]: unknown;
+  escalatedTo?: string | null;
+  escalationReason?: string | null;
 }
 
 export interface DisciplinaryActionCloseInput {
-  issuedBy?: string;
+  [key: string]: unknown;
+  issuedBy?: string | null;
 }
 
 export interface ActionMilestoneCreateInput {
-  disciplinaryActionId?: string;
-  title?: string;
-  dueAt?: string;
+  [key: string]: unknown;
+  disciplinaryActionId?: string | null;
+  title?: string | null;
+  dueAt?: string | null;
 }
 
 export interface PerformanceReviewCreateInput {
-  employeeId?: string;
-  reviewerId?: string;
-  reviewPeriod?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  reviewerId?: string | null;
+  reviewPeriod?: string | null;
 }
 
 export interface PerformanceReviewSubmitInput {
-  overallRating?: number;
+  [key: string]: unknown;
+  overallRating?: number | null;
 }
 
 export interface TrainingCompletionCreateInput {
-  employeeId?: string;
-  trainingModuleId?: string;
-  completedAt?: string;
-  score?: number;
-  passed?: boolean;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  trainingModuleId?: string | null;
+  completedAt?: string | null;
+  score?: number | null;
+  passed?: boolean | null;
 }
 
 export interface OnboardingTaskCreateInput {
-  title?: string;
-  description?: string;
-  sortOrder?: number;
-  isRequired?: boolean;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  sortOrder?: number | null;
+  isRequired?: boolean | null;
 }
 
 export interface OnboardingTaskUpdateInput {
-  title?: string;
-  description?: string;
-  sortOrder?: number;
-  isRequired?: boolean;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  sortOrder?: number | null;
+  isRequired?: boolean | null;
 }
 
 export interface OnboardingCompletionCreateInput {
-  employeeId?: string;
-  onboardingTaskId?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  onboardingTaskId?: string | null;
 }
 
 export interface OpenShiftCreateInput {
-  scheduleId?: string;
-  role?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  [key: string]: unknown;
+  scheduleId?: string | null;
+  role?: string | null;
+  shiftStart?: number | null;
+  shiftEnd?: number | null;
 }
 
 export interface OpenShiftClaimInput {
-  claimedBy?: string;
+  [key: string]: unknown;
+  claimedBy?: string | null;
 }
 
 export interface DeliveryRouteCreateInput {
-  name?: string;
-  driverId?: string;
-  routeDate?: string;
-  totalStops?: number;
-  distanceMiles?: number;
+  [key: string]: unknown;
+  name?: string | null;
+  driverId?: string | null;
+  routeDate?: string | null;
+  totalStops?: number | null;
+  distanceMiles?: number | null;
 }
 
 export interface DeliveryRouteAssignDriverInput {
-  driverId?: string;
+  [key: string]: unknown;
+  driverId?: string | null;
 }
 
 export interface RouteStopCreateInput {
-  deliveryRouteId?: string;
-  eventId?: string;
-  address?: string;
-  sequence?: number;
-  scheduledAt?: string;
+  [key: string]: unknown;
+  deliveryRouteId?: string | null;
+  eventId?: string | null;
+  address?: string | null;
+  sequence?: number | null;
+  scheduledAt?: string | null;
 }
 
 export interface RouteStopReorderInput {
-  sequence?: number;
+  [key: string]: unknown;
+  sequence?: number | null;
 }
 
 export interface PaymentRefundAttemptCreateInput {
-  paymentId?: string;
-  amount?: number;
-  reason?: string;
+  [key: string]: unknown;
+  paymentId?: string | null;
+  amount?: number | null;
+  reason?: string | null;
 }
 
 export interface PreventiveMaintenanceScheduleCreateInput {
-  title?: string;
-  areaId?: string;
-  equipmentId?: string;
-  description?: string;
-  frequency?: string;
-  intervalDays?: number;
-  nextDueAt?: string;
-  assignedTo?: string;
-  estimatedHours?: number;
-  estimatedCost?: number;
+  [key: string]: unknown;
+  title?: string | null;
+  areaId?: string | null;
+  equipmentId?: string | null;
+  description?: string | null;
+  frequency?: string | null;
+  intervalDays?: number | null;
+  nextDueAt?: string | null;
+  assignedTo?: string | null;
+  estimatedHours?: number | null;
+  estimatedCost?: number | null;
 }
 
 export interface PreventiveMaintenanceScheduleUpdateInput {
-  title?: string;
-  description?: string;
-  frequency?: string;
-  intervalDays?: number;
-  nextDueAt?: string;
-  assignedTo?: string;
-  estimatedHours?: number;
-  estimatedCost?: number;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  frequency?: string | null;
+  intervalDays?: number | null;
+  nextDueAt?: string | null;
+  assignedTo?: string | null;
+  estimatedHours?: number | null;
+  estimatedCost?: number | null;
 }
 
 export interface PreventiveMaintenanceScheduleCompleteInput {
-  nextDueAt?: string;
+  [key: string]: unknown;
+  nextDueAt?: string | null;
 }
 
 export interface StaffMemberCreateInput {
-  displayName?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
+  [key: string]: unknown;
+  displayName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
 }
 
 export interface StaffMemberUpdateProfileInput {
-  displayName?: string;
-  email?: string;
-  phone?: string;
-  role?: string;
+  [key: string]: unknown;
+  displayName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  role?: string | null;
 }
 
 export interface StaffMemberDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface StaffMemberChangeRoleInput {
-  role?: string;
-  changedBy?: string;
+  [key: string]: unknown;
+  role?: string | null;
+  changedBy?: string | null;
 }
 
 export interface StaffPerformanceCreateInput {
-  employeeId?: string;
-  reviewType?: string;
-  reviewerId?: string;
-  periodStart?: number;
-  periodEnd?: number;
-  strengths?: string;
-  improvements?: string;
-  goals?: string;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  reviewType?: string | null;
+  reviewerId?: string | null;
+  periodStart?: number | null;
+  periodEnd?: number | null;
+  strengths?: string | null;
+  improvements?: string | null;
+  goals?: string | null;
+  notes?: string | null;
 }
 
 export interface StaffPerformanceUpdateInput {
-  employeeId?: string;
-  reviewType?: string;
-  reviewerId?: string;
-  periodStart?: number;
-  periodEnd?: number;
-  strengths?: string;
-  improvements?: string;
-  goals?: string;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  reviewType?: string | null;
+  reviewerId?: string | null;
+  periodStart?: number | null;
+  periodEnd?: number | null;
+  strengths?: string | null;
+  improvements?: string | null;
+  goals?: string | null;
+  notes?: string | null;
 }
 
 export interface StaffPerformanceSendBackToDraftInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface StaffPerformanceCompleteInput {
-  rating?: number;
+  [key: string]: unknown;
+  rating?: number | null;
 }
 
 export interface StaffPerformanceAcknowledgeInput {
-  acknowledgementNotes?: string;
+  [key: string]: unknown;
+  acknowledgementNotes?: string | null;
 }
 
 export interface StationCreateInput {
-  locationId?: string;
-  name?: string;
-  stationType?: string;
-  capacitySimultaneousTasks?: number;
-  equipmentList?: string;
-  notes?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  name?: string | null;
+  stationType?: string | null;
+  capacitySimultaneousTasks?: number | null;
+  equipmentList?: string | null;
+  notes?: string | null;
 }
 
 export interface StationAssignTaskInput {
-  taskId?: string;
-  taskName?: string;
+  [key: string]: unknown;
+  taskId?: string | null;
+  taskName?: string | null;
 }
 
 export interface StationRemoveTaskInput {
-  taskId?: string;
-  taskName?: string;
+  [key: string]: unknown;
+  taskId?: string | null;
+  taskName?: string | null;
 }
 
 export interface StationUpdateCapacityInput {
-  newCapacity?: number;
-  userId?: string;
+  [key: string]: unknown;
+  newCapacity?: number | null;
+  userId?: string | null;
 }
 
 export interface StationDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface StationActivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface StationUpdateEquipmentInput {
-  equipmentList?: string;
-  userId?: string;
+  [key: string]: unknown;
+  equipmentList?: string | null;
+  userId?: string | null;
 }
 
 export interface StationStartMaintenanceInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface StationEndMaintenanceInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimeEntryClockInInput {
-  employeeId?: string;
-  locationId?: string;
-  shiftId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  locationId?: string | null;
+  shiftId?: string | null;
+  notes?: string | null;
 }
 
 export interface TimeEntryClockOutInput {
-  breakMinutes?: number;
-  notes?: string;
+  [key: string]: unknown;
+  breakMinutes?: number | null;
+  notes?: string | null;
 }
 
 export interface TimeEntryAddEntryInput {
-  employeeId?: string;
-  locationId?: string;
-  shiftId?: string;
-  clockIn?: number;
-  clockOut?: number;
-  breakMinutes?: number;
-  notes?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  locationId?: string | null;
+  shiftId?: string | null;
+  clockIn?: number | null;
+  clockOut?: number | null;
+  breakMinutes?: number | null;
+  notes?: string | null;
 }
 
 export interface TimeEntrySoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface TimecardEditRequestCreateInput {
-  timeEntryId?: string;
-  employeeId?: string;
-  requestedClockIn?: number;
-  requestedClockOut?: number;
-  requestedBreakMinutes?: number;
-  reason?: string;
+  [key: string]: unknown;
+  timeEntryId?: string | null;
+  employeeId?: string | null;
+  requestedClockIn?: number | null;
+  requestedClockOut?: number | null;
+  requestedBreakMinutes?: number | null;
+  reason?: string | null;
 }
 
 export interface TimecardEditRequestApproveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface TimecardEditRequestRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface TimeOffRequestCreateInput {
-  employeeId?: string;
-  startDate?: string;
-  endDate?: string;
-  reason?: string;
-  requestType?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  reason?: string | null;
+  requestType?: string | null;
 }
 
 export interface TimeOffRequestAttachBalanceInput {
-  balanceSnapshot?: number;
-  balanceUnit?: string;
+  [key: string]: unknown;
+  balanceSnapshot?: number | null;
+  balanceUnit?: string | null;
 }
 
 export interface TimeOffRequestApproveInput {
-  processedBy?: string;
+  [key: string]: unknown;
+  processedBy?: string | null;
 }
 
 export interface TimeOffRequestRejectInput {
-  processedBy?: string;
-  rejectionReason?: string;
+  [key: string]: unknown;
+  processedBy?: string | null;
+  rejectionReason?: string | null;
 }
 
 export interface TimeOffRequestReconsiderInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface TrainingModuleCreateInput {
-  id?: string;
-  code?: string;
-  title?: string;
-  description?: string;
-  contentUrl?: string;
-  contentType?: string;
-  durationMinutes?: number;
-  category?: string;
-  isRequired?: boolean;
-  passThresholdPercent?: number;
-  maxAttempts?: number;
-  requiredRole?: string;
-  createdBy?: string;
-  publishImmediately?: boolean;
+  [key: string]: unknown;
+  id?: string | null;
+  code?: string | null;
+  title?: string | null;
+  description?: string | null;
+  contentUrl?: string | null;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  category?: string | null;
+  isRequired?: boolean | null;
+  passThresholdPercent?: number | null;
+  maxAttempts?: number | null;
+  requiredRole?: string | null;
+  createdBy?: string | null;
+  publishImmediately?: boolean | null;
 }
 
 export interface TrainingModuleUpdateInput {
-  title?: string;
-  description?: string;
-  contentUrl?: string;
-  contentType?: string;
-  durationMinutes?: number;
-  category?: string;
-  isRequired?: boolean;
-  passThresholdPercent?: number;
-  maxAttempts?: number;
-  requiredRole?: string;
+  [key: string]: unknown;
+  title?: string | null;
+  description?: string | null;
+  contentUrl?: string | null;
+  contentType?: string | null;
+  durationMinutes?: number | null;
+  category?: string | null;
+  isRequired?: boolean | null;
+  passThresholdPercent?: number | null;
+  maxAttempts?: number | null;
+  requiredRole?: string | null;
 }
 
 export interface TrainingModuleCreateVersionInput {
-  changeNotes?: string;
+  [key: string]: unknown;
+  changeNotes?: string | null;
 }
 
 export interface TrainingModuleArchiveInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface TrainingQuestionCreateInput {
-  id?: string;
-  moduleId?: string;
-  code?: string;
-  sectionTitle?: string;
-  displayOrder?: number;
-  prompt?: string;
-  optionA?: string;
-  optionB?: string;
-  optionC?: string;
-  optionD?: string;
-  correctOptionKey?: string;
-  explanation?: string;
-  whyItMatters?: string;
+  [key: string]: unknown;
+  id?: string | null;
+  moduleId?: string | null;
+  code?: string | null;
+  sectionTitle?: string | null;
+  displayOrder?: number | null;
+  prompt?: string | null;
+  optionA?: string | null;
+  optionB?: string | null;
+  optionC?: string | null;
+  optionD?: string | null;
+  correctOptionKey?: string | null;
+  explanation?: string | null;
+  whyItMatters?: string | null;
 }
 
 export interface TrainingAssignmentCreateInput {
-  id?: string;
-  moduleId?: string;
-  moduleCode?: string;
-  moduleTitle?: string;
-  staffMemberId?: string;
-  staffRole?: string;
-  passThresholdPercent?: number;
-  maxAttempts?: number;
-  firstShiftAt?: string;
-  dueAt?: string;
-  dueDateReviewNeeded?: boolean;
+  [key: string]: unknown;
+  id?: string | null;
+  moduleId?: string | null;
+  moduleCode?: string | null;
+  moduleTitle?: string | null;
+  staffMemberId?: string | null;
+  staffRole?: string | null;
+  passThresholdPercent?: number | null;
+  maxAttempts?: number | null;
+  firstShiftAt?: string | null;
+  dueAt?: string | null;
+  dueDateReviewNeeded?: boolean | null;
 }
 
 export interface TrainingAssignmentStartInput {
-  assignmentId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
 }
 
 export interface TrainingAssignmentSubmitPassingAttemptInput {
-  assignmentId?: string;
-  attemptId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  scorePercent?: number;
-  answersJson?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  attemptId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  scorePercent?: number | null;
+  answersJson?: string | null;
 }
 
 export interface TrainingAssignmentSubmitFailedAttemptInput {
-  assignmentId?: string;
-  attemptId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  scorePercent?: number;
-  answersJson?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  attemptId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  scorePercent?: number | null;
+  answersJson?: string | null;
 }
 
 export interface TrainingAssignmentSubmitFinalFailedAttemptInput {
-  assignmentId?: string;
-  attemptId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  scorePercent?: number;
-  answersJson?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  attemptId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  scorePercent?: number | null;
+  answersJson?: string | null;
 }
 
 export interface TrainingAssignmentApplyFirstShiftDueDateInput {
-  assignmentId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  firstShiftAt?: string;
-  dueAt?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  firstShiftAt?: string | null;
+  dueAt?: string | null;
 }
 
 export interface TrainingAssignmentMarkOverdueInput {
-  assignmentId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  referenceTime?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  referenceTime?: string | null;
 }
 
 export interface TrainingAssignmentWaiveInput {
-  assignmentId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  reason?: string;
-  approvedBy?: string;
+  [key: string]: unknown;
+  assignmentId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  reason?: string | null;
+  approvedBy?: string | null;
 }
 
 export interface TrainingAttemptCreateInput {
-  id?: string;
-  assignmentId?: string;
-  moduleId?: string;
-  staffMemberId?: string;
-  attemptNumber?: number;
-  scorePercent?: number;
-  passThresholdPercent?: number;
-  passed?: boolean;
-  managerReviewRequired?: boolean;
-  answersJson?: string;
+  [key: string]: unknown;
+  id?: string | null;
+  assignmentId?: string | null;
+  moduleId?: string | null;
+  staffMemberId?: string | null;
+  attemptNumber?: number | null;
+  scorePercent?: number | null;
+  passThresholdPercent?: number | null;
+  passed?: boolean | null;
+  managerReviewRequired?: boolean | null;
+  answersJson?: string | null;
 }
 
 export interface StaffTrainingSignalRecordSchedulabilityGrantedInput {
-  id?: string;
-  staffMemberId?: string;
-  moduleId?: string;
-  assignmentId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  id?: string | null;
+  staffMemberId?: string | null;
+  moduleId?: string | null;
+  assignmentId?: string | null;
+  reason?: string | null;
 }
 
 export interface StaffTrainingSignalRecordWaiverLoggedInput {
-  id?: string;
-  staffMemberId?: string;
-  moduleId?: string;
-  assignmentId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  id?: string | null;
+  staffMemberId?: string | null;
+  moduleId?: string | null;
+  assignmentId?: string | null;
+  reason?: string | null;
 }
 
 export interface UserCreateInput {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  role?: string;
-  phone?: string;
-  employmentType?: string;
-  hourlyRate?: number;
-  salaryAnnual?: number;
-  hireDate?: string;
-  employeeNumber?: string;
+  [key: string]: unknown;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  role?: string | null;
+  phone?: string | null;
+  employmentType?: string | null;
+  hourlyRate?: number | null;
+  salaryAnnual?: number | null;
+  hireDate?: string | null;
+  employeeNumber?: string | null;
 }
 
 export interface UserUpdateInput {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  employmentType?: string;
-  hourlyRate?: number;
-  salaryAnnual?: number;
-  avatarUrl?: string;
+  [key: string]: unknown;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  employmentType?: string | null;
+  hourlyRate?: number | null;
+  salaryAnnual?: number | null;
+  avatarUrl?: string | null;
 }
 
 export interface UserDeactivateInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface UserTerminateInput {
-  userId?: string;
-  reason?: string;
-  terminationDate?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
+  terminationDate?: string | null;
 }
 
 export interface UserUpdateRoleInput {
-  newRole?: string;
-  userId?: string;
+  [key: string]: unknown;
+  newRole?: string | null;
+  userId?: string | null;
 }
 
 export interface UserReactivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface UserSoftDeleteInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface VendorCatalogCreateInput {
-  supplierId?: string;
-  itemNumber?: string;
-  itemName?: string;
-  description?: string;
-  category?: string;
-  baseUnitCost?: number;
-  currency?: string;
-  unitOfMeasure?: string;
-  leadTimeDays?: number;
-  leadTimeMinDays?: number;
-  leadTimeMaxDays?: number;
-  minimumOrderQuantity?: number;
-  orderMultiple?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
-  supplierSku?: string;
-  notes?: string;
-  tags?: string;
+  [key: string]: unknown;
+  supplierId?: string | null;
+  itemNumber?: string | null;
+  itemName?: string | null;
+  description?: string | null;
+  category?: string | null;
+  baseUnitCost?: number | null;
+  currency?: string | null;
+  unitOfMeasure?: string | null;
+  leadTimeDays?: number | null;
+  leadTimeMinDays?: number | null;
+  leadTimeMaxDays?: number | null;
+  minimumOrderQuantity?: number | null;
+  orderMultiple?: number | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
+  supplierSku?: string | null;
+  notes?: string | null;
+  tags?: string | null;
 }
 
 export interface VendorCatalogUpdateInput {
-  supplierId?: string;
-  itemNumber?: string;
-  itemName?: string;
-  description?: string;
-  category?: string;
-  baseUnitCost?: number;
-  currency?: string;
-  unitOfMeasure?: string;
-  leadTimeDays?: number;
-  leadTimeMinDays?: number;
-  leadTimeMaxDays?: number;
-  minimumOrderQuantity?: number;
-  orderMultiple?: number;
-  isActive?: boolean;
-  effectiveFrom?: number;
-  effectiveTo?: number;
-  supplierSku?: string;
-  notes?: string;
-  tags?: string;
-  lastCostUpdate?: number;
+  [key: string]: unknown;
+  supplierId?: string | null;
+  itemNumber?: string | null;
+  itemName?: string | null;
+  description?: string | null;
+  category?: string | null;
+  baseUnitCost?: number | null;
+  currency?: string | null;
+  unitOfMeasure?: string | null;
+  leadTimeDays?: number | null;
+  leadTimeMinDays?: number | null;
+  leadTimeMaxDays?: number | null;
+  minimumOrderQuantity?: number | null;
+  orderMultiple?: number | null;
+  isActive?: boolean | null;
+  effectiveFrom?: number | null;
+  effectiveTo?: number | null;
+  supplierSku?: string | null;
+  notes?: string | null;
+  tags?: string | null;
+  lastCostUpdate?: number | null;
 }
 
 export interface VendorCatalogUpdatePriceInput {
-  newBaseUnitCost?: number;
-  effectiveFrom?: number;
-  reason?: string;
+  [key: string]: unknown;
+  newBaseUnitCost?: number | null;
+  effectiveFrom?: number | null;
+  reason?: string | null;
 }
 
 export interface VendorCatalogDeactivateInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VendorCatalogReactivateInput {
-  reactivatedBy?: string;
+  [key: string]: unknown;
+  reactivatedBy?: string | null;
 }
 
 export interface VendorCatalogSoftDeleteInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VendorContractCreateInput {
-  contractNumber?: string;
-  vendorId?: string;
-  vendorName?: string;
-  contractType?: string;
-  startDate?: string;
-  endDate?: string;
-  autoRenew?: boolean;
-  paymentTerms?: string;
-  deliveryTerms?: string;
-  minimumOrderQuantity?: number;
-  annualSpendCommitment?: number;
-  currencyCode?: string;
-  contractUrl?: string;
-  notes?: string;
+  [key: string]: unknown;
+  contractNumber?: string | null;
+  vendorId?: string | null;
+  vendorName?: string | null;
+  contractType?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  autoRenew?: boolean | null;
+  paymentTerms?: string | null;
+  deliveryTerms?: string | null;
+  minimumOrderQuantity?: number | null;
+  annualSpendCommitment?: number | null;
+  currencyCode?: string | null;
+  contractUrl?: string | null;
+  notes?: string | null;
 }
 
 export interface VendorContractUpdateInput {
-  endDate?: string;
-  autoRenew?: boolean;
-  renewalTermDays?: number;
-  paymentTerms?: string;
-  deliveryTerms?: string;
-  minimumOrderQuantity?: number;
-  annualSpendCommitment?: number;
-  contractUrl?: string;
-  notes?: string;
+  [key: string]: unknown;
+  endDate?: string | null;
+  autoRenew?: boolean | null;
+  renewalTermDays?: number | null;
+  paymentTerms?: string | null;
+  deliveryTerms?: string | null;
+  minimumOrderQuantity?: number | null;
+  annualSpendCommitment?: number | null;
+  contractUrl?: string | null;
+  notes?: string | null;
 }
 
 export interface VendorContractSubmitInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface VendorContractApproveInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface VendorContractRejectInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface VendorContractActivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface VendorContractTerminateInput {
-  userId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  reason?: string | null;
 }
 
 export interface VendorContractRenewInput {
-  userId?: string;
-  newEndDate?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  newEndDate?: string | null;
 }
 
 export interface VendorContractUpdateComplianceInput {
-  userId?: string;
-  complianceScore?: number;
-  slaBreachCount?: number;
-  onTimeDeliveryRate?: number;
-  qualityRating?: number;
+  [key: string]: unknown;
+  userId?: string | null;
+  complianceScore?: number | null;
+  slaBreachCount?: number | null;
+  onTimeDeliveryRate?: number | null;
+  qualityRating?: number | null;
 }
 
 export interface VendorContractRecordSlaBreachInput {
-  userId?: string;
-  breachType?: string;
-  description?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  breachType?: string | null;
+  description?: string | null;
 }
 
 export interface VendorCreateInput {
-  name?: string;
-  type?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  taxId?: string;
-  paymentTerms?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  type?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  taxId?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
 }
 
 export interface VendorRemoveInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VendorApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface VendorSuspendInput {
-  suspendedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  suspendedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface VendorBlacklistInput {
-  blacklistedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  blacklistedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface VendorUpdateInput {
-  name?: string;
-  type?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  taxId?: string;
-  paymentTerms?: string;
-  notes?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  type?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+  taxId?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
 }
 
 export interface VendorAddContactInput {
-  name?: string;
-  role?: string;
-  email?: string;
-  phone?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  role?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface VendorRateInput {
-  score?: number;
-  review?: string;
+  [key: string]: unknown;
+  score?: number | null;
+  review?: string | null;
 }
 
 export interface VersionedEntityRegisterInput {
-  entityType?: string;
-  entityId?: string;
-  entityName?: string;
-  initialSnapshot?: string;
+  [key: string]: unknown;
+  entityType?: string | null;
+  entityId?: string | null;
+  entityName?: string | null;
+  initialSnapshot?: string | null;
 }
 
 export interface VersionedEntityLockInput {
-  reason?: string;
+  [key: string]: unknown;
+  reason?: string | null;
 }
 
 export interface VersionedEntityUpdateNameInput {
-  newName?: string;
+  [key: string]: unknown;
+  newName?: string | null;
 }
 
 export interface EntityVersionCreateInput {
-  versionedEntityId?: string;
-  versionNumber?: number;
-  changeType?: string;
-  snapshot?: string;
-  reason?: string;
-  summary?: string;
-  userId?: string;
+  [key: string]: unknown;
+  versionedEntityId?: string | null;
+  versionNumber?: number | null;
+  changeType?: string | null;
+  snapshot?: string | null;
+  reason?: string | null;
+  summary?: string | null;
+  userId?: string | null;
 }
 
 export interface EntityVersionApproveInput {
-  approverId?: string;
-  comments?: string;
+  [key: string]: unknown;
+  approverId?: string | null;
+  comments?: string | null;
 }
 
 export interface EntityVersionRejectInput {
-  reviewerId?: string;
-  reason?: string;
+  [key: string]: unknown;
+  reviewerId?: string | null;
+  reason?: string | null;
 }
 
 export interface EntityVersionRestoreInput {
-  newVersionNumber?: number;
-  restorerId?: string;
+  [key: string]: unknown;
+  newVersionNumber?: number | null;
+  restorerId?: string | null;
 }
 
 export interface VersionApprovalCreateInput {
-  entityVersionId?: string;
-  approverId?: string;
+  [key: string]: unknown;
+  entityVersionId?: string | null;
+  approverId?: string | null;
 }
 
 export interface VersionApprovalApproveInput {
-  newComments?: string;
+  [key: string]: unknown;
+  newComments?: string | null;
 }
 
 export interface VersionApprovalRejectInput {
-  rejectionReason?: string;
+  [key: string]: unknown;
+  rejectionReason?: string | null;
 }
 
 export interface WasteEntryCreateInput {
-  inventoryItemId?: string;
-  reasonId?: number;
-  quantity?: number;
-  unitId?: number;
-  eventId?: string;
-  loggedBy?: string;
-  unitCost?: number;
-  notes?: string;
+  [key: string]: unknown;
+  inventoryItemId?: string | null;
+  reasonId?: number | null;
+  quantity?: number | null;
+  unitId?: number | null;
+  eventId?: string | null;
+  loggedBy?: string | null;
+  unitCost?: number | null;
+  notes?: string | null;
 }
 
 export interface WasteEntryApproveInput {
-  approvedBy?: string;
+  [key: string]: unknown;
+  approvedBy?: string | null;
 }
 
 export interface WasteEntryVoidEntryInput {
-  voidedBy?: string;
-  reason?: string;
+  [key: string]: unknown;
+  voidedBy?: string | null;
+  reason?: string | null;
 }
 
 export interface WasteEntryUpdateInput {
-  quantity?: number;
-  unitId?: number;
-  locationId?: string;
-  notes?: string;
-  unitCost?: number;
+  [key: string]: unknown;
+  quantity?: number | null;
+  unitId?: number | null;
+  locationId?: string | null;
+  notes?: string | null;
+  unitCost?: number | null;
 }
 
 export interface WasteEntrySoftDeleteInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface WorkOrderCreateInput {
-  equipmentId?: string;
-  equipmentName?: string;
-  title?: string;
-  type?: string;
-  priority?: string;
-  description?: string;
-  scheduledDate?: string;
+  [key: string]: unknown;
+  equipmentId?: string | null;
+  equipmentName?: string | null;
+  title?: string | null;
+  type?: string | null;
+  priority?: string | null;
+  description?: string | null;
+  scheduledDate?: string | null;
 }
 
 export interface WorkOrderAssignInput {
-  userId?: string;
-  scheduledDate?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  scheduledDate?: string | null;
 }
 
 export interface WorkOrderStartInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface WorkOrderCompleteInput {
-  userId?: string;
-  notes?: string;
+  [key: string]: unknown;
+  userId?: string | null;
+  notes?: string | null;
 }
 
 export interface WorkOrderCancelInput {
-  reason?: string;
-  canceledBy?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  canceledBy?: string | null;
 }
 
 export interface WorkOrderUpdatePriorityInput {
-  priority?: string;
+  [key: string]: unknown;
+  priority?: string | null;
 }
 
 export interface WorkOrderRescheduleInput {
-  scheduledDate?: string;
-  reason?: string;
+  [key: string]: unknown;
+  scheduledDate?: string | null;
+  reason?: string | null;
 }
 
 export interface WorkflowCreateInput {
-  name?: string;
-  description?: string;
-  triggerType?: string;
-  triggerConfig?: string;
+  [key: string]: unknown;
+  name?: string | null;
+  description?: string | null;
+  triggerType?: string | null;
+  triggerConfig?: string | null;
 }
 
 export interface WorkflowUpdateInput {
-  newName?: string;
-  newDescription?: string;
-  newTriggerType?: string;
-  newTriggerConfig?: string;
+  [key: string]: unknown;
+  newName?: string | null;
+  newDescription?: string | null;
+  newTriggerType?: string | null;
+  newTriggerConfig?: string | null;
 }
 
 export interface WorkflowActivateInput {
-  userId?: string;
+  [key: string]: unknown;
+  userId?: string | null;
 }
 
 export interface WorkflowDeactivateInput {
-  reason?: string;
-  userId?: string;
+  [key: string]: unknown;
+  reason?: string | null;
+  userId?: string | null;
 }
 
 export interface WorkforceOptimizationCreateInput {
-  locationId?: string;
-  optimizationType?: string;
+  [key: string]: unknown;
+  locationId?: string | null;
+  optimizationType?: string | null;
 }
 
 export interface WorkforceOptimizationCompleteInput {
-  results?: string;
+  [key: string]: unknown;
+  results?: string | null;
 }
 
 export interface WorkforceOptimizationFailInput {
-  error?: string;
+  [key: string]: unknown;
+  error?: string | null;
 }
 
 export interface PerformancePredictionCreateInput {
-  employeeId?: string;
-  predictionType?: string;
-  predictionHorizon?: number;
-  predictionScore?: number;
-  confidence?: string;
-  factors?: string;
+  [key: string]: unknown;
+  employeeId?: string | null;
+  predictionType?: string | null;
+  predictionHorizon?: number | null;
+  predictionScore?: number | null;
+  confidence?: string | null;
+  factors?: string | null;
 }
 
