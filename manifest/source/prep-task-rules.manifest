@@ -135,7 +135,7 @@ entity PrepTask {
 
     mutate status = "done"
     mutate quantityCompleted = quantityCompleted
-    mutate updatedAt = completedAt != null and completedAt > 0 ? completedAt : now()
+    mutate updatedAt = completedAt != null ? completedAt : now()
 
     emit PrepTaskCompleted
   }

@@ -54,7 +54,7 @@ entity TimeEntry {
   command clockOut(breakMinutes: number, notes: string) {
     guard self.isClockedIn "Must be clocked in to clock out"
 
-    constraint blockNotClockedIn:block self.clockIn == 0 {
+    constraint blockNotClockedIn:block self.clockIn == null {
       messageTemplate: "Cannot clock out - no active clock-in found"
       details: {
         employeeId: self.employeeId

@@ -277,7 +277,7 @@ entity InventoryForecast {
   default policy InventoryForecastDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(inventoryItemId: string, forecastDate: datetime, projectedQuantity: decimal, confidence: decimal) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
-    guard forecastDate != null and forecastDate > 0 "Forecast date is required"
+    guard forecastDate != null "Forecast date is required"
     guard projectedQuantity >= 0 "Projected quantity cannot be negative"
     guard confidence >= 0 and confidence <= 1 "Confidence must be between 0 and 1"
 
@@ -355,7 +355,7 @@ entity ForecastInput {
   default policy ForecastInputDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
   command create(inventoryItemId: string, inputDate: datetime, actualUsage: decimal, source: string) {
     guard inventoryItemId != null and inventoryItemId != "" "Inventory item ID is required"
-    guard inputDate != null and inputDate > 0 "Input date is required"
+    guard inputDate != null "Input date is required"
     guard actualUsage >= 0 "Actual usage cannot be negative"
     guard source != null and source != "" "Data source is required"
 
@@ -798,10 +798,10 @@ entity AuditSchedule {
   }
 
   default policy AuditScheduleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Inventory management"
-  command create(name: string, frequency: string, nextRunAt: decimal) {
+  command create(name: string, frequency: string, nextRunAt: datetime) {
     guard name != null and name != "" "Audit schedule name is required"
     guard frequency != null and frequency != "" "Frequency is required"
-    guard nextRunAt != null and nextRunAt > 0 "Next run date is required"
+    guard nextRunAt != null "Next run date is required"
 
     mutate name = name
     mutate frequency = frequency
@@ -842,7 +842,7 @@ entity AuditSchedule {
   // Record a completed run and advance the next scheduled run date.
   command recordRun(nextRunAt: datetime) {
     guard self.isActive "Cannot record a run for an inactive schedule"
-    guard nextRunAt != null and nextRunAt > 0 "Next run date is required"
+    guard nextRunAt != null "Next run date is required"
 
     mutate lastRunAt = now()
     mutate nextRunAt = nextRunAt

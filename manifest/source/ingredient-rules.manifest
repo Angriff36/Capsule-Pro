@@ -159,7 +159,7 @@ entity Ingredient {
     guard self.isActive "Cannot record a lot for a deactivated ingredient"
     guard lotNumber != null and lotNumber != "" "Lot number is required"
 
-    constraint warnNoExpiry:warn expiresAt == 0 {
+    constraint warnNoExpiry:warn expiresAt == null {
       messageTemplate: "Lot '{lotNumber}' recorded without an expiry date — verify this is a non-perishable ingredient"
       details: {
         ingredientName: self.name

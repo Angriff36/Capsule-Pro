@@ -123,7 +123,7 @@ entity WorkOrder {
   }
 
   command reschedule(scheduledDate: datetime, reason: string) {
-    guard scheduledDate > 0 "Scheduled date must be valid"
+    guard scheduledDate != null "Scheduled date must be valid"
     guard not (self.status in ["completed", "cancelled"]) "Cannot reschedule a closed work order"
 
     mutate scheduledDate = scheduledDate

@@ -83,7 +83,7 @@ entity PrepTaskPlanWorkflow {
 
     mutate status = "generating"
     mutate currentStep = 1
-    mutate startedAt = now() == 0 ? now() : self.startedAt
+    mutate startedAt = self.startedAt == null ? now() : self.startedAt
 
     emit PrepTaskPlanWorkflowGeneratingStarted
   }

@@ -61,7 +61,7 @@ entity CollectionCase {
   // Computed properties
   computed collectionPercentage: number = percent(self.collectedAmount, self.originalAmount)
   computed isHighRisk: boolean = self.daysOverdue > 90 or self.status == "LEGAL"
-  computed estimatedLoss: number = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
+  computed estimatedLoss: money = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
 
   // Constraints
   relationship belongsTo client: Client fields [tenantId, clientId] references [tenantId, id]

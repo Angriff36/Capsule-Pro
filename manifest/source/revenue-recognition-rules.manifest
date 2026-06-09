@@ -279,7 +279,7 @@ entity RevenueRecognitionLine {
     guard amount <= self.amount "Cannot recognize more than line amount"
     mutate recognizedAmount = amount
     mutate status = "RECOGNIZED"
-    mutate recognizedAt = recognizedAt != null and recognizedAt > 0 ? recognizedAt : now()
+    mutate recognizedAt = recognizedAt != null ? recognizedAt : now()
     emit LineRecognized
   }
 

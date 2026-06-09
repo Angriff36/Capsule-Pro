@@ -39,7 +39,7 @@ entity Schedule {
 
   default policy ScheduleDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
   command create(locationId: string, scheduleDate: datetime, notes: string) {
-    guard scheduleDate != null and scheduleDate > 0 "Schedule date is required"
+    guard scheduleDate != null "Schedule date is required"
 
     mutate locationId = locationId
     mutate scheduleDate = scheduleDate
