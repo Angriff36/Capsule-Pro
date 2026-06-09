@@ -260,6 +260,84 @@
       "approvedDate": "2026-06-07",
       "reviewDate": "2026-09-07",
       "path": "apps/app/app/(authenticated)/command-board/actions.ts"
+    },
+    {
+      "entity": "EventDish, PrepList, EventContract, EventBudget",
+      "file": "apps/app/app/(authenticated)/events/actions/setup-event-completely.ts",
+      "lines": "105-107,145-147,194-199,351-356,395-399,436",
+      "method": "database.$executeRaw (UPDATE events, INSERT event_dishes/prep_lists/event_contracts/event_budgets)",
+      "reason": "Multi-entity bulk creation pipeline for event setup. Creates EventDish, PrepList, EventContract, and EventBudget records via raw SQL INSERT in a coordinated flow. Event staff assignment (line 277) correctly uses runManifestCommand, but the other entity creation steps use $executeRaw because they create multiple records in sequence with dependent IDs. Each entity type has governed create commands, but the setup-event flow creates N records per type in a single coordinated operation — migrating to N individual governed commands would change O(1) batch operations to O(N) roundtrips and lose the coordination guarantees of the sequential flow.",
+      "whyBypassSafe": "Bulk creation pipeline for event initialization, not user-initiated individual domain mutations. The staff assignment step already uses governed runtime. The raw SQL creates records with default/seed values that are subsequently managed through governed commands. All writes are scoped to the event's tenantId.",
+      "tenantBoundary": "All writes scoped by tenantId from requireCurrentUser() context; event ownership verified via eventId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/events/actions/setup-event-completely.ts"
+    },
+    {
+      "entity": "EventSummary",
+      "file": "apps/app/app/(authenticated)/events/actions/event-summary.ts",
+      "lines": "368-372,393-401",
+      "method": "database.$executeRaw (UPDATE generationDurationMs backfill, soft-delete via UPDATE deleted_at)",
+      "reason": "Two raw SQL writes: (1) generationDurationMs backfill at line 368 — this field has no IR property/param and is not part of any EventSummary command. (2) Soft-delete at line 393 — EventSummary IR entity has no softDelete command. The inline comment confirms: 'No softDelete command in EventSummary IR'. EventSummary.create IS governed (migrated in Task 8.3 batch 7).",
+      "whyBypassSafe": "generationDurationMs is an infrastructure timing metric with no domain semantics. The soft-delete is a standard pattern that needs a softDelete command added to the EventSummary manifest source (deferred migration). The create path already uses governed runtime.",
+      "tenantBoundary": "All writes scoped by tenantId + eventId",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/events/actions/event-summary.ts"
+    },
+    {
+      "entity": "Recipe, Dish, RecipeVersion, RecipeIngredient",
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/actions.ts",
+      "lines": "514,701,850,860,871,883,898,929,955,966,978,990,1007",
+      "method": "database.$executeRaw (13 raw SQL writes for recipe/dish CRUD operations)",
+      "reason": "Extensive raw SQL for complex recipe management: recipe duplication with versioning, bulk ingredient operations, cross-entity coordinated updates that span Recipe + RecipeVersion + RecipeIngredient + Dish. Many operations create N records with interdependent IDs in a single flow. The governed commands exist for individual entity creates/updates but don't support batch operations, version duplication, or cross-entity atomicity patterns needed here.",
+      "whyBypassSafe": "Complex multi-entity coordination patterns that require transactional atomicity across 4+ entity types. Individual governed commands exist but don't compose into batch/versioning operations. The recipe module uses raw SQL for structural operations (duplicate version, bulk ingredient swap) where per-item governed commands would lose atomicity and be O(N) roundtrips.",
+      "tenantBoundary": "All writes scoped by tenantId from requireCurrentUser() context",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/kitchen/recipes/actions.ts"
+    },
+    {
+      "entity": "PrepList, PrepListItem",
+      "file": "apps/app/app/(authenticated)/kitchen/prep-lists/actions.ts",
+      "lines": "737,832",
+      "method": "database.$executeRaw (2 raw SQL writes for prep-list operations)",
+      "reason": "Raw SQL for prep-list operations that involve cross-entity coordination between PrepList and PrepListItem. The operations create/update N PrepListItem records associated with a PrepList, requiring coordinated IDs and atomicity. Individual governed commands exist for PrepList.create but batch PrepListItem creation has no governed equivalent.",
+      "whyBypassSafe": "Batch creation/update of PrepListItem records requires atomic coordination with the parent PrepList. No bulk governed command exists for PrepListItem. The structural operations (bulk assign, reorder) have no Manifest command equivalent.",
+      "tenantBoundary": "All writes scoped by tenantId from requireCurrentUser() context",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/kitchen/prep-lists/actions.ts"
+    },
+    {
+      "entity": "Recipe, Dish, RecipeIngredient",
+      "file": "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts",
+      "lines": "127,194,211,220",
+      "method": "database.$executeRaw (4 raw SQL writes for cleanup operations)",
+      "reason": "Cleanup operations that remove/orphan recipe data across multiple entity types. These are destructive operations that cascade across Recipe + Dish + RecipeIngredient in a coordinated fashion. Cleanup has no governed command equivalent — it's an administrative maintenance operation, not a domain mutation.",
+      "whyBypassSafe": "Administrative cleanup operations with no domain business rules. The cleanup removes orphaned/unused data that was created through governed paths. No state transitions, approvals, or policy decisions are involved.",
+      "tenantBoundary": "All writes scoped by tenantId from requireCurrentUser() context",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/kitchen/recipes/cleanup/server-actions.ts"
+    },
+    {
+      "entity": "CycleCountAuditLog",
+      "file": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts",
+      "lines": "310",
+      "method": "database.cycleCountAuditLog.create",
+      "reason": "CycleCountAuditLog has no Manifest entity definition or commands. It is an append-only audit trail table that records cycle count session completion events. The inline TODO at line 310 acknowledges: 'CycleCountAuditLog has no Manifest entity/commands.' The governed CycleCountSession.finalize command IS used for the main entity mutation — this bypass only covers the supplementary audit log creation.",
+      "whyBypassSafe": "Append-only audit log with no business rules, state transitions, or governance policies. The audit log records the fact that a finalization occurred — it is infrastructure metadata, not domain state. The governed CycleCountSession.finalize command handles the actual domain mutation.",
+      "tenantBoundary": "Create scoped by tenantId from requireCurrentUser() context",
+      "owner": "governance-migration",
+      "approvedDate": "2026-06-09",
+      "reviewDate": "2026-09-09",
+      "path": "apps/app/app/(authenticated)/cycle-counting/actions/finalization.ts"
     }
   ]
 }

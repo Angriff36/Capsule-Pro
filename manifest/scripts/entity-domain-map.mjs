@@ -305,7 +305,7 @@ export function toCamelCase(value) {
 export const ENTITY_ACCESSOR_OVERRIDES = {
   // QACheck: dedicated Prisma model added (tenant_kitchen.qa_checks, v0.12.216).
   //   Previously dropped because only QualityCheck existed (different concept — QC session with
-  //   itemized QualityCheckItem children). The accessor `qaCheck` now auto-resolves via metadata.
+  //   itemized QualityCheckItem children). The accessor `qACheck` now auto-resolves via metadata.
 };
 
 // Per-entity Prisma FIELD-name corrections for generated read routes.

@@ -259,8 +259,12 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
-Files (1):
-  manifest/scripts/generate-mermaid.mjs (edit)
+[proactive bridge @ 86% context — saved before compacting]
+Files (5):
+  manifest/scripts/generate-kysely.mjs (create)
+  package.json (edit)
+  manifest/scripts/generate-kysely.mjs (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/task-5.11-projection-evaluations.md (create)
 
 # === END COGNILAYER ===

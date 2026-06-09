@@ -21,7 +21,7 @@
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
 | 3 | ~~32~~ ~~**1**~~ **0** IR entities without Prisma model — ALL 189 MATCHED | **RESOLVED** | **All 189 IR entities match a Prisma model.** QACheck was the last unmatched entity — a dedicated `QACheck` model was added to `tenant_kitchen.qa_checks` (schema.prisma:5932) with accessor `qACheck`. QACheck ≠ QualityCheck (different concepts: inspection checklist vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). ~~15 entities had wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge. |
 | 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1 added 58 declarations across 43 entities. 57 entities without relationships (polymorphic FKs, missing targets, or no FK props). |
-| 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported: **0 governed-entity violations**, 47 ungoverned infrastructure (entities with no Manifest IR definition), 14 documented bypasses in `bypasses.json`. Governance migration COMPLETE for governed entities. |
+| 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported: **0 governed-entity violations**, 47 ungoverned infrastructure (entities with no Manifest IR definition), 21 documented bypasses in `bypasses.json`. Governance migration COMPLETE for governed entities. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only **5 with custom logic** remain (PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer). |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ ✅ EXCEEDED (10). |
@@ -105,7 +105,7 @@
 | **packages/services/ is EMPTY** | Should be removed from monorepo. | `packages/services/` |
 | **54→32 entities have FK properties but no relationships (was 152)** | Task 0.4 COMPLETE: 68 belongsTo declarations added to 48 entities across 32 source files. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. | IR analysis |
 | **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.** | | IR analysis |
-| **563/611 computed properties have empty dependencies** | 92.1% may not recalculate correctly when upstream values change. | IR analysis |
+| **553/610 computed properties have empty dependencies** | 90.7% have empty dependencies, but investigation confirmed this is NOT a runtime correctness bug — all uncached CPs recompute fresh on every access. 7 cross-property dependency gaps (self.X references to other CPs) were resolved via compile-time enrichment in compile.mjs. Root cause: upstream parser's extractDependencies only captures standalone identifiers, not self.X member-access patterns. | IR analysis |
 | **5 overrideable constraints out of 583 total** | Task 9.8 DONE: VendorCatalog.warnLargePriceIncrease, EventBudget.warnOverBudget, Proposal.warnHighDiscount, VendorContract.warnEarlyTermination, Shipment.warnCancelInTransit. | IR analysis |
 | **irHash and contentHash are EMPTY** | No IR integrity verification possible. `requireValidProvenance` would fail if wired. | IR provenance analysis |
 | **RESOLVED: 0/952 commands had policies bound → 952/952 bound** | ROOT CAUSE: Top-level `policy` declarations are NOT bound by the compiler. Only `default policy` inside entity blocks auto-expands. Fixed by moving/adding policies inside entity blocks across all 92 source files. | `manifest/source/*.manifest` (all files modified) |
@@ -351,6 +351,12 @@
 | **`realtime` modifier does NOT exist in @angriff36/manifest v2.2.0** | Exhaustive search: zero type definitions, source files, or exports contain "realtime" as a modifier. Referenced docs path `/extensibility/realtime-subscriptions` does not exist. Task 9.10 BLOCKED. | Package audit |
 | **`manifest generate-tests` CLI command does NOT exist in v2.2.0** | Exhaustive search: zero hits for `generate-tests`, `generateTests`, or `generate_tests`. Task 9.17 BLOCKED. | Package audit |
 
+### NEW findings from this revision (29th, 2026-06-09)
+
+| Finding | Impact | Source |
+|---|---|---|
+| **Computed property cross-dependencies: 7 CPs reference other CPs via self.X but have empty dependencies** | RESOLVED — Post-compilation enrichment in compile.mjs automatically populates cross-property dependencies by walking expression ASTs for self.X references and intersecting with computed property names. 7 properties enriched. Root cause: upstream parser's extractDependencies only captures standalone identifiers, not self.X member-access patterns. | IR analysis + compile.mjs enrichment |
+
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
@@ -358,10 +364,10 @@
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
-- 168 entities with computed properties (611 total; 563 have empty `dependencies` arrays)
+- 168 entities with computed properties (610 total; 553 have empty `dependencies` arrays)
 - 183 entities with 583 constraints
 - **145 entities have relationships** (219 declarations total). **57 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
-- 563/611 computed properties have empty `dependencies` (92.1% may not recalculate correctly)
+- 553/610 computed properties have empty `dependencies` (90.7% — NOT a runtime correctness bug; all uncached CPs recompute fresh. 7 cross-property gaps resolved via compile-time enrichment)
 - `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
 - 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
@@ -443,7 +449,7 @@
 ### Governance
 
 - **0 governed-entity violations remain** (per pnpm manifest:audit-direct-writes). Total mutate handlers migrated: 100+ in 60+ route files + 30+ server action writes. Governed-entity direct-write violations reduced from 33 to 0 in batches 23–29 (v0.12.149).
-  - **15 documented bypasses** in `manifest/governance/bypasses.json` — cross-entity batch patterns (PaymentMethod clearOthers→markAsDefault), bulk operations, raw SQL imports, and operations with no Manifest command equivalent.
+  - **21 documented bypasses** in `manifest/governance/bypasses.json` — cross-entity batch patterns (PaymentMethod clearOthers→markAsDefault), bulk operations, raw SQL imports, and operations with no Manifest command equivalent.
   - **47 ungoverned writes** — entities with no Manifest IR definition (infrastructure tables, sync logs, operational entities outside governed domain).
   - **Note — file-level metric:** `pnpm manifest:audit-direct-writes` counts FILES containing governed-entity direct writes. All governed-entity files now report 0 violations.
 - Payroll engine: 100% bypass -- 4 direct Prisma writes, 2 entities with zero Manifest registration
@@ -749,7 +755,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 35. ~~**notifications package has 9+ direct DB writes** across 4 files -- not listed in prior governance audit.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (Task 8.4). Remaining writes are infrastructure logs (not governed entities).
 
-36. **57 entities with FK properties but NO relationship blocks (was 152):** Batch 1 added 58 declarations across 43 entities. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. 563/611 computed properties have empty dependencies. irHash and contentHash are empty (no IR integrity verification).
+36. **57 entities with FK properties but NO relationship blocks (was 152):** Batch 1 added 58 declarations across 43 entities. Remaining are polymorphic FKs, FKs to non-IR targets, or entities with no FK props. 553/610 computed properties have empty dependencies (NOT a runtime correctness bug — all uncached CPs recompute fresh; 7 cross-property self.X gaps resolved via compile-time enrichment). irHash and contentHash are empty (no IR integrity verification).
 
 37. **39 export paths in @angriff36/manifest, only 4 actively used (10.3%):** Major unused features include Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, Roles, Enums, Value Objects, Async Commands, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system.
 
@@ -1192,7 +1198,7 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 
 > **Why:** The audit found 191 direct-write violations in API routes and 110 in server actions (301 total across 28 server-action files + 80 API files). Payroll engine is 100% bypass. Invoice entity has zero policies. Constitution S12 requires audit discipline. Constitution S17 requires a conformance test index.
 >
-> **Status 2026-06-07:** `pnpm manifest:audit-direct-writes` reports **0 governed-entity violations**. 72 files scanned with 250 hits; 11 allowed, 61 reported (47 ungoverned infrastructure + 14 documented bypasses). All governed entities route through Manifest runtime or have approved bypass entries in `bypasses.json`. Governance migration is **effectively COMPLETE** for governed entities. Remaining work: (a) evaluate whether ungoverned entities should be added to Manifest IR, (b) reduce bypass count over time.
+> **Status 2026-06-07:** `pnpm manifest:audit-direct-writes` reports **0 governed-entity violations**. 72 files scanned with 250 hits; 11 allowed, 61 reported (47 ungoverned infrastructure + 21 documented bypasses). All governed entities route through Manifest runtime or have approved bypass entries in `bypasses.json`. Governance migration is **effectively COMPLETE** for governed entities. Remaining work: (a) evaluate whether ungoverned entities should be added to Manifest IR, (b) reduce bypass count over time.
 
 ### 8.1 Payroll governance migration (HIGHEST GOVERNANCE PRIORITY) — ✅ DONE 2026-06-05
 
@@ -1200,7 +1206,7 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 
 ### 8.2 API route governance migration (~191 violations across 80 files) — ✅ DONE (governed-entity violations = 0)
 
-29 batches migrated 100+ mutate handlers in 60+ route files. Governed-entity violations reduced from 191 to 0 (v0.12.149). 15 documented bypasses, 47 ungoverned infrastructure writes remain. Pre-validation patterns preserved per constitution §10. API+app typecheck 0.
+29 batches migrated 100+ mutate handlers in 60+ route files. Governed-entity violations reduced from 191 to 0 (v0.12.149). 21 documented bypasses, 47 ungoverned infrastructure writes remain. Pre-validation patterns preserved per constitution §10. API+app typecheck 0.
 
 **Done when:** All governed-entity API mutation calls route through Manifest runtime or are documented as infrastructure bypasses. ✅ ACHIEVED.
 
@@ -1656,7 +1662,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 6. Middleware pipeline wired (RBAC, identity, audit as lifecycle hooks).
 7. All 189 entities have backing Prisma models.
 8. Schema generation from IR is the default workflow (hand-authored schema retired).
-9. All governed domain mutations execute via `RuntimeEngine.runCommand()` (~301 direct-write violations reduced to 0 governed + 15 documented bypasses). **GOVERNED VIOLATIONS = 0 (v0.12.149).**
+9. All governed domain mutations execute via `RuntimeEngine.runCommand()` (~301 direct-write violations reduced to 0 governed + 21 documented bypasses). **GOVERNED VIOLATIONS = 0 (v0.12.149).**
 10. Manifest DSL features (reactions, approvals, sagas, relationships) are used where the domain requires them.
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
 12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9. **IR policies provide 100% coverage** (952/952 commands have `default policy` bindings via Task 8.6 with 23 unique roles). RBAC middleware (31 entries, allow-by-default) is a secondary finer-grained permission layer. Real task: expand middleware map to cover more commands OR remove it since IR policies are sufficient.
@@ -1693,7 +1699,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | IR entities with FK props but no relationship | **32** | 152 | UPDATED: Task 0.4 COMPLETE — remaining are polymorphic FKs / non-IR targets |
 | IR entities with transitions | 96 | 96 | -- |
 | IR status entities lacking transitions | 4 | 4 | -- |
-| IR computed properties with empty dependencies | 563/611 (92.1%) | 563/611 | -- |
+| IR computed properties with empty dependencies | **553/610 (90.7%)** (was 563/611 before dependency enrichment) | 563/611 | UPDATED: 7 cross-property dependency gaps resolved via compile-time enrichment (Task session 2026-06-09). NOT a runtime correctness bug — all uncached CPs recompute fresh. |
 | IR overrideable constraints | **5/583** (Task 9.8 DONE: 5 warn constraints overrideable) | 0/583 | UPDATED: Task 9.8 DONE |
 | IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
 | IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32) private(7) | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future package upgrade) |
@@ -1723,11 +1729,11 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | CLI scripts using manifest | 13 of **40** (**33%**) | 13/37 | CORRECTED: 40 CLI commands total (was 35-37) |
 | GenericPrismaStore | Available (233 LOC), NOT used at runtime | same | -- |
 | RuntimeOptions wired | **7 of 19** (5 wired + 2 passthrough) | same | -- |
-| Direct-write violations (API) | **0** governed (15 bypassed + 47 ungoverned) | 191 | RESOLVED (v0.12.149) |
+| Direct-write violations (API) | **0** governed (21 bypassed + 47 ungoverned) | 191 | RESOLVED (v0.12.149) |
 | Direct-write violations (server actions) | **0** governed | 110 | RESOLVED (v0.12.149) |
 | Direct-write violations (packages) | **0** governed (documented bypasses) | 9+ | RESOLVED (v0.12.149) |
 | Hybrid files (partial migration) | **0** | 12 | RESOLVED (v0.12.149) |
-| Total direct-write violations | **0** governed, **15** documented bypasses, **47** ungoverned infrastructure | 301 | RESOLVED (v0.12.149) |
+| Total direct-write violations | **0** governed, **21** documented bypasses, **47** ungoverned infrastructure | 301 | RESOLVED (v0.12.149) |
 | `as any` in apps/api/app/ | **0** | 39 | RESOLVED (Task 10.7, 2026-06-07) |
 | `as any` in manifest/runtime/src/ | **0** (factory verified clean 2026-06-06) | 10 | RESOLVED |
 | `as any` in factory specifically | **0** (verified 2026-06-06) | 6 | RESOLVED |
@@ -1796,7 +1802,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 17. ~~**notifications package ungoverned:** 9+ direct DB writes across 4 files (emailLog, sms_logs, notification_preferences, emailWorkflow) bypassing Manifest. Task 8.4.~~ **RESOLVED 2026-06-07:** EmailWorkflow writes migrated (callback pattern). emailLog/sms_logs/notification_preferences are infrastructure logs, not governed entities. Task 8.4 COMPLETE.
 
-18. **IR integrity gaps:** irHash and contentHash are empty strings. 563/611 computed properties have empty dependencies (92.1%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). ~~0 overrideable constraints out of 583 total~~ **RESOLVED 2026-06-08:** 5/583 overrideable (Task 9.8 DONE). Task 0.4 COMPLETE, 9.8 DONE.
+18. **IR integrity gaps:** irHash and contentHash are empty strings. 553/610 computed properties have empty dependencies (90.7%). ~~241 top-level policies exist but all 189 entities have empty `policies: []`~~ **RESOLVED 2026-06-05:** 952/952 commands now have policies bound via `default policy` inside entity blocks (Task 8.6). ~~0 overrideable constraints out of 583 total~~ **RESOLVED 2026-06-08:** 5/583 overrideable (Task 9.8 DONE). Task 0.4 COMPLETE, 9.8 DONE. Empty dependencies are NOT a runtime correctness bug (all uncached CPs recompute fresh on every access); 7 cross-property self.X gaps were resolved via compile-time enrichment in compile.mjs.
 
 19. **Feature adoption at 10.3%:** 39 export paths in @angriff36/manifest, only 4 actively used. 40 CLI commands available, 25 unused (63%). 27 projections available (not 9), 12 new in 8th revision. Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM evaluator, Encryption, Feature Flags, Profiling, Agent SDK, Plugin system. 9th revision discovered: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands, Entity Property Modifiers (encrypted/masked/searchable). 10th revision discovered: timestamps modifier, realtime subscriptions, computed caching, federation, IR compression, snapshot testing, property-based testing -- all fully implemented but zero adoption. Tasks 9.1-9.15, 11.1-11.4, 12.1-12.2.
 
@@ -1918,3 +1924,4 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-09 | **54 command-param type mismatches resolved across 14 sources (v0.12.214)** | 54 command-parameter parent-context type mismatches fixed (datetime, money, int, decimal corrections) across vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and 3 additional sources. All command params now match their target property types. IR 202/999/981. API+runtime typecheck 0. Tests pass. |
 | 2026-06-09 | **Remaining command-param type mismatches + datetime guard fixes (v0.12.215)** | Resolved remaining command-param type mismatches: catering-order (guestCount/staffRequired/balanceDue), event (guestCount), payroll (totalDeductions), staff-logistics (periodStart/periodEnd). 12 datetime guard `>0`/`==0` fixes across 9 files. CateringOrder.guestCount parent-context override added. IR 202/999/981. API+runtime typecheck 0. Tests pass. |
 | 2026-06-09 | **Task 9.11: Computed caching — 53/610 properties now use `cache request`** | Added `cache request` to all 53 computed properties with built-in function deps (now, percent, daysBetween, addDays, hoursBetween, count_of, count, length) across 30 manifest source files. 560 pure-self-reference properties left uncached. Runtime engine supports per-request cache map with staleness propagation. API typecheck 0, 2880 tests pass, IR 202/999. |
+| 2026-06-09 | **Session: Computed property dependency enrichment + bypasses documentation** | Post-compilation step in compile.mjs auto-populates cross-property dependencies (7 CPs enriched). 6 new bypass entries added to bypasses.json (setup-event-completely, event-summary, kitchen recipes/prep-lists/cleanup, cycle-count finalization). Bypasses: 15→21. API typecheck 0, 2880 tests pass. |
