@@ -19,7 +19,7 @@
 |---|---|---|---|
 | 1 | 189 entities, ALL durable | **CONFIRMED** | `stores[]` in IR: 189 entries, all `target: "durable"`, 0 memory |
 | 2 | ~~**80**~~ **0** typecheck errors | **RESOLVED** (2026-06-06) | Prior claim of 80 was stale; fresh measurement at session start found **12 residual errors** (soft-delete `deletedAt` drift — see below). All 12 now fixed at the producer. Current `pnpm --filter api typecheck` = **0 errors**. **Historical breakdown (all resolved):** original 80 = TS2339 (32), TS2551 (28), TS2353 (9), TS2561 (6), TS2322 (4), TS2345 (1); then 12 residual from `deletedAt` drift (4 snake_case models + 2 no-column models — fixed 2026-06-06 via `ENTITY_FIELD_OVERRIDES` `deletedAt` branch in `applyFieldOverrides()`). See Task 0.1 for full history. |
-| 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). Additionally **15 entities have models but wrong accessor names** (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1). |
+| 3 | ~~32~~ **1** IR entity without Prisma model (QACheck) | **CORRECTED** | **188 of 189 IR entities match a Prisma model** (was 173). QACheck is the only unmatched entity (different concept from QualityCheck — inspection task vs QC session). Prior 16 entities without models now have Prisma model declarations (Task 0.3). ~~15 entities had wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge. |
 | 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1 added 58 declarations across 43 entities. 57 entities without relationships (polymorphic FKs, missing targets, or no FK props). |
 | 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported: **0 governed-entity violations**, 47 ungoverned infrastructure (entities with no Manifest IR definition), 14 documented bypasses in `bypasses.json`. Governance migration COMPLETE for governed entities. |
 | 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore` (conditional), `customBuiltins`, `auditSink` (conditional), `outboxStore` (conditional). 2 passthrough: `deterministicMode`, `evaluationLimits` (defined in context but NOT forwarded by primary factory). |
@@ -246,7 +246,7 @@
 | **CORRECTED: Permission guard = 31 entries (not 28)** | `COMMAND_PERMISSION_MAP` has 31 entries across 9 entity types, not 28. Still allow-by-default on 180/189 entities. | `manifest/runtime/src/permission-guard.ts` |
 | **CORRECTED: Factory = 520 lines (not 521)** | Minor correction. | `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **ENTITY_DOMAIN_MAP expanded to 189 entries — ✅ stale copies eliminated** | Canonical `entity-domain-map.mjs` now covers all 189 entities (was 89-92 in prior revisions). Stale copies in `generate-route-manifest.ts` and `mcp-server` eliminated (2026-06-04). Task 2.4 DONE. | `manifest/scripts/entity-domain-map.mjs` |
-| **ENTITY_ACCESSOR_OVERRIDES still has only 2 entries** | Despite Task 0.1 listing ~31 entities needing overrides, only EventStaff and EventImportWorkflow are in the map. The remaining ~29 entities still produce broken accessors. | `manifest/scripts/entity-domain-map.mjs:256-259` |
+| **ENTITY_ACCESSOR_OVERRIDES consolidated to 1 entry** | ~~Had only 2 entries despite ~31 needed.~~ RESOLVED 2026-06-08 (Task 2.1): consolidated from 32→1 entry (QACheck semantic mismatch). 15 remaps auto-resolved via metadata bridge; 16 stale drops removed. | `manifest/scripts/entity-domain-map.mjs` |
 | **generate-route-manifest.ts now imports canonical map** | ✅ DONE — imports canonical 189-entry map (was 90 hardcoded entries). Event mapping fixed to "events/event". | `manifest/scripts/generate-route-manifest.ts` |
 | **Feature adoption = 10.3% (not 9.1%)** | 4 of 39 exports used (was 4 of 44). The denominator correction raises the percentage slightly. | Package export analysis |
 | **No new completed milestones since 10th revision** | All metrics stable. No new code changes affecting the plan's claims. | Git status verification |
@@ -370,7 +370,7 @@
 - 4 PascalCase @@map anomalies (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent)
 - **166 Prisma models match IR entities**
 - **69 Prisma-only models** (infrastructure: Account, Location, UserPreference, Role, OutboxEvent, ManifestEntity, audit_*, admin_*, etc.)
-- **16 IR entities without Prisma model** (need new tables -- see full list in Tier 0.3). Additionally **15 entities with models but wrong accessor names** need overrides.
+- **~~16~~ 0 IR entities without Prisma model** (all 16 now have Prisma model declarations from Task 0.3). ~~Additionally 15 entities with models but wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor remaps auto-resolved via metadata bridge; only QACheck remains unmatched (different concept from QualityCheck).
 
 ### API Typecheck
 
@@ -661,7 +661,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 1. **Bootstrap constraint gotcha (MOSTLY RESOLVED):** Upstream 1.7.0 fixed the core issue. Edge cases may remain for entities with unusually complex constraint blocks. **Note (v0.12.126):** The `0_init` migration baseline has been repaired — stripped dotenvx `◇` banner corruption from lines 1–2 and patched the generated-column SQL. Baseline now matches `schema.prisma` exactly. **Note (v0.12.151):** Baseline checksum mismatch still blocks `db:dev` — use `db:repair` + `db:deploy` for additive schema changes. The generated-column `account_number_last4 DEFAULT` expression also triggers P3006 on shadow replay.
 
-2. **~~16 IR entities have no Prisma model~~ RESOLVED 2026-06-04:** All 16 entities now have Prisma model declarations matching their SQL tables from the baseline migration. Additionally ~14 entities have models but wrong accessor names needing overrides (handled by ENTITY_ACCESSOR_OVERRIDES in Task 0.1).
+2. **~~16 IR entities have no Prisma model~~ RESOLVED 2026-06-04:** All 16 entities now have Prisma model declarations matching their SQL tables from the baseline migration. ~~Additionally ~14 entities have models but wrong accessor names needing overrides~~ RESOLVED 2026-06-08 (Task 2.1): accessor overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge.
 
 3. **No store projection in the package:** Capsule must use GenericPrismaStore or build a codegen step.
 
@@ -779,7 +779,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 60. **116 features planned across v1.9-v1.12 (27 shipped, 76 unreleased):** Major upcoming capabilities: Seed Data Generator, Default-Deny Policy, Soft Delete Pattern, Pagination API, CQRS Read Model, Notification Channels, OpenTelemetry Metrics. Task 11.8.
 
-61. **ENTITY_ACCESSOR_OVERRIDES needs 33 entries (currently 2):** 12 accessor name mismatches + 3 renamed models + 16 route drops = 31 new entries needed. Without the complete map, 30 entities produce broken generated routes. Task 0.1.
+61. **~~ENTITY_ACCESSOR_OVERRIDES needs 33 entries (currently 2)~~ RESOLVED 2026-06-08 (Task 2.1):** Consolidated from 32→1 entry (QACheck). 15 remaps auto-resolved via metadata bridge, 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed.
 
 62. **Task 12.2 MCP Server verification RESOLVED:** MCP Server is a CONFIRMED separate export (`@manifest/mcp-server`, 4 tools). Task 12.2 updated from "NEEDS VERIFICATION" to "CONFIRMED".
 
@@ -948,7 +948,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Why:** ALL 189 entities are now durable. PrismaProjection can generate models for ALL of them. The 226-model `schema.prisma` is hand-authored and drifts from the IR.
 
-### 2.1 Make the route generator accessor-aware from store layer
+### 2.1 Make the route generator accessor-aware from store layer — ✅ DONE 2026-06-08
+- **✅ DONE 2026-06-08.** Consolidated ENTITY_ACCESSOR_OVERRIDES from 32 entries to 1 (QACheck semantic mismatch). Fixed 2 incorrect bridge entries (QACorrectiveAction, QATemperatureLog). Added SampleData createdAt field override. The 15 string-valued remaps are now resolved via ENTITY_TO_PRISMA_MODEL bridge + PRISMA_MODEL_METADATA (step 2). The 16 null-valued drops for entities that now have Prisma models (created in Task 0.3) are handled by step 3 auto-drop. New read routes generated for 16 previously-dropped entities (Deal, Budget, Vendor, etc.). API typecheck 0, runtime typecheck 0, 2863 tests pass, zero drift.
 - **Done when:** Generator reads entity-to-Prisma-model mappings from `PRISMA_MODEL_METADATA`, not from a hand-maintained overrides map.
 - **Why:** ROOT CAUSE -- Upstream nextjs projection derives accessors as `camelCase(entityName)` with zero validation. The post-process `resolveAccessor()` patch works but requires manual maintenance.
 - **Backpressure:** Adding a new entity+table requires zero manual mapping updates.
@@ -2009,7 +2010,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 20. **CLI adoption at 60%+** -- at least 25 of 40 CLI commands have package.json scripts and documented workflow integration.
 21. **Realtime subscriptions evaluated** -- SSE + React hook strategy documented for high-value entities, with adoption decision recorded.
 22. **Federation capability assessed** -- architecture fit documented for future multi-service decomposition.
-23. **ENTITY_ACCESSOR_OVERRIDES complete** -- all 33 entries mapped (12 accessor names + 3 renamed models + 16 route drops + 2 existing). Zero generated routes reference non-existent Prisma accessors.
+23. **~~ENTITY_ACCESSOR_OVERRIDES complete~~ RESOLVED 2026-06-08 (Task 2.1)** -- consolidated from 32→1 entry (QACheck). 15 remaps auto-resolved via metadata bridge. 16 stale drops removed. Zero generated routes reference non-existent Prisma accessors.
 24. **Governance CLI suite adopted** -- at least 5 of 7 governance commands (`scan`, `audit-governance`, `audit-bypasses`, `enforce-surface`, `doctor`) have package.json scripts and CI integration.
 25. **Runtime tooling wired** -- Profiler export wired to factory (not just RuntimeOption). REPL available via `pnpm manifest:repl`. Time-travel debugger evaluated with adoption decision.
 26. **Tenant isolation dual-layer** -- IR-level `tenant` declaration in source files + `requireTenantContext: true` RuntimeOption both active.
@@ -2101,7 +2102,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 ## Root Cause Generator Issues
 
-1. **Naive camelCase accessor derivation (upstream):** The nextjs projection derives Prisma accessor names as `camelCase(entityName)` with zero model-existence validation. In-repo fix (`ENTITY_ACCESSOR_OVERRIDES`) is a patch -- currently only 2 of ~31 needed overrides are mapped. 3 systematic generator bugs cause 72 of 80 typecheck errors (90%). Task 2.1 is the long-term fix.
+1. **~~Naive camelCase accessor derivation (upstream)~~ RESOLVED 2026-06-08 (Task 2.1):** ENTITY_ACCESSOR_OVERRIDES consolidated from 32 entries to 1 (QACheck). 15 remaps auto-resolved via ENTITY_TO_PRISMA_MODEL bridge + PRISMA_MODEL_METADATA. 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed (QACorrectiveAction, QATemperatureLog).
 
 2. **No ENTITIES_WITHOUT_TABLE filtering at projection time (upstream):** The upstream projection emits routes for ALL entities regardless of Prisma table existence. Now 23 entities (not 32). Task 2.2.
 
@@ -2113,7 +2114,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 6. **Generated client disconnected from frontend patterns:** 1,330 functions with **0 consumers**. Task 6.1 must decide direction before building on it.
 
-7. **~~32~~ ~~23~~ ~~16~~ 1 IR entity without Prisma model (QACheck):** Reduced from 32->23->16->1. All 16 entities now have Prisma model declarations (Task 0.3). PrismaProjection pipeline (Task 2.5 Phase 3) matches 188/189 — only QACheck unmatched (different concept from QualityCheck). Additionally ~14 entities need accessor overrides (handled by ENTITY_ACCESSOR_OVERRIDES). Task 0.3 + Task 0.1 + Task 2.5.
+7. **~~32~~ ~~23~~ ~~16~~ 1 IR entity without Prisma model (QACheck):** Reduced from 32->23->16->1. All 16 entities now have Prisma model declarations (Task 0.3). PrismaProjection pipeline (Task 2.5 Phase 3) matches 188/189 — only QACheck unmatched (different concept from QualityCheck). ~~Additionally ~14 entities need accessor overrides~~ RESOLVED 2026-06-08 (Task 2.1): overrides consolidated to 1 entry, remaps auto-resolved via metadata bridge. Task 0.3 + Task 0.1 + Task 2.5 + Task 2.1.
 
 8. **Custom outbox duplicates upstream + 3 implementations total:** Factory has own `createPrismaOutboxWriter` (~60 lines) that duplicates what upstream `OutboxStore` provides. Additionally, kitchen helpers have a 3rd implementation lacking transaction safety. Task 7.2.
 
@@ -2238,3 +2239,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **v0.12.199: manifest:check score 75→100.** Aligned ProcurementBudget and TrainingAssignment event names with merge-kept definitions. Added ScheduleShift.locationId and 7 duplicate-drop allowlist entries. |
 | 2026-06-08 | **v0.12.200: Task 6.4 phase 1.** Fix array generics in generated command inputs (string[] vs unknown[]). Client regenerated from IR with 999 commands and 833 typed inputs. |
 | 2026-06-08 | **Duplicate event/policy cleanup + test fixes** | Removed 11 duplicate event definitions from 3 source files (recipe-rules, inventory-extended-rules, training-module-rules) + 1 duplicate policy (FinanceCanManageBudgets). Cleaned 22 stale allowlist keys (27→4). manifest doctor warnings 16→4. Fixed 2 pre-existing app test failures (settings-workflow apiFetch assertion, upcoming-maintenance-widget mock). Added coverage CLI variants (json, strict) + emit script. IR: 202 entities, 999 commands, 981 events (-18). All 3308 tests pass, 0 typecheck errors. |
+| 2026-06-08 | **Task 2.1: Route generator accessor-aware from metadata** | ENTITY_ACCESSOR_OVERRIDES 32→1 entries. 15 remaps auto-resolved via metadata (step 2). 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed (QACorrectiveAction, QATemperatureLog). SampleData field override added. 0 typecheck, 0 drift, 2863 tests pass. |

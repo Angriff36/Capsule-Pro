@@ -51,8 +51,8 @@ const ENTITY_TO_PRISMA_MODEL = {
   BulkCombineRule: "bulk_combine_rules",    // snake_case model name
   MethodVideo: "method_videos",             // snake_case model name
   PrepListImport: "prep_list_imports",       // snake_case model name
-  QACorrectiveAction: "correctiveAction",   // camelCase-but-different-casing model
-  QATemperatureLog: "temperatureLog",       // camelCase-but-different-casing model
+  QACorrectiveAction: "CorrectiveAction",   // PascalCase model CorrectiveAction (schema.prisma:5961)
+  QATemperatureLog: "TemperatureLog",       // PascalCase model TemperatureLog (schema.prisma:5929)
   TaskBundleItem: "task_bundle_items",       // snake_case model name
   TaskBundle: "task_bundles",               // snake_case model name
   OpenShift: "open_shifts",                 // snake_case model name
@@ -288,53 +288,21 @@ export function toCamelCase(value) {
 //                        ("EventImport (manifest entity \"EventImportWorkflow\") → tenant_events.event_imports").
 // (This corrects the stale phase-out-registry.md claim that EventImportWorkflow "has no table by
 //  design" — the event_imports table exists, so the route is REMAPPED, not deleted.)
+// Hard overrides for entity accessor resolution.
+//
+// resolveAccessor() resolves most entities automatically via PRISMA_MODEL_METADATA
+// (step 2) — the bridge map ENTITY_TO_PRISMA_MODEL handles IR-name→model-name translation,
+// and the metadata JSON provides the PrismaClient accessor. Entities absent from both
+// overrides AND metadata are auto-dropped (step 3).
+//
+// This table is reserved for cases the metadata path CANNOT handle:
+//   - Semantic mismatches: a Prisma model exists but maps to a DIFFERENT domain concept.
+//     The override forces a DROP to avoid inventing read semantics over a mismatched table.
+//
+// Previously contained 32 entries (15 accessor remaps + 17 drops). All 15 remaps and 16
+// of the drops were made redundant by Task 0.3 (created Prisma models) + the metadata
+// resolution path. Consolidated in Task 2.1.
 export const ENTITY_ACCESSOR_OVERRIDES = {
-  EventImportWorkflow: "eventImport",
-
-  // ─── Renamed Prisma models (verified same domain concept; remap) ───
-  // BankAccount → model EmployeeBankAccount @@map("employee_bank_accounts"). Identical field
-  //   schema (employeeId, accountNumber, routingNumber, accountType, bankName, status, verifiedAt).
-  //   schema.prisma:288. Verified 2026-06-03.
-  BankAccount: "employeeBankAccount",
-  // LogisticsRoute → model DeliveryRoute @@map("delivery_routes"). Same delivery-route concept
-  //   (driver/vehicle assignment, distance, duration, actual-execution tracking). schema.prisma:6219.
-  LogisticsRoute: "deliveryRoute",
-
-  // ─── Accessor name mismatches (Prisma's own "Did you mean" suggestions; authoritative) ───
-  // Each value is the EXACT accessor PrismaClient exposes for the committed model.
-  Document: "documents",
-  SmsAutomationRule: "sms_automation_rules",
-  EventTimelineItem: "eventTimeline",
-  StorageLocation: "storage_locations",
-  BulkCombineRule: "bulk_combine_rules",
-  MethodVideo: "method_videos",
-  PrepListImport: "prep_list_imports",
-  QACorrectiveAction: "correctiveAction",
-  QATemperatureLog: "temperatureLog",
-  TaskBundleItem: "task_bundle_items",
-  TaskBundle: "task_bundles",
-  OpenShift: "open_shifts",
-
-  // ─── No Prisma table (drop the generated read route; constitution §10 — never invent a
-  //     read surface over a non-existent/mismatched table). These IR entities have commands,
-  //     events and constraints but no backing model. Tracked for table creation in Task 0.3;
-  //     until then they have no read surface. ───
-  Deal: null,
-  AiEventSetupSession: null,
-  AutomatedFollowup: null,
-  EntityVersion: null,
-  EventWaitlistEntry: null,
-  FacilitySchedule: null,
-  FacilityWorkOrder: null,
-  LogisticsDispatch: null,
-  PerformancePrediction: null,
-  SampleData: null,
-  StaffPerformance: null,
-  VersionApproval: null,
-  VersionedEntity: null,
-  WorkforceOptimization: null,
-  Budget: null,
-  Vendor: null,
   // QACheck: model QualityCheck exists but is a DIFFERENT concept (QC session with itemized
   //   QualityCheckItem children, status passed/failed/needs_review), whereas IR QACheck is a single
   //   inspection task (result pass/fail/na, reinspectedAt, checkTypes temperature/sanitation/...).
@@ -377,6 +345,7 @@ export const ENTITY_FIELD_OVERRIDES = {
   ReorderSuggestion: { createdAt: "created_at" },
   ForecastInput: { createdAt: null },
   InventoryForecast: { createdAt: null },
+  SampleData: { createdAt: null },  // no created-at column; uses seededAt/clearedAt instead
   CrmScoringRule: { deletedAt: null },
 
   // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
