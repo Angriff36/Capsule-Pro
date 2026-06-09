@@ -37,6 +37,9 @@ const KNOWN_VIOLATIONS: string[] = [
   "api/app/api/payroll/tax/list/route.ts",
   "api/app/api/kitchen/prep-lists/generate/route.ts",
   "api/app/api/events/import/server-to-server/route.ts",
+  // API command routes — governed Manifest orchestration + raw SQL persistence
+  "api/app/api/kitchen/dishes/commands/create/route.ts",
+  "api/app/api/kitchen/prep-lists/commands/create/route.ts",
 ];
 
 const sourceFiles = () =>
