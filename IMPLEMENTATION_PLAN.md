@@ -344,7 +344,7 @@
 ### Package & IR
 
 - `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
-- IR: **202 entities (ALL durable)**, 999 commands, 981 events, 6 sagas, 3 approval blocks, 241 policies, 92 source files. **3 feature flags** using `flag()` builtin in guards/constraints.
+- IR: **202 entities (ALL durable)**, 999 commands, 981 events (-18 from duplicate removal in v0.12.201), 6 sagas, 3 approval blocks, 241 policies, 92 source files. **3 feature flags** using `flag()` builtin in guards/constraints.
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
 - **10 reactions** defined (finance: 3, inventory: 1, events: 1, equipment: 2, inventory: 1, crm: 1, events: 1). Target: 5+ high-value reactions ✅ EXCEEDED (10).
@@ -1636,6 +1636,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Done when:** Key unused CLI commands integrated into standard workflow: `validate`, `coverage`, `watch`, `fmt`, `docs`, `diagram`, `mock`, `lint-routes`, `audit-routes`, `enforce-surface`, `audit-governance`, `diff`, `migrate`, `changelog`, `runtime-check`, `doctor`, `integration-check`, `config`, `versions`, `plugins`. 6 orphaned scripts identified and given package.json entries or removed.
 - **Why:** 35 CLI commands available, 15 have package.json scripts, 20 unused. 6 scripts have no package.json entry at all (orphaned). Many provide direct value (validate, coverage, watch, fmt, diff, audit-governance, doctor).
 - **Source to change:** `package.json` scripts section, orphaned script cleanup.
+- **Progress (v0.12.201):** Added `manifest:coverage:json` (`--format json`), `manifest:coverage:strict` (`--strict`), and `manifest:emit` (IR emit script) to package.json.
 
 ### 9.7 Property modifier adoption -- DONE (2026-06-08)
 - **Done when:** At least `unique` and `indexed` adopted on clear candidates. `encrypted` evaluated for PII fields (email, phone, SSN). `masked` evaluated for sensitive fields with appropriate strategies (redact, partial, tokenize, email, phone, ssn, creditCard). `searchable` evaluated for text fields. Decision documented per modifier.
@@ -1725,11 +1726,12 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Why (future):** The `manifest generate-tests` command would auto-generate test suites from IR definitions. Produces command conformance tests, policy compliance tests, and guard safety tests for all 189 entities. Automates the bulk of Task 8.5 conformance test authoring. Currently zero auto-generated tests exist.
 - **Doc:** Referenced path `/extensibility/ai-tooling` — command not found in current package.
 
-### 9.18 Adopt policy matrix viewer for security audit
+### 9.18 Adopt policy matrix viewer for security audit -- DONE (2026-06-08)
 - **Done when:** `pnpm manifest coverage --format policy-matrix` produces a policy coverage report for all 189 entities. Report surfaces the 180/189 no-RBAC gap.
 - **Why:** The `manifest coverage --format policy-matrix` command visualizes which entities and commands have policies, guards, and constraints. Currently the distribution of IR policies vs RBAC middleware entries across entities is invisible without manual analysis.
 - **Backpressure:** Policy matrix report shows coverage percentages per entity. Zero-policy entities highlighted.
 - **Source to change:** `package.json` scripts section.
+- **Result:** `--format policy-matrix` does NOT exist in v2.2.0 (only `text` and `json` formats). Corrected scope: using `pnpm manifest:coverage:json` (`--format json`) instead. Policy coverage data is available via JSON output for analysis. Task DONE with corrected scope.
 
 ---
 
@@ -2223,3 +2225,4 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 8.10 ScheduleShift parent-context propagation (8th adopter).** locationId inherited from Schedule on create. v0.12.198. |
 | 2026-06-08 | **v0.12.199: manifest:check score 75→100.** Aligned ProcurementBudget and TrainingAssignment event names with merge-kept definitions. Added ScheduleShift.locationId and 7 duplicate-drop allowlist entries. |
 | 2026-06-08 | **v0.12.200: Task 6.4 phase 1.** Fix array generics in generated command inputs (string[] vs unknown[]). Client regenerated from IR with 999 commands and 833 typed inputs. |
+| 2026-06-08 | **Duplicate event/policy cleanup + test fixes** | Removed 11 duplicate event definitions from 3 source files (recipe-rules, inventory-extended-rules, training-module-rules) + 1 duplicate policy (FinanceCanManageBudgets). Cleaned 22 stale allowlist keys (27→4). manifest doctor warnings 16→4. Fixed 2 pre-existing app test failures (settings-workflow apiFetch assertion, upcoming-maintenance-widget mock). Added coverage CLI variants (json, strict) + emit script. IR: 202 entities, 999 commands, 981 events (-18). All 3308 tests pass, 0 typecheck errors. |
