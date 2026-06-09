@@ -618,6 +618,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-09 | **Task 5.7: LLM-context projection wired** | 3 surfaces: summary (2.7MB, 202 entities), full (2.8MB with expressions), ir (passthrough). Script: `manifest/scripts/generate-llm-context.mjs`, pnpm: `manifest:llm-context`. Single-file holistic IR view for LLM context injection. Not wired as MCP resource yet. |
 | 2026-06-09 | **Task 5.8: Materialized-views projection wired** | 6 views (event_profitability_summary, inventory_valuation, kitchen_task_metrics, staff_performance_summary, vendor_spend_summary, waste_analytics), 15 indexes, 6 refresh statements. Script: `manifest/scripts/generate-materialized-views.mjs`, pnpm: `manifest:materialized-views`. Output: `manifest/generated/materialized-views/views.sql` (179 lines). |
 | 2026-06-09 | **Task 5.10: Analytics projection wired** | 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts (1.1MB, 4,098 interfaces + typed track()), handlers.ts (185KB, 999 typed handler functions). Provider: Segment. Script: `manifest/scripts/generate-analytics.mjs`, pnpm: `manifest:analytics`. Zero diagnostics. |
+| 2026-06-09 | **Quarantine test recovery: 606 tests recovered from 8/66 files (v0.12.227)** | Migrated 8 quarantined test files from `createManifestRuntime().runCommand()` to `runManifestCommand()` mock pattern. Root cause: mock drift from manifest-command-handler migration. Files fixed: crm-extended (74), communications (86), event-sub-entities (110), inventory-extended (85), settings (106), facilities-commands (43), admin-extended (113), training (12). Also fixed dispatcher route.ts (missing `await` on runManifestCommand return) and governance test allowlist. Test count: 2880→3486 (+606). 58 quarantine files remain (~1,079 tests). |
 
 ---
 
@@ -1520,6 +1521,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
     2. Missing `workforceoptimization` routes (36 test failures) — route files don't exist.
     3. Various assertion drift from governance migration (status code changes, mock call patterns).
   - These are per-file fixes requiring individual attention per `ci/DRAIN.md` process.
+- **v0.12.227 UPDATE (2026-06-09):** Recovered 606 tests from 8/66 quarantine files (2880→3486 tests). Root cause: mock drift from `createManifestRuntime`→`runManifestCommand` migration. Fixed files: crm-extended (74), communications (86), event-sub-entities (110), inventory-extended (85), settings (106), facilities-commands (43), admin-extended (113), training (12). Also fixed dispatcher route.ts missing `await` on `runManifestCommand` return (pre-existing bug). 58 quarantine files remain (~1,079 tests).
 
 ---
 
