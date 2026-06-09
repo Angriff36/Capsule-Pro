@@ -78,7 +78,7 @@ entity Equipment {
   default policy EquipmentDefaultAccess execute: user.role in ["facility_manager", "facilities_manager", "manager", "admin"] "Equipment management"
   command scheduleMaintenance(scheduledDate: datetime, maintenanceType: string, notes: string, userId: string) {
     guard self.status != "retired" "Cannot schedule maintenance for retired equipment"
-    guard scheduledDate != null and scheduledDate > 0 "Scheduled date is required"
+    guard scheduledDate != null "Scheduled date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
 
     constraint warnConflictWithEvents:warn self.status == "active" and maintenanceType != "emergency" {
@@ -96,7 +96,7 @@ entity Equipment {
   }
 
   command recordMaintenance(maintenanceDate: datetime, maintenanceType: string, performedBy: string, cost: money, notes: string) {
-    guard maintenanceDate != null and maintenanceDate > 0 "Maintenance date is required"
+    guard maintenanceDate != null "Maintenance date is required"
     guard maintenanceType in ["preventive", "corrective", "emergency"] "Invalid maintenance type"
 
     mutate lastMaintenanceDate = maintenanceDate
@@ -150,7 +150,7 @@ entity Equipment {
     emit EquipmentUsageRecorded
   }
 
-  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: number, maintenanceIntervalDays: number, maxUsageHours: number, notes: string) {
+  command create(locationId: string, name: string, type: string, serialNumber: string, manufacturer: string, model: string, purchaseDate: datetime, warrantyExpiry: datetime, maintenanceIntervalDays: int, maxUsageHours: int, notes: string) {
     guard name != null and name != "" "Equipment name is required"
     guard locationId != null and locationId != "" "Location ID is required"
     guard type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
@@ -301,7 +301,7 @@ entity MaintenanceWorkOrder {
     guard type in ["corrective", "repair", "replacement", "inspection", "upgrade", "preventive", "emergency"] "Invalid work order type"
     guard priority in ["low", "medium", "high", "critical"] "Invalid priority"
 
-    constraint warnCriticalWithoutSchedule:warn priority == "critical" and (scheduledDate == 0 or scheduledDate > now() + 86400000) {
+    constraint warnCriticalWithoutSchedule:warn priority == "critical" and (scheduledDate == null or scheduledDate > now() + 86400000) {
       messageTemplate: "Critical work order '{title}' should be scheduled within 24 hours"
       details: {
         title: self.title

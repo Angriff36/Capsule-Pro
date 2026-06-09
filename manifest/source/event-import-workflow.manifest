@@ -64,12 +64,12 @@ entity EventImportWorkflow {
     guard self.status == "created" or self.status == "paused"
     mutate status = "parsing"
     mutate currentStep = 1
-    mutate startedAt = now() == 0 ? now() : self.startedAt
+    mutate startedAt = self.startedAt != null ? self.startedAt : now()
 
     emit EventImportWorkflowParsingStarted
   }
 
-  command completeParsing(extractedData: string, confidence: number) {
+  command completeParsing(extractedData: string, confidence: decimal) {
     guard self.status == "parsing"
     guard confidence >= 0 and confidence <= 100
 

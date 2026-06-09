@@ -50,7 +50,7 @@ entity BulkOrderRule {
   }
 
   default policy BulkOrderRuleDefaultAccess execute: user.role in ["kitchen_staff", "kitchen_lead", "inventory_manager", "manager", "admin"] "Bulk order management"
-  command create(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number) {
+  command create(catalogEntryId: string, ruleName: string, minimumQuantity: int, ruleType: string, action: string, thresholdQuantity: int, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime) {
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
     guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
@@ -74,7 +74,7 @@ entity BulkOrderRule {
     emit BulkOrderRuleCreated
   }
 
-  command update(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
+  command update(catalogEntryId: string, ruleName: string, minimumQuantity: int, ruleType: string, action: string, thresholdQuantity: int, discountPercent: decimal, freeItemQuantity: int, shippingIncluded: boolean, priority: int, effectiveFrom: datetime, effectiveTo: datetime, isActive: boolean) {
     guard self.deletedAt == null "Cannot update a deleted rule"
     guard ruleName != null and ruleName != "" "Rule name is required"
     guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
@@ -129,7 +129,7 @@ entity BulkOrderRule {
   }
 
   // Change rule evaluation priority — higher priority rules are applied first.
-  command adjustPriority(newPriority: number) {
+  command adjustPriority(newPriority: int) {
     guard self.deletedAt == null "Cannot adjust priority of a deleted rule"
     guard newPriority >= 0 "Priority must be non-negative"
 
@@ -163,7 +163,7 @@ event BulkOrderRuleCreated: "inventory.bulk-order-rule.created" {
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  minimumQuantity: number
+  minimumQuantity: int
   ruleType: string
   action: string
   createdAt: datetime
@@ -174,7 +174,7 @@ event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  minimumQuantity: number
+  minimumQuantity: int
   ruleType: string
   action: string
   updatedAt: datetime
@@ -202,7 +202,7 @@ event BulkOrderRulePriorityAdjusted: "inventory.bulk-order-rule.priority-adjuste
   tenantId: string
   catalogEntryId: string
   ruleName: string
-  newPriority: number
+  newPriority: int
   updatedAt: datetime
 }
 

@@ -52,7 +52,7 @@ entity AiEventSetupSession {
     emit AiEventSetupSessionParsed
   }
 
-  command confirm(title: string, eventType: string, eventDate: datetime, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
+  command confirm(title: string, eventType: string, eventDate: datetime, guestCount: int, venueName: string, venueAddress: string, notes: string, tags: string) {
     guard self.status == "parsed" "Can only confirm parsed sessions"
     
     mutate parsedTitle = title
@@ -88,7 +88,7 @@ entity AiEventSetupSession {
     emit AiEventSetupSessionCancelled
   }
 
-  command updateConfidence(confidence: number, missingFields: string, suggestions: string) {
+  command updateConfidence(confidence: decimal, missingFields: string, suggestions: string) {
     mutate confidence = confidence
     mutate missingFields = missingFields
     mutate suggestions = suggestions

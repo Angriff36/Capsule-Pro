@@ -294,7 +294,7 @@ entity CollectionAction {
     emit ActionSkipped
   }
 
-  command reschedule(newScheduledFor: number, reason: string) {
+  command reschedule(newScheduledFor: datetime, reason: string) {
     guard self.status == "PENDING" "Can only reschedule pending actions"
     mutate scheduledFor = newScheduledFor
     emit ActionRescheduled
@@ -379,7 +379,7 @@ entity CollectionPaymentPlan {
     emit PaymentPlanCancelled
   }
 
-  command modify(newInstallmentAmount: money, newInstallmentCount: number, reason: string) {
+  command modify(newInstallmentAmount: money, newInstallmentCount: int, reason: string) {
     guard self.status == "ACTIVE" "Can only modify active plans"
     mutate installmentAmount = newInstallmentAmount
     mutate installmentCount = newInstallmentCount

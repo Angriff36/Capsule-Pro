@@ -71,10 +71,10 @@ entity PurchaseRequisition {
   }
 
   default policy PurchaseRequisitionDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
-  command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
+  command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: datetime, justification: string, priority: string, itemCategory: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
     guard requestedBy != null and requestedBy != "" "Requester is required"
-    guard requiredBy != null and requiredBy > 0 "Required by date is required"
+    guard requiredBy != null "Required by date is required"
 
     mutate requisitionNumber = requisitionNumber
     mutate locationId = locationId
@@ -94,7 +94,7 @@ entity PurchaseRequisition {
     emit PurchaseRequisitionCreated
   }
 
-  command update(justification: string, requiredBy: number, priority: string, department: string) {
+  command update(justification: string, requiredBy: datetime, priority: string, department: string) {
     guard self.status == "draft" "Can only update draft requisitions"
 
     mutate justification = justification
@@ -245,7 +245,7 @@ entity PurchaseRequisitionItem {
   constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
   default policy PurchaseRequisitionItemDefaultAccess execute: user.role in ["kitchen_lead", "procurement_manager", "manager", "admin"] "Procurement management"
-  command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: number, unitId: number, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+  command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: decimal, unitId: number, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
     guard requisitionId != null and requisitionId != "" "Requisition ID is required"
     guard itemId != null and itemId != "" "Item ID is required"
     guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
@@ -266,7 +266,7 @@ entity PurchaseRequisitionItem {
     emit PurchaseRequisitionItemCreated
   }
 
-  command update(quantityRequested: number, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+  command update(quantityRequested: decimal, estimatedUnitCost: money, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
     guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
     guard estimatedUnitCost != null and estimatedUnitCost >= 0 "Unit cost cannot be negative"
 
