@@ -270,7 +270,7 @@ entity PrepTask {
 policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can claim prep tasks for their tenant"
 policy KitchenStaffComplete execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can complete prep tasks for their tenant"
 policy KitchenStaffUnclaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can unclaim prep tasks for their tenant"
-policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Only managers can cancel prep tasks in their tenant"
+policy ManagersCanCancelPrepTasks execute: user.role in ["kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Only managers can cancel prep tasks in their tenant"
 
 event PrepTaskClaimed: "kitchen.preptask.claimed" {
   taskId: string

@@ -201,8 +201,8 @@ entity Ingredient {
   store Ingredient in durable
 }
 
-policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage ingredients"
-policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate ingredients"
+policy KitchenStaffCanManageIngredients execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage ingredients"
+policy ManagersCanDeactivateIngredients execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate ingredients"
 
 event IngredientCreated: "kitchen.ingredient.created" {
   ingredientId: string

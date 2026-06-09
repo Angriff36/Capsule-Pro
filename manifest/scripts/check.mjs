@@ -167,7 +167,7 @@ if (withCli) {
 // AI-assisted IR validation (schema, semantic checks, coverage scoring)
 const aiResult = spawnSync(
   process.platform === "win32" ? "pnpm.cmd" : "pnpm",
-  ["exec", "manifest", "validate-ai", "manifest/ir/kitchen.ir.json", "--min-score", "80", "--format", "json"],
+  ["exec", "manifest", "validate-ai", "manifest/ir/kitchen.ir.json", "--min-score", "100", "--format", "json"],
   { stdio: "pipe", shell: process.platform === "win32" }
 );
 if (aiResult.status !== 0) {

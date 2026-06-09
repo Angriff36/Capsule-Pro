@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-09T02:31:15.032Z",
+  "generatedAt": "2026-06-09T05:12:52.997Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -104,72 +104,11 @@
     "stores": 202,
     "events": 981,
     "commands": 999,
-    "policies": 443,
+    "policies": 451,
     "enums": 0,
     "values": 0,
     "sagas": 6,
     "reactions": 18
   },
-  "droppedDuplicates": [
-    {
-      "type": "policy",
-      "key": "KitchenStaffCanManage",
-      "allowlistKey": "policy:KitchenStaffCanManage",
-      "keptFrom": "container-rules.manifest",
-      "droppedFrom": [
-        "dish-rules.manifest",
-        "ingredient-rules.manifest",
-        "prep-method-rules.manifest"
-      ],
-      "sources": [
-        "container-rules.manifest",
-        "dish-rules.manifest",
-        "ingredient-rules.manifest",
-        "prep-method-rules.manifest"
-      ]
-    },
-    {
-      "type": "policy",
-      "key": "ManagersCanAdjust",
-      "allowlistKey": "policy:ManagersCanAdjust",
-      "keptFrom": "inventory-rules.manifest",
-      "droppedFrom": [
-        "inventory-transaction-rules.manifest"
-      ],
-      "sources": [
-        "inventory-rules.manifest",
-        "inventory-transaction-rules.manifest"
-      ]
-    },
-    {
-      "type": "policy",
-      "key": "ManagersCanCancel",
-      "allowlistKey": "policy:ManagersCanCancel",
-      "keptFrom": "kitchen-task-rules.manifest",
-      "droppedFrom": [
-        "prep-task-rules.manifest"
-      ],
-      "sources": [
-        "kitchen-task-rules.manifest",
-        "prep-task-rules.manifest"
-      ]
-    },
-    {
-      "type": "policy",
-      "key": "ManagersCanDeactivate",
-      "allowlistKey": "policy:ManagersCanDeactivate",
-      "keptFrom": "container-rules.manifest",
-      "droppedFrom": [
-        "dish-rules.manifest",
-        "ingredient-rules.manifest",
-        "prep-method-rules.manifest"
-      ],
-      "sources": [
-        "container-rules.manifest",
-        "dish-rules.manifest",
-        "ingredient-rules.manifest",
-        "prep-method-rules.manifest"
-      ]
-    }
-  ]
+  "droppedDuplicates": []
 }

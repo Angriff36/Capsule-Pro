@@ -90,8 +90,8 @@ entity PrepMethod {
   store PrepMethod in durable
 }
 
-policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep methods"
-policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate prep methods"
+policy KitchenStaffCanManagePrepMethods execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep methods"
+policy ManagersCanDeactivatePrepMethods execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate prep methods"
 
 event PrepMethodCreated: "kitchen.prepmethod.created" {
   prepMethodId: string

@@ -111,8 +111,8 @@ entity Container {
   store Container in durable
 }
 
-policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage containers"
-policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate containers"
+policy KitchenStaffCanManageContainers execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage containers"
+policy ManagersCanDeactivateContainers execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate containers"
 
 event ContainerCreated: "kitchen.container.created" {
   containerId: string

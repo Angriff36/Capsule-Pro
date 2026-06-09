@@ -287,7 +287,7 @@ entity InventoryItem {
 
 policy InventoryStaffCanReserve execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can reserve inventory"
 policy InventoryStaffCanConsume execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can consume inventory"
-policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
+policy ManagersCanAdjustInventory execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can adjust inventory"
 policy ManagersCanRestock execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can restock inventory"
 policy ManagersCanCreate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can create inventory items"
 policy ManagersCanUpdate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can update inventory items"

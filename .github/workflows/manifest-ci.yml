@@ -69,6 +69,9 @@ jobs:
 
           echo "All manifest files validated successfully"
 
+      - name: Validate IR schema + AI score + doctor
+        run: pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor
+
       # Kitchen conformance test run moved to the dedicated `manifest-tests` job
       # below to avoid duplication. That job also excludes DB-dependent tests
       # (prep-tasks.test.ts) since this CI tier has no Postgres service.

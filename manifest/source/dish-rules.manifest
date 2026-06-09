@@ -261,8 +261,8 @@ entity Dish {
   store Dish in durable
 }
 
-policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage dishes"
-policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate dishes"
+policy KitchenStaffCanManageDishes execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage dishes"
+policy ManagersCanDeactivateDishes execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate dishes"
 policy ManagersCanUpdatePricing execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can update dish pricing"
 
 event DishCreated: "kitchen.dish.created" {

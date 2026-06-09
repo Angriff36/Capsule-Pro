@@ -259,8 +259,28 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 95% context — saved before compacting]
-Files (1):
-  packages/database/prisma/schema.prisma (edit)
+[proactive bridge @ 87% context — saved before compacting]
+Files (41):
+  manifest/scripts/generate-capsule-client.mjs (edit)
+  apps/app/app/lib/manifest-client.ts (edit)
+  apps/app/app/(authenticated)/events/[eventId]/guests/event-guests-client.tsx (edit)
+  apps/app/app/(authenticated)/events/contracts/components/create-contract-modal.tsx (edit)
+  apps/app/app/(authenticated)/facilities/areas/page.tsx (edit)
+  apps/app/app/(authenticated)/facilities/assets/page.tsx (edit)
+  apps/app/app/(authenticated)/facilities/page.tsx (edit)
+  apps/app/app/(authenticated)/facilities/schedules/page.tsx (edit)
+  apps/app/app/(authenticated)/kitchen/waste/waste-entries-client.tsx (edit)
+  apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx (edit)
+  apps/app/app/(authenticated)/logistics/dispatch/page.tsx (edit)
+  apps/app/app/(authenticated)/logistics/drivers/page.tsx (edit)
+  apps/app/app/(authenticated)/logistics/vehicles/page.tsx (edit)
+  apps/app/app/lib/chart-of-accounts.ts (edit)
+  apps/app/app/lib/inventory.ts (edit)
+  apps/app/app/(authenticated)/accounting/collections/collections-client.tsx (edit)
+  apps/app/app/(authenticated)/accounting/invoices/[id]/page.tsx (edit)
+  apps/app/app/(authenticated)/accounting/payments/[id]/page.tsx (edit)
+  apps/app/app/(authenticated)/contracts/[contractId]/contract-detail-client.tsx (edit)
+  apps/app/app/(authenticated)/crm/pipeline/components/pipeline-board.tsx (edit)
+  ... +21 more
 
 # === END COGNILAYER ===

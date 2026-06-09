@@ -187,7 +187,7 @@ entity KitchenTask {
 
 policy KitchenStaffCanClaim execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim kitchen tasks"
 policy KitchenStaffCanComplete execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can complete kitchen tasks"
-policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel kitchen tasks"
+policy ManagersCanCancelKitchenTasks execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel kitchen tasks"
 policy AnyoneCanView execute: true "Anyone can view kitchen tasks"
 
 event KitchenTaskClaimed: "kitchen.kitchentask.claimed" {

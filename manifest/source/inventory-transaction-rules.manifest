@@ -130,7 +130,7 @@ entity InventoryTransaction {
 }
 
 policy StaffCanCreateTransaction execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create inventory transactions"
-policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can create adjustment transactions"
+policy ManagersCanAdjustTransactions execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can create adjustment transactions"
 
 event InventoryTransactionCreated: "inventory.transaction.created" {
   transactionId: string
