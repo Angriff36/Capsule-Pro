@@ -608,6 +608,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **CrmScoringRule/EventFollowup soft-delete drift resolved** | Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES workarounds removed. | v0.12.205 |
 | 2026-06-09 | **Task 5.4: Mermaid ER diagram projection wired** | `manifest/scripts/generate-mermaid.mjs` generates ER (202 entities, 273 edges), state (263 transitions), sequence (8 entities) diagrams from IR via `MermaidProjection`. pnpm script: `manifest:mermaid`. Output: `manifest/reports/diagrams/` (10 files, 106KB ER). Stale findings corrected: PayrollLineItem (commands exist), User/ShipmentItem (no latent bugs), Time-Travel Debugger (not shipped, blocked). |
 | 2026-06-09 | **Task 5.11: Evaluate new projections — DONE** | All 12 projections evaluated. ADOPT: kysely (191 entity types, 3,918-line database.ts). DEFER: jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic. REJECT: dart, dynamodb, mongoose, sveltekit. |
+| 2026-06-09 | **Task 5.6: Drizzle projection wired** | `manifest/scripts/generate-drizzle.mjs` wraps `DrizzleProjection` from `@angriff36/manifest/projections/drizzle`. Output: `manifest/generated/drizzle/schema.ts` (4,646 lines, 191 pgTable definitions, 156 relation exports). pnpm script: `manifest:drizzle`. Zero errors. Drizzle NOT added as runtime dependency. API typecheck 0, 2880 tests pass. |
 
 ---
 
@@ -647,7 +648,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `projections/zod` | Zod input validation schemas | YES -- `pnpm manifest:generate-zod` produces 202 entity schemas with constraint-derived refinements (.min, .max, .int). Output: `manifest/generated/schemas/*.schema.ts`. Upstream packaging bug workaround: missing `.js` extension on ESM imports patched locally. |
 | `projections/react-query` | React Query hooks | NO -- blocked (Phase 5 eval) |
 | `projections/openapi` | OpenAPI spec generation | NO -- blocked (Phase 5 eval) |
-| `projections/drizzle` | Drizzle ORM schema | NO -- zero references |
+| `projections/drizzle` | Drizzle ORM schema | YES -- active, pnpm manifest:drizzle, 191 tables + 156 relations |
 | `projections/mermaid` | Mermaid diagram generation | YES -- active, `pnpm manifest:mermaid`, generates ER/state/sequence diagrams (Task 5.4) |
 | `projections/llm-context` | Structured JSON for LLM agent injection | NO -- candidate for MCP server (Task 5.7) |
 | `projections/materialized-views` | PostgreSQL materialized view DDL | NO -- candidate for reporting (Task 5.8) |
@@ -979,7 +980,13 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - **Evaluation: DEFER.** RoutesProjection generates 8,447-line typed path builders covering 1,403 routes (404 reads + 999 commands). However, the generated paths follow the canonical `/api/manifest/{entity}` pattern while 81% of Capsule's hardcoded API paths (211 of 260) are custom domain routes (`/api/kitchen/recipes`, `/api/analytics/kitchen`, `/api/events/:eventId/export/csv`) NOT derived from the IR. The projection would add 8K+ lines of dead code for negligible coverage today. Will be valuable when the app migrates reads to canonical manifest paths. Decision: DEFER.
 
 ### 5.6 Evaluate Drizzle projection as Prisma alternative
-- **Done when:** Drizzle schema generated from IR. Compared against Prisma output for coverage.
+- **✅ DONE 2026-06-09.** Drizzle projection wired end-to-end.
+- `manifest/scripts/generate-drizzle.mjs` wraps `DrizzleProjection` from `@angriff36/manifest/projections/drizzle`.
+- Output: `manifest/generated/drizzle/schema.ts` (4,646 lines, 191 pgTable definitions, 156 relation exports).
+- pnpm script: `manifest:drizzle`.
+- Zero errors, 191 warnings (missing back-relations), 28 info (skipped non-persistent).
+- Drizzle NOT added as runtime dependency — schema is generated for future use.
+- API typecheck 0, 2880 tests pass.
 
 ### 5.7 Evaluate llm-context projection for MCP server integration
 - **Done when:** Decision documented on replacing hand-rolled MCP tool definitions with llm-context projection output.
