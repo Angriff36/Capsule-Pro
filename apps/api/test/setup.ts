@@ -15,3 +15,14 @@ vi.mock("@repo/observability/log", () => ({
     warn: vi.fn((...a: unknown[]) => console.warn(...a)),
   },
 }));
+
+// Mock tenant context for all tests — route handlers import these to resolve
+// auth context. 56/58 quarantine tests were missing resolveCurrentUser (added
+// during governance migration), causing "No export" errors. Per-file mocks
+// in individual tests override these global stubs automatically.
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+}));
