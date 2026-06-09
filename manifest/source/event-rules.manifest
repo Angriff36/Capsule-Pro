@@ -523,8 +523,8 @@ event EventBudgetUpdated: "events.event.budget_updated" {
   eventId: string
   tenantId: string
   title: string
-  oldBudget: number
-  newBudget: number
+  oldBudget: money
+  newBudget: money
   updatedAt: datetime
 }
 
@@ -557,8 +557,8 @@ event EventProfitabilityCreated: "events.profitability.created" {
   profitabilityId: string
   tenantId: string
   eventId: string
-  budgetedRevenue: number
-  budgetedTotalCost: number
+  budgetedRevenue: money
+  budgetedTotalCost: money
   createdAt: datetime
 }
 
@@ -566,9 +566,9 @@ event EventProfitabilityUpdated: "events.profitability.updated" {
   profitabilityId: string
   tenantId: string
   eventId: string
-  actualRevenue: number
-  actualTotalCost: number
-  actualGrossMargin: number
+  actualRevenue: money
+  actualTotalCost: money
+  actualGrossMargin: money
   updatedAt: datetime
 }
 

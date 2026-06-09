@@ -194,7 +194,7 @@ event LeadCreated: "crm.lead.created" {
   contactName: string
   companyName: string
   source: string
-  estimatedValue: number
+  estimatedValue: money
   assignedTo: string
   createdAt: datetime
 }
@@ -205,7 +205,7 @@ event LeadUpdated: "crm.lead.updated" {
   contactName: string
   oldStatus: string
   newStatus: string
-  estimatedValue: number
+  estimatedValue: money
   updatedAt: datetime
 }
 
@@ -215,7 +215,7 @@ event LeadConvertedToClient: "crm.lead.converted" {
   contactName: string
   companyName: string
   clientId: string
-  estimatedValue: number
+  estimatedValue: money
   userId: string
   convertedAt: datetime
 }
@@ -226,7 +226,7 @@ event LeadDisqualified: "crm.lead.disqualified" {
   contactName: string
   companyName: string
   reason: string
-  estimatedValue: number
+  estimatedValue: money
   userId: string
   disqualifiedAt: datetime
 }

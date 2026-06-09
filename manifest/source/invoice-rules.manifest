@@ -175,7 +175,7 @@ event InvoiceSent: "invoice.sent" {
   invoiceNumber: string
   clientId: string
   eventId: string
-  amount: number
+  amount: money
   dueDate: datetime
 }
 
@@ -189,15 +189,15 @@ event InvoiceViewed: "invoice.viewed" {
 event PaymentApplied: "invoice.payment-applied" {
   invoiceId: string
   paymentId: string
-  amount: number
-  remainingBalance: number
+  amount: money
+  remainingBalance: money
 }
 
 event RefundRecorded: "invoice.refund-recorded" {
   invoiceId: string
   paymentId: string
-  refundAmount: number
-  newBalance: number
+  refundAmount: money
+  newBalance: money
 }
 
 event InvoiceMarkedOverdue: "invoice.marked-overdue" {
@@ -221,7 +221,7 @@ event InvoiceVoided: "invoice.voided" {
 event InvoiceWrittenOff: "invoice.written-off" {
   invoiceId: string
   invoiceNumber: string
-  writeOffAmount: number
+  writeOffAmount: money
   reason: string
 }
 

@@ -236,7 +236,7 @@ event EventBudgetCreated: "events.budget.created" {
   budgetId: string
   tenantId: string
   eventId: string
-  totalBudgetAmount: number
+  totalBudgetAmount: money
   createdAt: datetime
 }
 
@@ -244,9 +244,9 @@ event EventBudgetUpdated: "events.budget.updated" {
   budgetId: string
   tenantId: string
   eventId: string
-  totalBudgetAmount: number
-  totalActualAmount: number
-  varianceAmount: number
+  totalBudgetAmount: money
+  totalActualAmount: money
+  varianceAmount: money
   updatedAt: datetime
 }
 
@@ -254,8 +254,8 @@ event EventBudgetFinalized: "events.budget.finalized" {
   budgetId: string
   tenantId: string
   eventId: string
-  totalBudgetAmount: number
-  totalActualAmount: number
+  totalBudgetAmount: money
+  totalActualAmount: money
   variancePercentage: number
   userId: string
   finalizedAt: datetime
@@ -265,7 +265,7 @@ event EventBudgetApproved: "events.budget.approved" {
   budgetId: string
   tenantId: string
   eventId: string
-  totalBudgeted: number
+  totalBudgeted: money
   userId: string
   approvedAt: datetime
 }
@@ -277,7 +277,7 @@ event BudgetLineItemCreated: "events.budget.line_item_created" {
   tenantId: string
   category: string
   name: string
-  budgetedAmount: number
+  budgetedAmount: money
   createdAt: datetime
 }
 
@@ -286,10 +286,10 @@ event BudgetLineItemUpdated: "events.budget.line_item_updated" {
   budgetId: string
   tenantId: string
   name: string
-  oldBudgetedAmount: number
-  newBudgetedAmount: number
-  actualAmount: number
-  varianceAmount: number
+  oldBudgetedAmount: money
+  newBudgetedAmount: money
+  actualAmount: money
+  varianceAmount: money
   updatedAt: datetime
 }
 

@@ -139,7 +139,7 @@ event PricingTierCreated: "inventory.pricing-tier.created" {
   tierName: string
   minQuantity: number
   maxQuantity: number
-  unitCost: number
+  unitCost: money
   discountPercent: number
   createdAt: datetime
 }
@@ -151,7 +151,7 @@ event PricingTierUpdated: "inventory.pricing-tier.updated" {
   tierName: string
   minQuantity: number
   maxQuantity: number
-  unitCost: number
+  unitCost: money
   discountPercent: number
   updatedAt: datetime
 }

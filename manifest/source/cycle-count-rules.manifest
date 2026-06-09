@@ -429,7 +429,7 @@ event CycleCountSessionCompleted: "inventory.cyclecount.session.completed" {
   sessionName: string
   totalItems: number
   countedItems: number
-  totalVariance: number
+  totalVariance: money
   userId: string
   completedAt: datetime
 }
@@ -471,7 +471,7 @@ event CycleCountRecordCreated: "inventory.cyclecount.record.created" {
   itemName: string
   expectedQuantity: number
   countedQuantity: number
-  variance: number
+  variance: money
   countedById: string
   createdAt: datetime
 }
@@ -482,7 +482,7 @@ event CycleCountRecordUpdated: "inventory.cyclecount.record.updated" {
   itemId: string
   itemName: string
   countedQuantity: number
-  variance: number
+  variance: money
   userId: string
   updatedAt: datetime
 }
@@ -492,7 +492,7 @@ event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
   sessionId: string
   itemId: string
   itemName: string
-  variance: number
+  variance: money
   variancePct: number
   verifiedById: string
   verifiedAt: datetime
@@ -512,7 +512,7 @@ event VarianceReportCreated: "inventory.variance.report.created" {
   sessionId: string
   itemId: string
   itemName: string
-  variance: number
+  variance: money
   variancePct: number
   accuracyScore: number
   createdAt: datetime
@@ -531,7 +531,7 @@ event VarianceReportApproved: "inventory.variance.report.approved" {
   sessionId: string
   itemName: string
   adjustmentType: string
-  adjustmentAmount: number
+  adjustmentAmount: money
   userId: string
   approvedAt: datetime
 }

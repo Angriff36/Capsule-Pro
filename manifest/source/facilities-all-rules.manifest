@@ -707,7 +707,7 @@ event FacilityWorkOrderStarted: "facility.workorder.started" {
 event FacilityWorkOrderCompleted: "facility.workorder.completed" {
   workOrderId: string
   tenantId: string
-  actualCost: number
+  actualCost: money
   completedAt: datetime
 }
 

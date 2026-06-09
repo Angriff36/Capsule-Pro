@@ -975,7 +975,7 @@ event IoTAlertCreated: "kitchen.iotalert.created" {
   probeId: string
   ruleId: string
   severity: string
-  value: number
+  value: money
   triggeredAt: datetime
 }
 

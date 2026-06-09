@@ -466,8 +466,8 @@ event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
   recipeVersionId: string
   recipeId: string
   tenantId: string
-  totalCost: number
-  costPerYield: number
+  totalCost: money
+  costPerYield: money
   updatedAt: datetime
 }
 

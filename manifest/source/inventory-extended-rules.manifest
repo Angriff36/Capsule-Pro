@@ -1075,9 +1075,9 @@ event TransferItemRemoved: "inventory.transfer.item.removed" {
 
 event ProcurementBudgetSpendRecorded: "procurement.budget.spend_recorded" {
   budgetId: string
-  amount: number
+  amount: money
   reference: string
-  newSpentAmount: number
+  newSpentAmount: money
   recordedAt: datetime
 }
 
@@ -1085,7 +1085,7 @@ event ProcurementBudgetClosed: "procurement.budget.closed" {
   budgetId: string
   name: string
   closedBy: string
-  finalSpentAmount: number
+  finalSpentAmount: money
   closedAt: datetime
 }
 

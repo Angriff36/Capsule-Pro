@@ -340,10 +340,10 @@ event MenuRestored: "kitchen.menu.restored" {
 event MenuPricingUpdated: "kitchen.menu.pricing.updated" {
   menuId: string
   tenantId: string
-  oldBasePrice: number
-  newBasePrice: number
-  oldPricePerPerson: number
-  newPricePerPerson: number
+  oldBasePrice: money
+  newBasePrice: money
+  oldPricePerPerson: money
+  newPricePerPerson: money
   updatedAt: datetime
 }
 
@@ -390,7 +390,7 @@ event MenuDishPriceOverrideSet: "kitchen.menudish.price-override-set" {
   menuId: string
   dishId: string
   tenantId: string
-  priceOverride: number
+  priceOverride: money
   updatedAt: datetime
 }
 

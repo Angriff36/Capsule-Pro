@@ -154,7 +154,7 @@ store Payment in durable
 event PaymentProcessed: "payment.processed" {
   paymentId: string
   invoiceId: string
-  amount: number
+  amount: money
   status: string
   gatewayTransactionId: string
 }
@@ -162,7 +162,7 @@ event PaymentProcessed: "payment.processed" {
 event PaymentRefunded: "payment.refunded" {
   paymentId: string
   invoiceId: string
-  refundAmount: number
+  refundAmount: money
   reason: string
 }
 
@@ -186,7 +186,7 @@ event FraudReviewCompleted: "payment.fraud-review-completed" {
 event PaymentAcceptedNotApplied: "payment.accepted-not-applied" {
   paymentId: string
   invoiceId: string
-  amount: number
+  amount: money
   status: string
 }
 

@@ -405,8 +405,8 @@ event CollectionStatusChanged: "collections.case.status-changed" {
 event CollectionPaymentRecorded: "collections.case.payment-recorded" {
   caseId: string
   invoiceId: string
-  amount: number
-  outstandingAmount: number
+  amount: money
+  outstandingAmount: money
 }
 
 event CollectionResolved: "collections.case.resolved" {
@@ -456,7 +456,7 @@ event EscalatedToLegal: "collections.case.escalated-to-legal" {
 event CollectionWrittenOff: "collections.case.written-off" {
   caseId: string
   invoiceId: string
-  amount: number
+  amount: money
   reason: string
 }
 
@@ -483,7 +483,7 @@ event ActionCompleted: "collections.action.completed" {
   caseId: string
   actionType: string
   outcome: string
-  promiseAmount: number
+  promiseAmount: money
 }
 
 event ActionFailed: "collections.action.failed" {
@@ -508,7 +508,7 @@ event InstallmentRecorded: "collections.payment-plan.installment-recorded" {
   planId: string
   caseId: string
   installmentNumber: number
-  amount: number
+  amount: money
 }
 
 event PaymentPlanCompleted: "collections.payment-plan.completed" {
@@ -531,6 +531,6 @@ event PaymentPlanCancelled: "collections.payment-plan.cancelled" {
 event PaymentPlanModified: "collections.payment-plan.modified" {
   planId: string
   caseId: string
-  newInstallmentAmount: number
+  newInstallmentAmount: money
   newInstallmentCount: number
 }

@@ -139,8 +139,8 @@ event InventoryTransactionCreated: "inventory.transaction.created" {
   itemId: string
   transactionType: string
   quantity: number
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   referenceType: string
   referenceId: string
   reason: string
@@ -163,8 +163,8 @@ event InventoryTransactionCostAdjusted: "inventory.transaction.cost-adjusted" {
   transactionId: string
   tenantId: string
   itemId: string
-  oldUnitCost: number
-  newUnitCost: number
+  oldUnitCost: money
+  newUnitCost: money
   reason: string
   adjustedAt: datetime
 }

@@ -281,7 +281,7 @@ event PurchaseOrderSubmitted: "purchasing.po.submitted" {
   vendorId: string
   submittedBy: string
   itemCount: number
-  total: number
+  total: money
   submittedAt: datetime
 }
 
@@ -290,7 +290,7 @@ event PurchaseOrderApproved: "purchasing.po.approved" {
   poNumber: string
   vendorId: string
   userId: string
-  total: number
+  total: money
   approvedAt: datetime
 }
 
@@ -332,8 +332,8 @@ event PurchaseOrderTotalsUpdated: "purchasing.po.totals.updated" {
   purchaseOrderId: string
   tenantId: string
   poNumber: string
-  subtotal: number
-  total: number
+  subtotal: money
+  total: money
   itemCount: number
   expectedDeliveryDate: datetime
   updatedAt: datetime
@@ -344,8 +344,8 @@ event PurchaseOrderItemCreated: "purchasing.po.item.created" {
   purchaseOrderId: string
   itemId: string
   quantityOrdered: number
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   createdAt: datetime
 }
 
@@ -353,8 +353,8 @@ event PurchaseOrderItemUpdated: "purchasing.po.item.updated" {
   purchaseOrderItemId: string
   purchaseOrderId: string
   quantityOrdered: number
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   updatedAt: datetime
 }
 

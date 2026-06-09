@@ -1000,7 +1000,7 @@ event PayrollLineItemCreated: "payroll.lineitem.created" {
   tenantId: string
   payrollRunId: string
   employeeId: string
-  grossPay: number
+  grossPay: money
   netPay: number
   createdAt: datetime
 }
@@ -1010,7 +1010,7 @@ event PayrollLineItemUpdated: "payroll.lineitem.updated" {
   tenantId: string
   payrollRunId: string
   employeeId: string
-  grossPay: number
+  grossPay: money
   netPay: number
   updatedAt: datetime
 }
@@ -1019,14 +1019,14 @@ event TipPoolCreated: "hr.tippool.created" {
   tipPoolId: string
   tenantId: string
   eventId: string
-  totalTips: number
+  totalTips: money
   createdAt: datetime
 }
 
 event TipPoolAllocated: "hr.tippool.allocated" {
   tipPoolId: string
   tenantId: string
-  totalTips: number
+  totalTips: money
   allocatedAt: datetime
 }
 
@@ -1034,7 +1034,7 @@ event TipPoolDistributed: "hr.tippool.distributed" {
   tipPoolId: string
   tenantId: string
   employeeId: string
-  amount: number
+  amount: money
   distributedBy: string
   distributedAt: datetime
 }
@@ -1274,7 +1274,7 @@ event PaymentRefundAttemptCreated: "payments.refund.attempt.created" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: number
+  amount: money
   reason: string
   attemptedAt: datetime
 }
@@ -1283,7 +1283,7 @@ event PaymentRefundAttemptSucceeded: "payments.refund.attempt.succeeded" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: number
+  amount: money
   succeededAt: datetime
 }
 
@@ -1291,7 +1291,7 @@ event PaymentRefundAttemptFailed: "payments.refund.attempt.failed" {
   attemptId: string
   tenantId: string
   paymentId: string
-  amount: number
+  amount: money
   failedAt: datetime
 }
 

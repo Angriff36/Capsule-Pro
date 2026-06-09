@@ -330,7 +330,7 @@ event PurchaseRequisitionDraftCompleted: "procurement.requisition.draft_complete
   requisitionId: string
   requisitionNumber: string
   itemCount: number
-  estimatedTotal: number
+  estimatedTotal: money
   completedAt: datetime
 }
 
@@ -339,7 +339,7 @@ event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
   requisitionNumber: string
   submittedBy: string
   itemCount: number
-  estimatedTotal: number
+  estimatedTotal: money
   submittedAt: datetime
 }
 
@@ -347,7 +347,7 @@ event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_appro
   requisitionId: string
   requisitionNumber: string
   approvedBy: string
-  estimatedTotal: number
+  estimatedTotal: money
   approvedAt: datetime
 }
 
@@ -355,7 +355,7 @@ event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_appro
   requisitionId: string
   requisitionNumber: string
   approvedBy: string
-  estimatedTotal: number
+  estimatedTotal: money
   approvedAt: datetime
 }
 
@@ -388,8 +388,8 @@ event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
   itemId: string
   itemName: string
   quantityRequested: number
-  estimatedUnitCost: number
-  estimatedTotalCost: number
+  estimatedUnitCost: money
+  estimatedTotalCost: money
   createdAt: datetime
 }
 
@@ -398,8 +398,8 @@ event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
   requisitionId: string
   itemId: string
   quantityRequested: number
-  estimatedUnitCost: number
-  estimatedTotalCost: number
+  estimatedUnitCost: money
+  estimatedTotalCost: money
   updatedAt: datetime
 }
 

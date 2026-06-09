@@ -299,7 +299,7 @@ event ShipmentDelivered: "purchasing.shipment.delivered" {
   deliveredBy: string
   receivedBy: string
   totalItems: number
-  totalValue: number
+  totalValue: money
   deliveredAt: datetime
 }
 
@@ -341,7 +341,7 @@ event ShipmentItemCreated: "purchasing.shipment.item.created" {
   shipmentId: string
   itemId: string
   quantityShipped: number
-  unitCost: number
+  unitCost: money
   createdAt: datetime
 }
 
@@ -361,8 +361,8 @@ event ShipmentItemUpdated: "purchasing.shipment.item.updated" {
   shipmentId: string
   itemId: string
   quantityShipped: number
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   updatedAt: datetime
 }
 

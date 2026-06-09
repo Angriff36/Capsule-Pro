@@ -272,7 +272,7 @@ event DishCreated: "kitchen.dish.created" {
   recipeId: string
   name: string
   category: string
-  pricePerPerson: number
+  pricePerPerson: money
   createdAt: datetime
 }
 
@@ -300,10 +300,10 @@ event DishDeactivated: "kitchen.dish.deactivated" {
 event DishPricingUpdated: "kitchen.dish.pricing.updated" {
   dishId: string
   name: string
-  oldPrice: number
-  newPrice: number
-  oldCost: number
-  newCost: number
+  oldPrice: money
+  newPrice: money
+  oldCost: money
+  newCost: money
   userId: string
   updatedAt: datetime
 }

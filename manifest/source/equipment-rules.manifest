@@ -364,7 +364,7 @@ event EquipmentMaintenanceRecorded: "equipment.maintenance.recorded" {
   maintenanceDate: datetime
   maintenanceType: string
   performedBy: string
-  cost: number
+  cost: money
   recordedAt: datetime
 }
 
@@ -423,7 +423,7 @@ event MaintenanceWorkOrderAssigned: "maintenance.workorder.assigned" {
   equipmentName: string
   assignedTo: string
   scheduledDate: datetime
-  estimatedCost: number
+  estimatedCost: money
   assignedAt: datetime
 }
 
@@ -438,7 +438,7 @@ event MaintenanceWorkOrderCompleted: "maintenance.workorder.completed" {
   workOrderId: string
   equipmentId: string
   equipmentName: string
-  actualCost: number
+  actualCost: money
   partsUsed: string
   completedBy: string
   completedAt: datetime

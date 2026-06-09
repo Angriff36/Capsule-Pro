@@ -152,8 +152,8 @@ event WasteEntryCreated: "kitchen.waste-entry.created" {
   locationId: string
   eventId: string
   loggedBy: string
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   createdAt: datetime
 }
 
@@ -162,8 +162,8 @@ event WasteEntryUpdated: "kitchen.waste-entry.updated" {
   quantity: number
   unitId: number
   locationId: string
-  unitCost: number
-  totalCost: number
+  unitCost: money
+  totalCost: money
   updatedAt: datetime
 }
 
@@ -178,7 +178,7 @@ event WasteEntryApproved: "kitchen.waste-entry.approved" {
   wasteEntryId: string
   tenantId: string
   inventoryItemId: string
-  totalCost: number
+  totalCost: money
   approvedBy: string
   approvedAt: datetime
 }

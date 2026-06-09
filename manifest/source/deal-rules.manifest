@@ -140,7 +140,7 @@ event DealCreated: "crm.deal.created" {
   tenantId: string
   leadId: string
   title: string
-  value: number
+  value: money
   assignedTo: string
   createdAt: datetime
 }
@@ -156,7 +156,7 @@ event DealStageUpdated: "crm.deal.stage.updated" {
 
 event DealValueUpdated: "crm.deal.value.updated" {
   dealId: string
-  value: number
+  value: money
   updatedAt: datetime
 }
 

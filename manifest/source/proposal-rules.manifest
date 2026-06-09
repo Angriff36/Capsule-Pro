@@ -368,7 +368,7 @@ event ProposalUpdated: "crm.proposal.updated" {
   tenantId: string
   proposalNumber: string
   title: string
-  total: number
+  total: money
   updatedAt: datetime
 }
 
@@ -378,7 +378,7 @@ event ProposalSent: "crm.proposal.sent" {
   proposalNumber: string
   clientId: string
   title: string
-  total: number
+  total: money
   validUntil: datetime
   userId: string
   sentAt: datetime
@@ -399,7 +399,7 @@ event ProposalAccepted: "crm.proposal.accepted" {
   proposalNumber: string
   clientId: string
   title: string
-  total: number
+  total: money
   userId: string
   acceptedAt: datetime
 }
@@ -410,7 +410,7 @@ event ProposalRejected: "crm.proposal.rejected" {
   proposalNumber: string
   clientId: string
   title: string
-  total: number
+  total: money
   reason: string
   userId: string
   rejectedAt: datetime
@@ -452,8 +452,8 @@ event ProposalLineItemCreated: "crm.proposal_line_item.created" {
   description: string
   category: string
   quantity: number
-  unitPrice: number
-  totalPrice: number
+  unitPrice: money
+  totalPrice: money
   createdAt: datetime
 }
 
@@ -463,8 +463,8 @@ event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
   proposalId: string
   description: string
   quantity: number
-  unitPrice: number
-  totalPrice: number
+  unitPrice: money
+  totalPrice: money
   updatedAt: datetime
 }
 

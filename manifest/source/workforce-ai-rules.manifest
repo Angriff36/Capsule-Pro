@@ -152,6 +152,6 @@ event ScheduleAutoOptimized: "workforce.schedule.auto_optimized" {
   scheduleId: string
   tenantId: string
   assignmentsCount: number
-  totalEstimatedCost: number
+  totalEstimatedCost: money
   optimizedAt: datetime
 }

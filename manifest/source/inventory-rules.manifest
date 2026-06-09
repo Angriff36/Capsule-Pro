@@ -335,7 +335,7 @@ event InventoryRestocked: "kitchen.inventory.restocked" {
   itemId: string
   itemName: string
   quantity: number
-  costPerUnit: number
+  costPerUnit: money
   userId: string
   restockedAt: datetime
 }

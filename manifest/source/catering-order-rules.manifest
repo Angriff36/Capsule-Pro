@@ -266,7 +266,7 @@ event CateringOrderUpdated: "events.catering_order.updated" {
   orderId: string
   tenantId: string
   orderNumber: string
-  totalAmount: number
+  totalAmount: money
   guestCount: number
   updatedAt: datetime
 }
@@ -275,7 +275,7 @@ event CateringOrderConfirmed: "events.catering_order.confirmed" {
   orderId: string
   tenantId: string
   orderNumber: string
-  totalAmount: number
+  totalAmount: money
   depositPaid: boolean
   userId: string
   confirmedAt: datetime
@@ -285,7 +285,7 @@ event CateringOrderDepositRecorded: "events.catering_order.deposit_recorded" {
   orderId: string
   tenantId: string
   orderNumber: string
-  depositAmount: number
+  depositAmount: money
   paymentReference: string
   recordedAt: datetime
 }

@@ -300,7 +300,7 @@ event EmployeeDeductionCreated: "payroll.deduction.created" {
 event EmployeeDeductionUpdated: "payroll.deduction.updated" {
   deductionId: string
   tenantId: string
-  amount: number
+  amount: money
   percentage: number
   updatedAt: datetime
 }
@@ -331,9 +331,9 @@ event PayrollRunCreated: "payroll.run.created" {
 
 event PayrollRunProcessed: "payroll.run.processed" {
   runId: string
-  totalGross: number
-  totalDeductions: number
-  totalNet: number
+  totalGross: money
+  totalDeductions: money
+  totalNet: money
   processedAt: datetime
 }
 
@@ -352,6 +352,6 @@ event PayrollRunRejected: "payroll.run.rejected" {
 
 event PayrollRunPaid: "payroll.run.paid" {
   runId: string
-  totalNet: number
+  totalNet: money
   paidAt: datetime
 }

@@ -189,7 +189,7 @@ policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Manager
 event LaborBudgetCreated: "staff.labor-budget.created" {
   budgetId: string
   tenantId: string
-  budgetAmount: number
+  budgetAmount: money
   createdAt: datetime
 }
 
@@ -228,7 +228,7 @@ event LaborBudgetApproved: "staff.labor-budget.approved" {
   budgetId: string
   tenantId: string
   locationId: string
-  budgetAmount: number
+  budgetAmount: money
   approvedBy: string
   approvedAt: datetime
 }
@@ -236,7 +236,7 @@ event LaborBudgetApproved: "staff.labor-budget.approved" {
 event LaborBudgetActualRecorded: "staff.labor-budget.actual_recorded" {
   budgetId: string
   tenantId: string
-  actualAmount: number
+  actualAmount: money
   recordedAt: datetime
 }
 

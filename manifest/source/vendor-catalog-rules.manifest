@@ -180,7 +180,7 @@ event VendorCatalogCreated: "inventory.vendor-catalog.created" {
   supplierId: string
   itemNumber: string
   itemName: string
-  baseUnitCost: number
+  baseUnitCost: money
   currency: string
   unitOfMeasure: string
   createdAt: datetime
@@ -192,7 +192,7 @@ event VendorCatalogUpdated: "inventory.vendor-catalog.updated" {
   supplierId: string
   itemNumber: string
   itemName: string
-  baseUnitCost: number
+  baseUnitCost: money
   updatedAt: datetime
 }
 
@@ -212,8 +212,8 @@ event VendorCatalogPriceUpdated: "inventory.vendor-catalog.price-updated" {
   supplierId: string
   itemNumber: string
   itemName: string
-  oldBaseUnitCost: number
-  newBaseUnitCost: number
+  oldBaseUnitCost: money
+  newBaseUnitCost: money
   updatedAt: datetime
 }
 

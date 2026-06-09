@@ -315,7 +315,7 @@ event RecognitionStarted: "finance.revenue-recognition.started" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  totalAmount: number
+  totalAmount: money
   method: string
   createdAt: datetime
 }
@@ -324,9 +324,9 @@ event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  amount: number
-  recognizedAmount: number
-  remainingAmount: number
+  amount: money
+  recognizedAmount: money
+  remainingAmount: money
   updatedAt: datetime
 }
 
@@ -334,8 +334,8 @@ event RecognitionCompleted: "finance.revenue-recognition.completed" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  recognizedAmount: number
-  totalAmount: number
+  recognizedAmount: money
+  totalAmount: money
   completedAt: datetime
 }
 
@@ -344,7 +344,7 @@ event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
   tenantId: string
   invoiceId: string
   milestoneId: string
-  amount: number
+  amount: money
   completedMilestones: number
   totalMilestones: number
   updatedAt: datetime
@@ -355,8 +355,8 @@ event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" 
   tenantId: string
   invoiceId: string
   percentage: number
-  recognizedAmount: number
-  totalAmount: number
+  recognizedAmount: money
+  totalAmount: money
   updatedAt: datetime
 }
 
@@ -364,7 +364,7 @@ event RecognitionPaused: "finance.revenue-recognition.paused" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  recognizedAmount: number
+  recognizedAmount: money
   updatedAt: datetime
 }
 
@@ -380,7 +380,7 @@ event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
   tenantId: string
   invoiceId: string
   reason: string
-  recognizedAmount: number
+  recognizedAmount: money
   updatedAt: datetime
 }
 
@@ -389,7 +389,7 @@ event ScheduleAdjusted: "finance.revenue-recognition.schedule_adjusted" {
   tenantId: string
   invoiceId: string
   newEndDate: datetime
-  newAmount: number
+  newAmount: money
   updatedAt: datetime
 }
 
@@ -398,7 +398,7 @@ event LineCreated: "finance.revenue-recognition.line_created" {
   tenantId: string
   scheduleId: string
   sequence: number
-  amount: number
+  amount: money
   createdAt: datetime
 }
 
@@ -406,7 +406,7 @@ event LineRecognized: "finance.revenue-recognition.line_recognized" {
   lineId: string
   tenantId: string
   scheduleId: string
-  amount: number
+  amount: money
   recognizedAt: datetime
 }
 
@@ -429,7 +429,7 @@ event LineReversed: "finance.revenue-recognition.line_reversed" {
   lineId: string
   tenantId: string
   scheduleId: string
-  amount: number
+  amount: money
   updatedAt: datetime
 }
 
@@ -437,7 +437,7 @@ event RecognitionReversed: "finance.revenue-recognition.recognition_reversed" {
   scheduleId: string
   tenantId: string
   invoiceId: string
-  recognizedAmount: number
-  remainingAmount: number
+  recognizedAmount: money
+  remainingAmount: money
   updatedAt: datetime
 }
