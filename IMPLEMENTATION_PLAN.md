@@ -54,7 +54,7 @@
 | **EventStaff / EventStaffAssignment duplicate IR entities** | Both exist with overlapping purpose (eventId + staffMemberId + role + shift + status). Both have separate Prisma models. Must consolidate or explicitly differentiate. | IR + `schema.prisma` |
 | **Rules engine middleware factory exported but never called** | `createRulesEngineMiddleware()` at `manifest/runtime/src/rules-engine/runtime-integration.ts` is never imported outside its module. Complete, tested rules engine sitting unused. | `manifest/runtime/src/rules-engine/runtime-integration.ts` |
 | **~~Entity graph module returns empty graph~~ RESOLVED 2026-06-04 (Task 10.4)** | `buildGraphFromIR()` and the entire entity-graph module deleted (dead code, zero consumers). Task 9.1 COMPLETE. | `manifest/runtime/src/entity-graph/` (DELETED) |
-| **5 projections active, 3 blocked, 2 zero-footprint** | nextjs + routes + prisma(pilot) + mermaid + kysely are active. zod/react-query/openapi blocked in phase-out-registry. drizzle/express have zero references anywhere. | Codebase-wide grep |
+| **9 projections active, 3 blocked, 1 zero-footprint** | nextjs + routes + prisma(pilot) + mermaid + kysely + drizzle + llm-context + materialized-views + analytics are active. zod/react-query/openapi blocked in phase-out-registry. express has zero references anywhere. | Codebase-wide grep |
 | **Permission guard is whitelist-based, not deny-by-default** | `COMMAND_PERMISSION_MAP` covers ~30 entity.command pairs. Commands NOT in the map pass through unrestricted. Newly added entities are open until explicitly mapped. | `manifest/runtime/src/permission-guard.ts` |
 | **RESOLVED: Proxy-based permission guard replaced with Manifest middleware (Task 7.4a)** | `createRbacMiddleware()` at `before-guard` hook replaces `createPermissionGuard` Proxy. Factory returns raw `ManifestRuntimeEngine` instead of Proxy-wrapped engine. `COMMAND_PERMISSION_MAP` and `AI_APPROVAL_COMMANDS` logic preserved identically. Middleware composable with future identity/audit middleware. | `manifest/runtime/src/middleware/rbac-middleware.ts`, `manifest/runtime/src/manifest-runtime-factory.ts` |
 | **API shim is 376 lines, not a thin wrapper** | **RESOLVED 2026-06-07:** Shim is **99 lines** — a thin dependency-injection wrapper (Sentry telemetry, issue log, store reporter, logger) delegating to the shared factory. Prior "376 lines" was a stale measurement. | `apps/api/lib/manifest-runtime.ts` |
@@ -125,7 +125,7 @@
 | **HIGH: 559 event timestamp fields typed as number, not datetime** | Every event carrying a timestamp loses type safety at the boundary. Additionally, 9 datetime fields mutated to literal `0` instead of `null` for reset operations (prep-list, prep-comment, prep-task, time-entry, equipment, sample-data, admin-chat-participant). | Source analysis across all domains |
 | **HIGH: 3 outbox implementations exist** | `packages/realtime/src/outbox/create.ts` (canonical, tx-safe), `apps/api/app/api/kitchen/tasks/shared-task-helpers.ts` (duplicate, NO tx safety), `manifest/runtime/src/prisma-store.ts` (batch writer). Kitchen task claim routes use the unsafe version. | Codebase-wide grep |
 | **HIGH: payroll-engine 100% disconnected from Manifest** | Sets PayrollRun.status to "completed" (not a valid Manifest state). Constructor strips `$transaction` -- cannot be retrofitted without signature change. Zero Manifest awareness. | `packages/payroll-engine/` |
-| **MEDIUM: 25 projections exist (not 9)** | 17 undocumented projections: llm-context (MCP integration), materialized-views (reporting), health (K8s), graphql, analytics. High-value candidates for adoption. | `node_modules/@angriff36/manifest/dist/manifest/projections/` |
+| **MEDIUM: 25 projections exist (not 9)** | 17 undocumented projections: llm-context (WIRED Task 5.7), materialized-views (WIRED Task 5.8), health (K8s), graphql, analytics (WIRED Task 5.10). 9 now active. | `node_modules/@angriff36/manifest/dist/manifest/projections/` |
 | **~~MEDIUM: Rules engine and entity graph are dead code~~ RESOLVED 2026-06-04 (Task 10.4)** | Deleted: rules-engine/ (5 files, ~1000 LOC), entity-graph/ (7 files, ~1400 LOC). Total: 12 files, ~2400 lines removed. Zero consumers confirmed. | Runtime analysis |
 | **MEDIUM: CollectionCase.dunningStage arithmetic on string** | **RESOLVED 2026-06-05** — Fixed: dunningStage changed from string to int; escalateDunning guarded to <5; resetDunning param string→int; escalateToLegal 'LEGAL'→5. | `manifest/source/collection-rules.manifest` |
 | **MEDIUM: 12 hybrid files (partial migration started)** | 11 API + 1 app files contain BOTH direct Prisma writes AND manifest calls. Lowest-effort migration targets -- Manifest wiring already exists. | API analysis |
@@ -609,6 +609,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-09 | **Task 5.4: Mermaid ER diagram projection wired** | `manifest/scripts/generate-mermaid.mjs` generates ER (202 entities, 273 edges), state (263 transitions), sequence (8 entities) diagrams from IR via `MermaidProjection`. pnpm script: `manifest:mermaid`. Output: `manifest/reports/diagrams/` (10 files, 106KB ER). Stale findings corrected: PayrollLineItem (commands exist), User/ShipmentItem (no latent bugs), Time-Travel Debugger (not shipped, blocked). |
 | 2026-06-09 | **Task 5.11: Evaluate new projections — DONE** | All 12 projections evaluated. ADOPT: kysely (191 entity types, 3,918-line database.ts). DEFER: jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic. REJECT: dart, dynamodb, mongoose, sveltekit. |
 | 2026-06-09 | **Task 5.6: Drizzle projection wired** | `manifest/scripts/generate-drizzle.mjs` wraps `DrizzleProjection` from `@angriff36/manifest/projections/drizzle`. Output: `manifest/generated/drizzle/schema.ts` (4,646 lines, 191 pgTable definitions, 156 relation exports). pnpm script: `manifest:drizzle`. Zero errors. Drizzle NOT added as runtime dependency. API typecheck 0, 2880 tests pass. |
+| 2026-06-09 | **Task 5.7: LLM-context projection wired** | 3 surfaces: summary (2.7MB, 202 entities), full (2.8MB with expressions), ir (passthrough). Script: `manifest/scripts/generate-llm-context.mjs`, pnpm: `manifest:llm-context`. Single-file holistic IR view for LLM context injection. Not wired as MCP resource yet. |
+| 2026-06-09 | **Task 5.8: Materialized-views projection wired** | 6 views (event_profitability_summary, inventory_valuation, kitchen_task_metrics, staff_performance_summary, vendor_spend_summary, waste_analytics), 15 indexes, 6 refresh statements. Script: `manifest/scripts/generate-materialized-views.mjs`, pnpm: `manifest:materialized-views`. Output: `manifest/generated/materialized-views/views.sql` (179 lines). |
+| 2026-06-09 | **Task 5.10: Analytics projection wired** | 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts (1.1MB, 4,098 interfaces + typed track()), handlers.ts (185KB, 999 typed handler functions). Provider: Segment. Script: `manifest/scripts/generate-analytics.mjs`, pnpm: `manifest:analytics`. Zero diagnostics. |
 
 ---
 
@@ -650,11 +653,11 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `projections/openapi` | OpenAPI spec generation | NO -- blocked (Phase 5 eval) |
 | `projections/drizzle` | Drizzle ORM schema | YES -- active, pnpm manifest:drizzle, 191 tables + 156 relations |
 | `projections/mermaid` | Mermaid diagram generation | YES -- active, `pnpm manifest:mermaid`, generates ER/state/sequence diagrams (Task 5.4) |
-| `projections/llm-context` | Structured JSON for LLM agent injection | NO -- candidate for MCP server (Task 5.7) |
-| `projections/materialized-views` | PostgreSQL materialized view DDL | NO -- candidate for reporting (Task 5.8) |
+| `projections/llm-context` | Structured JSON for LLM agent injection | YES -- active, pnpm manifest:llm-context, 3 surfaces (summary/full/ir). 2.7MB summary (202 entities). Script: `manifest/scripts/generate-llm-context.mjs` |
+| `projections/materialized-views` | PostgreSQL materialized view DDL | YES -- active, pnpm manifest:materialized-views, 6 views (event_profitability_summary, inventory_valuation, kitchen_task_metrics, staff_performance_summary, vendor_spend_summary, waste_analytics). Output: `manifest/generated/materialized-views/views.sql` (179 lines) |
 | `projections/health` | K8s health check endpoints | NO -- zero health infra exists (Task 5.9) |
 | `projections/graphql` | Full SDL + resolver stubs | NO -- not evaluated |
-| `projections/analytics` | Typed tracking event schemas | NO -- zero analytics instrumentation (Task 5.10) |
+| `projections/analytics` | Typed tracking event schemas | YES -- active, pnpm manifest:analytics, 3 surfaces + 999 handlers. tracking-plan.json (4,250 events), events.ts (4,098 interfaces), handlers.ts (999 typed handler functions). Provider: Segment. Script: `manifest/scripts/generate-analytics.mjs` |
 | `projections/dart` | Dart/Flutter model generation | NO -- REJECTED (no Dart targets) |
 | `projections/dynamodb` | DynamoDB table definitions | NO -- REJECTED (uses PostgreSQL) |
 | `projections/elasticsearch` | Elasticsearch index mappings | NO -- DEFERRED (no ES infra) |
@@ -756,7 +759,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 40. **~~3 outbox implementations~~ RESOLVED 2026-06-05 (Task 10.5):** Unsafe kitchen helper removed. 2 implementations remain (canonical tx-safe + manifest batch writer). Bundle-claim route now uses transactional outbox.
 
-41. **27 projections available (not 9, not 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10.
+41. **27 projections available (not 9, not 25):** 12 NOT in prior plan: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform. Tasks 5.7-5.10. 9 projections now active (was 5).
 
 42. **~~Rules engine + entity graph dead code (~2400 LOC, 0 consumers)~~ RESOLVED 2026-06-04 (Task 10.4):** Both deleted. Zero consumers confirmed. Tasks 7.5, 9.1, 10.4 COMPLETE.
 
@@ -936,7 +939,7 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 
 ## TIER 5 -- PROJECTION EVALUATION
 
-> **Why:** 24 of 27 projections ship unused (excluding shared, nextjs, routes). Each could retire hand-written equivalents. Now that ALL entities are durable and IR is complete, projections have maximum coverage potential. 12 projections were NOT in the prior plan.
+> **Why:** 24 of 27 projections ship unused (excluding shared, nextjs, routes). Each could retire hand-written equivalents. Now that ALL entities are durable and IR is complete, projections have maximum coverage potential. 12 projections were NOT in the prior plan. 9 projections now active (nextjs, routes, prisma, mermaid, kysely, drizzle, llm-context, materialized-views, analytics).
 
 ### 5.1 Evaluate Zod projection for input validation
 - **Status:** COMPLETE. `pnpm manifest:generate-zod` produces 202 entity schemas at `manifest/generated/schemas/*.schema.ts`. Constraint-derived refinements (.min, .max, .int) working. Upstream packaging bug (missing `.js` extension on ESM imports) patched as workaround.
@@ -988,12 +991,20 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - Drizzle NOT added as runtime dependency — schema is generated for future use.
 - API typecheck 0, 2880 tests pass.
 
-### 5.7 Evaluate llm-context projection for MCP server integration
-- **Done when:** Decision documented on replacing hand-rolled MCP tool definitions with llm-context projection output.
+### 5.7 Evaluate llm-context projection for MCP server integration — ✅ DONE 2026-06-09
+- **✅ DONE 2026-06-09.** LLM-context projection wired for offline/CI context injection.
+- 3 surfaces: summary (2.7MB, 202 entities), full (2.8MB with expressions), ir (passthrough).
+- Script: `manifest/scripts/generate-llm-context.mjs`, pnpm: `manifest:llm-context`.
+- Value: single-file holistic IR view for LLM context injection (vs 202 per-entity MCP calls).
+- Not wired as MCP resource yet (deferred follow-up).
 - **Why:** The llm-context projection generates structured JSON containing entities, commands, policies, and constraints for LLM agent injection. Could replace hand-rolled tool definitions in `packages/mcp-server`.
 
-### 5.8 Evaluate materialized-views projection for reporting
-- **Done when:** Decision documented on using generated materialized view DDL for reporting dashboards (event profitability, inventory analytics, staff performance) instead of hand-rolled aggregation SQL.
+### 5.8 Evaluate materialized-views projection for reporting — ✅ DONE 2026-06-09
+- **✅ DONE 2026-06-09.** Materialized-views projection wired for PostgreSQL dashboard pre-computation.
+- 6 views (event_profitability_summary, inventory_valuation, kitchen_task_metrics, staff_performance_summary, vendor_spend_summary, waste_analytics).
+- 15 indexes, 6 refresh statements (2 scheduled via pg_cron, 4 on-demand).
+- Script: `manifest/scripts/generate-materialized-views.mjs`, pnpm: `manifest:materialized-views`.
+- Output: `manifest/generated/materialized-views/views.sql` (179 lines).
 - **Why:** Generates PostgreSQL CREATE MATERIALIZED VIEW DDL with refresh strategies. Eliminates hand-rolled aggregation queries.
 
 ### 5.9 Evaluate health projection for K8s readiness
@@ -1001,8 +1012,12 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - **Why:** Zero health check infrastructure exists today. Projection has a Next.js surface.
 - **Evaluation: REJECT.** HealthCheckProjection generates a Next.js GET handler at `/api/manifest/health`. However: (1) all 202 stores target "durable"/"memory" (not postgres/supabase), so store checks are trivially healthy, (2) contentHash/irHash are empty so provenance check is useless, (3) outbox check is omitted (no postgres/supabase stores), (4) Capsule already has a health endpoint at `/health`. The projection would produce a false sense of depth. Decision: REJECT — existing endpoint is more honest.
 
-### 5.10 Evaluate analytics projection for tracking events
-- **Done when:** Decision documented on using typed tracking event schemas from IR commands.
+### 5.10 Evaluate analytics projection for tracking events — ✅ DONE 2026-06-09
+- **✅ DONE 2026-06-09.** Analytics projection wired for typed event tracking.
+- 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts (1.1MB, 4,098 interfaces + typed track()), handlers.ts (185KB, 999 typed handler functions).
+- Provider: Segment (also supports Amplitude/Mixpanel/Snowplow via --provider flag).
+- Script: `manifest/scripts/generate-analytics.mjs`, pnpm: `manifest:analytics`.
+- Zero diagnostics. No analytics SDK added as dependency yet — generated code ready for consumption.
 - **Why:** Capsule has zero analytics instrumentation today. Projection generates typed schemas from command definitions.
 
 ### 5.11 Evaluate new projections (12 not in prior plan) — ✅ DONE 2026-06-09
@@ -1731,8 +1746,8 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | Package exports actively used | 4 of **39** (10.3%) | 4/38 | CORRECTED 11th rev: 39 exports total (was 44) |
 | Projections available | **27** (was 25) | 25 | CORRECTED |
 | Projections NOT in prior plan | **12**: dart, dynamodb, elasticsearch, hono, jsonschema, kysely, mongoose, pydantic, remix, storybook, sveltekit, terraform | N/A | NEW |
-| Projections active | 2 (nextjs, routes) + 1 pilot (prisma) | same | -- |
-| Projections unevaluated | **22** (12 new + 10 from prior plan) | 20 | CORRECTED |
+| Projections active | **9**: nextjs, routes, prisma(pilot), mermaid, kysely, drizzle, llm-context, materialized-views, analytics | 2 (nextjs, routes) + 1 pilot (prisma) | CORRECTED |
+| Projections unevaluated | **19** (12 new + 7 from prior plan) | 20 | CORRECTED |
 | Manifest config consumed | **YES** — paths + appDir + readRoutes + dispatcher executor import + routes basePath (via read-config.mjs in compile/generate/generate-route-manifest) | 0 of 148 lines | RESOLVED 2026-06-09 |
 | irHash / contentHash | EMPTY (no integrity verification) | same | -- |
 | Outbox implementations | **3** (realtime canonical, kitchen helpers unsafe, manifest batch) | same | -- |
@@ -1795,7 +1810,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 24. **Payroll 100% disconnected (CONFIRMED):** Sets invalid status values, constructor strips `$transaction`, zero Manifest awareness. Task 8.1.
 
-25. **27 projections available (CORRECTED from 25):** 12 NOT in prior plan — ALL EVALUATED (Task 5.11 DONE): ADOPT kysely (191 entity types generated), DEFER 7 (jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic), REJECT 4 (dart, dynamodb, mongoose, sveltekit). 5 projections now active: nextjs, routes, prisma(pilot), mermaid, kysely.
+25. **27 projections available (CORRECTED from 25):** 12 NOT in prior plan — ALL EVALUATED (Task 5.11 DONE): ADOPT kysely (191 entity types generated), DEFER 7 (jsonschema, elasticsearch, hono, storybook, terraform, remix, pydantic), REJECT 4 (dart, dynamodb, mongoose, sveltekit). 9 projections now active: nextjs, routes, prisma(pilot), mermaid, kysely, drizzle, llm-context, materialized-views, analytics.
 
 26. ~~**Legacy manifest-command-handler.ts coexists with canonical execute-command.ts:**~~ RESOLVED 2026-06-04 (Task 10.13). Legacy handler deleted, all 71 routes migrated to canonical handler.
 
