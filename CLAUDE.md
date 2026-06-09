@@ -259,7 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: manifest/governance/parent-context-overrides.json (edit), manifest/runtime/src/run-manifest-command-core.ts (edit), apps/api/app/api/staff/shifts/commands/create-validated/route.ts (edit), apps/app/app/(authenticated)/scheduling/shifts/actions.ts (edit), packages/database/prisma/schema.prisma (edit), manifest/source/schedule-rules.manifest (edit)
+[proactive bridge @ 86% context — saved before compacting]
+Files (1):
+  manifest/source/recipe-rules.manifest (edit)
 
 # === END COGNILAYER ===

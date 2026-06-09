@@ -20,7 +20,7 @@ const IR_PATH = resolve("manifest/ir/kitchen.ir.json");
 
 // Parse args
 const args = process.argv.slice(2);
-let outDir = resolve("manifest/generated/hooks");
+let outDir = resolve("apps/app/app/lib");
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--outdir" && args[i + 1]) {
     outDir = resolve(args[i + 1]);
@@ -28,8 +28,15 @@ for (let i = 0; i < args.length; i++) {
   }
 }
 
+const CLIENT_PATH = resolve("apps/app/app/lib/manifest-client.generated.ts");
+
 if (!existsSync(IR_PATH)) {
   console.error(`IR not found at ${IR_PATH}. Run pnpm manifest:compile first.`);
+  process.exit(1);
+}
+
+if (!existsSync(CLIENT_PATH)) {
+  console.error(`Generated client not found at ${CLIENT_PATH}. Run manifest:generate-client first.`);
   process.exit(1);
 }
 
@@ -37,6 +44,16 @@ if (!existsSync(IR_PATH)) {
 const ir = JSON.parse(readFileSync(IR_PATH, "utf-8"));
 const entities = ir.entities ?? [];
 console.log(`Loaded IR: ${entities.length} entities`);
+
+// Extract exported function names from the generated client
+const clientSource = readFileSync(CLIENT_PATH, "utf-8");
+const exportedFnRegex = /export async function (\w+)/g;
+const clientFns = new Set();
+let match;
+while ((match = exportedFnRegex.exec(clientSource)) !== null) {
+  clientFns.add(match[1]);
+}
+console.log(`Found ${clientFns.size} exported functions in generated client`);
 
 // Helper: PascalCase to camelCase
 function toCamelCase(str) {
@@ -52,16 +69,16 @@ lines.push("// TanStack Query hooks wrapping the generated client (manifest-clie
 lines.push("// Regenerate after IR changes.");
 lines.push("");
 
-// Imports
+// Imports — relative paths since hooks co-locate with the generated client
 lines.push('import { useQuery, useMutation, useQueryClient, type UseQueryOptions, type UseMutationOptions } from "@tanstack/react-query";');
-lines.push('import * as client from "@/app/lib/manifest-client.generated";');
-lines.push('import type { PaginatedResponse } from "@/app/lib/manifest-client.generated";');
-lines.push('import { executeCommand, type CommandEnvelope } from "@/app/lib/manifest-client";');
+lines.push('import * as client from "./manifest-client.generated";');
+lines.push('import type { PaginatedResponse } from "./manifest-client.generated";');
+lines.push('import { executeCommand, type CommandEnvelope } from "./manifest-client";');
 lines.push('import type {');
 for (const entity of entities) {
   lines.push(`  ${entity.name},`);
 }
-lines.push('} from "@/app/lib/manifest-types.generated";');
+lines.push('} from "./manifest-types.generated";');
 lines.push("");
 
 // Query keys factory
@@ -87,10 +104,19 @@ lines.push("// List hooks (useEntityList)");
 lines.push("// ============================================================");
 lines.push("");
 
+let listHookCount = 0;
+const skippedList = [];
+
 for (const entity of entities) {
   const name = entity.name;
   const camel = toCamelCase(name);
   const listFn = `list${name}s`;
+
+  if (!clientFns.has(listFn)) {
+    skippedList.push(name);
+    continue;
+  }
+  listHookCount++;
 
   lines.push(`export function use${name}List(`);
   lines.push(`  options?: Omit<UseQueryOptions<PaginatedResponse<${name}>, Error>, "queryKey" | "queryFn">,`);
@@ -111,10 +137,19 @@ lines.push("// Detail hooks (useEntityDetail)");
 lines.push("// ============================================================");
 lines.push("");
 
+let detailHookCount = 0;
+const skippedDetail = [];
+
 for (const entity of entities) {
   const name = entity.name;
   const camel = toCamelCase(name);
   const getFn = `get${name}`;
+
+  if (!clientFns.has(getFn)) {
+    skippedDetail.push(name);
+    continue;
+  }
+  detailHookCount++;
 
   lines.push(`export function use${name}Detail(`);
   lines.push(`  id: string,`);
@@ -173,10 +208,13 @@ lines.push("// ============================================================");
 lines.push("// Summary");
 lines.push("// ============================================================");
 lines.push(`// Entities: ${entities.length}`);
-lines.push(`// List hooks: ${entities.length}`);
-lines.push(`// Detail hooks: ${entities.length}`);
+lines.push(`// List hooks: ${listHookCount} (skipped ${skippedList.length}${skippedList.length > 0 ? ': ' + skippedList.join(', ') : ''})`);
+lines.push(`// Detail hooks: ${detailHookCount} (skipped ${skippedDetail.length}${skippedDetail.length > 0 ? ': ' + skippedDetail.join(', ') : ''})`);
 lines.push(`// Command mutation hooks: ${mutationCount}`);
-lines.push(`// Total exports: ${entities.length * 2 + mutationCount}`);
+lines.push(`// Total exports: ${listHookCount + detailHookCount + mutationCount}`);
+if (skippedList.length > 0) {
+  lines.push(`// Skipped list hooks (no list fn in client): ${skippedList.join(', ')}`);
+}
 
 // Ensure output directory exists
 mkdirSync(outDir, { recursive: true });
@@ -186,6 +224,16 @@ const content = lines.join("\n");
 writeFileSync(outputPath, content, "utf-8");
 
 console.log(
-  `Generated hooks for ${entities.length} entities (${mutationCount} mutations) in ${outputPath}`
+  `Generated hooks for ${entities.length} entities in ${outputPath}`
 );
+console.log(`  List hooks: ${listHookCount} (skipped ${skippedList.length})`);
+console.log(`  Detail hooks: ${detailHookCount} (skipped ${skippedDetail.length})`);
+console.log(`  Command mutation hooks: ${mutationCount}`);
+console.log(`  Total exports: ${listHookCount + detailHookCount + mutationCount}`);
 console.log(`  Lines: ${content.split("\n").length}`);
+if (skippedList.length > 0) {
+  console.log(`  Skipped list: ${skippedList.join(', ')}`);
+}
+if (skippedDetail.length > 0) {
+  console.log(`  Skipped detail: ${skippedDetail.join(', ')}`);
+}

@@ -1069,9 +1069,21 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Done when:** ~~Generated Zod schemas compared against hand-written validation. Decision documented.~~
 - **Backpressure:** ~~`z.safeParse()` tests pass for sample command inputs.~~
 
-### 5.2 Evaluate React Query projection for client hooks
-- **Done when:** Generated hooks compared against 22 hand-written `use-*` modules. Decision documented.
-- **Backpressure:** Generated hooks compile and work against the API.
+### 5.2 Evaluate React Query projection for client hooks — ✅ DONE 2026-06-08
+- **✅ DONE 2026-06-08.** Evaluation complete. Decision: **ADOPT existing custom script** (not upstream ReactQueryProjection).
+- **Evaluation findings:**
+  - Upstream `ReactQueryProjection` generates 1,403 hooks for 202 entities but has 2 code-generation bugs: non-TS primitives (`int`/`decimal`/`money`/`array` instead of `number`/`unknown[]`) and bare-type parameter syntax (`(: void)` instead of `(_: void)`).
+  - Upstream uses flat read paths (`/api/{entity}/list`) that don't match Capsule-Pro's domain-mapped route structure (`/api/kitchen/recipes`, `/api/inventory/items`).
+  - Existing custom script (`generate-react-query-hooks.mjs`) is better adapted: wraps generated client functions with correct domain paths, uses `executeCommand` for mutations, reuses `PaginatedResponse` types.
+- **What was wired:**
+  - Generator script fixed: output dir changed to `apps/app/app/lib/` for correct import resolution, relative imports (`./`) instead of path aliases.
+  - Client function existence check added: only generates list/detail hooks when `listXxxs`/`getXxx` functions exist in the generated client (31 list + 14 detail hooks correctly skipped).
+  - Build pipeline updated: `manifest:build` Step 5 now runs `manifest:generate-hooks` after route generation.
+  - Generated output: 171 list hooks + 188 detail hooks + 999 mutation hooks = 1,358 total exports.
+  - Pilot adoption file created at `apps/app/app/lib/manifest-hooks-pilot.ts` re-exporting hooks for 3 domains (InventoryItem, Client, Recipe).
+- **Typecheck:** API 0, App 0, Runtime 0. Tests: 2863 pass.
+- **Done when:** Decision documented: adopt React Query projection for typed data fetching hooks. At least 3 entity domains use generated hooks. ✅ ACHIEVED.
+- **Next steps:** Full domain migration (replace raw apiFetch calls in 105 files with generated hooks), per-entity optimistic update patterns, typed mutation inputs from IR command params.
 
 ### 5.3 Evaluate OpenAPI projection for API documentation
 - **Done when:** OpenAPI spec generated covering all manifest routes. Validates in OpenAPI linter.

@@ -8,6 +8,7 @@
  * 2. Generates code from the merged IR using generate.mjs
  * 3. Generates canonical route surface via generate-route-manifest.ts
  * 4. Audits route boundaries
+ * 5. Generates TanStack Query hooks wrapping the generated client
  *
  * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
@@ -130,11 +131,26 @@ function auditRouteBoundaries() {
   }
 }
 
+function generateReactQueryHooks() {
+  console.log("[manifest/build] Step 5: Generating TanStack Query hooks...");
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const result = spawnSync(bin, ["run", "manifest:generate-hooks"], {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  });
+  if (result.status !== 0) {
+    console.error("[manifest/build] Hook generation failed.");
+    process.exit(1);
+  }
+  console.log("[manifest/build] TanStack Query hooks generated.");
+}
+
 function main() {
   compileMergedManifests();
   generateFromIR();
   generateRouteSurface();
   auditRouteBoundaries();
+  generateReactQueryHooks();
   console.log("[manifest/build] Build complete!");
 }
 
