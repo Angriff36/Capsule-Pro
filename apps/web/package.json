@@ -39,6 +39,7 @@
     "@types/node": "25.9.1",
     "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
     "basehub": "^9.5.3",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
