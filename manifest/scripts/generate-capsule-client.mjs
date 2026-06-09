@@ -104,11 +104,15 @@ const SCALAR_TO_TS = {
   text: "string", uuid: "string",
 };
 function paramTsType(p) {
-  const base = SCALAR_TO_TS[p.type.name] || "unknown";
-  // All input fields accept null (Prisma nullable columns) and undefined (optional ?).
-  // Nullable IR types explicitly declare null; non-nullable ones may still receive null
-  // from form state or partial Prisma reads, so we include it unconditionally.
-  return `${base} | null`;
+  const typeObj = p.type || {};
+  const typeName = typeof typeObj === 'string' ? typeObj : (typeObj.name || 'string');
+  const base = SCALAR_TO_TS[typeName] || "unknown";
+  // Resolve array generic type (e.g., tags: string[] instead of unknown[])
+  if (base === "unknown[]" && typeObj.generic) {
+    const innerType = SCALAR_TO_TS[typeObj.generic.name || typeObj.generic] || "unknown";
+    return `${innerType}[]`;
+  }
+  return base;
 }
 
 // Generate per-command typed input interfaces
@@ -127,7 +131,7 @@ for (const c of ir.commands) {
 
   // Build typed input interface from IR parameters.
   // All fields are optional (with `?`) because the Manifest runtime fills defaults
-  // for omitted params. An index signature allows extra/arbitrary properties.
+  // for omitted params and update commands accept partial input.
   let inputType = "Record<string, unknown>";
   if (c.parameters && c.parameters.length > 0) {
     const iName = `${c.entity}${cap(c.name)}Input`;
@@ -135,7 +139,7 @@ for (const c of ir.commands) {
       const ts = paramTsType(p);
       return `  ${p.name}?: ${ts};`;
     });
-    interfaces.push(`export interface ${iName} {\n  [key: string]: unknown;\n${fields.join("\n")}\n}`);
+    interfaces.push(`export interface ${iName} {\n${fields.join("\n")}\n}`);
     inputType = iName;
   }
 

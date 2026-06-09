@@ -2798,6 +2798,7 @@ export interface ScheduleShift {
   swapStatus?: string;
   swapOfferedAt: string;
   swapAcceptedAt: string;
+  inheritedContext?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
