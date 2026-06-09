@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Version Control - Generic Versioning System
 // Manifest spec for versioning documents, templates, and configurations
 // with change history, rollback capabilities, and approval workflows

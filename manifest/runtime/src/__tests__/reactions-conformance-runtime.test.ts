@@ -108,7 +108,7 @@ function makeProvider(): (entity: string) => Store {
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
   return new RuntimeEngine(
     ir,
-    { user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
+    { tenantId: USER.tenantId, user: { id: USER.id, tenantId: USER.tenantId, role: USER.role } },
     { storeProvider: provider, customBuiltins: createCustomBuiltins() },
   );
 }

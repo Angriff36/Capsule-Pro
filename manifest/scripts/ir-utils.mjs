@@ -334,6 +334,29 @@ export function mergeIrs(irsOrEntries, provenance) {
       `[manifest/merge] Duplicate ${drop.type} "${drop.key}" dropped (kept from ${drop.keptFrom}; dropped from ${drop.droppedFrom.join(", ")})`
   );
 
+  // Collect tenant declarations from per-file IRs. All files that declare
+  // a tenant must agree on property, type, and contextPath. If they differ,
+  // warn and use the first declaration found.
+  let mergedTenant;
+  for (const entry of entries) {
+    const t = entry.ir.tenant;
+    if (!t) continue;
+    if (!mergedTenant) {
+      mergedTenant = t;
+      continue;
+    }
+    if (
+      t.property !== mergedTenant.property ||
+      t.type?.name !== mergedTenant.type?.name ||
+      t.type?.nullable !== mergedTenant.type?.nullable ||
+      t.contextPath !== mergedTenant.contextPath
+    ) {
+      duplicateWarnings.push(
+        `[manifest/merge] Tenant declaration mismatch in ${entry.source} (property=${t.property}, contextPath=${t.contextPath}) vs first seen (property=${mergedTenant.property}, contextPath=${mergedTenant.contextPath}); using first`
+      );
+    }
+  }
+
   const mergeReport = {
     $schema: "https://manifest.dev/merge-report.schema.json",
     version: "1.0",
@@ -366,6 +389,7 @@ export function mergeIrs(irsOrEntries, provenance) {
       events: eventsResult.keptItems,
       commands: commandsResult.keptItems,
       policies: policiesResult.keptItems,
+      ...(mergedTenant ? { tenant: mergedTenant } : {}),
       sagas: sagasResult.keptItems,
       reactions: reactionsResult.keptItems,
     },

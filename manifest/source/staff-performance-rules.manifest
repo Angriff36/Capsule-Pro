@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff Performance Review Rules
 // Manifest spec for employee performance evaluations and reviews
 // Lifecycle: draft -> in_review -> completed -> acknowledged (employee sign-off)

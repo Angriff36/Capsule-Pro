@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Administration - API Key Rules
 // Manifest spec for API key lifecycle management
 // SECURITY: All commands require admin/manager role. Keys are hashed before storage.

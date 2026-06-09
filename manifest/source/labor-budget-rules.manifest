@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff Domain - Labor Budget Rules
 // Manifest spec for labor budgets and budget alerts
 

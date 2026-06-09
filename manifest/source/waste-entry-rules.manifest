@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Waste Entry Rules
 // Manifest spec for waste tracking, cost attribution, and inventory loss management
 

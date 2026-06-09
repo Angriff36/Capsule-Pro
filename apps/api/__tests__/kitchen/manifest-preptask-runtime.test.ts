@@ -36,6 +36,7 @@ async function getTestRuntime() {
   return new ManifestRuntimeEngine(
     enforceCommandOwnership(ir),
     {
+      tenantId: "test-tenant-456",
       user: {
         id: "test-user-123",
         tenantId: "test-tenant-456",

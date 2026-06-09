@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Event Staff Rules
 // Manifest spec for event staff assignment, day-of attendance, and labor tracking.
 // Lifecycle: assigned -> confirmed -> checked_in -> checked_out (or no_show / unassigned).

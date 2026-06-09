@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen / Food-Safety Extended Rules
 // Manifest spec for IoT temperature monitoring, HACCP logging, corrective actions,
 // quality checks, task management extensions, prep tooling, and import provenance.

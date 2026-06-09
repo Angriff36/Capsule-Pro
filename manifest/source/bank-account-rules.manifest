@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Payroll Bank Account Rules
 // Manifest spec for payroll banking destinations
 

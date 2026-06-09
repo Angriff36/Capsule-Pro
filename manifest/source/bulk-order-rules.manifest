@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Bulk Order Rules
 // Manifest spec for bulk order management
 // A BulkOrderRule defines quantity-threshold incentives (discounts, free shipping)

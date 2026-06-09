@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Administrative Domain - Admin Task Rules
 // Manifest spec for managing administrative tasks with status state machine
 

@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff Domain - Employee Certification Rules
 // Manifest spec for managing employee certifications and credentials
 

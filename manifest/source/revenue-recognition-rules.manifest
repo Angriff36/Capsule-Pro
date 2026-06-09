@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Finance - Revenue Recognition Rules
 // Manifest spec for revenue recognition schedules and accrual accounting
 

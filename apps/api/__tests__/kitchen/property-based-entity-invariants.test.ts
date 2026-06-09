@@ -47,6 +47,7 @@ async function getRuntime(manifestFile: string) {
     );
   }
   return new ManifestRuntimeEngine(enforceCommandOwnership(ir), {
+    tenantId: "test-tenant-456",
     user: { id: "test-user-123", tenantId: "test-tenant-456", role: "admin" },
   }, { storeProvider: inMemoryStoreProvider() });
 }
@@ -107,10 +108,10 @@ const fcVendorContractCreate = fc.record({
   vendorId: fc.uuid(),
   vendorName: fc.string({ minLength: 1, maxLength: 100 }),
   contractType: fc.constantFrom("purchase", "service", "lease"),
-  startDate: fc.date({ min: new Date(2020, 0, 1), max: new Date(2030, 11, 31) })
-    .map(d => d.toISOString()),
-  endDate: fc.date({ min: new Date(2025, 0, 1), max: new Date(2040, 11, 31) })
-    .map(d => d.toISOString()),
+  startDate: fc.integer({ min: 1577836800000, max: 1767225600000 })
+    .map(ts => new Date(ts).toISOString()),
+  endDate: fc.integer({ min: 1735689600000, max: 2208988800000 })
+    .map(ts => new Date(ts).toISOString()),
   autoRenew: fc.boolean(),
   renewalTermDays: fc.integer({ min: 0, max: 365 }),
   paymentTerms: fc.constantFrom("NET_15", "NET_30", "NET_60", "NET_90"),
@@ -129,8 +130,8 @@ const fcCateringOrderCreate = fc.record({
   orderNumber: fc.string({ minLength: 1, maxLength: 20 }),
   customerId: fc.uuid(),
   eventId: fc.uuid(),
-  deliveryDate: fc.date({ min: new Date(2025, 0, 1), max: new Date(2030, 11, 31) })
-    .map(d => d.toISOString()),
+  deliveryDate: fc.integer({ min: 1735689600000, max: 1767225600000 })
+    .map(ts => new Date(ts).toISOString()),
   guestCount: fc.integer({ min: 1, max: 10000 }),
   subtotalAmount: fc.integer({ min: 0, max: 1000000 }),
 });
@@ -149,8 +150,8 @@ const fcInventoryItemCreate = fc.record({
 
 const fcPayrollRunCreate = fc.record({
   payrollPeriodId: fc.uuid(),
-  runDate: fc.date({ min: new Date(2025, 0, 1), max: new Date(2030, 11, 31) })
-    .map(d => d.toISOString()),
+  runDate: fc.integer({ min: 1735689600000, max: 1767225600000 })
+    .map(ts => new Date(ts).toISOString()),
   totalGross: fc.integer({ min: 0, max: 10000000 }),
   totalDeductions: fc.integer({ min: 0, max: 5000000 }),
   totalNet: fc.integer({ min: 0, max: 10000000 }),

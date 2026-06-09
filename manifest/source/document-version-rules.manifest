@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Document Version Control Rules
 // Manifest spec for document versioning, approval, and publish lifecycle
 

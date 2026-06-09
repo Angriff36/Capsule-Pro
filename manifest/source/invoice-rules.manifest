@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Invoice Rules Manifest
 // Defines invoice creation, management, and payment tracking
 

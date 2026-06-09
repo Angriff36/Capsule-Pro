@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Prep Method Rules
 // Manifest spec for preparation method catalog, duration estimates, and certification requirements
 // PrepMethod is a simple config catalog — enriched with reactivate command.

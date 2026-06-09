@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Catering Order Rules
 // Manifest spec for catering order lifecycle and delivery management
 

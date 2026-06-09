@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Procurement - Vendor Contract Rules
 // Manifest spec for vendor contract lifecycle and compliance tracking
 //

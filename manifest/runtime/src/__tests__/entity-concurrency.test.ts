@@ -87,7 +87,7 @@ function makeProvider(): {
 function newEngine(provider: (entity: string) => Store): RuntimeEngine {
   return new RuntimeEngine(
     ir,
-    { user: { id: "u1", tenantId: TENANT, role: "inventory_manager" } },
+    { tenantId: TENANT, user: { id: "u1", tenantId: TENANT, role: "inventory_manager" } },
     { storeProvider: provider },
   );
 }

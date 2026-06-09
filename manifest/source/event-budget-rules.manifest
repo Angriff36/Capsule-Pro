@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Event Budget Rules
 // Manifest spec for event budget management and line item tracking
 

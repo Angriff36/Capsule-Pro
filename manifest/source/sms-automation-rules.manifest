@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // SMS Automation - SMS Automation Rules
 // Manifest spec for event-triggered SMS automation rules
 

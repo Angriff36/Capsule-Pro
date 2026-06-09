@@ -11,16 +11,11 @@
 
 /** Relative to apps/api/app/api/ (forward slashes). */
 export const CUSTOM_COMMAND_ROUTE_ALLOWLIST = [
-  // createInstance persistence after guarded runCommand
-  "communications/email-templates/commands/create/route.ts",
   // Budget/actual aggregation + direct Prisma update (not a manifest command)
   "events/profitability/commands/recalculate/route.ts",
   // PO status FSM with direct SQL (legacy procurement surface)
   "procurement/purchase-orders/commands/update-status/route.ts",
   "procurement/purchase-orders/commands/receive/route.ts",
-  // Cross-entity shift validation before manifest create/update
-  "staff/shifts/commands/create-validated/route.ts",
-  "staff/shifts/commands/update-validated/route.ts",
 ] as const;
 
 export function isCustomCommandRoute(relativeApiPath: string): boolean {

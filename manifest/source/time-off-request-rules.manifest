@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff Domain - Time Off Request Rules
 // Manifest spec for managing employee time-off requests with status transitions
 // Lifecycle: PENDING -> APPROVED | REJECTED | CANCELLED

@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Menu Rules
 // Manifest spec for menu operations with constraints, guards, and events
 // Menu lifecycle: draft -> published -> archived

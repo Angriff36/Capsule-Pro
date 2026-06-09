@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff - User Rules
 // Manifest spec for user/employee lifecycle management
 

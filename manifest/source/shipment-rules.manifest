@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Purchasing - Shipment Rules
 // Manifest spec for shipment tracking and receiving
 

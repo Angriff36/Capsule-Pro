@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Recipe Rules
 // Manifest spec for recipe operations with constraints, guards, and events
 // Lifecycle: Recipe is a catalog header. RecipeVersion moves draft -> published (->approved).

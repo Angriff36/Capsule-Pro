@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // CRM Deal Rules
 // Manifest spec for deal pipeline management.
 // A deal is a qualified sales opportunity moving through stages toward won/lost.

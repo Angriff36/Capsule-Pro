@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Prep Task Rules
 // Manifest spec for prep task operations with constraints, guards, and events
 

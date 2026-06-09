@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Workflow Engine - Workflow Rules
 // Manifest spec for workflow automation with triggers, steps, and lifecycle management
 

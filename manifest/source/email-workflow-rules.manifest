@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Collaboration Domain - Email Workflow Rules
 // Manifest spec for email workflow CRUD
 

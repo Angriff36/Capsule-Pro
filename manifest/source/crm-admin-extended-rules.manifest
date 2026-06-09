@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // CRM + Admin Extended Rules
 // Manifest spec for ProposalTemplate, InteractionAttachment, CrmScoringRule,
 // Report, Document, AdminChatThread, and AdminChatMessage

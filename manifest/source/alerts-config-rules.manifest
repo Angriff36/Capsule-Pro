@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Alerts - Alerts Config Rules
 // Manifest spec for alert configuration channels and destinations
 

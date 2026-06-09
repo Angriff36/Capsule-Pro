@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Event Rules
 // Manifest spec for event lifecycle, profitability tracking, and summary management
 

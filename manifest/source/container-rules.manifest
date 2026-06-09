@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Container Rules
 // Manifest spec for container inventory, capacity tracking, and storage management
 // Enriched with: reactivate + relocate commands for real kitchen ops needs.

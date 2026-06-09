@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Notifications - Notification Rules
 // Manifest spec for notification delivery, read tracking, and dismissal
 

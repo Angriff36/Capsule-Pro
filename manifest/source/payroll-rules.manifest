@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Payroll Domain - Payroll Rules
 // Manifest spec for payroll periods, deductions, approvals, and runs.
 // A PayrollRun moves pending -> processing -> approved -> paid (or rejected).
