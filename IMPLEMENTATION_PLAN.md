@@ -592,6 +592,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-08 | **Task 8.10 (ScheduleShift parent-context)** | ScheduleShift inherits locationId from Schedule via parent-context propagation | v0.12.198 |
 | 2026-06-08 | **manifest:check score fix** | Aligned event names in ProcurementBudget + TrainingAssignment; added 7 allowlist entries; score 75→100 | v0.12.199 |
 | 2026-06-08 | **Task 6.4 (typed inputs phase 1)** | Array generics fixed (string[] vs unknown[]), client regenerated, 0 typecheck errors | v0.12.200 |
+| 2026-06-08 | **Task 6.4 Phase 2: Strict typed command inputs** | Removed [key: string]: unknown from 833 input interfaces, | null from 12,997 fields. 988 typed inputs enforce compile-time checking. API+App typecheck 0, 2863 tests pass. | v0.12.206 |
+| 2026-06-08 | **CrmScoringRule/EventFollowup soft-delete drift resolved** | Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES workarounds removed. | v0.12.205 |
 
 ---
 
@@ -800,7 +802,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 Producer fix: ENTITY_ACCESSOR_OVERRIDES 2→33, new ENTITY_FIELD_OVERRIDES + applyFieldOverrides(), ENTITY_DETAIL_DROP. 49 generated routes modified, 30 deleted. 9 hand-written errors fixed. Follow-up: soft-delete `deletedAt` drift fixed for 6 models via producer-side override. `pnpm --filter api typecheck` = 0.
 
 **Done when:** `pnpm --filter api typecheck` returns 0 errors. ✅ ACHIEVED.
-**Known follow-up:** CrmScoringRule/EventFollowup IR↔schema soft-delete inconsistency (no `deleted_at` column in Prisma).
+**Known follow-up:** ~~CrmScoringRule/EventFollowup IR↔schema soft-delete inconsistency (no `deleted_at` column in Prisma).~~ RESOLVED 2026-06-08: migration added `deleted_at` columns; ENTITY_FIELD_OVERRIDES workarounds removed. v0.12.205.
 
 ### 0.2 Fix build.mjs broken path, stale compilerVersion, and orphaned scripts — ✅ DONE 2026-06-04
 
@@ -1058,10 +1060,10 @@ All 189 entities use `timestamps` modifier. Net -1,202 lines of boilerplate (350
 - **Done when:** Single consistent frontend data access pattern. Dead code eliminated.
 - **Backpressure:** `grep -r 'from.*manifest-client.generated' apps/app/` returns only intended consumers. Sample CRUD flow works end-to-end.
 
-### 6.4 Typed command input generation — PARTIAL (phase 1 done 2026-06-08, phase 2 deferred)
+### 6.4 Typed command input generation — ✅ DONE 2026-06-08
 - **Phase 1 DONE (2026-06-08):** Array generics fixed (string[] instead of unknown[]). Client regenerated from updated IR with 999 commands and 833 typed inputs. ScheduleShiftCreateInput correctly excludes locationId. 0 typecheck errors.
-- **Phase 2 deferred:** Removing `[key: string]: unknown` index signature and `| null` from fields requires fixing 147 caller sites — deferred to a future pass.
-- **Done when:** All 999 command functions have typed input parameters derived from IR (not `Record<string, unknown>`).
+- **Phase 2 DONE (2026-06-08):** Removed `[key: string]: unknown` from all 833 generated input interfaces. Removed `| null` from all 12,997 field declarations. Added `id?: string` to non-create command inputs (dispatcher wire contract). Generated functions cast input to Record<string, unknown> at call boundary. Fixed 42 null→undefined + 65 unknown-property caller errors. 988 typed inputs now enforce strict compile-time checking. API typecheck 0, App typecheck 0, 2863 tests pass, route drift 0. v0.12.206.
+- **Done when:** All 999 command functions have typed input parameters derived from IR (not `Record<string, unknown>`). ✅ ACHIEVED.
 - **Why:** The IR defines per-command input schemas with required/optional fields and types, but the generated client projects all commands as `(input: Record<string, unknown>)`.
 - **Source to change:** `manifest/scripts/generate-capsule-client.mjs`.
 
@@ -1654,7 +1656,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | `manifest-runtime.ts` (API shim) | 376 lines | 376 | -- |
 | `manifest-command-handler.ts` (legacy) | ~~Monolithic handler, SHOULD BE DELETED~~ DELETED (Task 10.13) | N/A | RESOLVED 2026-06-04 |
 | `execute-command.ts` (canonical) | Single canonical handler, used by all 71 routes + dispatcher | N/A | RESOLVED 2026-06-04 |
-| `manifest-client.generated.ts` | **1,330 functions, 94 consumers** (Task 6.2 batches 1-21) | 1,330/0 | UPDATED (Task 6.2 batches 1-21) |
+| `manifest-client.generated.ts` | **1,330 functions, 94 consumers, 988 strict typed inputs (no index signature)** (Task 6.4 Phases 1-2) | 1,330/0 | UPDATED (Task 6.4 Phases 1-2) |
 | `manifest-types.generated.ts` | 3,367 lines, 189 interface definitions | same | -- |
 | API typecheck errors | **0** (Task 0.1 RESOLVED 2026-06-04; follow-up soft-delete drift RESOLVED 2026-06-06; ingredient-resolution test fix 2026-06-07; was 80) | 80 (72+8) | RESOLVED: generator fixes + hand-written fixes (2026-06-04) + `deletedAt` branch in applyFieldOverrides() for 6 models (2026-06-06) |
 | Runtime typecheck errors | **0** | 0 | -- |
@@ -1839,6 +1841,8 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-08 | **Task 8.10 ScheduleShift parent-context propagation (8th adopter).** locationId inherited from Schedule on create. v0.12.198. |
 | 2026-06-08 | **v0.12.199: manifest:check score 75→100.** Aligned ProcurementBudget and TrainingAssignment event names with merge-kept definitions. Added ScheduleShift.locationId and 7 duplicate-drop allowlist entries. |
 | 2026-06-08 | **v0.12.200: Task 6.4 phase 1.** Fix array generics in generated command inputs (string[] vs unknown[]). Client regenerated from IR with 999 commands and 833 typed inputs. |
+| 2026-06-08 | **v0.12.205: CrmScoringRule/EventFollowup soft-delete drift resolved.** Added deleted_at columns via migration. ENTITY_FIELD_OVERRIDES workarounds removed. |
+| 2026-06-08 | **v0.12.206: Task 6.4 phase 2 — strict typed command inputs.** Removed [key: string]: unknown from 833 input interfaces, | null from 12,997 fields. 988 typed inputs enforce strict compile-time checking. Fixed 42 null→undefined + 65 unknown-property caller errors. API+App typecheck 0, 2863 tests pass. |
 | 2026-06-08 | **Duplicate event/policy cleanup + test fixes** | Removed 11 duplicate event definitions from 3 source files (recipe-rules, inventory-extended-rules, training-module-rules) + 1 duplicate policy (FinanceCanManageBudgets). Cleaned 22 stale allowlist keys (27→4). manifest doctor warnings 16→4. Fixed 2 pre-existing app test failures (settings-workflow apiFetch assertion, upcoming-maintenance-widget mock). Added coverage CLI variants (json, strict) + emit script. IR: 202 entities, 999 commands, 981 events (-18). All 3308 tests pass, 0 typecheck errors. |
 | 2026-06-08 | **Task 2.1: Route generator accessor-aware from metadata** | ENTITY_ACCESSOR_OVERRIDES 32→1 entries. 15 remaps auto-resolved via metadata (step 2). 16 stale drops removed (entities now have Prisma models). 2 bridge entries fixed (QACorrectiveAction, QATemperatureLog). SampleData field override added. 0 typecheck, 0 drift, 2863 tests pass. |
 | 2026-06-08 | **Task 5.3 DONE: OpenAPI 3.1.0 projection** | OpenAPI spec generated from IR via `@angriff36/manifest/projections/openapi`. 202 entities (404 GET), 999 commands (999 POST) = 1,403 paths + 1,240 schemas. Output: `manifest/api-docs/openapi.json` (4 MB). Script: `manifest/scripts/generate-openapi.mjs`, pnpm: `manifest:openapi`. |
