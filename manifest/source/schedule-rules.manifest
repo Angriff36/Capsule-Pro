@@ -156,10 +156,10 @@ entity ScheduleShift {
   }
 
   default policy ScheduleShiftDefaultAccess execute: user.role in ["manager", "admin"] "Schedule management"
-  command create(scheduleId: string, employeeId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
+  command create(scheduleId: string, employeeId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, notes: string) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard shiftStart != null and shiftStart > 0 "Shift start time is required"
+    guard shiftStart != null "Shift start time is required"
     guard shiftEnd != null and shiftEnd > shiftStart "Shift end must be after shift start"
 
     mutate scheduleId = scheduleId
@@ -173,7 +173,7 @@ entity ScheduleShift {
     emit ScheduleShiftCreated
   }
 
-  command update(employeeId: string, locationId: string, shiftStart: number, shiftEnd: number, roleDuringShift: string, notes: string) {
+  command update(employeeId: string, locationId: string, shiftStart: datetime, shiftEnd: datetime, roleDuringShift: string, notes: string) {
     guard shiftEnd > shiftStart "Shift end must be after shift start"
     guard self.deletedAt == null "Cannot update a removed shift"
 
@@ -297,8 +297,8 @@ event ScheduleShiftCreated: "staff.schedule.shift.created" {
   scheduleId: string
   employeeId: string
   locationId: string
-  shiftStart: number
-  shiftEnd: number
+  shiftStart: datetime
+  shiftEnd: datetime
   roleDuringShift: string
   createdAt: datetime
 }
@@ -307,8 +307,8 @@ event ScheduleShiftUpdated: "staff.schedule.shift.updated" {
   shiftId: string
   scheduleId: string
   employeeId: string
-  shiftStart: number
-  shiftEnd: number
+  shiftStart: datetime
+  shiftEnd: datetime
   roleDuringShift: string
   updatedAt: datetime
 }

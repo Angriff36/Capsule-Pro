@@ -616,10 +616,10 @@ entity OpenShift {
   relationship belongsTo schedule: Schedule fields [tenantId, scheduleId] references [tenantId, id]
 
   default policy OpenShiftDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Staff logistics"
-  command create(scheduleId: string, role: string, shiftStart: number, shiftEnd: number) {
+  command create(scheduleId: string, role: string, shiftStart: datetime, shiftEnd: datetime) {
     guard scheduleId != null and scheduleId != "" "Schedule ID is required"
     guard role != null and role != "" "Role is required"
-    guard shiftStart != null and shiftStart > 0 "Shift start is required"
+    guard shiftStart != null "Shift start is required"
     guard shiftEnd != null and shiftEnd > shiftStart "Shift end must be after shift start"
 
     mutate scheduleId = scheduleId
@@ -1191,8 +1191,8 @@ event OpenShiftCreated: "schedule.openshift.created" {
   tenantId: string
   scheduleId: string
   role: string
-  shiftStart: number
-  shiftEnd: number
+  shiftStart: datetime
+  shiftEnd: datetime
   createdAt: datetime
 }
 

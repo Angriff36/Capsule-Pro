@@ -11,8 +11,8 @@ entity EventStaff {
   property required staffMemberId: string
   property role: string = ""
   searchable property notes: string = ""
-  property shiftStart: int = 0
-  property shiftEnd: int = 0
+  property shiftStart: datetime
+  property shiftEnd: datetime
   indexed property status: string = "assigned"
   // Day-of attendance timestamps — null until the transition actually happens.
   property confirmedAt: datetime
@@ -29,7 +29,7 @@ entity EventStaff {
   computed isNoShow: boolean = self.status == "no_show"
   computed isUnassigned: boolean = self.status == "unassigned"
   computed isDeleted: boolean = self.deletedAt != null
-  computed hasShift: boolean = self.shiftStart > 0 and self.shiftEnd > 0
+  computed hasShift: boolean = self.shiftStart != null and self.shiftEnd != null
   // Staff who committed to working but never showed — surfaces in labor reports.
   computed didWork: boolean = self.checkedInAt != null and self.checkedOutAt != null
 
@@ -41,7 +41,7 @@ entity EventStaff {
   relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
   default policy EventStaffDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
-  command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
+  command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: datetime, shiftEnd: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
 
@@ -65,7 +65,7 @@ entity EventStaff {
     emit EventStaffConfirmed
   }
 
-  command updateShift(shiftStart: number, shiftEnd: number) {
+  command updateShift(shiftStart: datetime, shiftEnd: datetime) {
     guard self.status in ["assigned", "confirmed"] "Cannot change shift after check-in"
     guard shiftEnd > shiftStart "Shift end must be after shift start"
 
@@ -137,8 +137,8 @@ event EventStaffAssigned: "events.event-staff.assigned" {
   eventId: string
   staffMemberId: string
   role: string
-  shiftStart: number
-  shiftEnd: number
+  shiftStart: datetime
+  shiftEnd: datetime
   assignedAt: datetime
 }
 
@@ -154,8 +154,8 @@ event EventStaffShiftUpdated: "events.event-staff.shift-updated" {
   eventStaffId: string
   tenantId: string
   eventId: string
-  shiftStart: number
-  shiftEnd: number
+  shiftStart: datetime
+  shiftEnd: datetime
   updatedAt: datetime
 }
 

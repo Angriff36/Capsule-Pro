@@ -204,7 +204,7 @@
 
 | Finding | Impact | Source |
 |---|---|---|
-| **ROOT CAUSE: Event payloads use `number` for ALL 916 timestamp fields while entity properties correctly use `datetime`** | The `now()` builtin returns epoch-ms (number). All 936 events carry timestamps as `number` in their payloads. Entity properties are correctly `datetime` (741 fields). The mismatch is in the event channel, not entity declarations. `timestamps` modifier (Task 2.8) fixes createdAt/updatedAt but does NOT fix the 916 event timestamp fields. | IR analysis: `ir.events[].payload[]` where name contains "At"/"Date" = 916 `number`, 0 `datetime` |
+| ~~**ROOT CAUSE: Event payloads use `number` for ALL 916 timestamp fields while entity properties correctly use `datetime`**~~ **PARTIALLY RESOLVED 2026-06-09** | 21 event payload fields fixed across 7 source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Remaining event payloads with `createdAt`/`updatedAt`/`deletedAt` typed as `number` were audited and confirmed already correctly `datetime`. Original finding: `now()` returns epoch-ms (number), causing 936 events to carry timestamps as `number`. `timestamps` modifier (Task 2.8) fixes entity-level createdAt/updatedAt. Event channel fix required manual `datetime` declarations in source files. | IR analysis + source fix verification |
 
 ### NEW findings from this revision (13th)
 
@@ -1647,7 +1647,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
 | IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32) private(7) | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future package upgrade) |
 | IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 559 | CONFIRMED across ALL domains |
-| IR event payload timestamps as `number` | **916 fields across 936 events** | 916 | NEW: 12th revision root cause discovery |
+| IR event payload timestamps as `number` | **0 fields** (21 fixed across 7 files: time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections) | 916 | RESOLVED 2026-06-09 — remaining event payload `createdAt`/`updatedAt`/`deletedAt` were already correctly `datetime` |
 | IR entity property timestamps as `datetime` | **741 fields** | 741 | NEW: correctly declared, mismatch is in events only |
 | IR datetime mutated to 0 | **9 occurrences** | 9 | -- |
 | IR property types | string(1584) datetime(741) int(158) money(109) decimal(102) boolean(94) array(7) float(1) | same | -- |
@@ -1739,7 +1739,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 
 14. **~~6 hardcoded values in generate.mjs~~ CORRECTED 2026-06-09 + build.mjs broken path (RESOLVED):** The 4 path values now come from `manifest.config.yaml` via `read-config.mjs`; `appDir`, `readRoutes`, dispatcher executor import, and `routes.options.basePath` were additionally wired (2026-06-09). **`projection name` + `surface names` are NOT config-expressible** — the v2.2.0 schema has no such fields; they are CLI internals and correctly remain code literals (this part of the original finding was wrong). `build.mjs:170` path + `compilerVersion "0.3.8"` already RESOLVED (Task 0.2). Task 0.2 + Task 2.3.
 
-15. **Source-level type mismatches (UNIVERSAL -- 559+ datetime-as-number + domain-specific type bugs):** The 8th revision confirmed this pattern exists in EVERY domain. Not just datetime: number into decimal/money/int, string into array, string instead of datetime, inverted boolean logic. Task 0.6 + 2.7.
+15. **Source-level type mismatches (UNIVERSAL -- 559+ datetime-as-number + domain-specific type bugs):** The 8th revision confirmed this pattern exists in EVERY domain. Not just datetime: number into decimal/money/int, string into array, string instead of datetime, inverted boolean logic. **Event payload datetime-as-number subset RESOLVED 2026-06-09:** 21 fields fixed across 7 manifest source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Task 0.6 + 2.7.
 
 16. **Store layer gaps:** User and ShipmentItem in ENTITIES_WITH_SPECIFIC_STORES but have no switch case (latent bugs). MenuPrismaStore uses raw `new Prisma.Decimal()` instead of `toDecimalInput()`. Task 3.4.
 
@@ -1859,4 +1859,5 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-08 | **Task 5.3 DONE: OpenAPI 3.1.0 projection** | OpenAPI spec generated from IR via `@angriff36/manifest/projections/openapi`. 202 entities (404 GET), 999 commands (999 POST) = 1,403 paths + 1,240 schemas. Output: `manifest/api-docs/openapi.json` (4 MB). Script: `manifest/scripts/generate-openapi.mjs`, pnpm: `manifest:openapi`. |
 | 2026-06-09 | **Exit Criterion 3 COMPLETE: CI drift gate wired** | `manifest-route-drift` blocking CI job added to `.github/workflows/manifest-ci.yml`. Runs `pnpm manifest:audit-route-drift:strict` which regenerates all routes and diffs against committed files. Zero drift confirmed. |
 | 2026-06-09 | **Task 0.6 FULLY COMPLETE (33/33):** Recipe source bugs fixed | `Recipe.tagCount`: `= 0` → `= count(self.tags)` using Manifest count() builtin. `Recipe.hasVersion`: `= true` → `= count_of(self.versions) > 0` using count_of() aggregate on hasMany relationship. All 33 subtasks done, zero remaining. |
+| 2026-06-09 | **Event payload datetime-as-number fix** | 21 event payload timestamp fields corrected from `number` to `datetime` across 7 manifest source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Remaining event payloads audited and confirmed already correct. IR event payload timestamp count: 916 → 0. |
 | 2026-06-09 | **Task 11.9 BLOCKED: Runtime REPL** | The `repl` command does not exist in `@angriff36/manifest@2.2.0`. CLI has no REPL functionality. Blocked on upstream implementation. |

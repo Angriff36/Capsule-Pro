@@ -86,7 +86,7 @@ entity Proposal {
   // (manifest/runtime/src/parent-context-resolver.ts). The caller supplies only
   // the eventId link + proposal-specific input, so the UI never re-asks for data
   // the Event already owns. See specs/parent-context-propagation.md.
-  command create(proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
+  command create(proposalNumber: string, leadId: string, eventId: string, title: string, guestCount: number, taxRate: number, validUntil: datetime, notes: string, termsAndConditions: string) {
     guard title != null and title != "" "Proposal title is required"
     guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
 
@@ -116,7 +116,7 @@ entity Proposal {
     emit ProposalCreated
   }
 
-  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
+  command update(title: string, eventDate: datetime, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: datetime, notes: string, termsAndConditions: string) {
     guard self.deletedAt == null "Cannot update a deleted proposal"
     guard self.isDraft "Can only update proposals in draft status"
     guard title != null and title != "" "Proposal title is required"
@@ -379,7 +379,7 @@ event ProposalSent: "crm.proposal.sent" {
   clientId: string
   title: string
   total: number
-  validUntil: number
+  validUntil: datetime
   userId: string
   sentAt: datetime
 }

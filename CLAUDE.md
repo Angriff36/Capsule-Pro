@@ -259,7 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/__tests__/kitchen/manifest-preptask-claim-conformance.test.ts (edit), apps/api/__tests__/kitchen/manifest-event-preplist-seed-runtime.test.ts (edit), apps/api/__tests__/events/catering-order-lifecycle.test.ts (edit), manifest/runtime/src/__tests__/reactions-conformance-runtime.test.ts (edit), manifest/runtime/src/__tests__/entity-concurrency.test.ts (edit), manifest/source/training-module-sel-rules.manifest (edit), manifest/scripts/ir-utils.mjs (edit)
 
 # === END COGNILAYER ===

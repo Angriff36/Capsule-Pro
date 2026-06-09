@@ -18,8 +18,8 @@ entity TimeEntry {
   timestamps
   property deletedAt: datetime
 
-  computed isClockedIn: boolean = self.clockIn > 0 and self.clockOut == 0
-  computed isCompleted: boolean = self.clockIn > 0 and self.clockOut > 0
+  computed isClockedIn: boolean = self.clockIn != null and self.clockOut == null
+  computed isCompleted: boolean = self.clockIn != null and self.clockOut != null
   computed totalMinutes: number = self.clockOut > self.clockIn ? (self.clockOut - self.clockIn) / 60000 : 0
   computed totalHours: number = self.totalMinutes > 0 ? (self.totalMinutes - self.breakMinutes) / 60 : 0
   computed isApproved: boolean = self.approvedBy != ""
@@ -77,9 +77,9 @@ entity TimeEntry {
     emit TimeEntryClockedOut
   }
 
-  command addEntry(employeeId: string, locationId: string, shiftId: string, clockIn: number, clockOut: number, breakMinutes: number, notes: string) {
+  command addEntry(employeeId: string, locationId: string, shiftId: string, clockIn: datetime, clockOut: datetime, breakMinutes: number, notes: string) {
     guard employeeId != null and employeeId != "" "Employee ID is required"
-    guard clockIn != null and clockIn > 0 "Clock-in time is required"
+    guard clockIn != null "Clock-in time is required"
     guard clockOut != null and clockOut > clockIn "Clock-out must be after clock-in"
 
     constraint warnLongEntry:warn (clockOut - clockIn) > 43200000 {
@@ -141,7 +141,7 @@ entity TimecardEditRequest {
   transition status from "pending" to ["approved", "rejected"]
 
   default policy TimecardEditRequestDefaultAccess execute: user.role in ["hr_admin", "payroll_admin", "manager", "admin"] "Time entry management"
-  command create(timeEntryId: string, employeeId: string, requestedClockIn: number, requestedClockOut: number, requestedBreakMinutes: number, reason: string) {
+  command create(timeEntryId: string, employeeId: string, requestedClockIn: datetime, requestedClockOut: datetime, requestedBreakMinutes: number, reason: string) {
     guard timeEntryId != null and timeEntryId != "" "Time entry ID is required"
     guard employeeId != null and employeeId != "" "Employee ID is required"
     guard reason != null and reason != "" "Reason is required"
@@ -205,14 +205,14 @@ event TimeEntryClockedIn: "staff.timeentry.clocked_in" {
   employeeId: string
   locationId: string
   shiftId: string
-  clockIn: number
+  clockIn: datetime
 }
 
 event TimeEntryClockedOut: "staff.timeentry.clocked_out" {
   timeEntryId: string
   employeeId: string
-  clockIn: number
-  clockOut: number
+  clockIn: datetime
+  clockOut: datetime
   totalHours: number
   breakMinutes: number
   clockedOutAt: datetime
@@ -223,8 +223,8 @@ event TimeEntryAdded: "staff.timeentry.added" {
   tenantId: string
   employeeId: string
   locationId: string
-  clockIn: number
-  clockOut: number
+  clockIn: datetime
+  clockOut: datetime
   totalHours: number
   breakMinutes: number
   createdAt: datetime
@@ -245,8 +245,8 @@ event TimecardEditRequested: "staff.timecard.edit.requested" {
   timeEntryId: string
   employeeId: string
   reason: string
-  requestedClockIn: number
-  requestedClockOut: number
+  requestedClockIn: datetime
+  requestedClockOut: datetime
   createdAt: datetime
 }
 

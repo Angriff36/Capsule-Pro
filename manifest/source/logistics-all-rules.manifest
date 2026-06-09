@@ -254,7 +254,7 @@ entity LogisticsRoute {
   relationship belongsTo driver: Driver with driverId
 
   default policy LogisticsRouteDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command create(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: number, scheduledEnd: number, distance: number, estimatedDuration: number, stops: number, notes: string) {
+  command create(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: datetime, scheduledEnd: datetime, distance: number, estimatedDuration: number, stops: number, notes: string) {
     guard name != null and name != "" "Route name is required"
 
     mutate name = name
@@ -282,7 +282,7 @@ entity LogisticsRoute {
     emit LogisticsRouteDeleted
   }
 
-  command update(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: number, scheduledEnd: number, distance: number, estimatedDuration: number, stops: number, notes: string) {
+  command update(name: string, vehicleId: string, driverId: string, startLocation: string, endLocation: string, scheduledStart: datetime, scheduledEnd: datetime, distance: number, estimatedDuration: number, stops: number, notes: string) {
     guard name != null and name != "" "Route name is required"
     guard self.status == "planned" "Can only update a planned route"
 
@@ -392,7 +392,7 @@ entity LogisticsDispatch {
   transition status from "in_transit" to ["delivered", "failed"]
 
   default policy LogisticsDispatchDefaultAccess execute: user.role in ["driver", "logistics_manager", "manager", "admin"] "Logistics management"
-  command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: number, notes: string) {
+  command assign(routeId: string, driverId: string, vehicleId: string, priority: string, estimatedDeliveryTime: datetime, notes: string) {
     guard routeId != null and routeId != "" "Route ID is required"
     guard driverId != null and driverId != "" "Driver ID is required"
     guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
@@ -440,7 +440,7 @@ entity LogisticsDispatch {
   }
 
   // Reassign a failed or pending dispatch to a different driver/vehicle
-  command reassign(driverId: string, vehicleId: string, estimatedDeliveryTime: number, notes: string) {
+  command reassign(driverId: string, vehicleId: string, estimatedDeliveryTime: datetime, notes: string) {
     guard self.status in ["pending", "assigned", "failed"] "Can only reassign a pending, assigned, or failed dispatch"
     guard driverId != null and driverId != "" "Driver ID is required"
     guard vehicleId != null and vehicleId != "" "Vehicle ID is required"
@@ -546,7 +546,7 @@ event LogisticsRouteCreated: "logistics.route.created" {
   routeId: string
   tenantId: string
   name: string
-  scheduledStart: number
+  scheduledStart: datetime
   createdAt: datetime
 }
 
@@ -623,7 +623,7 @@ event LogisticsDispatchDelivered: "logistics.dispatch.delivered" {
   dispatchId: string
   tenantId: string
   routeId: string
-  actualDeliveryTime: number
+  actualDeliveryTime: datetime
   deliveredAt: datetime
 }
 

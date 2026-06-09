@@ -140,7 +140,7 @@ entity CollectionCase {
     emit DunningReset
   }
 
-  command createPaymentPlan(planId: string, nextPaymentDue: number) {
+  command createPaymentPlan(planId: string, nextPaymentDue: datetime) {
     guard self.hasPaymentPlan == false "Payment plan already exists"
     guard self.status == "ACTIVE" "Can only create plan for active cases"
     mutate hasPaymentPlan = true
@@ -431,7 +431,7 @@ event DunningReset: "collections.case.dunning-reset" {
 event PaymentPlanCreated: "collections.case.payment-plan-created" {
   caseId: string
   planId: string
-  nextPaymentDue: number
+  nextPaymentDue: datetime
 }
 
 event CollectionDisputed: "collections.case.disputed" {
