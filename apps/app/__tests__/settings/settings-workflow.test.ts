@@ -91,7 +91,7 @@ describe("SET1: Settings pages load without crashes", () => {
       const clientSource = readSettingFile("security/security-client.tsx");
       expect(pageSource).toContain("SecurityClient");
       expect(clientSource).toContain('"use client"');
-      expect(clientSource).toContain("apiFetch");
+      expect(clientSource).toContain("manifest-client.generated");
       expect(clientSource).toContain("api-keys");
     });
   });
@@ -171,8 +171,7 @@ describe("SET1: Settings pages load without crashes", () => {
     });
 
     it("handles missing user_email with fallback", () => {
-      // Verify the fallback pattern exists in the codebase
-      const fallbackPattern = '"System"';
+      // Verify the fallback pattern exists in the codebase — "System" is the default username
       // The audit-log client likely handles this in rendering
       const clientSource = readSettingFile("audit-log/audit-log-client.tsx");
       if (clientSource) {

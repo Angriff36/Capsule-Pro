@@ -866,7 +866,6 @@ policy InventoryManagersCanManageReorders execute: user.role in ["inventory_mana
 policy ManagersCanManageVendorContacts execute: user.role in ["manager", "admin"] "Managers can manage vendor contacts"
 policy ManagersCanRateVendors execute: user.role in ["manager", "admin"] "Managers can rate vendors"
 policy InventoryManagersCanManageTransferItems execute: user.role in ["inventory_manager", "manager", "admin"] "Inventory managers can manage transfer line items"
-policy FinanceCanManageBudgets execute: user.role in ["manager", "admin"] "Managers and admins can manage procurement budgets"
 policy ManagersCanManageAuditSchedules execute: user.role in ["inventory_manager", "manager", "admin"] "Managers can manage audit schedules"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1071,23 +1070,6 @@ event TransferItemRemoved: "inventory.transfer.item.removed" {
   inventoryItemId: string
   removedBy: string
   removedAt: datetime
-}
-
-event ProcurementBudgetCreated: "procurement.budget.created" {
-  budgetId: string
-  tenantId: string
-  name: string
-  budgetAmount: number
-  periodStart: number
-  periodEnd: number
-  createdAt: datetime
-}
-
-event ProcurementBudgetUpdated: "procurement.budget.updated" {
-  budgetId: string
-  name: string
-  budgetAmount: number
-  updatedAt: datetime
 }
 
 event ProcurementBudgetSpendRecorded: "procurement.budget.spend_recorded" {

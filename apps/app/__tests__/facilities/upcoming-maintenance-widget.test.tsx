@@ -16,23 +16,14 @@ vi.mock("@/app/lib/manifest-client.generated", () => ({
         equipmentId: "asset-1",
       },
     ],
-    pagination: { page: 1, limit: 1, total: 1, totalPages: 1 },
   }),
-}));
-
-// Mock apiFetch for the assets call (still uses apiFetch due to envelope key mismatch)
-vi.mock("@/app/lib/api", () => ({
-  apiFetch: vi.fn().mockResolvedValue({
-    ok: true,
-    json: async () => ({
-      success: true,
-      assets: [{ id: "asset-1", name: "Main Oven" }],
-    }),
+  listFacilityAssets: vi.fn().mockResolvedValue({
+    data: [{ id: "asset-1", name: "Main Oven" }],
   }),
 }));
 
 describe("UpcomingMaintenanceWidget", () => {
-  it("renders schedules from the facilities API success shape", async () => {
+  it("renders schedules from the generated client", async () => {
     render(<UpcomingMaintenanceWidget />);
 
     await waitFor(() => {

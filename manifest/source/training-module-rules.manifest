@@ -45,20 +45,6 @@ event TrainingQuestionCreated: "staff.training-question.created" {
   code: string
 }
 
-event TrainingAssignmentCreated: "staff.training-assignment.created" {
-  id: string
-  moduleId: string
-  moduleCode: string
-  staffMemberId: string
-  dueDateReviewNeeded: boolean
-}
-
-event TrainingAssignmentStarted: "staff.training-assignment.started" {
-  id: string
-  moduleId: string
-  staffMemberId: string
-}
-
 event TrainingAttemptSubmitted: "staff.training-attempt.submitted" {
   assignmentId: string
   attemptId: string
@@ -96,19 +82,6 @@ event TrainingAttemptRecorded: "staff.training-attempt.recorded" {
   staffMemberId: string
   attemptNumber: number
   passed: boolean
-}
-
-event TrainingAssignmentCompleted: "staff.training-assignment.completed" {
-  id: string
-  moduleId: string
-  staffMemberId: string
-}
-
-event TrainingAssignmentWaived: "staff.training-assignment.waived" {
-  id: string
-  moduleId: string
-  staffMemberId: string
-  reason: string
 }
 
 event TrainingAssignmentDueDateSet: "staff.training-assignment.due-date-set" {
