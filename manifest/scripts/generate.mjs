@@ -26,6 +26,8 @@ const {
   nextjsOutput: defaultOutput,
   appDirPrefix,
   readRoutesEnabled,
+  dispatcherExecutorImportPath,
+  dispatcherExecutorImportName,
 } = getConfigPaths();
 
 const userArgs = process.argv.slice(2);
@@ -527,7 +529,7 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     `import { captureException } from "@sentry/nextjs";`,
     `import { requireCurrentUser } from "@/app/lib/tenant";`,
     `import { manifestErrorResponse } from "@/lib/manifest-response";`,
-    `import { runManifestCommand } from "@/lib/manifest/execute-command";`,
+    `import { ${dispatcherExecutorImportName} } from "${dispatcherExecutorImportPath}";`,
     "",
     `export const runtime = "nodejs";`,
     "",
@@ -540,7 +542,7 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     "    const currentUser = await requireCurrentUser();",
     "    const body = await request.json().catch(() => ({}));",
     "",
-    "    return runManifestCommand({",
+    `    return ${dispatcherExecutorImportName}({`,
     "      entity,",
     "      command: commandSlug,",
     "      body,",
