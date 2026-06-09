@@ -50,6 +50,8 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  requireTenantId: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -58,6 +60,26 @@ vi.mock("@sentry/nextjs", () => ({
 
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 // Import mocked modules after vi.mock setup

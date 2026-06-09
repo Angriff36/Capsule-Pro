@@ -51,6 +51,8 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  requireTenantId: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));

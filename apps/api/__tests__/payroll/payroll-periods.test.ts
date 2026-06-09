@@ -13,15 +13,50 @@ import { GET as getPeriod } from "@/app/api/payroll/periods/[id]/route";
 import { GET as listPeriods } from "@/app/api/payroll/periods/list/route";
 
 // Mock dependencies
+vi.mock("@repo/database", () => ({
+  database: {
+    payrollPeriod: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 const { auth } = await import("@repo/auth/server");

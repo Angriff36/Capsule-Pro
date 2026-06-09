@@ -12,10 +12,41 @@ import { GET as getDeduction } from "@/app/api/payroll/deductions/[id]/route";
 import { GET as listDeductions } from "@/app/api/payroll/deductions/list/route";
 
 // Mock dependencies
+vi.mock("@repo/database", () => ({
+  database: {
+    employeeDeduction: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
+  requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");

@@ -28,16 +28,53 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks
 // ---------------------------------------------------------------------------
 
+vi.mock("@repo/database", () => ({
+  database: {
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn(),
+    purchaseOrder: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    purchaseOrderItem: {
+      findMany: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  requireTenantId: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
 vi.mock("@/lib/database", async () => {
-  const mod =
-    await vi.importActual<typeof import("@repo/database")>("@repo/database");
-  return mod;
+  const { database } = await import("@repo/database");
+  return { database };
 });
 
 import { auth } from "@repo/auth/server";

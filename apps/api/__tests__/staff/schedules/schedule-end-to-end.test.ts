@@ -24,6 +24,31 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // which now includes schedule and scheduleShift models.
 // ---------------------------------------------------------------------------
 
+vi.mock("@repo/database", () => ({
+  database: {
+    schedule: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    scheduleShift: {
+      count: vi.fn(),
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+  },
+}));
+vi.mock("@/lib/database", async () => {
+  const { database } = await import("@repo/database");
+  return { database };
+});
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
@@ -31,6 +56,8 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  requireTenantId: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -40,6 +67,26 @@ vi.mock("@/app/lib/invariant", async () => {
 
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
 vi.mock("@/lib/manifest-runtime", () => ({

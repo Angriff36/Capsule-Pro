@@ -41,9 +41,33 @@ vi.mock("@repo/database", () => ({
 }));
 
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({ getTenantIdForOrg: vi.fn() }));
+vi.mock("@/app/lib/tenant", () => ({
+  getTenantIdForOrg: vi.fn(),
+  requireTenantId: vi.fn(),
+  requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
+}));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
+vi.mock("@/lib/manifest-response", async () => {
+  const { NextResponse } = await import("next/server");
+  return {
+    manifestSuccessResponse: (data: unknown, status = 200) =>
+      NextResponse.json(
+        {
+          success: true,
+          ...(typeof data === "object" && data !== null ? data : { data }),
+        },
+        { status }
+      ),
+    manifestErrorResponse: (message: string, status: number) =>
+      NextResponse.json({ success: false, message }, { status }),
+  };
+});
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
 // ---------------------------------------------------------------------------
 // Imported mocks
 // ---------------------------------------------------------------------------
