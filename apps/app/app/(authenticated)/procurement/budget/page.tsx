@@ -147,9 +147,6 @@ export default function BudgetPage() {
       await budgetCreate({
         ...form,
         fiscalYear: Number.parseInt(form.fiscalYear),
-        budgetAmount: Number.parseFloat(form.budgetAmount),
-        thresholdWarningPct: Number.parseInt(form.thresholdWarningPct),
-        thresholdCriticalPct: Number.parseInt(form.thresholdCriticalPct),
       });
       setDialogOpen(false);
       setForm({
@@ -181,7 +178,7 @@ export default function BudgetPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await budgetRemove({ budgetId: deleteTarget.id });
+      await budgetRemove({ id: deleteTarget.id });
       if (selectedBudget === deleteTarget.id) {
         setSelectedBudget(null);
         setDetailData(null);

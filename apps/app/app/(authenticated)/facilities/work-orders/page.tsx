@@ -183,9 +183,9 @@ export default function FacilitiesWorkOrdersPage() {
     setUpdatingStatus(workOrderId);
     try {
       if (newStatus === "in_progress") {
-        await facilityWorkOrderStart({ workOrderId, status: newStatus });
+        await facilityWorkOrderStart({ id: workOrderId });
       } else if (newStatus === "completed") {
-        await facilityWorkOrderComplete({ workOrderId, status: newStatus });
+        await facilityWorkOrderComplete({ id: workOrderId });
       }
       await loadWorkOrders();
     } catch (error) {
@@ -201,18 +201,7 @@ export default function FacilitiesWorkOrdersPage() {
     setUpdatingStatus(completingWorkOrder.id);
     try {
       await facilityWorkOrderComplete({
-        workOrderId: completingWorkOrder.id,
-        status: "completed",
-        laborHours: completeForm.laborHours
-          ? Number.parseFloat(completeForm.laborHours)
-          : null,
-        partsCost: completeForm.partsCost
-          ? Number.parseFloat(completeForm.partsCost)
-          : null,
-        laborCost: completeForm.laborCost
-          ? Number.parseFloat(completeForm.laborCost)
-          : null,
-        notes: completeForm.notes || null,
+        id: completingWorkOrder.id,
       });
       await loadWorkOrders();
       setShowCompleteDialog(false);

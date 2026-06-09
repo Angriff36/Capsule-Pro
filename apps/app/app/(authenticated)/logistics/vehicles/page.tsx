@@ -197,22 +197,21 @@ export default function VehiclesPage() {
     try {
       if (editing) {
         await vehicleUpdate({
-          vehicleId: editing.id,
+          id: editing.id,
           make: form.make,
           model: form.model,
-          year: form.year ? Number.parseInt(form.year) : null,
-          plateNumber: form.plateNumber || null,
-          vin: form.vin || null,
+          year: form.year ? Number.parseInt(form.year) : undefined,
+          plateNumber: form.plateNumber || undefined,
+          vin: form.vin || undefined,
           capacityWeight: form.capacityWeight
             ? Number.parseFloat(form.capacityWeight)
-            : null,
+            : undefined,
           capacityVolume: form.capacityVolume
             ? Number.parseFloat(form.capacityVolume)
-            : null,
-          fuelType: form.fuelType || null,
-          mileage: form.mileage ? Number.parseFloat(form.mileage) : null,
-          status: form.status,
-          notes: form.notes || null,
+            : undefined,
+          fuelType: form.fuelType || undefined,
+          mileage: form.mileage ? Number.parseFloat(form.mileage) : undefined,
+          notes: form.notes || undefined,
         });
         toast.success("Vehicle updated successfully");
         await loadVehicles();
@@ -251,7 +250,7 @@ export default function VehiclesPage() {
   const handleDelete = async (vehicleId: string) => {
     setDeleting(vehicleId);
     try {
-      await vehicleRemove({ vehicleId });
+      await vehicleRemove({ id: vehicleId });
       setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
     } catch (e) {
       console.error("Failed to delete:", e);

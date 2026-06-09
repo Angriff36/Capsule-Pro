@@ -148,7 +148,7 @@ function ChangeRoleDialog({
     }
     setLoading(true);
     try {
-      await userUpdateRole({ userId: employee.id, role });
+      await userUpdateRole({ id: employee.id });
 
       toast.success(`${getDisplayName(employee)} role updated to ${role}`);
       onSaved();

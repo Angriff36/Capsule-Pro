@@ -2832,10166 +2832,10611 @@ export async function getVersionApproval(id: string): Promise<VersionApproval | 
   return (json.versionApproval ?? json.data) as VersionApproval | undefined;
 }
 export async function adminChatParticipantCreate(input: AdminChatParticipantCreateInput = {}): Promise<AdminChatParticipant | undefined> {
-  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "create", input);
+  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminChatParticipantArchive(input: Record<string, unknown> = {}): Promise<AdminChatParticipant | undefined> {
-  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "archive", input);
+export async function adminChatParticipantArchive(input: AdminChatParticipantArchiveInput = {}): Promise<AdminChatParticipant | undefined> {
+  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "archive", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminChatParticipantUnarchive(input: Record<string, unknown> = {}): Promise<AdminChatParticipant | undefined> {
-  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "unarchive", input);
+export async function adminChatParticipantUnarchive(input: AdminChatParticipantUnarchiveInput = {}): Promise<AdminChatParticipant | undefined> {
+  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "unarchive", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminChatParticipantClearHistory(input: Record<string, unknown> = {}): Promise<AdminChatParticipant | undefined> {
-  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "clearHistory", input);
+export async function adminChatParticipantClearHistory(input: AdminChatParticipantClearHistoryInput = {}): Promise<AdminChatParticipant | undefined> {
+  const r = await executeCommand<AdminChatParticipant>("AdminChatParticipant", "clearHistory", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminTaskCreate(input: AdminTaskCreateInput = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "create", input);
+  const r = await executeCommand<AdminTask>("AdminTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminTaskUpdate(input: AdminTaskUpdateInput = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "update", input);
+  const r = await executeCommand<AdminTask>("AdminTask", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskMoveToBacklog(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "moveToBacklog", input);
+export async function adminTaskMoveToBacklog(input: AdminTaskMoveToBacklogInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "moveToBacklog", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskStartProgress(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "startProgress", input);
+export async function adminTaskStartProgress(input: AdminTaskStartProgressInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "startProgress", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskSubmitForReview(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "submitForReview", input);
+export async function adminTaskSubmitForReview(input: AdminTaskSubmitForReviewInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "submitForReview", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskComplete(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "complete", input);
+export async function adminTaskComplete(input: AdminTaskCompleteInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "complete", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskCancel(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "cancel", input);
+export async function adminTaskCancel(input: AdminTaskCancelInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function adminTaskSoftDelete(input: Record<string, unknown> = {}): Promise<AdminTask | undefined> {
-  const r = await executeCommand<AdminTask>("AdminTask", "softDelete", input);
+export async function adminTaskSoftDelete(input: AdminTaskSoftDeleteInput = {}): Promise<AdminTask | undefined> {
+  const r = await executeCommand<AdminTask>("AdminTask", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function aiEventSetupSessionParse(input: AiEventSetupSessionParseInput = {}): Promise<AiEventSetupSession | undefined> {
-  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "parse", input);
+  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "parse", input as Record<string, unknown>);
   return r.result;
 }
 export async function aiEventSetupSessionConfirm(input: AiEventSetupSessionConfirmInput = {}): Promise<AiEventSetupSession | undefined> {
-  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "confirm", input);
+  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "confirm", input as Record<string, unknown>);
   return r.result;
 }
 export async function aiEventSetupSessionMarkCreated(input: AiEventSetupSessionMarkCreatedInput = {}): Promise<AiEventSetupSession | undefined> {
-  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "markCreated", input);
+  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "markCreated", input as Record<string, unknown>);
   return r.result;
 }
 export async function aiEventSetupSessionCancel(input: AiEventSetupSessionCancelInput = {}): Promise<AiEventSetupSession | undefined> {
-  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "cancel", input);
+  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function aiEventSetupSessionUpdateConfidence(input: AiEventSetupSessionUpdateConfidenceInput = {}): Promise<AiEventSetupSession | undefined> {
-  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "updateConfidence", input);
+  const r = await executeCommand<AiEventSetupSession>("AiEventSetupSession", "updateConfidence", input as Record<string, unknown>);
   return r.result;
 }
 export async function alertsConfigCreate(input: AlertsConfigCreateInput = {}): Promise<AlertsConfig | undefined> {
-  const r = await executeCommand<AlertsConfig>("AlertsConfig", "create", input);
+  const r = await executeCommand<AlertsConfig>("AlertsConfig", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function alertsConfigUpdate(input: AlertsConfigUpdateInput = {}): Promise<AlertsConfig | undefined> {
-  const r = await executeCommand<AlertsConfig>("AlertsConfig", "update", input);
+  const r = await executeCommand<AlertsConfig>("AlertsConfig", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function alertsConfigRemove(input: AlertsConfigRemoveInput = {}): Promise<AlertsConfig | undefined> {
-  const r = await executeCommand<AlertsConfig>("AlertsConfig", "remove", input);
+  const r = await executeCommand<AlertsConfig>("AlertsConfig", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningCreate(input: AllergenWarningCreateInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "create", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningAcknowledge(input: AllergenWarningAcknowledgeInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "acknowledge", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningMarkResolved(input: AllergenWarningMarkResolvedInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "markResolved", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningApplyOverride(input: AllergenWarningApplyOverrideInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "applyOverride", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "applyOverride", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningEscalate(input: AllergenWarningEscalateInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "escalate", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "escalate", input as Record<string, unknown>);
   return r.result;
 }
 export async function allergenWarningSoftDelete(input: AllergenWarningSoftDeleteInput = {}): Promise<AllergenWarning | undefined> {
-  const r = await executeCommand<AllergenWarning>("AllergenWarning", "softDelete", input);
+  const r = await executeCommand<AllergenWarning>("AllergenWarning", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function apiKeyCreate(input: ApiKeyCreateInput = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "create", input);
+  const r = await executeCommand<ApiKey>("ApiKey", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function apiKeyUpdate(input: ApiKeyUpdateInput = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "update", input);
+  const r = await executeCommand<ApiKey>("ApiKey", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function apiKeyRotate(input: ApiKeyRotateInput = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "rotate", input);
+  const r = await executeCommand<ApiKey>("ApiKey", "rotate", input as Record<string, unknown>);
   return r.result;
 }
 export async function apiKeyRevoke(input: ApiKeyRevokeInput = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "revoke", input);
+  const r = await executeCommand<ApiKey>("ApiKey", "revoke", input as Record<string, unknown>);
   return r.result;
 }
 export async function apiKeySoftDelete(input: ApiKeySoftDeleteInput = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "softDelete", input);
+  const r = await executeCommand<ApiKey>("ApiKey", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
-export async function apiKeyRecordUsage(input: Record<string, unknown> = {}): Promise<ApiKey | undefined> {
-  const r = await executeCommand<ApiKey>("ApiKey", "recordUsage", input);
+export async function apiKeyRecordUsage(input: ApiKeyRecordUsageInput = {}): Promise<ApiKey | undefined> {
+  const r = await executeCommand<ApiKey>("ApiKey", "recordUsage", input as Record<string, unknown>);
   return r.result;
 }
 export async function bankAccountCreate(input: BankAccountCreateInput = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "create", input);
+  const r = await executeCommand<BankAccount>("BankAccount", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function bankAccountRemove(input: Record<string, unknown> = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "remove", input);
+export async function bankAccountRemove(input: BankAccountRemoveInput = {}): Promise<BankAccount | undefined> {
+  const r = await executeCommand<BankAccount>("BankAccount", "remove", input as Record<string, unknown>);
   return r.result;
 }
-export async function bankAccountMarkDefault(input: Record<string, unknown> = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "markDefault", input);
+export async function bankAccountMarkDefault(input: BankAccountMarkDefaultInput = {}): Promise<BankAccount | undefined> {
+  const r = await executeCommand<BankAccount>("BankAccount", "markDefault", input as Record<string, unknown>);
   return r.result;
 }
 export async function bankAccountUpdate(input: BankAccountUpdateInput = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "update", input);
+  const r = await executeCommand<BankAccount>("BankAccount", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function bankAccountVerify(input: Record<string, unknown> = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "verify", input);
+export async function bankAccountVerify(input: BankAccountVerifyInput = {}): Promise<BankAccount | undefined> {
+  const r = await executeCommand<BankAccount>("BankAccount", "verify", input as Record<string, unknown>);
   return r.result;
 }
 export async function bankAccountVerifyFailed(input: BankAccountVerifyFailedInput = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "verifyFailed", input);
+  const r = await executeCommand<BankAccount>("BankAccount", "verifyFailed", input as Record<string, unknown>);
   return r.result;
 }
-export async function bankAccountRetryVerification(input: Record<string, unknown> = {}): Promise<BankAccount | undefined> {
-  const r = await executeCommand<BankAccount>("BankAccount", "retryVerification", input);
+export async function bankAccountRetryVerification(input: BankAccountRetryVerificationInput = {}): Promise<BankAccount | undefined> {
+  const r = await executeCommand<BankAccount>("BankAccount", "retryVerification", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardCreate(input: BattleBoardCreateInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "create", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardOpen(input: BattleBoardOpenInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "open", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "open", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardStartVoting(input: BattleBoardStartVotingInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "startVoting", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "startVoting", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardAddDish(input: BattleBoardAddDishInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "addDish", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "addDish", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardRemoveDish(input: BattleBoardRemoveDishInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "removeDish", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "removeDish", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardVote(input: BattleBoardVoteInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "vote", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "vote", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardFinalize(input: BattleBoardFinalizeInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "finalize", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "finalize", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardUpdate(input: BattleBoardUpdateInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "update", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function battleBoardRecordImport(input: BattleBoardRecordImportInput = {}): Promise<BattleBoard | undefined> {
-  const r = await executeCommand<BattleBoard>("BattleBoard", "recordImport", input);
+  const r = await executeCommand<BattleBoard>("BattleBoard", "recordImport", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetCreate(input: BudgetCreateInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "create", input);
+  const r = await executeCommand<Budget>("Budget", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function budgetRemove(input: Record<string, unknown> = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "remove", input);
+export async function budgetRemove(input: BudgetRemoveInput = {}): Promise<Budget | undefined> {
+  const r = await executeCommand<Budget>("Budget", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetUpdate(input: BudgetUpdateInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "update", input);
+  const r = await executeCommand<Budget>("Budget", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetApprove(input: BudgetApproveInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "approve", input);
+  const r = await executeCommand<Budget>("Budget", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetLock(input: BudgetLockInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "lock", input);
+  const r = await executeCommand<Budget>("Budget", "lock", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetAddLineItem(input: BudgetAddLineItemInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "addLineItem", input);
+  const r = await executeCommand<Budget>("Budget", "addLineItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetRecordVariance(input: BudgetRecordVarianceInput = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "recordVariance", input);
+  const r = await executeCommand<Budget>("Budget", "recordVariance", input as Record<string, unknown>);
   return r.result;
 }
-export async function budgetRefresh(input: Record<string, unknown> = {}): Promise<Budget | undefined> {
-  const r = await executeCommand<Budget>("Budget", "refresh", input);
+export async function budgetRefresh(input: BudgetRefreshInput = {}): Promise<Budget | undefined> {
+  const r = await executeCommand<Budget>("Budget", "refresh", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkOrderRuleCreate(input: BulkOrderRuleCreateInput = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "create", input);
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkOrderRuleUpdate(input: BulkOrderRuleUpdateInput = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "update", input);
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function bulkOrderRuleActivate(input: Record<string, unknown> = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "activate", input);
+export async function bulkOrderRuleActivate(input: BulkOrderRuleActivateInput = {}): Promise<BulkOrderRule | undefined> {
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkOrderRuleDeactivate(input: BulkOrderRuleDeactivateInput = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "deactivate", input);
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkOrderRuleAdjustPriority(input: BulkOrderRuleAdjustPriorityInput = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "adjustPriority", input);
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "adjustPriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkOrderRuleSoftDelete(input: BulkOrderRuleSoftDeleteInput = {}): Promise<BulkOrderRule | undefined> {
-  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "softDelete", input);
+  const r = await executeCommand<BulkOrderRule>("BulkOrderRule", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderCreate(input: CateringOrderCreateInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "create", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderUpdate(input: CateringOrderUpdateInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "update", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderConfirm(input: CateringOrderConfirmInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "confirm", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "confirm", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderRecordDeposit(input: CateringOrderRecordDepositInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "recordDeposit", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "recordDeposit", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderScheduleDelivery(input: CateringOrderScheduleDeliveryInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "scheduleDelivery", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "scheduleDelivery", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderCancel(input: CateringOrderCancelInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "cancel", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderStartPrep(input: CateringOrderStartPrepInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "startPrep", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "startPrep", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderDeliver(input: CateringOrderDeliverInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "deliver", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "deliver", input as Record<string, unknown>);
   return r.result;
 }
 export async function cateringOrderMarkComplete(input: CateringOrderMarkCompleteInput = {}): Promise<CateringOrder | undefined> {
-  const r = await executeCommand<CateringOrder>("CateringOrder", "markComplete", input);
+  const r = await executeCommand<CateringOrder>("CateringOrder", "markComplete", input as Record<string, unknown>);
   return r.result;
 }
 export async function chartOfAccountCreate(input: ChartOfAccountCreateInput = {}): Promise<ChartOfAccount | undefined> {
-  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "create", input);
+  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function chartOfAccountUpdate(input: ChartOfAccountUpdateInput = {}): Promise<ChartOfAccount | undefined> {
-  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "update", input);
+  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function chartOfAccountDeactivate(input: Record<string, unknown> = {}): Promise<ChartOfAccount | undefined> {
-  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "deactivate", input);
+export async function chartOfAccountDeactivate(input: ChartOfAccountDeactivateInput = {}): Promise<ChartOfAccount | undefined> {
+  const r = await executeCommand<ChartOfAccount>("ChartOfAccount", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientInteractionCreate(input: ClientInteractionCreateInput = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "create", input);
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientInteractionUpdate(input: ClientInteractionUpdateInput = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "update", input);
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientInteractionComplete(input: ClientInteractionCompleteInput = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "complete", input);
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientInteractionSchedule(input: ClientInteractionScheduleInput = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "schedule", input);
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "schedule", input as Record<string, unknown>);
   return r.result;
 }
-export async function clientInteractionMarkOverdue(input: Record<string, unknown> = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "markOverdue", input);
+export async function clientInteractionMarkOverdue(input: ClientInteractionMarkOverdueInput = {}): Promise<ClientInteraction | undefined> {
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "markOverdue", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientInteractionEscalate(input: ClientInteractionEscalateInput = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "escalate", input);
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "escalate", input as Record<string, unknown>);
   return r.result;
 }
-export async function clientInteractionSoftDelete(input: Record<string, unknown> = {}): Promise<ClientInteraction | undefined> {
-  const r = await executeCommand<ClientInteraction>("ClientInteraction", "softDelete", input);
+export async function clientInteractionSoftDelete(input: ClientInteractionSoftDeleteInput = {}): Promise<ClientInteraction | undefined> {
+  const r = await executeCommand<ClientInteraction>("ClientInteraction", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientCreate(input: ClientCreateInput = {}): Promise<Client | undefined> {
-  const r = await executeCommand<Client>("Client", "create", input);
+  const r = await executeCommand<Client>("Client", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientUpdate(input: ClientUpdateInput = {}): Promise<Client | undefined> {
-  const r = await executeCommand<Client>("Client", "update", input);
+  const r = await executeCommand<Client>("Client", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientArchive(input: ClientArchiveInput = {}): Promise<Client | undefined> {
-  const r = await executeCommand<Client>("Client", "archive", input);
+  const r = await executeCommand<Client>("Client", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientReactivate(input: ClientReactivateInput = {}): Promise<Client | undefined> {
-  const r = await executeCommand<Client>("Client", "reactivate", input);
+  const r = await executeCommand<Client>("Client", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientContactCreate(input: ClientContactCreateInput = {}): Promise<ClientContact | undefined> {
-  const r = await executeCommand<ClientContact>("ClientContact", "create", input);
+  const r = await executeCommand<ClientContact>("ClientContact", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientContactUpdate(input: ClientContactUpdateInput = {}): Promise<ClientContact | undefined> {
-  const r = await executeCommand<ClientContact>("ClientContact", "update", input);
+  const r = await executeCommand<ClientContact>("ClientContact", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientContactRemove(input: ClientContactRemoveInput = {}): Promise<ClientContact | undefined> {
-  const r = await executeCommand<ClientContact>("ClientContact", "remove", input);
+  const r = await executeCommand<ClientContact>("ClientContact", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientContactSetPrimary(input: ClientContactSetPrimaryInput = {}): Promise<ClientContact | undefined> {
-  const r = await executeCommand<ClientContact>("ClientContact", "setPrimary", input);
+  const r = await executeCommand<ClientContact>("ClientContact", "setPrimary", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientPreferenceCreate(input: ClientPreferenceCreateInput = {}): Promise<ClientPreference | undefined> {
-  const r = await executeCommand<ClientPreference>("ClientPreference", "create", input);
+  const r = await executeCommand<ClientPreference>("ClientPreference", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientPreferenceUpdate(input: ClientPreferenceUpdateInput = {}): Promise<ClientPreference | undefined> {
-  const r = await executeCommand<ClientPreference>("ClientPreference", "update", input);
+  const r = await executeCommand<ClientPreference>("ClientPreference", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function clientPreferenceRemove(input: ClientPreferenceRemoveInput = {}): Promise<ClientPreference | undefined> {
-  const r = await executeCommand<ClientPreference>("ClientPreference", "remove", input);
+  const r = await executeCommand<ClientPreference>("ClientPreference", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseAssignTo(input: CollectionCaseAssignToInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "assignTo", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "assignTo", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseUpdateStatus(input: CollectionCaseUpdateStatusInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "updateStatus", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "updateStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseSettle(input: CollectionCaseSettleInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "settle", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "settle", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseRecordPayment(input: CollectionCaseRecordPaymentInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "recordPayment", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "recordPayment", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionCaseMarkResolved(input: Record<string, unknown> = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "markResolved", input);
+export async function collectionCaseMarkResolved(input: CollectionCaseMarkResolvedInput = {}): Promise<CollectionCase | undefined> {
+  const r = await executeCommand<CollectionCase>("CollectionCase", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionCaseEscalateDunning(input: Record<string, unknown> = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateDunning", input);
+export async function collectionCaseEscalateDunning(input: CollectionCaseEscalateDunningInput = {}): Promise<CollectionCase | undefined> {
+  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateDunning", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionCaseEscalateToLegal(input: Record<string, unknown> = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateToLegal", input);
+export async function collectionCaseEscalateToLegal(input: CollectionCaseEscalateToLegalInput = {}): Promise<CollectionCase | undefined> {
+  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateToLegal", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionCaseSetUrgentPriority(input: Record<string, unknown> = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "setUrgentPriority", input);
+export async function collectionCaseSetUrgentPriority(input: CollectionCaseSetUrgentPriorityInput = {}): Promise<CollectionCase | undefined> {
+  const r = await executeCommand<CollectionCase>("CollectionCase", "setUrgentPriority", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionCaseSetHighPriority(input: Record<string, unknown> = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "setHighPriority", input);
+export async function collectionCaseSetHighPriority(input: CollectionCaseSetHighPriorityInput = {}): Promise<CollectionCase | undefined> {
+  const r = await executeCommand<CollectionCase>("CollectionCase", "setHighPriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseResetDunning(input: CollectionCaseResetDunningInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "resetDunning", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "resetDunning", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseCreatePaymentPlan(input: CollectionCaseCreatePaymentPlanInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "createPaymentPlan", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "createPaymentPlan", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseMarkDisputed(input: CollectionCaseMarkDisputedInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "markDisputed", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "markDisputed", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseResolveDispute(input: CollectionCaseResolveDisputeInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "resolveDispute", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "resolveDispute", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseEscalateToLegalWithDetails(input: CollectionCaseEscalateToLegalWithDetailsInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateToLegalWithDetails", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "escalateToLegalWithDetails", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseWriteOff(input: CollectionCaseWriteOffInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "writeOff", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "writeOff", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseUpdateAging(input: CollectionCaseUpdateAgingInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "updateAging", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "updateAging", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseSetPriority(input: CollectionCaseSetPriorityInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "setPriority", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "setPriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionCaseClose(input: CollectionCaseCloseInput = {}): Promise<CollectionCase | undefined> {
-  const r = await executeCommand<CollectionCase>("CollectionCase", "close", input);
+  const r = await executeCommand<CollectionCase>("CollectionCase", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionActionComplete(input: CollectionActionCompleteInput = {}): Promise<CollectionAction | undefined> {
-  const r = await executeCommand<CollectionAction>("CollectionAction", "complete", input);
+  const r = await executeCommand<CollectionAction>("CollectionAction", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionActionFail(input: CollectionActionFailInput = {}): Promise<CollectionAction | undefined> {
-  const r = await executeCommand<CollectionAction>("CollectionAction", "fail", input);
+  const r = await executeCommand<CollectionAction>("CollectionAction", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionActionSkip(input: CollectionActionSkipInput = {}): Promise<CollectionAction | undefined> {
-  const r = await executeCommand<CollectionAction>("CollectionAction", "skip", input);
+  const r = await executeCommand<CollectionAction>("CollectionAction", "skip", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionActionReschedule(input: CollectionActionRescheduleInput = {}): Promise<CollectionAction | undefined> {
-  const r = await executeCommand<CollectionAction>("CollectionAction", "reschedule", input);
+  const r = await executeCommand<CollectionAction>("CollectionAction", "reschedule", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionPaymentPlanRecordInstallment(input: CollectionPaymentPlanRecordInstallmentInput = {}): Promise<CollectionPaymentPlan | undefined> {
-  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "recordInstallment", input);
+  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "recordInstallment", input as Record<string, unknown>);
   return r.result;
 }
-export async function collectionPaymentPlanMarkCompleted(input: Record<string, unknown> = {}): Promise<CollectionPaymentPlan | undefined> {
-  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markCompleted", input);
+export async function collectionPaymentPlanMarkCompleted(input: CollectionPaymentPlanMarkCompletedInput = {}): Promise<CollectionPaymentPlan | undefined> {
+  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markCompleted", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionPaymentPlanMarkDefaulted(input: CollectionPaymentPlanMarkDefaultedInput = {}): Promise<CollectionPaymentPlan | undefined> {
-  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markDefaulted", input);
+  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markDefaulted", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionPaymentPlanCancel(input: CollectionPaymentPlanCancelInput = {}): Promise<CollectionPaymentPlan | undefined> {
-  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "cancel", input);
+  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function collectionPaymentPlanModify(input: CollectionPaymentPlanModifyInput = {}): Promise<CollectionPaymentPlan | undefined> {
-  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "modify", input);
+  const r = await executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "modify", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCreate(input: CommandBoardCreateInput = {}): Promise<CommandBoard | undefined> {
-  const r = await executeCommand<CommandBoard>("CommandBoard", "create", input);
+  const r = await executeCommand<CommandBoard>("CommandBoard", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardUpdate(input: CommandBoardUpdateInput = {}): Promise<CommandBoard | undefined> {
-  const r = await executeCommand<CommandBoard>("CommandBoard", "update", input);
+  const r = await executeCommand<CommandBoard>("CommandBoard", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardActivate(input: CommandBoardActivateInput = {}): Promise<CommandBoard | undefined> {
-  const r = await executeCommand<CommandBoard>("CommandBoard", "activate", input);
+  const r = await executeCommand<CommandBoard>("CommandBoard", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardDeactivate(input: CommandBoardDeactivateInput = {}): Promise<CommandBoard | undefined> {
-  const r = await executeCommand<CommandBoard>("CommandBoard", "deactivate", input);
+  const r = await executeCommand<CommandBoard>("CommandBoard", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCardCreate(input: CommandBoardCardCreateInput = {}): Promise<CommandBoardCard | undefined> {
-  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "create", input);
+  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCardUpdate(input: CommandBoardCardUpdateInput = {}): Promise<CommandBoardCard | undefined> {
-  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "update", input);
+  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCardMove(input: CommandBoardCardMoveInput = {}): Promise<CommandBoardCard | undefined> {
-  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "move", input);
+  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "move", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCardResize(input: CommandBoardCardResizeInput = {}): Promise<CommandBoardCard | undefined> {
-  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "resize", input);
+  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "resize", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardCardRemove(input: CommandBoardCardRemoveInput = {}): Promise<CommandBoardCard | undefined> {
-  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "remove", input);
+  const r = await executeCommand<CommandBoardCard>("CommandBoardCard", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardGroupCreate(input: CommandBoardGroupCreateInput = {}): Promise<CommandBoardGroup | undefined> {
-  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "create", input);
+  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardGroupUpdate(input: CommandBoardGroupUpdateInput = {}): Promise<CommandBoardGroup | undefined> {
-  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "update", input);
+  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardGroupRemove(input: CommandBoardGroupRemoveInput = {}): Promise<CommandBoardGroup | undefined> {
-  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "remove", input);
+  const r = await executeCommand<CommandBoardGroup>("CommandBoardGroup", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardConnectionCreate(input: CommandBoardConnectionCreateInput = {}): Promise<CommandBoardConnection | undefined> {
-  const r = await executeCommand<CommandBoardConnection>("CommandBoardConnection", "create", input);
+  const r = await executeCommand<CommandBoardConnection>("CommandBoardConnection", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardConnectionRemove(input: CommandBoardConnectionRemoveInput = {}): Promise<CommandBoardConnection | undefined> {
-  const r = await executeCommand<CommandBoardConnection>("CommandBoardConnection", "remove", input);
+  const r = await executeCommand<CommandBoardConnection>("CommandBoardConnection", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardLayoutCreate(input: CommandBoardLayoutCreateInput = {}): Promise<CommandBoardLayout | undefined> {
-  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "create", input);
+  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardLayoutUpdate(input: CommandBoardLayoutUpdateInput = {}): Promise<CommandBoardLayout | undefined> {
-  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "update", input);
+  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function commandBoardLayoutRemove(input: CommandBoardLayoutRemoveInput = {}): Promise<CommandBoardLayout | undefined> {
-  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "remove", input);
+  const r = await executeCommand<CommandBoardLayout>("CommandBoardLayout", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function containerCreate(input: ContainerCreateInput = {}): Promise<Container | undefined> {
-  const r = await executeCommand<Container>("Container", "create", input);
+  const r = await executeCommand<Container>("Container", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function containerUpdate(input: ContainerUpdateInput = {}): Promise<Container | undefined> {
-  const r = await executeCommand<Container>("Container", "update", input);
+  const r = await executeCommand<Container>("Container", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function containerDeactivate(input: ContainerDeactivateInput = {}): Promise<Container | undefined> {
-  const r = await executeCommand<Container>("Container", "deactivate", input);
+  const r = await executeCommand<Container>("Container", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function containerReactivate(input: ContainerReactivateInput = {}): Promise<Container | undefined> {
-  const r = await executeCommand<Container>("Container", "reactivate", input);
+  const r = await executeCommand<Container>("Container", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function containerRelocate(input: ContainerRelocateInput = {}): Promise<Container | undefined> {
-  const r = await executeCommand<Container>("Container", "relocate", input);
+  const r = await executeCommand<Container>("Container", "relocate", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalTemplateCreate(input: ProposalTemplateCreateInput = {}): Promise<ProposalTemplate | undefined> {
-  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "create", input);
+  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalTemplateUpdate(input: ProposalTemplateUpdateInput = {}): Promise<ProposalTemplate | undefined> {
-  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "update", input);
+  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function proposalTemplateActivate(input: Record<string, unknown> = {}): Promise<ProposalTemplate | undefined> {
-  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "activate", input);
+export async function proposalTemplateActivate(input: ProposalTemplateActivateInput = {}): Promise<ProposalTemplate | undefined> {
+  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "activate", input as Record<string, unknown>);
   return r.result;
 }
-export async function proposalTemplateDeactivate(input: Record<string, unknown> = {}): Promise<ProposalTemplate | undefined> {
-  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "deactivate", input);
+export async function proposalTemplateDeactivate(input: ProposalTemplateDeactivateInput = {}): Promise<ProposalTemplate | undefined> {
+  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function proposalTemplateSoftDelete(input: Record<string, unknown> = {}): Promise<ProposalTemplate | undefined> {
-  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "softDelete", input);
+export async function proposalTemplateSoftDelete(input: ProposalTemplateSoftDeleteInput = {}): Promise<ProposalTemplate | undefined> {
+  const r = await executeCommand<ProposalTemplate>("ProposalTemplate", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function interactionAttachmentCreate(input: InteractionAttachmentCreateInput = {}): Promise<InteractionAttachment | undefined> {
-  const r = await executeCommand<InteractionAttachment>("InteractionAttachment", "create", input);
+  const r = await executeCommand<InteractionAttachment>("InteractionAttachment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function interactionAttachmentRemove(input: InteractionAttachmentRemoveInput = {}): Promise<InteractionAttachment | undefined> {
-  const r = await executeCommand<InteractionAttachment>("InteractionAttachment", "remove", input);
+  const r = await executeCommand<InteractionAttachment>("InteractionAttachment", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function crmScoringRuleCreate(input: CrmScoringRuleCreateInput = {}): Promise<CrmScoringRule | undefined> {
-  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "create", input);
+  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function crmScoringRuleUpdate(input: CrmScoringRuleUpdateInput = {}): Promise<CrmScoringRule | undefined> {
-  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "update", input);
+  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function crmScoringRuleActivate(input: Record<string, unknown> = {}): Promise<CrmScoringRule | undefined> {
-  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "activate", input);
+export async function crmScoringRuleActivate(input: CrmScoringRuleActivateInput = {}): Promise<CrmScoringRule | undefined> {
+  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "activate", input as Record<string, unknown>);
   return r.result;
 }
-export async function crmScoringRuleDeactivate(input: Record<string, unknown> = {}): Promise<CrmScoringRule | undefined> {
-  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "deactivate", input);
+export async function crmScoringRuleDeactivate(input: CrmScoringRuleDeactivateInput = {}): Promise<CrmScoringRule | undefined> {
+  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function crmScoringRuleSoftDelete(input: Record<string, unknown> = {}): Promise<CrmScoringRule | undefined> {
-  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "softDelete", input);
+export async function crmScoringRuleSoftDelete(input: CrmScoringRuleSoftDeleteInput = {}): Promise<CrmScoringRule | undefined> {
+  const r = await executeCommand<CrmScoringRule>("CrmScoringRule", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function reportCreate(input: ReportCreateInput = {}): Promise<Report | undefined> {
-  const r = await executeCommand<Report>("Report", "create", input);
+  const r = await executeCommand<Report>("Report", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function reportUpdate(input: ReportUpdateInput = {}): Promise<Report | undefined> {
-  const r = await executeCommand<Report>("Report", "update", input);
+  const r = await executeCommand<Report>("Report", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function reportShare(input: ReportShareInput = {}): Promise<Report | undefined> {
-  const r = await executeCommand<Report>("Report", "share", input);
+  const r = await executeCommand<Report>("Report", "share", input as Record<string, unknown>);
   return r.result;
 }
 export async function reportRemove(input: ReportRemoveInput = {}): Promise<Report | undefined> {
-  const r = await executeCommand<Report>("Report", "remove", input);
+  const r = await executeCommand<Report>("Report", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentCreate(input: DocumentCreateInput = {}): Promise<Document | undefined> {
-  const r = await executeCommand<Document>("Document", "create", input);
+  const r = await executeCommand<Document>("Document", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentMarkParsed(input: DocumentMarkParsedInput = {}): Promise<Document | undefined> {
-  const r = await executeCommand<Document>("Document", "markParsed", input);
+  const r = await executeCommand<Document>("Document", "markParsed", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentMarkFailed(input: DocumentMarkFailedInput = {}): Promise<Document | undefined> {
-  const r = await executeCommand<Document>("Document", "markFailed", input);
+  const r = await executeCommand<Document>("Document", "markFailed", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentRemove(input: DocumentRemoveInput = {}): Promise<Document | undefined> {
-  const r = await executeCommand<Document>("Document", "remove", input);
+  const r = await executeCommand<Document>("Document", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminChatThreadCreate(input: AdminChatThreadCreateInput = {}): Promise<AdminChatThread | undefined> {
-  const r = await executeCommand<AdminChatThread>("AdminChatThread", "create", input);
+  const r = await executeCommand<AdminChatThread>("AdminChatThread", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminChatThreadArchive(input: AdminChatThreadArchiveInput = {}): Promise<AdminChatThread | undefined> {
-  const r = await executeCommand<AdminChatThread>("AdminChatThread", "archive", input);
+  const r = await executeCommand<AdminChatThread>("AdminChatThread", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminChatThreadReopen(input: AdminChatThreadReopenInput = {}): Promise<AdminChatThread | undefined> {
-  const r = await executeCommand<AdminChatThread>("AdminChatThread", "reopen", input);
+  const r = await executeCommand<AdminChatThread>("AdminChatThread", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminChatMessageCreate(input: AdminChatMessageCreateInput = {}): Promise<AdminChatMessage | undefined> {
-  const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "create", input);
+  const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function adminChatMessageRemove(input: AdminChatMessageRemoveInput = {}): Promise<AdminChatMessage | undefined> {
-  const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "remove", input);
+  const r = await executeCommand<AdminChatMessage>("AdminChatMessage", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionCreate(input: CycleCountSessionCreateInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "create", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionUpdate(input: CycleCountSessionUpdateInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "update", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionStart(input: CycleCountSessionStartInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "start", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionComplete(input: CycleCountSessionCompleteInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "complete", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionFinalize(input: CycleCountSessionFinalizeInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "finalize", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "finalize", input as Record<string, unknown>);
   return r.result;
 }
-export async function cycleCountSessionReopen(input: Record<string, unknown> = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "reopen", input);
+export async function cycleCountSessionReopen(input: CycleCountSessionReopenInput = {}): Promise<CycleCountSession | undefined> {
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionCancel(input: CycleCountSessionCancelInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "cancel", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountSessionSoftDelete(input: CycleCountSessionSoftDeleteInput = {}): Promise<CycleCountSession | undefined> {
-  const r = await executeCommand<CycleCountSession>("CycleCountSession", "softDelete", input);
+  const r = await executeCommand<CycleCountSession>("CycleCountSession", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountRecordCreate(input: CycleCountRecordCreateInput = {}): Promise<CycleCountRecord | undefined> {
-  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "create", input);
+  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountRecordUpdate(input: CycleCountRecordUpdateInput = {}): Promise<CycleCountRecord | undefined> {
-  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "update", input);
+  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountRecordVerify(input: CycleCountRecordVerifyInput = {}): Promise<CycleCountRecord | undefined> {
-  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "verify", input);
+  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "verify", input as Record<string, unknown>);
   return r.result;
 }
 export async function cycleCountRecordRemove(input: CycleCountRecordRemoveInput = {}): Promise<CycleCountRecord | undefined> {
-  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "remove", input);
+  const r = await executeCommand<CycleCountRecord>("CycleCountRecord", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function varianceReportCreate(input: VarianceReportCreateInput = {}): Promise<VarianceReport | undefined> {
-  const r = await executeCommand<VarianceReport>("VarianceReport", "create", input);
+  const r = await executeCommand<VarianceReport>("VarianceReport", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function varianceReportReject(input: VarianceReportRejectInput = {}): Promise<VarianceReport | undefined> {
-  const r = await executeCommand<VarianceReport>("VarianceReport", "reject", input);
+  const r = await executeCommand<VarianceReport>("VarianceReport", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function varianceReportReview(input: VarianceReportReviewInput = {}): Promise<VarianceReport | undefined> {
-  const r = await executeCommand<VarianceReport>("VarianceReport", "review", input);
+  const r = await executeCommand<VarianceReport>("VarianceReport", "review", input as Record<string, unknown>);
   return r.result;
 }
 export async function varianceReportApprove(input: VarianceReportApproveInput = {}): Promise<VarianceReport | undefined> {
-  const r = await executeCommand<VarianceReport>("VarianceReport", "approve", input);
+  const r = await executeCommand<VarianceReport>("VarianceReport", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function varianceReportUpdateDiscrepancy(input: VarianceReportUpdateDiscrepancyInput = {}): Promise<VarianceReport | undefined> {
-  const r = await executeCommand<VarianceReport>("VarianceReport", "updateDiscrepancy", input);
+  const r = await executeCommand<VarianceReport>("VarianceReport", "updateDiscrepancy", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealCreate(input: DealCreateInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "create", input);
+  const r = await executeCommand<Deal>("Deal", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealUpdateStage(input: DealUpdateStageInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "updateStage", input);
+  const r = await executeCommand<Deal>("Deal", "updateStage", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealUpdateValue(input: DealUpdateValueInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "updateValue", input);
+  const r = await executeCommand<Deal>("Deal", "updateValue", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealUpdateProbability(input: DealUpdateProbabilityInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "updateProbability", input);
+  const r = await executeCommand<Deal>("Deal", "updateProbability", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealAssign(input: DealAssignInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "assign", input);
+  const r = await executeCommand<Deal>("Deal", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealClose(input: DealCloseInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "close", input);
+  const r = await executeCommand<Deal>("Deal", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealAbandon(input: DealAbandonInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "abandon", input);
+  const r = await executeCommand<Deal>("Deal", "abandon", input as Record<string, unknown>);
   return r.result;
 }
 export async function dealReopen(input: DealReopenInput = {}): Promise<Deal | undefined> {
-  const r = await executeCommand<Deal>("Deal", "reopen", input);
+  const r = await executeCommand<Deal>("Deal", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishCreate(input: DishCreateInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "create", input);
+  const r = await executeCommand<Dish>("Dish", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishUpdate(input: DishUpdateInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "update", input);
+  const r = await executeCommand<Dish>("Dish", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function dishActivate(input: Record<string, unknown> = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "activate", input);
+export async function dishActivate(input: DishActivateInput = {}): Promise<Dish | undefined> {
+  const r = await executeCommand<Dish>("Dish", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishDeactivate(input: DishDeactivateInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "deactivate", input);
+  const r = await executeCommand<Dish>("Dish", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishUpdatePricing(input: DishUpdatePricingInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "updatePricing", input);
+  const r = await executeCommand<Dish>("Dish", "updatePricing", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishUpdateLeadTime(input: DishUpdateLeadTimeInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "updateLeadTime", input);
+  const r = await executeCommand<Dish>("Dish", "updateLeadTime", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishMarkSeasonal(input: DishMarkSeasonalInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "markSeasonal", input);
+  const r = await executeCommand<Dish>("Dish", "markSeasonal", input as Record<string, unknown>);
   return r.result;
 }
-export async function dishUnmarkSeasonal(input: Record<string, unknown> = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "unmarkSeasonal", input);
+export async function dishUnmarkSeasonal(input: DishUnmarkSeasonalInput = {}): Promise<Dish | undefined> {
+  const r = await executeCommand<Dish>("Dish", "unmarkSeasonal", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishEightySix(input: DishEightySixInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "eightySix", input);
+  const r = await executeCommand<Dish>("Dish", "eightySix", input as Record<string, unknown>);
   return r.result;
 }
 export async function dishReinstate(input: DishReinstateInput = {}): Promise<Dish | undefined> {
-  const r = await executeCommand<Dish>("Dish", "reinstate", input);
+  const r = await executeCommand<Dish>("Dish", "reinstate", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentVersionCreate(input: DocumentVersionCreateInput = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "create", input);
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentVersionUpdateContent(input: DocumentVersionUpdateContentInput = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "updateContent", input);
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "updateContent", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentVersionApprove(input: DocumentVersionApproveInput = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "approve", input);
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentVersionMarkPublished(input: DocumentVersionMarkPublishedInput = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "markPublished", input);
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "markPublished", input as Record<string, unknown>);
   return r.result;
 }
 export async function documentVersionSupersede(input: DocumentVersionSupersedeInput = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "supersede", input);
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "supersede", input as Record<string, unknown>);
   return r.result;
 }
-export async function documentVersionRestore(input: Record<string, unknown> = {}): Promise<DocumentVersion | undefined> {
-  const r = await executeCommand<DocumentVersion>("DocumentVersion", "restore", input);
+export async function documentVersionRestore(input: DocumentVersionRestoreInput = {}): Promise<DocumentVersion | undefined> {
+  const r = await executeCommand<DocumentVersion>("DocumentVersion", "restore", input as Record<string, unknown>);
   return r.result;
 }
 export async function emailTemplateCreate(input: EmailTemplateCreateInput = {}): Promise<EmailTemplate | undefined> {
-  const r = await executeCommand<EmailTemplate>("EmailTemplate", "create", input);
+  const r = await executeCommand<EmailTemplate>("EmailTemplate", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function emailTemplateUpdate(input: EmailTemplateUpdateInput = {}): Promise<EmailTemplate | undefined> {
-  const r = await executeCommand<EmailTemplate>("EmailTemplate", "update", input);
+  const r = await executeCommand<EmailTemplate>("EmailTemplate", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function emailTemplateSoftDelete(input: Record<string, unknown> = {}): Promise<EmailTemplate | undefined> {
-  const r = await executeCommand<EmailTemplate>("EmailTemplate", "softDelete", input);
+export async function emailTemplateSoftDelete(input: EmailTemplateSoftDeleteInput = {}): Promise<EmailTemplate | undefined> {
+  const r = await executeCommand<EmailTemplate>("EmailTemplate", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function emailWorkflowCreate(input: EmailWorkflowCreateInput = {}): Promise<EmailWorkflow | undefined> {
-  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "create", input);
+  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function emailWorkflowUpdate(input: EmailWorkflowUpdateInput = {}): Promise<EmailWorkflow | undefined> {
-  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "update", input);
+  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function emailWorkflowSetActive(input: EmailWorkflowSetActiveInput = {}): Promise<EmailWorkflow | undefined> {
-  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "setActive", input);
+  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "setActive", input as Record<string, unknown>);
   return r.result;
 }
-export async function emailWorkflowSoftDelete(input: Record<string, unknown> = {}): Promise<EmailWorkflow | undefined> {
-  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "softDelete", input);
+export async function emailWorkflowSoftDelete(input: EmailWorkflowSoftDeleteInput = {}): Promise<EmailWorkflow | undefined> {
+  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
-export async function emailWorkflowRecordTriggered(input: Record<string, unknown> = {}): Promise<EmailWorkflow | undefined> {
-  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "recordTriggered", input);
+export async function emailWorkflowRecordTriggered(input: EmailWorkflowRecordTriggeredInput = {}): Promise<EmailWorkflow | undefined> {
+  const r = await executeCommand<EmailWorkflow>("EmailWorkflow", "recordTriggered", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeAvailabilityCreate(input: EmployeeAvailabilityCreateInput = {}): Promise<EmployeeAvailability | undefined> {
-  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "create", input);
+  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeAvailabilityUpdate(input: EmployeeAvailabilityUpdateInput = {}): Promise<EmployeeAvailability | undefined> {
-  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "update", input);
+  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeAvailabilitySuspend(input: EmployeeAvailabilitySuspendInput = {}): Promise<EmployeeAvailability | undefined> {
-  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "suspend", input);
+  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "suspend", input as Record<string, unknown>);
   return r.result;
 }
-export async function employeeAvailabilityReinstate(input: Record<string, unknown> = {}): Promise<EmployeeAvailability | undefined> {
-  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "reinstate", input);
+export async function employeeAvailabilityReinstate(input: EmployeeAvailabilityReinstateInput = {}): Promise<EmployeeAvailability | undefined> {
+  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "reinstate", input as Record<string, unknown>);
   return r.result;
 }
-export async function employeeAvailabilitySoftDelete(input: Record<string, unknown> = {}): Promise<EmployeeAvailability | undefined> {
-  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "softDelete", input);
+export async function employeeAvailabilitySoftDelete(input: EmployeeAvailabilitySoftDeleteInput = {}): Promise<EmployeeAvailability | undefined> {
+  const r = await executeCommand<EmployeeAvailability>("EmployeeAvailability", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeCertificationCreate(input: EmployeeCertificationCreateInput = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "create", input);
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeCertificationUpdate(input: EmployeeCertificationUpdateInput = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "update", input);
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeCertificationRenew(input: EmployeeCertificationRenewInput = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "renew", input);
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "renew", input as Record<string, unknown>);
   return r.result;
 }
-export async function employeeCertificationExpire(input: Record<string, unknown> = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "expire", input);
+export async function employeeCertificationExpire(input: EmployeeCertificationExpireInput = {}): Promise<EmployeeCertification | undefined> {
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "expire", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeCertificationRevoke(input: EmployeeCertificationRevokeInput = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "revoke", input);
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "revoke", input as Record<string, unknown>);
   return r.result;
 }
-export async function employeeCertificationSoftDelete(input: Record<string, unknown> = {}): Promise<EmployeeCertification | undefined> {
-  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "softDelete", input);
+export async function employeeCertificationSoftDelete(input: EmployeeCertificationSoftDeleteInput = {}): Promise<EmployeeCertification | undefined> {
+  const r = await executeCommand<EmployeeCertification>("EmployeeCertification", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentScheduleMaintenance(input: EquipmentScheduleMaintenanceInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "scheduleMaintenance", input);
+  const r = await executeCommand<Equipment>("Equipment", "scheduleMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentRecordMaintenance(input: EquipmentRecordMaintenanceInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "recordMaintenance", input);
+  const r = await executeCommand<Equipment>("Equipment", "recordMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentUpdateStatus(input: EquipmentUpdateStatusInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "updateStatus", input);
+  const r = await executeCommand<Equipment>("Equipment", "updateStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentUpdateCondition(input: EquipmentUpdateConditionInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "updateCondition", input);
+  const r = await executeCommand<Equipment>("Equipment", "updateCondition", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentRecordUsage(input: EquipmentRecordUsageInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "recordUsage", input);
+  const r = await executeCommand<Equipment>("Equipment", "recordUsage", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentCreate(input: EquipmentCreateInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "create", input);
+  const r = await executeCommand<Equipment>("Equipment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function equipmentRetire(input: EquipmentRetireInput = {}): Promise<Equipment | undefined> {
-  const r = await executeCommand<Equipment>("Equipment", "retire", input);
+  const r = await executeCommand<Equipment>("Equipment", "retire", input as Record<string, unknown>);
   return r.result;
 }
 export async function maintenanceWorkOrderAssign(input: MaintenanceWorkOrderAssignInput = {}): Promise<MaintenanceWorkOrder | undefined> {
-  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "assign", input);
+  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function maintenanceWorkOrderStartWork(input: MaintenanceWorkOrderStartWorkInput = {}): Promise<MaintenanceWorkOrder | undefined> {
-  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "startWork", input);
+  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "startWork", input as Record<string, unknown>);
   return r.result;
 }
 export async function maintenanceWorkOrderCompleteWork(input: MaintenanceWorkOrderCompleteWorkInput = {}): Promise<MaintenanceWorkOrder | undefined> {
-  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "completeWork", input);
+  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "completeWork", input as Record<string, unknown>);
   return r.result;
 }
 export async function maintenanceWorkOrderUpdateStatus(input: MaintenanceWorkOrderUpdateStatusInput = {}): Promise<MaintenanceWorkOrder | undefined> {
-  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "updateStatus", input);
+  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "updateStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function maintenanceWorkOrderCreate(input: MaintenanceWorkOrderCreateInput = {}): Promise<MaintenanceWorkOrder | undefined> {
-  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "create", input);
+  const r = await executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function automatedFollowupCreate(input: AutomatedFollowupCreateInput = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "create", input);
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function automatedFollowupComplete(input: AutomatedFollowupCompleteInput = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "complete", input);
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "complete", input as Record<string, unknown>);
   return r.result;
 }
-export async function automatedFollowupGenerate(input: Record<string, unknown> = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "generate", input);
+export async function automatedFollowupGenerate(input: AutomatedFollowupGenerateInput = {}): Promise<AutomatedFollowup | undefined> {
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "generate", input as Record<string, unknown>);
   return r.result;
 }
 export async function automatedFollowupFail(input: AutomatedFollowupFailInput = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "fail", input);
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function automatedFollowupRetry(input: AutomatedFollowupRetryInput = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "retry", input);
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "retry", input as Record<string, unknown>);
   return r.result;
 }
 export async function automatedFollowupSkip(input: AutomatedFollowupSkipInput = {}): Promise<AutomatedFollowup | undefined> {
-  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "skip", input);
+  const r = await executeCommand<AutomatedFollowup>("AutomatedFollowup", "skip", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemCreateItem(input: EventTimelineItemCreateItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "createItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "createItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemStartItem(input: EventTimelineItemStartItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "startItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "startItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemBlockItem(input: EventTimelineItemBlockItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "blockItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "blockItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemUnblockItem(input: EventTimelineItemUnblockItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "unblockItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "unblockItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemReorderItem(input: EventTimelineItemReorderItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "reorderItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "reorderItem", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventTimelineItemDeleteItem(input: Record<string, unknown> = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "deleteItem", input);
+export async function eventTimelineItemDeleteItem(input: EventTimelineItemDeleteItemInput = {}): Promise<EventTimelineItem | undefined> {
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "deleteItem", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventTimelineItemCompleteItem(input: Record<string, unknown> = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "completeItem", input);
+export async function eventTimelineItemCompleteItem(input: EventTimelineItemCompleteItemInput = {}): Promise<EventTimelineItem | undefined> {
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "completeItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineItemUpdateItem(input: EventTimelineItemUpdateItemInput = {}): Promise<EventTimelineItem | undefined> {
-  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "updateItem", input);
+  const r = await executeCommand<EventTimelineItem>("EventTimelineItem", "updateItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventWaitlistEntryAddGuest(input: EventWaitlistEntryAddGuestInput = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "addGuest", input);
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "addGuest", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventWaitlistEntryNotify(input: EventWaitlistEntryNotifyInput = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "notify", input);
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "notify", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventWaitlistEntryPromote(input: Record<string, unknown> = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "promote", input);
+export async function eventWaitlistEntryPromote(input: EventWaitlistEntryPromoteInput = {}): Promise<EventWaitlistEntry | undefined> {
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "promote", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventWaitlistEntrySeat(input: EventWaitlistEntrySeatInput = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "seat", input);
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "seat", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventWaitlistEntryCancel(input: EventWaitlistEntryCancelInput = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "cancel", input);
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventWaitlistEntryUpdateRsvp(input: EventWaitlistEntryUpdateRsvpInput = {}): Promise<EventWaitlistEntry | undefined> {
-  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "updateRsvp", input);
+  const r = await executeCommand<EventWaitlistEntry>("EventWaitlistEntry", "updateRsvp", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventBudgetCreate(input: EventBudgetCreateInput = {}): Promise<EventBudget | undefined> {
-  const r = await executeCommand<EventBudget>("EventBudget", "create", input);
+  const r = await executeCommand<EventBudget>("EventBudget", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventBudgetUpdate(input: EventBudgetUpdateInput = {}): Promise<EventBudget | undefined> {
-  const r = await executeCommand<EventBudget>("EventBudget", "update", input);
+  const r = await executeCommand<EventBudget>("EventBudget", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventBudgetApprove(input: EventBudgetApproveInput = {}): Promise<EventBudget | undefined> {
-  const r = await executeCommand<EventBudget>("EventBudget", "approve", input);
+  const r = await executeCommand<EventBudget>("EventBudget", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventBudgetFinalize(input: EventBudgetFinalizeInput = {}): Promise<EventBudget | undefined> {
-  const r = await executeCommand<EventBudget>("EventBudget", "finalize", input);
+  const r = await executeCommand<EventBudget>("EventBudget", "finalize", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetLineItemCreate(input: BudgetLineItemCreateInput = {}): Promise<BudgetLineItem | undefined> {
-  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "create", input);
+  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetLineItemUpdate(input: BudgetLineItemUpdateInput = {}): Promise<BudgetLineItem | undefined> {
-  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "update", input);
+  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetLineItemRemove(input: BudgetLineItemRemoveInput = {}): Promise<BudgetLineItem | undefined> {
-  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "remove", input);
+  const r = await executeCommand<BudgetLineItem>("BudgetLineItem", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventContractCreate(input: EventContractCreateInput = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "create", input);
+  const r = await executeCommand<EventContract>("EventContract", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventContractUpdate(input: EventContractUpdateInput = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "update", input);
+  const r = await executeCommand<EventContract>("EventContract", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventContractSend(input: EventContractSendInput = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "send", input);
+  const r = await executeCommand<EventContract>("EventContract", "send", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventContractMarkViewed(input: Record<string, unknown> = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "markViewed", input);
+export async function eventContractMarkViewed(input: EventContractMarkViewedInput = {}): Promise<EventContract | undefined> {
+  const r = await executeCommand<EventContract>("EventContract", "markViewed", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventContractSign(input: Record<string, unknown> = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "sign", input);
+export async function eventContractSign(input: EventContractSignInput = {}): Promise<EventContract | undefined> {
+  const r = await executeCommand<EventContract>("EventContract", "sign", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventContractExpire(input: Record<string, unknown> = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "expire", input);
+export async function eventContractExpire(input: EventContractExpireInput = {}): Promise<EventContract | undefined> {
+  const r = await executeCommand<EventContract>("EventContract", "expire", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventContractCancel(input: EventContractCancelInput = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "cancel", input);
+  const r = await executeCommand<EventContract>("EventContract", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventContractSoftDelete(input: EventContractSoftDeleteInput = {}): Promise<EventContract | undefined> {
-  const r = await executeCommand<EventContract>("EventContract", "softDelete", input);
+  const r = await executeCommand<EventContract>("EventContract", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function contractSignatureCreate(input: ContractSignatureCreateInput = {}): Promise<ContractSignature | undefined> {
-  const r = await executeCommand<ContractSignature>("ContractSignature", "create", input, { path: `/api/events/contracts/${String(input.contractId ?? "")}/signatures` });
+  const r = await executeCommand<ContractSignature>("ContractSignature", "create", input as Record<string, unknown>, { path: `/api/events/contracts/${String(input.contractId ?? "")}/signatures` });
   return r.result;
 }
 export async function contractSignatureVerify(input: ContractSignatureVerifyInput = {}): Promise<ContractSignature | undefined> {
-  const r = await executeCommand<ContractSignature>("ContractSignature", "verify", input);
+  const r = await executeCommand<ContractSignature>("ContractSignature", "verify", input as Record<string, unknown>);
   return r.result;
 }
 export async function contractSignatureInvalidate(input: ContractSignatureInvalidateInput = {}): Promise<ContractSignature | undefined> {
-  const r = await executeCommand<ContractSignature>("ContractSignature", "invalidate", input);
+  const r = await executeCommand<ContractSignature>("ContractSignature", "invalidate", input as Record<string, unknown>);
   return r.result;
 }
 export async function contractSignatureSoftDelete(input: ContractSignatureSoftDeleteInput = {}): Promise<ContractSignature | undefined> {
-  const r = await executeCommand<ContractSignature>("ContractSignature", "softDelete", input);
+  const r = await executeCommand<ContractSignature>("ContractSignature", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventDishCreate(input: EventDishCreateInput = {}): Promise<EventDish | undefined> {
-  const r = await executeCommand<EventDish>("EventDish", "create", input);
+  const r = await executeCommand<EventDish>("EventDish", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventDishUpdateQuantity(input: EventDishUpdateQuantityInput = {}): Promise<EventDish | undefined> {
-  const r = await executeCommand<EventDish>("EventDish", "updateQuantity", input);
+  const r = await executeCommand<EventDish>("EventDish", "updateQuantity", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventDishUpdateCourse(input: EventDishUpdateCourseInput = {}): Promise<EventDish | undefined> {
-  const r = await executeCommand<EventDish>("EventDish", "updateCourse", input);
+  const r = await executeCommand<EventDish>("EventDish", "updateCourse", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventDishUpdateNotes(input: EventDishUpdateNotesInput = {}): Promise<EventDish | undefined> {
-  const r = await executeCommand<EventDish>("EventDish", "updateNotes", input);
+  const r = await executeCommand<EventDish>("EventDish", "updateNotes", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventDishRemove(input: EventDishRemoveInput = {}): Promise<EventDish | undefined> {
-  const r = await executeCommand<EventDish>("EventDish", "remove", input);
+  const r = await executeCommand<EventDish>("EventDish", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventGuestCreate(input: EventGuestCreateInput = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "create", input);
+  const r = await executeCommand<EventGuest>("EventGuest", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventGuestUpdate(input: EventGuestUpdateInput = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "update", input);
+  const r = await executeCommand<EventGuest>("EventGuest", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventGuestRsvpConfirm(input: Record<string, unknown> = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "rsvpConfirm", input);
+export async function eventGuestRsvpConfirm(input: EventGuestRsvpConfirmInput = {}): Promise<EventGuest | undefined> {
+  const r = await executeCommand<EventGuest>("EventGuest", "rsvpConfirm", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventGuestRsvpDecline(input: EventGuestRsvpDeclineInput = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "rsvpDecline", input);
+  const r = await executeCommand<EventGuest>("EventGuest", "rsvpDecline", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventGuestCheckIn(input: Record<string, unknown> = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "checkIn", input);
+export async function eventGuestCheckIn(input: EventGuestCheckInInput = {}): Promise<EventGuest | undefined> {
+  const r = await executeCommand<EventGuest>("EventGuest", "checkIn", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventGuestAssignTable(input: EventGuestAssignTableInput = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "assignTable", input);
+  const r = await executeCommand<EventGuest>("EventGuest", "assignTable", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventGuestSoftDelete(input: EventGuestSoftDeleteInput = {}): Promise<EventGuest | undefined> {
-  const r = await executeCommand<EventGuest>("EventGuest", "softDelete", input);
+  const r = await executeCommand<EventGuest>("EventGuest", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCreate(input: EventImportWorkflowCreateInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "create", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartParsing(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startParsing", input);
+export async function eventImportWorkflowStartParsing(input: EventImportWorkflowStartParsingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startParsing", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteParsing(input: EventImportWorkflowCompleteParsingInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeParsing", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeParsing", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartExtracting(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startExtracting", input);
+export async function eventImportWorkflowStartExtracting(input: EventImportWorkflowStartExtractingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startExtracting", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteExtraction(input: EventImportWorkflowCompleteExtractionInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeExtraction", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeExtraction", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartValidating(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startValidating", input);
+export async function eventImportWorkflowStartValidating(input: EventImportWorkflowStartValidatingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startValidating", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteValidation(input: EventImportWorkflowCompleteValidationInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeValidation", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeValidation", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartProposing(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startProposing", input);
+export async function eventImportWorkflowStartProposing(input: EventImportWorkflowStartProposingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startProposing", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteProposing(input: EventImportWorkflowCompleteProposingInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeProposing", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeProposing", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartReserving(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startReserving", input);
+export async function eventImportWorkflowStartReserving(input: EventImportWorkflowStartReservingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startReserving", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteReserving(input: EventImportWorkflowCompleteReservingInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeReserving", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeReserving", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowStartActivating(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startActivating", input);
+export async function eventImportWorkflowStartActivating(input: EventImportWorkflowStartActivatingInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "startActivating", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCompleteActivating(input: EventImportWorkflowCompleteActivatingInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeActivating", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "completeActivating", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowFail(input: EventImportWorkflowFailInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "fail", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowPause(input: EventImportWorkflowPauseInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "pause", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "pause", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowResume(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "resume", input);
+export async function eventImportWorkflowResume(input: EventImportWorkflowResumeInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "resume", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportWorkflowCancel(input: EventImportWorkflowCancelInput = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "cancel", input);
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventImportWorkflowRetry(input: Record<string, unknown> = {}): Promise<EventImportWorkflow | undefined> {
-  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "retry", input);
+export async function eventImportWorkflowRetry(input: EventImportWorkflowRetryInput = {}): Promise<EventImportWorkflow | undefined> {
+  const r = await executeCommand<EventImportWorkflow>("EventImportWorkflow", "retry", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportCreate(input: EventReportCreateInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "create", input);
+  const r = await executeCommand<EventReport>("EventReport", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportSubmit(input: EventReportSubmitInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "submit", input);
+  const r = await executeCommand<EventReport>("EventReport", "submit", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportApprove(input: EventReportApproveInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "approve", input);
+  const r = await executeCommand<EventReport>("EventReport", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportReject(input: EventReportRejectInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "reject", input);
+  const r = await executeCommand<EventReport>("EventReport", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportComplete(input: EventReportCompleteInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "complete", input);
+  const r = await executeCommand<EventReport>("EventReport", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventReportUpdateProgress(input: EventReportUpdateProgressInput = {}): Promise<EventReport | undefined> {
-  const r = await executeCommand<EventReport>("EventReport", "updateProgress", input);
+  const r = await executeCommand<EventReport>("EventReport", "updateProgress", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventCreate(input: EventCreateInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "create", input);
+  const r = await executeCommand<Event>("Event", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUpdate(input: EventUpdateInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "update", input);
+  const r = await executeCommand<Event>("Event", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventConfirm(input: EventConfirmInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "confirm", input);
+  const r = await executeCommand<Event>("Event", "confirm", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventCancel(input: EventCancelInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "cancel", input);
+  const r = await executeCommand<Event>("Event", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventArchive(input: Record<string, unknown> = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "archive", input);
+export async function eventArchive(input: EventArchiveInput = {}): Promise<Event | undefined> {
+  const r = await executeCommand<Event>("Event", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUpdateBudget(input: EventUpdateBudgetInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "updateBudget", input);
+  const r = await executeCommand<Event>("Event", "updateBudget", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUpdateGuestCount(input: EventUpdateGuestCountInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "updateGuestCount", input);
+  const r = await executeCommand<Event>("Event", "updateGuestCount", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUpdateDate(input: EventUpdateDateInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "updateDate", input);
+  const r = await executeCommand<Event>("Event", "updateDate", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUpdateLocation(input: EventUpdateLocationInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "updateLocation", input);
+  const r = await executeCommand<Event>("Event", "updateLocation", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventFinalize(input: EventFinalizeInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "finalize", input);
+  const r = await executeCommand<Event>("Event", "finalize", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventUnfinalize(input: EventUnfinalizeInput = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "unfinalize", input);
+  const r = await executeCommand<Event>("Event", "unfinalize", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventSoftDelete(input: Record<string, unknown> = {}): Promise<Event | undefined> {
-  const r = await executeCommand<Event>("Event", "softDelete", input);
+export async function eventSoftDelete(input: EventSoftDeleteInput = {}): Promise<Event | undefined> {
+  const r = await executeCommand<Event>("Event", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventProfitabilityCreate(input: EventProfitabilityCreateInput = {}): Promise<EventProfitability | undefined> {
-  const r = await executeCommand<EventProfitability>("EventProfitability", "create", input);
+  const r = await executeCommand<EventProfitability>("EventProfitability", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventProfitabilityUpdate(input: EventProfitabilityUpdateInput = {}): Promise<EventProfitability | undefined> {
-  const r = await executeCommand<EventProfitability>("EventProfitability", "update", input);
+  const r = await executeCommand<EventProfitability>("EventProfitability", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventProfitabilityRecalculate(input: EventProfitabilityRecalculateInput = {}): Promise<EventProfitability | undefined> {
-  const r = await executeCommand<EventProfitability>("EventProfitability", "recalculate", input);
+  const r = await executeCommand<EventProfitability>("EventProfitability", "recalculate", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventSummaryCreate(input: EventSummaryCreateInput = {}): Promise<EventSummary | undefined> {
-  const r = await executeCommand<EventSummary>("EventSummary", "create", input);
+  const r = await executeCommand<EventSummary>("EventSummary", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventSummaryUpdate(input: EventSummaryUpdateInput = {}): Promise<EventSummary | undefined> {
-  const r = await executeCommand<EventSummary>("EventSummary", "update", input);
+  const r = await executeCommand<EventSummary>("EventSummary", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventSummaryRefresh(input: Record<string, unknown> = {}): Promise<EventSummary | undefined> {
-  const r = await executeCommand<EventSummary>("EventSummary", "refresh", input);
+export async function eventSummaryRefresh(input: EventSummaryRefreshInput = {}): Promise<EventSummary | undefined> {
+  const r = await executeCommand<EventSummary>("EventSummary", "refresh", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventStaffAssign(input: EventStaffAssignInput = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "assign", input);
+  const r = await executeCommand<EventStaff>("EventStaff", "assign", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventStaffConfirm(input: Record<string, unknown> = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "confirm", input);
+export async function eventStaffConfirm(input: EventStaffConfirmInput = {}): Promise<EventStaff | undefined> {
+  const r = await executeCommand<EventStaff>("EventStaff", "confirm", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventStaffUpdateShift(input: EventStaffUpdateShiftInput = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "updateShift", input);
+  const r = await executeCommand<EventStaff>("EventStaff", "updateShift", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventStaffUpdateRole(input: EventStaffUpdateRoleInput = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "updateRole", input);
+  const r = await executeCommand<EventStaff>("EventStaff", "updateRole", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventStaffCheckIn(input: Record<string, unknown> = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "checkIn", input);
+export async function eventStaffCheckIn(input: EventStaffCheckInInput = {}): Promise<EventStaff | undefined> {
+  const r = await executeCommand<EventStaff>("EventStaff", "checkIn", input as Record<string, unknown>);
   return r.result;
 }
-export async function eventStaffCheckOut(input: Record<string, unknown> = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "checkOut", input);
+export async function eventStaffCheckOut(input: EventStaffCheckOutInput = {}): Promise<EventStaff | undefined> {
+  const r = await executeCommand<EventStaff>("EventStaff", "checkOut", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventStaffMarkNoShow(input: EventStaffMarkNoShowInput = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "markNoShow", input);
+  const r = await executeCommand<EventStaff>("EventStaff", "markNoShow", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventStaffUnassign(input: EventStaffUnassignInput = {}): Promise<EventStaff | undefined> {
-  const r = await executeCommand<EventStaff>("EventStaff", "unassign", input);
+  const r = await executeCommand<EventStaff>("EventStaff", "unassign", input as Record<string, unknown>);
   return r.result;
 }
 export async function venueCreate(input: VenueCreateInput = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "create", input);
+  const r = await executeCommand<Venue>("Venue", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function venueUpdate(input: VenueUpdateInput = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "update", input);
+  const r = await executeCommand<Venue>("Venue", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function venueActivate(input: Record<string, unknown> = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "activate", input);
+export async function venueActivate(input: VenueActivateInput = {}): Promise<Venue | undefined> {
+  const r = await executeCommand<Venue>("Venue", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function venueDeactivate(input: VenueDeactivateInput = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "deactivate", input);
+  const r = await executeCommand<Venue>("Venue", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function venueUpdateCapacity(input: VenueUpdateCapacityInput = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "updateCapacity", input);
+  const r = await executeCommand<Venue>("Venue", "updateCapacity", input as Record<string, unknown>);
   return r.result;
 }
-export async function venueSoftDelete(input: Record<string, unknown> = {}): Promise<Venue | undefined> {
-  const r = await executeCommand<Venue>("Venue", "softDelete", input);
+export async function venueSoftDelete(input: VenueSoftDeleteInput = {}): Promise<Venue | undefined> {
+  const r = await executeCommand<Venue>("Venue", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineCreate(input: EventTimelineCreateInput = {}): Promise<EventTimeline | undefined> {
-  const r = await executeCommand<EventTimeline>("EventTimeline", "create", input);
+  const r = await executeCommand<EventTimeline>("EventTimeline", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineUpdate(input: EventTimelineUpdateInput = {}): Promise<EventTimeline | undefined> {
-  const r = await executeCommand<EventTimeline>("EventTimeline", "update", input);
+  const r = await executeCommand<EventTimeline>("EventTimeline", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineReorder(input: EventTimelineReorderInput = {}): Promise<EventTimeline | undefined> {
-  const r = await executeCommand<EventTimeline>("EventTimeline", "reorder", input);
+  const r = await executeCommand<EventTimeline>("EventTimeline", "reorder", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventTimelineRemove(input: EventTimelineRemoveInput = {}): Promise<EventTimeline | undefined> {
-  const r = await executeCommand<EventTimeline>("EventTimeline", "remove", input);
+  const r = await executeCommand<EventTimeline>("EventTimeline", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskCreate(input: TimelineTaskCreateInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "create", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskStart(input: TimelineTaskStartInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "start", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskComplete(input: TimelineTaskCompleteInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "complete", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskBlockTask(input: TimelineTaskBlockTaskInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "blockTask", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "blockTask", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskUnblockTask(input: TimelineTaskUnblockTaskInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "unblockTask", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "unblockTask", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskReorder(input: TimelineTaskReorderInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "reorder", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "reorder", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskReassign(input: TimelineTaskReassignInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "reassign", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "reassign", input as Record<string, unknown>);
   return r.result;
 }
 export async function timelineTaskRemove(input: TimelineTaskRemoveInput = {}): Promise<TimelineTask | undefined> {
-  const r = await executeCommand<TimelineTask>("TimelineTask", "remove", input);
+  const r = await executeCommand<TimelineTask>("TimelineTask", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportCreate(input: EventImportCreateInput = {}): Promise<EventImport | undefined> {
-  const r = await executeCommand<EventImport>("EventImport", "create", input);
+  const r = await executeCommand<EventImport>("EventImport", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportStartProcessing(input: EventImportStartProcessingInput = {}): Promise<EventImport | undefined> {
-  const r = await executeCommand<EventImport>("EventImport", "startProcessing", input);
+  const r = await executeCommand<EventImport>("EventImport", "startProcessing", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportComplete(input: EventImportCompleteInput = {}): Promise<EventImport | undefined> {
-  const r = await executeCommand<EventImport>("EventImport", "complete", input);
+  const r = await executeCommand<EventImport>("EventImport", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportFail(input: EventImportFailInput = {}): Promise<EventImport | undefined> {
-  const r = await executeCommand<EventImport>("EventImport", "fail", input);
+  const r = await executeCommand<EventImport>("EventImport", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventImportRetry(input: EventImportRetryInput = {}): Promise<EventImport | undefined> {
-  const r = await executeCommand<EventImport>("EventImport", "retry", input);
+  const r = await executeCommand<EventImport>("EventImport", "retry", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventFollowupCreate(input: EventFollowupCreateInput = {}): Promise<EventFollowup | undefined> {
-  const r = await executeCommand<EventFollowup>("EventFollowup", "create", input);
+  const r = await executeCommand<EventFollowup>("EventFollowup", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventFollowupComplete(input: EventFollowupCompleteInput = {}): Promise<EventFollowup | undefined> {
-  const r = await executeCommand<EventFollowup>("EventFollowup", "complete", input);
+  const r = await executeCommand<EventFollowup>("EventFollowup", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventFollowupReschedule(input: EventFollowupRescheduleInput = {}): Promise<EventFollowup | undefined> {
-  const r = await executeCommand<EventFollowup>("EventFollowup", "reschedule", input);
+  const r = await executeCommand<EventFollowup>("EventFollowup", "reschedule", input as Record<string, unknown>);
   return r.result;
 }
 export async function eventFollowupCancel(input: EventFollowupCancelInput = {}): Promise<EventFollowup | undefined> {
-  const r = await executeCommand<EventFollowup>("EventFollowup", "cancel", input);
+  const r = await executeCommand<EventFollowup>("EventFollowup", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardProjectionCreate(input: BoardProjectionCreateInput = {}): Promise<BoardProjection | undefined> {
-  const r = await executeCommand<BoardProjection>("BoardProjection", "create", input);
+  const r = await executeCommand<BoardProjection>("BoardProjection", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardProjectionMove(input: BoardProjectionMoveInput = {}): Promise<BoardProjection | undefined> {
-  const r = await executeCommand<BoardProjection>("BoardProjection", "move", input);
+  const r = await executeCommand<BoardProjection>("BoardProjection", "move", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardProjectionResize(input: BoardProjectionResizeInput = {}): Promise<BoardProjection | undefined> {
-  const r = await executeCommand<BoardProjection>("BoardProjection", "resize", input);
+  const r = await executeCommand<BoardProjection>("BoardProjection", "resize", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardProjectionRemove(input: BoardProjectionRemoveInput = {}): Promise<BoardProjection | undefined> {
-  const r = await executeCommand<BoardProjection>("BoardProjection", "remove", input);
+  const r = await executeCommand<BoardProjection>("BoardProjection", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardAnnotationCreate(input: BoardAnnotationCreateInput = {}): Promise<BoardAnnotation | undefined> {
-  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "create", input);
+  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardAnnotationUpdate(input: BoardAnnotationUpdateInput = {}): Promise<BoardAnnotation | undefined> {
-  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "update", input);
+  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function boardAnnotationRemove(input: BoardAnnotationRemoveInput = {}): Promise<BoardAnnotation | undefined> {
-  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "remove", input);
+  const r = await executeCommand<BoardAnnotation>("BoardAnnotation", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function noteCreate(input: NoteCreateInput = {}): Promise<Note | undefined> {
-  const r = await executeCommand<Note>("Note", "create", input);
+  const r = await executeCommand<Note>("Note", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function noteUpdate(input: NoteUpdateInput = {}): Promise<Note | undefined> {
-  const r = await executeCommand<Note>("Note", "update", input);
+  const r = await executeCommand<Note>("Note", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function noteRemove(input: NoteRemoveInput = {}): Promise<Note | undefined> {
-  const r = await executeCommand<Note>("Note", "remove", input);
+  const r = await executeCommand<Note>("Note", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityCreate(input: FacilityCreateInput = {}): Promise<Facility | undefined> {
-  const r = await executeCommand<Facility>("Facility", "create", input);
+  const r = await executeCommand<Facility>("Facility", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityRemove(input: Record<string, unknown> = {}): Promise<Facility | undefined> {
-  const r = await executeCommand<Facility>("Facility", "remove", input);
+export async function facilityRemove(input: FacilityRemoveInput = {}): Promise<Facility | undefined> {
+  const r = await executeCommand<Facility>("Facility", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityEdit(input: FacilityEditInput = {}): Promise<Facility | undefined> {
-  const r = await executeCommand<Facility>("Facility", "edit", input);
+  const r = await executeCommand<Facility>("Facility", "edit", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilitySendToMaintenance(input: FacilitySendToMaintenanceInput = {}): Promise<Facility | undefined> {
-  const r = await executeCommand<Facility>("Facility", "sendToMaintenance", input);
+  const r = await executeCommand<Facility>("Facility", "sendToMaintenance", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityRestoreFromMaintenance(input: Record<string, unknown> = {}): Promise<Facility | undefined> {
-  const r = await executeCommand<Facility>("Facility", "restoreFromMaintenance", input);
+export async function facilityRestoreFromMaintenance(input: FacilityRestoreFromMaintenanceInput = {}): Promise<Facility | undefined> {
+  const r = await executeCommand<Facility>("Facility", "restoreFromMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAreaCreate(input: FacilityAreaCreateInput = {}): Promise<FacilityArea | undefined> {
-  const r = await executeCommand<FacilityArea>("FacilityArea", "create", input);
+  const r = await executeCommand<FacilityArea>("FacilityArea", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityAreaRemove(input: Record<string, unknown> = {}): Promise<FacilityArea | undefined> {
-  const r = await executeCommand<FacilityArea>("FacilityArea", "remove", input);
+export async function facilityAreaRemove(input: FacilityAreaRemoveInput = {}): Promise<FacilityArea | undefined> {
+  const r = await executeCommand<FacilityArea>("FacilityArea", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAreaEdit(input: FacilityAreaEditInput = {}): Promise<FacilityArea | undefined> {
-  const r = await executeCommand<FacilityArea>("FacilityArea", "edit", input);
+  const r = await executeCommand<FacilityArea>("FacilityArea", "edit", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAreaCloseForMaintenance(input: FacilityAreaCloseForMaintenanceInput = {}): Promise<FacilityArea | undefined> {
-  const r = await executeCommand<FacilityArea>("FacilityArea", "closeForMaintenance", input);
+  const r = await executeCommand<FacilityArea>("FacilityArea", "closeForMaintenance", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityAreaReopen(input: Record<string, unknown> = {}): Promise<FacilityArea | undefined> {
-  const r = await executeCommand<FacilityArea>("FacilityArea", "reopen", input);
+export async function facilityAreaReopen(input: FacilityAreaReopenInput = {}): Promise<FacilityArea | undefined> {
+  const r = await executeCommand<FacilityArea>("FacilityArea", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAssetCreate(input: FacilityAssetCreateInput = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "create", input);
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityAssetRemove(input: Record<string, unknown> = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "remove", input);
+export async function facilityAssetRemove(input: FacilityAssetRemoveInput = {}): Promise<FacilityAsset | undefined> {
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAssetUpdate(input: FacilityAssetUpdateInput = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "update", input);
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAssetSendToMaintenance(input: FacilityAssetSendToMaintenanceInput = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "sendToMaintenance", input);
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "sendToMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAssetReturnFromMaintenance(input: FacilityAssetReturnFromMaintenanceInput = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "returnFromMaintenance", input);
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "returnFromMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityAssetRetire(input: FacilityAssetRetireInput = {}): Promise<FacilityAsset | undefined> {
-  const r = await executeCommand<FacilityAsset>("FacilityAsset", "retire", input);
+  const r = await executeCommand<FacilityAsset>("FacilityAsset", "retire", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityScheduleCreate(input: FacilityScheduleCreateInput = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "create", input);
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function facilityScheduleRemove(input: Record<string, unknown> = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "remove", input);
+export async function facilityScheduleRemove(input: FacilityScheduleRemoveInput = {}): Promise<FacilitySchedule | undefined> {
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityScheduleEdit(input: FacilityScheduleEditInput = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "edit", input);
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "edit", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityScheduleStart(input: FacilityScheduleStartInput = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "start", input);
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityScheduleComplete(input: FacilityScheduleCompleteInput = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "complete", input);
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityScheduleCancel(input: FacilityScheduleCancelInput = {}): Promise<FacilitySchedule | undefined> {
-  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "cancel", input);
+  const r = await executeCommand<FacilitySchedule>("FacilitySchedule", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityWorkOrderCreate(input: FacilityWorkOrderCreateInput = {}): Promise<FacilityWorkOrder | undefined> {
-  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "create", input);
+  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityWorkOrderAssign(input: FacilityWorkOrderAssignInput = {}): Promise<FacilityWorkOrder | undefined> {
-  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "assign", input);
+  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityWorkOrderStart(input: FacilityWorkOrderStartInput = {}): Promise<FacilityWorkOrder | undefined> {
-  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "start", input);
+  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityWorkOrderComplete(input: FacilityWorkOrderCompleteInput = {}): Promise<FacilityWorkOrder | undefined> {
-  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "complete", input);
+  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function facilityWorkOrderCancel(input: FacilityWorkOrderCancelInput = {}): Promise<FacilityWorkOrder | undefined> {
-  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "cancel", input);
+  const r = await executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientCreate(input: IngredientCreateInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "create", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientUpdate(input: IngredientUpdateInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "update", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientDeactivate(input: IngredientDeactivateInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "deactivate", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientReactivate(input: IngredientReactivateInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "reactivate", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientUpdateAllergens(input: IngredientUpdateAllergensInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "updateAllergens", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "updateAllergens", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientUpdateShelfLife(input: IngredientUpdateShelfLifeInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "updateShelfLife", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "updateShelfLife", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientLinkInventoryItem(input: IngredientLinkInventoryItemInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "linkInventoryItem", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "linkInventoryItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientUnlinkInventoryItem(input: IngredientUnlinkInventoryItemInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "unlinkInventoryItem", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "unlinkInventoryItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientRecordLot(input: IngredientRecordLotInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "recordLot", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "recordLot", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientFlagRecall(input: IngredientFlagRecallInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "flagRecall", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "flagRecall", input as Record<string, unknown>);
   return r.result;
 }
 export async function ingredientClearRecall(input: IngredientClearRecallInput = {}): Promise<Ingredient | undefined> {
-  const r = await executeCommand<Ingredient>("Ingredient", "clearRecall", input);
+  const r = await executeCommand<Ingredient>("Ingredient", "clearRecall", input as Record<string, unknown>);
   return r.result;
 }
 export async function storageLocationCreate(input: StorageLocationCreateInput = {}): Promise<StorageLocation | undefined> {
-  const r = await executeCommand<StorageLocation>("StorageLocation", "create", input);
+  const r = await executeCommand<StorageLocation>("StorageLocation", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function storageLocationUpdate(input: StorageLocationUpdateInput = {}): Promise<StorageLocation | undefined> {
-  const r = await executeCommand<StorageLocation>("StorageLocation", "update", input);
+  const r = await executeCommand<StorageLocation>("StorageLocation", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function storageLocationDeactivate(input: StorageLocationDeactivateInput = {}): Promise<StorageLocation | undefined> {
-  const r = await executeCommand<StorageLocation>("StorageLocation", "deactivate", input);
+  const r = await executeCommand<StorageLocation>("StorageLocation", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryStockCreate(input: InventoryStockCreateInput = {}): Promise<InventoryStock | undefined> {
-  const r = await executeCommand<InventoryStock>("InventoryStock", "create", input);
+  const r = await executeCommand<InventoryStock>("InventoryStock", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryStockAdjust(input: InventoryStockAdjustInput = {}): Promise<InventoryStock | undefined> {
-  const r = await executeCommand<InventoryStock>("InventoryStock", "adjust", input);
+  const r = await executeCommand<InventoryStock>("InventoryStock", "adjust", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryStockRecount(input: InventoryStockRecountInput = {}): Promise<InventoryStock | undefined> {
-  const r = await executeCommand<InventoryStock>("InventoryStock", "recount", input);
+  const r = await executeCommand<InventoryStock>("InventoryStock", "recount", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryAlertCreate(input: InventoryAlertCreateInput = {}): Promise<InventoryAlert | undefined> {
-  const r = await executeCommand<InventoryAlert>("InventoryAlert", "create", input);
+  const r = await executeCommand<InventoryAlert>("InventoryAlert", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryAlertEscalate(input: InventoryAlertEscalateInput = {}): Promise<InventoryAlert | undefined> {
-  const r = await executeCommand<InventoryAlert>("InventoryAlert", "escalate", input);
+  const r = await executeCommand<InventoryAlert>("InventoryAlert", "escalate", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryAlertAcknowledge(input: InventoryAlertAcknowledgeInput = {}): Promise<InventoryAlert | undefined> {
-  const r = await executeCommand<InventoryAlert>("InventoryAlert", "acknowledge", input);
+  const r = await executeCommand<InventoryAlert>("InventoryAlert", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryAlertMarkResolved(input: InventoryAlertMarkResolvedInput = {}): Promise<InventoryAlert | undefined> {
-  const r = await executeCommand<InventoryAlert>("InventoryAlert", "markResolved", input);
+  const r = await executeCommand<InventoryAlert>("InventoryAlert", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryForecastCreate(input: InventoryForecastCreateInput = {}): Promise<InventoryForecast | undefined> {
-  const r = await executeCommand<InventoryForecast>("InventoryForecast", "create", input);
+  const r = await executeCommand<InventoryForecast>("InventoryForecast", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryForecastUpdate(input: InventoryForecastUpdateInput = {}): Promise<InventoryForecast | undefined> {
-  const r = await executeCommand<InventoryForecast>("InventoryForecast", "update", input);
+  const r = await executeCommand<InventoryForecast>("InventoryForecast", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function inventoryForecastMarkPublished(input: Record<string, unknown> = {}): Promise<InventoryForecast | undefined> {
-  const r = await executeCommand<InventoryForecast>("InventoryForecast", "markPublished", input);
+export async function inventoryForecastMarkPublished(input: InventoryForecastMarkPublishedInput = {}): Promise<InventoryForecast | undefined> {
+  const r = await executeCommand<InventoryForecast>("InventoryForecast", "markPublished", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryForecastApprove(input: InventoryForecastApproveInput = {}): Promise<InventoryForecast | undefined> {
-  const r = await executeCommand<InventoryForecast>("InventoryForecast", "approve", input);
+  const r = await executeCommand<InventoryForecast>("InventoryForecast", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function forecastInputCreate(input: ForecastInputCreateInput = {}): Promise<ForecastInput | undefined> {
-  const r = await executeCommand<ForecastInput>("ForecastInput", "create", input);
+  const r = await executeCommand<ForecastInput>("ForecastInput", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function reorderSuggestionCreate(input: ReorderSuggestionCreateInput = {}): Promise<ReorderSuggestion | undefined> {
-  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "create", input);
+  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function reorderSuggestionAccept(input: ReorderSuggestionAcceptInput = {}): Promise<ReorderSuggestion | undefined> {
-  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "accept", input);
+  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "accept", input as Record<string, unknown>);
   return r.result;
 }
 export async function reorderSuggestionDismiss(input: ReorderSuggestionDismissInput = {}): Promise<ReorderSuggestion | undefined> {
-  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "dismiss", input);
+  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "dismiss", input as Record<string, unknown>);
   return r.result;
 }
 export async function reorderSuggestionAutoAccept(input: ReorderSuggestionAutoAcceptInput = {}): Promise<ReorderSuggestion | undefined> {
-  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "autoAccept", input);
+  const r = await executeCommand<ReorderSuggestion>("ReorderSuggestion", "autoAccept", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContactCreate(input: VendorContactCreateInput = {}): Promise<VendorContact | undefined> {
-  const r = await executeCommand<VendorContact>("VendorContact", "create", input);
+  const r = await executeCommand<VendorContact>("VendorContact", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContactUpdate(input: VendorContactUpdateInput = {}): Promise<VendorContact | undefined> {
-  const r = await executeCommand<VendorContact>("VendorContact", "update", input);
+  const r = await executeCommand<VendorContact>("VendorContact", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContactRemove(input: VendorContactRemoveInput = {}): Promise<VendorContact | undefined> {
-  const r = await executeCommand<VendorContact>("VendorContact", "remove", input);
+  const r = await executeCommand<VendorContact>("VendorContact", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorRatingCreate(input: VendorRatingCreateInput = {}): Promise<VendorRating | undefined> {
-  const r = await executeCommand<VendorRating>("VendorRating", "create", input);
+  const r = await executeCommand<VendorRating>("VendorRating", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorRatingUpdate(input: VendorRatingUpdateInput = {}): Promise<VendorRating | undefined> {
-  const r = await executeCommand<VendorRating>("VendorRating", "update", input);
+  const r = await executeCommand<VendorRating>("VendorRating", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferItemAddItem(input: InventoryTransferItemAddItemInput = {}): Promise<InventoryTransferItem | undefined> {
-  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "addItem", input);
+  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "addItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferItemUpdateQuantity(input: InventoryTransferItemUpdateQuantityInput = {}): Promise<InventoryTransferItem | undefined> {
-  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "updateQuantity", input);
+  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "updateQuantity", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferItemRemoveItem(input: InventoryTransferItemRemoveItemInput = {}): Promise<InventoryTransferItem | undefined> {
-  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "removeItem", input);
+  const r = await executeCommand<InventoryTransferItem>("InventoryTransferItem", "removeItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetCreate(input: ProcurementBudgetCreateInput = {}): Promise<ProcurementBudget | undefined> {
-  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "create", input);
+  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetUpdate(input: ProcurementBudgetUpdateInput = {}): Promise<ProcurementBudget | undefined> {
-  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "update", input);
+  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetRecordSpend(input: ProcurementBudgetRecordSpendInput = {}): Promise<ProcurementBudget | undefined> {
-  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "recordSpend", input);
+  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "recordSpend", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetClose(input: ProcurementBudgetCloseInput = {}): Promise<ProcurementBudget | undefined> {
-  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "close", input);
+  const r = await executeCommand<ProcurementBudget>("ProcurementBudget", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetAlertCreate(input: ProcurementBudgetAlertCreateInput = {}): Promise<ProcurementBudgetAlert | undefined> {
-  const r = await executeCommand<ProcurementBudgetAlert>("ProcurementBudgetAlert", "create", input);
+  const r = await executeCommand<ProcurementBudgetAlert>("ProcurementBudgetAlert", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function procurementBudgetAlertAcknowledge(input: ProcurementBudgetAlertAcknowledgeInput = {}): Promise<ProcurementBudgetAlert | undefined> {
-  const r = await executeCommand<ProcurementBudgetAlert>("ProcurementBudgetAlert", "acknowledge", input);
+  const r = await executeCommand<ProcurementBudgetAlert>("ProcurementBudgetAlert", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function auditScheduleCreate(input: AuditScheduleCreateInput = {}): Promise<AuditSchedule | undefined> {
-  const r = await executeCommand<AuditSchedule>("AuditSchedule", "create", input);
+  const r = await executeCommand<AuditSchedule>("AuditSchedule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function auditScheduleUpdate(input: AuditScheduleUpdateInput = {}): Promise<AuditSchedule | undefined> {
-  const r = await executeCommand<AuditSchedule>("AuditSchedule", "update", input);
+  const r = await executeCommand<AuditSchedule>("AuditSchedule", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function auditScheduleDeactivate(input: AuditScheduleDeactivateInput = {}): Promise<AuditSchedule | undefined> {
-  const r = await executeCommand<AuditSchedule>("AuditSchedule", "deactivate", input);
+  const r = await executeCommand<AuditSchedule>("AuditSchedule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function auditScheduleActivate(input: Record<string, unknown> = {}): Promise<AuditSchedule | undefined> {
-  const r = await executeCommand<AuditSchedule>("AuditSchedule", "activate", input);
+export async function auditScheduleActivate(input: AuditScheduleActivateInput = {}): Promise<AuditSchedule | undefined> {
+  const r = await executeCommand<AuditSchedule>("AuditSchedule", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function auditScheduleRecordRun(input: AuditScheduleRecordRunInput = {}): Promise<AuditSchedule | undefined> {
-  const r = await executeCommand<AuditSchedule>("AuditSchedule", "recordRun", input);
+  const r = await executeCommand<AuditSchedule>("AuditSchedule", "recordRun", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemReserve(input: InventoryItemReserveInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "reserve", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "reserve", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemConsume(input: InventoryItemConsumeInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "consume", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "consume", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemWaste(input: InventoryItemWasteInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "waste", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "waste", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemAdjust(input: InventoryItemAdjustInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "adjust", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "adjust", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemRestock(input: InventoryItemRestockInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "restock", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "restock", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemReleaseReservation(input: InventoryItemReleaseReservationInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "releaseReservation", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "releaseReservation", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemCreate(input: InventoryItemCreateInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "create", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryItemUpdate(input: InventoryItemUpdateInput = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "update", input);
+  const r = await executeCommand<InventoryItem>("InventoryItem", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function inventoryItemSoftDelete(input: Record<string, unknown> = {}): Promise<InventoryItem | undefined> {
-  const r = await executeCommand<InventoryItem>("InventoryItem", "softDelete", input);
+export async function inventoryItemSoftDelete(input: InventoryItemSoftDeleteInput = {}): Promise<InventoryItem | undefined> {
+  const r = await executeCommand<InventoryItem>("InventoryItem", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierCreate(input: InventorySupplierCreateInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "create", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierUpdate(input: InventorySupplierUpdateInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "update", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierDeactivate(input: InventorySupplierDeactivateInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "deactivate", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierApprove(input: InventorySupplierApproveInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "approve", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierSuspend(input: InventorySupplierSuspendInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "suspend", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "suspend", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierReinstate(input: InventorySupplierReinstateInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "reinstate", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "reinstate", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventorySupplierBlacklist(input: InventorySupplierBlacklistInput = {}): Promise<InventorySupplier | undefined> {
-  const r = await executeCommand<InventorySupplier>("InventorySupplier", "blacklist", input);
+  const r = await executeCommand<InventorySupplier>("InventorySupplier", "blacklist", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransactionCreate(input: InventoryTransactionCreateInput = {}): Promise<InventoryTransaction | undefined> {
-  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "create", input);
+  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransactionReverse(input: InventoryTransactionReverseInput = {}): Promise<InventoryTransaction | undefined> {
-  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "reverse", input);
+  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "reverse", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransactionAdjustCost(input: InventoryTransactionAdjustCostInput = {}): Promise<InventoryTransaction | undefined> {
-  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "adjustCost", input);
+  const r = await executeCommand<InventoryTransaction>("InventoryTransaction", "adjustCost", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferCreate(input: InventoryTransferCreateInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "create", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferApprove(input: InventoryTransferApproveInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "approve", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferShip(input: InventoryTransferShipInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "ship", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "ship", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferReceive(input: InventoryTransferReceiveInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "receive", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "receive", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferCancel(input: InventoryTransferCancelInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "cancel", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferPartialReceive(input: InventoryTransferPartialReceiveInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "partialReceive", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "partialReceive", input as Record<string, unknown>);
   return r.result;
 }
 export async function inventoryTransferFlagDiscrepancy(input: InventoryTransferFlagDiscrepancyInput = {}): Promise<InventoryTransfer | undefined> {
-  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "flagDiscrepancy", input);
+  const r = await executeCommand<InventoryTransfer>("InventoryTransfer", "flagDiscrepancy", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceUpdate(input: InvoiceUpdateInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "update", input);
+  const r = await executeCommand<Invoice>("Invoice", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceSend(input: InvoiceSendInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "send", input);
+  const r = await executeCommand<Invoice>("Invoice", "send", input as Record<string, unknown>);
   return r.result;
 }
-export async function invoiceMarkViewed(input: Record<string, unknown> = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "markViewed", input);
+export async function invoiceMarkViewed(input: InvoiceMarkViewedInput = {}): Promise<Invoice | undefined> {
+  const r = await executeCommand<Invoice>("Invoice", "markViewed", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceApplyPayment(input: InvoiceApplyPaymentInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "applyPayment", input);
+  const r = await executeCommand<Invoice>("Invoice", "applyPayment", input as Record<string, unknown>);
   return r.result;
 }
-export async function invoiceMarkAsPaid(input: Record<string, unknown> = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "markAsPaid", input);
+export async function invoiceMarkAsPaid(input: InvoiceMarkAsPaidInput = {}): Promise<Invoice | undefined> {
+  const r = await executeCommand<Invoice>("Invoice", "markAsPaid", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceRecordRefund(input: InvoiceRecordRefundInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "recordRefund", input);
+  const r = await executeCommand<Invoice>("Invoice", "recordRefund", input as Record<string, unknown>);
   return r.result;
 }
-export async function invoiceMarkOverdue(input: Record<string, unknown> = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "markOverdue", input);
+export async function invoiceMarkOverdue(input: InvoiceMarkOverdueInput = {}): Promise<Invoice | undefined> {
+  const r = await executeCommand<Invoice>("Invoice", "markOverdue", input as Record<string, unknown>);
   return r.result;
 }
-export async function invoiceSendReminder(input: Record<string, unknown> = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "sendReminder", input);
+export async function invoiceSendReminder(input: InvoiceSendReminderInput = {}): Promise<Invoice | undefined> {
+  const r = await executeCommand<Invoice>("Invoice", "sendReminder", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceVoidInvoice(input: InvoiceVoidInvoiceInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "voidInvoice", input);
+  const r = await executeCommand<Invoice>("Invoice", "voidInvoice", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceWriteOff(input: InvoiceWriteOffInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "writeOff", input);
+  const r = await executeCommand<Invoice>("Invoice", "writeOff", input as Record<string, unknown>);
   return r.result;
 }
 export async function invoiceUpdateLineItems(input: InvoiceUpdateLineItemsInput = {}): Promise<Invoice | undefined> {
-  const r = await executeCommand<Invoice>("Invoice", "updateLineItems", input);
+  const r = await executeCommand<Invoice>("Invoice", "updateLineItems", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureProbeCreate(input: TemperatureProbeCreateInput = {}): Promise<TemperatureProbe | undefined> {
-  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "create", input);
+  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureProbeCalibrate(input: TemperatureProbeCalibrateInput = {}): Promise<TemperatureProbe | undefined> {
-  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "calibrate", input);
+  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "calibrate", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureProbeUpdateThresholds(input: TemperatureProbeUpdateThresholdsInput = {}): Promise<TemperatureProbe | undefined> {
-  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "updateThresholds", input);
+  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "updateThresholds", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureProbeDeactivate(input: TemperatureProbeDeactivateInput = {}): Promise<TemperatureProbe | undefined> {
-  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "deactivate", input);
+  const r = await executeCommand<TemperatureProbe>("TemperatureProbe", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureLogCreate(input: TemperatureLogCreateInput = {}): Promise<TemperatureLog | undefined> {
-  const r = await executeCommand<TemperatureLog>("TemperatureLog", "create", input);
+  const r = await executeCommand<TemperatureLog>("TemperatureLog", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function temperatureReadingCreate(input: TemperatureReadingCreateInput = {}): Promise<TemperatureReading | undefined> {
-  const r = await executeCommand<TemperatureReading>("TemperatureReading", "create", input);
+  const r = await executeCommand<TemperatureReading>("TemperatureReading", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function iotAlertRuleCreate(input: IotAlertRuleCreateInput = {}): Promise<IotAlertRule | undefined> {
-  const r = await executeCommand<IotAlertRule>("IotAlertRule", "create", input);
+  const r = await executeCommand<IotAlertRule>("IotAlertRule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function iotAlertRuleUpdate(input: IotAlertRuleUpdateInput = {}): Promise<IotAlertRule | undefined> {
-  const r = await executeCommand<IotAlertRule>("IotAlertRule", "update", input);
+  const r = await executeCommand<IotAlertRule>("IotAlertRule", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function iotAlertRuleDeactivate(input: IotAlertRuleDeactivateInput = {}): Promise<IotAlertRule | undefined> {
-  const r = await executeCommand<IotAlertRule>("IotAlertRule", "deactivate", input);
+  const r = await executeCommand<IotAlertRule>("IotAlertRule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function ioTAlertCreate(input: IoTAlertCreateInput = {}): Promise<IoTAlert | undefined> {
-  const r = await executeCommand<IoTAlert>("IoTAlert", "create", input);
+  const r = await executeCommand<IoTAlert>("IoTAlert", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function ioTAlertAcknowledge(input: IoTAlertAcknowledgeInput = {}): Promise<IoTAlert | undefined> {
-  const r = await executeCommand<IoTAlert>("IoTAlert", "acknowledge", input);
+  const r = await executeCommand<IoTAlert>("IoTAlert", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function ioTAlertMarkResolved(input: IoTAlertMarkResolvedInput = {}): Promise<IoTAlert | undefined> {
-  const r = await executeCommand<IoTAlert>("IoTAlert", "markResolved", input);
+  const r = await executeCommand<IoTAlert>("IoTAlert", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function correctiveActionCreate(input: CorrectiveActionCreateInput = {}): Promise<CorrectiveAction | undefined> {
-  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "create", input);
+  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function correctiveActionAssign(input: CorrectiveActionAssignInput = {}): Promise<CorrectiveAction | undefined> {
-  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "assign", input);
+  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function correctiveActionStartProgress(input: CorrectiveActionStartProgressInput = {}): Promise<CorrectiveAction | undefined> {
-  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "startProgress", input);
+  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "startProgress", input as Record<string, unknown>);
   return r.result;
 }
 export async function correctiveActionClose(input: CorrectiveActionCloseInput = {}): Promise<CorrectiveAction | undefined> {
-  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "close", input);
+  const r = await executeCommand<CorrectiveAction>("CorrectiveAction", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckCreate(input: QualityCheckCreateInput = {}): Promise<QualityCheck | undefined> {
-  const r = await executeCommand<QualityCheck>("QualityCheck", "create", input);
+  const r = await executeCommand<QualityCheck>("QualityCheck", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckPass(input: QualityCheckPassInput = {}): Promise<QualityCheck | undefined> {
-  const r = await executeCommand<QualityCheck>("QualityCheck", "pass", input);
+  const r = await executeCommand<QualityCheck>("QualityCheck", "pass", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckFail(input: QualityCheckFailInput = {}): Promise<QualityCheck | undefined> {
-  const r = await executeCommand<QualityCheck>("QualityCheck", "fail", input);
+  const r = await executeCommand<QualityCheck>("QualityCheck", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckReinspect(input: QualityCheckReinspectInput = {}): Promise<QualityCheck | undefined> {
-  const r = await executeCommand<QualityCheck>("QualityCheck", "reinspect", input);
+  const r = await executeCommand<QualityCheck>("QualityCheck", "reinspect", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckItemCreate(input: QualityCheckItemCreateInput = {}): Promise<QualityCheckItem | undefined> {
-  const r = await executeCommand<QualityCheckItem>("QualityCheckItem", "create", input);
+  const r = await executeCommand<QualityCheckItem>("QualityCheckItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function qualityCheckItemRecordResult(input: QualityCheckItemRecordResultInput = {}): Promise<QualityCheckItem | undefined> {
-  const r = await executeCommand<QualityCheckItem>("QualityCheckItem", "recordResult", input);
+  const r = await executeCommand<QualityCheckItem>("QualityCheckItem", "recordResult", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskClaimClaim(input: KitchenTaskClaimClaimInput = {}): Promise<KitchenTaskClaim | undefined> {
-  const r = await executeCommand<KitchenTaskClaim>("KitchenTaskClaim", "claim", input);
+  const r = await executeCommand<KitchenTaskClaim>("KitchenTaskClaim", "claim", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskClaimRelease(input: KitchenTaskClaimReleaseInput = {}): Promise<KitchenTaskClaim | undefined> {
-  const r = await executeCommand<KitchenTaskClaim>("KitchenTaskClaim", "release", input);
+  const r = await executeCommand<KitchenTaskClaim>("KitchenTaskClaim", "release", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskProgressCreate(input: KitchenTaskProgressCreateInput = {}): Promise<KitchenTaskProgress | undefined> {
-  const r = await executeCommand<KitchenTaskProgress>("KitchenTaskProgress", "create", input);
+  const r = await executeCommand<KitchenTaskProgress>("KitchenTaskProgress", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function taskBundleCreate(input: TaskBundleCreateInput = {}): Promise<TaskBundle | undefined> {
-  const r = await executeCommand<TaskBundle>("TaskBundle", "create", input);
+  const r = await executeCommand<TaskBundle>("TaskBundle", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function taskBundleUpdate(input: TaskBundleUpdateInput = {}): Promise<TaskBundle | undefined> {
-  const r = await executeCommand<TaskBundle>("TaskBundle", "update", input);
+  const r = await executeCommand<TaskBundle>("TaskBundle", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function taskBundleArchive(input: TaskBundleArchiveInput = {}): Promise<TaskBundle | undefined> {
-  const r = await executeCommand<TaskBundle>("TaskBundle", "archive", input);
+  const r = await executeCommand<TaskBundle>("TaskBundle", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function taskBundleItemAddItem(input: TaskBundleItemAddItemInput = {}): Promise<TaskBundleItem | undefined> {
-  const r = await executeCommand<TaskBundleItem>("TaskBundleItem", "addItem", input);
+  const r = await executeCommand<TaskBundleItem>("TaskBundleItem", "addItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function taskBundleItemRemoveItem(input: TaskBundleItemRemoveItemInput = {}): Promise<TaskBundleItem | undefined> {
-  const r = await executeCommand<TaskBundleItem>("TaskBundleItem", "removeItem", input);
+  const r = await executeCommand<TaskBundleItem>("TaskBundleItem", "removeItem", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkCombineRuleCreate(input: BulkCombineRuleCreateInput = {}): Promise<BulkCombineRule | undefined> {
-  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "create", input);
+  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkCombineRuleUpdate(input: BulkCombineRuleUpdateInput = {}): Promise<BulkCombineRule | undefined> {
-  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "update", input);
+  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function bulkCombineRuleDeactivate(input: BulkCombineRuleDeactivateInput = {}): Promise<BulkCombineRule | undefined> {
-  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "deactivate", input);
+  const r = await executeCommand<BulkCombineRule>("BulkCombineRule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function methodVideoCreate(input: MethodVideoCreateInput = {}): Promise<MethodVideo | undefined> {
-  const r = await executeCommand<MethodVideo>("MethodVideo", "create", input);
+  const r = await executeCommand<MethodVideo>("MethodVideo", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function methodVideoUpdate(input: MethodVideoUpdateInput = {}): Promise<MethodVideo | undefined> {
-  const r = await executeCommand<MethodVideo>("MethodVideo", "update", input);
+  const r = await executeCommand<MethodVideo>("MethodVideo", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function methodVideoRemove(input: MethodVideoRemoveInput = {}): Promise<MethodVideo | undefined> {
-  const r = await executeCommand<MethodVideo>("MethodVideo", "remove", input);
+  const r = await executeCommand<MethodVideo>("MethodVideo", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListImportCreate(input: PrepListImportCreateInput = {}): Promise<PrepListImport | undefined> {
-  const r = await executeCommand<PrepListImport>("PrepListImport", "create", input);
+  const r = await executeCommand<PrepListImport>("PrepListImport", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListImportComplete(input: PrepListImportCompleteInput = {}): Promise<PrepListImport | undefined> {
-  const r = await executeCommand<PrepListImport>("PrepListImport", "complete", input);
+  const r = await executeCommand<PrepListImport>("PrepListImport", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListImportFail(input: PrepListImportFailInput = {}): Promise<PrepListImport | undefined> {
-  const r = await executeCommand<PrepListImport>("PrepListImport", "fail", input);
+  const r = await executeCommand<PrepListImport>("PrepListImport", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskClaim(input: KitchenTaskClaimInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "claim", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "claim", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskStart(input: KitchenTaskStartInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "start", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskComplete(input: KitchenTaskCompleteInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "complete", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskRelease(input: KitchenTaskReleaseInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "release", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "release", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskReassign(input: KitchenTaskReassignInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "reassign", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "reassign", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdatePriority(input: KitchenTaskUpdatePriorityInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updatePriority", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updatePriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdateComplexity(input: KitchenTaskUpdateComplexityInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updateComplexity", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updateComplexity", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdateTitle(input: KitchenTaskUpdateTitleInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updateTitle", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updateTitle", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdateSummary(input: KitchenTaskUpdateSummaryInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updateSummary", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updateSummary", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdateDueDate(input: KitchenTaskUpdateDueDateInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updateDueDate", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updateDueDate", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskUpdateTags(input: KitchenTaskUpdateTagsInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "updateTags", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "updateTags", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskAddTag(input: KitchenTaskAddTagInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "addTag", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "addTag", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskRemoveTag(input: KitchenTaskRemoveTagInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "removeTag", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "removeTag", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskCancel(input: KitchenTaskCancelInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "cancel", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function kitchenTaskCreate(input: KitchenTaskCreateInput = {}): Promise<KitchenTask | undefined> {
-  const r = await executeCommand<KitchenTask>("KitchenTask", "create", input);
+  const r = await executeCommand<KitchenTask>("KitchenTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function knowledgeBaseEntryCreate(input: KnowledgeBaseEntryCreateInput = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "create", input);
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function knowledgeBaseEntryRemove(input: Record<string, unknown> = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "remove", input);
+export async function knowledgeBaseEntryRemove(input: KnowledgeBaseEntryRemoveInput = {}): Promise<KnowledgeBaseEntry | undefined> {
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function knowledgeBaseEntryUpdate(input: KnowledgeBaseEntryUpdateInput = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "update", input);
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function knowledgeBaseEntryPublishEntry(input: Record<string, unknown> = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "publishEntry", input);
+export async function knowledgeBaseEntryPublishEntry(input: KnowledgeBaseEntryPublishEntryInput = {}): Promise<KnowledgeBaseEntry | undefined> {
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "publishEntry", input as Record<string, unknown>);
   return r.result;
 }
 export async function knowledgeBaseEntryUnpublish(input: KnowledgeBaseEntryUnpublishInput = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "unpublish", input);
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "unpublish", input as Record<string, unknown>);
   return r.result;
 }
-export async function knowledgeBaseEntryRecordView(input: Record<string, unknown> = {}): Promise<KnowledgeBaseEntry | undefined> {
-  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "recordView", input);
+export async function knowledgeBaseEntryRecordView(input: KnowledgeBaseEntryRecordViewInput = {}): Promise<KnowledgeBaseEntry | undefined> {
+  const r = await executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "recordView", input as Record<string, unknown>);
   return r.result;
 }
 export async function laborBudgetCreate(input: LaborBudgetCreateInput = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "create", input);
+  const r = await executeCommand<LaborBudget>("LaborBudget", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function laborBudgetUpdate(input: LaborBudgetUpdateInput = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "update", input);
+  const r = await executeCommand<LaborBudget>("LaborBudget", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function laborBudgetApprove(input: LaborBudgetApproveInput = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "approve", input);
+  const r = await executeCommand<LaborBudget>("LaborBudget", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function laborBudgetRecordActual(input: LaborBudgetRecordActualInput = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "recordActual", input);
+  const r = await executeCommand<LaborBudget>("LaborBudget", "recordActual", input as Record<string, unknown>);
   return r.result;
 }
-export async function laborBudgetClose(input: Record<string, unknown> = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "close", input);
+export async function laborBudgetClose(input: LaborBudgetCloseInput = {}): Promise<LaborBudget | undefined> {
+  const r = await executeCommand<LaborBudget>("LaborBudget", "close", input as Record<string, unknown>);
   return r.result;
 }
-export async function laborBudgetSoftDelete(input: Record<string, unknown> = {}): Promise<LaborBudget | undefined> {
-  const r = await executeCommand<LaborBudget>("LaborBudget", "softDelete", input);
+export async function laborBudgetSoftDelete(input: LaborBudgetSoftDeleteInput = {}): Promise<LaborBudget | undefined> {
+  const r = await executeCommand<LaborBudget>("LaborBudget", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetAlertCreate(input: BudgetAlertCreateInput = {}): Promise<BudgetAlert | undefined> {
-  const r = await executeCommand<BudgetAlert>("BudgetAlert", "create", input);
+  const r = await executeCommand<BudgetAlert>("BudgetAlert", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function budgetAlertAcknowledge(input: BudgetAlertAcknowledgeInput = {}): Promise<BudgetAlert | undefined> {
-  const r = await executeCommand<BudgetAlert>("BudgetAlert", "acknowledge", input);
+  const r = await executeCommand<BudgetAlert>("BudgetAlert", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
-export async function budgetAlertMarkResolved(input: Record<string, unknown> = {}): Promise<BudgetAlert | undefined> {
-  const r = await executeCommand<BudgetAlert>("BudgetAlert", "markResolved", input);
+export async function budgetAlertMarkResolved(input: BudgetAlertMarkResolvedInput = {}): Promise<BudgetAlert | undefined> {
+  const r = await executeCommand<BudgetAlert>("BudgetAlert", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadCreate(input: LeadCreateInput = {}): Promise<Lead | undefined> {
-  const r = await executeCommand<Lead>("Lead", "create", input);
+  const r = await executeCommand<Lead>("Lead", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadUpdate(input: LeadUpdateInput = {}): Promise<Lead | undefined> {
-  const r = await executeCommand<Lead>("Lead", "update", input);
+  const r = await executeCommand<Lead>("Lead", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadConvertToClient(input: LeadConvertToClientInput = {}): Promise<Lead | undefined> {
-  const r = await executeCommand<Lead>("Lead", "convertToClient", input);
+  const r = await executeCommand<Lead>("Lead", "convertToClient", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadDisqualify(input: LeadDisqualifyInput = {}): Promise<Lead | undefined> {
-  const r = await executeCommand<Lead>("Lead", "disqualify", input);
+  const r = await executeCommand<Lead>("Lead", "disqualify", input as Record<string, unknown>);
   return r.result;
 }
 export async function leadArchive(input: LeadArchiveInput = {}): Promise<Lead | undefined> {
-  const r = await executeCommand<Lead>("Lead", "archive", input);
+  const r = await executeCommand<Lead>("Lead", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function driverCreate(input: DriverCreateInput = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "create", input);
+  const r = await executeCommand<Driver>("Driver", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function driverRemove(input: Record<string, unknown> = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "remove", input);
+export async function driverRemove(input: DriverRemoveInput = {}): Promise<Driver | undefined> {
+  const r = await executeCommand<Driver>("Driver", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function driverUpdate(input: DriverUpdateInput = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "update", input);
+  const r = await executeCommand<Driver>("Driver", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function driverRenewLicense(input: DriverRenewLicenseInput = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "renewLicense", input);
+  const r = await executeCommand<Driver>("Driver", "renewLicense", input as Record<string, unknown>);
   return r.result;
 }
 export async function driverSetOffDuty(input: DriverSetOffDutyInput = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "setOffDuty", input);
+  const r = await executeCommand<Driver>("Driver", "setOffDuty", input as Record<string, unknown>);
   return r.result;
 }
 export async function driverReactivate(input: DriverReactivateInput = {}): Promise<Driver | undefined> {
-  const r = await executeCommand<Driver>("Driver", "reactivate", input);
+  const r = await executeCommand<Driver>("Driver", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function vehicleCreate(input: VehicleCreateInput = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "create", input);
+  const r = await executeCommand<Vehicle>("Vehicle", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function vehicleRemove(input: Record<string, unknown> = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "remove", input);
+export async function vehicleRemove(input: VehicleRemoveInput = {}): Promise<Vehicle | undefined> {
+  const r = await executeCommand<Vehicle>("Vehicle", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function vehicleUpdate(input: VehicleUpdateInput = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "update", input);
+  const r = await executeCommand<Vehicle>("Vehicle", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function vehicleSendToMaintenance(input: VehicleSendToMaintenanceInput = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "sendToMaintenance", input);
+  const r = await executeCommand<Vehicle>("Vehicle", "sendToMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function vehicleReturnFromMaintenance(input: VehicleReturnFromMaintenanceInput = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "returnFromMaintenance", input);
+  const r = await executeCommand<Vehicle>("Vehicle", "returnFromMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function vehicleDecommission(input: VehicleDecommissionInput = {}): Promise<Vehicle | undefined> {
-  const r = await executeCommand<Vehicle>("Vehicle", "decommission", input);
+  const r = await executeCommand<Vehicle>("Vehicle", "decommission", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteCreate(input: LogisticsRouteCreateInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "create", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function logisticsRouteRemove(input: Record<string, unknown> = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "remove", input);
+export async function logisticsRouteRemove(input: LogisticsRouteRemoveInput = {}): Promise<LogisticsRoute | undefined> {
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteUpdate(input: LogisticsRouteUpdateInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "update", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function logisticsRouteStart(input: Record<string, unknown> = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "start", input);
+export async function logisticsRouteStart(input: LogisticsRouteStartInput = {}): Promise<LogisticsRoute | undefined> {
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteCompleteStop(input: LogisticsRouteCompleteStopInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "completeStop", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "completeStop", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteRecordDelay(input: LogisticsRouteRecordDelayInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "recordDelay", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "recordDelay", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteComplete(input: LogisticsRouteCompleteInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "complete", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsRouteCancel(input: LogisticsRouteCancelInput = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "cancel", input);
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function logisticsRouteOptimize(input: Record<string, unknown> = {}): Promise<LogisticsRoute | undefined> {
-  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "optimize", input);
+export async function logisticsRouteOptimize(input: LogisticsRouteOptimizeInput = {}): Promise<LogisticsRoute | undefined> {
+  const r = await executeCommand<LogisticsRoute>("LogisticsRoute", "optimize", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsDispatchAssign(input: LogisticsDispatchAssignInput = {}): Promise<LogisticsDispatch | undefined> {
-  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "assign", input);
+  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsDispatchDepart(input: LogisticsDispatchDepartInput = {}): Promise<LogisticsDispatch | undefined> {
-  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "depart", input);
+  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "depart", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsDispatchDeliver(input: LogisticsDispatchDeliverInput = {}): Promise<LogisticsDispatch | undefined> {
-  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "deliver", input);
+  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "deliver", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsDispatchFail(input: LogisticsDispatchFailInput = {}): Promise<LogisticsDispatch | undefined> {
-  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "fail", input);
+  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function logisticsDispatchReassign(input: LogisticsDispatchReassignInput = {}): Promise<LogisticsDispatch | undefined> {
-  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "reassign", input);
+  const r = await executeCommand<LogisticsDispatch>("LogisticsDispatch", "reassign", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuCreate(input: MenuCreateInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "create", input);
+  const r = await executeCommand<Menu>("Menu", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuUpdate(input: MenuUpdateInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "update", input);
+  const r = await executeCommand<Menu>("Menu", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuUpdatePricing(input: MenuUpdatePricingInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "updatePricing", input);
+  const r = await executeCommand<Menu>("Menu", "updatePricing", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuMarkPublished(input: MenuMarkPublishedInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "markPublished", input);
+  const r = await executeCommand<Menu>("Menu", "markPublished", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuUnpublish(input: MenuUnpublishInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "unpublish", input);
+  const r = await executeCommand<Menu>("Menu", "unpublish", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuArchive(input: MenuArchiveInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "archive", input);
+  const r = await executeCommand<Menu>("Menu", "archive", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuRestore(input: MenuRestoreInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "restore", input);
+  const r = await executeCommand<Menu>("Menu", "restore", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuMarkSeasonal(input: MenuMarkSeasonalInput = {}): Promise<Menu | undefined> {
-  const r = await executeCommand<Menu>("Menu", "markSeasonal", input);
+  const r = await executeCommand<Menu>("Menu", "markSeasonal", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuDishCreate(input: MenuDishCreateInput = {}): Promise<MenuDish | undefined> {
-  const r = await executeCommand<MenuDish>("MenuDish", "create", input);
+  const r = await executeCommand<MenuDish>("MenuDish", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuDishUpdateCourse(input: MenuDishUpdateCourseInput = {}): Promise<MenuDish | undefined> {
-  const r = await executeCommand<MenuDish>("MenuDish", "updateCourse", input);
+  const r = await executeCommand<MenuDish>("MenuDish", "updateCourse", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuDishSetPriceOverride(input: MenuDishSetPriceOverrideInput = {}): Promise<MenuDish | undefined> {
-  const r = await executeCommand<MenuDish>("MenuDish", "setPriceOverride", input);
+  const r = await executeCommand<MenuDish>("MenuDish", "setPriceOverride", input as Record<string, unknown>);
   return r.result;
 }
 export async function menuDishRemove(input: MenuDishRemoveInput = {}): Promise<MenuDish | undefined> {
-  const r = await executeCommand<MenuDish>("MenuDish", "remove", input);
+  const r = await executeCommand<MenuDish>("MenuDish", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function notificationCreate(input: NotificationCreateInput = {}): Promise<Notification | undefined> {
-  const r = await executeCommand<Notification>("Notification", "create", input);
+  const r = await executeCommand<Notification>("Notification", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function notificationMarkRead(input: NotificationMarkReadInput = {}): Promise<Notification | undefined> {
-  const r = await executeCommand<Notification>("Notification", "markRead", input);
+  const r = await executeCommand<Notification>("Notification", "markRead", input as Record<string, unknown>);
   return r.result;
 }
 export async function notificationMarkDismissed(input: NotificationMarkDismissedInput = {}): Promise<Notification | undefined> {
-  const r = await executeCommand<Notification>("Notification", "markDismissed", input);
+  const r = await executeCommand<Notification>("Notification", "markDismissed", input as Record<string, unknown>);
   return r.result;
 }
 export async function notificationRemove(input: NotificationRemoveInput = {}): Promise<Notification | undefined> {
-  const r = await executeCommand<Notification>("Notification", "remove", input);
+  const r = await executeCommand<Notification>("Notification", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function overrideAuditCreate(input: OverrideAuditCreateInput = {}): Promise<OverrideAudit | undefined> {
-  const r = await executeCommand<OverrideAudit>("OverrideAudit", "create", input);
+  const r = await executeCommand<OverrideAudit>("OverrideAudit", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function overrideAuditAuthorize(input: OverrideAuditAuthorizeInput = {}): Promise<OverrideAudit | undefined> {
-  const r = await executeCommand<OverrideAudit>("OverrideAudit", "authorize", input);
+  const r = await executeCommand<OverrideAudit>("OverrideAudit", "authorize", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodCreate(input: PaymentMethodCreateInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "create", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentMethodMarkAsDefault(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markAsDefault", input);
+export async function paymentMethodMarkAsDefault(input: PaymentMethodMarkAsDefaultInput = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markAsDefault", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentMethodMarkNotDefault(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markNotDefault", input);
+export async function paymentMethodMarkNotDefault(input: PaymentMethodMarkNotDefaultInput = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markNotDefault", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentMethodMarkExpired(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markExpired", input);
+export async function paymentMethodMarkExpired(input: PaymentMethodMarkExpiredInput = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markExpired", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodMarkInvalid(input: PaymentMethodMarkInvalidInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markInvalid", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markInvalid", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodFlagForFraud(input: PaymentMethodFlagForFraudInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "flagForFraud", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "flagForFraud", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodVerify(input: PaymentMethodVerifyInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "verify", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "verify", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodMarkVerificationFailed(input: PaymentMethodMarkVerificationFailedInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markVerificationFailed", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "markVerificationFailed", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodUpdateToken(input: PaymentMethodUpdateTokenInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "updateToken", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "updateToken", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMethodUpdate(input: PaymentMethodUpdateInput = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "update", input);
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentMethodRemove(input: Record<string, unknown> = {}): Promise<PaymentMethod | undefined> {
-  const r = await executeCommand<PaymentMethod>("PaymentMethod", "remove", input);
+export async function paymentMethodRemove(input: PaymentMethodRemoveInput = {}): Promise<PaymentMethod | undefined> {
+  const r = await executeCommand<PaymentMethod>("PaymentMethod", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentProcess(input: PaymentProcessInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "process", input);
+  const r = await executeCommand<Payment>("Payment", "process", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentProcessFailed(input: Record<string, unknown> = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "processFailed", input);
+export async function paymentProcessFailed(input: PaymentProcessFailedInput = {}): Promise<Payment | undefined> {
+  const r = await executeCommand<Payment>("Payment", "processFailed", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentRefund(input: PaymentRefundInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "refund", input);
+  const r = await executeCommand<Payment>("Payment", "refund", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentPartialRefund(input: PaymentPartialRefundInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "partialRefund", input);
+  const r = await executeCommand<Payment>("Payment", "partialRefund", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMarkChargeback(input: PaymentMarkChargebackInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "markChargeback", input);
+  const r = await executeCommand<Payment>("Payment", "markChargeback", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentUpdateFraudStatus(input: PaymentUpdateFraudStatusInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "updateFraudStatus", input);
+  const r = await executeCommand<Payment>("Payment", "updateFraudStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMarkFraudReviewed(input: PaymentMarkFraudReviewedInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "markFraudReviewed", input);
+  const r = await executeCommand<Payment>("Payment", "markFraudReviewed", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMarkFraudPassed(input: PaymentMarkFraudPassedInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "markFraudPassed", input);
+  const r = await executeCommand<Payment>("Payment", "markFraudPassed", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentMarkFraudFailed(input: PaymentMarkFraudFailedInput = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "markFraudFailed", input);
+  const r = await executeCommand<Payment>("Payment", "markFraudFailed", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentMarkAcceptedNotApplied(input: Record<string, unknown> = {}): Promise<Payment | undefined> {
-  const r = await executeCommand<Payment>("Payment", "markAcceptedNotApplied", input);
+export async function paymentMarkAcceptedNotApplied(input: PaymentMarkAcceptedNotAppliedInput = {}): Promise<Payment | undefined> {
+  const r = await executeCommand<Payment>("Payment", "markAcceptedNotApplied", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollPeriodCreate(input: PayrollPeriodCreateInput = {}): Promise<PayrollPeriod | undefined> {
-  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "create", input);
+  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function payrollPeriodClose(input: Record<string, unknown> = {}): Promise<PayrollPeriod | undefined> {
-  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "close", input);
+export async function payrollPeriodClose(input: PayrollPeriodCloseInput = {}): Promise<PayrollPeriod | undefined> {
+  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollPeriodReopen(input: PayrollPeriodReopenInput = {}): Promise<PayrollPeriod | undefined> {
-  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "reopen", input);
+  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "reopen", input as Record<string, unknown>);
   return r.result;
 }
-export async function payrollPeriodLock(input: Record<string, unknown> = {}): Promise<PayrollPeriod | undefined> {
-  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "lock", input);
+export async function payrollPeriodLock(input: PayrollPeriodLockInput = {}): Promise<PayrollPeriod | undefined> {
+  const r = await executeCommand<PayrollPeriod>("PayrollPeriod", "lock", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeDeductionCreate(input: EmployeeDeductionCreateInput = {}): Promise<EmployeeDeduction | undefined> {
-  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "create", input);
+  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeDeductionUpdate(input: EmployeeDeductionUpdateInput = {}): Promise<EmployeeDeduction | undefined> {
-  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "update", input);
+  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function employeeDeductionDeactivate(input: EmployeeDeductionDeactivateInput = {}): Promise<EmployeeDeduction | undefined> {
-  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "deactivate", input);
+  const r = await executeCommand<EmployeeDeduction>("EmployeeDeduction", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollApprovalHistoryCreate(input: PayrollApprovalHistoryCreateInput = {}): Promise<PayrollApprovalHistory | undefined> {
-  const r = await executeCommand<PayrollApprovalHistory>("PayrollApprovalHistory", "create", input);
+  const r = await executeCommand<PayrollApprovalHistory>("PayrollApprovalHistory", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollRunCreate(input: PayrollRunCreateInput = {}): Promise<PayrollRun | undefined> {
-  const r = await executeCommand<PayrollRun>("PayrollRun", "create", input);
+  const r = await executeCommand<PayrollRun>("PayrollRun", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollRunProcess(input: PayrollRunProcessInput = {}): Promise<PayrollRun | undefined> {
-  const r = await executeCommand<PayrollRun>("PayrollRun", "process", input);
+  const r = await executeCommand<PayrollRun>("PayrollRun", "process", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollRunApprove(input: PayrollRunApproveInput = {}): Promise<PayrollRun | undefined> {
-  const r = await executeCommand<PayrollRun>("PayrollRun", "approve", input);
+  const r = await executeCommand<PayrollRun>("PayrollRun", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollRunReject(input: PayrollRunRejectInput = {}): Promise<PayrollRun | undefined> {
-  const r = await executeCommand<PayrollRun>("PayrollRun", "reject", input);
+  const r = await executeCommand<PayrollRun>("PayrollRun", "reject", input as Record<string, unknown>);
   return r.result;
 }
-export async function payrollRunMarkPaid(input: Record<string, unknown> = {}): Promise<PayrollRun | undefined> {
-  const r = await executeCommand<PayrollRun>("PayrollRun", "markPaid", input);
+export async function payrollRunMarkPaid(input: PayrollRunMarkPaidInput = {}): Promise<PayrollRun | undefined> {
+  const r = await executeCommand<PayrollRun>("PayrollRun", "markPaid", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepCommentCreate(input: PrepCommentCreateInput = {}): Promise<PrepComment | undefined> {
-  const r = await executeCommand<PrepComment>("PrepComment", "create", input);
+  const r = await executeCommand<PrepComment>("PrepComment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepCommentEdit(input: PrepCommentEditInput = {}): Promise<PrepComment | undefined> {
-  const r = await executeCommand<PrepComment>("PrepComment", "edit", input);
+  const r = await executeCommand<PrepComment>("PrepComment", "edit", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepCommentMarkResolved(input: PrepCommentMarkResolvedInput = {}): Promise<PrepComment | undefined> {
-  const r = await executeCommand<PrepComment>("PrepComment", "markResolved", input);
+  const r = await executeCommand<PrepComment>("PrepComment", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepCommentUnresolve(input: PrepCommentUnresolveInput = {}): Promise<PrepComment | undefined> {
-  const r = await executeCommand<PrepComment>("PrepComment", "unresolve", input);
+  const r = await executeCommand<PrepComment>("PrepComment", "unresolve", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepCommentSoftDelete(input: PrepCommentSoftDeleteInput = {}): Promise<PrepComment | undefined> {
-  const r = await executeCommand<PrepComment>("PrepComment", "softDelete", input);
+  const r = await executeCommand<PrepComment>("PrepComment", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListUpdate(input: PrepListUpdateInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "update", input);
+  const r = await executeCommand<PrepList>("PrepList", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListUpdateBatchMultiplier(input: PrepListUpdateBatchMultiplierInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "updateBatchMultiplier", input);
+  const r = await executeCommand<PrepList>("PrepList", "updateBatchMultiplier", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepListFinalize(input: Record<string, unknown> = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "finalize", input);
+export async function prepListFinalize(input: PrepListFinalizeInput = {}): Promise<PrepList | undefined> {
+  const r = await executeCommand<PrepList>("PrepList", "finalize", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepListActivate(input: Record<string, unknown> = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "activate", input);
+export async function prepListActivate(input: PrepListActivateInput = {}): Promise<PrepList | undefined> {
+  const r = await executeCommand<PrepList>("PrepList", "activate", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepListDeactivate(input: Record<string, unknown> = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "deactivate", input);
+export async function prepListDeactivate(input: PrepListDeactivateInput = {}): Promise<PrepList | undefined> {
+  const r = await executeCommand<PrepList>("PrepList", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepListMarkCompleted(input: Record<string, unknown> = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "markCompleted", input);
+export async function prepListMarkCompleted(input: PrepListMarkCompletedInput = {}): Promise<PrepList | undefined> {
+  const r = await executeCommand<PrepList>("PrepList", "markCompleted", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListCancel(input: PrepListCancelInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "cancel", input);
+  const r = await executeCommand<PrepList>("PrepList", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListCreate(input: PrepListCreateInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "create", input);
+  const r = await executeCommand<PrepList>("PrepList", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListCreateFromSeed(input: PrepListCreateFromSeedInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "createFromSeed", input);
+  const r = await executeCommand<PrepList>("PrepList", "createFromSeed", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListReopen(input: PrepListReopenInput = {}): Promise<PrepList | undefined> {
-  const r = await executeCommand<PrepList>("PrepList", "reopen", input);
+  const r = await executeCommand<PrepList>("PrepList", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListItemUpdateQuantity(input: PrepListItemUpdateQuantityInput = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "updateQuantity", input);
+  const r = await executeCommand<PrepListItem>("PrepListItem", "updateQuantity", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListItemUpdateStation(input: PrepListItemUpdateStationInput = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "updateStation", input);
+  const r = await executeCommand<PrepListItem>("PrepListItem", "updateStation", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListItemUpdatePrepNotes(input: PrepListItemUpdatePrepNotesInput = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "updatePrepNotes", input);
+  const r = await executeCommand<PrepListItem>("PrepListItem", "updatePrepNotes", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListItemMarkCompleted(input: PrepListItemMarkCompletedInput = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "markCompleted", input);
+  const r = await executeCommand<PrepListItem>("PrepListItem", "markCompleted", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepListItemMarkUncompleted(input: Record<string, unknown> = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "markUncompleted", input);
+export async function prepListItemMarkUncompleted(input: PrepListItemMarkUncompletedInput = {}): Promise<PrepListItem | undefined> {
+  const r = await executeCommand<PrepListItem>("PrepListItem", "markUncompleted", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepListItemCreate(input: PrepListItemCreateInput = {}): Promise<PrepListItem | undefined> {
-  const r = await executeCommand<PrepListItem>("PrepListItem", "create", input);
+  const r = await executeCommand<PrepListItem>("PrepListItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepMethodCreate(input: PrepMethodCreateInput = {}): Promise<PrepMethod | undefined> {
-  const r = await executeCommand<PrepMethod>("PrepMethod", "create", input);
+  const r = await executeCommand<PrepMethod>("PrepMethod", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepMethodUpdate(input: PrepMethodUpdateInput = {}): Promise<PrepMethod | undefined> {
-  const r = await executeCommand<PrepMethod>("PrepMethod", "update", input);
+  const r = await executeCommand<PrepMethod>("PrepMethod", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepMethodDeactivate(input: PrepMethodDeactivateInput = {}): Promise<PrepMethod | undefined> {
-  const r = await executeCommand<PrepMethod>("PrepMethod", "deactivate", input);
+  const r = await executeCommand<PrepMethod>("PrepMethod", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepMethodReactivate(input: PrepMethodReactivateInput = {}): Promise<PrepMethod | undefined> {
-  const r = await executeCommand<PrepMethod>("PrepMethod", "reactivate", input);
+  const r = await executeCommand<PrepMethod>("PrepMethod", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCreate(input: PrepTaskPlanWorkflowCreateInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "create", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepTaskPlanWorkflowStartGenerating(input: Record<string, unknown> = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startGenerating", input);
+export async function prepTaskPlanWorkflowStartGenerating(input: PrepTaskPlanWorkflowStartGeneratingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startGenerating", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCompleteGeneration(input: PrepTaskPlanWorkflowCompleteGenerationInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeGeneration", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeGeneration", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowStartReviewing(input: PrepTaskPlanWorkflowStartReviewingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startReviewing", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startReviewing", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCompleteReview(input: PrepTaskPlanWorkflowCompleteReviewInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeReview", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeReview", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowStartApproving(input: PrepTaskPlanWorkflowStartApprovingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startApproving", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startApproving", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepTaskPlanWorkflowApprovePlan(input: Record<string, unknown> = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "approvePlan", input);
+export async function prepTaskPlanWorkflowApprovePlan(input: PrepTaskPlanWorkflowApprovePlanInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "approvePlan", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowRejectPlan(input: PrepTaskPlanWorkflowRejectPlanInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "rejectPlan", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "rejectPlan", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepTaskPlanWorkflowStartInstantiating(input: Record<string, unknown> = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startInstantiating", input);
+export async function prepTaskPlanWorkflowStartInstantiating(input: PrepTaskPlanWorkflowStartInstantiatingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startInstantiating", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCompleteInstantiation(input: PrepTaskPlanWorkflowCompleteInstantiationInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeInstantiation", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeInstantiation", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepTaskPlanWorkflowStartScheduling(input: Record<string, unknown> = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startScheduling", input);
+export async function prepTaskPlanWorkflowStartScheduling(input: PrepTaskPlanWorkflowStartSchedulingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "startScheduling", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCompleteScheduling(input: PrepTaskPlanWorkflowCompleteSchedulingInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeScheduling", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "completeScheduling", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowFail(input: PrepTaskPlanWorkflowFailInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "fail", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowCancel(input: PrepTaskPlanWorkflowCancelInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "cancel", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function prepTaskPlanWorkflowRetry(input: Record<string, unknown> = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "retry", input);
+export async function prepTaskPlanWorkflowRetry(input: PrepTaskPlanWorkflowRetryInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "retry", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskPlanWorkflowQuickApprove(input: PrepTaskPlanWorkflowQuickApproveInput = {}): Promise<PrepTaskPlanWorkflow | undefined> {
-  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "quickApprove", input);
+  const r = await executeCommand<PrepTaskPlanWorkflow>("PrepTaskPlanWorkflow", "quickApprove", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskClaim(input: PrepTaskClaimInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "claim", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "claim", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUnclaim(input: PrepTaskUnclaimInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "unclaim", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "unclaim", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskStart(input: PrepTaskStartInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "start", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskComplete(input: PrepTaskCompleteInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "complete", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskRelease(input: PrepTaskReleaseInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "release", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "release", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskReassign(input: PrepTaskReassignInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "reassign", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "reassign", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdateQuantity(input: PrepTaskUpdateQuantityInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updateQuantity", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updateQuantity", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskCancel(input: PrepTaskCancelInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "cancel", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskCreate(input: PrepTaskCreateInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "create", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdateStatus(input: PrepTaskUpdateStatusInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updateStatus", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updateStatus", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdatePriority(input: PrepTaskUpdatePriorityInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updatePriority", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updatePriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdateAssignment(input: PrepTaskUpdateAssignmentInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updateAssignment", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updateAssignment", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdateDueDate(input: PrepTaskUpdateDueDateInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updateDueDate", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updateDueDate", input as Record<string, unknown>);
   return r.result;
 }
 export async function prepTaskUpdateDetails(input: PrepTaskUpdateDetailsInput = {}): Promise<PrepTask | undefined> {
-  const r = await executeCommand<PrepTask>("PrepTask", "updateDetails", input);
+  const r = await executeCommand<PrepTask>("PrepTask", "updateDetails", input as Record<string, unknown>);
   return r.result;
 }
 export async function pricingTierCreate(input: PricingTierCreateInput = {}): Promise<PricingTier | undefined> {
-  const r = await executeCommand<PricingTier>("PricingTier", "create", input);
+  const r = await executeCommand<PricingTier>("PricingTier", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function pricingTierUpdate(input: PricingTierUpdateInput = {}): Promise<PricingTier | undefined> {
-  const r = await executeCommand<PricingTier>("PricingTier", "update", input);
+  const r = await executeCommand<PricingTier>("PricingTier", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function pricingTierActivate(input: Record<string, unknown> = {}): Promise<PricingTier | undefined> {
-  const r = await executeCommand<PricingTier>("PricingTier", "activate", input);
+export async function pricingTierActivate(input: PricingTierActivateInput = {}): Promise<PricingTier | undefined> {
+  const r = await executeCommand<PricingTier>("PricingTier", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function pricingTierDeactivate(input: PricingTierDeactivateInput = {}): Promise<PricingTier | undefined> {
-  const r = await executeCommand<PricingTier>("PricingTier", "deactivate", input);
+  const r = await executeCommand<PricingTier>("PricingTier", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function pricingTierSoftDelete(input: PricingTierSoftDeleteInput = {}): Promise<PricingTier | undefined> {
-  const r = await executeCommand<PricingTier>("PricingTier", "softDelete", input);
+  const r = await executeCommand<PricingTier>("PricingTier", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionCreate(input: PurchaseRequisitionCreateInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "create", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionUpdate(input: PurchaseRequisitionUpdateInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "update", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionCompleteDraftFromPrepDemand(input: PurchaseRequisitionCompleteDraftFromPrepDemandInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "completeDraftFromPrepDemand", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "completeDraftFromPrepDemand", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionSubmit(input: PurchaseRequisitionSubmitInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "submit", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "submit", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionApproveManager(input: PurchaseRequisitionApproveManagerInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveManager", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveManager", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionApproveFinance(input: PurchaseRequisitionApproveFinanceInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveFinance", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveFinance", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionReject(input: PurchaseRequisitionRejectInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "reject", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionConvertToPo(input: PurchaseRequisitionConvertToPoInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "convertToPo", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "convertToPo", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionCancel(input: PurchaseRequisitionCancelInput = {}): Promise<PurchaseRequisition | undefined> {
-  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "cancel", input);
+  const r = await executeCommand<PurchaseRequisition>("PurchaseRequisition", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionItemCreate(input: PurchaseRequisitionItemCreateInput = {}): Promise<PurchaseRequisitionItem | undefined> {
-  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "create", input);
+  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionItemUpdate(input: PurchaseRequisitionItemUpdateInput = {}): Promise<PurchaseRequisitionItem | undefined> {
-  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "update", input);
+  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseRequisitionItemRemove(input: PurchaseRequisitionItemRemoveInput = {}): Promise<PurchaseRequisitionItem | undefined> {
-  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "remove", input);
+  const r = await executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalCreate(input: ProposalCreateInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "create", input);
+  const r = await executeCommand<Proposal>("Proposal", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalUpdate(input: ProposalUpdateInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "update", input);
+  const r = await executeCommand<Proposal>("Proposal", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalSend(input: ProposalSendInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "send", input);
+  const r = await executeCommand<Proposal>("Proposal", "send", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalMarkViewed(input: ProposalMarkViewedInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "markViewed", input);
+  const r = await executeCommand<Proposal>("Proposal", "markViewed", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalAccept(input: ProposalAcceptInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "accept", input);
+  const r = await executeCommand<Proposal>("Proposal", "accept", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalReject(input: ProposalRejectInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "reject", input);
+  const r = await executeCommand<Proposal>("Proposal", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalWithdraw(input: ProposalWithdrawInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "withdraw", input);
+  const r = await executeCommand<Proposal>("Proposal", "withdraw", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalRemove(input: ProposalRemoveInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "remove", input);
+  const r = await executeCommand<Proposal>("Proposal", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalGeneratePublicLink(input: ProposalGeneratePublicLinkInput = {}): Promise<Proposal | undefined> {
-  const r = await executeCommand<Proposal>("Proposal", "generatePublicLink", input);
+  const r = await executeCommand<Proposal>("Proposal", "generatePublicLink", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalLineItemCreate(input: ProposalLineItemCreateInput = {}): Promise<ProposalLineItem | undefined> {
-  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "create", input);
+  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalLineItemUpdate(input: ProposalLineItemUpdateInput = {}): Promise<ProposalLineItem | undefined> {
-  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "update", input);
+  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function proposalLineItemRemove(input: ProposalLineItemRemoveInput = {}): Promise<ProposalLineItem | undefined> {
-  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "remove", input);
+  const r = await executeCommand<ProposalLineItem>("ProposalLineItem", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderCreate(input: PurchaseOrderCreateInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "create", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderSubmit(input: PurchaseOrderSubmitInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "submit", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "submit", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderApprove(input: PurchaseOrderApproveInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "approve", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderReject(input: PurchaseOrderRejectInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "reject", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderCancel(input: PurchaseOrderCancelInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "cancel", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderMarkOrdered(input: PurchaseOrderMarkOrderedInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markOrdered", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markOrdered", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderMarkReceived(input: PurchaseOrderMarkReceivedInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markReceived", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "markReceived", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderUpdateTotals(input: PurchaseOrderUpdateTotalsInput = {}): Promise<PurchaseOrder | undefined> {
-  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "updateTotals", input);
+  const r = await executeCommand<PurchaseOrder>("PurchaseOrder", "updateTotals", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderItemCreate(input: PurchaseOrderItemCreateInput = {}): Promise<PurchaseOrderItem | undefined> {
-  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "create", input);
+  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderItemUpdate(input: PurchaseOrderItemUpdateInput = {}): Promise<PurchaseOrderItem | undefined> {
-  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "update", input);
+  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function purchaseOrderItemRemove(input: PurchaseOrderItemRemoveInput = {}): Promise<PurchaseOrderItem | undefined> {
-  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "remove", input);
+  const r = await executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACheckCreate(input: QACheckCreateInput = {}): Promise<QACheck | undefined> {
-  const r = await executeCommand<QACheck>("QACheck", "create", input);
+  const r = await executeCommand<QACheck>("QACheck", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACheckComplete(input: QACheckCompleteInput = {}): Promise<QACheck | undefined> {
-  const r = await executeCommand<QACheck>("QACheck", "complete", input);
+  const r = await executeCommand<QACheck>("QACheck", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACheckFail(input: QACheckFailInput = {}): Promise<QACheck | undefined> {
-  const r = await executeCommand<QACheck>("QACheck", "fail", input);
+  const r = await executeCommand<QACheck>("QACheck", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACheckRequireReinspection(input: QACheckRequireReinspectionInput = {}): Promise<QACheck | undefined> {
-  const r = await executeCommand<QACheck>("QACheck", "requireReinspection", input);
+  const r = await executeCommand<QACheck>("QACheck", "requireReinspection", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACheckReinspect(input: QACheckReinspectInput = {}): Promise<QACheck | undefined> {
-  const r = await executeCommand<QACheck>("QACheck", "reinspect", input);
+  const r = await executeCommand<QACheck>("QACheck", "reinspect", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACorrectiveActionCreate(input: QACorrectiveActionCreateInput = {}): Promise<QACorrectiveAction | undefined> {
-  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "create", input);
+  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACorrectiveActionAssign(input: QACorrectiveActionAssignInput = {}): Promise<QACorrectiveAction | undefined> {
-  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "assign", input);
+  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACorrectiveActionEscalate(input: QACorrectiveActionEscalateInput = {}): Promise<QACorrectiveAction | undefined> {
-  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "escalate", input);
+  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "escalate", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACorrectiveActionMarkResolved(input: QACorrectiveActionMarkResolvedInput = {}): Promise<QACorrectiveAction | undefined> {
-  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "markResolved", input);
+  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "markResolved", input as Record<string, unknown>);
   return r.result;
 }
 export async function qACorrectiveActionDismiss(input: QACorrectiveActionDismissInput = {}): Promise<QACorrectiveAction | undefined> {
-  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "dismiss", input);
+  const r = await executeCommand<QACorrectiveAction>("QACorrectiveAction", "dismiss", input as Record<string, unknown>);
   return r.result;
 }
 export async function qATemperatureLogLog(input: QATemperatureLogLogInput = {}): Promise<QATemperatureLog | undefined> {
-  const r = await executeCommand<QATemperatureLog>("QATemperatureLog", "log", input);
+  const r = await executeCommand<QATemperatureLog>("QATemperatureLog", "log", input as Record<string, unknown>);
   return r.result;
 }
 export async function rateLimitConfigCreate(input: RateLimitConfigCreateInput = {}): Promise<RateLimitConfig | undefined> {
-  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "create", input);
+  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function rateLimitConfigUpdate(input: RateLimitConfigUpdateInput = {}): Promise<RateLimitConfig | undefined> {
-  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "update", input);
+  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function rateLimitConfigSoftDelete(input: RateLimitConfigSoftDeleteInput = {}): Promise<RateLimitConfig | undefined> {
-  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "softDelete", input);
+  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
-export async function rateLimitConfigTurnOn(input: Record<string, unknown> = {}): Promise<RateLimitConfig | undefined> {
-  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "turnOn", input);
+export async function rateLimitConfigTurnOn(input: RateLimitConfigTurnOnInput = {}): Promise<RateLimitConfig | undefined> {
+  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "turnOn", input as Record<string, unknown>);
   return r.result;
 }
-export async function rateLimitConfigTurnOff(input: Record<string, unknown> = {}): Promise<RateLimitConfig | undefined> {
-  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "turnOff", input);
+export async function rateLimitConfigTurnOff(input: RateLimitConfigTurnOffInput = {}): Promise<RateLimitConfig | undefined> {
+  const r = await executeCommand<RateLimitConfig>("RateLimitConfig", "turnOff", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeUpdate(input: RecipeUpdateInput = {}): Promise<Recipe | undefined> {
-  const r = await executeCommand<Recipe>("Recipe", "update", input);
+  const r = await executeCommand<Recipe>("Recipe", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeDeactivate(input: RecipeDeactivateInput = {}): Promise<Recipe | undefined> {
-  const r = await executeCommand<Recipe>("Recipe", "deactivate", input);
+  const r = await executeCommand<Recipe>("Recipe", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function recipeActivate(input: Record<string, unknown> = {}): Promise<Recipe | undefined> {
-  const r = await executeCommand<Recipe>("Recipe", "activate", input);
+export async function recipeActivate(input: RecipeActivateInput = {}): Promise<Recipe | undefined> {
+  const r = await executeCommand<Recipe>("Recipe", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeCreate(input: RecipeCreateInput = {}): Promise<Recipe | undefined> {
-  const r = await executeCommand<Recipe>("Recipe", "create", input);
+  const r = await executeCommand<Recipe>("Recipe", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionCreate(input: RecipeVersionCreateInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "create", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionMarkPublished(input: RecipeVersionMarkPublishedInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "markPublished", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "markPublished", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionRetract(input: RecipeVersionRetractInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "retract", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "retract", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionApprove(input: RecipeVersionApproveInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "approve", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionRestore(input: RecipeVersionRestoreInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "restore", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "restore", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeVersionUpdateCosts(input: RecipeVersionUpdateCostsInput = {}): Promise<RecipeVersion | undefined> {
-  const r = await executeCommand<RecipeVersion>("RecipeVersion", "updateCosts", input);
+  const r = await executeCommand<RecipeVersion>("RecipeVersion", "updateCosts", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeIngredientUpdateQuantity(input: RecipeIngredientUpdateQuantityInput = {}): Promise<RecipeIngredient | undefined> {
-  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "updateQuantity", input);
+  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "updateQuantity", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeIngredientUpdateWasteFactor(input: RecipeIngredientUpdateWasteFactorInput = {}): Promise<RecipeIngredient | undefined> {
-  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "updateWasteFactor", input);
+  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "updateWasteFactor", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeIngredientCreate(input: RecipeIngredientCreateInput = {}): Promise<RecipeIngredient | undefined> {
-  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "create", input);
+  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeIngredientRemove(input: RecipeIngredientRemoveInput = {}): Promise<RecipeIngredient | undefined> {
-  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "remove", input);
+  const r = await executeCommand<RecipeIngredient>("RecipeIngredient", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeStepCreate(input: RecipeStepCreateInput = {}): Promise<RecipeStep | undefined> {
-  const r = await executeCommand<RecipeStep>("RecipeStep", "create", input);
+  const r = await executeCommand<RecipeStep>("RecipeStep", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeStepUpdateInstruction(input: RecipeStepUpdateInstructionInput = {}): Promise<RecipeStep | undefined> {
-  const r = await executeCommand<RecipeStep>("RecipeStep", "updateInstruction", input);
+  const r = await executeCommand<RecipeStep>("RecipeStep", "updateInstruction", input as Record<string, unknown>);
   return r.result;
 }
 export async function recipeStepRemove(input: RecipeStepRemoveInput = {}): Promise<RecipeStep | undefined> {
-  const r = await executeCommand<RecipeStep>("RecipeStep", "remove", input);
+  const r = await executeCommand<RecipeStep>("RecipeStep", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleCreate(input: RevenueRecognitionScheduleCreateInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "create", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionScheduleStartRecognition(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "startRecognition", input);
+export async function revenueRecognitionScheduleStartRecognition(input: RevenueRecognitionScheduleStartRecognitionInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "startRecognition", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleRecognizeAmount(input: RevenueRecognitionScheduleRecognizeAmountInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeAmount", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeAmount", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionScheduleCompleteIfFullyRecognized(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfFullyRecognized", input);
+export async function revenueRecognitionScheduleCompleteIfFullyRecognized(input: RevenueRecognitionScheduleCompleteIfFullyRecognizedInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfFullyRecognized", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleRecognizeMilestone(input: RevenueRecognitionScheduleRecognizeMilestoneInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeMilestone", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeMilestone", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionScheduleCompleteIfAllMilestones(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfAllMilestones", input);
+export async function revenueRecognitionScheduleCompleteIfAllMilestones(input: RevenueRecognitionScheduleCompleteIfAllMilestonesInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfAllMilestones", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleRecognizePercentage(input: RevenueRecognitionScheduleRecognizePercentageInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizePercentage", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizePercentage", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionScheduleCompleteIfPercentageFull(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfPercentageFull", input);
+export async function revenueRecognitionScheduleCompleteIfPercentageFull(input: RevenueRecognitionScheduleCompleteIfPercentageFullInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfPercentageFull", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionSchedulePause(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "pause", input);
+export async function revenueRecognitionSchedulePause(input: RevenueRecognitionSchedulePauseInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "pause", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionScheduleResume(input: Record<string, unknown> = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "resume", input);
+export async function revenueRecognitionScheduleResume(input: RevenueRecognitionScheduleResumeInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "resume", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleCancel(input: RevenueRecognitionScheduleCancelInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "cancel", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleAdjustSchedule(input: RevenueRecognitionScheduleAdjustScheduleInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "adjustSchedule", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "adjustSchedule", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionScheduleReverseRecognition(input: RevenueRecognitionScheduleReverseRecognitionInput = {}): Promise<RevenueRecognitionSchedule | undefined> {
-  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "reverseRecognition", input);
+  const r = await executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "reverseRecognition", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionLineCreate(input: RevenueRecognitionLineCreateInput = {}): Promise<RevenueRecognitionLine | undefined> {
-  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "create", input);
+  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionLineRecognize(input: RevenueRecognitionLineRecognizeInput = {}): Promise<RevenueRecognitionLine | undefined> {
-  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "recognize", input);
+  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "recognize", input as Record<string, unknown>);
   return r.result;
 }
 export async function revenueRecognitionLineSkip(input: RevenueRecognitionLineSkipInput = {}): Promise<RevenueRecognitionLine | undefined> {
-  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "skip", input);
+  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "skip", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionLineCancel(input: Record<string, unknown> = {}): Promise<RevenueRecognitionLine | undefined> {
-  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "cancel", input);
+export async function revenueRecognitionLineCancel(input: RevenueRecognitionLineCancelInput = {}): Promise<RevenueRecognitionLine | undefined> {
+  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function revenueRecognitionLineReverse(input: Record<string, unknown> = {}): Promise<RevenueRecognitionLine | undefined> {
-  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "reverse", input);
+export async function revenueRecognitionLineReverse(input: RevenueRecognitionLineReverseInput = {}): Promise<RevenueRecognitionLine | undefined> {
+  const r = await executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "reverse", input as Record<string, unknown>);
   return r.result;
 }
 export async function rolePolicyCreate(input: RolePolicyCreateInput = {}): Promise<RolePolicy | undefined> {
-  const r = await executeCommand<RolePolicy>("RolePolicy", "create", input);
+  const r = await executeCommand<RolePolicy>("RolePolicy", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function rolePolicyUpdate(input: RolePolicyUpdateInput = {}): Promise<RolePolicy | undefined> {
-  const r = await executeCommand<RolePolicy>("RolePolicy", "update", input);
+  const r = await executeCommand<RolePolicy>("RolePolicy", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function rolePolicyGrant(input: RolePolicyGrantInput = {}): Promise<RolePolicy | undefined> {
-  const r = await executeCommand<RolePolicy>("RolePolicy", "grant", input);
+  const r = await executeCommand<RolePolicy>("RolePolicy", "grant", input as Record<string, unknown>);
   return r.result;
 }
 export async function rolePolicyRevoke(input: RolePolicyRevokeInput = {}): Promise<RolePolicy | undefined> {
-  const r = await executeCommand<RolePolicy>("RolePolicy", "revoke", input);
+  const r = await executeCommand<RolePolicy>("RolePolicy", "revoke", input as Record<string, unknown>);
   return r.result;
 }
 export async function sampleDataSeed(input: SampleDataSeedInput = {}): Promise<SampleData | undefined> {
-  const r = await executeCommand<SampleData>("SampleData", "seed", input);
+  const r = await executeCommand<SampleData>("SampleData", "seed", input as Record<string, unknown>);
   return r.result;
 }
 export async function sampleDataClear(input: SampleDataClearInput = {}): Promise<SampleData | undefined> {
-  const r = await executeCommand<SampleData>("SampleData", "clear", input);
+  const r = await executeCommand<SampleData>("SampleData", "clear", input as Record<string, unknown>);
   return r.result;
 }
 export async function sampleDataReseed(input: SampleDataReseedInput = {}): Promise<SampleData | undefined> {
-  const r = await executeCommand<SampleData>("SampleData", "reseed", input);
+  const r = await executeCommand<SampleData>("SampleData", "reseed", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleCreate(input: ScheduleCreateInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "create", input);
+  const r = await executeCommand<Schedule>("Schedule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleUpdate(input: ScheduleUpdateInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "update", input);
+  const r = await executeCommand<Schedule>("Schedule", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleApprove(input: ScheduleApproveInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "approve", input);
+  const r = await executeCommand<Schedule>("Schedule", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleReopen(input: ScheduleReopenInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "reopen", input);
+  const r = await executeCommand<Schedule>("Schedule", "reopen", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleRelease(input: ScheduleReleaseInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "release", input);
+  const r = await executeCommand<Schedule>("Schedule", "release", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleClose(input: ScheduleCloseInput = {}): Promise<Schedule | undefined> {
-  const r = await executeCommand<Schedule>("Schedule", "close", input);
+  const r = await executeCommand<Schedule>("Schedule", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleShiftCreate(input: ScheduleShiftCreateInput = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "create", input);
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleShiftUpdate(input: ScheduleShiftUpdateInput = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "update", input);
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleShiftOfferSwap(input: ScheduleShiftOfferSwapInput = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "offerSwap", input);
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "offerSwap", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleShiftAcceptSwap(input: ScheduleShiftAcceptSwapInput = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "acceptSwap", input);
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "acceptSwap", input as Record<string, unknown>);
   return r.result;
 }
-export async function scheduleShiftDeclineSwap(input: Record<string, unknown> = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "declineSwap", input);
+export async function scheduleShiftDeclineSwap(input: ScheduleShiftDeclineSwapInput = {}): Promise<ScheduleShift | undefined> {
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "declineSwap", input as Record<string, unknown>);
   return r.result;
 }
-export async function scheduleShiftCancelSwap(input: Record<string, unknown> = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "cancelSwap", input);
+export async function scheduleShiftCancelSwap(input: ScheduleShiftCancelSwapInput = {}): Promise<ScheduleShift | undefined> {
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "cancelSwap", input as Record<string, unknown>);
   return r.result;
 }
 export async function scheduleShiftRemove(input: ScheduleShiftRemoveInput = {}): Promise<ScheduleShift | undefined> {
-  const r = await executeCommand<ScheduleShift>("ScheduleShift", "remove", input);
+  const r = await executeCommand<ScheduleShift>("ScheduleShift", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentCreate(input: ShipmentCreateInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "create", input);
+  const r = await executeCommand<Shipment>("Shipment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentUpdate(input: ShipmentUpdateInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "update", input);
+  const r = await executeCommand<Shipment>("Shipment", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentSchedule(input: ShipmentScheduleInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "schedule", input);
+  const r = await executeCommand<Shipment>("Shipment", "schedule", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentStartPreparing(input: ShipmentStartPreparingInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "startPreparing", input);
+  const r = await executeCommand<Shipment>("Shipment", "startPreparing", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentShip(input: ShipmentShipInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "ship", input);
+  const r = await executeCommand<Shipment>("Shipment", "ship", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentMarkDelivered(input: ShipmentMarkDeliveredInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "markDelivered", input);
+  const r = await executeCommand<Shipment>("Shipment", "markDelivered", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentCancel(input: ShipmentCancelInput = {}): Promise<Shipment | undefined> {
-  const r = await executeCommand<Shipment>("Shipment", "cancel", input);
+  const r = await executeCommand<Shipment>("Shipment", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentItemCreate(input: ShipmentItemCreateInput = {}): Promise<ShipmentItem | undefined> {
-  const r = await executeCommand<ShipmentItem>("ShipmentItem", "create", input);
+  const r = await executeCommand<ShipmentItem>("ShipmentItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentItemUpdateReceived(input: ShipmentItemUpdateReceivedInput = {}): Promise<ShipmentItem | undefined> {
-  const r = await executeCommand<ShipmentItem>("ShipmentItem", "updateReceived", input);
+  const r = await executeCommand<ShipmentItem>("ShipmentItem", "updateReceived", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentItemUpdate(input: ShipmentItemUpdateInput = {}): Promise<ShipmentItem | undefined> {
-  const r = await executeCommand<ShipmentItem>("ShipmentItem", "update", input);
+  const r = await executeCommand<ShipmentItem>("ShipmentItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function shipmentItemSoftDelete(input: ShipmentItemSoftDeleteInput = {}): Promise<ShipmentItem | undefined> {
-  const r = await executeCommand<ShipmentItem>("ShipmentItem", "softDelete", input);
+  const r = await executeCommand<ShipmentItem>("ShipmentItem", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function smsAutomationRuleCreate(input: SmsAutomationRuleCreateInput = {}): Promise<SmsAutomationRule | undefined> {
-  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "create", input);
+  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function smsAutomationRuleUpdate(input: SmsAutomationRuleUpdateInput = {}): Promise<SmsAutomationRule | undefined> {
-  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "update", input);
+  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function smsAutomationRuleActivate(input: Record<string, unknown> = {}): Promise<SmsAutomationRule | undefined> {
-  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "activate", input);
+export async function smsAutomationRuleActivate(input: SmsAutomationRuleActivateInput = {}): Promise<SmsAutomationRule | undefined> {
+  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "activate", input as Record<string, unknown>);
   return r.result;
 }
-export async function smsAutomationRuleDeactivate(input: Record<string, unknown> = {}): Promise<SmsAutomationRule | undefined> {
-  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "deactivate", input);
+export async function smsAutomationRuleDeactivate(input: SmsAutomationRuleDeactivateInput = {}): Promise<SmsAutomationRule | undefined> {
+  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function smsAutomationRuleSoftDelete(input: Record<string, unknown> = {}): Promise<SmsAutomationRule | undefined> {
-  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "softDelete", input);
+export async function smsAutomationRuleSoftDelete(input: SmsAutomationRuleSoftDeleteInput = {}): Promise<SmsAutomationRule | undefined> {
+  const r = await executeCommand<SmsAutomationRule>("SmsAutomationRule", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardApprovalCreate(input: TimecardApprovalCreateInput = {}): Promise<TimecardApproval | undefined> {
-  const r = await executeCommand<TimecardApproval>("TimecardApproval", "create", input);
+  const r = await executeCommand<TimecardApproval>("TimecardApproval", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardApprovalApprove(input: TimecardApprovalApproveInput = {}): Promise<TimecardApproval | undefined> {
-  const r = await executeCommand<TimecardApproval>("TimecardApproval", "approve", input);
+  const r = await executeCommand<TimecardApproval>("TimecardApproval", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardApprovalReject(input: TimecardApprovalRejectInput = {}): Promise<TimecardApproval | undefined> {
-  const r = await executeCommand<TimecardApproval>("TimecardApproval", "reject", input);
+  const r = await executeCommand<TimecardApproval>("TimecardApproval", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardApprovalBulkApprove(input: TimecardApprovalBulkApproveInput = {}): Promise<TimecardApproval | undefined> {
-  const r = await executeCommand<TimecardApproval>("TimecardApproval", "bulkApprove", input);
+  const r = await executeCommand<TimecardApproval>("TimecardApproval", "bulkApprove", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollLineItemCreate(input: PayrollLineItemCreateInput = {}): Promise<PayrollLineItem | undefined> {
-  const r = await executeCommand<PayrollLineItem>("PayrollLineItem", "create", input);
+  const r = await executeCommand<PayrollLineItem>("PayrollLineItem", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function payrollLineItemUpdate(input: PayrollLineItemUpdateInput = {}): Promise<PayrollLineItem | undefined> {
-  const r = await executeCommand<PayrollLineItem>("PayrollLineItem", "update", input);
+  const r = await executeCommand<PayrollLineItem>("PayrollLineItem", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function tipPoolCreate(input: TipPoolCreateInput = {}): Promise<TipPool | undefined> {
-  const r = await executeCommand<TipPool>("TipPool", "create", input);
+  const r = await executeCommand<TipPool>("TipPool", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function tipPoolAllocate(input: TipPoolAllocateInput = {}): Promise<TipPool | undefined> {
-  const r = await executeCommand<TipPool>("TipPool", "allocate", input);
+  const r = await executeCommand<TipPool>("TipPool", "allocate", input as Record<string, unknown>);
   return r.result;
 }
 export async function tipPoolDistribute(input: TipPoolDistributeInput = {}): Promise<TipPool | undefined> {
-  const r = await executeCommand<TipPool>("TipPool", "distribute", input);
+  const r = await executeCommand<TipPool>("TipPool", "distribute", input as Record<string, unknown>);
   return r.result;
 }
 export async function tipPoolFinalizeDistribution(input: TipPoolFinalizeDistributionInput = {}): Promise<TipPool | undefined> {
-  const r = await executeCommand<TipPool>("TipPool", "finalizeDistribution", input);
+  const r = await executeCommand<TipPool>("TipPool", "finalizeDistribution", input as Record<string, unknown>);
   return r.result;
 }
-export async function tipPoolClose(input: Record<string, unknown> = {}): Promise<TipPool | undefined> {
-  const r = await executeCommand<TipPool>("TipPool", "close", input);
+export async function tipPoolClose(input: TipPoolCloseInput = {}): Promise<TipPool | undefined> {
+  const r = await executeCommand<TipPool>("TipPool", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function disciplinaryActionCreate(input: DisciplinaryActionCreateInput = {}): Promise<DisciplinaryAction | undefined> {
-  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "create", input);
+  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function disciplinaryActionAcknowledge(input: DisciplinaryActionAcknowledgeInput = {}): Promise<DisciplinaryAction | undefined> {
-  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "acknowledge", input);
+  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function disciplinaryActionEscalate(input: DisciplinaryActionEscalateInput = {}): Promise<DisciplinaryAction | undefined> {
-  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "escalate", input);
+  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "escalate", input as Record<string, unknown>);
   return r.result;
 }
 export async function disciplinaryActionClose(input: DisciplinaryActionCloseInput = {}): Promise<DisciplinaryAction | undefined> {
-  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "close", input);
+  const r = await executeCommand<DisciplinaryAction>("DisciplinaryAction", "close", input as Record<string, unknown>);
   return r.result;
 }
 export async function actionMilestoneCreate(input: ActionMilestoneCreateInput = {}): Promise<ActionMilestone | undefined> {
-  const r = await executeCommand<ActionMilestone>("ActionMilestone", "create", input);
+  const r = await executeCommand<ActionMilestone>("ActionMilestone", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function actionMilestoneComplete(input: Record<string, unknown> = {}): Promise<ActionMilestone | undefined> {
-  const r = await executeCommand<ActionMilestone>("ActionMilestone", "complete", input);
+export async function actionMilestoneComplete(input: ActionMilestoneCompleteInput = {}): Promise<ActionMilestone | undefined> {
+  const r = await executeCommand<ActionMilestone>("ActionMilestone", "complete", input as Record<string, unknown>);
   return r.result;
 }
-export async function actionMilestoneMiss(input: Record<string, unknown> = {}): Promise<ActionMilestone | undefined> {
-  const r = await executeCommand<ActionMilestone>("ActionMilestone", "miss", input);
+export async function actionMilestoneMiss(input: ActionMilestoneMissInput = {}): Promise<ActionMilestone | undefined> {
+  const r = await executeCommand<ActionMilestone>("ActionMilestone", "miss", input as Record<string, unknown>);
   return r.result;
 }
 export async function performanceReviewCreate(input: PerformanceReviewCreateInput = {}): Promise<PerformanceReview | undefined> {
-  const r = await executeCommand<PerformanceReview>("PerformanceReview", "create", input);
+  const r = await executeCommand<PerformanceReview>("PerformanceReview", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function performanceReviewSubmit(input: PerformanceReviewSubmitInput = {}): Promise<PerformanceReview | undefined> {
-  const r = await executeCommand<PerformanceReview>("PerformanceReview", "submit", input);
+  const r = await executeCommand<PerformanceReview>("PerformanceReview", "submit", input as Record<string, unknown>);
   return r.result;
 }
-export async function performanceReviewSignOff(input: Record<string, unknown> = {}): Promise<PerformanceReview | undefined> {
-  const r = await executeCommand<PerformanceReview>("PerformanceReview", "signOff", input);
+export async function performanceReviewSignOff(input: PerformanceReviewSignOffInput = {}): Promise<PerformanceReview | undefined> {
+  const r = await executeCommand<PerformanceReview>("PerformanceReview", "signOff", input as Record<string, unknown>);
   return r.result;
 }
-export async function performanceReviewAcknowledge(input: Record<string, unknown> = {}): Promise<PerformanceReview | undefined> {
-  const r = await executeCommand<PerformanceReview>("PerformanceReview", "acknowledge", input);
+export async function performanceReviewAcknowledge(input: PerformanceReviewAcknowledgeInput = {}): Promise<PerformanceReview | undefined> {
+  const r = await executeCommand<PerformanceReview>("PerformanceReview", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingCompletionCreate(input: TrainingCompletionCreateInput = {}): Promise<TrainingCompletion | undefined> {
-  const r = await executeCommand<TrainingCompletion>("TrainingCompletion", "create", input);
+  const r = await executeCommand<TrainingCompletion>("TrainingCompletion", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function onboardingTaskCreate(input: OnboardingTaskCreateInput = {}): Promise<OnboardingTask | undefined> {
-  const r = await executeCommand<OnboardingTask>("OnboardingTask", "create", input);
+  const r = await executeCommand<OnboardingTask>("OnboardingTask", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function onboardingTaskUpdate(input: OnboardingTaskUpdateInput = {}): Promise<OnboardingTask | undefined> {
-  const r = await executeCommand<OnboardingTask>("OnboardingTask", "update", input);
+  const r = await executeCommand<OnboardingTask>("OnboardingTask", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function onboardingTaskRemove(input: Record<string, unknown> = {}): Promise<OnboardingTask | undefined> {
-  const r = await executeCommand<OnboardingTask>("OnboardingTask", "remove", input);
+export async function onboardingTaskRemove(input: OnboardingTaskRemoveInput = {}): Promise<OnboardingTask | undefined> {
+  const r = await executeCommand<OnboardingTask>("OnboardingTask", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function onboardingCompletionCreate(input: OnboardingCompletionCreateInput = {}): Promise<OnboardingCompletion | undefined> {
-  const r = await executeCommand<OnboardingCompletion>("OnboardingCompletion", "create", input);
+  const r = await executeCommand<OnboardingCompletion>("OnboardingCompletion", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function onboardingCompletionComplete(input: Record<string, unknown> = {}): Promise<OnboardingCompletion | undefined> {
-  const r = await executeCommand<OnboardingCompletion>("OnboardingCompletion", "complete", input);
+export async function onboardingCompletionComplete(input: OnboardingCompletionCompleteInput = {}): Promise<OnboardingCompletion | undefined> {
+  const r = await executeCommand<OnboardingCompletion>("OnboardingCompletion", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function openShiftCreate(input: OpenShiftCreateInput = {}): Promise<OpenShift | undefined> {
-  const r = await executeCommand<OpenShift>("OpenShift", "create", input);
+  const r = await executeCommand<OpenShift>("OpenShift", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function openShiftClaim(input: OpenShiftClaimInput = {}): Promise<OpenShift | undefined> {
-  const r = await executeCommand<OpenShift>("OpenShift", "claim", input);
+  const r = await executeCommand<OpenShift>("OpenShift", "claim", input as Record<string, unknown>);
   return r.result;
 }
-export async function openShiftCancel(input: Record<string, unknown> = {}): Promise<OpenShift | undefined> {
-  const r = await executeCommand<OpenShift>("OpenShift", "cancel", input);
+export async function openShiftCancel(input: OpenShiftCancelInput = {}): Promise<OpenShift | undefined> {
+  const r = await executeCommand<OpenShift>("OpenShift", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function deliveryRouteCreate(input: DeliveryRouteCreateInput = {}): Promise<DeliveryRoute | undefined> {
-  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "create", input);
+  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function deliveryRouteStart(input: Record<string, unknown> = {}): Promise<DeliveryRoute | undefined> {
-  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "start", input);
+export async function deliveryRouteStart(input: DeliveryRouteStartInput = {}): Promise<DeliveryRoute | undefined> {
+  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "start", input as Record<string, unknown>);
   return r.result;
 }
-export async function deliveryRouteComplete(input: Record<string, unknown> = {}): Promise<DeliveryRoute | undefined> {
-  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "complete", input);
+export async function deliveryRouteComplete(input: DeliveryRouteCompleteInput = {}): Promise<DeliveryRoute | undefined> {
+  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function deliveryRouteAssignDriver(input: DeliveryRouteAssignDriverInput = {}): Promise<DeliveryRoute | undefined> {
-  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "assignDriver", input);
+  const r = await executeCommand<DeliveryRoute>("DeliveryRoute", "assignDriver", input as Record<string, unknown>);
   return r.result;
 }
 export async function routeStopCreate(input: RouteStopCreateInput = {}): Promise<RouteStop | undefined> {
-  const r = await executeCommand<RouteStop>("RouteStop", "create", input);
+  const r = await executeCommand<RouteStop>("RouteStop", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function routeStopMarkArrived(input: Record<string, unknown> = {}): Promise<RouteStop | undefined> {
-  const r = await executeCommand<RouteStop>("RouteStop", "markArrived", input);
+export async function routeStopMarkArrived(input: RouteStopMarkArrivedInput = {}): Promise<RouteStop | undefined> {
+  const r = await executeCommand<RouteStop>("RouteStop", "markArrived", input as Record<string, unknown>);
   return r.result;
 }
-export async function routeStopComplete(input: Record<string, unknown> = {}): Promise<RouteStop | undefined> {
-  const r = await executeCommand<RouteStop>("RouteStop", "complete", input);
+export async function routeStopComplete(input: RouteStopCompleteInput = {}): Promise<RouteStop | undefined> {
+  const r = await executeCommand<RouteStop>("RouteStop", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function routeStopReorder(input: RouteStopReorderInput = {}): Promise<RouteStop | undefined> {
-  const r = await executeCommand<RouteStop>("RouteStop", "reorder", input);
+  const r = await executeCommand<RouteStop>("RouteStop", "reorder", input as Record<string, unknown>);
   return r.result;
 }
 export async function paymentRefundAttemptCreate(input: PaymentRefundAttemptCreateInput = {}): Promise<PaymentRefundAttempt | undefined> {
-  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "create", input);
+  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentRefundAttemptMarkSucceeded(input: Record<string, unknown> = {}): Promise<PaymentRefundAttempt | undefined> {
-  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "markSucceeded", input);
+export async function paymentRefundAttemptMarkSucceeded(input: PaymentRefundAttemptMarkSucceededInput = {}): Promise<PaymentRefundAttempt | undefined> {
+  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "markSucceeded", input as Record<string, unknown>);
   return r.result;
 }
-export async function paymentRefundAttemptMarkFailed(input: Record<string, unknown> = {}): Promise<PaymentRefundAttempt | undefined> {
-  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "markFailed", input);
+export async function paymentRefundAttemptMarkFailed(input: PaymentRefundAttemptMarkFailedInput = {}): Promise<PaymentRefundAttempt | undefined> {
+  const r = await executeCommand<PaymentRefundAttempt>("PaymentRefundAttempt", "markFailed", input as Record<string, unknown>);
   return r.result;
 }
 export async function preventiveMaintenanceScheduleCreate(input: PreventiveMaintenanceScheduleCreateInput = {}): Promise<PreventiveMaintenanceSchedule | undefined> {
-  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "create", input);
+  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function preventiveMaintenanceScheduleUpdate(input: PreventiveMaintenanceScheduleUpdateInput = {}): Promise<PreventiveMaintenanceSchedule | undefined> {
-  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "update", input);
+  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function preventiveMaintenanceScheduleComplete(input: PreventiveMaintenanceScheduleCompleteInput = {}): Promise<PreventiveMaintenanceSchedule | undefined> {
-  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "complete", input);
+  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "complete", input as Record<string, unknown>);
   return r.result;
 }
-export async function preventiveMaintenanceScheduleDeactivate(input: Record<string, unknown> = {}): Promise<PreventiveMaintenanceSchedule | undefined> {
-  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "deactivate", input);
+export async function preventiveMaintenanceScheduleDeactivate(input: PreventiveMaintenanceScheduleDeactivateInput = {}): Promise<PreventiveMaintenanceSchedule | undefined> {
+  const r = await executeCommand<PreventiveMaintenanceSchedule>("PreventiveMaintenanceSchedule", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffMemberCreate(input: StaffMemberCreateInput = {}): Promise<StaffMember | undefined> {
-  const r = await executeCommand<StaffMember>("StaffMember", "create", input);
+  const r = await executeCommand<StaffMember>("StaffMember", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffMemberUpdateProfile(input: StaffMemberUpdateProfileInput = {}): Promise<StaffMember | undefined> {
-  const r = await executeCommand<StaffMember>("StaffMember", "updateProfile", input);
+  const r = await executeCommand<StaffMember>("StaffMember", "updateProfile", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffMemberDeactivate(input: StaffMemberDeactivateInput = {}): Promise<StaffMember | undefined> {
-  const r = await executeCommand<StaffMember>("StaffMember", "deactivate", input);
+  const r = await executeCommand<StaffMember>("StaffMember", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
-export async function staffMemberReactivate(input: Record<string, unknown> = {}): Promise<StaffMember | undefined> {
-  const r = await executeCommand<StaffMember>("StaffMember", "reactivate", input);
+export async function staffMemberReactivate(input: StaffMemberReactivateInput = {}): Promise<StaffMember | undefined> {
+  const r = await executeCommand<StaffMember>("StaffMember", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffMemberChangeRole(input: StaffMemberChangeRoleInput = {}): Promise<StaffMember | undefined> {
-  const r = await executeCommand<StaffMember>("StaffMember", "changeRole", input);
+  const r = await executeCommand<StaffMember>("StaffMember", "changeRole", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffPerformanceCreate(input: StaffPerformanceCreateInput = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "create", input);
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffPerformanceUpdate(input: StaffPerformanceUpdateInput = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "update", input);
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function staffPerformanceSubmitForReview(input: Record<string, unknown> = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "submitForReview", input);
+export async function staffPerformanceSubmitForReview(input: StaffPerformanceSubmitForReviewInput = {}): Promise<StaffPerformance | undefined> {
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "submitForReview", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffPerformanceSendBackToDraft(input: StaffPerformanceSendBackToDraftInput = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "sendBackToDraft", input);
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "sendBackToDraft", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffPerformanceComplete(input: StaffPerformanceCompleteInput = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "complete", input);
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffPerformanceAcknowledge(input: StaffPerformanceAcknowledgeInput = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "acknowledge", input);
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "acknowledge", input as Record<string, unknown>);
   return r.result;
 }
-export async function staffPerformanceRemove(input: Record<string, unknown> = {}): Promise<StaffPerformance | undefined> {
-  const r = await executeCommand<StaffPerformance>("StaffPerformance", "remove", input);
+export async function staffPerformanceRemove(input: StaffPerformanceRemoveInput = {}): Promise<StaffPerformance | undefined> {
+  const r = await executeCommand<StaffPerformance>("StaffPerformance", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationCreate(input: StationCreateInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "create", input);
+  const r = await executeCommand<Station>("Station", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationAssignTask(input: StationAssignTaskInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "assignTask", input);
+  const r = await executeCommand<Station>("Station", "assignTask", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationRemoveTask(input: StationRemoveTaskInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "removeTask", input);
+  const r = await executeCommand<Station>("Station", "removeTask", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationUpdateCapacity(input: StationUpdateCapacityInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "updateCapacity", input);
+  const r = await executeCommand<Station>("Station", "updateCapacity", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationDeactivate(input: StationDeactivateInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "deactivate", input);
+  const r = await executeCommand<Station>("Station", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationActivate(input: StationActivateInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "activate", input);
+  const r = await executeCommand<Station>("Station", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationUpdateEquipment(input: StationUpdateEquipmentInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "updateEquipment", input);
+  const r = await executeCommand<Station>("Station", "updateEquipment", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationStartMaintenance(input: StationStartMaintenanceInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "startMaintenance", input);
+  const r = await executeCommand<Station>("Station", "startMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function stationEndMaintenance(input: StationEndMaintenanceInput = {}): Promise<Station | undefined> {
-  const r = await executeCommand<Station>("Station", "endMaintenance", input);
+  const r = await executeCommand<Station>("Station", "endMaintenance", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeEntryClockIn(input: TimeEntryClockInInput = {}): Promise<TimeEntry | undefined> {
-  const r = await executeCommand<TimeEntry>("TimeEntry", "clockIn", input);
+  const r = await executeCommand<TimeEntry>("TimeEntry", "clockIn", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeEntryClockOut(input: TimeEntryClockOutInput = {}): Promise<TimeEntry | undefined> {
-  const r = await executeCommand<TimeEntry>("TimeEntry", "clockOut", input);
+  const r = await executeCommand<TimeEntry>("TimeEntry", "clockOut", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeEntryAddEntry(input: TimeEntryAddEntryInput = {}): Promise<TimeEntry | undefined> {
-  const r = await executeCommand<TimeEntry>("TimeEntry", "addEntry", input);
+  const r = await executeCommand<TimeEntry>("TimeEntry", "addEntry", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeEntrySoftDelete(input: TimeEntrySoftDeleteInput = {}): Promise<TimeEntry | undefined> {
-  const r = await executeCommand<TimeEntry>("TimeEntry", "softDelete", input);
+  const r = await executeCommand<TimeEntry>("TimeEntry", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardEditRequestCreate(input: TimecardEditRequestCreateInput = {}): Promise<TimecardEditRequest | undefined> {
-  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "create", input);
+  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardEditRequestApprove(input: TimecardEditRequestApproveInput = {}): Promise<TimecardEditRequest | undefined> {
-  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "approve", input);
+  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function timecardEditRequestReject(input: TimecardEditRequestRejectInput = {}): Promise<TimecardEditRequest | undefined> {
-  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "reject", input);
+  const r = await executeCommand<TimecardEditRequest>("TimecardEditRequest", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeOffRequestCreate(input: TimeOffRequestCreateInput = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "create", input);
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeOffRequestAttachBalance(input: TimeOffRequestAttachBalanceInput = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "attachBalance", input);
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "attachBalance", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeOffRequestApprove(input: TimeOffRequestApproveInput = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "approve", input);
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeOffRequestReject(input: TimeOffRequestRejectInput = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "reject", input);
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function timeOffRequestReconsider(input: TimeOffRequestReconsiderInput = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "reconsider", input);
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "reconsider", input as Record<string, unknown>);
   return r.result;
 }
-export async function timeOffRequestCancel(input: Record<string, unknown> = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "cancel", input);
+export async function timeOffRequestCancel(input: TimeOffRequestCancelInput = {}): Promise<TimeOffRequest | undefined> {
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "cancel", input as Record<string, unknown>);
   return r.result;
 }
-export async function timeOffRequestSoftDelete(input: Record<string, unknown> = {}): Promise<TimeOffRequest | undefined> {
-  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "softDelete", input);
+export async function timeOffRequestSoftDelete(input: TimeOffRequestSoftDeleteInput = {}): Promise<TimeOffRequest | undefined> {
+  const r = await executeCommand<TimeOffRequest>("TimeOffRequest", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingModuleCreate(input: TrainingModuleCreateInput = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "create", input);
+  const r = await executeCommand<TrainingModule>("TrainingModule", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingModuleUpdate(input: TrainingModuleUpdateInput = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "update", input);
+  const r = await executeCommand<TrainingModule>("TrainingModule", "update", input as Record<string, unknown>);
   return r.result;
 }
-export async function trainingModuleMarkPublished(input: Record<string, unknown> = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "markPublished", input);
+export async function trainingModuleMarkPublished(input: TrainingModuleMarkPublishedInput = {}): Promise<TrainingModule | undefined> {
+  const r = await executeCommand<TrainingModule>("TrainingModule", "markPublished", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingModuleCreateVersion(input: TrainingModuleCreateVersionInput = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "createVersion", input);
+  const r = await executeCommand<TrainingModule>("TrainingModule", "createVersion", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingModuleArchive(input: TrainingModuleArchiveInput = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "archive", input);
+  const r = await executeCommand<TrainingModule>("TrainingModule", "archive", input as Record<string, unknown>);
   return r.result;
 }
-export async function trainingModuleUnarchive(input: Record<string, unknown> = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "unarchive", input);
+export async function trainingModuleUnarchive(input: TrainingModuleUnarchiveInput = {}): Promise<TrainingModule | undefined> {
+  const r = await executeCommand<TrainingModule>("TrainingModule", "unarchive", input as Record<string, unknown>);
   return r.result;
 }
-export async function trainingModuleSoftDelete(input: Record<string, unknown> = {}): Promise<TrainingModule | undefined> {
-  const r = await executeCommand<TrainingModule>("TrainingModule", "softDelete", input);
+export async function trainingModuleSoftDelete(input: TrainingModuleSoftDeleteInput = {}): Promise<TrainingModule | undefined> {
+  const r = await executeCommand<TrainingModule>("TrainingModule", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingQuestionCreate(input: TrainingQuestionCreateInput = {}): Promise<TrainingQuestion | undefined> {
-  const r = await executeCommand<TrainingQuestion>("TrainingQuestion", "create", input);
+  const r = await executeCommand<TrainingQuestion>("TrainingQuestion", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function trainingQuestionDeactivate(input: Record<string, unknown> = {}): Promise<TrainingQuestion | undefined> {
-  const r = await executeCommand<TrainingQuestion>("TrainingQuestion", "deactivate", input);
+export async function trainingQuestionDeactivate(input: TrainingQuestionDeactivateInput = {}): Promise<TrainingQuestion | undefined> {
+  const r = await executeCommand<TrainingQuestion>("TrainingQuestion", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentCreate(input: TrainingAssignmentCreateInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "create", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentStart(input: TrainingAssignmentStartInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "start", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentSubmitPassingAttempt(input: TrainingAssignmentSubmitPassingAttemptInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitPassingAttempt", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitPassingAttempt", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentSubmitFailedAttempt(input: TrainingAssignmentSubmitFailedAttemptInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitFailedAttempt", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitFailedAttempt", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentSubmitFinalFailedAttempt(input: TrainingAssignmentSubmitFinalFailedAttemptInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitFinalFailedAttempt", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "submitFinalFailedAttempt", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentApplyFirstShiftDueDate(input: TrainingAssignmentApplyFirstShiftDueDateInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "applyFirstShiftDueDate", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "applyFirstShiftDueDate", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentMarkOverdue(input: TrainingAssignmentMarkOverdueInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "markOverdue", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "markOverdue", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAssignmentWaive(input: TrainingAssignmentWaiveInput = {}): Promise<TrainingAssignment | undefined> {
-  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "waive", input);
+  const r = await executeCommand<TrainingAssignment>("TrainingAssignment", "waive", input as Record<string, unknown>);
   return r.result;
 }
 export async function trainingAttemptCreate(input: TrainingAttemptCreateInput = {}): Promise<TrainingAttempt | undefined> {
-  const r = await executeCommand<TrainingAttempt>("TrainingAttempt", "create", input);
+  const r = await executeCommand<TrainingAttempt>("TrainingAttempt", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffTrainingSignalRecordSchedulabilityGranted(input: StaffTrainingSignalRecordSchedulabilityGrantedInput = {}): Promise<StaffTrainingSignal | undefined> {
-  const r = await executeCommand<StaffTrainingSignal>("StaffTrainingSignal", "recordSchedulabilityGranted", input);
+  const r = await executeCommand<StaffTrainingSignal>("StaffTrainingSignal", "recordSchedulabilityGranted", input as Record<string, unknown>);
   return r.result;
 }
 export async function staffTrainingSignalRecordWaiverLogged(input: StaffTrainingSignalRecordWaiverLoggedInput = {}): Promise<StaffTrainingSignal | undefined> {
-  const r = await executeCommand<StaffTrainingSignal>("StaffTrainingSignal", "recordWaiverLogged", input);
+  const r = await executeCommand<StaffTrainingSignal>("StaffTrainingSignal", "recordWaiverLogged", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingModuleDefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingModuleDefinition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingModuleDefinition>("SelOnboardingTrainingModuleDefinition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingModuleDefinition>("SelOnboardingTrainingModuleDefinition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion01DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion01Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion01Definition>("SelOnboardingTrainingQuestion01Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion01Definition>("SelOnboardingTrainingQuestion01Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion02DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion02Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion02Definition>("SelOnboardingTrainingQuestion02Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion02Definition>("SelOnboardingTrainingQuestion02Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion03DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion03Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion03Definition>("SelOnboardingTrainingQuestion03Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion03Definition>("SelOnboardingTrainingQuestion03Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion04DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion04Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion04Definition>("SelOnboardingTrainingQuestion04Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion04Definition>("SelOnboardingTrainingQuestion04Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion05DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion05Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion05Definition>("SelOnboardingTrainingQuestion05Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion05Definition>("SelOnboardingTrainingQuestion05Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion06DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion06Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion06Definition>("SelOnboardingTrainingQuestion06Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion06Definition>("SelOnboardingTrainingQuestion06Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion07DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion07Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion07Definition>("SelOnboardingTrainingQuestion07Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion07Definition>("SelOnboardingTrainingQuestion07Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion08DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion08Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion08Definition>("SelOnboardingTrainingQuestion08Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion08Definition>("SelOnboardingTrainingQuestion08Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion09DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion09Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion09Definition>("SelOnboardingTrainingQuestion09Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion09Definition>("SelOnboardingTrainingQuestion09Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function selOnboardingTrainingQuestion10DefinitionCreate(input: Record<string, unknown> = {}): Promise<SelOnboardingTrainingQuestion10Definition | undefined> {
-  const r = await executeCommand<SelOnboardingTrainingQuestion10Definition>("SelOnboardingTrainingQuestion10Definition", "create", input);
+  const r = await executeCommand<SelOnboardingTrainingQuestion10Definition>("SelOnboardingTrainingQuestion10Definition", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function userCreate(input: UserCreateInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "create", input);
+  const r = await executeCommand<User>("User", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function userUpdate(input: UserUpdateInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "update", input);
+  const r = await executeCommand<User>("User", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function userDeactivate(input: UserDeactivateInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "deactivate", input);
+  const r = await executeCommand<User>("User", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function userTerminate(input: UserTerminateInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "terminate", input);
+  const r = await executeCommand<User>("User", "terminate", input as Record<string, unknown>);
   return r.result;
 }
 export async function userUpdateRole(input: UserUpdateRoleInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "updateRole", input);
+  const r = await executeCommand<User>("User", "updateRole", input as Record<string, unknown>);
   return r.result;
 }
 export async function userReactivate(input: UserReactivateInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "reactivate", input);
+  const r = await executeCommand<User>("User", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function userSoftDelete(input: UserSoftDeleteInput = {}): Promise<User | undefined> {
-  const r = await executeCommand<User>("User", "softDelete", input);
+  const r = await executeCommand<User>("User", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogCreate(input: VendorCatalogCreateInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "create", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogUpdate(input: VendorCatalogUpdateInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "update", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogUpdatePrice(input: VendorCatalogUpdatePriceInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "updatePrice", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "updatePrice", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogDeactivate(input: VendorCatalogDeactivateInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "deactivate", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogReactivate(input: VendorCatalogReactivateInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "reactivate", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "reactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCatalogSoftDelete(input: VendorCatalogSoftDeleteInput = {}): Promise<VendorCatalog | undefined> {
-  const r = await executeCommand<VendorCatalog>("VendorCatalog", "softDelete", input);
+  const r = await executeCommand<VendorCatalog>("VendorCatalog", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractCreate(input: VendorContractCreateInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "create", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractUpdate(input: VendorContractUpdateInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "update", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractSubmit(input: VendorContractSubmitInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "submit", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "submit", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractApprove(input: VendorContractApproveInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "approve", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractReject(input: VendorContractRejectInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "reject", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractActivate(input: VendorContractActivateInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "activate", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractTerminate(input: VendorContractTerminateInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "terminate", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "terminate", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractRenew(input: VendorContractRenewInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "renew", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "renew", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractUpdateCompliance(input: VendorContractUpdateComplianceInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "updateCompliance", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "updateCompliance", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorContractRecordSlaBreach(input: VendorContractRecordSlaBreachInput = {}): Promise<VendorContract | undefined> {
-  const r = await executeCommand<VendorContract>("VendorContract", "recordSlaBreach", input);
+  const r = await executeCommand<VendorContract>("VendorContract", "recordSlaBreach", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorCreate(input: VendorCreateInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "create", input);
+  const r = await executeCommand<Vendor>("Vendor", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorRemove(input: VendorRemoveInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "remove", input);
+  const r = await executeCommand<Vendor>("Vendor", "remove", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorApprove(input: VendorApproveInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "approve", input);
+  const r = await executeCommand<Vendor>("Vendor", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorSuspend(input: VendorSuspendInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "suspend", input);
+  const r = await executeCommand<Vendor>("Vendor", "suspend", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorBlacklist(input: VendorBlacklistInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "blacklist", input);
+  const r = await executeCommand<Vendor>("Vendor", "blacklist", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorUpdate(input: VendorUpdateInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "update", input);
+  const r = await executeCommand<Vendor>("Vendor", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorAddContact(input: VendorAddContactInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "addContact", input);
+  const r = await executeCommand<Vendor>("Vendor", "addContact", input as Record<string, unknown>);
   return r.result;
 }
 export async function vendorRate(input: VendorRateInput = {}): Promise<Vendor | undefined> {
-  const r = await executeCommand<Vendor>("Vendor", "rate", input);
+  const r = await executeCommand<Vendor>("Vendor", "rate", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionedEntityRegister(input: VersionedEntityRegisterInput = {}): Promise<VersionedEntity | undefined> {
-  const r = await executeCommand<VersionedEntity>("VersionedEntity", "register", input);
+  const r = await executeCommand<VersionedEntity>("VersionedEntity", "register", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionedEntityLock(input: VersionedEntityLockInput = {}): Promise<VersionedEntity | undefined> {
-  const r = await executeCommand<VersionedEntity>("VersionedEntity", "lock", input);
+  const r = await executeCommand<VersionedEntity>("VersionedEntity", "lock", input as Record<string, unknown>);
   return r.result;
 }
-export async function versionedEntityUnlock(input: Record<string, unknown> = {}): Promise<VersionedEntity | undefined> {
-  const r = await executeCommand<VersionedEntity>("VersionedEntity", "unlock", input);
+export async function versionedEntityUnlock(input: VersionedEntityUnlockInput = {}): Promise<VersionedEntity | undefined> {
+  const r = await executeCommand<VersionedEntity>("VersionedEntity", "unlock", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionedEntityUpdateName(input: VersionedEntityUpdateNameInput = {}): Promise<VersionedEntity | undefined> {
-  const r = await executeCommand<VersionedEntity>("VersionedEntity", "updateName", input);
+  const r = await executeCommand<VersionedEntity>("VersionedEntity", "updateName", input as Record<string, unknown>);
   return r.result;
 }
 export async function entityVersionCreate(input: EntityVersionCreateInput = {}): Promise<EntityVersion | undefined> {
-  const r = await executeCommand<EntityVersion>("EntityVersion", "create", input);
+  const r = await executeCommand<EntityVersion>("EntityVersion", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function entityVersionApprove(input: EntityVersionApproveInput = {}): Promise<EntityVersion | undefined> {
-  const r = await executeCommand<EntityVersion>("EntityVersion", "approve", input);
+  const r = await executeCommand<EntityVersion>("EntityVersion", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function entityVersionReject(input: EntityVersionRejectInput = {}): Promise<EntityVersion | undefined> {
-  const r = await executeCommand<EntityVersion>("EntityVersion", "reject", input);
+  const r = await executeCommand<EntityVersion>("EntityVersion", "reject", input as Record<string, unknown>);
   return r.result;
 }
 export async function entityVersionRestore(input: EntityVersionRestoreInput = {}): Promise<EntityVersion | undefined> {
-  const r = await executeCommand<EntityVersion>("EntityVersion", "restore", input);
+  const r = await executeCommand<EntityVersion>("EntityVersion", "restore", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionApprovalCreate(input: VersionApprovalCreateInput = {}): Promise<VersionApproval | undefined> {
-  const r = await executeCommand<VersionApproval>("VersionApproval", "create", input);
+  const r = await executeCommand<VersionApproval>("VersionApproval", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionApprovalApprove(input: VersionApprovalApproveInput = {}): Promise<VersionApproval | undefined> {
-  const r = await executeCommand<VersionApproval>("VersionApproval", "approve", input);
+  const r = await executeCommand<VersionApproval>("VersionApproval", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function versionApprovalReject(input: VersionApprovalRejectInput = {}): Promise<VersionApproval | undefined> {
-  const r = await executeCommand<VersionApproval>("VersionApproval", "reject", input);
+  const r = await executeCommand<VersionApproval>("VersionApproval", "reject", input as Record<string, unknown>);
   return r.result;
 }
-export async function versionApprovalCancel(input: Record<string, unknown> = {}): Promise<VersionApproval | undefined> {
-  const r = await executeCommand<VersionApproval>("VersionApproval", "cancel", input);
+export async function versionApprovalCancel(input: VersionApprovalCancelInput = {}): Promise<VersionApproval | undefined> {
+  const r = await executeCommand<VersionApproval>("VersionApproval", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function wasteEntryCreate(input: WasteEntryCreateInput = {}): Promise<WasteEntry | undefined> {
-  const r = await executeCommand<WasteEntry>("WasteEntry", "create", input);
+  const r = await executeCommand<WasteEntry>("WasteEntry", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function wasteEntryApprove(input: WasteEntryApproveInput = {}): Promise<WasteEntry | undefined> {
-  const r = await executeCommand<WasteEntry>("WasteEntry", "approve", input);
+  const r = await executeCommand<WasteEntry>("WasteEntry", "approve", input as Record<string, unknown>);
   return r.result;
 }
 export async function wasteEntryVoidEntry(input: WasteEntryVoidEntryInput = {}): Promise<WasteEntry | undefined> {
-  const r = await executeCommand<WasteEntry>("WasteEntry", "voidEntry", input);
+  const r = await executeCommand<WasteEntry>("WasteEntry", "voidEntry", input as Record<string, unknown>);
   return r.result;
 }
 export async function wasteEntryUpdate(input: WasteEntryUpdateInput = {}): Promise<WasteEntry | undefined> {
-  const r = await executeCommand<WasteEntry>("WasteEntry", "update", input);
+  const r = await executeCommand<WasteEntry>("WasteEntry", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function wasteEntrySoftDelete(input: WasteEntrySoftDeleteInput = {}): Promise<WasteEntry | undefined> {
-  const r = await executeCommand<WasteEntry>("WasteEntry", "softDelete", input);
+  const r = await executeCommand<WasteEntry>("WasteEntry", "softDelete", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderCreate(input: WorkOrderCreateInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "create", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderAssign(input: WorkOrderAssignInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "assign", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "assign", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderStart(input: WorkOrderStartInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "start", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderComplete(input: WorkOrderCompleteInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "complete", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderCancel(input: WorkOrderCancelInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "cancel", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "cancel", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderUpdatePriority(input: WorkOrderUpdatePriorityInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "updatePriority", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "updatePriority", input as Record<string, unknown>);
   return r.result;
 }
 export async function workOrderReschedule(input: WorkOrderRescheduleInput = {}): Promise<WorkOrder | undefined> {
-  const r = await executeCommand<WorkOrder>("WorkOrder", "reschedule", input);
+  const r = await executeCommand<WorkOrder>("WorkOrder", "reschedule", input as Record<string, unknown>);
   return r.result;
 }
 export async function workflowCreate(input: WorkflowCreateInput = {}): Promise<Workflow | undefined> {
-  const r = await executeCommand<Workflow>("Workflow", "create", input);
+  const r = await executeCommand<Workflow>("Workflow", "create", input as Record<string, unknown>);
   return r.result;
 }
 export async function workflowUpdate(input: WorkflowUpdateInput = {}): Promise<Workflow | undefined> {
-  const r = await executeCommand<Workflow>("Workflow", "update", input);
+  const r = await executeCommand<Workflow>("Workflow", "update", input as Record<string, unknown>);
   return r.result;
 }
 export async function workflowActivate(input: WorkflowActivateInput = {}): Promise<Workflow | undefined> {
-  const r = await executeCommand<Workflow>("Workflow", "activate", input);
+  const r = await executeCommand<Workflow>("Workflow", "activate", input as Record<string, unknown>);
   return r.result;
 }
 export async function workflowDeactivate(input: WorkflowDeactivateInput = {}): Promise<Workflow | undefined> {
-  const r = await executeCommand<Workflow>("Workflow", "deactivate", input);
+  const r = await executeCommand<Workflow>("Workflow", "deactivate", input as Record<string, unknown>);
   return r.result;
 }
 export async function workforceOptimizationCreate(input: WorkforceOptimizationCreateInput = {}): Promise<WorkforceOptimization | undefined> {
-  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "create", input);
+  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "create", input as Record<string, unknown>);
   return r.result;
 }
-export async function workforceOptimizationStart(input: Record<string, unknown> = {}): Promise<WorkforceOptimization | undefined> {
-  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "start", input);
+export async function workforceOptimizationStart(input: WorkforceOptimizationStartInput = {}): Promise<WorkforceOptimization | undefined> {
+  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "start", input as Record<string, unknown>);
   return r.result;
 }
 export async function workforceOptimizationComplete(input: WorkforceOptimizationCompleteInput = {}): Promise<WorkforceOptimization | undefined> {
-  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "complete", input);
+  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "complete", input as Record<string, unknown>);
   return r.result;
 }
 export async function workforceOptimizationFail(input: WorkforceOptimizationFailInput = {}): Promise<WorkforceOptimization | undefined> {
-  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "fail", input);
+  const r = await executeCommand<WorkforceOptimization>("WorkforceOptimization", "fail", input as Record<string, unknown>);
   return r.result;
 }
 export async function performancePredictionCreate(input: PerformancePredictionCreateInput = {}): Promise<PerformancePrediction | undefined> {
-  const r = await executeCommand<PerformancePrediction>("PerformancePrediction", "create", input);
+  const r = await executeCommand<PerformancePrediction>("PerformancePrediction", "create", input as Record<string, unknown>);
   return r.result;
 }
 // Command input types (generated from IR parameters)
 export interface AdminChatParticipantCreateInput {
-  [key: string]: unknown;
-  threadId?: string | null;
-  userId?: string | null;
+  threadId?: string;
+  userId?: string;
+}
+
+export interface AdminChatParticipantArchiveInput {
+  id?: string;
+}
+
+export interface AdminChatParticipantUnarchiveInput {
+  id?: string;
+}
+
+export interface AdminChatParticipantClearHistoryInput {
+  id?: string;
 }
 
 export interface AdminTaskCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  status?: string | null;
-  priority?: string | null;
-  category?: string | null;
-  assignedTo?: string | null;
-  dueDate?: string | null;
-  createdBy?: string | null;
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  category?: string;
+  assignedTo?: string;
+  dueDate?: string;
+  createdBy?: string;
 }
 
 export interface AdminTaskUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  priority?: string | null;
-  category?: string | null;
-  assignedTo?: string | null;
-  dueDate?: string | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  priority?: string;
+  category?: string;
+  assignedTo?: string;
+  dueDate?: string;
+}
+
+export interface AdminTaskMoveToBacklogInput {
+  id?: string;
+}
+
+export interface AdminTaskStartProgressInput {
+  id?: string;
+}
+
+export interface AdminTaskSubmitForReviewInput {
+  id?: string;
+}
+
+export interface AdminTaskCompleteInput {
+  id?: string;
+}
+
+export interface AdminTaskCancelInput {
+  id?: string;
+}
+
+export interface AdminTaskSoftDeleteInput {
+  id?: string;
 }
 
 export interface AiEventSetupSessionParseInput {
-  [key: string]: unknown;
-  originalInput?: string | null;
+  id?: string;
+  originalInput?: string;
 }
 
 export interface AiEventSetupSessionConfirmInput {
-  [key: string]: unknown;
-  title?: string | null;
-  eventType?: string | null;
-  eventDate?: string | null;
-  guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  notes?: string | null;
-  tags?: string | null;
+  id?: string;
+  title?: string;
+  eventType?: string;
+  eventDate?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  notes?: string;
+  tags?: string;
 }
 
 export interface AiEventSetupSessionMarkCreatedInput {
-  [key: string]: unknown;
-  eventId?: string | null;
+  id?: string;
+  eventId?: string;
 }
 
 export interface AiEventSetupSessionCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface AiEventSetupSessionUpdateConfidenceInput {
-  [key: string]: unknown;
-  confidence?: number | null;
-  missingFields?: string | null;
-  suggestions?: string | null;
+  id?: string;
+  confidence?: number;
+  missingFields?: string;
+  suggestions?: string;
 }
 
 export interface AlertsConfigCreateInput {
-  [key: string]: unknown;
-  channel?: string | null;
-  destination?: string | null;
+  channel?: string;
+  destination?: string;
 }
 
 export interface AlertsConfigUpdateInput {
-  [key: string]: unknown;
-  channel?: string | null;
-  destination?: string | null;
+  id?: string;
+  channel?: string;
+  destination?: string;
 }
 
 export interface AlertsConfigRemoveInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface AllergenWarningCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  dishId?: string | null;
-  warningType?: string | null;
-  allergens?: string | null;
-  affectedGuests?: string | null;
-  severity?: string | null;
-  notes?: string | null;
+  eventId?: string;
+  dishId?: string;
+  warningType?: string;
+  allergens?: string;
+  affectedGuests?: string;
+  severity?: string;
+  notes?: string;
 }
 
 export interface AllergenWarningAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  acknowledgedBy?: string;
+  notes?: string;
 }
 
 export interface AllergenWarningMarkResolvedInput {
-  [key: string]: unknown;
-  resolvedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  resolvedBy?: string;
+  notes?: string;
 }
 
 export interface AllergenWarningApplyOverrideInput {
-  [key: string]: unknown;
-  overrideReason?: string | null;
-  acknowledgedBy?: string | null;
+  id?: string;
+  overrideReason?: string;
+  acknowledgedBy?: string;
 }
 
 export interface AllergenWarningEscalateInput {
-  [key: string]: unknown;
-  escalatedTo?: string | null;
-  reason?: string | null;
+  id?: string;
+  escalatedTo?: string;
+  reason?: string;
 }
 
 export interface AllergenWarningSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ApiKeyCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  keyPrefix?: string | null;
-  hashedKey?: string | null;
-  scopes?: string[] | null;
-  expiresAt?: string | null;
-  createdByUserId?: string | null;
+  name?: string;
+  keyPrefix?: string;
+  hashedKey?: string;
+  scopes?: string[];
+  expiresAt?: string;
+  createdByUserId?: string;
 }
 
 export interface ApiKeyUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  scopes?: string[] | null;
-  expiresAt?: string | null;
+  id?: string;
+  name?: string;
+  scopes?: string[];
+  expiresAt?: string;
 }
 
 export interface ApiKeyRotateInput {
-  [key: string]: unknown;
-  keyPrefix?: string | null;
-  hashedKey?: string | null;
+  id?: string;
+  keyPrefix?: string;
+  hashedKey?: string;
 }
 
 export interface ApiKeyRevokeInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  revokedBy?: string | null;
+  id?: string;
+  reason?: string;
+  revokedBy?: string;
 }
 
 export interface ApiKeySoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  deletedBy?: string | null;
+  id?: string;
+  reason?: string;
+  deletedBy?: string;
+}
+
+export interface ApiKeyRecordUsageInput {
+  id?: string;
 }
 
 export interface BankAccountCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  accountHolderName?: string | null;
-  accountNumber?: string | null;
-  routingNumber?: string | null;
-  accountType?: string | null;
-  bankName?: string | null;
-  isDefault?: boolean | null;
+  employeeId?: string;
+  accountHolderName?: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  accountType?: string;
+  bankName?: string;
+  isDefault?: boolean;
+}
+
+export interface BankAccountRemoveInput {
+  id?: string;
+}
+
+export interface BankAccountMarkDefaultInput {
+  id?: string;
 }
 
 export interface BankAccountUpdateInput {
-  [key: string]: unknown;
-  accountHolderName?: string | null;
-  accountNumber?: string | null;
-  routingNumber?: string | null;
-  accountType?: string | null;
-  bankName?: string | null;
+  id?: string;
+  accountHolderName?: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  accountType?: string;
+  bankName?: string;
+}
+
+export interface BankAccountVerifyInput {
+  id?: string;
 }
 
 export interface BankAccountVerifyFailedInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface BankAccountRetryVerificationInput {
+  id?: string;
 }
 
 export interface BattleBoardCreateInput {
-  [key: string]: unknown;
-  boardName?: string | null;
-  boardType?: string | null;
-  eventId?: string | null;
-  description?: string | null;
-  isTemplate?: boolean | null;
-  notes?: string | null;
-  tags?: string | null;
+  boardName?: string;
+  boardType?: string;
+  eventId?: string;
+  description?: string;
+  isTemplate?: boolean;
+  notes?: string;
+  tags?: string;
 }
 
 export interface BattleBoardOpenInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface BattleBoardStartVotingInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface BattleBoardAddDishInput {
-  [key: string]: unknown;
-  dishData?: string | null;
-  userId?: string | null;
+  id?: string;
+  dishData?: string;
+  userId?: string;
 }
 
 export interface BattleBoardRemoveDishInput {
-  [key: string]: unknown;
-  dishId?: string | null;
-  userId?: string | null;
+  id?: string;
+  dishId?: string;
+  userId?: string;
 }
 
 export interface BattleBoardVoteInput {
-  [key: string]: unknown;
-  voteData?: string | null;
-  userId?: string | null;
+  id?: string;
+  voteData?: string;
+  userId?: string;
 }
 
 export interface BattleBoardFinalizeInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface BattleBoardUpdateInput {
-  [key: string]: unknown;
-  boardName?: string | null;
-  status?: string | null;
-  notes?: string | null;
-  boardData?: string | null;
+  id?: string;
+  boardName?: string;
+  status?: string;
+  notes?: string;
+  boardData?: string;
 }
 
 export interface BattleBoardRecordImportInput {
-  [key: string]: unknown;
-  boardData?: string | null;
+  id?: string;
+  boardData?: string;
 }
 
 export interface BudgetCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  fiscalYear?: number | null;
-  totalAmount?: number | null;
-  category?: string | null;
-  departmentId?: string | null;
+  name?: string;
+  description?: string;
+  fiscalYear?: number;
+  totalAmount?: number;
+  category?: string;
+  departmentId?: string;
+}
+
+export interface BudgetRemoveInput {
+  id?: string;
 }
 
 export interface BudgetUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  fiscalYear?: number | null;
-  allocatedAmount?: number | null;
-  category?: string | null;
-  departmentId?: string | null;
+  id?: string;
+  name?: string;
+  description?: string;
+  fiscalYear?: number;
+  allocatedAmount?: number;
+  category?: string;
+  departmentId?: string;
 }
 
 export interface BudgetApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface BudgetLockInput {
-  [key: string]: unknown;
-  lockedBy?: string | null;
+  id?: string;
+  lockedBy?: string;
 }
 
 export interface BudgetAddLineItemInput {
-  [key: string]: unknown;
-  lineItemName?: string | null;
-  amount?: number | null;
-  category?: string | null;
+  id?: string;
+  lineItemName?: string;
+  amount?: number;
+  category?: string;
 }
 
 export interface BudgetRecordVarianceInput {
-  [key: string]: unknown;
-  actualSpent?: number | null;
-  note?: string | null;
+  id?: string;
+  actualSpent?: number;
+  note?: string;
+}
+
+export interface BudgetRefreshInput {
+  id?: string;
 }
 
 export interface BulkOrderRuleCreateInput {
-  [key: string]: unknown;
-  catalogEntryId?: string | null;
-  ruleName?: string | null;
-  minimumQuantity?: number | null;
-  ruleType?: string | null;
-  action?: string | null;
-  thresholdQuantity?: number | null;
-  discountPercent?: number | null;
-  freeItemQuantity?: number | null;
-  shippingIncluded?: boolean | null;
-  priority?: number | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
+  catalogEntryId?: string;
+  ruleName?: string;
+  minimumQuantity?: number;
+  ruleType?: string;
+  action?: string;
+  thresholdQuantity?: number;
+  discountPercent?: number;
+  freeItemQuantity?: number;
+  shippingIncluded?: boolean;
+  priority?: number;
+  effectiveFrom?: number;
+  effectiveTo?: number;
 }
 
 export interface BulkOrderRuleUpdateInput {
-  [key: string]: unknown;
-  catalogEntryId?: string | null;
-  ruleName?: string | null;
-  minimumQuantity?: number | null;
-  ruleType?: string | null;
-  action?: string | null;
-  thresholdQuantity?: number | null;
-  discountPercent?: number | null;
-  freeItemQuantity?: number | null;
-  shippingIncluded?: boolean | null;
-  priority?: number | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
-  isActive?: boolean | null;
+  id?: string;
+  catalogEntryId?: string;
+  ruleName?: string;
+  minimumQuantity?: number;
+  ruleType?: string;
+  action?: string;
+  thresholdQuantity?: number;
+  discountPercent?: number;
+  freeItemQuantity?: number;
+  shippingIncluded?: boolean;
+  priority?: number;
+  effectiveFrom?: number;
+  effectiveTo?: number;
+  isActive?: boolean;
+}
+
+export interface BulkOrderRuleActivateInput {
+  id?: string;
 }
 
 export interface BulkOrderRuleDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface BulkOrderRuleAdjustPriorityInput {
-  [key: string]: unknown;
-  newPriority?: number | null;
+  id?: string;
+  newPriority?: number;
 }
 
 export interface BulkOrderRuleSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CateringOrderCreateInput {
-  [key: string]: unknown;
-  orderNumber?: string | null;
-  customerId?: string | null;
-  eventId?: string | null;
-  deliveryDate?: string | null;
-  deliveryTime?: string | null;
-  guestCount?: number | null;
-  venueCity?: string | null;
-  venueState?: string | null;
-  venueZip?: string | null;
-  venueContactName?: string | null;
-  venueContactPhone?: string | null;
-  specialInstructions?: string | null;
-  dietaryRestrictions?: string | null;
-  staffRequired?: number | null;
+  orderNumber?: string;
+  customerId?: string;
+  eventId?: string;
+  deliveryDate?: string;
+  deliveryTime?: string;
+  guestCount?: number;
+  venueCity?: string;
+  venueState?: string;
+  venueZip?: string;
+  venueContactName?: string;
+  venueContactPhone?: string;
+  specialInstructions?: string;
+  dietaryRestrictions?: string;
+  staffRequired?: number;
 }
 
 export interface CateringOrderUpdateInput {
-  [key: string]: unknown;
-  guestCount?: number | null;
-  subtotalAmount?: number | null;
-  taxAmount?: number | null;
-  discountAmount?: number | null;
-  serviceChargeAmount?: number | null;
-  totalAmount?: number | null;
-  depositRequired?: boolean | null;
-  depositAmount?: number | null;
-  specialInstructions?: string | null;
-  dietaryRestrictions?: string | null;
-  staffRequired?: number | null;
+  id?: string;
+  guestCount?: number;
+  subtotalAmount?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  serviceChargeAmount?: number;
+  totalAmount?: number;
+  depositRequired?: boolean;
+  depositAmount?: number;
+  specialInstructions?: string;
+  dietaryRestrictions?: string;
+  staffRequired?: number;
 }
 
 export interface CateringOrderConfirmInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CateringOrderRecordDepositInput {
-  [key: string]: unknown;
-  paymentReference?: string | null;
+  id?: string;
+  paymentReference?: string;
 }
 
 export interface CateringOrderScheduleDeliveryInput {
-  [key: string]: unknown;
-  deliveryDate?: string | null;
-  deliveryTime?: string | null;
+  id?: string;
+  deliveryDate?: string;
+  deliveryTime?: string;
 }
 
 export interface CateringOrderCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CateringOrderStartPrepInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CateringOrderDeliverInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CateringOrderMarkCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ChartOfAccountCreateInput {
-  [key: string]: unknown;
-  accountNumber?: string | null;
-  accountName?: string | null;
-  accountType?: string | null;
-  parentId?: string | null;
-  description?: string | null;
+  accountNumber?: string;
+  accountName?: string;
+  accountType?: string;
+  parentId?: string;
+  description?: string;
 }
 
 export interface ChartOfAccountUpdateInput {
-  [key: string]: unknown;
-  accountName?: string | null;
-  accountNumber?: string | null;
-  accountType?: string | null;
-  parentId?: string | null;
-  description?: string | null;
-  isActive?: boolean | null;
+  id?: string;
+  accountName?: string;
+  accountNumber?: string;
+  accountType?: string;
+  parentId?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface ChartOfAccountDeactivateInput {
+  id?: string;
 }
 
 export interface ClientInteractionCreateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  leadId?: string | null;
-  employeeId?: string | null;
-  interactionType?: string | null;
-  interactionDate?: string | null;
-  subject?: string | null;
-  description?: string | null;
-  followUpDate?: string | null;
-  correlationId?: string | null;
+  clientId?: string;
+  leadId?: string;
+  employeeId?: string;
+  interactionType?: string;
+  interactionDate?: string;
+  subject?: string;
+  description?: string;
+  followUpDate?: string;
+  correlationId?: string;
 }
 
 export interface ClientInteractionUpdateInput {
-  [key: string]: unknown;
-  interactionType?: string | null;
-  interactionDate?: string | null;
-  subject?: string | null;
-  description?: string | null;
-  followUpDate?: string | null;
-  correlationId?: string | null;
+  id?: string;
+  interactionType?: string;
+  interactionDate?: string;
+  subject?: string;
+  description?: string;
+  followUpDate?: string;
+  correlationId?: string;
 }
 
 export interface ClientInteractionCompleteInput {
-  [key: string]: unknown;
-  completionNotes?: string | null;
-  userId?: string | null;
+  id?: string;
+  completionNotes?: string;
+  userId?: string;
 }
 
 export interface ClientInteractionScheduleInput {
-  [key: string]: unknown;
-  followUpDate?: string | null;
-  assignedTo?: string | null;
+  id?: string;
+  followUpDate?: string;
+  assignedTo?: string;
+}
+
+export interface ClientInteractionMarkOverdueInput {
+  id?: string;
 }
 
 export interface ClientInteractionEscalateInput {
-  [key: string]: unknown;
-  escalatedTo?: string | null;
-  reason?: string | null;
+  id?: string;
+  escalatedTo?: string;
+  reason?: string;
+}
+
+export interface ClientInteractionSoftDeleteInput {
+  id?: string;
 }
 
 export interface ClientCreateInput {
-  [key: string]: unknown;
-  clientType?: string | null;
-  companyName?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  website?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  stateProvince?: string | null;
-  postalCode?: string | null;
-  countryCode?: string | null;
-  defaultPaymentTerms?: number | null;
-  taxExempt?: boolean | null;
-  taxId?: string | null;
-  notes?: string | null;
-  tags?: string[] | null;
-  source?: string | null;
-  assignedTo?: string | null;
+  clientType?: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
+  defaultPaymentTerms?: number;
+  taxExempt?: boolean;
+  taxId?: string;
+  notes?: string;
+  tags?: string[];
+  source?: string;
+  assignedTo?: string;
 }
 
 export interface ClientUpdateInput {
-  [key: string]: unknown;
-  companyName?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  website?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  stateProvince?: string | null;
-  postalCode?: string | null;
-  countryCode?: string | null;
-  defaultPaymentTerms?: number | null;
-  taxExempt?: boolean | null;
-  taxId?: string | null;
-  notes?: string | null;
-  tags?: string[] | null;
-  source?: string | null;
-  assignedTo?: string | null;
+  id?: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
+  defaultPaymentTerms?: number;
+  taxExempt?: boolean;
+  taxId?: string;
+  notes?: string;
+  tags?: string[];
+  source?: string;
+  assignedTo?: string;
 }
 
 export interface ClientArchiveInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ClientReactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ClientContactCreateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  title?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  phoneMobile?: string | null;
-  isPrimary?: boolean | null;
-  isBillingContact?: boolean | null;
-  notes?: string | null;
+  clientId?: string;
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  phoneMobile?: string;
+  isPrimary?: boolean;
+  isBillingContact?: boolean;
+  notes?: string;
 }
 
 export interface ClientContactUpdateInput {
-  [key: string]: unknown;
-  firstName?: string | null;
-  lastName?: string | null;
-  title?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  phoneMobile?: string | null;
-  isBillingContact?: boolean | null;
-  notes?: string | null;
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  phoneMobile?: string;
+  isBillingContact?: boolean;
+  notes?: string;
 }
 
 export interface ClientContactRemoveInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ClientContactSetPrimaryInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ClientPreferenceCreateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  preferenceType?: string | null;
-  preferenceKey?: string | null;
-  preferenceValue?: string | null;
-  notes?: string | null;
+  clientId?: string;
+  preferenceType?: string;
+  preferenceKey?: string;
+  preferenceValue?: string;
+  notes?: string;
 }
 
 export interface ClientPreferenceUpdateInput {
-  [key: string]: unknown;
-  preferenceValue?: string | null;
-  notes?: string | null;
+  id?: string;
+  preferenceValue?: string;
+  notes?: string;
 }
 
 export interface ClientPreferenceRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CollectionCaseAssignToInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CollectionCaseUpdateStatusInput {
-  [key: string]: unknown;
-  newStatus?: string | null;
-  newNotes?: string | null;
+  id?: string;
+  newStatus?: string;
+  newNotes?: string;
 }
 
 export interface CollectionCaseSettleInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface CollectionCaseRecordPaymentInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  paymentId?: string | null;
-  paymentDate?: string | null;
+  id?: string;
+  amount?: number;
+  paymentId?: string;
+  paymentDate?: string;
+}
+
+export interface CollectionCaseMarkResolvedInput {
+  id?: string;
+}
+
+export interface CollectionCaseEscalateDunningInput {
+  id?: string;
+}
+
+export interface CollectionCaseEscalateToLegalInput {
+  id?: string;
+}
+
+export interface CollectionCaseSetUrgentPriorityInput {
+  id?: string;
+}
+
+export interface CollectionCaseSetHighPriorityInput {
+  id?: string;
 }
 
 export interface CollectionCaseResetDunningInput {
-  [key: string]: unknown;
-  stage?: string | null;
-  reason?: string | null;
+  id?: string;
+  stage?: string;
+  reason?: string;
 }
 
 export interface CollectionCaseCreatePaymentPlanInput {
-  [key: string]: unknown;
-  planId?: string | null;
-  nextPaymentDue?: number | null;
+  id?: string;
+  planId?: string;
+  nextPaymentDue?: number;
 }
 
 export interface CollectionCaseMarkDisputedInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CollectionCaseResolveDisputeInput {
-  [key: string]: unknown;
-  resolutionNotes?: string | null;
+  id?: string;
+  resolutionNotes?: string;
 }
 
 export interface CollectionCaseEscalateToLegalWithDetailsInput {
-  [key: string]: unknown;
-  legalCaseNumber?: string | null;
-  legalFirm?: string | null;
+  id?: string;
+  legalCaseNumber?: string;
+  legalFirm?: string;
 }
 
 export interface CollectionCaseWriteOffInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  reason?: string | null;
-  approvedBy?: string | null;
+  id?: string;
+  amount?: number;
+  reason?: string;
+  approvedBy?: string;
 }
 
 export interface CollectionCaseUpdateAgingInput {
-  [key: string]: unknown;
-  daysOverdue?: number | null;
-  agingBucket?: string | null;
+  id?: string;
+  daysOverdue?: number;
+  agingBucket?: string;
 }
 
 export interface CollectionCaseSetPriorityInput {
-  [key: string]: unknown;
-  newPriority?: string | null;
-  reason?: string | null;
+  id?: string;
+  newPriority?: string;
+  reason?: string;
 }
 
 export interface CollectionCaseCloseInput {
-  [key: string]: unknown;
-  resolution?: string | null;
+  id?: string;
+  resolution?: string;
 }
 
 export interface CollectionActionCompleteInput {
-  [key: string]: unknown;
-  outcome?: string | null;
-  promiseAmount?: number | null;
-  promiseDate?: string | null;
-  nextActionDate?: string | null;
+  id?: string;
+  outcome?: string;
+  promiseAmount?: number;
+  promiseDate?: string;
+  nextActionDate?: string;
 }
 
 export interface CollectionActionFailInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CollectionActionSkipInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CollectionActionRescheduleInput {
-  [key: string]: unknown;
-  newScheduledFor?: number | null;
-  reason?: string | null;
+  id?: string;
+  newScheduledFor?: number;
+  reason?: string;
 }
 
 export interface CollectionPaymentPlanRecordInstallmentInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  paymentDate?: string | null;
+  id?: string;
+  amount?: number;
+  paymentDate?: string;
+}
+
+export interface CollectionPaymentPlanMarkCompletedInput {
+  id?: string;
 }
 
 export interface CollectionPaymentPlanMarkDefaultedInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CollectionPaymentPlanCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface CollectionPaymentPlanModifyInput {
-  [key: string]: unknown;
-  newInstallmentAmount?: number | null;
-  newInstallmentCount?: number | null;
-  reason?: string | null;
+  id?: string;
+  newInstallmentAmount?: number;
+  newInstallmentCount?: number;
+  reason?: string;
 }
 
 export interface CommandBoardCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  eventId?: string | null;
-  isTemplate?: boolean | null;
-  tags?: string[] | null;
-  autoPopulate?: boolean | null;
-  scope?: string | null;
+  name?: string;
+  description?: string;
+  eventId?: string;
+  isTemplate?: boolean;
+  tags?: string[];
+  autoPopulate?: boolean;
+  scope?: string;
 }
 
 export interface CommandBoardUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newDescription?: string | null;
-  newTags?: string[] | null;
+  id?: string;
+  newName?: string;
+  newDescription?: string;
+  newTags?: string[];
 }
 
 export interface CommandBoardActivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CommandBoardDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface CommandBoardCardCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  title?: string | null;
-  content?: string | null;
-  cardType?: string | null;
-  status?: string | null;
-  positionX?: number | null;
-  positionY?: number | null;
-  width?: number | null;
-  height?: number | null;
-  color?: string | null;
-  metadata?: string | null;
-  groupId?: string | null;
-  entityId?: string | null;
-  entityType?: string | null;
+  boardId?: string;
+  title?: string;
+  content?: string;
+  cardType?: string;
+  status?: string;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  color?: string;
+  metadata?: string;
+  groupId?: string;
+  entityId?: string;
+  entityType?: string;
 }
 
 export interface CommandBoardCardUpdateInput {
-  [key: string]: unknown;
-  newTitle?: string | null;
-  newContent?: string | null;
-  newCardType?: string | null;
-  newStatus?: string | null;
-  newColor?: string | null;
-  newMetadata?: string | null;
-  newGroupId?: string | null;
+  id?: string;
+  newTitle?: string;
+  newContent?: string;
+  newCardType?: string;
+  newStatus?: string;
+  newColor?: string;
+  newMetadata?: string;
+  newGroupId?: string;
 }
 
 export interface CommandBoardCardMoveInput {
-  [key: string]: unknown;
-  newPositionX?: number | null;
-  newPositionY?: number | null;
-  newZIndex?: number | null;
+  id?: string;
+  newPositionX?: number;
+  newPositionY?: number;
+  newZIndex?: number;
 }
 
 export interface CommandBoardCardResizeInput {
-  [key: string]: unknown;
-  newWidth?: number | null;
-  newHeight?: number | null;
+  id?: string;
+  newWidth?: number;
+  newHeight?: number;
 }
 
 export interface CommandBoardCardRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CommandBoardGroupCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  name?: string | null;
-  color?: string | null;
-  positionX?: number | null;
-  positionY?: number | null;
-  width?: number | null;
-  height?: number | null;
+  boardId?: string;
+  name?: string;
+  color?: string;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
 }
 
 export interface CommandBoardGroupUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newColor?: string | null;
-  newCollapsed?: boolean | null;
-  newPositionX?: number | null;
-  newPositionY?: number | null;
-  newWidth?: number | null;
-  newHeight?: number | null;
+  id?: string;
+  newName?: string;
+  newColor?: string;
+  newCollapsed?: boolean;
+  newPositionX?: number;
+  newPositionY?: number;
+  newWidth?: number;
+  newHeight?: number;
 }
 
 export interface CommandBoardGroupRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CommandBoardConnectionCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  fromCardId?: string | null;
-  toCardId?: string | null;
-  relationshipType?: string | null;
-  label?: string | null;
+  boardId?: string;
+  fromCardId?: string;
+  toCardId?: string;
+  relationshipType?: string;
+  label?: string;
 }
 
 export interface CommandBoardConnectionRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CommandBoardLayoutCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  userId?: string | null;
-  name?: string | null;
-  viewport?: string | null;
-  visibleCards?: string | null;
-  gridSize?: number | null;
-  showGrid?: boolean | null;
-  snapToGrid?: boolean | null;
+  boardId?: string;
+  userId?: string;
+  name?: string;
+  viewport?: string;
+  visibleCards?: string;
+  gridSize?: number;
+  showGrid?: boolean;
+  snapToGrid?: boolean;
 }
 
 export interface CommandBoardLayoutUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newViewport?: string | null;
-  newVisibleCards?: string | null;
-  newGridSize?: number | null;
-  newShowGrid?: boolean | null;
-  newSnapToGrid?: boolean | null;
+  id?: string;
+  newName?: string;
+  newViewport?: string;
+  newVisibleCards?: string;
+  newGridSize?: number;
+  newShowGrid?: boolean;
+  newSnapToGrid?: boolean;
 }
 
 export interface CommandBoardLayoutRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ContainerCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  containerType?: string | null;
-  locationId?: string | null;
-  sizeDescription?: string | null;
-  capacityVolumeMl?: number | null;
-  capacityWeightG?: number | null;
-  capacityPortions?: number | null;
-  isReusable?: boolean | null;
+  name?: string;
+  containerType?: string;
+  locationId?: string;
+  sizeDescription?: string;
+  capacityVolumeMl?: number;
+  capacityWeightG?: number;
+  capacityPortions?: number;
+  isReusable?: boolean;
 }
 
 export interface ContainerUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  containerType?: string | null;
-  locationId?: string | null;
-  sizeDescription?: string | null;
-  capacityVolumeMl?: number | null;
-  capacityWeightG?: number | null;
-  capacityPortions?: number | null;
-  isReusable?: boolean | null;
+  id?: string;
+  name?: string;
+  containerType?: string;
+  locationId?: string;
+  sizeDescription?: string;
+  capacityVolumeMl?: number;
+  capacityWeightG?: number;
+  capacityPortions?: number;
+  isReusable?: boolean;
 }
 
 export interface ContainerDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ContainerReactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ContainerRelocateInput {
-  [key: string]: unknown;
-  newLocationId?: string | null;
-  userId?: string | null;
+  id?: string;
+  newLocationId?: string;
+  userId?: string;
 }
 
 export interface ProposalTemplateCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  eventType?: string | null;
-  defaultTerms?: string | null;
-  defaultTaxRate?: number | null;
-  defaultNotes?: string | null;
-  defaultLineItems?: string | null;
-  isActive?: boolean | null;
-  isDefault?: boolean | null;
-  logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
-  fontFamily?: string | null;
+  name?: string;
+  description?: string;
+  eventType?: string;
+  defaultTerms?: string;
+  defaultTaxRate?: number;
+  defaultNotes?: string;
+  defaultLineItems?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
 }
 
 export interface ProposalTemplateUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  eventType?: string | null;
-  defaultTerms?: string | null;
-  defaultTaxRate?: number | null;
-  defaultNotes?: string | null;
-  defaultLineItems?: string | null;
-  isActive?: boolean | null;
-  isDefault?: boolean | null;
-  logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  accentColor?: string | null;
-  fontFamily?: string | null;
+  id?: string;
+  name?: string;
+  description?: string;
+  eventType?: string;
+  defaultTerms?: string;
+  defaultTaxRate?: number;
+  defaultNotes?: string;
+  defaultLineItems?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+  logoUrl?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  fontFamily?: string;
+}
+
+export interface ProposalTemplateActivateInput {
+  id?: string;
+}
+
+export interface ProposalTemplateDeactivateInput {
+  id?: string;
+}
+
+export interface ProposalTemplateSoftDeleteInput {
+  id?: string;
 }
 
 export interface InteractionAttachmentCreateInput {
-  [key: string]: unknown;
-  clientInteractionId?: string | null;
-  fileName?: string | null;
-  fileUrl?: string | null;
-  fileType?: string | null;
-  fileSizeBytes?: number | null;
-  uploadedBy?: string | null;
+  clientInteractionId?: string;
+  fileName?: string;
+  fileUrl?: string;
+  fileType?: string;
+  fileSizeBytes?: number;
+  uploadedBy?: string;
 }
 
 export interface InteractionAttachmentRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CrmScoringRuleCreateInput {
-  [key: string]: unknown;
-  ruleName?: string | null;
-  field?: string | null;
-  condition?: string | null;
-  value?: string | null;
-  points?: number | null;
-  isActive?: boolean | null;
-  priority?: number | null;
+  ruleName?: string;
+  field?: string;
+  condition?: string;
+  value?: string;
+  points?: number;
+  isActive?: boolean;
+  priority?: number;
 }
 
 export interface CrmScoringRuleUpdateInput {
-  [key: string]: unknown;
-  ruleName?: string | null;
-  field?: string | null;
-  condition?: string | null;
-  value?: string | null;
-  points?: number | null;
-  isActive?: boolean | null;
-  priority?: number | null;
+  id?: string;
+  ruleName?: string;
+  field?: string;
+  condition?: string;
+  value?: string;
+  points?: number;
+  isActive?: boolean;
+  priority?: number;
+}
+
+export interface CrmScoringRuleActivateInput {
+  id?: string;
+}
+
+export interface CrmScoringRuleDeactivateInput {
+  id?: string;
+}
+
+export interface CrmScoringRuleSoftDeleteInput {
+  id?: string;
 }
 
 export interface ReportCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  reportType?: string | null;
-  queryConfig?: string | null;
-  displayConfig?: string | null;
-  isShared?: boolean | null;
-  createdBy?: string | null;
+  name?: string;
+  reportType?: string;
+  queryConfig?: string;
+  displayConfig?: string;
+  isShared?: boolean;
+  createdBy?: string;
 }
 
 export interface ReportUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  reportType?: string | null;
-  queryConfig?: string | null;
-  displayConfig?: string | null;
+  id?: string;
+  name?: string;
+  reportType?: string;
+  queryConfig?: string;
+  displayConfig?: string;
 }
 
 export interface ReportShareInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ReportRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface DocumentCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  documentType?: string | null;
-  fileUrl?: string | null;
-  fileSizeBytes?: number | null;
-  entityType?: string | null;
-  entityId?: string | null;
-  uploadedBy?: string | null;
+  name?: string;
+  documentType?: string;
+  fileUrl?: string;
+  fileSizeBytes?: number;
+  entityType?: string;
+  entityId?: string;
+  uploadedBy?: string;
 }
 
 export interface DocumentMarkParsedInput {
-  [key: string]: unknown;
-  extractedText?: string | null;
+  id?: string;
+  extractedText?: string;
 }
 
 export interface DocumentMarkFailedInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface DocumentRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface AdminChatThreadCreateInput {
-  [key: string]: unknown;
-  threadType?: string | null;
-  slug?: string | null;
-  directKey?: string | null;
-  createdBy?: string | null;
+  threadType?: string;
+  slug?: string;
+  directKey?: string;
+  createdBy?: string;
 }
 
 export interface AdminChatThreadArchiveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface AdminChatThreadReopenInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface AdminChatMessageCreateInput {
-  [key: string]: unknown;
-  threadId?: string | null;
-  authorId?: string | null;
-  authorName?: string | null;
-  text?: string | null;
+  threadId?: string;
+  authorId?: string;
+  authorName?: string;
+  text?: string;
 }
 
 export interface AdminChatMessageRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CycleCountSessionCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  sessionId?: string | null;
-  sessionName?: string | null;
-  countType?: string | null;
-  scheduledDate?: string | null;
-  notes?: string | null;
-  userId?: string | null;
+  locationId?: string;
+  sessionId?: string;
+  sessionName?: string;
+  countType?: string;
+  scheduledDate?: string;
+  notes?: string;
+  userId?: string;
 }
 
 export interface CycleCountSessionUpdateInput {
-  [key: string]: unknown;
-  sessionName?: string | null;
-  notes?: string | null;
-  userId?: string | null;
+  id?: string;
+  sessionName?: string;
+  notes?: string;
+  userId?: string;
 }
 
 export interface CycleCountSessionStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CycleCountSessionCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CycleCountSessionFinalizeInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  notes?: string | null;
-  totalVariance?: number | null;
-  variancePercentage?: number | null;
-  countedItems?: number | null;
-  totalItems?: number | null;
+  id?: string;
+  userId?: string;
+  notes?: string;
+  totalVariance?: number;
+  variancePercentage?: number;
+  countedItems?: number;
+  totalItems?: number;
+}
+
+export interface CycleCountSessionReopenInput {
+  id?: string;
 }
 
 export interface CycleCountSessionCancelInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface CycleCountSessionSoftDeleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CycleCountRecordCreateInput {
-  [key: string]: unknown;
-  sessionId?: string | null;
-  itemId?: string | null;
-  itemNumber?: string | null;
-  itemName?: string | null;
-  storageLocationId?: string | null;
-  expectedQuantity?: number | null;
-  countedQuantity?: number | null;
-  userId?: string | null;
-  barcode?: string | null;
-  notes?: string | null;
+  sessionId?: string;
+  itemId?: string;
+  itemNumber?: string;
+  itemName?: string;
+  storageLocationId?: string;
+  expectedQuantity?: number;
+  countedQuantity?: number;
+  userId?: string;
+  barcode?: string;
+  notes?: string;
 }
 
 export interface CycleCountRecordUpdateInput {
-  [key: string]: unknown;
-  countedQuantity?: number | null;
-  notes?: string | null;
-  userId?: string | null;
+  id?: string;
+  countedQuantity?: number;
+  notes?: string;
+  userId?: string;
 }
 
 export interface CycleCountRecordVerifyInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface CycleCountRecordRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface VarianceReportCreateInput {
-  [key: string]: unknown;
-  sessionId?: string | null;
-  reportType?: string | null;
-  itemId?: string | null;
-  itemNumber?: string | null;
-  itemName?: string | null;
-  expectedQuantity?: number | null;
-  countedQuantity?: number | null;
-  variance?: number | null;
-  variancePct?: number | null;
-  accuracyScore?: number | null;
-  notes?: string | null;
+  sessionId?: string;
+  reportType?: string;
+  itemId?: string;
+  itemNumber?: string;
+  itemName?: string;
+  expectedQuantity?: number;
+  countedQuantity?: number;
+  variance?: number;
+  variancePct?: number;
+  accuracyScore?: number;
+  notes?: string;
 }
 
 export interface VarianceReportRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface VarianceReportReviewInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  notes?: string | null;
+  id?: string;
+  userId?: string;
+  notes?: string;
 }
 
 export interface VarianceReportApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  adjustmentType?: string | null;
-  adjustmentAmount?: number | null;
+  id?: string;
+  userId?: string;
+  adjustmentType?: string;
+  adjustmentAmount?: number;
 }
 
 export interface VarianceReportUpdateDiscrepancyInput {
-  [key: string]: unknown;
-  notes?: string | null;
-  rootCause?: string | null;
-  resolutionNotes?: string | null;
+  id?: string;
+  notes?: string;
+  rootCause?: string;
+  resolutionNotes?: string;
 }
 
 export interface DealCreateInput {
-  [key: string]: unknown;
-  leadId?: string | null;
-  title?: string | null;
-  value?: number | null;
-  currency?: string | null;
-  stage?: string | null;
-  probability?: number | null;
-  expectedCloseDate?: string | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  leadId?: string;
+  title?: string;
+  value?: number;
+  currency?: string;
+  stage?: string;
+  probability?: number;
+  expectedCloseDate?: string;
+  assignedTo?: string;
+  notes?: string;
 }
 
 export interface DealUpdateStageInput {
-  [key: string]: unknown;
-  stage?: string | null;
-  notes?: string | null;
+  id?: string;
+  stage?: string;
+  notes?: string;
 }
 
 export interface DealUpdateValueInput {
-  [key: string]: unknown;
-  value?: number | null;
+  id?: string;
+  value?: number;
 }
 
 export interface DealUpdateProbabilityInput {
-  [key: string]: unknown;
-  probability?: number | null;
+  id?: string;
+  probability?: number;
 }
 
 export interface DealAssignInput {
-  [key: string]: unknown;
-  assignedTo?: string | null;
-  assignedBy?: string | null;
+  id?: string;
+  assignedTo?: string;
+  assignedBy?: string;
 }
 
 export interface DealCloseInput {
-  [key: string]: unknown;
-  status?: string | null;
+  id?: string;
+  status?: string;
 }
 
 export interface DealAbandonInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface DealReopenInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface DishCreateInput {
-  [key: string]: unknown;
-  recipeId?: string | null;
-  name?: string | null;
-  description?: string | null;
-  category?: string | null;
-  serviceStyle?: string | null;
-  defaultContainerId?: string | null;
-  presentationImageUrl?: string | null;
-  minPrepLeadDays?: number | null;
-  maxPrepLeadDays?: number | null;
-  portionSizeDescription?: string | null;
-  dietaryTags?: string | null;
-  allergens?: string | null;
-  pricePerPerson?: number | null;
-  costPerPerson?: number | null;
+  recipeId?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  serviceStyle?: string;
+  defaultContainerId?: string;
+  presentationImageUrl?: string;
+  minPrepLeadDays?: number;
+  maxPrepLeadDays?: number;
+  portionSizeDescription?: string;
+  dietaryTags?: string;
+  allergens?: string;
+  pricePerPerson?: number;
+  costPerPerson?: number;
 }
 
 export interface DishUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  category?: string | null;
-  serviceStyle?: string | null;
-  defaultContainerId?: string | null;
-  presentationImageUrl?: string | null;
-  portionSizeDescription?: string | null;
-  dietaryTags?: string | null;
-  allergens?: string | null;
+  id?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  serviceStyle?: string;
+  defaultContainerId?: string;
+  presentationImageUrl?: string;
+  portionSizeDescription?: string;
+  dietaryTags?: string;
+  allergens?: string;
+}
+
+export interface DishActivateInput {
+  id?: string;
 }
 
 export interface DishDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface DishUpdatePricingInput {
-  [key: string]: unknown;
-  pricePerPerson?: number | null;
-  costPerPerson?: number | null;
-  userId?: string | null;
+  id?: string;
+  pricePerPerson?: number;
+  costPerPerson?: number;
+  userId?: string;
 }
 
 export interface DishUpdateLeadTimeInput {
-  [key: string]: unknown;
-  minPrepLeadDays?: number | null;
-  maxPrepLeadDays?: number | null;
-  userId?: string | null;
+  id?: string;
+  minPrepLeadDays?: number;
+  maxPrepLeadDays?: number;
+  userId?: string;
 }
 
 export interface DishMarkSeasonalInput {
-  [key: string]: unknown;
-  seasonLabel?: string | null;
-  seasonStartMonth?: number | null;
-  seasonEndMonth?: number | null;
+  id?: string;
+  seasonLabel?: string;
+  seasonStartMonth?: number;
+  seasonEndMonth?: number;
+}
+
+export interface DishUnmarkSeasonalInput {
+  id?: string;
 }
 
 export interface DishEightySixInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface DishReinstateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface DocumentVersionCreateInput {
-  [key: string]: unknown;
-  documentId?: string | null;
-  content?: string | null;
-  changeDescription?: string | null;
-  createdBy?: string | null;
+  documentId?: string;
+  content?: string;
+  changeDescription?: string;
+  createdBy?: string;
 }
 
 export interface DocumentVersionUpdateContentInput {
-  [key: string]: unknown;
-  content?: string | null;
-  changeDescription?: string | null;
+  id?: string;
+  content?: string;
+  changeDescription?: string;
 }
 
 export interface DocumentVersionApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface DocumentVersionMarkPublishedInput {
-  [key: string]: unknown;
-  publishedBy?: string | null;
+  id?: string;
+  publishedBy?: string;
 }
 
 export interface DocumentVersionSupersedeInput {
-  [key: string]: unknown;
-  newVersionId?: string | null;
+  id?: string;
+  newVersionId?: string;
+}
+
+export interface DocumentVersionRestoreInput {
+  id?: string;
 }
 
 export interface EmailTemplateCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  templateType?: string | null;
-  subject?: string | null;
-  body?: string | null;
-  mergeFields?: string | null;
-  isActive?: boolean | null;
-  isDefault?: boolean | null;
+  name?: string;
+  templateType?: string;
+  subject?: string;
+  body?: string;
+  mergeFields?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
 }
 
 export interface EmailTemplateUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  templateType?: string | null;
-  subject?: string | null;
-  body?: string | null;
-  mergeFields?: string | null;
-  isActive?: boolean | null;
-  isDefault?: boolean | null;
+  id?: string;
+  name?: string;
+  templateType?: string;
+  subject?: string;
+  body?: string;
+  mergeFields?: string;
+  isActive?: boolean;
+  isDefault?: boolean;
+}
+
+export interface EmailTemplateSoftDeleteInput {
+  id?: string;
 }
 
 export interface EmailWorkflowCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  triggerType?: string | null;
-  triggerConfig?: string | null;
-  emailTemplateId?: string | null;
-  emailTemplateTenantId?: string | null;
-  recipientConfig?: string | null;
-  isActive?: boolean | null;
+  name?: string;
+  triggerType?: string;
+  triggerConfig?: string;
+  emailTemplateId?: string;
+  emailTemplateTenantId?: string;
+  recipientConfig?: string;
+  isActive?: boolean;
 }
 
 export interface EmailWorkflowUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  triggerType?: string | null;
-  triggerConfig?: string | null;
-  emailTemplateId?: string | null;
-  emailTemplateTenantId?: string | null;
-  recipientConfig?: string | null;
-  isActive?: boolean | null;
+  id?: string;
+  name?: string;
+  triggerType?: string;
+  triggerConfig?: string;
+  emailTemplateId?: string;
+  emailTemplateTenantId?: string;
+  recipientConfig?: string;
+  isActive?: boolean;
 }
 
 export interface EmailWorkflowSetActiveInput {
-  [key: string]: unknown;
-  isActive?: boolean | null;
+  id?: string;
+  isActive?: boolean;
+}
+
+export interface EmailWorkflowSoftDeleteInput {
+  id?: string;
+}
+
+export interface EmailWorkflowRecordTriggeredInput {
+  id?: string;
 }
 
 export interface EmployeeAvailabilityCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  dayOfWeek?: number | null;
-  startTime?: string | null;
-  endTime?: string | null;
-  isAvailable?: boolean | null;
-  effectiveFrom?: string | null;
-  effectiveUntil?: string | null;
+  employeeId?: string;
+  dayOfWeek?: number;
+  startTime?: string;
+  endTime?: string;
+  isAvailable?: boolean;
+  effectiveFrom?: string;
+  effectiveUntil?: string;
 }
 
 export interface EmployeeAvailabilityUpdateInput {
-  [key: string]: unknown;
-  dayOfWeek?: number | null;
-  startTime?: string | null;
-  endTime?: string | null;
-  isAvailable?: boolean | null;
-  effectiveFrom?: string | null;
-  effectiveUntil?: string | null;
+  id?: string;
+  dayOfWeek?: number;
+  startTime?: string;
+  endTime?: string;
+  isAvailable?: boolean;
+  effectiveFrom?: string;
+  effectiveUntil?: string;
 }
 
 export interface EmployeeAvailabilitySuspendInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface EmployeeAvailabilityReinstateInput {
+  id?: string;
+}
+
+export interface EmployeeAvailabilitySoftDeleteInput {
+  id?: string;
 }
 
 export interface EmployeeCertificationCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  certificationType?: string | null;
-  certificationName?: string | null;
-  issuedDate?: string | null;
-  expiryDate?: string | null;
-  documentUrl?: string | null;
+  employeeId?: string;
+  certificationType?: string;
+  certificationName?: string;
+  issuedDate?: string;
+  expiryDate?: string;
+  documentUrl?: string;
 }
 
 export interface EmployeeCertificationUpdateInput {
-  [key: string]: unknown;
-  certificationType?: string | null;
-  certificationName?: string | null;
-  issuedDate?: string | null;
-  expiryDate?: string | null;
-  documentUrl?: string | null;
+  id?: string;
+  certificationType?: string;
+  certificationName?: string;
+  issuedDate?: string;
+  expiryDate?: string;
+  documentUrl?: string;
 }
 
 export interface EmployeeCertificationRenewInput {
-  [key: string]: unknown;
-  issuedDate?: string | null;
-  expiryDate?: string | null;
-  documentUrl?: string | null;
+  id?: string;
+  issuedDate?: string;
+  expiryDate?: string;
+  documentUrl?: string;
+}
+
+export interface EmployeeCertificationExpireInput {
+  id?: string;
 }
 
 export interface EmployeeCertificationRevokeInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  revokedBy?: string | null;
+  id?: string;
+  reason?: string;
+  revokedBy?: string;
+}
+
+export interface EmployeeCertificationSoftDeleteInput {
+  id?: string;
 }
 
 export interface EquipmentScheduleMaintenanceInput {
-  [key: string]: unknown;
-  scheduledDate?: string | null;
-  maintenanceType?: string | null;
-  notes?: string | null;
-  userId?: string | null;
+  id?: string;
+  scheduledDate?: string;
+  maintenanceType?: string;
+  notes?: string;
+  userId?: string;
 }
 
 export interface EquipmentRecordMaintenanceInput {
-  [key: string]: unknown;
-  maintenanceDate?: string | null;
-  maintenanceType?: string | null;
-  performedBy?: string | null;
-  cost?: number | null;
-  notes?: string | null;
+  id?: string;
+  maintenanceDate?: string;
+  maintenanceType?: string;
+  performedBy?: string;
+  cost?: number;
+  notes?: string;
 }
 
 export interface EquipmentUpdateStatusInput {
-  [key: string]: unknown;
-  newStatus?: string | null;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  newStatus?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface EquipmentUpdateConditionInput {
-  [key: string]: unknown;
-  newCondition?: string | null;
-  notes?: string | null;
-  userId?: string | null;
+  id?: string;
+  newCondition?: string;
+  notes?: string;
+  userId?: string;
 }
 
 export interface EquipmentRecordUsageInput {
-  [key: string]: unknown;
-  hours?: number | null;
-  userId?: string | null;
+  id?: string;
+  hours?: number;
+  userId?: string;
 }
 
 export interface EquipmentCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  name?: string | null;
-  type?: string | null;
-  serialNumber?: string | null;
-  manufacturer?: string | null;
-  model?: string | null;
-  purchaseDate?: string | null;
-  warrantyExpiry?: number | null;
-  maintenanceIntervalDays?: number | null;
-  maxUsageHours?: number | null;
-  notes?: string | null;
+  locationId?: string;
+  name?: string;
+  type?: string;
+  serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
+  purchaseDate?: string;
+  warrantyExpiry?: number;
+  maintenanceIntervalDays?: number;
+  maxUsageHours?: number;
+  notes?: string;
 }
 
 export interface EquipmentRetireInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface MaintenanceWorkOrderAssignInput {
-  [key: string]: unknown;
-  assignedTo?: string | null;
-  scheduledDate?: string | null;
-  estimatedCost?: number | null;
+  id?: string;
+  assignedTo?: string;
+  scheduledDate?: string;
+  estimatedCost?: number;
 }
 
 export interface MaintenanceWorkOrderStartWorkInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface MaintenanceWorkOrderCompleteWorkInput {
-  [key: string]: unknown;
-  actualCost?: number | null;
-  partsUsed?: string | null;
-  notes?: string | null;
-  userId?: string | null;
+  id?: string;
+  actualCost?: number;
+  partsUsed?: string;
+  notes?: string;
+  userId?: string;
 }
 
 export interface MaintenanceWorkOrderUpdateStatusInput {
-  [key: string]: unknown;
-  newStatus?: string | null;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  newStatus?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface MaintenanceWorkOrderCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  type?: string | null;
-  priority?: string | null;
-  description?: string | null;
-  areaId?: string | null;
-  equipmentId?: string | null;
-  assignedTo?: string | null;
-  reportedBy?: string | null;
-  scheduledDate?: string | null;
-  notes?: string | null;
+  title?: string;
+  type?: string;
+  priority?: string;
+  description?: string;
+  areaId?: string;
+  equipmentId?: string;
+  assignedTo?: string;
+  reportedBy?: string;
+  scheduledDate?: string;
+  notes?: string;
 }
 
 export interface AutomatedFollowupCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  type?: string | null;
-  scheduledDate?: string | null;
-  recipientId?: string | null;
-  subject?: string | null;
-  body?: string | null;
-  templateId?: string | null;
+  eventId?: string;
+  type?: string;
+  scheduledDate?: string;
+  recipientId?: string;
+  subject?: string;
+  body?: string;
+  templateId?: string;
 }
 
 export interface AutomatedFollowupCompleteInput {
-  [key: string]: unknown;
-  sentDate?: string | null;
+  id?: string;
+  sentDate?: string;
+}
+
+export interface AutomatedFollowupGenerateInput {
+  id?: string;
 }
 
 export interface AutomatedFollowupFailInput {
-  [key: string]: unknown;
-  errorMessage?: string | null;
+  id?: string;
+  errorMessage?: string;
 }
 
 export interface AutomatedFollowupRetryInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface AutomatedFollowupSkipInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface EventTimelineItemCreateItemInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  title?: string | null;
-  description?: string | null;
-  itemType?: string | null;
-  assignedTo?: string | null;
-  dueDate?: string | null;
-  sortOrder?: number | null;
+  id?: string;
+  eventId?: string;
+  title?: string;
+  description?: string;
+  itemType?: string;
+  assignedTo?: string;
+  dueDate?: string;
+  sortOrder?: number;
 }
 
 export interface EventTimelineItemStartItemInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventTimelineItemBlockItemInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface EventTimelineItemUnblockItemInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventTimelineItemReorderItemInput {
-  [key: string]: unknown;
-  newSortOrder?: number | null;
+  id?: string;
+  newSortOrder?: number;
+}
+
+export interface EventTimelineItemDeleteItemInput {
+  id?: string;
+}
+
+export interface EventTimelineItemCompleteItemInput {
+  id?: string;
 }
 
 export interface EventTimelineItemUpdateItemInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  itemType?: string | null;
-  assignedTo?: string | null;
-  dueDate?: string | null;
-  sortOrder?: number | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  itemType?: string;
+  assignedTo?: string;
+  dueDate?: string;
+  sortOrder?: number;
 }
 
 export interface EventWaitlistEntryAddGuestInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  guestName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  partySize?: number | null;
-  notes?: string | null;
+  id?: string;
+  eventId?: string;
+  guestName?: string;
+  email?: string;
+  phone?: string;
+  partySize?: number;
+  notes?: string;
 }
 
 export interface EventWaitlistEntryNotifyInput {
-  [key: string]: unknown;
-  message?: string | null;
+  id?: string;
+  message?: string;
+}
+
+export interface EventWaitlistEntryPromoteInput {
+  id?: string;
 }
 
 export interface EventWaitlistEntrySeatInput {
-  [key: string]: unknown;
-  tableNumber?: string | null;
+  id?: string;
+  tableNumber?: string;
 }
 
 export interface EventWaitlistEntryCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface EventWaitlistEntryUpdateRsvpInput {
-  [key: string]: unknown;
-  status?: string | null;
+  id?: string;
+  status?: string;
 }
 
 export interface EventBudgetCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  totalBudgetAmount?: number | null;
-  notes?: string | null;
+  eventId?: string;
+  totalBudgetAmount?: number;
+  notes?: string;
 }
 
 export interface EventBudgetUpdateInput {
-  [key: string]: unknown;
-  totalBudgetAmount?: number | null;
-  totalActualAmount?: number | null;
-  notes?: string | null;
+  id?: string;
+  totalBudgetAmount?: number;
+  totalActualAmount?: number;
+  notes?: string;
 }
 
 export interface EventBudgetApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventBudgetFinalizeInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface BudgetLineItemCreateInput {
-  [key: string]: unknown;
-  budgetId?: string | null;
-  category?: string | null;
-  name?: string | null;
-  description?: string | null;
-  budgetedAmount?: number | null;
-  sortOrder?: number | null;
-  notes?: string | null;
+  budgetId?: string;
+  category?: string;
+  name?: string;
+  description?: string;
+  budgetedAmount?: number;
+  sortOrder?: number;
+  notes?: string;
 }
 
 export interface BudgetLineItemUpdateInput {
-  [key: string]: unknown;
-  budgetedAmount?: number | null;
-  actualAmount?: number | null;
-  description?: string | null;
-  notes?: string | null;
+  id?: string;
+  budgetedAmount?: number;
+  actualAmount?: number;
+  description?: string;
+  notes?: string;
 }
 
 export interface BudgetLineItemRemoveInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface EventContractCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  clientId?: string | null;
-  contractNumber?: string | null;
-  title?: string | null;
-  documentUrl?: string | null;
-  documentType?: string | null;
-  notes?: string | null;
-  expiresAt?: string | null;
+  eventId?: string;
+  clientId?: string;
+  contractNumber?: string;
+  title?: string;
+  documentUrl?: string;
+  documentType?: string;
+  notes?: string;
+  expiresAt?: string;
 }
 
 export interface EventContractUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  documentUrl?: string | null;
-  documentType?: string | null;
-  notes?: string | null;
-  expiresAt?: string | null;
+  id?: string;
+  title?: string;
+  documentUrl?: string;
+  documentType?: string;
+  notes?: string;
+  expiresAt?: string;
 }
 
 export interface EventContractSendInput {
-  [key: string]: unknown;
-  sentBy?: string | null;
+  id?: string;
+  sentBy?: string;
+}
+
+export interface EventContractMarkViewedInput {
+  id?: string;
+}
+
+export interface EventContractSignInput {
+  id?: string;
+}
+
+export interface EventContractExpireInput {
+  id?: string;
 }
 
 export interface EventContractCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  canceledBy?: string | null;
+  id?: string;
+  reason?: string;
+  canceledBy?: string;
 }
 
 export interface EventContractSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ContractSignatureCreateInput {
-  [key: string]: unknown;
-  contractId?: string | null;
-  signatureData?: string | null;
-  signerName?: string | null;
-  signerEmail?: string | null;
-  signerRole?: string | null;
-  ipAddress?: string | null;
+  contractId?: string;
+  signatureData?: string;
+  signerName?: string;
+  signerEmail?: string;
+  signerRole?: string;
+  ipAddress?: string;
 }
 
 export interface ContractSignatureVerifyInput {
-  [key: string]: unknown;
-  verifiedBy?: string | null;
+  id?: string;
+  verifiedBy?: string;
 }
 
 export interface ContractSignatureInvalidateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ContractSignatureSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface EventDishCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  dishId?: string | null;
-  quantity?: number | null;
-  notes?: string | null;
-  courseLabel?: string | null;
-  sortOrder?: number | null;
+  eventId?: string;
+  dishId?: string;
+  quantity?: number;
+  notes?: string;
+  courseLabel?: string;
+  sortOrder?: number;
 }
 
 export interface EventDishUpdateQuantityInput {
-  [key: string]: unknown;
-  quantity?: number | null;
+  id?: string;
+  quantity?: number;
 }
 
 export interface EventDishUpdateCourseInput {
-  [key: string]: unknown;
-  courseLabel?: string | null;
-  sortOrder?: number | null;
+  id?: string;
+  courseLabel?: string;
+  sortOrder?: number;
 }
 
 export interface EventDishUpdateNotesInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface EventDishRemoveInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface EventGuestCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  guestName?: string | null;
-  guestEmail?: string | null;
-  guestPhone?: string | null;
-  isPrimaryContact?: boolean | null;
-  dietaryRestrictions?: string | null;
-  allergenRestrictions?: string | null;
-  notes?: string | null;
-  specialMealRequired?: boolean | null;
-  specialMealNotes?: string | null;
-  tableAssignment?: string | null;
-  mealPreference?: string | null;
+  eventId?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  isPrimaryContact?: boolean;
+  dietaryRestrictions?: string;
+  allergenRestrictions?: string;
+  notes?: string;
+  specialMealRequired?: boolean;
+  specialMealNotes?: string;
+  tableAssignment?: string;
+  mealPreference?: string;
 }
 
 export interface EventGuestUpdateInput {
-  [key: string]: unknown;
-  guestName?: string | null;
-  guestEmail?: string | null;
-  guestPhone?: string | null;
-  isPrimaryContact?: boolean | null;
-  dietaryRestrictions?: string | null;
-  allergenRestrictions?: string | null;
-  notes?: string | null;
-  specialMealRequired?: boolean | null;
-  specialMealNotes?: string | null;
-  tableAssignment?: string | null;
-  mealPreference?: string | null;
+  id?: string;
+  guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  isPrimaryContact?: boolean;
+  dietaryRestrictions?: string;
+  allergenRestrictions?: string;
+  notes?: string;
+  specialMealRequired?: boolean;
+  specialMealNotes?: string;
+  tableAssignment?: string;
+  mealPreference?: string;
+}
+
+export interface EventGuestRsvpConfirmInput {
+  id?: string;
 }
 
 export interface EventGuestRsvpDeclineInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface EventGuestCheckInInput {
+  id?: string;
 }
 
 export interface EventGuestAssignTableInput {
-  [key: string]: unknown;
-  tableAssignment?: string | null;
+  id?: string;
+  tableAssignment?: string;
 }
 
 export interface EventGuestSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface EventImportWorkflowCreateInput {
-  [key: string]: unknown;
-  idempotencyKey?: string | null;
-  inputData?: string | null;
+  idempotencyKey?: string;
+  inputData?: string;
+}
+
+export interface EventImportWorkflowStartParsingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteParsingInput {
-  [key: string]: unknown;
-  extractedData?: string | null;
-  confidence?: number | null;
+  id?: string;
+  extractedData?: string;
+  confidence?: number;
+}
+
+export interface EventImportWorkflowStartExtractingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteExtractionInput {
-  [key: string]: unknown;
-  eventData?: string | null;
+  id?: string;
+  eventData?: string;
+}
+
+export interface EventImportWorkflowStartValidatingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteValidationInput {
-  [key: string]: unknown;
-  validationErrors?: string | null;
-  validationWarnings?: string | null;
+  id?: string;
+  validationErrors?: string;
+  validationWarnings?: string;
+}
+
+export interface EventImportWorkflowStartProposingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteProposingInput {
-  [key: string]: unknown;
-  proposedTasks?: string | null;
+  id?: string;
+  proposedTasks?: string;
+}
+
+export interface EventImportWorkflowStartReservingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteReservingInput {
-  [key: string]: unknown;
-  reservationResults?: string | null;
+  id?: string;
+  reservationResults?: string;
+}
+
+export interface EventImportWorkflowStartActivatingInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCompleteActivatingInput {
-  [key: string]: unknown;
-  eventId?: string | null;
+  id?: string;
+  eventId?: string;
 }
 
 export interface EventImportWorkflowFailInput {
-  [key: string]: unknown;
-  errorList?: string | null;
-  step?: number | null;
+  id?: string;
+  errorList?: string;
+  step?: number;
 }
 
 export interface EventImportWorkflowPauseInput {
-  [key: string]: unknown;
-  reasonList?: string | null;
+  id?: string;
+  reasonList?: string;
+}
+
+export interface EventImportWorkflowResumeInput {
+  id?: string;
 }
 
 export interface EventImportWorkflowCancelInput {
-  [key: string]: unknown;
-  reasonList?: string | null;
+  id?: string;
+  reasonList?: string;
+}
+
+export interface EventImportWorkflowRetryInput {
+  id?: string;
 }
 
 export interface EventReportCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  name?: string | null;
-  version?: string | null;
-  checklistData?: string | null;
-  reportConfig?: string | null;
-  notes?: string | null;
+  eventId?: string;
+  name?: string;
+  version?: string;
+  checklistData?: string;
+  reportConfig?: string;
+  notes?: string;
 }
 
 export interface EventReportSubmitInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventReportApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reviewNotes?: string | null;
+  id?: string;
+  userId?: string;
+  reviewNotes?: string;
 }
 
 export interface EventReportRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface EventReportCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventReportUpdateProgressInput {
-  [key: string]: unknown;
-  completion?: number | null;
-  checklistData?: string | null;
+  id?: string;
+  completion?: number;
+  checklistData?: string;
 }
 
 export interface EventCreateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  eventNumber?: string | null;
-  title?: string | null;
-  eventType?: string | null;
-  eventDate?: string | null;
-  guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  notes?: string | null;
-  tags?: string[] | null;
-  status?: string | null;
-  budget?: number | null;
-  ticketPrice?: number | null;
-  ticketTier?: string | null;
-  eventFormat?: string | null;
-  accessibilityOptions?: string[] | null;
-  featuredMediaUrl?: string | null;
+  clientId?: string;
+  eventNumber?: string;
+  title?: string;
+  eventType?: string;
+  eventDate?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  notes?: string;
+  tags?: string[];
+  status?: string;
+  budget?: number;
+  ticketPrice?: number;
+  ticketTier?: string;
+  eventFormat?: string;
+  accessibilityOptions?: string[];
+  featuredMediaUrl?: string;
 }
 
 export interface EventUpdateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  eventNumber?: string | null;
-  title?: string | null;
-  eventType?: string | null;
-  eventDate?: string | null;
-  guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  notes?: string | null;
-  tags?: string[] | null;
-  status?: string | null;
-  budget?: number | null;
-  ticketPrice?: number | null;
-  ticketTier?: string | null;
-  eventFormat?: string | null;
-  accessibilityOptions?: string[] | null;
-  featuredMediaUrl?: string | null;
+  id?: string;
+  clientId?: string;
+  eventNumber?: string;
+  title?: string;
+  eventType?: string;
+  eventDate?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  notes?: string;
+  tags?: string[];
+  status?: string;
+  budget?: number;
+  ticketPrice?: number;
+  ticketTier?: string;
+  eventFormat?: string;
+  accessibilityOptions?: string[];
+  featuredMediaUrl?: string;
 }
 
 export interface EventConfirmInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface EventArchiveInput {
+  id?: string;
 }
 
 export interface EventUpdateBudgetInput {
-  [key: string]: unknown;
-  newBudget?: number | null;
+  id?: string;
+  newBudget?: number;
 }
 
 export interface EventUpdateGuestCountInput {
-  [key: string]: unknown;
-  newGuestCount?: number | null;
+  id?: string;
+  newGuestCount?: number;
 }
 
 export interface EventUpdateDateInput {
-  [key: string]: unknown;
-  newEventDate?: string | null;
+  id?: string;
+  newEventDate?: string;
 }
 
 export interface EventUpdateLocationInput {
-  [key: string]: unknown;
-  newLocationId?: string | null;
-  newVenueId?: string | null;
-  newVenueName?: string | null;
-  newVenueAddress?: string | null;
+  id?: string;
+  newLocationId?: string;
+  newVenueId?: string;
+  newVenueName?: string;
+  newVenueAddress?: string;
 }
 
 export interface EventFinalizeInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventUnfinalizeInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
+}
+
+export interface EventSoftDeleteInput {
+  id?: string;
 }
 
 export interface EventProfitabilityCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  budgetedRevenue?: number | null;
-  budgetedFoodCost?: number | null;
-  budgetedLaborCost?: number | null;
-  budgetedOverhead?: number | null;
-  notes?: string | null;
+  eventId?: string;
+  budgetedRevenue?: number;
+  budgetedFoodCost?: number;
+  budgetedLaborCost?: number;
+  budgetedOverhead?: number;
+  notes?: string;
 }
 
 export interface EventProfitabilityUpdateInput {
-  [key: string]: unknown;
-  actualRevenue?: number | null;
-  actualFoodCost?: number | null;
-  actualLaborCost?: number | null;
-  actualOverhead?: number | null;
-  notes?: string | null;
+  id?: string;
+  actualRevenue?: number;
+  actualFoodCost?: number;
+  actualLaborCost?: number;
+  actualOverhead?: number;
+  notes?: string;
 }
 
 export interface EventProfitabilityRecalculateInput {
-  [key: string]: unknown;
-  calculationMethod?: string | null;
-  budgetedRevenue?: number | null;
-  budgetedFoodCost?: number | null;
-  budgetedLaborCost?: number | null;
-  budgetedOverhead?: number | null;
-  actualRevenue?: number | null;
-  actualFoodCost?: number | null;
-  actualLaborCost?: number | null;
-  actualOverhead?: number | null;
+  id?: string;
+  calculationMethod?: string;
+  budgetedRevenue?: number;
+  budgetedFoodCost?: number;
+  budgetedLaborCost?: number;
+  budgetedOverhead?: number;
+  actualRevenue?: number;
+  actualFoodCost?: number;
+  actualLaborCost?: number;
+  actualOverhead?: number;
 }
 
 export interface EventSummaryCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  highlights?: string | null;
-  issues?: string | null;
-  financialPerformance?: string | null;
-  clientFeedback?: string | null;
-  insights?: string | null;
-  overallSummary?: string | null;
+  eventId?: string;
+  highlights?: string;
+  issues?: string;
+  financialPerformance?: string;
+  clientFeedback?: string;
+  insights?: string;
+  overallSummary?: string;
 }
 
 export interface EventSummaryUpdateInput {
-  [key: string]: unknown;
-  highlights?: string | null;
-  issues?: string | null;
-  financialPerformance?: string | null;
-  clientFeedback?: string | null;
-  insights?: string | null;
-  overallSummary?: string | null;
+  id?: string;
+  highlights?: string;
+  issues?: string;
+  financialPerformance?: string;
+  clientFeedback?: string;
+  insights?: string;
+  overallSummary?: string;
+}
+
+export interface EventSummaryRefreshInput {
+  id?: string;
 }
 
 export interface EventStaffAssignInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  staffMemberId?: string | null;
-  role?: string | null;
-  notes?: string | null;
-  shiftStart?: number | null;
-  shiftEnd?: number | null;
+  id?: string;
+  eventId?: string;
+  staffMemberId?: string;
+  role?: string;
+  notes?: string;
+  shiftStart?: number;
+  shiftEnd?: number;
+}
+
+export interface EventStaffConfirmInput {
+  id?: string;
 }
 
 export interface EventStaffUpdateShiftInput {
-  [key: string]: unknown;
-  shiftStart?: number | null;
-  shiftEnd?: number | null;
+  id?: string;
+  shiftStart?: number;
+  shiftEnd?: number;
 }
 
 export interface EventStaffUpdateRoleInput {
-  [key: string]: unknown;
-  role?: string | null;
+  id?: string;
+  role?: string;
+}
+
+export interface EventStaffCheckInInput {
+  id?: string;
+}
+
+export interface EventStaffCheckOutInput {
+  id?: string;
 }
 
 export interface EventStaffMarkNoShowInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface EventStaffUnassignInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VenueCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  venueType?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  stateProvince?: string | null;
-  postalCode?: string | null;
-  countryCode?: string | null;
-  capacity?: number | null;
-  contactName?: string | null;
-  contactPhone?: string | null;
-  contactEmail?: string | null;
-  accessNotes?: string | null;
-  cateringNotes?: string | null;
-  layoutImageUrl?: string | null;
-  tags?: string[] | null;
+  name?: string;
+  venueType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
+  capacity?: number;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  accessNotes?: string;
+  cateringNotes?: string;
+  layoutImageUrl?: string;
+  tags?: string[];
 }
 
 export interface VenueUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  venueType?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  stateProvince?: string | null;
-  postalCode?: string | null;
-  countryCode?: string | null;
-  capacity?: number | null;
-  contactName?: string | null;
-  contactPhone?: string | null;
-  contactEmail?: string | null;
-  accessNotes?: string | null;
-  cateringNotes?: string | null;
-  layoutImageUrl?: string | null;
-  tags?: string[] | null;
-  isActive?: boolean | null;
+  id?: string;
+  name?: string;
+  venueType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
+  capacity?: number;
+  contactName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  accessNotes?: string;
+  cateringNotes?: string;
+  layoutImageUrl?: string;
+  tags?: string[];
+  isActive?: boolean;
+}
+
+export interface VenueActivateInput {
+  id?: string;
 }
 
 export interface VenueDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VenueUpdateCapacityInput {
-  [key: string]: unknown;
-  capacity?: number | null;
+  id?: string;
+  capacity?: number;
+}
+
+export interface VenueSoftDeleteInput {
+  id?: string;
 }
 
 export interface EventTimelineCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  title?: string | null;
-  scheduledAt?: string | null;
-  durationMinutes?: number | null;
-  notes?: string | null;
-  sortOrder?: number | null;
+  eventId?: string;
+  title?: string;
+  scheduledAt?: string;
+  durationMinutes?: number;
+  notes?: string;
+  sortOrder?: number;
 }
 
 export interface EventTimelineUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  scheduledAt?: string | null;
-  durationMinutes?: number | null;
-  notes?: string | null;
+  id?: string;
+  title?: string;
+  scheduledAt?: string;
+  durationMinutes?: number;
+  notes?: string;
 }
 
 export interface EventTimelineReorderInput {
-  [key: string]: unknown;
-  newSortOrder?: number | null;
+  id?: string;
+  newSortOrder?: number;
 }
 
 export interface EventTimelineRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimelineTaskCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  title?: string | null;
-  dueAt?: string | null;
-  assignedTo?: string | null;
-  sortOrder?: number | null;
+  eventId?: string;
+  title?: string;
+  dueAt?: string;
+  assignedTo?: string;
+  sortOrder?: number;
 }
 
 export interface TimelineTaskStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimelineTaskCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimelineTaskBlockTaskInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface TimelineTaskUnblockTaskInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimelineTaskReorderInput {
-  [key: string]: unknown;
-  newSortOrder?: number | null;
+  id?: string;
+  newSortOrder?: number;
 }
 
 export interface TimelineTaskReassignInput {
-  [key: string]: unknown;
-  newAssignedTo?: string | null;
+  id?: string;
+  newAssignedTo?: string;
 }
 
 export interface TimelineTaskRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventImportCreateInput {
-  [key: string]: unknown;
-  source?: string | null;
-  fileName?: string | null;
-  totalRows?: number | null;
+  source?: string;
+  fileName?: string;
+  totalRows?: number;
 }
 
 export interface EventImportStartProcessingInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventImportCompleteInput {
-  [key: string]: unknown;
-  importedRows?: number | null;
-  skippedRows?: number | null;
+  id?: string;
+  importedRows?: number;
+  skippedRows?: number;
 }
 
 export interface EventImportFailInput {
-  [key: string]: unknown;
-  errorMessage?: string | null;
+  id?: string;
+  errorMessage?: string;
 }
 
 export interface EventImportRetryInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface EventFollowupCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  type?: string | null;
-  dueAt?: string | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  eventId?: string;
+  type?: string;
+  dueAt?: string;
+  assignedTo?: string;
+  notes?: string;
 }
 
 export interface EventFollowupCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  notes?: string | null;
+  id?: string;
+  userId?: string;
+  notes?: string;
 }
 
 export interface EventFollowupRescheduleInput {
-  [key: string]: unknown;
-  newDueAt?: string | null;
-  reason?: string | null;
+  id?: string;
+  newDueAt?: string;
+  reason?: string;
 }
 
 export interface EventFollowupCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface BoardProjectionCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  entityType?: string | null;
-  entityId?: string | null;
-  positionX?: number | null;
-  positionY?: number | null;
-  width?: number | null;
-  height?: number | null;
+  boardId?: string;
+  entityType?: string;
+  entityId?: string;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
 }
 
 export interface BoardProjectionMoveInput {
-  [key: string]: unknown;
-  positionX?: number | null;
-  positionY?: number | null;
+  id?: string;
+  positionX?: number;
+  positionY?: number;
 }
 
 export interface BoardProjectionResizeInput {
-  [key: string]: unknown;
-  width?: number | null;
-  height?: number | null;
+  id?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface BoardProjectionRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface BoardAnnotationCreateInput {
-  [key: string]: unknown;
-  boardId?: string | null;
-  text?: string | null;
-  positionX?: number | null;
-  positionY?: number | null;
-  color?: string | null;
+  boardId?: string;
+  text?: string;
+  positionX?: number;
+  positionY?: number;
+  color?: string;
 }
 
 export interface BoardAnnotationUpdateInput {
-  [key: string]: unknown;
-  text?: string | null;
-  positionX?: number | null;
-  positionY?: number | null;
-  color?: string | null;
+  id?: string;
+  text?: string;
+  positionX?: number;
+  positionY?: number;
+  color?: string;
 }
 
 export interface BoardAnnotationRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface NoteCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  content?: string | null;
-  color?: string | null;
-  tags?: string[] | null;
-  entityType?: string | null;
-  entityId?: string | null;
+  title?: string;
+  content?: string;
+  color?: string;
+  tags?: string[];
+  entityType?: string;
+  entityId?: string;
 }
 
 export interface NoteUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  content?: string | null;
-  color?: string | null;
-  tags?: string[] | null;
+  id?: string;
+  title?: string;
+  content?: string;
+  color?: string;
+  tags?: string[];
 }
 
 export interface NoteRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface FacilityCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  code?: string | null;
-  facilityType?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  state?: string | null;
-  postalCode?: string | null;
-  country?: string | null;
-  phone?: string | null;
-  notes?: string | null;
+  name?: string;
+  code?: string;
+  facilityType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+  notes?: string;
+}
+
+export interface FacilityRemoveInput {
+  id?: string;
 }
 
 export interface FacilityEditInput {
-  [key: string]: unknown;
-  name?: string | null;
-  code?: string | null;
-  facilityType?: string | null;
-  addressLine1?: string | null;
-  addressLine2?: string | null;
-  city?: string | null;
-  state?: string | null;
-  postalCode?: string | null;
-  country?: string | null;
-  phone?: string | null;
-  notes?: string | null;
+  id?: string;
+  name?: string;
+  code?: string;
+  facilityType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+  notes?: string;
 }
 
 export interface FacilitySendToMaintenanceInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface FacilityRestoreFromMaintenanceInput {
+  id?: string;
 }
 
 export interface FacilityAreaCreateInput {
-  [key: string]: unknown;
-  venueId?: string | null;
-  name?: string | null;
-  code?: string | null;
-  areaType?: string | null;
-  floor?: string | null;
-  description?: string | null;
-  squareFeet?: number | null;
+  venueId?: string;
+  name?: string;
+  code?: string;
+  areaType?: string;
+  floor?: string;
+  description?: string;
+  squareFeet?: number;
+}
+
+export interface FacilityAreaRemoveInput {
+  id?: string;
 }
 
 export interface FacilityAreaEditInput {
-  [key: string]: unknown;
-  name?: string | null;
-  code?: string | null;
-  areaType?: string | null;
-  floor?: string | null;
-  description?: string | null;
-  squareFeet?: number | null;
+  id?: string;
+  name?: string;
+  code?: string;
+  areaType?: string;
+  floor?: string;
+  description?: string;
+  squareFeet?: number;
 }
 
 export interface FacilityAreaCloseForMaintenanceInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface FacilityAreaReopenInput {
+  id?: string;
 }
 
 export interface FacilityAssetCreateInput {
-  [key: string]: unknown;
-  facilityId?: string | null;
-  areaId?: string | null;
-  name?: string | null;
-  assetType?: string | null;
-  purchaseDate?: string | null;
-  purchasePrice?: number | null;
-  serialNumber?: string | null;
-  manufacturer?: string | null;
-  model?: string | null;
-  warrantyExpiry?: string | null;
-  notes?: string | null;
+  facilityId?: string;
+  areaId?: string;
+  name?: string;
+  assetType?: string;
+  purchaseDate?: string;
+  purchasePrice?: number;
+  serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
+  warrantyExpiry?: string;
+  notes?: string;
+}
+
+export interface FacilityAssetRemoveInput {
+  id?: string;
 }
 
 export interface FacilityAssetUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  assetType?: string | null;
-  currentValue?: number | null;
-  serialNumber?: string | null;
-  notes?: string | null;
+  id?: string;
+  name?: string;
+  assetType?: string;
+  currentValue?: number;
+  serialNumber?: string;
+  notes?: string;
 }
 
 export interface FacilityAssetSendToMaintenanceInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  nextMaintenanceAt?: string | null;
+  id?: string;
+  reason?: string;
+  nextMaintenanceAt?: string;
 }
 
 export interface FacilityAssetReturnFromMaintenanceInput {
-  [key: string]: unknown;
-  maintenanceNotes?: string | null;
-  nextMaintenanceAt?: string | null;
+  id?: string;
+  maintenanceNotes?: string;
+  nextMaintenanceAt?: string;
 }
 
 export interface FacilityAssetRetireInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface FacilityScheduleCreateInput {
-  [key: string]: unknown;
-  facilityId?: string | null;
-  areaId?: string | null;
-  title?: string | null;
-  description?: string | null;
-  scheduleType?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  facilityId?: string;
+  areaId?: string;
+  title?: string;
+  description?: string;
+  scheduleType?: string;
+  startDate?: string;
+  endDate?: string;
+  assignedTo?: string;
+  notes?: string;
+}
+
+export interface FacilityScheduleRemoveInput {
+  id?: string;
 }
 
 export interface FacilityScheduleEditInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  scheduleType?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  scheduleType?: string;
+  startDate?: string;
+  endDate?: string;
+  assignedTo?: string;
+  notes?: string;
 }
 
 export interface FacilityScheduleStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface FacilityScheduleCompleteInput {
-  [key: string]: unknown;
-  completionNotes?: string | null;
+  id?: string;
+  completionNotes?: string;
 }
 
 export interface FacilityScheduleCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface FacilityWorkOrderCreateInput {
-  [key: string]: unknown;
-  assetId?: string | null;
-  title?: string | null;
-  description?: string | null;
-  priority?: string | null;
-  category?: string | null;
-  requestedBy?: string | null;
-  estimatedCost?: number | null;
-  scheduledDate?: string | null;
-  notes?: string | null;
+  assetId?: string;
+  title?: string;
+  description?: string;
+  priority?: string;
+  category?: string;
+  requestedBy?: string;
+  estimatedCost?: number;
+  scheduledDate?: string;
+  notes?: string;
 }
 
 export interface FacilityWorkOrderAssignInput {
-  [key: string]: unknown;
-  assignedTo?: string | null;
-  scheduledDate?: string | null;
-  estimatedCost?: number | null;
+  id?: string;
+  assignedTo?: string;
+  scheduledDate?: string;
+  estimatedCost?: number;
 }
 
 export interface FacilityWorkOrderStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface FacilityWorkOrderCompleteInput {
-  [key: string]: unknown;
-  actualCost?: number | null;
-  completionNotes?: string | null;
+  id?: string;
+  actualCost?: number;
+  completionNotes?: string;
 }
 
 export interface FacilityWorkOrderCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface IngredientCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  category?: string | null;
-  defaultUnitId?: number | null;
-  densityGPerMl?: number | null;
-  shelfLifeDays?: number | null;
-  storageInstructions?: string | null;
-  allergens?: string | null;
+  name?: string;
+  category?: string;
+  defaultUnitId?: number;
+  densityGPerMl?: number;
+  shelfLifeDays?: number;
+  storageInstructions?: string;
+  allergens?: string;
 }
 
 export interface IngredientUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  category?: string | null;
-  defaultUnitId?: number | null;
-  densityGPerMl?: number | null;
-  storageInstructions?: string | null;
+  id?: string;
+  name?: string;
+  category?: string;
+  defaultUnitId?: number;
+  densityGPerMl?: number;
+  storageInstructions?: string;
 }
 
 export interface IngredientDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface IngredientReactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface IngredientUpdateAllergensInput {
-  [key: string]: unknown;
-  allergens?: string | null;
-  userId?: string | null;
+  id?: string;
+  allergens?: string;
+  userId?: string;
 }
 
 export interface IngredientUpdateShelfLifeInput {
-  [key: string]: unknown;
-  shelfLifeDays?: number | null;
-  storageInstructions?: string | null;
-  userId?: string | null;
+  id?: string;
+  shelfLifeDays?: number;
+  storageInstructions?: string;
+  userId?: string;
 }
 
 export interface IngredientLinkInventoryItemInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  userId?: string | null;
+  id?: string;
+  inventoryItemId?: string;
+  userId?: string;
 }
 
 export interface IngredientUnlinkInventoryItemInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface IngredientRecordLotInput {
-  [key: string]: unknown;
-  lotNumber?: string | null;
-  receivedAt?: string | null;
-  expiresAt?: string | null;
+  id?: string;
+  lotNumber?: string;
+  receivedAt?: string;
+  expiresAt?: string;
 }
 
 export interface IngredientFlagRecallInput {
-  [key: string]: unknown;
-  recallReason?: string | null;
-  userId?: string | null;
+  id?: string;
+  recallReason?: string;
+  userId?: string;
 }
 
 export interface IngredientClearRecallInput {
-  [key: string]: unknown;
-  clearanceNote?: string | null;
-  userId?: string | null;
+  id?: string;
+  clearanceNote?: string;
+  userId?: string;
 }
 
 export interface StorageLocationCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  name?: string | null;
-  storageType?: string | null;
-  temperatureZone?: string | null;
+  locationId?: string;
+  name?: string;
+  storageType?: string;
+  temperatureZone?: string;
 }
 
 export interface StorageLocationUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  storageType?: string | null;
-  temperatureZone?: string | null;
+  id?: string;
+  name?: string;
+  storageType?: string;
+  temperatureZone?: string;
 }
 
 export interface StorageLocationDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface InventoryStockCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  storageLocationId?: string | null;
-  quantityOnHand?: number | null;
-  unitId?: string | null;
+  inventoryItemId?: string;
+  storageLocationId?: string;
+  quantityOnHand?: number;
+  unitId?: string;
 }
 
 export interface InventoryStockAdjustInput {
-  [key: string]: unknown;
-  delta?: number | null;
-  reason?: string | null;
+  id?: string;
+  delta?: number;
+  reason?: string;
 }
 
 export interface InventoryStockRecountInput {
-  [key: string]: unknown;
-  newQuantity?: number | null;
-  countedBy?: string | null;
+  id?: string;
+  newQuantity?: number;
+  countedBy?: string;
 }
 
 export interface InventoryAlertCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  alertType?: string | null;
-  severity?: string | null;
-  message?: string | null;
+  inventoryItemId?: string;
+  alertType?: string;
+  severity?: string;
+  message?: string;
 }
 
 export interface InventoryAlertEscalateInput {
-  [key: string]: unknown;
-  escalatedBy?: string | null;
-  newSeverity?: string | null;
+  id?: string;
+  escalatedBy?: string;
+  newSeverity?: string;
 }
 
 export interface InventoryAlertAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgedBy?: string | null;
+  id?: string;
+  acknowledgedBy?: string;
 }
 
 export interface InventoryAlertMarkResolvedInput {
-  [key: string]: unknown;
-  resolvedBy?: string | null;
+  id?: string;
+  resolvedBy?: string;
 }
 
 export interface InventoryForecastCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  forecastDate?: string | null;
-  projectedQuantity?: number | null;
-  confidence?: number | null;
+  inventoryItemId?: string;
+  forecastDate?: string;
+  projectedQuantity?: number;
+  confidence?: number;
 }
 
 export interface InventoryForecastUpdateInput {
-  [key: string]: unknown;
-  projectedQuantity?: number | null;
-  confidence?: number | null;
+  id?: string;
+  projectedQuantity?: number;
+  confidence?: number;
+}
+
+export interface InventoryForecastMarkPublishedInput {
+  id?: string;
 }
 
 export interface InventoryForecastApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface ForecastInputCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  inputDate?: string | null;
-  actualUsage?: number | null;
-  source?: string | null;
+  inventoryItemId?: string;
+  inputDate?: string;
+  actualUsage?: number;
+  source?: string;
 }
 
 export interface ReorderSuggestionCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  suggestedQuantity?: number | null;
-  reason?: string | null;
+  inventoryItemId?: string;
+  suggestedQuantity?: number;
+  reason?: string;
 }
 
 export interface ReorderSuggestionAcceptInput {
-  [key: string]: unknown;
-  acceptedBy?: string | null;
+  id?: string;
+  acceptedBy?: string;
 }
 
 export interface ReorderSuggestionDismissInput {
-  [key: string]: unknown;
-  dismissedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  dismissedBy?: string;
+  reason?: string;
 }
 
 export interface ReorderSuggestionAutoAcceptInput {
-  [key: string]: unknown;
-  triggeredBy?: string | null;
+  id?: string;
+  triggeredBy?: string;
 }
 
 export interface VendorContactCreateInput {
-  [key: string]: unknown;
-  inventorySupplierId?: string | null;
-  name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  role?: string | null;
-  isPrimary?: boolean | null;
+  inventorySupplierId?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  isPrimary?: boolean;
 }
 
 export interface VendorContactUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  role?: string | null;
-  isPrimary?: boolean | null;
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
+  isPrimary?: boolean;
 }
 
 export interface VendorContactRemoveInput {
-  [key: string]: unknown;
-  removedBy?: string | null;
+  id?: string;
+  removedBy?: string;
 }
 
 export interface VendorRatingCreateInput {
-  [key: string]: unknown;
-  inventorySupplierId?: string | null;
-  category?: string | null;
-  score?: number | null;
-  comment?: string | null;
-  ratedBy?: string | null;
+  inventorySupplierId?: string;
+  category?: string;
+  score?: number;
+  comment?: string;
+  ratedBy?: string;
 }
 
 export interface VendorRatingUpdateInput {
-  [key: string]: unknown;
-  score?: number | null;
-  comment?: string | null;
+  id?: string;
+  score?: number;
+  comment?: string;
 }
 
 export interface InventoryTransferItemAddItemInput {
-  [key: string]: unknown;
-  inventoryTransferId?: string | null;
-  inventoryItemId?: string | null;
-  quantity?: number | null;
-  unitId?: string | null;
+  id?: string;
+  inventoryTransferId?: string;
+  inventoryItemId?: string;
+  quantity?: number;
+  unitId?: string;
 }
 
 export interface InventoryTransferItemUpdateQuantityInput {
-  [key: string]: unknown;
-  quantity?: number | null;
+  id?: string;
+  quantity?: number;
 }
 
 export interface InventoryTransferItemRemoveItemInput {
-  [key: string]: unknown;
-  removedBy?: string | null;
+  id?: string;
+  removedBy?: string;
 }
 
 export interface ProcurementBudgetCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  periodStart?: string | null;
-  periodEnd?: string | null;
-  budgetAmount?: number | null;
+  name?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  budgetAmount?: number;
 }
 
 export interface ProcurementBudgetUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  budgetAmount?: number | null;
+  id?: string;
+  name?: string;
+  budgetAmount?: number;
 }
 
 export interface ProcurementBudgetRecordSpendInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  reference?: string | null;
+  id?: string;
+  amount?: number;
+  reference?: string;
 }
 
 export interface ProcurementBudgetCloseInput {
-  [key: string]: unknown;
-  closedBy?: string | null;
+  id?: string;
+  closedBy?: string;
 }
 
 export interface ProcurementBudgetAlertCreateInput {
-  [key: string]: unknown;
-  procurementBudgetId?: string | null;
-  thresholdPct?: number | null;
-  message?: string | null;
+  procurementBudgetId?: string;
+  thresholdPct?: number;
+  message?: string;
 }
 
 export interface ProcurementBudgetAlertAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgedBy?: string | null;
+  id?: string;
+  acknowledgedBy?: string;
 }
 
 export interface AuditScheduleCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  frequency?: string | null;
-  nextRunAt?: number | null;
+  name?: string;
+  frequency?: string;
+  nextRunAt?: number;
 }
 
 export interface AuditScheduleUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  frequency?: string | null;
-  nextRunAt?: number | null;
+  id?: string;
+  name?: string;
+  frequency?: string;
+  nextRunAt?: number;
 }
 
 export interface AuditScheduleDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface AuditScheduleActivateInput {
+  id?: string;
 }
 
 export interface AuditScheduleRecordRunInput {
-  [key: string]: unknown;
-  nextRunAt?: string | null;
+  id?: string;
+  nextRunAt?: string;
 }
 
 export interface InventoryItemReserveInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  eventId?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  eventId?: string;
+  userId?: string;
 }
 
 export interface InventoryItemConsumeInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  lotId?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  lotId?: string;
+  userId?: string;
 }
 
 export interface InventoryItemWasteInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  reason?: string | null;
-  lotId?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  reason?: string;
+  lotId?: string;
+  userId?: string;
 }
 
 export interface InventoryItemAdjustInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  reason?: string;
+  userId?: string;
 }
 
 export interface InventoryItemRestockInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  costPerUnit?: number | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  costPerUnit?: number;
+  userId?: string;
 }
 
 export interface InventoryItemReleaseReservationInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  eventId?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantity?: number;
+  eventId?: string;
+  userId?: string;
 }
 
 export interface InventoryItemCreateInput {
-  [key: string]: unknown;
-  item_number?: string | null;
-  name?: string | null;
-  category?: string | null;
-  description?: string | null;
-  unitOfMeasure?: string | null;
-  unitCost?: number | null;
-  quantityOnHand?: number | null;
-  parLevel?: number | null;
-  reorder_level?: number | null;
-  supplierId?: string | null;
-  tags?: string | null;
-  fsa_status?: string | null;
-  fsa_temp_logged?: boolean | null;
-  fsa_allergen_info?: boolean | null;
-  fsa_traceable?: boolean | null;
+  item_number?: string;
+  name?: string;
+  category?: string;
+  description?: string;
+  unitOfMeasure?: string;
+  unitCost?: number;
+  quantityOnHand?: number;
+  parLevel?: number;
+  reorder_level?: number;
+  supplierId?: string;
+  tags?: string;
+  fsa_status?: string;
+  fsa_temp_logged?: boolean;
+  fsa_allergen_info?: boolean;
+  fsa_traceable?: boolean;
 }
 
 export interface InventoryItemUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  category?: string | null;
-  unitOfMeasure?: string | null;
-  unitCost?: number | null;
-  quantityOnHand?: number | null;
-  parLevel?: number | null;
-  reorder_level?: number | null;
-  supplierId?: string | null;
-  tags?: string | null;
-  fsa_status?: string | null;
-  fsa_temp_logged?: string | null;
-  fsa_allergen_info?: string | null;
-  fsa_traceable?: string | null;
+  id?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  unitOfMeasure?: string;
+  unitCost?: number;
+  quantityOnHand?: number;
+  parLevel?: number;
+  reorder_level?: number;
+  supplierId?: string;
+  tags?: string;
+  fsa_status?: string;
+  fsa_temp_logged?: string;
+  fsa_allergen_info?: string;
+  fsa_traceable?: string;
+}
+
+export interface InventoryItemSoftDeleteInput {
+  id?: string;
 }
 
 export interface InventorySupplierCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  supplierNumber?: string | null;
-  contactPerson?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  paymentTerms?: string | null;
-  notes?: string | null;
-  tags?: string | null;
+  name?: string;
+  supplierNumber?: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  paymentTerms?: string;
+  notes?: string;
+  tags?: string;
 }
 
 export interface InventorySupplierUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  contactPerson?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  paymentTerms?: string | null;
-  notes?: string | null;
-  tags?: string | null;
+  id?: string;
+  name?: string;
+  contactPerson?: string;
+  email?: string;
+  phone?: string;
+  paymentTerms?: string;
+  notes?: string;
+  tags?: string;
 }
 
 export interface InventorySupplierDeactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface InventorySupplierApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface InventorySupplierSuspendInput {
-  [key: string]: unknown;
-  suspendedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  suspendedBy?: string;
+  reason?: string;
 }
 
 export interface InventorySupplierReinstateInput {
-  [key: string]: unknown;
-  reinstatedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  reinstatedBy?: string;
+  notes?: string;
 }
 
 export interface InventorySupplierBlacklistInput {
-  [key: string]: unknown;
-  blacklistedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  blacklistedBy?: string;
+  reason?: string;
 }
 
 export interface InventoryTransactionCreateInput {
-  [key: string]: unknown;
-  itemId?: string | null;
-  transactionType?: string | null;
-  quantity?: number | null;
-  unitCost?: number | null;
-  referenceType?: string | null;
-  referenceId?: string | null;
-  reason?: string | null;
-  notes?: string | null;
-  employeeId?: string | null;
-  storageLocationId?: string | null;
+  itemId?: string;
+  transactionType?: string;
+  quantity?: number;
+  unitCost?: number;
+  referenceType?: string;
+  referenceId?: string;
+  reason?: string;
+  notes?: string;
+  employeeId?: string;
+  storageLocationId?: string;
 }
 
 export interface InventoryTransactionReverseInput {
-  [key: string]: unknown;
-  reversedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  reversedBy?: string;
+  reason?: string;
 }
 
 export interface InventoryTransactionAdjustCostInput {
-  [key: string]: unknown;
-  newUnitCost?: number | null;
-  reason?: string | null;
+  id?: string;
+  newUnitCost?: number;
+  reason?: string;
 }
 
 export interface InventoryTransferCreateInput {
-  [key: string]: unknown;
-  fromLocationId?: string | null;
-  toLocationId?: string | null;
-  notes?: string | null;
-  items?: string | null;
+  fromLocationId?: string;
+  toLocationId?: string;
+  notes?: string;
+  items?: string;
 }
 
 export interface InventoryTransferApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface InventoryTransferShipInput {
-  [key: string]: unknown;
-  shippedBy?: string | null;
+  id?: string;
+  shippedBy?: string;
 }
 
 export interface InventoryTransferReceiveInput {
-  [key: string]: unknown;
-  receivedBy?: string | null;
+  id?: string;
+  receivedBy?: string;
 }
 
 export interface InventoryTransferCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface InventoryTransferPartialReceiveInput {
-  [key: string]: unknown;
-  receivedBy?: string | null;
-  receivedItems?: string | null;
-  notes?: string | null;
+  id?: string;
+  receivedBy?: string;
+  receivedItems?: string;
+  notes?: string;
 }
 
 export interface InventoryTransferFlagDiscrepancyInput {
-  [key: string]: unknown;
-  reportedBy?: string | null;
-  discrepancyNotes?: string | null;
+  id?: string;
+  reportedBy?: string;
+  discrepancyNotes?: string;
 }
 
 export interface InvoiceUpdateInput {
-  [key: string]: unknown;
-  subtotal?: number | null;
-  taxAmount?: number | null;
-  total?: number | null;
-  amountDue?: number | null;
-  notes?: string | null;
-  internalNotes?: string | null;
-  dueDate?: string | null;
-  paymentTerms?: number | null;
-  lineItems?: string | null;
+  id?: string;
+  subtotal?: number;
+  taxAmount?: number;
+  total?: number;
+  amountDue?: number;
+  notes?: string;
+  internalNotes?: string;
+  dueDate?: string;
+  paymentTerms?: number;
+  lineItems?: string;
 }
 
 export interface InvoiceSendInput {
-  [key: string]: unknown;
-  clientContactId?: string | null;
+  id?: string;
+  clientContactId?: string;
+}
+
+export interface InvoiceMarkViewedInput {
+  id?: string;
 }
 
 export interface InvoiceApplyPaymentInput {
-  [key: string]: unknown;
-  paymentAmount?: number | null;
-  paymentId?: string | null;
+  id?: string;
+  paymentAmount?: number;
+  paymentId?: string;
+}
+
+export interface InvoiceMarkAsPaidInput {
+  id?: string;
 }
 
 export interface InvoiceRecordRefundInput {
-  [key: string]: unknown;
-  refundAmount?: number | null;
-  paymentId?: string | null;
+  id?: string;
+  refundAmount?: number;
+  paymentId?: string;
+}
+
+export interface InvoiceMarkOverdueInput {
+  id?: string;
+}
+
+export interface InvoiceSendReminderInput {
+  id?: string;
 }
 
 export interface InvoiceVoidInvoiceInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface InvoiceWriteOffInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  writeOffAmount?: number | null;
+  id?: string;
+  reason?: string;
+  writeOffAmount?: number;
 }
 
 export interface InvoiceUpdateLineItemsInput {
-  [key: string]: unknown;
-  lineItems?: string | null;
+  id?: string;
+  lineItems?: string;
 }
 
 export interface TemperatureProbeCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  equipmentId?: string | null;
-  location?: string | null;
-  minThreshold?: number | null;
-  maxThreshold?: number | null;
+  name?: string;
+  equipmentId?: string;
+  location?: string;
+  minThreshold?: number;
+  maxThreshold?: number;
 }
 
 export interface TemperatureProbeCalibrateInput {
-  [key: string]: unknown;
-  calibratedBy?: string | null;
+  id?: string;
+  calibratedBy?: string;
 }
 
 export interface TemperatureProbeUpdateThresholdsInput {
-  [key: string]: unknown;
-  minThreshold?: number | null;
-  maxThreshold?: number | null;
+  id?: string;
+  minThreshold?: number;
+  maxThreshold?: number;
 }
 
 export interface TemperatureProbeDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  deactivatedBy?: string | null;
+  id?: string;
+  reason?: string;
+  deactivatedBy?: string;
 }
 
 export interface TemperatureLogCreateInput {
-  [key: string]: unknown;
-  equipmentId?: string | null;
-  recordedBy?: string | null;
-  temperature?: number | null;
-  recordedAt?: string | null;
-  withinRange?: boolean | null;
-  notes?: string | null;
+  equipmentId?: string;
+  recordedBy?: string;
+  temperature?: number;
+  recordedAt?: string;
+  withinRange?: boolean;
+  notes?: string;
 }
 
 export interface TemperatureReadingCreateInput {
-  [key: string]: unknown;
-  probeId?: string | null;
-  temperature?: number | null;
-  recordedAt?: string | null;
-  withinRange?: boolean | null;
+  probeId?: string;
+  temperature?: number;
+  recordedAt?: string;
+  withinRange?: boolean;
 }
 
 export interface IotAlertRuleCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  equipmentId?: string | null;
-  metric?: string | null;
-  sensorType?: string | null;
-  condition?: string | null;
-  threshold?: number | null;
-  thresholdMin?: number | null;
-  thresholdMax?: number | null;
-  comparison?: string | null;
-  severity?: string | null;
-  durationMs?: number | null;
-  alertAction?: string | null;
-  isActive?: boolean | null;
-  notifyRoles?: string | null;
-  notifyChannels?: string | null;
-  description?: string | null;
+  name?: string;
+  equipmentId?: string;
+  metric?: string;
+  sensorType?: string;
+  condition?: string;
+  threshold?: number;
+  thresholdMin?: number;
+  thresholdMax?: number;
+  comparison?: string;
+  severity?: string;
+  durationMs?: number;
+  alertAction?: string;
+  isActive?: boolean;
+  notifyRoles?: string;
+  notifyChannels?: string;
+  description?: string;
 }
 
 export interface IotAlertRuleUpdateInput {
-  [key: string]: unknown;
-  metric?: string | null;
-  threshold?: number | null;
-  comparison?: string | null;
-  severity?: string | null;
+  id?: string;
+  metric?: string;
+  threshold?: number;
+  comparison?: string;
+  severity?: string;
 }
 
 export interface IotAlertRuleDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  deactivatedBy?: string | null;
+  id?: string;
+  reason?: string;
+  deactivatedBy?: string;
 }
 
 export interface IoTAlertCreateInput {
-  [key: string]: unknown;
-  probeId?: string | null;
-  ruleId?: string | null;
-  severity?: string | null;
-  message?: string | null;
-  value?: number | null;
-  triggeredAt?: string | null;
-  alertNumber?: string | null;
-  alertType?: string | null;
-  title?: string | null;
-  temperature?: number | null;
+  probeId?: string;
+  ruleId?: string;
+  severity?: string;
+  message?: string;
+  value?: number;
+  triggeredAt?: string;
+  alertNumber?: string;
+  alertType?: string;
+  title?: string;
+  temperature?: number;
 }
 
 export interface IoTAlertAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgedBy?: string | null;
+  id?: string;
+  acknowledgedBy?: string;
 }
 
 export interface IoTAlertMarkResolvedInput {
-  [key: string]: unknown;
-  resolvedBy?: string | null;
+  id?: string;
+  resolvedBy?: string;
 }
 
 export interface CorrectiveActionCreateInput {
-  [key: string]: unknown;
-  sourceType?: string | null;
-  sourceId?: string | null;
-  description?: string | null;
-  dueAt?: string | null;
+  sourceType?: string;
+  sourceId?: string;
+  description?: string;
+  dueAt?: string;
 }
 
 export interface CorrectiveActionAssignInput {
-  [key: string]: unknown;
-  assignedTo?: string | null;
-  assignedBy?: string | null;
+  id?: string;
+  assignedTo?: string;
+  assignedBy?: string;
 }
 
 export interface CorrectiveActionStartProgressInput {
-  [key: string]: unknown;
-  startedBy?: string | null;
+  id?: string;
+  startedBy?: string;
 }
 
 export interface CorrectiveActionCloseInput {
-  [key: string]: unknown;
-  resolvedBy?: string | null;
-  resolutionNotes?: string | null;
+  id?: string;
+  resolvedBy?: string;
+  resolutionNotes?: string;
 }
 
 export interface QualityCheckCreateInput {
-  [key: string]: unknown;
-  checkType?: string | null;
-  performedBy?: string | null;
-  notes?: string | null;
+  checkType?: string;
+  performedBy?: string;
+  notes?: string;
 }
 
 export interface QualityCheckPassInput {
-  [key: string]: unknown;
-  passedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  passedBy?: string;
+  notes?: string;
 }
 
 export interface QualityCheckFailInput {
-  [key: string]: unknown;
-  failedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  failedBy?: string;
+  notes?: string;
 }
 
 export interface QualityCheckReinspectInput {
-  [key: string]: unknown;
-  requestedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  requestedBy?: string;
+  reason?: string;
 }
 
 export interface QualityCheckItemCreateInput {
-  [key: string]: unknown;
-  qualityCheckId?: string | null;
-  criterion?: string | null;
-  sortOrder?: number | null;
+  qualityCheckId?: string;
+  criterion?: string;
+  sortOrder?: number;
 }
 
 export interface QualityCheckItemRecordResultInput {
-  [key: string]: unknown;
-  passed?: boolean | null;
-  notes?: string | null;
-  recordedBy?: string | null;
+  id?: string;
+  passed?: boolean;
+  notes?: string;
+  recordedBy?: string;
 }
 
 export interface KitchenTaskClaimClaimInput {
-  [key: string]: unknown;
-  kitchenTaskId?: string | null;
-  employeeId?: string | null;
-  claimedAt?: string | null;
+  id?: string;
+  kitchenTaskId?: string;
+  employeeId?: string;
+  claimedAt?: string;
 }
 
 export interface KitchenTaskClaimReleaseInput {
-  [key: string]: unknown;
-  releasedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  releasedBy?: string;
+  reason?: string;
 }
 
 export interface KitchenTaskProgressCreateInput {
-  [key: string]: unknown;
-  kitchenTaskId?: string | null;
-  employeeId?: string | null;
-  status?: string | null;
-  progressPct?: number | null;
-  note?: string | null;
-  recordedAt?: string | null;
+  kitchenTaskId?: string;
+  employeeId?: string;
+  status?: string;
+  progressPct?: number;
+  note?: string;
+  recordedAt?: string;
 }
 
 export interface TaskBundleCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  eventId?: string | null;
-  description?: string | null;
+  name?: string;
+  eventId?: string;
+  description?: string;
 }
 
 export interface TaskBundleUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
+  id?: string;
+  name?: string;
+  description?: string;
 }
 
 export interface TaskBundleArchiveInput {
-  [key: string]: unknown;
-  archivedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  archivedBy?: string;
+  reason?: string;
 }
 
 export interface TaskBundleItemAddItemInput {
-  [key: string]: unknown;
-  taskBundleId?: string | null;
-  kitchenTaskId?: string | null;
-  sortOrder?: number | null;
+  id?: string;
+  taskBundleId?: string;
+  kitchenTaskId?: string;
+  sortOrder?: number;
 }
 
 export interface TaskBundleItemRemoveItemInput {
-  [key: string]: unknown;
-  removedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  removedBy?: string;
+  reason?: string;
 }
 
 export interface BulkCombineRuleCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  matchCriteria?: string | null;
+  name?: string;
+  matchCriteria?: string;
 }
 
 export interface BulkCombineRuleUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  matchCriteria?: string | null;
+  id?: string;
+  name?: string;
+  matchCriteria?: string;
 }
 
 export interface BulkCombineRuleDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  deactivatedBy?: string | null;
+  id?: string;
+  reason?: string;
+  deactivatedBy?: string;
 }
 
 export interface MethodVideoCreateInput {
-  [key: string]: unknown;
-  prepMethodId?: string | null;
-  title?: string | null;
-  url?: string | null;
-  durationSeconds?: number | null;
+  prepMethodId?: string;
+  title?: string;
+  url?: string;
+  durationSeconds?: number;
 }
 
 export interface MethodVideoUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  url?: string | null;
-  durationSeconds?: number | null;
+  id?: string;
+  title?: string;
+  url?: string;
+  durationSeconds?: number;
 }
 
 export interface MethodVideoRemoveInput {
-  [key: string]: unknown;
-  removedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  removedBy?: string;
+  reason?: string;
 }
 
 export interface PrepListImportCreateInput {
-  [key: string]: unknown;
-  source?: string | null;
-  fileName?: string | null;
+  source?: string;
+  fileName?: string;
 }
 
 export interface PrepListImportCompleteInput {
-  [key: string]: unknown;
-  rowsImported?: number | null;
+  id?: string;
+  rowsImported?: number;
 }
 
 export interface PrepListImportFailInput {
-  [key: string]: unknown;
-  errorMessage?: string | null;
+  id?: string;
+  errorMessage?: string;
 }
 
 export interface KitchenTaskClaimInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface KitchenTaskStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface KitchenTaskCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface KitchenTaskReleaseInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface KitchenTaskReassignInput {
-  [key: string]: unknown;
-  newUserId?: string | null;
-  requestedBy?: string | null;
+  id?: string;
+  newUserId?: string;
+  requestedBy?: string;
 }
 
 export interface KitchenTaskUpdatePriorityInput {
-  [key: string]: unknown;
-  priority?: number | null;
+  id?: string;
+  priority?: number;
 }
 
 export interface KitchenTaskUpdateComplexityInput {
-  [key: string]: unknown;
-  complexity?: number | null;
+  id?: string;
+  complexity?: number;
 }
 
 export interface KitchenTaskUpdateTitleInput {
-  [key: string]: unknown;
-  title?: string | null;
+  id?: string;
+  title?: string;
 }
 
 export interface KitchenTaskUpdateSummaryInput {
-  [key: string]: unknown;
-  summary?: string | null;
+  id?: string;
+  summary?: string;
 }
 
 export interface KitchenTaskUpdateDueDateInput {
-  [key: string]: unknown;
-  dueDate?: string | null;
+  id?: string;
+  dueDate?: string;
 }
 
 export interface KitchenTaskUpdateTagsInput {
-  [key: string]: unknown;
-  tags?: string | null;
+  id?: string;
+  tags?: string;
 }
 
 export interface KitchenTaskAddTagInput {
-  [key: string]: unknown;
-  tag?: string | null;
+  id?: string;
+  tag?: string;
 }
 
 export interface KitchenTaskRemoveTagInput {
-  [key: string]: unknown;
-  tag?: string | null;
+  id?: string;
+  tag?: string;
 }
 
 export interface KitchenTaskCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  canceledBy?: string | null;
+  id?: string;
+  reason?: string;
+  canceledBy?: string;
 }
 
 export interface KitchenTaskCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  summary?: string | null;
-  priority?: number | null;
-  complexity?: number | null;
-  tags?: string | null;
-  dueDate?: string | null;
+  title?: string;
+  summary?: string;
+  priority?: number;
+  complexity?: number;
+  tags?: string;
+  dueDate?: string;
 }
 
 export interface KnowledgeBaseEntryCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  category?: string | null;
-  content?: string | null;
-  tags?: string | null;
-  authorId?: string | null;
+  title?: string;
+  category?: string;
+  content?: string;
+  tags?: string;
+  authorId?: string;
+}
+
+export interface KnowledgeBaseEntryRemoveInput {
+  id?: string;
 }
 
 export interface KnowledgeBaseEntryUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  category?: string | null;
-  content?: string | null;
-  tags?: string | null;
+  id?: string;
+  title?: string;
+  category?: string;
+  content?: string;
+  tags?: string;
+}
+
+export interface KnowledgeBaseEntryPublishEntryInput {
+  id?: string;
 }
 
 export interface KnowledgeBaseEntryUnpublishInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface KnowledgeBaseEntryRecordViewInput {
+  id?: string;
 }
 
 export interface LaborBudgetCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  periodStart?: string | null;
-  periodEnd?: string | null;
-  budgetAmount?: number | null;
-  budgetType?: string | null;
-  notes?: string | null;
-  createdBy?: string | null;
+  locationId?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  budgetAmount?: number;
+  budgetType?: string;
+  notes?: string;
+  createdBy?: string;
 }
 
 export interface LaborBudgetUpdateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  periodStart?: string | null;
-  periodEnd?: string | null;
-  budgetAmount?: number | null;
-  budgetType?: string | null;
-  notes?: string | null;
+  id?: string;
+  locationId?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  budgetAmount?: number;
+  budgetType?: string;
+  notes?: string;
 }
 
 export interface LaborBudgetApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface LaborBudgetRecordActualInput {
-  [key: string]: unknown;
-  actualAmount?: number | null;
+  id?: string;
+  actualAmount?: number;
+}
+
+export interface LaborBudgetCloseInput {
+  id?: string;
+}
+
+export interface LaborBudgetSoftDeleteInput {
+  id?: string;
 }
 
 export interface BudgetAlertCreateInput {
-  [key: string]: unknown;
-  budgetId?: string | null;
-  alertType?: string | null;
-  thresholdPct?: number | null;
-  actualPct?: number | null;
-  message?: string | null;
+  budgetId?: string;
+  alertType?: string;
+  thresholdPct?: number;
+  actualPct?: number;
+  message?: string;
 }
 
 export interface BudgetAlertAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgedBy?: string | null;
+  id?: string;
+  acknowledgedBy?: string;
+}
+
+export interface BudgetAlertMarkResolvedInput {
+  id?: string;
 }
 
 export interface LeadCreateInput {
-  [key: string]: unknown;
-  source?: string | null;
-  companyName?: string | null;
-  contactName?: string | null;
-  contactEmail?: string | null;
-  contactPhone?: string | null;
-  eventType?: string | null;
-  eventDate?: string | null;
-  estimatedGuests?: number | null;
-  estimatedValue?: number | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  source?: string;
+  companyName?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  eventType?: string;
+  eventDate?: string;
+  estimatedGuests?: number;
+  estimatedValue?: number;
+  assignedTo?: string;
+  notes?: string;
 }
 
 export interface LeadUpdateInput {
-  [key: string]: unknown;
-  companyName?: string | null;
-  contactName?: string | null;
-  contactEmail?: string | null;
-  contactPhone?: string | null;
-  eventType?: string | null;
-  eventDate?: string | null;
-  estimatedGuests?: number | null;
-  estimatedValue?: number | null;
-  status?: string | null;
-  assignedTo?: string | null;
-  notes?: string | null;
+  id?: string;
+  companyName?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  eventType?: string;
+  eventDate?: string;
+  estimatedGuests?: number;
+  estimatedValue?: number;
+  status?: string;
+  assignedTo?: string;
+  notes?: string;
 }
 
 export interface LeadConvertToClientInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  userId?: string | null;
+  id?: string;
+  clientId?: string;
+  userId?: string;
 }
 
 export interface LeadDisqualifyInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface LeadArchiveInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface DriverCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  licenseNumber?: string | null;
-  licenseExpiry?: string | null;
-  vehicleId?: string | null;
-  status?: string | null;
-  notes?: string | null;
+  name?: string;
+  email?: string;
+  phone?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  vehicleId?: string;
+  status?: string;
+  notes?: string;
+}
+
+export interface DriverRemoveInput {
+  id?: string;
 }
 
 export interface DriverUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  licenseNumber?: string | null;
-  licenseExpiry?: string | null;
-  vehicleId?: string | null;
-  notes?: string | null;
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
+  vehicleId?: string;
+  notes?: string;
 }
 
 export interface DriverRenewLicenseInput {
-  [key: string]: unknown;
-  licenseNumber?: string | null;
-  licenseExpiry?: string | null;
+  id?: string;
+  licenseNumber?: string;
+  licenseExpiry?: string;
 }
 
 export interface DriverSetOffDutyInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface DriverReactivateInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface VehicleCreateInput {
-  [key: string]: unknown;
-  make?: string | null;
-  model?: string | null;
-  year?: number | null;
-  plateNumber?: string | null;
-  vin?: string | null;
-  capacityWeight?: number | null;
-  capacityVolume?: number | null;
-  fuelType?: string | null;
-  mileage?: number | null;
-  status?: string | null;
-  notes?: string | null;
+  make?: string;
+  model?: string;
+  year?: number;
+  plateNumber?: string;
+  vin?: string;
+  capacityWeight?: number;
+  capacityVolume?: number;
+  fuelType?: string;
+  mileage?: number;
+  status?: string;
+  notes?: string;
+}
+
+export interface VehicleRemoveInput {
+  id?: string;
 }
 
 export interface VehicleUpdateInput {
-  [key: string]: unknown;
-  make?: string | null;
-  model?: string | null;
-  year?: number | null;
-  plateNumber?: string | null;
-  vin?: string | null;
-  capacityWeight?: number | null;
-  capacityVolume?: number | null;
-  fuelType?: string | null;
-  mileage?: number | null;
-  notes?: string | null;
+  id?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  plateNumber?: string;
+  vin?: string;
+  capacityWeight?: number;
+  capacityVolume?: number;
+  fuelType?: string;
+  mileage?: number;
+  notes?: string;
 }
 
 export interface VehicleSendToMaintenanceInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VehicleReturnFromMaintenanceInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface VehicleDecommissionInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface LogisticsRouteCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  vehicleId?: string | null;
-  driverId?: string | null;
-  startLocation?: string | null;
-  endLocation?: string | null;
-  scheduledStart?: number | null;
-  scheduledEnd?: number | null;
-  distance?: number | null;
-  estimatedDuration?: number | null;
-  stops?: number | null;
-  notes?: string | null;
+  name?: string;
+  vehicleId?: string;
+  driverId?: string;
+  startLocation?: string;
+  endLocation?: string;
+  scheduledStart?: number;
+  scheduledEnd?: number;
+  distance?: number;
+  estimatedDuration?: number;
+  stops?: number;
+  notes?: string;
+}
+
+export interface LogisticsRouteRemoveInput {
+  id?: string;
 }
 
 export interface LogisticsRouteUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  vehicleId?: string | null;
-  driverId?: string | null;
-  startLocation?: string | null;
-  endLocation?: string | null;
-  scheduledStart?: number | null;
-  scheduledEnd?: number | null;
-  distance?: number | null;
-  estimatedDuration?: number | null;
-  stops?: number | null;
-  notes?: string | null;
+  id?: string;
+  name?: string;
+  vehicleId?: string;
+  driverId?: string;
+  startLocation?: string;
+  endLocation?: string;
+  scheduledStart?: number;
+  scheduledEnd?: number;
+  distance?: number;
+  estimatedDuration?: number;
+  stops?: number;
+  notes?: string;
+}
+
+export interface LogisticsRouteStartInput {
+  id?: string;
 }
 
 export interface LogisticsRouteCompleteStopInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface LogisticsRouteRecordDelayInput {
-  [key: string]: unknown;
-  delayMinutes?: number | null;
-  reason?: string | null;
+  id?: string;
+  delayMinutes?: number;
+  reason?: string;
 }
 
 export interface LogisticsRouteCompleteInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface LogisticsRouteCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface LogisticsRouteOptimizeInput {
+  id?: string;
 }
 
 export interface LogisticsDispatchAssignInput {
-  [key: string]: unknown;
-  routeId?: string | null;
-  driverId?: string | null;
-  vehicleId?: string | null;
-  priority?: string | null;
-  estimatedDeliveryTime?: number | null;
-  notes?: string | null;
+  id?: string;
+  routeId?: string;
+  driverId?: string;
+  vehicleId?: string;
+  priority?: string;
+  estimatedDeliveryTime?: number;
+  notes?: string;
 }
 
 export interface LogisticsDispatchDepartInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface LogisticsDispatchDeliverInput {
-  [key: string]: unknown;
-  notes?: string | null;
+  id?: string;
+  notes?: string;
 }
 
 export interface LogisticsDispatchFailInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface LogisticsDispatchReassignInput {
-  [key: string]: unknown;
-  driverId?: string | null;
-  vehicleId?: string | null;
-  estimatedDeliveryTime?: number | null;
-  notes?: string | null;
+  id?: string;
+  driverId?: string;
+  vehicleId?: string;
+  estimatedDeliveryTime?: number;
+  notes?: string;
 }
 
 export interface MenuCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  category?: string | null;
-  basePrice?: number | null;
-  pricePerPerson?: number | null;
-  minGuests?: number | null;
-  maxGuests?: number | null;
+  name?: string;
+  description?: string;
+  category?: string;
+  basePrice?: number;
+  pricePerPerson?: number;
+  minGuests?: number;
+  maxGuests?: number;
 }
 
 export interface MenuUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newDescription?: string | null;
-  newCategory?: string | null;
-  newBasePrice?: number | null;
-  newPricePerPerson?: number | null;
-  newMinGuests?: number | null;
-  newMaxGuests?: number | null;
+  id?: string;
+  newName?: string;
+  newDescription?: string;
+  newCategory?: string;
+  newBasePrice?: number;
+  newPricePerPerson?: number;
+  newMinGuests?: number;
+  newMaxGuests?: number;
 }
 
 export interface MenuUpdatePricingInput {
-  [key: string]: unknown;
-  newBasePrice?: number | null;
-  newPricePerPerson?: number | null;
+  id?: string;
+  newBasePrice?: number;
+  newPricePerPerson?: number;
 }
 
 export interface MenuMarkPublishedInput {
-  [key: string]: unknown;
-  publishedBy?: string | null;
+  id?: string;
+  publishedBy?: string;
 }
 
 export interface MenuUnpublishInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface MenuArchiveInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface MenuRestoreInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface MenuMarkSeasonalInput {
-  [key: string]: unknown;
-  seasonLabel?: string | null;
-  seasonYear?: number | null;
+  id?: string;
+  seasonLabel?: string;
+  seasonYear?: number;
 }
 
 export interface MenuDishCreateInput {
-  [key: string]: unknown;
-  menuId?: string | null;
-  dishId?: string | null;
-  course?: string | null;
-  sortOrder?: number | null;
-  isOptional?: boolean | null;
+  menuId?: string;
+  dishId?: string;
+  course?: string;
+  sortOrder?: number;
+  isOptional?: boolean;
 }
 
 export interface MenuDishUpdateCourseInput {
-  [key: string]: unknown;
-  newCourse?: string | null;
-  newSortOrder?: number | null;
-  newIsOptional?: boolean | null;
+  id?: string;
+  newCourse?: string;
+  newSortOrder?: number;
+  newIsOptional?: boolean;
 }
 
 export interface MenuDishSetPriceOverrideInput {
-  [key: string]: unknown;
-  priceOverride?: number | null;
+  id?: string;
+  priceOverride?: number;
 }
 
 export interface MenuDishRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface NotificationCreateInput {
-  [key: string]: unknown;
-  recipientEmployeeId?: string | null;
-  notificationType?: string | null;
-  title?: string | null;
-  body?: string | null;
-  actionUrl?: string | null;
-  correlationId?: string | null;
+  recipientEmployeeId?: string;
+  notificationType?: string;
+  title?: string;
+  body?: string;
+  actionUrl?: string;
+  correlationId?: string;
 }
 
 export interface NotificationMarkReadInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface NotificationMarkDismissedInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface NotificationRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface OverrideAuditCreateInput {
-  [key: string]: unknown;
-  entityType?: string | null;
-  entityId?: string | null;
-  constraintId?: string | null;
-  guardExpression?: string | null;
-  overriddenBy?: string | null;
-  overrideReason?: string | null;
+  entityType?: string;
+  entityId?: string;
+  constraintId?: string;
+  guardExpression?: string;
+  overriddenBy?: string;
+  overrideReason?: string;
 }
 
 export interface OverrideAuditAuthorizeInput {
-  [key: string]: unknown;
-  authorizedBy?: string | null;
+  id?: string;
+  authorizedBy?: string;
 }
 
 export interface PaymentMethodCreateInput {
-  [key: string]: unknown;
-  clientId?: string | null;
-  type?: string | null;
-  externalMethodId?: string | null;
-  cardLastFour?: string | null;
-  cardNetwork?: string | null;
-  cardExpiryMonth?: number | null;
-  cardExpiryYear?: number | null;
-  cardHolderName?: string | null;
-  bankAccountLastFour?: string | null;
-  bankAccountType?: string | null;
-  bankRoutingNumber?: string | null;
-  walletProvider?: string | null;
-  walletEmail?: string | null;
-  nickname?: string | null;
+  clientId?: string;
+  type?: string;
+  externalMethodId?: string;
+  cardLastFour?: string;
+  cardNetwork?: string;
+  cardExpiryMonth?: number;
+  cardExpiryYear?: number;
+  cardHolderName?: string;
+  bankAccountLastFour?: string;
+  bankAccountType?: string;
+  bankRoutingNumber?: string;
+  walletProvider?: string;
+  walletEmail?: string;
+  nickname?: string;
+}
+
+export interface PaymentMethodMarkAsDefaultInput {
+  id?: string;
+}
+
+export interface PaymentMethodMarkNotDefaultInput {
+  id?: string;
+}
+
+export interface PaymentMethodMarkExpiredInput {
+  id?: string;
 }
 
 export interface PaymentMethodMarkInvalidInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PaymentMethodFlagForFraudInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PaymentMethodVerifyInput {
-  [key: string]: unknown;
-  method?: string | null;
+  id?: string;
+  method?: string;
 }
 
 export interface PaymentMethodMarkVerificationFailedInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PaymentMethodUpdateTokenInput {
-  [key: string]: unknown;
-  newToken?: string | null;
+  id?: string;
+  newToken?: string;
 }
 
 export interface PaymentMethodUpdateInput {
-  [key: string]: unknown;
-  cardLastFour?: string | null;
-  cardNetwork?: string | null;
-  isDefault?: boolean | null;
+  id?: string;
+  cardLastFour?: string;
+  cardNetwork?: string;
+  isDefault?: boolean;
+}
+
+export interface PaymentMethodRemoveInput {
+  id?: string;
 }
 
 export interface PaymentProcessInput {
-  [key: string]: unknown;
-  gatewayTransactionId?: string | null;
+  id?: string;
+  gatewayTransactionId?: string;
+}
+
+export interface PaymentProcessFailedInput {
+  id?: string;
 }
 
 export interface PaymentRefundInput {
-  [key: string]: unknown;
-  refundAmount?: number | null;
-  reason?: string | null;
+  id?: string;
+  refundAmount?: number;
+  reason?: string;
 }
 
 export interface PaymentPartialRefundInput {
-  [key: string]: unknown;
-  refundAmount?: number | null;
-  reason?: string | null;
+  id?: string;
+  refundAmount?: number;
+  reason?: string;
 }
 
 export interface PaymentMarkChargebackInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PaymentUpdateFraudStatusInput {
-  [key: string]: unknown;
-  newFraudStatus?: string | null;
-  score?: number | null;
+  id?: string;
+  newFraudStatus?: string;
+  score?: number;
 }
 
 export interface PaymentMarkFraudReviewedInput {
-  [key: string]: unknown;
-  approved?: boolean | null;
-  reviewer?: string | null;
+  id?: string;
+  approved?: boolean;
+  reviewer?: string;
 }
 
 export interface PaymentMarkFraudPassedInput {
-  [key: string]: unknown;
-  reviewer?: string | null;
+  id?: string;
+  reviewer?: string;
 }
 
 export interface PaymentMarkFraudFailedInput {
-  [key: string]: unknown;
-  reviewer?: string | null;
+  id?: string;
+  reviewer?: string;
+}
+
+export interface PaymentMarkAcceptedNotAppliedInput {
+  id?: string;
 }
 
 export interface PayrollPeriodCreateInput {
-  [key: string]: unknown;
-  periodStart?: string | null;
-  periodEnd?: string | null;
+  periodStart?: string;
+  periodEnd?: string;
+}
+
+export interface PayrollPeriodCloseInput {
+  id?: string;
 }
 
 export interface PayrollPeriodReopenInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface PayrollPeriodLockInput {
+  id?: string;
 }
 
 export interface EmployeeDeductionCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  type?: string | null;
-  name?: string | null;
-  amount?: number | null;
-  percentage?: number | null;
-  isPreTax?: boolean | null;
-  effectiveDate?: string | null;
-  endDate?: string | null;
-  maxAnnualAmount?: number | null;
+  employeeId?: string;
+  type?: string;
+  name?: string;
+  amount?: number;
+  percentage?: number;
+  isPreTax?: boolean;
+  effectiveDate?: string;
+  endDate?: string;
+  maxAnnualAmount?: number;
 }
 
 export interface EmployeeDeductionUpdateInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  percentage?: number | null;
-  endDate?: string | null;
-  maxAnnualAmount?: number | null;
+  id?: string;
+  amount?: number;
+  percentage?: number;
+  endDate?: string;
+  maxAnnualAmount?: number;
 }
 
 export interface EmployeeDeductionDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  endDate?: string | null;
+  id?: string;
+  reason?: string;
+  endDate?: string;
 }
 
 export interface PayrollApprovalHistoryCreateInput {
-  [key: string]: unknown;
-  payrollRunId?: string | null;
-  action?: string | null;
-  previousStatus?: string | null;
-  newStatus?: string | null;
-  performedBy?: string | null;
-  reason?: string | null;
+  payrollRunId?: string;
+  action?: string;
+  previousStatus?: string;
+  newStatus?: string;
+  performedBy?: string;
+  reason?: string;
 }
 
 export interface PayrollRunCreateInput {
-  [key: string]: unknown;
-  payrollPeriodId?: string | null;
-  runDate?: string | null;
+  payrollPeriodId?: string;
+  runDate?: string;
 }
 
 export interface PayrollRunProcessInput {
-  [key: string]: unknown;
-  totalGross?: number | null;
-  totalDeductions?: number | null;
-  totalNet?: number | null;
+  id?: string;
+  totalGross?: number;
+  totalDeductions?: number;
+  totalNet?: number;
 }
 
 export interface PayrollRunApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface PayrollRunRejectInput {
-  [key: string]: unknown;
-  rejectedBy?: string | null;
-  rejectReason?: string | null;
+  id?: string;
+  rejectedBy?: string;
+  rejectReason?: string;
+}
+
+export interface PayrollRunMarkPaidInput {
+  id?: string;
 }
 
 export interface PrepCommentCreateInput {
-  [key: string]: unknown;
-  taskId?: string | null;
-  employeeId?: string | null;
-  commentText?: string | null;
+  taskId?: string;
+  employeeId?: string;
+  commentText?: string;
 }
 
 export interface PrepCommentEditInput {
-  [key: string]: unknown;
-  newText?: string | null;
-  userId?: string | null;
+  id?: string;
+  newText?: string;
+  userId?: string;
 }
 
 export interface PrepCommentMarkResolvedInput {
-  [key: string]: unknown;
-  resolvedBy?: string | null;
+  id?: string;
+  resolvedBy?: string;
 }
 
 export interface PrepCommentUnresolveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PrepCommentSoftDeleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PrepListUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newDietaryRestrictions?: string | null;
-  newNotes?: string | null;
+  id?: string;
+  newName?: string;
+  newDietaryRestrictions?: string;
+  newNotes?: string;
 }
 
 export interface PrepListUpdateBatchMultiplierInput {
-  [key: string]: unknown;
-  newMultiplier?: number | null;
+  id?: string;
+  newMultiplier?: number;
+}
+
+export interface PrepListFinalizeInput {
+  id?: string;
+}
+
+export interface PrepListActivateInput {
+  id?: string;
+}
+
+export interface PrepListDeactivateInput {
+  id?: string;
+}
+
+export interface PrepListMarkCompletedInput {
+  id?: string;
 }
 
 export interface PrepListCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PrepListCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  name?: string | null;
-  batchMultiplier?: number | null;
-  dietaryRestrictions?: string | null;
-  totalItems?: number | null;
-  totalEstimatedTime?: number | null;
-  notes?: string | null;
+  eventId?: string;
+  name?: string;
+  batchMultiplier?: number;
+  dietaryRestrictions?: string;
+  totalItems?: number;
+  totalEstimatedTime?: number;
+  notes?: string;
 }
 
 export interface PrepListCreateFromSeedInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  name?: string | null;
-  batchMultiplier?: number | null;
-  dietaryRestrictions?: string | null;
-  notes?: string | null;
-  menuGroupsJson?: string | null;
-  totalInstructionLines?: number | null;
-  validInstructionLines?: number | null;
+  id?: string;
+  eventId?: string;
+  name?: string;
+  batchMultiplier?: number;
+  dietaryRestrictions?: string;
+  notes?: string;
+  menuGroupsJson?: string;
+  totalInstructionLines?: number;
+  validInstructionLines?: number;
 }
 
 export interface PrepListReopenInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PrepListItemUpdateQuantityInput {
-  [key: string]: unknown;
-  newBaseQuantity?: number | null;
-  newScaledQuantity?: number | null;
-  newBaseUnit?: string | null;
-  newScaledUnit?: string | null;
+  id?: string;
+  newBaseQuantity?: number;
+  newScaledQuantity?: number;
+  newBaseUnit?: string;
+  newScaledUnit?: string;
 }
 
 export interface PrepListItemUpdateStationInput {
-  [key: string]: unknown;
-  newStationId?: string | null;
-  newStationName?: string | null;
+  id?: string;
+  newStationId?: string;
+  newStationName?: string;
 }
 
 export interface PrepListItemUpdatePrepNotesInput {
-  [key: string]: unknown;
-  newNotes?: string | null;
-  newDietarySubstitutions?: string | null;
+  id?: string;
+  newNotes?: string;
+  newDietarySubstitutions?: string;
 }
 
 export interface PrepListItemMarkCompletedInput {
-  [key: string]: unknown;
-  completedByUserId?: string | null;
+  id?: string;
+  completedByUserId?: string;
+}
+
+export interface PrepListItemMarkUncompletedInput {
+  id?: string;
 }
 
 export interface PrepListItemCreateInput {
-  [key: string]: unknown;
-  prepListId?: string | null;
-  stationId?: string | null;
-  stationName?: string | null;
-  ingredientId?: string | null;
-  ingredientName?: string | null;
-  category?: string | null;
-  baseQuantity?: number | null;
-  baseUnit?: string | null;
-  scaledQuantity?: number | null;
-  scaledUnit?: string | null;
-  isOptional?: boolean | null;
-  preparationNotes?: string | null;
-  allergens?: string | null;
-  dietarySubstitutions?: string | null;
-  dishId?: string | null;
-  dishName?: string | null;
-  recipeVersionId?: string | null;
-  sortOrder?: number | null;
+  prepListId?: string;
+  stationId?: string;
+  stationName?: string;
+  ingredientId?: string;
+  ingredientName?: string;
+  category?: string;
+  baseQuantity?: number;
+  baseUnit?: string;
+  scaledQuantity?: number;
+  scaledUnit?: string;
+  isOptional?: boolean;
+  preparationNotes?: string;
+  allergens?: string;
+  dietarySubstitutions?: string;
+  dishId?: string;
+  dishName?: string;
+  recipeVersionId?: string;
+  sortOrder?: number;
 }
 
 export interface PrepMethodCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  category?: string | null;
-  description?: string | null;
-  estimatedDurationMinutes?: number | null;
-  requiresCertification?: string | null;
+  name?: string;
+  category?: string;
+  description?: string;
+  estimatedDurationMinutes?: number;
+  requiresCertification?: string;
 }
 
 export interface PrepMethodUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  category?: string | null;
-  description?: string | null;
-  estimatedDurationMinutes?: number | null;
-  requiresCertification?: string | null;
+  id?: string;
+  name?: string;
+  category?: string;
+  description?: string;
+  estimatedDurationMinutes?: number;
+  requiresCertification?: string;
 }
 
 export interface PrepMethodDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface PrepMethodReactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PrepTaskPlanWorkflowCreateInput {
-  [key: string]: unknown;
-  eventId?: string | null;
-  idempotencyKey?: string | null;
-  generationOptions?: string | null;
+  eventId?: string;
+  idempotencyKey?: string;
+  generationOptions?: string;
+}
+
+export interface PrepTaskPlanWorkflowStartGeneratingInput {
+  id?: string;
 }
 
 export interface PrepTaskPlanWorkflowCompleteGenerationInput {
-  [key: string]: unknown;
-  generatedTasks?: string | null;
-  generatedCount?: number | null;
-  constraintOutcomes?: string | null;
+  id?: string;
+  generatedTasks?: string;
+  generatedCount?: number;
+  constraintOutcomes?: string;
 }
 
 export interface PrepTaskPlanWorkflowStartReviewingInput {
-  [key: string]: unknown;
-  reviewerId?: string | null;
+  id?: string;
+  reviewerId?: string;
 }
 
 export interface PrepTaskPlanWorkflowCompleteReviewInput {
-  [key: string]: unknown;
-  reviewedTasks?: string | null;
-  approvedIds?: string | null;
-  rejectedIds?: string | null;
-  approvedCount?: number | null;
-  reviewWarnings?: string | null;
+  id?: string;
+  reviewedTasks?: string;
+  approvedIds?: string;
+  rejectedIds?: string;
+  approvedCount?: number;
+  reviewWarnings?: string;
 }
 
 export interface PrepTaskPlanWorkflowStartApprovingInput {
-  [key: string]: unknown;
-  approverId?: string | null;
+  id?: string;
+  approverId?: string;
+}
+
+export interface PrepTaskPlanWorkflowApprovePlanInput {
+  id?: string;
 }
 
 export interface PrepTaskPlanWorkflowRejectPlanInput {
-  [key: string]: unknown;
-  reasonList?: string | null;
+  id?: string;
+  reasonList?: string;
+}
+
+export interface PrepTaskPlanWorkflowStartInstantiatingInput {
+  id?: string;
 }
 
 export interface PrepTaskPlanWorkflowCompleteInstantiationInput {
-  [key: string]: unknown;
-  instantiatedIds?: string | null;
-  instantiatedCount?: number | null;
-  instantiationErrors?: string | null;
+  id?: string;
+  instantiatedIds?: string;
+  instantiatedCount?: number;
+  instantiationErrors?: string;
+}
+
+export interface PrepTaskPlanWorkflowStartSchedulingInput {
+  id?: string;
 }
 
 export interface PrepTaskPlanWorkflowCompleteSchedulingInput {
-  [key: string]: unknown;
-  scheduledWindows?: string | null;
+  id?: string;
+  scheduledWindows?: string;
 }
 
 export interface PrepTaskPlanWorkflowFailInput {
-  [key: string]: unknown;
-  errorList?: string | null;
-  step?: number | null;
+  id?: string;
+  errorList?: string;
+  step?: number;
 }
 
 export interface PrepTaskPlanWorkflowCancelInput {
-  [key: string]: unknown;
-  reasonList?: string | null;
+  id?: string;
+  reasonList?: string;
+}
+
+export interface PrepTaskPlanWorkflowRetryInput {
+  id?: string;
 }
 
 export interface PrepTaskPlanWorkflowQuickApproveInput {
-  [key: string]: unknown;
-  approverId?: string | null;
+  id?: string;
+  approverId?: string;
 }
 
 export interface PrepTaskClaimInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  stationId?: string | null;
+  id?: string;
+  userId?: string;
+  stationId?: string;
 }
 
 export interface PrepTaskUnclaimInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PrepTaskStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PrepTaskCompleteInput {
-  [key: string]: unknown;
-  quantityCompleted?: number | null;
-  userId?: string | null;
-  completedAt?: string | null;
+  id?: string;
+  quantityCompleted?: number;
+  userId?: string;
+  completedAt?: string;
 }
 
 export interface PrepTaskReleaseInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PrepTaskReassignInput {
-  [key: string]: unknown;
-  newUserId?: string | null;
-  requestedBy?: string | null;
+  id?: string;
+  newUserId?: string;
+  requestedBy?: string;
 }
 
 export interface PrepTaskUpdateQuantityInput {
-  [key: string]: unknown;
-  quantityTotal?: number | null;
-  quantityCompleted?: number | null;
+  id?: string;
+  quantityTotal?: number;
+  quantityCompleted?: number;
 }
 
 export interface PrepTaskCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  canceledBy?: string | null;
+  id?: string;
+  reason?: string;
+  canceledBy?: string;
 }
 
 export interface PrepTaskCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  eventId?: string | null;
-  prepListId?: string | null;
-  taskType?: string | null;
-  priority?: number | null;
-  quantityTotal?: number | null;
-  quantityUnitId?: string | null;
-  servingsTotal?: number | null;
-  startByDate?: string | null;
-  dueByDate?: string | null;
-  notes?: string | null;
-  ingredients?: string | null;
+  name?: string;
+  eventId?: string;
+  prepListId?: string;
+  taskType?: string;
+  priority?: number;
+  quantityTotal?: number;
+  quantityUnitId?: string;
+  servingsTotal?: number;
+  startByDate?: string;
+  dueByDate?: string;
+  notes?: string;
+  ingredients?: string;
 }
 
 export interface PrepTaskUpdateStatusInput {
-  [key: string]: unknown;
-  status?: string | null;
+  id?: string;
+  status?: string;
 }
 
 export interface PrepTaskUpdatePriorityInput {
-  [key: string]: unknown;
-  priority?: number | null;
+  id?: string;
+  priority?: number;
 }
 
 export interface PrepTaskUpdateAssignmentInput {
-  [key: string]: unknown;
-  claimedBy?: string | null;
+  id?: string;
+  claimedBy?: string;
 }
 
 export interface PrepTaskUpdateDueDateInput {
-  [key: string]: unknown;
-  dueByDate?: string | null;
+  id?: string;
+  dueByDate?: string;
 }
 
 export interface PrepTaskUpdateDetailsInput {
-  [key: string]: unknown;
-  dishId?: string | null;
-  locationId?: string | null;
-  estimatedMinutes?: number | null;
-  dueByTime?: string | null;
+  id?: string;
+  dishId?: string;
+  locationId?: string;
+  estimatedMinutes?: number;
+  dueByTime?: string;
 }
 
 export interface PricingTierCreateInput {
-  [key: string]: unknown;
-  catalogEntryId?: string | null;
-  tierName?: string | null;
-  minQuantity?: number | null;
-  maxQuantity?: number | null;
-  unitCost?: number | null;
-  discountPercent?: number | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
+  catalogEntryId?: string;
+  tierName?: string;
+  minQuantity?: number;
+  maxQuantity?: number;
+  unitCost?: number;
+  discountPercent?: number;
+  effectiveFrom?: number;
+  effectiveTo?: number;
 }
 
 export interface PricingTierUpdateInput {
-  [key: string]: unknown;
-  catalogEntryId?: string | null;
-  tierName?: string | null;
-  minQuantity?: number | null;
-  maxQuantity?: number | null;
-  unitCost?: number | null;
-  discountPercent?: number | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
-  isActive?: boolean | null;
+  id?: string;
+  catalogEntryId?: string;
+  tierName?: string;
+  minQuantity?: number;
+  maxQuantity?: number;
+  unitCost?: number;
+  discountPercent?: number;
+  effectiveFrom?: number;
+  effectiveTo?: number;
+  isActive?: boolean;
+}
+
+export interface PricingTierActivateInput {
+  id?: string;
 }
 
 export interface PricingTierDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PricingTierSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface PurchaseRequisitionCreateInput {
-  [key: string]: unknown;
-  requisitionNumber?: string | null;
-  locationId?: string | null;
-  department?: string | null;
-  requestedBy?: string | null;
-  requiredBy?: number | null;
-  justification?: string | null;
-  priority?: string | null;
-  itemCategory?: string | null;
+  requisitionNumber?: string;
+  locationId?: string;
+  department?: string;
+  requestedBy?: string;
+  requiredBy?: number;
+  justification?: string;
+  priority?: string;
+  itemCategory?: string;
 }
 
 export interface PurchaseRequisitionUpdateInput {
-  [key: string]: unknown;
-  justification?: string | null;
-  requiredBy?: number | null;
-  priority?: string | null;
-  department?: string | null;
+  id?: string;
+  justification?: string;
+  requiredBy?: number;
+  priority?: string;
+  department?: string;
 }
 
 export interface PurchaseRequisitionCompleteDraftFromPrepDemandInput {
-  [key: string]: unknown;
-  itemCount?: number | null;
-  subtotal?: number | null;
-  estimatedTax?: number | null;
-  estimatedShipping?: number | null;
-  estimatedTotal?: number | null;
-  notes?: string | null;
+  id?: string;
+  itemCount?: number;
+  subtotal?: number;
+  estimatedTax?: number;
+  estimatedShipping?: number;
+  estimatedTotal?: number;
+  notes?: string;
 }
 
 export interface PurchaseRequisitionSubmitInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseRequisitionApproveManagerInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseRequisitionApproveFinanceInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseRequisitionRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PurchaseRequisitionConvertToPoInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  purchaseOrderId?: string | null;
+  id?: string;
+  userId?: string;
+  purchaseOrderId?: string;
 }
 
 export interface PurchaseRequisitionCancelInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PurchaseRequisitionItemCreateInput {
-  [key: string]: unknown;
-  requisitionId?: string | null;
-  itemId?: string | null;
-  itemName?: string | null;
-  quantityRequested?: number | null;
-  unitId?: number | null;
-  estimatedUnitCost?: number | null;
-  suggestedVendorId?: string | null;
-  suggestedVendorName?: string | null;
-  specifications?: string | null;
-  notes?: string | null;
+  requisitionId?: string;
+  itemId?: string;
+  itemName?: string;
+  quantityRequested?: number;
+  unitId?: number;
+  estimatedUnitCost?: number;
+  suggestedVendorId?: string;
+  suggestedVendorName?: string;
+  specifications?: string;
+  notes?: string;
 }
 
 export interface PurchaseRequisitionItemUpdateInput {
-  [key: string]: unknown;
-  quantityRequested?: number | null;
-  estimatedUnitCost?: number | null;
-  suggestedVendorId?: string | null;
-  suggestedVendorName?: string | null;
-  specifications?: string | null;
-  notes?: string | null;
+  id?: string;
+  quantityRequested?: number;
+  estimatedUnitCost?: number;
+  suggestedVendorId?: string;
+  suggestedVendorName?: string;
+  specifications?: string;
+  notes?: string;
 }
 
 export interface PurchaseRequisitionItemRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ProposalCreateInput {
-  [key: string]: unknown;
-  proposalNumber?: string | null;
-  leadId?: string | null;
-  eventId?: string | null;
-  title?: string | null;
-  guestCount?: number | null;
-  taxRate?: number | null;
-  validUntil?: number | null;
-  notes?: string | null;
-  termsAndConditions?: string | null;
+  proposalNumber?: string;
+  leadId?: string;
+  eventId?: string;
+  title?: string;
+  guestCount?: number;
+  taxRate?: number;
+  validUntil?: number;
+  notes?: string;
+  termsAndConditions?: string;
 }
 
 export interface ProposalUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  eventDate?: string | null;
-  eventType?: string | null;
-  guestCount?: number | null;
-  venueName?: string | null;
-  venueAddress?: string | null;
-  subtotal?: number | null;
-  taxRate?: number | null;
-  taxAmount?: number | null;
-  discountAmount?: number | null;
-  total?: number | null;
-  validUntil?: number | null;
-  notes?: string | null;
-  termsAndConditions?: string | null;
+  id?: string;
+  title?: string;
+  eventDate?: string;
+  eventType?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  total?: number;
+  validUntil?: number;
+  notes?: string;
+  termsAndConditions?: string;
 }
 
 export interface ProposalSendInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ProposalMarkViewedInput {
-  [key: string]: unknown;
-  viewedByInfo?: string | null;
+  id?: string;
+  viewedByInfo?: string;
 }
 
 export interface ProposalAcceptInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ProposalRejectInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ProposalWithdrawInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface ProposalRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ProposalGeneratePublicLinkInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ProposalLineItemCreateInput {
-  [key: string]: unknown;
-  proposalId?: string | null;
-  itemType?: string | null;
-  category?: string | null;
-  description?: string | null;
-  quantity?: number | null;
-  unitOfMeasure?: string | null;
-  unitPrice?: number | null;
-  sortOrder?: number | null;
-  notes?: string | null;
+  proposalId?: string;
+  itemType?: string;
+  category?: string;
+  description?: string;
+  quantity?: number;
+  unitOfMeasure?: string;
+  unitPrice?: number;
+  sortOrder?: number;
+  notes?: string;
 }
 
 export interface ProposalLineItemUpdateInput {
-  [key: string]: unknown;
-  itemType?: string | null;
-  category?: string | null;
-  description?: string | null;
-  quantity?: number | null;
-  unitOfMeasure?: string | null;
-  unitPrice?: number | null;
-  sortOrder?: number | null;
-  notes?: string | null;
+  id?: string;
+  itemType?: string;
+  category?: string;
+  description?: string;
+  quantity?: number;
+  unitOfMeasure?: string;
+  unitPrice?: number;
+  sortOrder?: number;
+  notes?: string;
 }
 
 export interface ProposalLineItemRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseOrderCreateInput {
-  [key: string]: unknown;
-  poNumber?: string | null;
-  vendorId?: string | null;
-  locationId?: string | null;
-  notes?: string | null;
+  poNumber?: string;
+  vendorId?: string;
+  locationId?: string;
+  notes?: string;
 }
 
 export interface PurchaseOrderSubmitInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseOrderApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseOrderRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PurchaseOrderCancelInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface PurchaseOrderMarkOrderedInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseOrderMarkReceivedInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface PurchaseOrderUpdateTotalsInput {
-  [key: string]: unknown;
-  subtotal?: number | null;
-  total?: number | null;
-  itemCount?: number | null;
-  expectedDeliveryDate?: string | null;
+  id?: string;
+  subtotal?: number;
+  total?: number;
+  itemCount?: number;
+  expectedDeliveryDate?: string;
 }
 
 export interface PurchaseOrderItemCreateInput {
-  [key: string]: unknown;
-  purchaseOrderId?: string | null;
-  itemId?: string | null;
-  quantityOrdered?: number | null;
-  unitId?: number | null;
-  unitCost?: number | null;
-  notes?: string | null;
+  purchaseOrderId?: string;
+  itemId?: string;
+  quantityOrdered?: number;
+  unitId?: number;
+  unitCost?: number;
+  notes?: string;
 }
 
 export interface PurchaseOrderItemUpdateInput {
-  [key: string]: unknown;
-  quantityOrdered?: number | null;
-  unitCost?: number | null;
-  notes?: string | null;
+  id?: string;
+  quantityOrdered?: number;
+  unitCost?: number;
+  notes?: string;
 }
 
 export interface PurchaseOrderItemRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface QACheckCreateInput {
-  [key: string]: unknown;
-  location?: string | null;
-  checkType?: string | null;
-  inspector?: string | null;
-  notes?: string | null;
+  location?: string;
+  checkType?: string;
+  inspector?: string;
+  notes?: string;
 }
 
 export interface QACheckCompleteInput {
-  [key: string]: unknown;
-  result?: string | null;
-  inspector?: string | null;
-  notes?: string | null;
+  id?: string;
+  result?: string;
+  inspector?: string;
+  notes?: string;
 }
 
 export interface QACheckFailInput {
-  [key: string]: unknown;
-  inspector?: string | null;
-  notes?: string | null;
+  id?: string;
+  inspector?: string;
+  notes?: string;
 }
 
 export interface QACheckRequireReinspectionInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface QACheckReinspectInput {
-  [key: string]: unknown;
-  result?: string | null;
-  inspector?: string | null;
-  notes?: string | null;
+  id?: string;
+  result?: string;
+  inspector?: string;
+  notes?: string;
 }
 
 export interface QACorrectiveActionCreateInput {
-  [key: string]: unknown;
-  checkId?: string | null;
-  description?: string | null;
-  assignedTo?: string | null;
-  priority?: string | null;
-  dueDate?: string | null;
+  checkId?: string;
+  description?: string;
+  assignedTo?: string;
+  priority?: string;
+  dueDate?: string;
 }
 
 export interface QACorrectiveActionAssignInput {
-  [key: string]: unknown;
-  assignedTo?: string | null;
+  id?: string;
+  assignedTo?: string;
 }
 
 export interface QACorrectiveActionEscalateInput {
-  [key: string]: unknown;
-  escalatedTo?: string | null;
-  escalationReason?: string | null;
+  id?: string;
+  escalatedTo?: string;
+  escalationReason?: string;
 }
 
 export interface QACorrectiveActionMarkResolvedInput {
-  [key: string]: unknown;
-  resolutionNotes?: string | null;
+  id?: string;
+  resolutionNotes?: string;
 }
 
 export interface QACorrectiveActionDismissInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface QATemperatureLogLogInput {
-  [key: string]: unknown;
-  location?: string | null;
-  temperature?: number | null;
-  unit?: string | null;
-  equipment?: string | null;
-  recordedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  location?: string;
+  temperature?: number;
+  unit?: string;
+  equipment?: string;
+  recordedBy?: string;
+  notes?: string;
 }
 
 export interface RateLimitConfigCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  endpointPattern?: string | null;
-  windowMs?: number | null;
-  maxRequests?: number | null;
-  burstAllowance?: number | null;
-  priority?: number | null;
+  name?: string;
+  endpointPattern?: string;
+  windowMs?: number;
+  maxRequests?: number;
+  burstAllowance?: number;
+  priority?: number;
 }
 
 export interface RateLimitConfigUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  endpointPattern?: string | null;
-  windowMs?: number | null;
-  maxRequests?: number | null;
-  burstAllowance?: number | null;
-  priority?: number | null;
-  isActive?: boolean | null;
+  id?: string;
+  name?: string;
+  endpointPattern?: string;
+  windowMs?: number;
+  maxRequests?: number;
+  burstAllowance?: number;
+  priority?: number;
+  isActive?: boolean;
 }
 
 export interface RateLimitConfigSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface RateLimitConfigTurnOnInput {
+  id?: string;
+}
+
+export interface RateLimitConfigTurnOffInput {
+  id?: string;
 }
 
 export interface RecipeUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newCategory?: string | null;
-  newCuisineType?: string | null;
-  newDescription?: string | null;
-  newTags?: string[] | null;
+  id?: string;
+  newName?: string;
+  newCategory?: string;
+  newCuisineType?: string;
+  newDescription?: string;
+  newTags?: string[];
 }
 
 export interface RecipeDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface RecipeActivateInput {
+  id?: string;
 }
 
 export interface RecipeCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  category?: string | null;
-  cuisineType?: string | null;
-  description?: string | null;
-  tags?: string[] | null;
+  name?: string;
+  category?: string;
+  cuisineType?: string;
+  description?: string;
+  tags?: string[];
 }
 
 export interface RecipeVersionCreateInput {
-  [key: string]: unknown;
-  yieldQty?: number | null;
-  yieldUnit?: number | null;
-  prepTime?: number | null;
-  cookTime?: number | null;
-  restTime?: number | null;
-  difficulty?: number | null;
-  instructionsText?: string | null;
-  notesText?: string | null;
+  yieldQty?: number;
+  yieldUnit?: number;
+  prepTime?: number;
+  cookTime?: number;
+  restTime?: number;
+  difficulty?: number;
+  instructionsText?: string;
+  notesText?: string;
 }
 
 export interface RecipeVersionMarkPublishedInput {
-  [key: string]: unknown;
-  publishedBy?: string | null;
+  id?: string;
+  publishedBy?: string;
 }
 
 export interface RecipeVersionRetractInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface RecipeVersionApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface RecipeVersionRestoreInput {
-  [key: string]: unknown;
-  sourceId?: string | null;
-  newVersionNum?: number | null;
+  id?: string;
+  sourceId?: string;
+  newVersionNum?: number;
 }
 
 export interface RecipeVersionUpdateCostsInput {
-  [key: string]: unknown;
-  newTotalCost?: number | null;
-  newCostPerYield?: number | null;
+  id?: string;
+  newTotalCost?: number;
+  newCostPerYield?: number;
 }
 
 export interface RecipeIngredientUpdateQuantityInput {
-  [key: string]: unknown;
-  newQuantity?: number | null;
-  newUnit?: number | null;
+  id?: string;
+  newQuantity?: number;
+  newUnit?: number;
 }
 
 export interface RecipeIngredientUpdateWasteFactorInput {
-  [key: string]: unknown;
-  newWasteFactor?: number | null;
+  id?: string;
+  newWasteFactor?: number;
 }
 
 export interface RecipeIngredientCreateInput {
-  [key: string]: unknown;
-  recipeVersionId?: string | null;
-  ingredientId?: string | null;
-  quantity?: number | null;
-  unitId?: number | null;
-  sortOrder?: number | null;
-  preparationNotes?: string | null;
-  isOptional?: boolean | null;
+  recipeVersionId?: string;
+  ingredientId?: string;
+  quantity?: number;
+  unitId?: number;
+  sortOrder?: number;
+  preparationNotes?: string;
+  isOptional?: boolean;
 }
 
 export interface RecipeIngredientRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface RecipeStepCreateInput {
-  [key: string]: unknown;
-  recipeVersionId?: string | null;
-  stepNumber?: number | null;
-  instruction?: string | null;
-  durationMinutes?: number | null;
-  temperatureValue?: number | null;
-  temperatureUnit?: string | null;
-  equipmentNeeded?: string | null;
-  tips?: string | null;
-  videoUrl?: string | null;
-  imageUrl?: string | null;
+  recipeVersionId?: string;
+  stepNumber?: number;
+  instruction?: string;
+  durationMinutes?: number;
+  temperatureValue?: number;
+  temperatureUnit?: string;
+  equipmentNeeded?: string;
+  tips?: string;
+  videoUrl?: string;
+  imageUrl?: string;
 }
 
 export interface RecipeStepUpdateInstructionInput {
-  [key: string]: unknown;
-  newInstruction?: string | null;
-  newDurationMinutes?: number | null;
-  newTips?: string | null;
+  id?: string;
+  newInstruction?: string;
+  newDurationMinutes?: number;
+  newTips?: string;
 }
 
 export interface RecipeStepRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface RevenueRecognitionScheduleCreateInput {
-  [key: string]: unknown;
-  invoiceId?: string | null;
-  contractId?: string | null;
-  totalAmount?: number | null;
-  method?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  recognitionPeriod?: number | null;
-  description?: string | null;
-  notes?: string | null;
-  metadata?: string | null;
+  invoiceId?: string;
+  contractId?: string;
+  totalAmount?: number;
+  method?: string;
+  startDate?: string;
+  endDate?: string;
+  recognitionPeriod?: number;
+  description?: string;
+  notes?: string;
+  metadata?: string;
+}
+
+export interface RevenueRecognitionScheduleStartRecognitionInput {
+  id?: string;
 }
 
 export interface RevenueRecognitionScheduleRecognizeAmountInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  recognizedAt?: unknown | null;
+  id?: string;
+  amount?: number;
+  recognizedAt?: unknown;
+}
+
+export interface RevenueRecognitionScheduleCompleteIfFullyRecognizedInput {
+  id?: string;
 }
 
 export interface RevenueRecognitionScheduleRecognizeMilestoneInput {
-  [key: string]: unknown;
-  milestoneId?: string | null;
-  amount?: number | null;
+  id?: string;
+  milestoneId?: string;
+  amount?: number;
+}
+
+export interface RevenueRecognitionScheduleCompleteIfAllMilestonesInput {
+  id?: string;
 }
 
 export interface RevenueRecognitionScheduleRecognizePercentageInput {
-  [key: string]: unknown;
-  percentage?: number | null;
+  id?: string;
+  percentage?: number;
+}
+
+export interface RevenueRecognitionScheduleCompleteIfPercentageFullInput {
+  id?: string;
+}
+
+export interface RevenueRecognitionSchedulePauseInput {
+  id?: string;
+}
+
+export interface RevenueRecognitionScheduleResumeInput {
+  id?: string;
 }
 
 export interface RevenueRecognitionScheduleCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface RevenueRecognitionScheduleAdjustScheduleInput {
-  [key: string]: unknown;
-  newEndDate?: unknown | null;
-  newTotalAmount?: number | null;
-  description?: string | null;
-  notes?: string | null;
-  recognitionPeriod?: number | null;
+  id?: string;
+  newEndDate?: unknown;
+  newTotalAmount?: number;
+  description?: string;
+  notes?: string;
+  recognitionPeriod?: number;
 }
 
 export interface RevenueRecognitionScheduleReverseRecognitionInput {
-  [key: string]: unknown;
-  recognizedAmount?: number | null;
-  remainingAmount?: number | null;
+  id?: string;
+  recognizedAmount?: number;
+  remainingAmount?: number;
 }
 
 export interface RevenueRecognitionLineCreateInput {
-  [key: string]: unknown;
-  scheduleId?: string | null;
-  sequence?: number | null;
-  amount?: number | null;
-  dueDate?: string | null;
-  milestoneId?: string | null;
-  milestoneName?: string | null;
-  description?: string | null;
-  notes?: string | null;
+  scheduleId?: string;
+  sequence?: number;
+  amount?: number;
+  dueDate?: string;
+  milestoneId?: string;
+  milestoneName?: string;
+  description?: string;
+  notes?: string;
 }
 
 export interface RevenueRecognitionLineRecognizeInput {
-  [key: string]: unknown;
-  amount?: number | null;
-  recognizedAt?: unknown | null;
+  id?: string;
+  amount?: number;
+  recognizedAt?: unknown;
 }
 
 export interface RevenueRecognitionLineSkipInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface RevenueRecognitionLineCancelInput {
+  id?: string;
+}
+
+export interface RevenueRecognitionLineReverseInput {
+  id?: string;
 }
 
 export interface RolePolicyCreateInput {
-  [key: string]: unknown;
-  roleId?: string | null;
-  roleName?: string | null;
-  permissions?: string[] | null;
-  description?: string | null;
+  roleId?: string;
+  roleName?: string;
+  permissions?: string[];
+  description?: string;
 }
 
 export interface RolePolicyUpdateInput {
-  [key: string]: unknown;
-  roleName?: string | null;
-  permissions?: string[] | null;
-  description?: string | null;
-  isActive?: boolean | null;
+  id?: string;
+  roleName?: string;
+  permissions?: string[];
+  description?: string;
+  isActive?: boolean;
 }
 
 export interface RolePolicyGrantInput {
-  [key: string]: unknown;
-  permission?: string | null;
-  grantedBy?: string | null;
+  id?: string;
+  permission?: string;
+  grantedBy?: string;
 }
 
 export interface RolePolicyRevokeInput {
-  [key: string]: unknown;
-  permission?: string | null;
-  revokedBy?: string | null;
+  id?: string;
+  permission?: string;
+  revokedBy?: string;
 }
 
 export interface SampleDataSeedInput {
-  [key: string]: unknown;
-  requestedBy?: string | null;
+  id?: string;
+  requestedBy?: string;
 }
 
 export interface SampleDataClearInput {
-  [key: string]: unknown;
-  requestedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  requestedBy?: string;
+  reason?: string;
 }
 
 export interface SampleDataReseedInput {
-  [key: string]: unknown;
-  requestedBy?: string | null;
+  id?: string;
+  requestedBy?: string;
 }
 
 export interface ScheduleCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  scheduleDate?: string | null;
-  notes?: string | null;
+  locationId?: string;
+  scheduleDate?: string;
+  notes?: string;
 }
 
 export interface ScheduleUpdateInput {
-  [key: string]: unknown;
-  scheduleDate?: string | null;
-  locationId?: string | null;
-  notes?: string | null;
+  id?: string;
+  scheduleDate?: string;
+  locationId?: string;
+  notes?: string;
 }
 
 export interface ScheduleApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ScheduleReopenInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface ScheduleReleaseInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ScheduleCloseInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ScheduleShiftCreateInput {
-  [key: string]: unknown;
-  scheduleId?: string | null;
-  employeeId?: string | null;
-  shiftStart?: number | null;
-  shiftEnd?: number | null;
-  roleDuringShift?: string | null;
-  notes?: string | null;
+  scheduleId?: string;
+  employeeId?: string;
+  shiftStart?: number;
+  shiftEnd?: number;
+  roleDuringShift?: string;
+  notes?: string;
 }
 
 export interface ScheduleShiftUpdateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  locationId?: string | null;
-  shiftStart?: number | null;
-  shiftEnd?: number | null;
-  roleDuringShift?: string | null;
-  notes?: string | null;
+  id?: string;
+  employeeId?: string;
+  locationId?: string;
+  shiftStart?: number;
+  shiftEnd?: number;
+  roleDuringShift?: string;
+  notes?: string;
 }
 
 export interface ScheduleShiftOfferSwapInput {
-  [key: string]: unknown;
-  swapOfferedTo?: string | null;
+  id?: string;
+  swapOfferedTo?: string;
 }
 
 export interface ScheduleShiftAcceptSwapInput {
-  [key: string]: unknown;
-  acceptingEmployeeId?: string | null;
+  id?: string;
+  acceptingEmployeeId?: string;
+}
+
+export interface ScheduleShiftDeclineSwapInput {
+  id?: string;
+}
+
+export interface ScheduleShiftCancelSwapInput {
+  id?: string;
 }
 
 export interface ScheduleShiftRemoveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ShipmentCreateInput {
-  [key: string]: unknown;
-  shipmentNumber?: string | null;
-  supplierId?: string | null;
-  eventId?: string | null;
-  scheduledDate?: string | null;
-  carrier?: string | null;
-  shippingMethod?: string | null;
-  notes?: string | null;
+  shipmentNumber?: string;
+  supplierId?: string;
+  eventId?: string;
+  scheduledDate?: string;
+  carrier?: string;
+  shippingMethod?: string;
+  notes?: string;
 }
 
 export interface ShipmentUpdateInput {
-  [key: string]: unknown;
-  trackingNumber?: string | null;
-  carrier?: string | null;
-  shippingMethod?: string | null;
-  estimatedDeliveryDate?: string | null;
-  shippingCost?: number | null;
-  notes?: string | null;
+  id?: string;
+  trackingNumber?: string;
+  carrier?: string;
+  shippingMethod?: string;
+  estimatedDeliveryDate?: string;
+  shippingCost?: number;
+  notes?: string;
 }
 
 export interface ShipmentScheduleInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  scheduledDate?: string | null;
+  id?: string;
+  userId?: string;
+  scheduledDate?: string;
 }
 
 export interface ShipmentStartPreparingInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface ShipmentShipInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  trackingNumber?: string | null;
+  id?: string;
+  userId?: string;
+  trackingNumber?: string;
 }
 
 export interface ShipmentMarkDeliveredInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  receivedBy?: string | null;
-  signatureData?: string | null;
+  id?: string;
+  userId?: string;
+  receivedBy?: string;
+  signatureData?: string;
 }
 
 export interface ShipmentCancelInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface ShipmentItemCreateInput {
-  [key: string]: unknown;
-  shipmentId?: string | null;
-  itemId?: string | null;
-  quantityShipped?: number | null;
-  unitId?: number | null;
-  unitCost?: number | null;
-  lotNumber?: string | null;
-  expirationDate?: string | null;
+  shipmentId?: string;
+  itemId?: string;
+  quantityShipped?: number;
+  unitId?: number;
+  unitCost?: number;
+  lotNumber?: string;
+  expirationDate?: string;
 }
 
 export interface ShipmentItemUpdateReceivedInput {
-  [key: string]: unknown;
-  quantityReceived?: number | null;
-  quantityDamaged?: number | null;
-  condition?: string | null;
-  conditionNotes?: string | null;
-  userId?: string | null;
+  id?: string;
+  quantityReceived?: number;
+  quantityDamaged?: number;
+  condition?: string;
+  conditionNotes?: string;
+  userId?: string;
 }
 
 export interface ShipmentItemUpdateInput {
-  [key: string]: unknown;
-  quantityShipped?: number | null;
-  unitId?: number | null;
-  unitCost?: number | null;
-  condition?: string | null;
-  conditionNotes?: string | null;
-  lotNumber?: string | null;
-  expirationDate?: string | null;
+  id?: string;
+  quantityShipped?: number;
+  unitId?: number;
+  unitCost?: number;
+  condition?: string;
+  conditionNotes?: string;
+  lotNumber?: string;
+  expirationDate?: string;
 }
 
 export interface ShipmentItemSoftDeleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface SmsAutomationRuleCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  triggerType?: string | null;
-  triggerConfig?: string | null;
-  templateId?: string | null;
-  customMessage?: string | null;
-  recipientType?: string | null;
-  recipientConfig?: string | null;
-  isActive?: boolean | null;
-  priority?: number | null;
+  name?: string;
+  description?: string;
+  triggerType?: string;
+  triggerConfig?: string;
+  templateId?: string;
+  customMessage?: string;
+  recipientType?: string;
+  recipientConfig?: string;
+  isActive?: boolean;
+  priority?: number;
 }
 
 export interface SmsAutomationRuleUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  triggerConfig?: string | null;
-  templateId?: string | null;
-  customMessage?: string | null;
-  recipientType?: string | null;
-  recipientConfig?: string | null;
-  isActive?: boolean | null;
-  priority?: number | null;
+  id?: string;
+  name?: string;
+  description?: string;
+  triggerConfig?: string;
+  templateId?: string;
+  customMessage?: string;
+  recipientType?: string;
+  recipientConfig?: string;
+  isActive?: boolean;
+  priority?: number;
+}
+
+export interface SmsAutomationRuleActivateInput {
+  id?: string;
+}
+
+export interface SmsAutomationRuleDeactivateInput {
+  id?: string;
+}
+
+export interface SmsAutomationRuleSoftDeleteInput {
+  id?: string;
 }
 
 export interface TimecardApprovalCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  payrollPeriodId?: string | null;
-  notes?: string | null;
+  employeeId?: string;
+  payrollPeriodId?: string;
+  notes?: string;
 }
 
 export interface TimecardApprovalApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  approvedBy?: string;
+  notes?: string;
 }
 
 export interface TimecardApprovalRejectInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
-  notes?: string | null;
+  id?: string;
+  approvedBy?: string;
+  notes?: string;
 }
 
 export interface TimecardApprovalBulkApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface PayrollLineItemCreateInput {
-  [key: string]: unknown;
-  payrollRunId?: string | null;
-  employeeId?: string | null;
-  grossPay?: number | null;
-  netPay?: number | null;
-  totalDeductions?: number | null;
-  hoursWorked?: number | null;
-  hoursRegular?: number | null;
-  hoursOvertime?: number | null;
-  rateRegular?: number | null;
-  rateOvertime?: number | null;
+  payrollRunId?: string;
+  employeeId?: string;
+  grossPay?: number;
+  netPay?: number;
+  totalDeductions?: number;
+  hoursWorked?: number;
+  hoursRegular?: number;
+  hoursOvertime?: number;
+  rateRegular?: number;
+  rateOvertime?: number;
 }
 
 export interface PayrollLineItemUpdateInput {
-  [key: string]: unknown;
-  grossPay?: number | null;
-  netPay?: number | null;
-  totalDeductions?: number | null;
-  hoursWorked?: number | null;
-  hoursRegular?: number | null;
-  hoursOvertime?: number | null;
-  rateRegular?: number | null;
-  rateOvertime?: number | null;
+  id?: string;
+  grossPay?: number;
+  netPay?: number;
+  totalDeductions?: number;
+  hoursWorked?: number;
+  hoursRegular?: number;
+  hoursOvertime?: number;
+  rateRegular?: number;
+  rateOvertime?: number;
 }
 
 export interface TipPoolCreateInput {
-  [key: string]: unknown;
-  periodStart?: number | null;
-  periodEnd?: number | null;
-  eventId?: string | null;
-  totalTips?: number | null;
+  periodStart?: number;
+  periodEnd?: number;
+  eventId?: string;
+  totalTips?: number;
 }
 
 export interface TipPoolAllocateInput {
-  [key: string]: unknown;
-  totalTips?: number | null;
+  id?: string;
+  totalTips?: number;
 }
 
 export interface TipPoolDistributeInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  amount?: number | null;
-  distributedBy?: string | null;
+  id?: string;
+  employeeId?: string;
+  amount?: number;
+  distributedBy?: string;
 }
 
 export interface TipPoolFinalizeDistributionInput {
-  [key: string]: unknown;
-  distributedBy?: string | null;
+  id?: string;
+  distributedBy?: string;
+}
+
+export interface TipPoolCloseInput {
+  id?: string;
 }
 
 export interface DisciplinaryActionCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  actionType?: string | null;
-  reason?: string | null;
-  severity?: string | null;
-  issuedBy?: string | null;
+  employeeId?: string;
+  actionType?: string;
+  reason?: string;
+  severity?: string;
+  issuedBy?: string;
 }
 
 export interface DisciplinaryActionAcknowledgeInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
+  id?: string;
+  employeeId?: string;
 }
 
 export interface DisciplinaryActionEscalateInput {
-  [key: string]: unknown;
-  escalatedTo?: string | null;
-  escalationReason?: string | null;
+  id?: string;
+  escalatedTo?: string;
+  escalationReason?: string;
 }
 
 export interface DisciplinaryActionCloseInput {
-  [key: string]: unknown;
-  issuedBy?: string | null;
+  id?: string;
+  issuedBy?: string;
 }
 
 export interface ActionMilestoneCreateInput {
-  [key: string]: unknown;
-  disciplinaryActionId?: string | null;
-  title?: string | null;
-  dueAt?: string | null;
+  disciplinaryActionId?: string;
+  title?: string;
+  dueAt?: string;
+}
+
+export interface ActionMilestoneCompleteInput {
+  id?: string;
+}
+
+export interface ActionMilestoneMissInput {
+  id?: string;
 }
 
 export interface PerformanceReviewCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  reviewerId?: string | null;
-  reviewPeriod?: string | null;
+  employeeId?: string;
+  reviewerId?: string;
+  reviewPeriod?: string;
 }
 
 export interface PerformanceReviewSubmitInput {
-  [key: string]: unknown;
-  overallRating?: number | null;
+  id?: string;
+  overallRating?: number;
+}
+
+export interface PerformanceReviewSignOffInput {
+  id?: string;
+}
+
+export interface PerformanceReviewAcknowledgeInput {
+  id?: string;
 }
 
 export interface TrainingCompletionCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  trainingModuleId?: string | null;
-  completedAt?: string | null;
-  score?: number | null;
-  passed?: boolean | null;
+  employeeId?: string;
+  trainingModuleId?: string;
+  completedAt?: string;
+  score?: number;
+  passed?: boolean;
 }
 
 export interface OnboardingTaskCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  sortOrder?: number | null;
-  isRequired?: boolean | null;
+  title?: string;
+  description?: string;
+  sortOrder?: number;
+  isRequired?: boolean;
 }
 
 export interface OnboardingTaskUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  sortOrder?: number | null;
-  isRequired?: boolean | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  sortOrder?: number;
+  isRequired?: boolean;
+}
+
+export interface OnboardingTaskRemoveInput {
+  id?: string;
 }
 
 export interface OnboardingCompletionCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  onboardingTaskId?: string | null;
+  employeeId?: string;
+  onboardingTaskId?: string;
+}
+
+export interface OnboardingCompletionCompleteInput {
+  id?: string;
 }
 
 export interface OpenShiftCreateInput {
-  [key: string]: unknown;
-  scheduleId?: string | null;
-  role?: string | null;
-  shiftStart?: number | null;
-  shiftEnd?: number | null;
+  scheduleId?: string;
+  role?: string;
+  shiftStart?: number;
+  shiftEnd?: number;
 }
 
 export interface OpenShiftClaimInput {
-  [key: string]: unknown;
-  claimedBy?: string | null;
+  id?: string;
+  claimedBy?: string;
+}
+
+export interface OpenShiftCancelInput {
+  id?: string;
 }
 
 export interface DeliveryRouteCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  driverId?: string | null;
-  routeDate?: string | null;
-  totalStops?: number | null;
-  distanceMiles?: number | null;
+  name?: string;
+  driverId?: string;
+  routeDate?: string;
+  totalStops?: number;
+  distanceMiles?: number;
+}
+
+export interface DeliveryRouteStartInput {
+  id?: string;
+}
+
+export interface DeliveryRouteCompleteInput {
+  id?: string;
 }
 
 export interface DeliveryRouteAssignDriverInput {
-  [key: string]: unknown;
-  driverId?: string | null;
+  id?: string;
+  driverId?: string;
 }
 
 export interface RouteStopCreateInput {
-  [key: string]: unknown;
-  deliveryRouteId?: string | null;
-  eventId?: string | null;
-  address?: string | null;
-  sequence?: number | null;
-  scheduledAt?: string | null;
+  deliveryRouteId?: string;
+  eventId?: string;
+  address?: string;
+  sequence?: number;
+  scheduledAt?: string;
+}
+
+export interface RouteStopMarkArrivedInput {
+  id?: string;
+}
+
+export interface RouteStopCompleteInput {
+  id?: string;
 }
 
 export interface RouteStopReorderInput {
-  [key: string]: unknown;
-  sequence?: number | null;
+  id?: string;
+  sequence?: number;
 }
 
 export interface PaymentRefundAttemptCreateInput {
-  [key: string]: unknown;
-  paymentId?: string | null;
-  amount?: number | null;
-  reason?: string | null;
+  paymentId?: string;
+  amount?: number;
+  reason?: string;
+}
+
+export interface PaymentRefundAttemptMarkSucceededInput {
+  id?: string;
+}
+
+export interface PaymentRefundAttemptMarkFailedInput {
+  id?: string;
 }
 
 export interface PreventiveMaintenanceScheduleCreateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  areaId?: string | null;
-  equipmentId?: string | null;
-  description?: string | null;
-  frequency?: string | null;
-  intervalDays?: number | null;
-  nextDueAt?: string | null;
-  assignedTo?: string | null;
-  estimatedHours?: number | null;
-  estimatedCost?: number | null;
+  title?: string;
+  areaId?: string;
+  equipmentId?: string;
+  description?: string;
+  frequency?: string;
+  intervalDays?: number;
+  nextDueAt?: string;
+  assignedTo?: string;
+  estimatedHours?: number;
+  estimatedCost?: number;
 }
 
 export interface PreventiveMaintenanceScheduleUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  frequency?: string | null;
-  intervalDays?: number | null;
-  nextDueAt?: string | null;
-  assignedTo?: string | null;
-  estimatedHours?: number | null;
-  estimatedCost?: number | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  frequency?: string;
+  intervalDays?: number;
+  nextDueAt?: string;
+  assignedTo?: string;
+  estimatedHours?: number;
+  estimatedCost?: number;
 }
 
 export interface PreventiveMaintenanceScheduleCompleteInput {
-  [key: string]: unknown;
-  nextDueAt?: string | null;
+  id?: string;
+  nextDueAt?: string;
+}
+
+export interface PreventiveMaintenanceScheduleDeactivateInput {
+  id?: string;
 }
 
 export interface StaffMemberCreateInput {
-  [key: string]: unknown;
-  displayName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  role?: string | null;
+  displayName?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
 }
 
 export interface StaffMemberUpdateProfileInput {
-  [key: string]: unknown;
-  displayName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  role?: string | null;
+  id?: string;
+  displayName?: string;
+  email?: string;
+  phone?: string;
+  role?: string;
 }
 
 export interface StaffMemberDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface StaffMemberReactivateInput {
+  id?: string;
 }
 
 export interface StaffMemberChangeRoleInput {
-  [key: string]: unknown;
-  role?: string | null;
-  changedBy?: string | null;
+  id?: string;
+  role?: string;
+  changedBy?: string;
 }
 
 export interface StaffPerformanceCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  reviewType?: string | null;
-  reviewerId?: string | null;
-  periodStart?: number | null;
-  periodEnd?: number | null;
-  strengths?: string | null;
-  improvements?: string | null;
-  goals?: string | null;
-  notes?: string | null;
+  employeeId?: string;
+  reviewType?: string;
+  reviewerId?: string;
+  periodStart?: number;
+  periodEnd?: number;
+  strengths?: string;
+  improvements?: string;
+  goals?: string;
+  notes?: string;
 }
 
 export interface StaffPerformanceUpdateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  reviewType?: string | null;
-  reviewerId?: string | null;
-  periodStart?: number | null;
-  periodEnd?: number | null;
-  strengths?: string | null;
-  improvements?: string | null;
-  goals?: string | null;
-  notes?: string | null;
+  id?: string;
+  employeeId?: string;
+  reviewType?: string;
+  reviewerId?: string;
+  periodStart?: number;
+  periodEnd?: number;
+  strengths?: string;
+  improvements?: string;
+  goals?: string;
+  notes?: string;
+}
+
+export interface StaffPerformanceSubmitForReviewInput {
+  id?: string;
 }
 
 export interface StaffPerformanceSendBackToDraftInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface StaffPerformanceCompleteInput {
-  [key: string]: unknown;
-  rating?: number | null;
+  id?: string;
+  rating?: number;
 }
 
 export interface StaffPerformanceAcknowledgeInput {
-  [key: string]: unknown;
-  acknowledgementNotes?: string | null;
+  id?: string;
+  acknowledgementNotes?: string;
+}
+
+export interface StaffPerformanceRemoveInput {
+  id?: string;
 }
 
 export interface StationCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  name?: string | null;
-  stationType?: string | null;
-  capacitySimultaneousTasks?: number | null;
-  equipmentList?: string | null;
-  notes?: string | null;
+  locationId?: string;
+  name?: string;
+  stationType?: string;
+  capacitySimultaneousTasks?: number;
+  equipmentList?: string;
+  notes?: string;
 }
 
 export interface StationAssignTaskInput {
-  [key: string]: unknown;
-  taskId?: string | null;
-  taskName?: string | null;
+  id?: string;
+  taskId?: string;
+  taskName?: string;
 }
 
 export interface StationRemoveTaskInput {
-  [key: string]: unknown;
-  taskId?: string | null;
-  taskName?: string | null;
+  id?: string;
+  taskId?: string;
+  taskName?: string;
 }
 
 export interface StationUpdateCapacityInput {
-  [key: string]: unknown;
-  newCapacity?: number | null;
-  userId?: string | null;
+  id?: string;
+  newCapacity?: number;
+  userId?: string;
 }
 
 export interface StationDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface StationActivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface StationUpdateEquipmentInput {
-  [key: string]: unknown;
-  equipmentList?: string | null;
-  userId?: string | null;
+  id?: string;
+  equipmentList?: string;
+  userId?: string;
 }
 
 export interface StationStartMaintenanceInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface StationEndMaintenanceInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimeEntryClockInInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  locationId?: string | null;
-  shiftId?: string | null;
-  notes?: string | null;
+  id?: string;
+  employeeId?: string;
+  locationId?: string;
+  shiftId?: string;
+  notes?: string;
 }
 
 export interface TimeEntryClockOutInput {
-  [key: string]: unknown;
-  breakMinutes?: number | null;
-  notes?: string | null;
+  id?: string;
+  breakMinutes?: number;
+  notes?: string;
 }
 
 export interface TimeEntryAddEntryInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  locationId?: string | null;
-  shiftId?: string | null;
-  clockIn?: number | null;
-  clockOut?: number | null;
-  breakMinutes?: number | null;
-  notes?: string | null;
+  id?: string;
+  employeeId?: string;
+  locationId?: string;
+  shiftId?: string;
+  clockIn?: number;
+  clockOut?: number;
+  breakMinutes?: number;
+  notes?: string;
 }
 
 export interface TimeEntrySoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface TimecardEditRequestCreateInput {
-  [key: string]: unknown;
-  timeEntryId?: string | null;
-  employeeId?: string | null;
-  requestedClockIn?: number | null;
-  requestedClockOut?: number | null;
-  requestedBreakMinutes?: number | null;
-  reason?: string | null;
+  timeEntryId?: string;
+  employeeId?: string;
+  requestedClockIn?: number;
+  requestedClockOut?: number;
+  requestedBreakMinutes?: number;
+  reason?: string;
 }
 
 export interface TimecardEditRequestApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface TimecardEditRequestRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface TimeOffRequestCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  reason?: string | null;
-  requestType?: string | null;
+  employeeId?: string;
+  startDate?: string;
+  endDate?: string;
+  reason?: string;
+  requestType?: string;
 }
 
 export interface TimeOffRequestAttachBalanceInput {
-  [key: string]: unknown;
-  balanceSnapshot?: number | null;
-  balanceUnit?: string | null;
+  id?: string;
+  balanceSnapshot?: number;
+  balanceUnit?: string;
 }
 
 export interface TimeOffRequestApproveInput {
-  [key: string]: unknown;
-  processedBy?: string | null;
+  id?: string;
+  processedBy?: string;
 }
 
 export interface TimeOffRequestRejectInput {
-  [key: string]: unknown;
-  processedBy?: string | null;
-  rejectionReason?: string | null;
+  id?: string;
+  processedBy?: string;
+  rejectionReason?: string;
 }
 
 export interface TimeOffRequestReconsiderInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface TimeOffRequestCancelInput {
+  id?: string;
+}
+
+export interface TimeOffRequestSoftDeleteInput {
+  id?: string;
 }
 
 export interface TrainingModuleCreateInput {
-  [key: string]: unknown;
-  id?: string | null;
-  code?: string | null;
-  title?: string | null;
-  description?: string | null;
-  contentUrl?: string | null;
-  contentType?: string | null;
-  durationMinutes?: number | null;
-  category?: string | null;
-  isRequired?: boolean | null;
-  passThresholdPercent?: number | null;
-  maxAttempts?: number | null;
-  requiredRole?: string | null;
-  createdBy?: string | null;
-  publishImmediately?: boolean | null;
+  id?: string;
+  code?: string;
+  title?: string;
+  description?: string;
+  contentUrl?: string;
+  contentType?: string;
+  durationMinutes?: number;
+  category?: string;
+  isRequired?: boolean;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  requiredRole?: string;
+  createdBy?: string;
+  publishImmediately?: boolean;
 }
 
 export interface TrainingModuleUpdateInput {
-  [key: string]: unknown;
-  title?: string | null;
-  description?: string | null;
-  contentUrl?: string | null;
-  contentType?: string | null;
-  durationMinutes?: number | null;
-  category?: string | null;
-  isRequired?: boolean | null;
-  passThresholdPercent?: number | null;
-  maxAttempts?: number | null;
-  requiredRole?: string | null;
+  id?: string;
+  title?: string;
+  description?: string;
+  contentUrl?: string;
+  contentType?: string;
+  durationMinutes?: number;
+  category?: string;
+  isRequired?: boolean;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  requiredRole?: string;
+}
+
+export interface TrainingModuleMarkPublishedInput {
+  id?: string;
 }
 
 export interface TrainingModuleCreateVersionInput {
-  [key: string]: unknown;
-  changeNotes?: string | null;
+  id?: string;
+  changeNotes?: string;
 }
 
 export interface TrainingModuleArchiveInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface TrainingModuleUnarchiveInput {
+  id?: string;
+}
+
+export interface TrainingModuleSoftDeleteInput {
+  id?: string;
 }
 
 export interface TrainingQuestionCreateInput {
-  [key: string]: unknown;
-  id?: string | null;
-  moduleId?: string | null;
-  code?: string | null;
-  sectionTitle?: string | null;
-  displayOrder?: number | null;
-  prompt?: string | null;
-  optionA?: string | null;
-  optionB?: string | null;
-  optionC?: string | null;
-  optionD?: string | null;
-  correctOptionKey?: string | null;
-  explanation?: string | null;
-  whyItMatters?: string | null;
+  id?: string;
+  moduleId?: string;
+  code?: string;
+  sectionTitle?: string;
+  displayOrder?: number;
+  prompt?: string;
+  optionA?: string;
+  optionB?: string;
+  optionC?: string;
+  optionD?: string;
+  correctOptionKey?: string;
+  explanation?: string;
+  whyItMatters?: string;
+}
+
+export interface TrainingQuestionDeactivateInput {
+  id?: string;
 }
 
 export interface TrainingAssignmentCreateInput {
-  [key: string]: unknown;
-  id?: string | null;
-  moduleId?: string | null;
-  moduleCode?: string | null;
-  moduleTitle?: string | null;
-  staffMemberId?: string | null;
-  staffRole?: string | null;
-  passThresholdPercent?: number | null;
-  maxAttempts?: number | null;
-  firstShiftAt?: string | null;
-  dueAt?: string | null;
-  dueDateReviewNeeded?: boolean | null;
+  id?: string;
+  moduleId?: string;
+  moduleCode?: string;
+  moduleTitle?: string;
+  staffMemberId?: string;
+  staffRole?: string;
+  passThresholdPercent?: number;
+  maxAttempts?: number;
+  firstShiftAt?: string;
+  dueAt?: string;
+  dueDateReviewNeeded?: boolean;
 }
 
 export interface TrainingAssignmentStartInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
+  id?: string;
+  assignmentId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
 }
 
 export interface TrainingAssignmentSubmitPassingAttemptInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  attemptId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  scorePercent?: number | null;
-  answersJson?: string | null;
+  id?: string;
+  assignmentId?: string;
+  attemptId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  scorePercent?: number;
+  answersJson?: string;
 }
 
 export interface TrainingAssignmentSubmitFailedAttemptInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  attemptId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  scorePercent?: number | null;
-  answersJson?: string | null;
+  id?: string;
+  assignmentId?: string;
+  attemptId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  scorePercent?: number;
+  answersJson?: string;
 }
 
 export interface TrainingAssignmentSubmitFinalFailedAttemptInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  attemptId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  scorePercent?: number | null;
-  answersJson?: string | null;
+  id?: string;
+  assignmentId?: string;
+  attemptId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  scorePercent?: number;
+  answersJson?: string;
 }
 
 export interface TrainingAssignmentApplyFirstShiftDueDateInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  firstShiftAt?: string | null;
-  dueAt?: string | null;
+  id?: string;
+  assignmentId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  firstShiftAt?: string;
+  dueAt?: string;
 }
 
 export interface TrainingAssignmentMarkOverdueInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  referenceTime?: string | null;
+  id?: string;
+  assignmentId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  referenceTime?: string;
 }
 
 export interface TrainingAssignmentWaiveInput {
-  [key: string]: unknown;
-  assignmentId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  reason?: string | null;
-  approvedBy?: string | null;
+  id?: string;
+  assignmentId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  reason?: string;
+  approvedBy?: string;
 }
 
 export interface TrainingAttemptCreateInput {
-  [key: string]: unknown;
-  id?: string | null;
-  assignmentId?: string | null;
-  moduleId?: string | null;
-  staffMemberId?: string | null;
-  attemptNumber?: number | null;
-  scorePercent?: number | null;
-  passThresholdPercent?: number | null;
-  passed?: boolean | null;
-  managerReviewRequired?: boolean | null;
-  answersJson?: string | null;
+  id?: string;
+  assignmentId?: string;
+  moduleId?: string;
+  staffMemberId?: string;
+  attemptNumber?: number;
+  scorePercent?: number;
+  passThresholdPercent?: number;
+  passed?: boolean;
+  managerReviewRequired?: boolean;
+  answersJson?: string;
 }
 
 export interface StaffTrainingSignalRecordSchedulabilityGrantedInput {
-  [key: string]: unknown;
-  id?: string | null;
-  staffMemberId?: string | null;
-  moduleId?: string | null;
-  assignmentId?: string | null;
-  reason?: string | null;
+  id?: string;
+  staffMemberId?: string;
+  moduleId?: string;
+  assignmentId?: string;
+  reason?: string;
 }
 
 export interface StaffTrainingSignalRecordWaiverLoggedInput {
-  [key: string]: unknown;
-  id?: string | null;
-  staffMemberId?: string | null;
-  moduleId?: string | null;
-  assignmentId?: string | null;
-  reason?: string | null;
+  id?: string;
+  staffMemberId?: string;
+  moduleId?: string;
+  assignmentId?: string;
+  reason?: string;
 }
 
 export interface UserCreateInput {
-  [key: string]: unknown;
-  email?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  role?: string | null;
-  phone?: string | null;
-  employmentType?: string | null;
-  hourlyRate?: number | null;
-  salaryAnnual?: number | null;
-  hireDate?: string | null;
-  employeeNumber?: string | null;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  phone?: string;
+  employmentType?: string;
+  hourlyRate?: number;
+  salaryAnnual?: number;
+  hireDate?: string;
+  employeeNumber?: string;
 }
 
 export interface UserUpdateInput {
-  [key: string]: unknown;
-  email?: string | null;
-  firstName?: string | null;
-  lastName?: string | null;
-  phone?: string | null;
-  employmentType?: string | null;
-  hourlyRate?: number | null;
-  salaryAnnual?: number | null;
-  avatarUrl?: string | null;
+  id?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  employmentType?: string;
+  hourlyRate?: number;
+  salaryAnnual?: number;
+  avatarUrl?: string;
 }
 
 export interface UserDeactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface UserTerminateInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
-  terminationDate?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
+  terminationDate?: string;
 }
 
 export interface UserUpdateRoleInput {
-  [key: string]: unknown;
-  newRole?: string | null;
-  userId?: string | null;
+  id?: string;
+  newRole?: string;
+  userId?: string;
 }
 
 export interface UserReactivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface UserSoftDeleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface VendorCatalogCreateInput {
-  [key: string]: unknown;
-  supplierId?: string | null;
-  itemNumber?: string | null;
-  itemName?: string | null;
-  description?: string | null;
-  category?: string | null;
-  baseUnitCost?: number | null;
-  currency?: string | null;
-  unitOfMeasure?: string | null;
-  leadTimeDays?: number | null;
-  leadTimeMinDays?: number | null;
-  leadTimeMaxDays?: number | null;
-  minimumOrderQuantity?: number | null;
-  orderMultiple?: number | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
-  supplierSku?: string | null;
-  notes?: string | null;
-  tags?: string | null;
+  supplierId?: string;
+  itemNumber?: string;
+  itemName?: string;
+  description?: string;
+  category?: string;
+  baseUnitCost?: number;
+  currency?: string;
+  unitOfMeasure?: string;
+  leadTimeDays?: number;
+  leadTimeMinDays?: number;
+  leadTimeMaxDays?: number;
+  minimumOrderQuantity?: number;
+  orderMultiple?: number;
+  effectiveFrom?: number;
+  effectiveTo?: number;
+  supplierSku?: string;
+  notes?: string;
+  tags?: string;
 }
 
 export interface VendorCatalogUpdateInput {
-  [key: string]: unknown;
-  supplierId?: string | null;
-  itemNumber?: string | null;
-  itemName?: string | null;
-  description?: string | null;
-  category?: string | null;
-  baseUnitCost?: number | null;
-  currency?: string | null;
-  unitOfMeasure?: string | null;
-  leadTimeDays?: number | null;
-  leadTimeMinDays?: number | null;
-  leadTimeMaxDays?: number | null;
-  minimumOrderQuantity?: number | null;
-  orderMultiple?: number | null;
-  isActive?: boolean | null;
-  effectiveFrom?: number | null;
-  effectiveTo?: number | null;
-  supplierSku?: string | null;
-  notes?: string | null;
-  tags?: string | null;
-  lastCostUpdate?: number | null;
+  id?: string;
+  supplierId?: string;
+  itemNumber?: string;
+  itemName?: string;
+  description?: string;
+  category?: string;
+  baseUnitCost?: number;
+  currency?: string;
+  unitOfMeasure?: string;
+  leadTimeDays?: number;
+  leadTimeMinDays?: number;
+  leadTimeMaxDays?: number;
+  minimumOrderQuantity?: number;
+  orderMultiple?: number;
+  isActive?: boolean;
+  effectiveFrom?: number;
+  effectiveTo?: number;
+  supplierSku?: string;
+  notes?: string;
+  tags?: string;
+  lastCostUpdate?: number;
 }
 
 export interface VendorCatalogUpdatePriceInput {
-  [key: string]: unknown;
-  newBaseUnitCost?: number | null;
-  effectiveFrom?: number | null;
-  reason?: string | null;
+  id?: string;
+  newBaseUnitCost?: number;
+  effectiveFrom?: number;
+  reason?: string;
 }
 
 export interface VendorCatalogDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VendorCatalogReactivateInput {
-  [key: string]: unknown;
-  reactivatedBy?: string | null;
+  id?: string;
+  reactivatedBy?: string;
 }
 
 export interface VendorCatalogSoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VendorContractCreateInput {
-  [key: string]: unknown;
-  contractNumber?: string | null;
-  vendorId?: string | null;
-  vendorName?: string | null;
-  contractType?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-  autoRenew?: boolean | null;
-  paymentTerms?: string | null;
-  deliveryTerms?: string | null;
-  minimumOrderQuantity?: number | null;
-  annualSpendCommitment?: number | null;
-  currencyCode?: string | null;
-  contractUrl?: string | null;
-  notes?: string | null;
+  contractNumber?: string;
+  vendorId?: string;
+  vendorName?: string;
+  contractType?: string;
+  startDate?: string;
+  endDate?: string;
+  autoRenew?: boolean;
+  paymentTerms?: string;
+  deliveryTerms?: string;
+  minimumOrderQuantity?: number;
+  annualSpendCommitment?: number;
+  currencyCode?: string;
+  contractUrl?: string;
+  notes?: string;
 }
 
 export interface VendorContractUpdateInput {
-  [key: string]: unknown;
-  endDate?: string | null;
-  autoRenew?: boolean | null;
-  renewalTermDays?: number | null;
-  paymentTerms?: string | null;
-  deliveryTerms?: string | null;
-  minimumOrderQuantity?: number | null;
-  annualSpendCommitment?: number | null;
-  contractUrl?: string | null;
-  notes?: string | null;
+  id?: string;
+  endDate?: string;
+  autoRenew?: boolean;
+  renewalTermDays?: number;
+  paymentTerms?: string;
+  deliveryTerms?: string;
+  minimumOrderQuantity?: number;
+  annualSpendCommitment?: number;
+  contractUrl?: string;
+  notes?: string;
 }
 
 export interface VendorContractSubmitInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface VendorContractApproveInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface VendorContractRejectInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface VendorContractActivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface VendorContractTerminateInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  reason?: string | null;
+  id?: string;
+  userId?: string;
+  reason?: string;
 }
 
 export interface VendorContractRenewInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  newEndDate?: string | null;
+  id?: string;
+  userId?: string;
+  newEndDate?: string;
 }
 
 export interface VendorContractUpdateComplianceInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  complianceScore?: number | null;
-  slaBreachCount?: number | null;
-  onTimeDeliveryRate?: number | null;
-  qualityRating?: number | null;
+  id?: string;
+  userId?: string;
+  complianceScore?: number;
+  slaBreachCount?: number;
+  onTimeDeliveryRate?: number;
+  qualityRating?: number;
 }
 
 export interface VendorContractRecordSlaBreachInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  breachType?: string | null;
-  description?: string | null;
+  id?: string;
+  userId?: string;
+  breachType?: string;
+  description?: string;
 }
 
 export interface VendorCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  type?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  website?: string | null;
-  address?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zip?: string | null;
-  taxId?: string | null;
-  paymentTerms?: string | null;
-  notes?: string | null;
+  name?: string;
+  type?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  notes?: string;
 }
 
 export interface VendorRemoveInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
 }
 
 export interface VendorApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface VendorSuspendInput {
-  [key: string]: unknown;
-  suspendedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  suspendedBy?: string;
+  reason?: string;
 }
 
 export interface VendorBlacklistInput {
-  [key: string]: unknown;
-  blacklistedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  blacklistedBy?: string;
+  reason?: string;
 }
 
 export interface VendorUpdateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  type?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  website?: string | null;
-  address?: string | null;
-  city?: string | null;
-  state?: string | null;
-  zip?: string | null;
-  taxId?: string | null;
-  paymentTerms?: string | null;
-  notes?: string | null;
+  id?: string;
+  name?: string;
+  type?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  notes?: string;
 }
 
 export interface VendorAddContactInput {
-  [key: string]: unknown;
-  name?: string | null;
-  role?: string | null;
-  email?: string | null;
-  phone?: string | null;
+  id?: string;
+  name?: string;
+  role?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface VendorRateInput {
-  [key: string]: unknown;
-  score?: number | null;
-  review?: string | null;
+  id?: string;
+  score?: number;
+  review?: string;
 }
 
 export interface VersionedEntityRegisterInput {
-  [key: string]: unknown;
-  entityType?: string | null;
-  entityId?: string | null;
-  entityName?: string | null;
-  initialSnapshot?: string | null;
+  id?: string;
+  entityType?: string;
+  entityId?: string;
+  entityName?: string;
+  initialSnapshot?: string;
 }
 
 export interface VersionedEntityLockInput {
-  [key: string]: unknown;
-  reason?: string | null;
+  id?: string;
+  reason?: string;
+}
+
+export interface VersionedEntityUnlockInput {
+  id?: string;
 }
 
 export interface VersionedEntityUpdateNameInput {
-  [key: string]: unknown;
-  newName?: string | null;
+  id?: string;
+  newName?: string;
 }
 
 export interface EntityVersionCreateInput {
-  [key: string]: unknown;
-  versionedEntityId?: string | null;
-  versionNumber?: number | null;
-  changeType?: string | null;
-  snapshot?: string | null;
-  reason?: string | null;
-  summary?: string | null;
-  userId?: string | null;
+  versionedEntityId?: string;
+  versionNumber?: number;
+  changeType?: string;
+  snapshot?: string;
+  reason?: string;
+  summary?: string;
+  userId?: string;
 }
 
 export interface EntityVersionApproveInput {
-  [key: string]: unknown;
-  approverId?: string | null;
-  comments?: string | null;
+  id?: string;
+  approverId?: string;
+  comments?: string;
 }
 
 export interface EntityVersionRejectInput {
-  [key: string]: unknown;
-  reviewerId?: string | null;
-  reason?: string | null;
+  id?: string;
+  reviewerId?: string;
+  reason?: string;
 }
 
 export interface EntityVersionRestoreInput {
-  [key: string]: unknown;
-  newVersionNumber?: number | null;
-  restorerId?: string | null;
+  id?: string;
+  newVersionNumber?: number;
+  restorerId?: string;
 }
 
 export interface VersionApprovalCreateInput {
-  [key: string]: unknown;
-  entityVersionId?: string | null;
-  approverId?: string | null;
+  entityVersionId?: string;
+  approverId?: string;
 }
 
 export interface VersionApprovalApproveInput {
-  [key: string]: unknown;
-  newComments?: string | null;
+  id?: string;
+  newComments?: string;
 }
 
 export interface VersionApprovalRejectInput {
-  [key: string]: unknown;
-  rejectionReason?: string | null;
+  id?: string;
+  rejectionReason?: string;
+}
+
+export interface VersionApprovalCancelInput {
+  id?: string;
 }
 
 export interface WasteEntryCreateInput {
-  [key: string]: unknown;
-  inventoryItemId?: string | null;
-  reasonId?: number | null;
-  quantity?: number | null;
-  unitId?: number | null;
-  eventId?: string | null;
-  loggedBy?: string | null;
-  unitCost?: number | null;
-  notes?: string | null;
+  inventoryItemId?: string;
+  reasonId?: number;
+  quantity?: number;
+  unitId?: number;
+  eventId?: string;
+  loggedBy?: string;
+  unitCost?: number;
+  notes?: string;
 }
 
 export interface WasteEntryApproveInput {
-  [key: string]: unknown;
-  approvedBy?: string | null;
+  id?: string;
+  approvedBy?: string;
 }
 
 export interface WasteEntryVoidEntryInput {
-  [key: string]: unknown;
-  voidedBy?: string | null;
-  reason?: string | null;
+  id?: string;
+  voidedBy?: string;
+  reason?: string;
 }
 
 export interface WasteEntryUpdateInput {
-  [key: string]: unknown;
-  quantity?: number | null;
-  unitId?: number | null;
-  locationId?: string | null;
-  notes?: string | null;
-  unitCost?: number | null;
+  id?: string;
+  quantity?: number;
+  unitId?: number;
+  locationId?: string;
+  notes?: string;
+  unitCost?: number;
 }
 
 export interface WasteEntrySoftDeleteInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface WorkOrderCreateInput {
-  [key: string]: unknown;
-  equipmentId?: string | null;
-  equipmentName?: string | null;
-  title?: string | null;
-  type?: string | null;
-  priority?: string | null;
-  description?: string | null;
-  scheduledDate?: string | null;
+  equipmentId?: string;
+  equipmentName?: string;
+  title?: string;
+  type?: string;
+  priority?: string;
+  description?: string;
+  scheduledDate?: string;
 }
 
 export interface WorkOrderAssignInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  scheduledDate?: string | null;
+  id?: string;
+  userId?: string;
+  scheduledDate?: string;
 }
 
 export interface WorkOrderStartInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface WorkOrderCompleteInput {
-  [key: string]: unknown;
-  userId?: string | null;
-  notes?: string | null;
+  id?: string;
+  userId?: string;
+  notes?: string;
 }
 
 export interface WorkOrderCancelInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  canceledBy?: string | null;
+  id?: string;
+  reason?: string;
+  canceledBy?: string;
 }
 
 export interface WorkOrderUpdatePriorityInput {
-  [key: string]: unknown;
-  priority?: string | null;
+  id?: string;
+  priority?: string;
 }
 
 export interface WorkOrderRescheduleInput {
-  [key: string]: unknown;
-  scheduledDate?: string | null;
-  reason?: string | null;
+  id?: string;
+  scheduledDate?: string;
+  reason?: string;
 }
 
 export interface WorkflowCreateInput {
-  [key: string]: unknown;
-  name?: string | null;
-  description?: string | null;
-  triggerType?: string | null;
-  triggerConfig?: string | null;
+  name?: string;
+  description?: string;
+  triggerType?: string;
+  triggerConfig?: string;
 }
 
 export interface WorkflowUpdateInput {
-  [key: string]: unknown;
-  newName?: string | null;
-  newDescription?: string | null;
-  newTriggerType?: string | null;
-  newTriggerConfig?: string | null;
+  id?: string;
+  newName?: string;
+  newDescription?: string;
+  newTriggerType?: string;
+  newTriggerConfig?: string;
 }
 
 export interface WorkflowActivateInput {
-  [key: string]: unknown;
-  userId?: string | null;
+  id?: string;
+  userId?: string;
 }
 
 export interface WorkflowDeactivateInput {
-  [key: string]: unknown;
-  reason?: string | null;
-  userId?: string | null;
+  id?: string;
+  reason?: string;
+  userId?: string;
 }
 
 export interface WorkforceOptimizationCreateInput {
-  [key: string]: unknown;
-  locationId?: string | null;
-  optimizationType?: string | null;
+  locationId?: string;
+  optimizationType?: string;
+}
+
+export interface WorkforceOptimizationStartInput {
+  id?: string;
 }
 
 export interface WorkforceOptimizationCompleteInput {
-  [key: string]: unknown;
-  results?: string | null;
+  id?: string;
+  results?: string;
 }
 
 export interface WorkforceOptimizationFailInput {
-  [key: string]: unknown;
-  error?: string | null;
+  id?: string;
+  error?: string;
 }
 
 export interface PerformancePredictionCreateInput {
-  [key: string]: unknown;
-  employeeId?: string | null;
-  predictionType?: string | null;
-  predictionHorizon?: number | null;
-  predictionScore?: number | null;
-  confidence?: string | null;
-  factors?: string | null;
+  employeeId?: string;
+  predictionType?: string;
+  predictionHorizon?: number;
+  predictionScore?: number;
+  confidence?: string;
+  factors?: string;
 }
 

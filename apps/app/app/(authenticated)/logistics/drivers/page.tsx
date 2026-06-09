@@ -198,10 +198,10 @@ export default function DriversPage() {
     try {
       if (editing) {
         await driverUpdate({
-          driverId: editing.id,
+          id: editing.id,
           ...form,
           vehicleId:
-            form.vehicleId === "__none__" ? null : form.vehicleId || null,
+            form.vehicleId === "__none__" ? undefined : form.vehicleId || undefined,
         });
         toast.success("Driver updated successfully");
         await loadData();
@@ -237,7 +237,7 @@ export default function DriversPage() {
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
-      await driverRemove({ driverId });
+      await driverRemove({ id: driverId });
       setDrivers((prev) => prev.filter((d) => d.id !== driverId));
     } catch (e) {
       console.error("Failed to delete:", e);

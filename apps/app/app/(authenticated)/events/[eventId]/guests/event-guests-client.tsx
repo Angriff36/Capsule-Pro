@@ -381,7 +381,7 @@ export function EventGuestsClient({
   const handleUpdateRSVP = (guestId: string, status: string) => {
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: guestId, rsvpStatus: status });
+        await eventGuestUpdate({ id: guestId });
         toast.success("RSVP updated");
         refreshGuests();
       } catch (err) {
@@ -425,7 +425,7 @@ export function EventGuestsClient({
     }
     startTransition(async () => {
       try {
-        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail, guestPhone: editForm.guestPhone, tableAssignment: editForm.tableAssignment, mealPreference: editForm.mealPreference, notes: editForm.notes, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions.join(",") : null });
+        await eventGuestUpdate({ id: editingId, guestName: editForm.guestName, guestEmail: editForm.guestEmail ?? undefined, guestPhone: editForm.guestPhone ?? undefined, tableAssignment: editForm.tableAssignment ?? undefined, mealPreference: editForm.mealPreference ?? undefined, notes: editForm.notes ?? undefined, dietaryRestrictions: Array.isArray(editForm.dietaryRestrictions) ? editForm.dietaryRestrictions.join(",") : undefined });
         toast.success("Guest updated");
         setEditingId(null);
         setEditForm({});

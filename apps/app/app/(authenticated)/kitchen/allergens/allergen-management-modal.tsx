@@ -138,7 +138,6 @@ export function AllergenManagementModal({
 
       await dishUpdate({
         id,
-        tenantId, // Server validates tenantId from auth
         allergens: JSON.stringify(selectedAllergens),
         dietaryTags: JSON.stringify(selectedDietaryTags),
       });

@@ -115,15 +115,15 @@ export default function AreasPage() {
     try {
       if (editing) {
         await facilityAreaEdit({
-          areaId: editing.id,
+          id: editing.id,
           name: form.name,
-          code: form.code || null,
+          code: form.code || undefined,
           areaType: form.areaType,
-          floor: form.floor || null,
+          floor: form.floor || undefined,
           squareFeet: form.squareFeet
             ? Number.parseInt(form.squareFeet)
-            : null,
-          description: form.description || null,
+            : undefined,
+          description: form.description || undefined,
         });
         await loadAreas();
         setShowDialog(false);
@@ -151,7 +151,7 @@ export default function AreasPage() {
   const handleDelete = async (areaId: string) => {
     setDeleting(areaId);
     try {
-      await facilityAreaRemove({ areaId });
+      await facilityAreaRemove({ id: areaId });
       setAreas((prev) => prev.filter((a) => a.id !== areaId));
       setDeleteDialogOpen(false);
       setAreaToDelete(null);

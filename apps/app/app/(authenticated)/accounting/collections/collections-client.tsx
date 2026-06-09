@@ -292,7 +292,7 @@ export function CollectionsClient({ initialMetrics }: CollectionsClientProps) {
   const handleEscalateDunning = async () => {
     if (!(selectedCase && dunningStage)) return;
     try {
-      await collectionCaseEscalateDunning({ id: selectedCase.id, stage: dunningStage });
+      await collectionCaseEscalateDunning({ id: selectedCase.id });
       toast.success("Dunning escalated successfully");
       setDunningDialogOpen(false);
       setDunningStage("");

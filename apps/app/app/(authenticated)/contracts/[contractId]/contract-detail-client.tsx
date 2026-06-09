@@ -206,7 +206,7 @@ function EventContractDetail({
       setActionLoading(label);
       try {
         if (command === "send") {
-          await eventContractSend({ instanceId: contract.id });
+          await eventContractSend({ id: contract.id });
         }
         toast.success(`${label} completed`);
         window.location.reload();

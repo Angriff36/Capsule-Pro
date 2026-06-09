@@ -174,13 +174,6 @@ export default function WaitlistPage() {
       const result = await eventWaitlistEntryAddGuest({
         eventId,
         guestName: form.guestName.trim(),
-        guestEmail: form.guestEmail.trim() || null,
-        guestPhone: form.guestPhone.trim() || null,
-        dietaryRestrictions: form.dietaryRestrictions.trim()
-          ? form.dietaryRestrictions.split(",").map((s) => s.trim())
-          : [],
-        specialMealRequired: form.specialMealRequired,
-        specialMealNotes: form.specialMealNotes.trim() || null,
       });
 
       const guest = result as Record<string, unknown> | undefined;
@@ -212,7 +205,7 @@ export default function WaitlistPage() {
   const handleUpdateRSVP = async (guestId: string, status: string) => {
     setUpdating(guestId);
     try {
-      const result = await eventWaitlistEntryUpdateRsvp({ guestId, status });
+      const result = await eventWaitlistEntryUpdateRsvp({ id: guestId, status });
 
       const promoted = (result as Record<string, unknown> | undefined)?.autoPromoted as Record<string, unknown> | undefined;
       if (promoted) {
@@ -231,7 +224,7 @@ export default function WaitlistPage() {
   const handlePromote = async (guestId: string, guestName: string) => {
     setUpdating(guestId);
     try {
-      await eventWaitlistEntryPromote({ eventId, guestId });
+      await eventWaitlistEntryPromote({ id: guestId });
       toast.success(`${guestName} promoted to confirmed`);
       fetchGuests();
     } catch (err) {

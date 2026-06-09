@@ -223,7 +223,7 @@ export default function AllergenManagementPage() {
   const handleAcknowledgeWarning = async (warningId: string) => {
     setActionLoading(true);
     try {
-      await allergenWarningAcknowledge({ warningId });
+      await allergenWarningAcknowledge({ id: warningId });
 
       toast.success("Warning acknowledged");
 
@@ -243,7 +243,7 @@ export default function AllergenManagementPage() {
   ) => {
     setActionLoading(true);
     try {
-      await allergenWarningMarkResolved({ warningId, overrideReason });
+      await allergenWarningMarkResolved({ id: warningId });
 
       toast.success("Warning resolved");
 

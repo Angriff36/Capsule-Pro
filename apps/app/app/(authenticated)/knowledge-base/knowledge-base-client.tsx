@@ -106,17 +106,15 @@ export default function KnowledgeBaseClient() {
     try {
       await knowledgeBaseEntryCreate({
         title: createForm.title,
-        slug: createForm.slug,
-        content: createForm.content || null,
-        category: createForm.category || null,
+        content: createForm.content || undefined,
+        category: createForm.category || undefined,
         tags: createForm.tags
           ? createForm.tags
               .split(",")
               .map((t) => t.trim())
               .filter(Boolean)
               .join(",")
-          : null,
-        status: createForm.status,
+          : undefined,
       });
       if (createForm.status === "published") {
         await fetchEntries();

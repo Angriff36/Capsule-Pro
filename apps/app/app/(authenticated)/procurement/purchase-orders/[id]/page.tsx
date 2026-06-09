@@ -137,9 +137,7 @@ export default function PODetailPage() {
         const qtyReceived = Number(qty);
         if (qtyReceived > 0) {
           await purchaseOrderMarkReceived({
-            orderId: order.id,
-            itemId,
-            quantityReceived: qtyReceived,
+            id: order.id,
           });
         }
       }

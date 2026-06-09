@@ -229,12 +229,8 @@ export default function PerformancePageClient() {
     setCompleting(true);
     try {
       await staffPerformanceComplete({
-        reviewId: selectedReview.id,
+        id: selectedReview.id,
         rating: completeForm.rating,
-        strengths: completeForm.strengths || null,
-        areasForImprovement: completeForm.areasForImprovement || null,
-        goalsNextPeriod: completeForm.goalsNextPeriod || null,
-        managerComments: completeForm.managerComments || null,
       });
       await loadData();
       setShowCompleteDialog(false);

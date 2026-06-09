@@ -157,8 +157,7 @@ export function RoutesView() {
     try {
       const route = await logisticsRouteCreate({
         name: createForm.name,
-        description: createForm.description || null,
-        scheduledDate: createForm.scheduledDate || null,
+        scheduledStart: createForm.scheduledDate ? Number(createForm.scheduledDate) : undefined,
       });
       if (route) {
         setRoutes((prev) => [route as unknown as DeliveryRoute, ...prev]);
@@ -175,7 +174,7 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const route = await logisticsRouteOptimize({ routeId });
+      const route = await logisticsRouteOptimize({ id: routeId });
       if (route) {
         setRoutes((prev) =>
           prev.map((r) => (r.id === routeId ? (route as unknown as DeliveryRoute) : r))
@@ -192,7 +191,7 @@ export function RoutesView() {
 
   const handleStartRoute = async (routeId: string) => {
     try {
-      const route = await logisticsRouteStart({ routeId });
+      const route = await logisticsRouteStart({ id: routeId });
       if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
@@ -207,7 +206,7 @@ export function RoutesView() {
 
   const handleCompleteRoute = async (routeId: string) => {
     try {
-      const route = await logisticsRouteComplete({ routeId });
+      const route = await logisticsRouteComplete({ id: routeId });
       if (route) {
         setRoutes((prev) =>
           prev.map((r) =>
@@ -239,10 +238,9 @@ export function RoutesView() {
     setSaving(true);
     try {
       const route = await logisticsRouteUpdate({
-        routeId: editingRoute.id,
+        id: editingRoute.id,
         name: editForm.name,
-        description: editForm.description || null,
-        scheduledDate: editForm.scheduledDate || null,
+        scheduledStart: editForm.scheduledDate ? Number(editForm.scheduledDate) : undefined,
       });
       if (route) {
         setRoutes((prev) =>
@@ -263,7 +261,7 @@ export function RoutesView() {
 
     setDeleting(true);
     try {
-      await logisticsRouteRemove({ routeId: deleteRouteId });
+      await logisticsRouteRemove({ id: deleteRouteId });
       setRoutes((prev) => prev.filter((r) => r.id !== deleteRouteId));
       toast.success("Route deleted");
     } catch (error) {

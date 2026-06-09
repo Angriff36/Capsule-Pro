@@ -257,7 +257,7 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
 
       setIsUpdating(true);
       try {
-        await dealUpdateStage({ dealId: draggingDeal.id, stage: targetStage });
+        await dealUpdateStage({ id: draggingDeal.id, stage: targetStage });
 
         // Optimistically update local state
         setDeals((prev) =>

@@ -218,9 +218,9 @@ export async function updateInventoryItem(
     supplierId: request.supplier_id,
     tags: request.tags?.join(","),
     fsa_status: request.fsa_status,
-    fsa_temp_logged: request.fsa_temp_logged as unknown as string | null | undefined,
-    fsa_allergen_info: request.fsa_allergen_info as unknown as string | null | undefined,
-    fsa_traceable: request.fsa_traceable as unknown as string | null | undefined,
+    fsa_temp_logged: request.fsa_temp_logged as unknown as string | undefined,
+    fsa_allergen_info: request.fsa_allergen_info as unknown as string | undefined,
+    fsa_traceable: request.fsa_traceable as unknown as string | undefined,
   });
   if (!result) throw new Error("Failed to update inventory item");
   return result;

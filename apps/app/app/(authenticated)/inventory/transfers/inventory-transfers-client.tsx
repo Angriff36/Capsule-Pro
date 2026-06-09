@@ -163,7 +163,7 @@ export function InventoryTransfersClient() {
         return;
       }
 
-      await fn({ transferId });
+      await fn({ id: transferId });
       toast.success(`Transfer ${action}d successfully`);
       fetchTransfers();
     } catch (error) {

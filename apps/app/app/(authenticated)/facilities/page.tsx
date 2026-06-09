@@ -194,16 +194,16 @@ export default function FacilitiesPage() {
     setSaving(true);
     try {
       await facilityEdit({
-        facilityId: editing.id,
+        id: editing.id,
         name: form.name,
-        code: form.code || null,
+        code: form.code || undefined,
         facilityType: form.facilityType,
-        addressLine1: form.addressLine1 || null,
-        city: form.city || null,
-        state: form.state || null,
-        postalCode: form.postalCode || null,
-        phone: form.phone || null,
-        notes: form.notes || null,
+        addressLine1: form.addressLine1 || undefined,
+        city: form.city || undefined,
+        state: form.state || undefined,
+        postalCode: form.postalCode || undefined,
+        phone: form.phone || undefined,
+        notes: form.notes || undefined,
       });
       await loadFacilities();
       setShowDialog(false);
@@ -217,7 +217,7 @@ export default function FacilitiesPage() {
   const handleDelete = async (facilityId: string) => {
     setDeleting(facilityId);
     try {
-      await facilityRemove({ facilityId });
+      await facilityRemove({ id: facilityId });
       setFacilities((prev) => prev.filter((f) => f.id !== facilityId));
       setDeleteDialogOpen(false);
       setFacilityToDelete(null);

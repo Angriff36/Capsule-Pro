@@ -280,7 +280,7 @@ export default function DirectDepositPage() {
     if (!verifyTarget) return;
     setActionLoading("verify");
     try {
-      await bankAccountVerify({ id: verifyTarget.id, method: verifyMethod });
+      await bankAccountVerify({ id: verifyTarget.id });
       toast.success("Bank account verified");
       setVerifyModalOpen(false);
       setVerifyTarget(null);

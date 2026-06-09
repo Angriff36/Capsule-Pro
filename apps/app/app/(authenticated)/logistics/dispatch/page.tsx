@@ -156,7 +156,7 @@ export default function DispatchPage() {
     try {
       await logisticsDispatchAssign({
         routeId: selectedRoute.id,
-        driverId: selectedDriverId === "__none__" ? null : selectedDriverId || null,
+        driverId: selectedDriverId === "__none__" ? undefined : selectedDriverId || undefined,
       });
       await loadData();
       setShowAssignDialog(false);

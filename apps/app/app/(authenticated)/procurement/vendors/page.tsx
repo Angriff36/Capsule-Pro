@@ -140,7 +140,7 @@ export default function VendorsPage() {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await vendorRemove({ vendorId: deleteTarget.id });
+      await vendorRemove({ id: deleteTarget.id });
       loadVendors();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to delete vendor");

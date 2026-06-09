@@ -605,8 +605,6 @@ function DocumentParserTab() {
                 await eventDishCreate({
                   eventId: selectedEventId,
                   dishId,
-                  quantityServings: item.quantity || 1,
-                  specialInstructions: item.notes || undefined,
                 });
               }
               created++;
@@ -629,10 +627,6 @@ function DocumentParserTab() {
           for (const shift of parsed.staffShifts) {
             try {
               await scheduleShiftCreate({
-                eventId: selectedEventId,
-                role: shift.role,
-                employeeName: shift.name,
-                shiftTime: shift.time,
               });
               created++;
             } catch {

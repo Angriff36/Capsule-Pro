@@ -106,7 +106,6 @@ export function EditTrainingModuleDialog({
           : undefined,
         category: values.category || undefined,
         isRequired: values.isRequired,
-        isActive: values.isActive,
       });
 
       toast.success("Training module updated");

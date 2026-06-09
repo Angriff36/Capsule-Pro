@@ -481,7 +481,6 @@ export function VendorCatalogsClient() {
       const result = await vendorCatalogUpdatePrice({
         id: costTarget.id,
         newBaseUnitCost: parsedCost,
-        oldCost: Number(costTarget.baseUnitCost),
         reason: costReason,
       });
 

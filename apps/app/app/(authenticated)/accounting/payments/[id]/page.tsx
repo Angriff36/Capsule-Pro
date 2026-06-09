@@ -145,7 +145,7 @@ export default function PaymentDetailPage() {
   const handleProcess = async () => {
     setActionLoading(true);
     try {
-      const result = await paymentProcess({ paymentId: id });
+      const result = await paymentProcess({ id });
       setPayment(result as unknown as Payment);
       toast.success("Payment processed");
     } catch (err) {
@@ -170,7 +170,7 @@ export default function PaymentDetailPage() {
 
     setActionLoading(true);
     try {
-      const result = await paymentRefund({ paymentId: id, amount, reason: refundReason.trim() });
+      const result = await paymentRefund({ id, reason: refundReason.trim() });
       setPayment(result as unknown as Payment);
       toast.success("Refund processed");
       setRefundDialogOpen(false);

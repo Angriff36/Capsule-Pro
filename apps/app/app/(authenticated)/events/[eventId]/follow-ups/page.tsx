@@ -77,7 +77,7 @@ export default function EventFollowUpsPage() {
   const generateFollowups = async () => {
     setGenerating(true);
     try {
-      await automatedFollowupGenerate({ eventId });
+      await automatedFollowupGenerate({ id: eventId });
       fetchFollowups();
     } catch (e) {
       console.error("Failed to generate followups:", e);
@@ -89,7 +89,7 @@ export default function EventFollowUpsPage() {
   const completeFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      await automatedFollowupComplete({ followupId });
+      await automatedFollowupComplete({ id: followupId });
       fetchFollowups();
     } catch (e) {
       console.error("Failed to complete followup:", e);
@@ -101,7 +101,7 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      await automatedFollowupSkip({ followupId, reason: "Skipped by user" });
+      await automatedFollowupSkip({ id: followupId, reason: "Skipped by user" });
       fetchFollowups();
     } catch (e) {
       console.error("Failed to skip followup:", e);

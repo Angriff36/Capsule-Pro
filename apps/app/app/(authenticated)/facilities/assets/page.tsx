@@ -207,20 +207,10 @@ export default function AssetsPage() {
     try {
       if (editing) {
         await facilityAssetUpdate({
-          assetId: editing.id,
+          id: editing.id,
           name: form.name,
           assetType: form.assetType,
-          serialNumber: form.serialNumber || null,
-          manufacturer: form.manufacturer || null,
-          model: form.model || null,
-          purchaseDate: form.purchaseDate || null,
-          purchaseCost: form.purchaseCost
-            ? Number.parseFloat(form.purchaseCost)
-            : null,
-          warrantyExpiry: form.warrantyExpiry || null,
-          status: form.status,
-          areaId: form.areaId || null,
-          notes: form.notes || null,
+          serialNumber: form.serialNumber || undefined,
         });
         await loadData();
         setShowDialog(false);
@@ -252,7 +242,7 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await facilityAssetRemove({ assetId });
+      await facilityAssetRemove({ id: assetId });
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       setDeleteDialogOpen(false);
       setAssetToDelete(null);

@@ -178,16 +178,16 @@ export default function InvoiceDetailPage() {
       let result: unknown;
       switch (action) {
         case "apply-payment":
-          result = await invoiceApplyPayment({ invoiceId: id, amount: body?.amount });
+          result = await invoiceApplyPayment({ id });
           break;
         case "mark-as-paid":
-          result = await invoiceMarkAsPaid({ invoiceId: id });
+          result = await invoiceMarkAsPaid({ id });
           break;
         case "send-reminder":
-          result = await invoiceSendReminder({ invoiceId: id });
+          result = await invoiceSendReminder({ id });
           break;
         case "mark-overdue":
-          result = await invoiceMarkOverdue({ invoiceId: id });
+          result = await invoiceMarkOverdue({ id });
           break;
         default:
           throw new Error(`Unknown action: ${action}`);
@@ -204,7 +204,7 @@ export default function InvoiceDetailPage() {
   const handleSend = async () => {
     setActionLoading(true);
     try {
-      const result = await invoiceSend({ invoiceId: id });
+      const result = await invoiceSend({ id });
       setInvoice(result as unknown as Invoice);
       toast.success("Invoice sent to client");
     } catch (err) {
@@ -219,7 +219,7 @@ export default function InvoiceDetailPage() {
   const handleVoid = async () => {
     setActionLoading(true);
     try {
-      const result = await invoiceVoidInvoice({ invoiceId: id });
+      const result = await invoiceVoidInvoice({ id });
       setInvoice(result as unknown as Invoice);
       toast.success("Invoice voided");
     } catch (err) {

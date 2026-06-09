@@ -239,8 +239,6 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
         customerId: form.customerId,
         deliveryDate: form.deliveryDate,
         deliveryTime: form.deliveryTime,
-        venueName: form.venueName,
-        venueAddress: form.venueAddress,
         venueCity: form.venueCity,
         venueState: form.venueState,
         venueZip: form.venueZip,
@@ -248,10 +246,6 @@ export function CateringClient({ initialMetrics }: CateringClientProps) {
         venueContactPhone: form.venueContactPhone,
         guestCount: Number(form.guestCount),
         specialInstructions: form.specialInstructions,
-        dietaryRestrictions: form.dietaryRestrictions,
-        subtotal: form.subtotal,
-        tax: form.tax,
-        serviceCharge: form.serviceCharge,
       });
       toast.success("Catering order created");
       setCreateOpen(false);

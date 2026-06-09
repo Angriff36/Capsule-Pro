@@ -110,9 +110,9 @@ function paramTsType(p) {
   // Resolve array generic type (e.g., tags: string[] instead of unknown[])
   if (base === "unknown[]" && typeObj.generic) {
     const innerType = SCALAR_TO_TS[typeObj.generic.name || typeObj.generic] || "unknown";
-    return `${innerType}[] | null`;
+    return `${innerType}[]`;
   }
-  return `${base} | null`;
+  return base;
 }
 
 // Generate per-command typed input interfaces
@@ -139,12 +139,25 @@ for (const c of ir.commands) {
       const ts = paramTsType(p);
       return `  ${p.name}?: ${ts};`;
     });
-    interfaces.push(`export interface ${iName} {\n  [key: string]: unknown;\n${fields.join("\n")}\n}`);
+    // Non-create commands accept `id` for instance resolution by the dispatcher
+    // (body.id → deriveInstanceIdFromBody). It's not a Manifest command param
+    // but part of the HTTP contract. Include it in the type so callers don't
+    // need to cast.
+    const hasId = c.parameters.some(p => p.name === 'id');
+    if (!hasId && c.name !== 'create') {
+      fields.unshift('  id?: string;');
+    }
+    interfaces.push(`export interface ${iName} {\n${fields.join("\n")}\n}`);
+    inputType = iName;
+  } else if (c.name !== 'create') {
+    // Commands with no IR params but still need `id` for dispatcher
+    const iName = `${c.entity}${cap(c.name)}Input`;
+    interfaces.push(`export interface ${iName} {\n  id?: string;\n}`);
     inputType = iName;
   }
 
   out.push(`export async function ${fn}(input: ${inputType} = {}): Promise<${T} | undefined> {`);
-  out.push(`  const r = await executeCommand<${T}>(${JSON.stringify(c.entity)}, ${JSON.stringify(c.name)}, input${pathArg});`);
+  out.push(`  const r = await executeCommand<${T}>(${JSON.stringify(c.entity)}, ${JSON.stringify(c.name)}, input as Record<string, unknown>${pathArg});`);
   out.push(`  return r.result;`);
   out.push(`}`);
 }

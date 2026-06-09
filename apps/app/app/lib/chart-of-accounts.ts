@@ -140,7 +140,7 @@ export async function updateChartOfAccount(
     accountNumber: data.account_number,
     accountName: data.account_name,
     accountType: data.account_type,
-    parentId: data.parent_id,
+    parentId: data.parent_id ?? undefined,
     description: data.description,
     isActive: data.is_active,
   });

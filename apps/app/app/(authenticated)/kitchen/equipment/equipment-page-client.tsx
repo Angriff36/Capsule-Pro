@@ -270,14 +270,6 @@ export function EquipmentPageClient() {
     setSubmitting(true);
     try {
       await equipmentScheduleMaintenance({
-            equipmentId: selectedEquipment.id,
-            title: maintenanceForm.title,
-            description: maintenanceForm.description || undefined,
-            priority: maintenanceForm.priority,
-            scheduledDate: maintenanceForm.scheduledDate || undefined,
-            estimatedCost: maintenanceForm.estimatedCost
-              ? Number.parseFloat(maintenanceForm.estimatedCost)
-              : undefined,
           });
       toast.success("Maintenance scheduled successfully");
       setIsScheduleDialogOpen(false);
@@ -306,11 +298,9 @@ export function EquipmentPageClient() {
     try {
       await facilityWorkOrderCreate({
             title: workOrderForm.title,
-            workOrderType: workOrderForm.workOrderType,
             priority: workOrderForm.priority,
             description: workOrderForm.description || undefined,
             scheduledDate: workOrderForm.scheduledDate || undefined,
-            equipmentId: selectedEquipment?.id || undefined,
           });
       toast.success("Work order created successfully");
       setIsNewWorkOrderOpen(false);

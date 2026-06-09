@@ -171,7 +171,7 @@ export default function VendorDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await vendorUpdate({ vendorId, ...form });
+      await vendorUpdate({ id: vendorId, ...form });
       setEditing(false);
       loadVendor();
     } catch (error) {
@@ -184,7 +184,7 @@ export default function VendorDetailPage() {
   const handleAddContact = async () => {
     if (!contactForm.contactName.trim()) return;
     try {
-      await vendorAddContact({ vendorId, ...contactForm });
+      await vendorAddContact({ id: vendorId, ...contactForm });
       setContactDialogOpen(false);
       setContactForm({
         contactName: "",
@@ -202,7 +202,7 @@ export default function VendorDetailPage() {
 
   const handleRate = async () => {
     try {
-      await vendorRate({ vendorId, ...ratingForm });
+      await vendorRate({ id: vendorId, ...ratingForm });
       setRatingDialogOpen(false);
       setRatingForm({ category: "overall", rating: 5, comment: "" });
       loadVendor();

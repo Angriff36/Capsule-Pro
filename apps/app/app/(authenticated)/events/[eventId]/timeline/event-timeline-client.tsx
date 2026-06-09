@@ -79,10 +79,7 @@ export function EventTimelineClient({
     try {
       const result = await eventTimelineItemCreateItem({
         eventId,
-        timelineTime: draft.timelineTime,
         description: draft.description.trim(),
-        responsibleRole: draft.responsibleRole.trim() || null,
-        notes: draft.notes.trim() || null,
       });
 
       if (result) {
@@ -111,7 +108,7 @@ export function EventTimelineClient({
     );
 
     try {
-      await eventTimelineItemCompleteItem({ eventId, itemId });
+      await eventTimelineItemCompleteItem({ id: itemId });
       refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");
@@ -138,7 +135,7 @@ export function EventTimelineClient({
     setItemToDelete(null);
 
     try {
-      await eventTimelineItemDeleteItem({ eventId, itemId });
+      await eventTimelineItemDeleteItem({ id: itemId });
       refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Network error");

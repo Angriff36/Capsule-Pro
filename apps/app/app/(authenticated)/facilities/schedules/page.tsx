@@ -201,18 +201,9 @@ export default function SchedulesPage() {
     try {
       if (editing) {
         await facilityScheduleEdit({
-          scheduleId: editing.id,
+          id: editing.id,
           title: form.title,
-          description: form.description || null,
-          frequency: form.frequency,
-          nextDueDate:
-            form.nextDueDate || new Date().toISOString().split("T")[0],
-          estimatedHours: form.estimatedHours
-            ? Number.parseFloat(form.estimatedHours)
-            : null,
-          estimatedCost: form.estimatedCost
-            ? Number.parseFloat(form.estimatedCost)
-            : null,
+          description: form.description || undefined,
         });
         await loadData();
         setShowDialog(false);
@@ -243,7 +234,7 @@ export default function SchedulesPage() {
   const handleDelete = async (scheduleId: string) => {
     setDeleting(scheduleId);
     try {
-      await facilityScheduleRemove({ scheduleId });
+      await facilityScheduleRemove({ id: scheduleId });
       setSchedules((prev) => prev.filter((s) => s.id !== scheduleId));
       setDeleteDialogOpen(false);
       setScheduleToDelete(null);

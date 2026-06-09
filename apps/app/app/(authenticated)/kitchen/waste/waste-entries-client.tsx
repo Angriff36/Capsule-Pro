@@ -201,10 +201,10 @@ export function WasteEntriesClient() {
     try {
       const result = await wasteEntryCreate({
         inventoryItemId: formData.inventoryItemId,
-        quantity: formData.quantity ? Number.parseFloat(formData.quantity) : null,
-        reasonId: formData.reasonId ? Number.parseInt(formData.reasonId) : null,
-        unitId: formData.unitId ? Number.parseInt(formData.unitId) : null,
-        notes: formData.notes || null,
+        quantity: formData.quantity ? Number.parseFloat(formData.quantity) : undefined,
+        reasonId: formData.reasonId ? Number.parseInt(formData.reasonId) : undefined,
+        unitId: formData.unitId ? Number.parseInt(formData.unitId) : undefined,
+        notes: formData.notes || undefined,
       });
 
       toast.success(
