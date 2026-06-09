@@ -134,6 +134,11 @@ export function getConfigPaths() {
   const readRoutesEnabled = readRoutes.enabled !== false; // default true
   const readRoutesDirectDbReads = readRoutes.directDbReads !== false; // default true
 
+  // Canonical Routes projection base path (schema key: projections.routes.options.basePath).
+  const routesProjection = projections.routes || {};
+  const routesOptions = routesProjection.options || {};
+  const routesBasePath = routesOptions.basePath || "/api";
+
   // Canonical command dispatcher route. The official schema key is
   // projections.nextjs.options.dispatcher.path; keep a legacy nextjs.dispatcher
   // fallback and a hardcoded default so generation still works with no config.
@@ -171,6 +176,9 @@ export function getConfigPaths() {
     // Read-route generation policy.
     readRoutesEnabled,
     readRoutesDirectDbReads,
+
+    // Canonical Routes projection base path.
+    routesBasePath,
 
     // Raw config for projection options etc.
     config: cfg,
