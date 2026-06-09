@@ -570,8 +570,7 @@ the FUTURE clean home for a Capsule Prisma store adapter, but overkill for the s
 **13c. Tenancy (language/tenancy) — divergence from repo:**
 - Canonical syntax: a SINGLE top-level `tenant tenantId : string from context.tenantId`. Then runtime
   auto-writes tenant on create + filters reads; commands fail `MISSING_TENANT_CONTEXT` if absent.
-- **Repo does NOT use this** — every entity hand-declares `property required tenantId` + per-entity
-  RLS. Functional gate doesn't require adopting the `tenant` block; note it as future cleanup.
+- **Repo NOW uses this (2026-06-09):** all 94 `.manifest` source files carry `tenant tenantId : string from context.tenantId`. The merged IR has a structured `tenant` declaration (was previously missing despite individual files declaring it — fixed in `mergeIrs()`). Per-entity `property required tenantId` still exists in many entities for backward compat; the unified tenant block enables automatic runtime enforcement. See §24.
 - Prisma projection adds a tenant discriminator column + index + RLS policy COMMENTS (not executed).
   **No `@@schema`/multi-schema and no composite `@@id` support in the projection** — confirms our
   Capsule post-process (§11c/§12) is the correct place for those. (`key [...]` composite-key syntax
@@ -1073,6 +1072,32 @@ and must be non-user-editable (not a command input); the Postgres projection sho
 Prisma/Postgres projection escape hatch.
 
 Search: baseline repair, dotenvx banner, generated column, GENERATED ALWAYS AS, P3006, account_number_last4, schema behind live, db:dev drift, checksum modified after applied
+
+---
+
+## 24. Tenant declarations + mergeIrs() fix (2026-06-09)
+
+### What changed
+All 94 `.manifest` source files in `manifest/source/` now carry a top-level tenant declaration:
+```
+tenant tenantId : string from context.tenantId
+```
+This is the canonical syntax from the Manifest tenancy docs (§13c). Previously, most source files relied on per-entity `property required tenantId` fields and hand-rolled RLS instead of the unified tenant block.
+
+### mergeIrs() fix
+`mergeIrs()` in `manifest/scripts/ir-utils.mjs` was fixed to propagate the `tenant` field from individual compiled IRs to the merged IR. Previously, even when one source file declared `tenant`, the merged `kitchen.ir.json` had no structured `tenant` declaration at the top level — the field was silently dropped during merge. The fix ensures the merged IR carries a single `tenant` object reflecting the shared declaration.
+
+### Runtime test impact
+Tests that instantiate `RuntimeEngine` with the merged IR now need top-level `tenantId` in the engine context (since the IR declares `tenant tenantId : string from context.tenantId`). Without it, commands fail with `MISSING_TENANT_CONTEXT`. This is the correct behavior — the tenant block makes tenant enforcement automatic per the Manifest runtime contract.
+
+### Why this matters
+With all 94 source files declaring tenant uniformly:
+- The merged IR is tenant-complete — no entity is missing tenant context
+- The Manifest runtime can auto-filter reads and auto-write tenantId on creates
+- Per-entity RLS policy duplication can eventually be retired in favor of the unified tenant block
+- IR-completeness checks (Phase 0 / audit tools) can validate tenant coverage as a single gate
+
+Search: tenant declarations, tenant tenantId, mergeIrs, ir-utils.mjs, kitchen.ir.json tenant, MISSING_TENANT_CONTEXT, context.tenantId, all 94 manifests, tenant block unified
 
 ---
 
