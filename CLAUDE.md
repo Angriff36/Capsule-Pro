@@ -259,12 +259,18 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 86% context — saved before compacting]
-Files (5):
-  manifest/source/time-entry-rules.manifest (edit)
-  manifest/source/schedule-rules.manifest (edit)
-  manifest/source/event-staff-rules.manifest (edit)
-  manifest/source/staff-logistics-extended-rules.manifest (edit)
-  manifest/source/logistics-all-rules.manifest (edit)
+[proactive bridge @ 75% context — saved before compacting]
+Files (11):
+  manifest/scripts/fix-money-as-number.mjs (create)
+  manifest/scripts/fix-money-as-number.mjs (edit)
+  manifest/source/invoice-rules.manifest (edit)
+  manifest/source/payroll-rules.manifest (edit)
+  manifest/source/proposal-rules.manifest (edit)
+  manifest/source/purchase-order-rules.manifest (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/money-as-number-fix-v0.12.212.md (create)
+  C:/Users/Ryan/.claude/projects/C--projects-capsule-pro/memory/MEMORY.md (edit)
+  manifest/scripts/fix-cmd-money-as-number.mjs (create)
+  manifest/scripts/fix-cmd-money-as-number.mjs (edit)
 
 # === END COGNILAYER ===

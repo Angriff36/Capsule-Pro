@@ -4,14 +4,14 @@
 >
 > **Ultimate Goal:** Fully utilize Manifest features that are currently useful but not implemented, AND use Manifest as the sole source of truth generator for as many surfaces as possible.
 >
-> **Prioritization:** Fix typecheck baseline -> fix permission guard (SECURITY) -> resolve Prisma model gaps -> adopt `timestamps` modifier (ROOT FIX for datetime-as-number) -> fix remaining source type mismatches -> model relationships -> wire middleware (highest-leverage runtime) -> schema projection -> store strategy -> runtime wiring -> governance -> frontend strategy -> reactions -> projection evaluation -> advanced features -> federation evaluation.
+> **Prioritization:** Fix typecheck baseline -> fix permission guard (SECURITY) -> resolve Prisma model gaps -> adopt `timestamps` modifier (ROOT FIX for datetime-as-number) -> fix remaining source type mismatches (datetime DONE v0.12.208, money DONE v0.12.212-213, command-param parent-context DONE v0.12.214) -> model relationships -> wire middleware (highest-leverage runtime) -> schema projection -> store strategy -> runtime wiring -> governance -> frontend strategy -> reactions -> projection evaluation -> advanced features -> federation evaluation.
 >
 > **Companion docs:** task_plan.md, notes.md, phase-out-registry.md, AGENTS.md, constitution.md
 > **Official Manifest docs:** https://manifest-b1e8623f.mintlify.app/ (docs/manifest-official/ does NOT exist locally; schemas are in `node_modules/@angriff36/manifest/docs/spec/`)
 
 ---
 
-## Validation Baseline (2026-06-08, comprehensive audit -- 31st revision, v0.12.208 target)
+## Validation Baseline (2026-06-09, comprehensive audit -- 31st revision, v0.12.214 target)
 
 ### Claim Verification Matrix
 
@@ -204,7 +204,7 @@
 
 | Finding | Impact | Source |
 |---|---|---|
-| ~~**ROOT CAUSE: Event payloads use `number` for ALL 916 timestamp fields while entity properties correctly use `datetime`**~~ **RESOLVED 2026-06-09 (datetime + money)** | 21 event payload fields fixed across 7 source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Remaining event payloads with `createdAt`/`updatedAt`/`deletedAt` typed as `number` were audited and confirmed already correctly `datetime`. Original finding: `now()` returns epoch-ms (number), causing 936 events to carry timestamps as `number`. `timestamps` modifier (Task 2.8) fixes entity-level createdAt/updatedAt. Event channel fix required manual `datetime` declarations in source files. Additionally, 153 money-as-number event payload + command param fields fixed across 34 source files (v0.12.212). All financial fields (amount, cost, price, value, budget, etc.) now correctly typed as 'money'. | IR analysis + source fix verification |
+| ~~**ROOT CAUSE: Event payloads use `number` for ALL 916 timestamp fields while entity properties correctly use `datetime`**~~ **RESOLVED 2026-06-09 (datetime + money + command-param)** | 21 event payload fields fixed across 7 source files (time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections). Remaining event payloads with `createdAt`/`updatedAt`/`deletedAt` typed as `number` were audited and confirmed already correctly `datetime`. Original finding: `now()` returns epoch-ms (number), causing 936 events to carry timestamps as `number`. `timestamps` modifier (Task 2.8) fixes entity-level createdAt/updatedAt. Event channel fix required manual `datetime` declarations in source files. Additionally, 153 money-as-number event payload + command param fields fixed across 34 source files (v0.12.212). 95 command-param money fields fixed across 25 sources (v0.12.213). 54 additional command-param type mismatches resolved across 14 sources (v0.12.214: vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and others). All financial fields (amount, cost, price, value, budget, etc.) now correctly typed as 'money'. | IR analysis + source fix verification |
 
 ### NEW findings from this revision (13th)
 
@@ -357,13 +357,13 @@
 - 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
 - **5 overrideable constraints out of 583 total** (Task 9.8 DONE: 5 overrideable warn constraints across 5 entities)
 - **Event payload timestamps: FIXED (Task 2.7)** — was 916 fields typed `number`, 0 typed `datetime`; now all timestamp fields correctly typed `datetime`
-- **Event payload + command param money fields: FIXED (v0.12.212–213)** — 153 event payload + 95 command param fields typed `number` changed to `money` across 34+25 source files (248 total financial fields fixed)
+- **Event payload + command param money fields: FIXED (v0.12.212–214)** — 153 event payload + 95 command param fields typed `number` changed to `money` across 34+25 source files (248 total financial fields fixed) + 54 additional command-param type mismatches resolved across 14 sources (v0.12.214: vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and others)
 - **Entity property timestamps: 741 fields typed `datetime`, 0 typed `number`** (correctly declared)
 ### Property types (all resolved)
 
 - string(1,584), datetime(741), int(158), money(109), decimal(102), boolean(94), array(7), float(1)
 - **0 number-typed properties** (was 17 -- all fixed to proper types)
-- **0 number-typed financial fields** (was ~248 across event payloads + command params — all fixed to `money` in v0.12.212–213)
+- **0 number-typed financial fields** (was ~248 across event payloads + command params — all fixed to `money` in v0.12.212–213, + 54 command-param parent-context mismatches resolved in v0.12.214)
 
 ### Prisma & Database
 
@@ -1611,7 +1611,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 10. Manifest DSL features (reactions, approvals, sagas, relationships) are used where the domain requires them.
 11. **No `build.mjs` broken paths** -- all 4 build pipeline steps succeed without ENOENT.
 12. **Permission guard coverage 100%** -- all 189 entity types have RBAC enforcement, not just 9. **IR policies provide 100% coverage** (952/952 commands have `default policy` bindings via Task 8.6 with 23 unique roles). RBAC middleware (31 entries, allow-by-default) is a secondary finer-grained permission layer. Real task: expand middleware map to cover more commands OR remove it since IR policies are sufficient.
-13. **Source type correctness** -- zero datetime-as-number mismatches, zero datetime-mutated-to-0, zero number-into-decimal/money/int mismatches.
+13. **Source type correctness** -- zero datetime-as-number mismatches, zero datetime-mutated-to-0, zero number-into-decimal/money/int mismatches (v0.12.214: all command-param parent-context type mismatches resolved).
 14. **Dead code eliminated** — ✅ rules-engine/, entity-graph/, packages/services/, legacy manifest-command-handler.ts, legacy manifest-runtime.ts (3,205 lines), unsafe outbox helper all removed.
 15. **Single command handler** -- legacy manifest-command-handler.ts removed, all paths use execute-command.ts. DONE (Task 10.13).
 16. **ENTITY_DOMAIN_MAP coverage 100%** -- all 189 entities mapped in canonical map (DONE), stale copies eliminated (DONE 2026-06-04).
@@ -1648,7 +1648,7 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | IR overrideable constraints | **5/583** (Task 9.8 DONE: 5 warn constraints overrideable) | 0/583 | UPDATED: Task 9.8 DONE |
 | IR source files | 94 | 92 | UPDATED: Task 9.7 modifier annotations |
 | IR property modifiers (source-level) | **534** across 94 files: indexed(92) searchable(73) unique(18) encrypted(32) private(7) | 0 | NEW: Task 9.7 DONE — not yet emitted to IR JSON (future package upgrade) |
-| IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 559 | CONFIRMED across ALL domains |
+| IR source type bugs (datetime-as-number) | **559+ in EVENT PAYLOADS only (entity-level fixed by timestamps modifier)** | 0 | RESOLVED v0.12.208–214 (Task 2.7/2.8, money v0.12.212-213, command-param v0.12.214) |
 | IR event payload timestamps as `number` | **0 fields** (21 fixed across 7 files: time-entry, schedule, event-staff, staff-logistics-extended, logistics-all, proposal, collections) | 916 | RESOLVED 2026-06-09 — remaining event payload `createdAt`/`updatedAt`/`deletedAt` were already correctly `datetime` |
 | IR entity property timestamps as `datetime` | **741 fields** | 741 | NEW: correctly declared, mismatch is in events only |
 | IR datetime mutated to 0 | **9 occurrences** | 9 | -- |
@@ -1865,3 +1865,4 @@ Generic IR-relationship-driven resolver inherits parent-owned context onto child
 | 2026-06-09 | **Task 11.9 BLOCKED: Runtime REPL** | The `repl` command does not exist in `@angriff36/manifest@2.2.0`. CLI has no REPL functionality. Blocked on upstream implementation. |
 | 2026-06-09 | **153 money-as-number type mismatches fixed across 34 manifest sources (v0.12.212)** | 144 event payload + command param fields via automated script (fix-money-as-number.mjs) + 9 manual fixes (proposal/purchase-order totals, invoice newBalance, payroll totalDeductions). Financial fields (amount, cost, price, value, budget, revenue, gross, net, tips, etc.) now correctly typed as `money` instead of `number`. IR 202/999/981. API+runtime typecheck 0. 2880 tests pass. 0 route drift. |
 | 2026-06-09 | **95 command-param money-as-number fixes + 4 parent-context overrides (v0.12.213)** | 95 command parameters across 25 source files fixed `number`→`money` (catering, collections, deals, equipment, events, facilities, inventory, invoices, leads, menus, payments, payroll, pricing, procurement, proposals, recipes, revenue, shipments, staff, users, vendor catalogs/contracts, waste). 4 parent-context overrides added (ShipmentItem.unitCost, PaymentRefundAttempt.amount, WasteEntry.unitCost, InventoryTransaction.unitCost). IR 202/999/981. 2880 tests pass. |
+| 2026-06-09 | **54 command-param type mismatches resolved across 14 sources (v0.12.214)** | 54 command-parameter parent-context type mismatches fixed (datetime, money, int, decimal corrections) across vendor-catalog, bulk-order, pricing-tier, equipment, collections, budget, vendor-contract, cycle-count, procurement-requisition, ai-event-setup, event-import-workflow, and 3 additional sources. All command params now match their target property types. IR 202/999/981. API+runtime typecheck 0. Tests pass. |
