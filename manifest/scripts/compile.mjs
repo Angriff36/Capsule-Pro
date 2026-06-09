@@ -19,6 +19,79 @@ import {
 import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
 import { getConfigPaths } from "./read-config.mjs";
 
+/**
+ * Post-compile enrichment: populate computed property `dependencies` arrays.
+ *
+ * The upstream parser's `extractDependencies` only captures standalone
+ * identifiers, not `self.X` member-access references.  This function walks
+ * each computed property's expression AST, collects all `self.X` property
+ * names, and intersects them with the entity's own computed property names
+ * to produce a correct dependency list.  Without this, the runtime's
+ * `markComputedPropertiesStale` (runtime-engine.js) cannot propagate cache
+ * invalidation transitively through computed-to-computed chains.
+ */
+function enrichComputedDependencies(ir) {
+  let enrichedCount = 0;
+
+  for (const entity of ir.entities ?? []) {
+    const computedNames = new Set(
+      (entity.computedProperties ?? []).map((cp) => cp.name),
+    );
+    if (computedNames.size === 0) continue;
+
+    for (const cp of entity.computedProperties) {
+      const selfRefs = collectSelfPropertyRefs(cp.expression);
+      const deps = [...selfRefs].filter((name) => computedNames.has(name));
+      // Only update if the list actually changed (avoids false churn in IR diffs)
+      if (
+        deps.length > 0 &&
+        JSON.stringify(deps.sort()) !==
+          JSON.stringify([...(cp.dependencies ?? [])].sort())
+      ) {
+        cp.dependencies = deps;
+        enrichedCount++;
+      }
+    }
+  }
+
+  return enrichedCount;
+}
+
+/**
+ * Walk an expression AST node and collect all property names accessed via
+ * `self.X` member-access patterns.
+ */
+function collectSelfPropertyRefs(expr) {
+  const refs = new Set();
+  if (!expr || typeof expr !== "object") return refs;
+
+  const walk = (node) => {
+    if (!node || typeof node !== "object") return;
+    // MemberAccess: { kind: "member", object: { kind: "identifier", name: "self" }, property: "foo" }
+    if (
+      node.kind === "member" &&
+      node.object?.kind === "identifier" &&
+      node.object.name === "self" &&
+      typeof node.property === "string"
+    ) {
+      refs.add(node.property);
+    }
+    // Recurse into all child properties that could be expression nodes
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          if (item && typeof item === "object" && item.kind) walk(item);
+        }
+      } else if (value && typeof value === "object" && value.kind) {
+        walk(value);
+      }
+    }
+  };
+
+  walk(expr);
+  return refs;
+}
+
 const {
   srcDir: MANIFESTS_DIR,
   outputDir: OUTPUT_DIR,
@@ -113,6 +186,14 @@ async function compileMergedManifests() {
         `  ... and ${duplicateWarnings.length - 20} more duplicate definitions`
       );
     }
+  }
+
+  // Enrich computed-property dependencies (self.X → computed-to-computed chains)
+  const enrichedDeps = enrichComputedDependencies(mergedIR);
+  if (enrichedDeps > 0) {
+    console.log(
+      `[manifest/compile] Enriched ${enrichedDeps} computed-property dependency declarations`
+    );
   }
 
   console.log(
