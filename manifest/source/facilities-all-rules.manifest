@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Facilities Domain — Facility Management Rules
 // Covers Facility, FacilityArea, FacilityAsset, FacilitySchedule, FacilityWorkOrder
 

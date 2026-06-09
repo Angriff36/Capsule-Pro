@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Procurement Budget Rules
 // Manifest spec for departmental and project budgets
 

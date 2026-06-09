@@ -46,6 +46,7 @@ async function buildRuntime() {
   return new ManifestRuntimeEngine(
     mergedIr,
     {
+      tenantId: TEST_TENANT_ID,
       user: {
         id: "manager-001",
         tenantId: TEST_TENANT_ID,

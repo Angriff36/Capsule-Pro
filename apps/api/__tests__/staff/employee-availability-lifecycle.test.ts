@@ -62,7 +62,7 @@ async function getRuntime(role = "manager") {
   const ir = await compile();
   return new ManifestRuntimeEngine(
     enforceCommandOwnership(ir),
-    { user: { id: "test-user-123", tenantId: TENANT, role } },
+    { tenantId: TENANT, user: { id: "test-user-123", tenantId: TENANT, role } },
     {
       storeProvider: inMemoryStoreProvider(),
       customBuiltins: createCustomBuiltins(),

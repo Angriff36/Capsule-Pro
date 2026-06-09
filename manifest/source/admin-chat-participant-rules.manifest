@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Administrative Domain - Chat Participant Rules
 // Manifest spec for admin chat participant operations
 

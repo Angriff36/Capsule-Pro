@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // HR/Staff + Logistics Extended Rules
 // Manifest spec for TimecardApproval, PayrollLineItem, TipPool, DisciplinaryAction,
 // ActionMilestone, PerformanceReview, TrainingCompletion, OnboardingTask,

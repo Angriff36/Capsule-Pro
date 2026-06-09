@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Event Contract Rules
 // Manifest spec for event contract management and signature tracking
 

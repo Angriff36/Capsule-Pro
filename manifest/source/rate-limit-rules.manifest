@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Administration - Rate Limit Rules
 // Manifest spec for rate limit configuration management
 

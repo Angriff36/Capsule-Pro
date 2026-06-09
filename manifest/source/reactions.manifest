@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Cross-Entity Reactions
 // Declarative event-to-command bindings that replace manual cross-entity Prisma writes.
 // Reactions fire synchronously within the same Manifest runtime turn after event emission.

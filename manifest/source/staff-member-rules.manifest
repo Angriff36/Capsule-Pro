@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff - StaffMember Rules
 // Manifest spec for catering staff members assignable to events.
 // Distinct from `User` (auth/employee lifecycle): StaffMember is the domain entity

@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Events & Catering - Battle Board Rules
 // Manifest spec for battle board dish competition and voting management
 

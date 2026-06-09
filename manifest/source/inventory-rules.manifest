@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Inventory Rules
 // Manifest spec for inventory operations with constraints, guards, and events
 

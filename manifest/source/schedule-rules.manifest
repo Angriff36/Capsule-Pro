@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Staff - Schedule Rules
 // Manifest spec for schedule and shift management
 // Lifecycle: draft -> approved -> published -> closed

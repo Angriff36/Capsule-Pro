@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Inventory - Cycle Count Rules
 // Manifest spec for cycle count sessions, records, and variance reporting
 

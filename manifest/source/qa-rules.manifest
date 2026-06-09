@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen QA Rules — Quality Checks, Corrective Actions, Temperature Logs
 
 entity QACheck {

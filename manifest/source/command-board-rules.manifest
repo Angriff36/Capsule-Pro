@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Command Board - Board Rules
 // Manifest spec for command board operations with cards, groups, layouts, and connections
 

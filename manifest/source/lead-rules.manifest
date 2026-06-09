@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // CRM & Sales - Lead Rules
 // Manifest spec for lead tracking, qualification, and conversion
 

@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // CRM & Sales - Proposal Rules
 // Manifest spec for proposal lifecycle and line item management
 

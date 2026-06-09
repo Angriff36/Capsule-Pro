@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Workforce AI - Rules
 // Manifest spec for AI-powered workforce optimization features
 

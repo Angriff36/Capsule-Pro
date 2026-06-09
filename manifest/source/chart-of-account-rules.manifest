@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Accounting Domain - Chart of Account Rules
 // Manifest spec for managing chart of accounts (general ledger account definitions)
 

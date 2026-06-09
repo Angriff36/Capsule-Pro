@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Collections Rules Manifest
 // Defines collections workflows, aging, and dunning management
 

@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Sample Data Operations
 // Manifest spec for seeding and clearing sample/demo data
 //

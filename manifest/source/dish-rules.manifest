@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Kitchen Ops - Dish Rules
 // Manifest spec for dish catalog management, pricing, lead times, and menu integration
 // Lifecycle: active | seasonal | eighty_six (out-of-stock/pulled)

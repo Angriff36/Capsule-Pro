@@ -58,6 +58,7 @@ async function buildDeterministicRuntime(userOverrides?: {
   return new ManifestRuntimeEngine(
     enforceCommandOwnership(ir),
     {
+      tenantId: userOverrides?.tenantId ?? TENANT_ID,
       user: {
         id: userOverrides?.id ?? USER_ID,
         tenantId: userOverrides?.tenantId ?? TENANT_ID,
@@ -291,11 +292,15 @@ describe("PrepTask.claim conformance", () => {
       expect(instance!.claimedBy).toBe("");
     });
 
-    it("allows admin with empty tenantId (default policy grants admin access)", async () => {
+    it("allows admin with valid tenantId (IR tenant gate enforces non-empty tenant context)", async () => {
+      // The IR now has a tenant declaration that activates the tenant gate for all
+      // RuntimeEngine instances. Empty tenantId triggers MISSING_TENANT_CONTEXT.
+      // Use the engine's own TENANT_ID so the tenant gate passes, then verify
+      // that the default entity policy still grants admin access.
       const runtime = await buildDeterministicRuntime({
         id: USER_ID,
         role: "admin",
-        tenantId: "", // Empty tenantId
+        tenantId: TENANT_ID,
       });
       await seedClaimableTask(runtime);
 
@@ -306,9 +311,8 @@ describe("PrepTask.claim conformance", () => {
       );
 
       // Admin IS in PrepTaskDefaultAccess role list, so the default entity policy
-      // passes. The old KitchenStaffClaim policy had a tenantId guard, but
-      // default policies are evaluated first and admin is authorized.
-      // Tenant isolation is enforced at a different layer (requireTenantContext).
+      // passes. Tenant isolation is now enforced at the IR level (tenant gate)
+      // rather than at the policy layer.
       expect(result.success).toBe(true);
       expect(result.emittedEvents.length).toBeGreaterThan(0);
     });

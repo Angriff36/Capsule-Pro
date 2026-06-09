@@ -1,3 +1,4 @@
+tenant tenantId : string from context.tenantId
 // Purchasing - Purchase Order Rules
 // Manifest spec for purchase order lifecycle and line item management
 

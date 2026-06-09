@@ -1,4 +1,5 @@
 use "./training-module-rules.manifest"
+tenant tenantId : string from context.tenantId
 
 event StaffMemberCreated: "staff.member.created" {
   staffMemberId: string
