@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 86% context — saved before compacting]
+[proactive bridge @ 95% context — saved before compacting]
 Files (1):
-  manifest/source/recipe-rules.manifest (edit)
+  packages/database/prisma/schema.prisma (edit)
 
 # === END COGNILAYER ===

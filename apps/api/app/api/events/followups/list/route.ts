@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
 const eventFollowups = await database.eventFollowup.findMany({
     where: {
         tenant_id: tenantId,
+        deleted_at: null
       },
     orderBy: {
       created_at: "desc",

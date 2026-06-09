@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
 const crmScoringRules = await database.crmScoringRule.findMany({
     where: {
         tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

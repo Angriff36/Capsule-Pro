@@ -331,12 +331,11 @@ export const ENTITY_ACCESSOR_OVERRIDES = {
 //     OnboardingCompletion, OnboardingTask, PerformanceReview.
 //   tenantId @map + created_at raw: ReorderSuggestion (where ok, orderBy needs rewrite).
 //   no created-at column: ForecastInput (absent), InventoryForecast (uses last_updated).
-// Soft-delete drift verified 2026-06-06 (upstream emits `deletedAt: null`, but these models differ):
-//   raw `deleted_at` column: Document, SmsAutomationRule, StorageLocation, OnboardingTask.
-//   no soft-delete column at all: CrmScoringRule, EventFollowup (IR declares deletedAt but the
-//     Prisma table has no such column — read route must not filter on a phantom field).
+// Soft-delete drift verified 2026-06-08:
+//   raw `deleted_at` column: Document, SmsAutomationRule, StorageLocation, OnboardingTask, EventFollowup.
+//   CrmScoringRule and EventFollowup now have deleted_at columns (added 2026-06-08).
 export const ENTITY_FIELD_OVERRIDES = {
-  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: null },
+  EventFollowup: { tenantId: "tenant_id", createdAt: "created_at", deletedAt: "deleted_at" },
   ActionMilestone: { tenantId: "tenant_id", createdAt: "created_at" },
   DisciplinaryAction: { tenantId: "tenant_id", createdAt: "created_at" },
   OnboardingCompletion: { tenantId: "tenant_id", createdAt: "created_at" },
@@ -346,7 +345,6 @@ export const ENTITY_FIELD_OVERRIDES = {
   ForecastInput: { createdAt: null },
   InventoryForecast: { createdAt: null },
   SampleData: { createdAt: null },  // no created-at column; uses seededAt/clearedAt instead
-  CrmScoringRule: { deletedAt: null },
 
   // Raw snake_case models reached via ENTITY_ACCESSOR_OVERRIDES above. Fixing the accessor
   // exposed that these models also use raw `tenant_id` + `created_at` (no @map). Verified
