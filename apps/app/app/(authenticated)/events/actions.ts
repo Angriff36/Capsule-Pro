@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireCurrentUser, requireTenantId } from "../../lib/tenant";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { syncBattleBoardsForEvent } from "./actions/sync-battle-boards";
 import { importEventFromCsvText, importEventFromPdf } from "./importer";
 import { createEventSchema, updateEventSchema } from "./validation";
 
@@ -119,30 +120,6 @@ const revalidateEvent = (eventId?: string, clientId?: string | null): void => {
   }
 };
 
-const nextEventNumber = async (
-  tx: Prisma.TransactionClient,
-  tenantId: string
-): Promise<string> => {
-  const year = new Date().getFullYear();
-  const prefix = `EVT-${year}`;
-  const lockKey = `${tenantId}:${prefix}`;
-
-  // Event numbers are human-facing; do not let two simultaneous creates race.
-  await tx.$queryRaw(
-    Prisma.sql`SELECT pg_advisory_xact_lock(hashtext(${lockKey})::bigint)`
-  );
-
-  const count = await tx.event.count({
-    where: {
-      tenantId,
-      eventNumber: { startsWith: prefix },
-      deletedAt: null,
-    },
-  });
-
-  return `${prefix}-${String(count + 1).padStart(4, "0")}`;
-};
-
 const hasMenuItems = async (
   tenantId: string,
   eventId: string
@@ -247,51 +224,53 @@ export const createEvent = async (
   let createdId: string;
 
   try {
-    // NOTE: the Event row is still written directly here (pre-existing §9
-    // direct-write; tracked in IMPLEMENTATION_PLAN.md as a follow-up to route
-    // through Event.create — it needs templateId added to the Event manifest
-    // source and the eventNumber advisory-lock numbering reworked).
-    const event = await database.$transaction(async (tx) => {
-      return tx.event.create({
-        data: {
-          tenantId,
-          eventNumber: await nextEventNumber(tx, tenantId),
-          ...eventData(parsed.data, dateOnly(parsed.data.eventDate)),
-          tags: parsed.data.tags,
-          templateId: rawData.templateId,
-        },
-      });
+    const ed = eventData(parsed.data, dateOnly(parsed.data.eventDate));
+    const createResult = await runManifestCommand({
+      entity: "Event",
+      command: "create",
+      body: {
+        clientId: "",
+        // Empty → GenericPrismaStore allocates EVT-YYYY-#### inside Event.create txn
+        eventNumber: "",
+        title: ed.title ?? "",
+        eventType: ed.eventType ?? "",
+        eventDate: ed.eventDate ?? "",
+        guestCount: ed.guestCount ?? 1,
+        venueName: ed.venueName ?? "",
+        venueAddress: ed.venueAddress ?? "",
+        notes: ed.notes ?? "",
+        tags: parsed.data.tags ?? [],
+        status: ed.status ?? "",
+        budget: ed.budget ?? 0,
+        ticketPrice: ed.ticketPrice ?? 0,
+        ticketTier: ed.ticketTier ?? "",
+        eventFormat: ed.eventFormat ?? "",
+        accessibilityOptions: ed.accessibilityOptions ?? [],
+        featuredMediaUrl: ed.featuredMediaUrl ?? "",
+        templateId: rawData.templateId ?? "",
+      },
+      user: { id: user.id, tenantId, role: user.role },
     });
 
-    createdId = event.id;
+    if (!createResult.ok) {
+      console.error("[createEvent] Manifest error:", createResult.message);
+      return {
+        error: createResult.message || "Failed to create event. Please try again.",
+      };
+    }
+
+    const created = createResult.result as { id?: string } | null;
+    createdId = created?.id ?? "";
+    if (!createdId) {
+      return { error: "Failed to create event. Please try again." };
+    }
   } catch (error) {
     console.error("[createEvent] Database error:", error);
     return { error: "Failed to create event. Please try again." };
   }
 
-  // Auto-create the event's battle board through the governed Manifest command
-  // (constitution §9 — no direct Prisma write). Parent-context propagation
-  // resolves the just-created Event and inherits its date/client/venue/guest
-  // context onto the board, so the board never re-collects event-owned data.
-  // Non-fatal: a board failure must not block event creation. See
-  // specs/parent-context-propagation.md.
-  try {
-    const boardResult = await runManifestCommand({
-      entity: "BattleBoard",
-      command: "create",
-      body: {
-        boardName: `${parsed.data.title} - Battle Board`,
-        boardType: "event-specific",
-        eventId: createdId,
-      },
-      user: { id: user.id, tenantId: user.tenantId, role: user.role },
-    });
-    if (!boardResult.ok) {
-      console.error("[createEvent] battle board create failed:", boardResult.message);
-    }
-  } catch (error) {
-    console.error("[createEvent] battle board create error:", error);
-  }
+  // BattleBoard auto-create is handled by the EventCreated reaction in
+  // manifest/source/reactions.manifest (synchronous in the same API turn).
 
   revalidateEvent(createdId);
   redirect(`/events/${createdId}`);
@@ -356,6 +335,12 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   if (!result.ok) {
     throw new Error(result.message || "Failed to update event");
   }
+
+  await syncBattleBoardsForEvent(tenantId, data.eventId, {
+    id: user.id,
+    tenantId,
+    role: user.role,
+  });
 
   revalidateEvent(data.eventId, data.clientId);
   redirect(`/events/${data.eventId}`);

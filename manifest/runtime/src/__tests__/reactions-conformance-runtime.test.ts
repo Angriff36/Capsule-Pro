@@ -164,7 +164,7 @@ async function logWaste(
 describe("Reaction conformance: WasteEntryCreated → InventoryItem.waste", () => {
   it("the compiled IR carries the reaction with the expected resolve + param mapping", () => {
     const reactions: Array<Record<string, unknown>> = ir.reactions ?? [];
-    expect(reactions.length).toBeGreaterThanOrEqual(10);
+    expect(reactions.length).toBeGreaterThanOrEqual(11);
 
     const waste = reactions.find(
       (r) =>

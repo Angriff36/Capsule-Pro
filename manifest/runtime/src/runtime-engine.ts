@@ -1,6 +1,11 @@
 import type { CommandResult } from "@angriff36/manifest";
 import { RuntimeEngine } from "@angriff36/manifest";
 import type { IRCommand, OverrideRequest } from "@angriff36/manifest/ir";
+import {
+  refreshParentContext,
+  resolveParentContext,
+} from "./parent-context-resolver";
+import { sanitizeCreateInitialTransitionInput } from "./run-manifest-command-core";
 
 // Re-export the canonical deterministic expression builtins
 // (percent/daysBetween/containsAny/…) from this DB-free module so test runtimes
@@ -99,6 +104,43 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
     input: Record<string, unknown>,
     options: RunCommandOptions = {}
   ): Promise<CommandResult> {
+    const entityName = options.entityName;
+    const body = input;
+
+    if (entityName && commandName === "create") {
+      try {
+        await resolveParentContext(this, {
+          entity: entityName,
+          command: commandName,
+          body,
+        });
+      } catch {
+        // Inference is best-effort.
+      }
+      sanitizeCreateInitialTransitionInput(this, entityName, commandName, body);
+    }
+
+    const instanceId =
+      commandName === "create"
+        ? options.instanceId
+        : (options.instanceId ??
+            (typeof body.id === "string" && body.id.length > 0
+              ? body.id
+              : undefined));
+
+    if (entityName && commandName === "syncFromEvent" && instanceId) {
+      try {
+        await refreshParentContext(this, {
+          entity: entityName,
+          command: commandName,
+          body,
+          instanceId,
+        });
+      } catch {
+        // Refresh is best-effort.
+      }
+    }
+
     const result = await super.runCommand(commandName, input, options);
 
     // Fire the telemetry hook only when there is something to report.

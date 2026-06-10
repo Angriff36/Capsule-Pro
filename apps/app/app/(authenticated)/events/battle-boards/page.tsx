@@ -45,7 +45,14 @@ interface BattleBoardData {
   timeline?: Array<{ time: string; item: string }>;
 }
 
-const BattleBoardsPage = async () => {
+interface BattleBoardsPageProps {
+  searchParams: Promise<{
+    eventId?: string;
+  }>;
+}
+
+const BattleBoardsPage = async ({ searchParams }: BattleBoardsPageProps) => {
+  const { eventId: filterEventId } = await searchParams;
   const { orgId } = await auth();
 
   if (!orgId) {
@@ -54,11 +61,11 @@ const BattleBoardsPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch battle boards
   const boards = await database.battleBoard.findMany({
     where: {
       tenantId,
       deletedAt: null,
+      ...(filterEventId ? { eventId: filterEventId } : {}),
     },
     orderBy: [{ createdAt: "desc" }],
   });
@@ -106,8 +113,15 @@ const BattleBoardsPage = async () => {
             Battle Boards
           </h1>
           <p className="text-muted-foreground">
-            Print-ready event staff assignments and operational timelines
+            {filterEventId
+              ? "Battle boards linked to this event"
+              : "Print-ready event staff assignments and operational timelines"}
           </p>
+          {filterEventId ? (
+            <Button asChild className="mt-2 w-fit" size="sm" variant="outline">
+              <Link href="/events/battle-boards">Show all boards</Link>
+            </Button>
+          ) : null}
         </div>
 
         <Separator />

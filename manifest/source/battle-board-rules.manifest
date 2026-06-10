@@ -50,19 +50,10 @@ entity BattleBoard {
   constraint validStatus: self.status in ["draft", "open", "voting", "finalized"] "Status must be valid"
   constraint validBoardType: self.boardType in ["event-specific", "general", "seasonal", "competition"] "Board type must be valid"
 
-  constraint blockVoteIfFinalized:block self.status == "finalized" {
-    messageTemplate: "Cannot vote on finalized battle board '{boardName}'"
-    details: {
-      boardName: self.boardName
-    }
-  }
-
-  constraint blockFinalizeNoData:block self.boardData == "{}" or self.boardData == "" {
-    messageTemplate: "Cannot finalize battle board '{boardName}' - no board data"
-    details: {
-      boardName: self.boardName
-    }
-  }
+  // NOTE: blockVoteIfFinalized and blockFinalizeNoData are command guards on
+  // vote/finalize — not entity invariants. As entity block-constraints they
+  // made BattleBoard un-instantiable (create seeds boardData="{}" and status
+  // "draft", tripping blockFinalizeNoData before mutate runs).
 
   // State transitions
   transition status from "draft" to ["open"]
@@ -129,6 +120,7 @@ entity BattleBoard {
 
   command vote(voteData: string, userId: string) {
     guard self.status == "voting" "Can only vote when board is in voting status"
+    guard self.status != "finalized" "Cannot vote on finalized battle board"
     guard userId != null and userId != "" "User ID is required"
     guard voteData != null and voteData != "" "Vote data is required"
 
@@ -139,6 +131,7 @@ entity BattleBoard {
 
   command finalize(userId: string) {
     guard self.status == "voting" "Can only finalize boards in voting status"
+    guard self.status != "finalized" "Cannot finalize an already finalized battle board"
     guard self.boardData != "{}" and self.boardData != "" "Cannot finalize board with no data"
 
     mutate status = "finalized"
@@ -153,6 +146,22 @@ entity BattleBoard {
     mutate boardData = boardData
 
     emit BattleBoardUpdated
+  }
+
+  // Refresh inherited event snapshot after Event.update (parent-context runs
+  // on create only). run-manifest-command-core pre-fills body from the linked
+  // Event before this command executes.
+  command syncFromEvent(eventDate: datetime, clientId: string, guestCount: int, venueName: string, venueAddress: string, locationId: string) {
+    guard self.eventId != null and self.eventId != "" "Battle board must be linked to an event"
+
+    mutate eventDate = eventDate
+    mutate clientId = clientId
+    mutate guestCount = guestCount
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+    mutate locationId = locationId
+
+    emit BattleBoardSyncedFromEvent
   }
 
   command recordImport(boardData: string) {
@@ -238,6 +247,13 @@ event BattleBoardUpdated: "events.battle_board.updated" {
   boardName: string
   userId: string
   updatedAt: datetime
+}
+
+event BattleBoardSyncedFromEvent: "events.battle_board.synced_from_event" {
+  boardId: string
+  tenantId: string
+  eventId: string
+  syncedAt: datetime
 }
 
 event BattleBoardImportRecorded: "events.battle_board.import_recorded" {

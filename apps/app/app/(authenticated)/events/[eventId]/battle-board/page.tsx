@@ -1,6 +1,9 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { Button } from "@repo/design-system/components/ui/button";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { resolveEventBattleBoardHref } from "../../../../lib/battle-boards/resolve-event-board-href";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { getEventStaff, getTimelineTasks } from "./actions/tasks";
@@ -35,28 +38,40 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
     notFound();
   }
 
-  const [tasks, staff] = await Promise.all([
+  const [tasks, staff, canonicalBattleBoardHref] = await Promise.all([
     getTimelineTasks(eventId),
     getEventStaff(eventId),
+    resolveEventBattleBoardHref(database, tenantId, eventId),
   ]);
 
   return (
     <>
       <Header
-        page={event.title}
+        page={`${event.title} — Event Timeline`}
         pages={[
           { label: "Events", href: "/events" },
-          { label: "Battle Board", href: `/events/${eventId}/battle-board` },
+          { label: "Event Timeline", href: `/events/${eventId}/battle-board` },
         ]}
       >
+        <Button asChild size="sm" variant="outline">
+          <Link href={canonicalBattleBoardHref}>Manifest Battle Board</Link>
+        </Button>
         <BattleBoardExportButton eventId={eventId} eventName={event.title} />
-        <a
-          className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-          href={`/events/${eventId}`}
-        >
-          Back to Event
-        </a>
+        <Button asChild size="sm" variant="ghost">
+          <Link href={`/events/${eventId}`}>Back to Event</Link>
+        </Button>
       </Header>
+      <div className="mx-4 mb-4 rounded-md border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+        This Gantt timeline uses legacy <code>timeline_tasks</code> data. For
+        print-ready staff assignments, open the{" "}
+        <Link
+          className="font-medium text-foreground underline-offset-4 hover:underline"
+          href={canonicalBattleBoardHref}
+        >
+          canonical Battle Board
+        </Link>
+        .
+      </div>
       <Timeline
         eventDate={event.eventDate}
         eventId={eventId}

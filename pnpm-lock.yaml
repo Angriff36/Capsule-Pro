@@ -156,8 +156,8 @@ importers:
         specifier: ^3.0.65
         version: 3.0.65(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 2.3.1
-        version: 2.3.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.4.1
+        version: 2.4.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -925,8 +925,8 @@ importers:
         specifier: ^3.0.65
         version: 3.0.65(zod@4.4.3)
       '@angriff36/manifest':
-        specifier: 2.3.1
-        version: 2.3.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.4.1
+        version: 2.4.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -1473,8 +1473,8 @@ importers:
   packages/mcp-server:
     dependencies:
       '@angriff36/manifest':
-        specifier: 2.3.1
-        version: 2.3.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
+        specifier: 2.4.1
+        version: 2.4.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)
       '@modelcontextprotocol/sdk':
         specifier: ^1.29.0
         version: 1.29.0(@cfworker/json-schema@4.1.1)(zod@4.4.3)
@@ -2008,27 +2008,6 @@ packages:
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
-
-  '@angriff36/manifest@2.3.1':
-    resolution: {integrity: sha512-YtFGxSBLKPnfVpJAnHWWUC+OBntPiAn7x4HcIzscbVC8vMsILjC/43piI+56opK+ItS6iBZK+rRE7gjJ4H0R8A==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.3.1/f6123fe94692b1cd386819b5599503b09d0e937e}
-    hasBin: true
-    peerDependencies:
-      '@assemblyscript/loader': ^0.27
-      '@libsql/client': '>=0.14'
-      '@supabase/supabase-js': ^2
-      ioredis: ^5
-      mongodb: ^6
-    peerDependenciesMeta:
-      '@assemblyscript/loader':
-        optional: true
-      '@libsql/client':
-        optional: true
-      '@supabase/supabase-js':
-        optional: true
-      ioredis:
-        optional: true
-      mongodb:
-        optional: true
 
   '@angriff36/manifest@2.4.1':
     resolution: {integrity: sha512-XRVVY3s/4dsScOrnQYNsCEH7WaxEZv0avhqYrqGv3HhbyXWZM62wF1BHSbkWRiWvPmrnGZmKU7SF2k0WTwK9HA==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/2.4.1/a10b8f6cea8fe1870e4a1ca2d15901f05774f00e}
@@ -16345,36 +16324,6 @@ snapshots:
       zod-to-json-schema: 3.25.2(zod@3.25.76)
 
   '@alloc/quick-lru@5.2.0': {}
-
-  '@angriff36/manifest@2.3.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.29.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
-      '@msgpack/msgpack': 3.1.3
-      '@types/pg': 8.20.0
-      ajv: 8.20.0
-      chalk: 5.6.2
-      commander: 12.1.0
-      glob: 10.5.0
-      inquirer: 9.3.8(@types/node@25.9.1)
-      jiti: 2.7.0
-      js-yaml: 4.1.1
-      ora: 8.2.0
-      pg: 8.21.0
-      typescript: 5.9.3
-      vscode-languageserver: 9.0.1
-      vscode-languageserver-textdocument: 1.0.12
-      zod: 3.25.76
-    optionalDependencies:
-      '@assemblyscript/loader': 0.27.37
-      '@libsql/client': 0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      ioredis: 5.11.1
-      mongodb: 6.21.0
-    transitivePeerDependencies:
-      - '@cfworker/json-schema'
-      - '@types/node'
-      - pg-native
-      - supports-color
 
   '@angriff36/manifest@2.4.1(@assemblyscript/loader@0.27.37)(@cfworker/json-schema@4.1.1)(@libsql/client@0.17.3(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(@types/node@25.9.1)(ioredis@5.11.1)(mongodb@6.21.0)':
     dependencies:

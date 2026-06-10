@@ -146,3 +146,21 @@ on ProposalAccepted run Event.create
     ticketTier: ""
     eventFormat: ""
   }
+
+// ── Events: Event hub → BattleBoard propagation ─────────────────────────────
+
+// Governed Event.create emits EventCreated; this reaction auto-creates the
+// canonical event-specific BattleBoard. Parent-context propagation inherits
+// event date/client/venue/guest from eventId — callers supply only boardName
+// and boardType. resolve null lets the engine auto-generate the board id.
+on EventCreated run BattleBoard.create
+  resolve null
+  params {
+    boardName: payload.title + " - Battle Board"
+    boardType: "event-specific"
+    eventId: payload.result.id
+    description: ""
+    isTemplate: false
+    notes: ""
+    tags: ""
+  }

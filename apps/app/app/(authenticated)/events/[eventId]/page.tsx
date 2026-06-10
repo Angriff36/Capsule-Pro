@@ -1,8 +1,10 @@
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { resolveEventBattleBoardHref } from "../../../lib/battle-boards/resolve-event-board-href";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { DeleteEventButton } from "../components/delete-event-button";
@@ -92,6 +94,12 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   const prepTasksForClient: Awaited<ReturnType<typeof serializePrepTasks>> =
     serializePrepTasks(prepTasks);
 
+  const battleBoardHref = await resolveEventBattleBoardHref(
+    database,
+    tenantId,
+    eventId
+  );
+
   return (
     <>
       <Header
@@ -110,10 +118,10 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
             <Link href={`/events/${eventId}/budget`}>Budget</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link href={`/events/${eventId}/timeline`}>Timeline</Link>
+            <Link href={`/events/${eventId}/battle-board`}>Event Timeline</Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link href={`/events/${eventId}/battle-board`}>Battle Board</Link>
+            <Link href={battleBoardHref}>Battle Board</Link>
           </Button>
           <EventExportButton eventId={eventId} eventName={event.title} />
           <Button asChild size="sm" variant="ghost">
@@ -131,6 +139,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       </Header>
       <EventDetailsClient
         allEventData={data}
+        battleBoardHref={battleBoardHref}
         budget={null}
         event={{
           ...event,

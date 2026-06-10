@@ -13,8 +13,11 @@ import type {
   OverrideRequest,
 } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
-import { resolveParentContext } from "./parent-context-resolver";
-export { resolveParentContext } from "./parent-context-resolver";
+import {
+  refreshParentContext,
+  resolveParentContext,
+} from "./parent-context-resolver";
+export { refreshParentContext, resolveParentContext } from "./parent-context-resolver";
 
 export interface ManifestUserContext {
   id: string;
@@ -285,6 +288,8 @@ export async function runManifestCommandCore(
     // the parent-owned fields the child declares but does not accept as input.
     // Runs here — before runCommand — because the engine snapshots the create
     // body before any middleware fires. Never let inference break a create.
+    // ManifestRuntimeEngine also enriches create/sync before runCommand (covers
+    // reaction-triggered creates). Keep this path for plain RuntimeEngine tests.
     if (command === "create") {
       try {
         await resolveParentContext(runtime, { entity, command, body });
@@ -292,6 +297,24 @@ export async function runManifestCommandCore(
         // Inference is best-effort; proceed with the un-enriched body.
       }
       sanitizeCreateInitialTransitionInput(runtime, entity, command, body);
+    }
+
+    const resolvedInstanceIdForRefresh =
+      command === "create"
+        ? instanceId
+        : (instanceId ?? deriveInstanceIdFromBody(body, entity));
+
+    if (command === "syncFromEvent" && resolvedInstanceIdForRefresh) {
+      try {
+        await refreshParentContext(runtime, {
+          entity,
+          command,
+          body,
+          instanceId: resolvedInstanceIdForRefresh,
+        });
+      } catch {
+        // Refresh is best-effort; proceed with the un-enriched body.
+      }
     }
 
     // Resolve which instance an instance-scoped verb targets. The canonical
@@ -305,10 +328,7 @@ export async function runManifestCommandCore(
     // command's mutate actions (runtime-engine `shouldAutoCreateInstance`).
     // Passing an instanceId would DISABLE that path, so we never derive one for
     // create and let the engine own instantiation.
-    const resolvedInstanceId =
-      command === "create"
-        ? instanceId
-        : (instanceId ?? deriveInstanceIdFromBody(body, entity));
+    const resolvedInstanceId = resolvedInstanceIdForRefresh;
 
     const result = await runtime.runCommand(command, body, {
       entityName: entity,

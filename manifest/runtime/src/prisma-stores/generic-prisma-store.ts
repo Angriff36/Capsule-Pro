@@ -48,6 +48,10 @@ import {
   type PrismaFieldMeta,
   type PrismaModelMeta,
 } from "../generated/prisma-model-metadata.generated";
+import {
+  allocateEventNumberInTransaction,
+  resolveEventNumberForCreate,
+} from "./allocate-event-number";
 
 // Minimal structural view of a Prisma delegate — the generic store stays
 // untyped against the concrete model so one class serves every entity.
@@ -62,12 +66,16 @@ interface PrismaDelegate {
 export class GenericPrismaStore implements Store<EntityInstance> {
   private readonly meta: PrismaModelMeta;
   private readonly delegate: PrismaDelegate;
+  private readonly prisma: PrismaClient;
+  private readonly entityName: string;
 
   constructor(
     prisma: PrismaClient,
     entityName: string,
     private readonly tenantId: string,
   ) {
+    this.prisma = prisma;
+    this.entityName = entityName;
     const modelKey = resolvePrismaModelKey(entityName);
     const meta =
       PRISMA_MODEL_METADATA[entityName] ?? PRISMA_MODEL_METADATA[modelKey];
@@ -219,8 +227,33 @@ export class GenericPrismaStore implements Store<EntityInstance> {
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    if (this.entityName === "Event") {
+      const row = await this.createEventRow(data);
+      return this.mapToManifestEntity(row);
+    }
+
     const row = await this.delegate.create({ data: this.buildCreateData(data) });
     return this.mapToManifestEntity(row);
+  }
+
+  /**
+   * Event.create may omit eventNumber — allocate EVT-YYYY-#### under an advisory
+   * lock in the same transaction as the insert (not in app-layer Prisma).
+   */
+  private async createEventRow(
+    data: Partial<EntityInstance>
+  ): Promise<Record<string, unknown>> {
+    return this.prisma.$transaction(async (tx) => {
+      const payload = data as Record<string, unknown>;
+      const allocated = await allocateEventNumberInTransaction(tx, this.tenantId);
+      const enriched = resolveEventNumberForCreate(payload, allocated);
+      const row = await tx.event.create({
+        data: this.buildCreateData(
+          enriched as Partial<EntityInstance>
+        ) as Parameters<typeof tx.event.create>[0]["data"],
+      });
+      return row as Record<string, unknown>;
+    });
   }
 
   async update(

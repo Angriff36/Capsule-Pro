@@ -2085,6 +2085,7 @@ model Event {
   venueAddress String? @map("venue_address") @default("")
   notes String? @default("")
   tags String[]
+  templateId String? @map("template_id") @default("")
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
   createdAt DateTime? @map("created_at") @db.Timestamptz(6) @default(now())
   updatedAt DateTime? @map("updated_at") @db.Timestamptz(6) @updatedAt

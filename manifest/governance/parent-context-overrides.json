@@ -245,6 +245,13 @@
       "reason": "CateringOrder.guestCount is the meal headcount (may be less than the event total — e.g., vendor/staff meals, dietary-specific orders). Semantically independent of Event.guestCount (total event attendees). The name match is coincidental — the catering count is authored per order.",
       "owner": "events",
       "reviewed": "2026-06-09"
+    },
+    "AutomatedFollowup": {
+      "fields": ["templateId"],
+      "category": "FALSE_POSITIVE",
+      "reason": "Surfaced 2026-06-10 when the Event hub-propagation increment added a `templateId` property to Event (which event-creation template the event was built from). AutomatedFollowup.templateId is the followup's OWN notification template — the email/sms/push message template used to render the followup — authored per followup and semantically independent of the parent Event's source template. The name+type match is coincidental; the followup message template must NOT inherit the event's creation template.",
+      "owner": "events",
+      "reviewed": "2026-06-10"
     }
   }
 }

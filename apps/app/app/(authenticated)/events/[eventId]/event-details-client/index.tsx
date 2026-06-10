@@ -764,6 +764,7 @@ interface EventDetailsClientProps {
   staffCount?: number;
   prepLists?: PrepListSummary[];
   hasBudget?: boolean;
+  battleBoardHref: string;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -783,6 +784,7 @@ export function EventDetailsClient({
   staffCount = 0,
   prepLists = [],
   hasBudget = false,
+  battleBoardHref,
 }: EventDetailsClientProps) {
   const router = useRouter();
 
@@ -1429,6 +1431,7 @@ export function EventDetailsClient({
       <div className="relative mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 pb-28 pt-10 sm:px-6 lg:px-8">
         <Separator />
         <EventDetailTabs
+          battleBoardHref={battleBoardHref}
           battleboard={
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />
@@ -1437,7 +1440,7 @@ export function EventDetailsClient({
               </p>
               <a
                 className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-                href={`/events/${event.id}/battle-board`}
+                href={battleBoardHref}
               >
                 Open Battle Board
               </a>
@@ -1562,6 +1565,7 @@ export function EventDetailsClient({
           operations={
             <div className="space-y-6">
               <OperationsSection
+                battleBoardHref={battleBoardHref}
                 currentStaffCount={currentStaffCount}
                 eventId={event.id}
                 isGeneratingPrepList={isGeneratingPrepList}

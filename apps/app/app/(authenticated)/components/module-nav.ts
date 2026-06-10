@@ -72,6 +72,7 @@ export const modules: ModuleDefinition[] = [
         label: "Planning",
         items: [
           { title: "Battle Boards", href: "/events/battle-boards" },
+          { title: "Command Board", href: "/command-board" },
           { title: "Budgets", href: "/events/budgets" },
         ],
       },
@@ -470,7 +471,6 @@ export const modules: ModuleDefinition[] = [
           { title: "Tools Overview", href: "/tools" },
           { title: "AI", href: "/tools/ai" },
           { title: "Autofill Reports", href: "/tools/autofill-reports" },
-          { title: "Battleboards", href: "/tools/battleboards" },
           { title: "Conflicts", href: "/tools/conflicts" },
           { title: "Inventory Import", href: "/tools/inventory-import" },
         ],

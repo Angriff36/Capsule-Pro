@@ -54,6 +54,7 @@ const ALL_TAB_VALUES = new Set<string>([
 
 interface EventDetailTabsProps {
   eventId: string;
+  battleBoardHref: string;
   eventDate: string | Date | null | undefined;
   eventStatus: string | null;
   overview: ReactNode;
@@ -116,6 +117,7 @@ function getTabsForMode(mode: EventMode): readonly string[] {
 
 export function EventDetailTabs({
   eventId,
+  battleBoardHref,
   eventDate,
   eventStatus,
   overview,
@@ -225,7 +227,7 @@ export function EventDetailTabs({
         </p>
         <a
           className="mt-3 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          href={`/events/${eventId}/battle-board`}
+          href={battleBoardHref}
         >
           Open Battle Board
         </a>

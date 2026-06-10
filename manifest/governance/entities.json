@@ -1,12 +1,17 @@
 {
-  "irHash": "",
-  "compilerVersion": "2.2.0",
+  "irHash": "41b38886cee29c78020033a4d2a2444a18f0c2932798da93e4de55d00ffa5587",
+  "compilerVersion": "2.4.1",
   "entities": [
     {
       "name": "AdminChatParticipant",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["archive", "unarchive", "clearHistory"],
+      "commands": [
+        "create",
+        "archive",
+        "unarchive",
+        "clearHistory"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -14,9 +19,9 @@
         "userId",
         "archivedAt",
         "clearedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -26,11 +31,11 @@
       "commands": [
         "create",
         "update",
-        "moveToTodo",
+        "moveToBacklog",
         "startProgress",
+        "submitForReview",
         "complete",
         "cancel",
-        "reopen",
         "softDelete"
       ],
       "properties": [
@@ -44,9 +49,9 @@
         "assignedTo",
         "dueDate",
         "createdBy",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -78,17 +83,28 @@
         "missingFields",
         "suggestions",
         "createdEventId",
+        "completedAt",
         "createdAt",
-        "updatedAt",
-        "completedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "AlertsConfig",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
-      "properties": ["id", "tenantId", "channel", "destination"]
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "channel",
+        "destination",
+        "createdAt",
+        "updatedAt"
+      ]
     },
     {
       "name": "AllergenWarning",
@@ -97,8 +113,9 @@
       "commands": [
         "create",
         "acknowledge",
-        "resolve",
+        "markResolved",
         "applyOverride",
+        "escalate",
         "softDelete"
       ],
       "properties": [
@@ -116,17 +133,26 @@
         "overrideReason",
         "resolved",
         "resolvedAt",
+        "escalatedAt",
+        "escalatedTo",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ApiKey",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "revoke", "softDelete", "recordUsage"],
+      "commands": [
+        "create",
+        "update",
+        "rotate",
+        "revoke",
+        "softDelete",
+        "recordUsage"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -138,16 +164,24 @@
         "expiresAt",
         "revokedAt",
         "createdByUserId",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "BankAccount",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "setDefault", "update", "verify"],
+      "commands": [
+        "create",
+        "remove",
+        "markDefault",
+        "update",
+        "verify",
+        "verifyFailed",
+        "retryVerification"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -160,6 +194,8 @@
         "isDefault",
         "status",
         "verifiedAt",
+        "verificationFailedAt",
+        "verificationFailureReason",
         "createdAt",
         "updatedAt"
       ]
@@ -175,7 +211,10 @@
         "addDish",
         "removeDish",
         "vote",
-        "finalize"
+        "finalize",
+        "update",
+        "syncFromEvent",
+        "recordImport"
       ],
       "properties": [
         "id",
@@ -193,17 +232,33 @@
         "description",
         "notes",
         "tags",
-        "createdAt",
         "dishCount",
-        "updatedAt",
-        "deletedAt"
+        "deletedAt",
+        "eventDate",
+        "clientId",
+        "guestCount",
+        "venueName",
+        "venueAddress",
+        "locationId",
+        "inheritedContext",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "Budget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update", "refresh"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "approve",
+        "lock",
+        "addLineItem",
+        "recordVariance",
+        "refresh"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -216,6 +271,9 @@
         "status",
         "category",
         "departmentId",
+        "approvedBy",
+        "approvedAt",
+        "lockedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -224,7 +282,14 @@
       "name": "BulkOrderRule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "adjustPriority",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -241,9 +306,9 @@
         "effectiveFrom",
         "effectiveTo",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -254,8 +319,11 @@
         "create",
         "update",
         "confirm",
+        "recordDeposit",
+        "scheduleDelivery",
         "cancel",
         "startPrep",
+        "deliver",
         "markComplete"
       ],
       "properties": [
@@ -277,6 +345,8 @@
         "depositAmount",
         "depositPaid",
         "depositPaidAt",
+        "deliveredAt",
+        "prepStartedAt",
         "venueName",
         "venueAddress",
         "venueCity",
@@ -289,16 +359,20 @@
         "dietaryRestrictions",
         "staffRequired",
         "staffAssigned",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ChartOfAccount",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -316,7 +390,15 @@
       "name": "ClientInteraction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "complete"],
+      "commands": [
+        "create",
+        "update",
+        "complete",
+        "schedule",
+        "markOverdue",
+        "escalate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -329,17 +411,26 @@
         "description",
         "followUpDate",
         "followUpCompleted",
+        "status",
+        "priority",
+        "escalatedAt",
+        "escalatedTo",
         "correlationId",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Client",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "archive", "reactivate"],
+      "commands": [
+        "create",
+        "update",
+        "archive",
+        "reactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -364,16 +455,21 @@
         "source",
         "assignedTo",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ClientContact",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove", "setPrimary"],
+      "commands": [
+        "create",
+        "update",
+        "remove",
+        "setPrimary"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -387,16 +483,20 @@
         "isPrimary",
         "isBillingContact",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ClientPreference",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -405,9 +505,9 @@
         "preferenceKey",
         "preferenceValue",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -417,7 +517,7 @@
       "commands": [
         "assignTo",
         "updateStatus",
-        "resolve",
+        "settle",
         "recordPayment",
         "markResolved",
         "escalateDunning",
@@ -465,17 +565,22 @@
         "internalNotes",
         "lastActivityAt",
         "metadata",
-        "createdAt",
-        "updatedAt",
         "resolvedAt",
-        "closedAt"
+        "closedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "CollectionAction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["complete", "fail", "skip", "reschedule"],
+      "commands": [
+        "complete",
+        "fail",
+        "skip",
+        "reschedule"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -526,17 +631,22 @@
         "nextPaymentDate",
         "notes",
         "metadata",
-        "createdAt",
-        "updatedAt",
         "completedAt",
-        "defaultedAt"
+        "defaultedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "CommandBoard",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "activate", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -546,16 +656,24 @@
         "status",
         "isTemplate",
         "tags",
+        "autoPopulate",
+        "scope",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "CommandBoardCard",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "move", "resize", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "move",
+        "resize",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -575,16 +693,20 @@
         "entityId",
         "entityType",
         "version",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "CommandBoardGroup",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -597,16 +719,19 @@
         "width",
         "height",
         "zIndex",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "CommandBoardConnection",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove"],
+      "commands": [
+        "create",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -616,16 +741,20 @@
         "relationshipType",
         "label",
         "visible",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "CommandBoardLayout",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -637,16 +766,22 @@
         "gridSize",
         "showGrid",
         "snapToGrid",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Container",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate",
+        "reactivate",
+        "relocate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -659,16 +794,199 @@
         "capacityPortions",
         "isReusable",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ProposalTemplate",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "softDelete"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "description",
+        "eventType",
+        "defaultTerms",
+        "defaultTaxRate",
+        "defaultNotes",
+        "defaultLineItems",
+        "isActive",
+        "isDefault",
+        "logoUrl",
+        "primaryColor",
+        "secondaryColor",
+        "accentColor",
+        "fontFamily",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "InteractionAttachment",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "clientInteractionId",
+        "fileName",
+        "fileUrl",
+        "fileType",
+        "fileSizeBytes",
+        "uploadedBy",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CrmScoringRule",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "softDelete"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "ruleName",
+        "field",
+        "condition",
+        "value",
+        "points",
+        "isActive",
+        "priority",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Report",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "share",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "reportType",
+        "queryConfig",
+        "displayConfig",
+        "isShared",
+        "createdBy",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Document",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "markParsed",
+        "markFailed",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "documentType",
+        "fileUrl",
+        "fileSizeBytes",
+        "status",
+        "entityType",
+        "entityId",
+        "uploadedBy",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "AdminChatThread",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "archive",
+        "reopen"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "threadType",
+        "slug",
+        "directKey",
+        "status",
+        "createdBy",
+        "lastMessageAt",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "AdminChatMessage",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "threadId",
+        "authorId",
+        "authorName",
+        "text",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "CycleCountSession",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "start", "complete", "finalize", "cancel"],
+      "commands": [
+        "create",
+        "update",
+        "start",
+        "complete",
+        "finalize",
+        "reopen",
+        "cancel",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -688,16 +1006,21 @@
         "notes",
         "createdById",
         "approvedById",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "CycleCountRecord",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "verify", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "verify",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -719,16 +1042,22 @@
         "verifiedAt",
         "syncStatus",
         "offlineId",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "VarianceReport",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "review", "approve"],
+      "commands": [
+        "create",
+        "reject",
+        "review",
+        "approve",
+        "updateDiscrepancy"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -746,18 +1075,34 @@
         "adjustmentType",
         "adjustmentAmount",
         "adjustmentDate",
+        "rejectedAt",
+        "rejectedBy",
+        "rejectionReason",
         "notes",
+        "rootCause",
+        "resolutionNotes",
+        "resolvedById",
+        "resolvedAt",
         "generatedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Deal",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["updateStage", "close"],
+      "commands": [
+        "create",
+        "updateStage",
+        "updateValue",
+        "updateProbability",
+        "assign",
+        "close",
+        "abandon",
+        "reopen"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -783,9 +1128,14 @@
       "commands": [
         "create",
         "update",
+        "activate",
         "deactivate",
         "updatePricing",
-        "updateLeadTime"
+        "updateLeadTime",
+        "markSeasonal",
+        "unmarkSeasonal",
+        "eightySix",
+        "reinstate"
       ],
       "properties": [
         "id",
@@ -805,16 +1155,30 @@
         "pricePerPerson",
         "costPerPerson",
         "isActive",
+        "isSeasonal",
+        "seasonLabel",
+        "seasonStartMonth",
+        "seasonEndMonth",
+        "isEightySix",
+        "eightySixReason",
+        "eightySixAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "DocumentVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "restore"],
+      "commands": [
+        "create",
+        "updateContent",
+        "approve",
+        "markPublished",
+        "supersede",
+        "restore"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -823,6 +1187,13 @@
         "content",
         "changeDescription",
         "createdBy",
+        "status",
+        "approvedBy",
+        "publishedBy",
+        "supersededBy",
+        "approvedAt",
+        "publishedAt",
+        "supersededAt",
         "createdAt",
         "updatedAt"
       ]
@@ -831,7 +1202,11 @@
       "name": "EmailTemplate",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -842,16 +1217,22 @@
         "mergeFields",
         "isActive",
         "isDefault",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EmailWorkflow",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "setActive",
+        "softDelete",
+        "recordTriggered"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -859,18 +1240,26 @@
         "triggerType",
         "triggerConfig",
         "emailTemplateId",
+        "emailTemplateTenantId",
         "recipientConfig",
         "isActive",
+        "lastTriggeredAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EmployeeAvailability",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "suspend",
+        "reinstate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -881,16 +1270,27 @@
         "isAvailable",
         "effectiveFrom",
         "effectiveUntil",
+        "isSuspended",
+        "suspendReason",
+        "suspendedAt",
+        "reinstatedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EmployeeCertification",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "renew",
+        "expire",
+        "revoke",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -900,9 +1300,10 @@
         "issuedDate",
         "expiryDate",
         "documentUrl",
+        "status",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -943,7 +1344,7 @@
       ]
     },
     {
-      "name": "WorkOrder",
+      "name": "MaintenanceWorkOrder",
       "classification": "governed",
       "tenantScoped": true,
       "commands": [
@@ -951,16 +1352,13 @@
         "startWork",
         "completeWork",
         "updateStatus",
-        "create",
-        "start",
-        "complete",
-        "cancel",
-        "updatePriority",
-        "reschedule"
+        "create"
       ],
       "properties": [
         "id",
         "tenantId",
+        "workOrderNumber",
+        "areaId",
         "equipmentId",
         "equipmentName",
         "title",
@@ -968,13 +1366,15 @@
         "priority",
         "status",
         "description",
+        "reportedBy",
         "assignedTo",
-        "estimatedCost",
-        "actualCost",
         "scheduledDate",
         "completedDate",
+        "estimatedCost",
+        "actualCost",
         "partsUsed",
         "vendorId",
+        "notes",
         "createdAt",
         "updatedAt"
       ]
@@ -983,7 +1383,14 @@
       "name": "AutomatedFollowup",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "complete", "generate", "skip"],
+      "commands": [
+        "create",
+        "complete",
+        "generate",
+        "fail",
+        "retry",
+        "skip"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1005,7 +1412,16 @@
       "name": "EventTimelineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["createItem", "deleteItem", "completeItem", "updateItem"],
+      "commands": [
+        "createItem",
+        "startItem",
+        "blockItem",
+        "unblockItem",
+        "reorderItem",
+        "deleteItem",
+        "completeItem",
+        "updateItem"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1026,7 +1442,14 @@
       "name": "EventWaitlistEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["addGuest", "promote", "updateRsvp"],
+      "commands": [
+        "addGuest",
+        "notify",
+        "promote",
+        "seat",
+        "cancel",
+        "updateRsvp"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1039,6 +1462,7 @@
         "notes",
         "joinedAt",
         "notifiedAt",
+        "seatedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -1047,7 +1471,12 @@
       "name": "EventBudget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "approve", "finalize"],
+      "commands": [
+        "create",
+        "update",
+        "approve",
+        "finalize"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1057,18 +1486,21 @@
         "totalBudgetAmount",
         "totalActualAmount",
         "varianceAmount",
-        "variancePercentage",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "BudgetLineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1081,9 +1513,9 @@
         "varianceAmount",
         "sortOrder",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -1112,16 +1544,25 @@
         "documentType",
         "notes",
         "expiresAt",
+        "sentAt",
+        "viewedAt",
+        "signedAt",
+        "canceledBy",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ContractSignature",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "softDelete"],
+      "commands": [
+        "create",
+        "verify",
+        "invalidate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1130,17 +1571,28 @@
         "signatureData",
         "signerName",
         "signerEmail",
+        "signerRole",
         "ipAddress",
+        "verifiedAt",
+        "invalidatedAt",
+        "invalidationReason",
+        "isValid",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EventDish",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove"],
+      "commands": [
+        "create",
+        "updateQuantity",
+        "updateCourse",
+        "updateNotes",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1150,16 +1602,24 @@
         "notes",
         "courseLabel",
         "sortOrder",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EventGuest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "rsvpConfirm",
+        "rsvpDecline",
+        "checkIn",
+        "assignTable",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1171,13 +1631,17 @@
         "dietaryRestrictions",
         "allergenRestrictions",
         "notes",
+        "declineReason",
         "specialMealRequired",
         "specialMealNotes",
         "tableAssignment",
         "mealPreference",
+        "rsvpStatus",
+        "rsvpAt",
+        "checkedInAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -1228,7 +1692,14 @@
       "name": "EventReport",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "submit", "approve", "complete"],
+      "commands": [
+        "create",
+        "submit",
+        "approve",
+        "reject",
+        "complete",
+        "updateProgress"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1245,9 +1716,12 @@
         "reviewedBy",
         "reviewedAt",
         "completedAt",
+        "rejectedAt",
+        "rejectedBy",
+        "rejectionReason",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -1260,11 +1734,13 @@
         "confirm",
         "cancel",
         "archive",
+        "updateBudget",
         "updateGuestCount",
         "updateDate",
         "updateLocation",
         "finalize",
-        "unfinalize"
+        "unfinalize",
+        "softDelete"
       ],
       "properties": [
         "id",
@@ -1284,21 +1760,27 @@
         "featuredMediaUrl",
         "locationId",
         "venueId",
+        "venueEntityId",
         "assignedTo",
         "venueName",
         "venueAddress",
         "notes",
         "tags",
+        "templateId",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EventProfitability",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "recalculate"],
+      "commands": [
+        "create",
+        "update",
+        "recalculate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1309,14 +1791,12 @@
         "budgetedOverhead",
         "budgetedTotalCost",
         "budgetedGrossMargin",
-        "budgetedGrossMarginPct",
         "actualRevenue",
         "actualFoodCost",
         "actualLaborCost",
         "actualOverhead",
         "actualTotalCost",
         "actualGrossMargin",
-        "actualGrossMarginPct",
         "revenueVariance",
         "foodCostVariance",
         "laborCostVariance",
@@ -1325,16 +1805,20 @@
         "calculatedAt",
         "calculationMethod",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EventSummary",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "refresh"],
+      "commands": [
+        "create",
+        "update",
+        "refresh"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1347,49 +1831,283 @@
         "overallSummary",
         "generatedAt",
         "generationDurationMs",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EventStaff",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["assign", "unassign"],
+      "commands": [
+        "assign",
+        "confirm",
+        "updateShift",
+        "updateRole",
+        "checkIn",
+        "checkOut",
+        "markNoShow",
+        "unassign"
+      ],
       "properties": [
         "id",
         "tenantId",
         "eventId",
-        "userId",
+        "staffMemberId",
         "role",
         "notes",
         "shiftStart",
         "shiftEnd",
         "status",
+        "confirmedAt",
+        "checkedInAt",
+        "checkedOutAt",
+        "noShowReason",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Venue",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "updateCapacity",
+        "softDelete"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "venueType",
+        "addressLine1",
+        "addressLine2",
+        "city",
+        "stateProvince",
+        "postalCode",
+        "countryCode",
+        "capacity",
+        "contactName",
+        "contactPhone",
+        "contactEmail",
+        "accessNotes",
+        "cateringNotes",
+        "layoutImageUrl",
+        "tags",
+        "isActive",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "EventTimeline",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "reorder",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "eventId",
+        "title",
+        "scheduledAt",
+        "durationMinutes",
+        "notes",
+        "sortOrder",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TimelineTask",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "start",
+        "complete",
+        "blockTask",
+        "unblockTask",
+        "reorder",
+        "reassign",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "eventId",
+        "title",
+        "dueAt",
+        "status",
+        "assignedTo",
+        "notes",
+        "sortOrder",
+        "completedAt",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "EventImport",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "startProcessing",
+        "complete",
+        "fail",
+        "retry"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "source",
+        "fileName",
+        "status",
+        "totalRows",
+        "importedRows",
+        "skippedRows",
+        "errorMessage",
+        "completedAt",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "EventFollowup",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "complete",
+        "reschedule",
+        "cancel"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "eventId",
+        "type",
+        "dueAt",
+        "status",
+        "assignedTo",
+        "notes",
+        "completedAt",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "BoardProjection",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "move",
+        "resize",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "boardId",
+        "entityType",
+        "entityId",
+        "positionX",
+        "positionY",
+        "width",
+        "height",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "BoardAnnotation",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "boardId",
+        "text",
+        "positionX",
+        "positionY",
+        "color",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "Note",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "title",
+        "content",
+        "color",
+        "tags",
+        "entityType",
+        "entityId",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "Facility",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "edit"],
+      "commands": [
+        "create",
+        "remove",
+        "edit",
+        "sendToMaintenance",
+        "restoreFromMaintenance"
+      ],
       "properties": [
         "id",
         "tenantId",
         "name",
-        "type",
-        "address",
+        "code",
+        "facilityType",
+        "addressLine1",
+        "addressLine2",
         "city",
         "state",
-        "zip",
+        "postalCode",
+        "country",
         "phone",
         "status",
-        "capacity",
-        "description",
+        "notes",
         "createdAt",
         "updatedAt"
       ]
@@ -1398,7 +2116,13 @@
       "name": "FacilityArea",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "edit"],
+      "commands": [
+        "create",
+        "remove",
+        "edit",
+        "closeForMaintenance",
+        "reopen"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1418,7 +2142,14 @@
       "name": "FacilityAsset",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "sendToMaintenance",
+        "returnFromMaintenance",
+        "retire"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1433,6 +2164,11 @@
         "currentValue",
         "depreciationRate",
         "serialNumber",
+        "manufacturer",
+        "model",
+        "warrantyExpiry",
+        "lastMaintenanceAt",
+        "nextMaintenanceAt",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1442,7 +2178,14 @@
       "name": "FacilitySchedule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "edit", "complete"],
+      "commands": [
+        "create",
+        "remove",
+        "edit",
+        "start",
+        "complete",
+        "cancel"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1455,6 +2198,7 @@
         "startDate",
         "endDate",
         "assignedTo",
+        "completedAt",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1464,7 +2208,13 @@
       "name": "FacilityWorkOrder",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "updateStatus"],
+      "commands": [
+        "create",
+        "assign",
+        "start",
+        "complete",
+        "cancel"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1495,8 +2245,14 @@
         "create",
         "update",
         "deactivate",
+        "reactivate",
         "updateAllergens",
-        "updateShelfLife"
+        "updateShelfLife",
+        "linkInventoryItem",
+        "unlinkInventoryItem",
+        "recordLot",
+        "flagRecall",
+        "clearRecall"
       ],
       "properties": [
         "id",
@@ -1509,9 +2265,282 @@
         "storageInstructions",
         "allergens",
         "isActive",
+        "inventoryItemId",
+        "currentLotNumber",
+        "currentLotReceivedAt",
+        "currentLotExpiresAt",
+        "isRecalled",
+        "recallReason",
+        "recalledAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "StorageLocation",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "deactivate"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "locationId",
+        "name",
+        "storageType",
+        "temperatureZone",
+        "isActive",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "InventoryStock",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "adjust",
+        "recount"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryItemId",
+        "storageLocationId",
+        "quantityOnHand",
+        "unitId",
+        "lastCountedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "InventoryAlert",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "escalate",
+        "acknowledge",
+        "markResolved"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryItemId",
+        "alertType",
+        "severity",
+        "message",
+        "status",
+        "triggeredAt",
+        "acknowledgedAt",
+        "resolvedAt",
+        "acknowledgedBy",
+        "resolvedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "InventoryForecast",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "markPublished",
+        "approve"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryItemId",
+        "forecastDate",
+        "projectedQuantity",
+        "confidence",
+        "status",
+        "publishedAt",
+        "approvedAt",
+        "approvedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ForecastInput",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryItemId",
+        "inputDate",
+        "actualUsage",
+        "source",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ReorderSuggestion",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "accept",
+        "dismiss",
+        "autoAccept"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryItemId",
+        "suggestedQuantity",
+        "reason",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "VendorContact",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventorySupplierId",
+        "name",
+        "email",
+        "phone",
+        "role",
+        "isPrimary",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "VendorRating",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventorySupplierId",
+        "category",
+        "score",
+        "comment",
+        "ratedAt",
+        "ratedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "InventoryTransferItem",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "addItem",
+        "updateQuantity",
+        "removeItem"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "inventoryTransferId",
+        "inventoryItemId",
+        "quantity",
+        "unitId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ProcurementBudget",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "recordSpend",
+        "close"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "periodStart",
+        "periodEnd",
+        "budgetAmount",
+        "spentAmount",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ProcurementBudgetAlert",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "acknowledge"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "procurementBudgetId",
+        "thresholdPct",
+        "message",
+        "triggeredAt",
+        "acknowledgedAt",
+        "acknowledgedBy",
+        "isAcknowledged",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "AuditSchedule",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "deactivate",
+        "activate",
+        "recordRun"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "frequency",
+        "nextRunAt",
+        "lastRunAt",
+        "isActive",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
@@ -1525,7 +2554,9 @@
         "adjust",
         "restock",
         "releaseReservation",
-        "create"
+        "create",
+        "update",
+        "softDelete"
       ],
       "properties": [
         "id",
@@ -1537,6 +2568,7 @@
         "unitOfMeasure",
         "unitCost",
         "quantityOnHand",
+        "quantityReserved",
         "parLevel",
         "reorder_level",
         "supplierId",
@@ -1545,16 +2577,24 @@
         "fsa_temp_logged",
         "fsa_allergen_info",
         "fsa_traceable",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "InventorySupplier",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate",
+        "approve",
+        "suspend",
+        "reinstate",
+        "blacklist"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1568,16 +2608,27 @@
         "tags",
         "isActive",
         "openPOCount",
+        "approvedAt",
+        "approvedBy",
+        "suspendedAt",
+        "suspendedReason",
+        "blacklistedAt",
+        "blacklistedReason",
+        "qualificationStatus",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "InventoryTransaction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create"],
+      "commands": [
+        "create",
+        "reverse",
+        "adjustCost"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1594,14 +2645,27 @@
         "employeeId",
         "storageLocationId",
         "transactionDate",
-        "createdAt"
+        "reversedAt",
+        "reversedBy",
+        "reverseOfTransactionId",
+        "isReversed",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "InventoryTransfer",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "approve", "ship", "receive", "cancel"],
+      "commands": [
+        "create",
+        "approve",
+        "ship",
+        "receive",
+        "cancel",
+        "partialReceive",
+        "flagDiscrepancy"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1614,10 +2678,12 @@
         "receivedBy",
         "shipDate",
         "receiveDate",
+        "discrepancyNotes",
+        "hasDiscrepancy",
         "notes",
+        "items",
         "createdAt",
-        "updatedAt",
-        "items"
+        "updatedAt"
       ]
     },
     {
@@ -1625,6 +2691,7 @@
       "classification": "governed",
       "tenantScoped": true,
       "commands": [
+        "update",
         "send",
         "markViewed",
         "applyPayment",
@@ -1668,7 +2735,337 @@
         "notes",
         "internalNotes",
         "lineItems",
-        "metadata"
+        "metadata",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TemperatureProbe",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "calibrate",
+        "updateThresholds",
+        "deactivate"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "equipmentId",
+        "location",
+        "minThreshold",
+        "maxThreshold",
+        "isActive",
+        "lastCalibratedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TemperatureLog",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "equipmentId",
+        "recordedBy",
+        "temperature",
+        "recordedAt",
+        "withinRange",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TemperatureReading",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "probeId",
+        "temperature",
+        "recordedAt",
+        "withinRange",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "IotAlertRule",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "deactivate"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "equipmentId",
+        "metric",
+        "sensorType",
+        "condition",
+        "threshold",
+        "thresholdMin",
+        "thresholdMax",
+        "comparison",
+        "severity",
+        "durationMs",
+        "alertAction",
+        "isActive",
+        "notifyRoles",
+        "notifyChannels",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "IoTAlert",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "acknowledge",
+        "markResolved"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "probeId",
+        "ruleId",
+        "severity",
+        "message",
+        "value",
+        "status",
+        "triggeredAt",
+        "alertNumber",
+        "alertType",
+        "title",
+        "temperature",
+        "acknowledgedBy",
+        "resolvedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "CorrectiveAction",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "assign",
+        "startProgress",
+        "close"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "sourceType",
+        "sourceId",
+        "description",
+        "assignedTo",
+        "status",
+        "dueAt",
+        "resolvedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "QualityCheck",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "pass",
+        "fail",
+        "reinspect"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "checkType",
+        "performedBy",
+        "status",
+        "performedAt",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "QualityCheckItem",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "recordResult"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "qualityCheckId",
+        "criterion",
+        "passed",
+        "notes",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "KitchenTaskClaim",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "claim",
+        "release"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "kitchenTaskId",
+        "employeeId",
+        "claimedAt",
+        "status",
+        "releasedAt",
+        "releaseReason",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "KitchenTaskProgress",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "kitchenTaskId",
+        "employeeId",
+        "status",
+        "progressPct",
+        "note",
+        "recordedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TaskBundle",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "archive"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "eventId",
+        "description",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TaskBundleItem",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "addItem",
+        "removeItem"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "taskBundleId",
+        "kitchenTaskId",
+        "sortOrder",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "BulkCombineRule",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "deactivate"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "matchCriteria",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "MethodVideo",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "prepMethodId",
+        "title",
+        "url",
+        "durationSeconds",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PrepListImport",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "complete",
+        "fail"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "source",
+        "fileName",
+        "status",
+        "importedAt",
+        "errorMessage",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
@@ -1701,6 +3098,7 @@
         "priority",
         "complexity",
         "tags",
+        "assignedTo",
         "dueDate",
         "completedAt",
         "createdAt",
@@ -1711,7 +3109,14 @@
       "name": "KnowledgeBaseEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update", "publishEntry"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "publishEntry",
+        "unpublish",
+        "recordView"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1731,7 +3136,14 @@
       "name": "LaborBudget",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "approve",
+        "recordActual",
+        "close",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1739,24 +3151,35 @@
         "periodStart",
         "periodEnd",
         "budgetAmount",
+        "actualAmount",
         "budgetType",
+        "status",
         "notes",
         "createdBy",
+        "approvedBy",
+        "approvedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "BudgetAlert",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["acknowledge", "resolve"],
+      "commands": [
+        "create",
+        "acknowledge",
+        "markResolved"
+      ],
       "properties": [
         "id",
         "tenantId",
         "budgetId",
         "alertType",
+        "thresholdPct",
+        "actualPct",
+        "message",
         "isAcknowledged",
         "acknowledgedBy",
         "acknowledgedAt",
@@ -1794,28 +3217,33 @@
         "notes",
         "convertedToClientId",
         "convertedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Driver",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "renewLicense",
+        "setOffDuty",
+        "reactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
-        "firstName",
-        "lastName",
+        "name",
         "email",
         "phone",
         "licenseNumber",
         "licenseExpiry",
+        "vehicleId",
         "status",
-        "currentVehicleId",
-        "rating",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1825,22 +3253,27 @@
       "name": "Vehicle",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "sendToMaintenance",
+        "returnFromMaintenance",
+        "decommission"
+      ],
       "properties": [
         "id",
         "tenantId",
-        "name",
-        "type",
-        "plateNumber",
-        "vin",
         "make",
         "model",
         "year",
-        "capacity",
+        "plateNumber",
+        "vin",
+        "capacityWeight",
+        "capacityVolume",
+        "fuelType",
+        "mileage",
         "status",
-        "currentDriverId",
-        "lastMaintenanceDate",
-        "nextMaintenanceDate",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1850,7 +3283,17 @@
       "name": "LogisticsRoute",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update", "updateStatus", "optimize"],
+      "commands": [
+        "create",
+        "remove",
+        "update",
+        "start",
+        "completeStop",
+        "recordDelay",
+        "complete",
+        "cancel",
+        "optimize"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1868,6 +3311,7 @@
         "actualEnd",
         "stops",
         "completedStops",
+        "delayMinutes",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1877,7 +3321,13 @@
       "name": "LogisticsDispatch",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["assign"],
+      "commands": [
+        "assign",
+        "depart",
+        "deliver",
+        "fail",
+        "reassign"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1888,6 +3338,8 @@
         "priority",
         "estimatedDeliveryTime",
         "actualDeliveryTime",
+        "departedAt",
+        "failureReason",
         "notes",
         "createdAt",
         "updatedAt"
@@ -1897,7 +3349,16 @@
       "name": "Menu",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["update", "activate", "deactivate", "create"],
+      "commands": [
+        "create",
+        "update",
+        "updatePricing",
+        "markPublished",
+        "unpublish",
+        "archive",
+        "restore",
+        "markSeasonal"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1908,14 +3369,27 @@
         "basePrice",
         "pricePerPerson",
         "minGuests",
-        "maxGuests"
+        "maxGuests",
+        "isSeasonal",
+        "seasonLabel",
+        "seasonYear",
+        "status",
+        "publishedAt",
+        "archivedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "MenuDish",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["updateCourse", "create", "remove"],
+      "commands": [
+        "create",
+        "updateCourse",
+        "setPriceOverride",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1924,14 +3398,22 @@
         "course",
         "sortOrder",
         "isOptional",
-        "deletedAt"
+        "priceOverride",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "Notification",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "markRead", "markDismissed", "remove"],
+      "commands": [
+        "create",
+        "markRead",
+        "markDismissed",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1943,14 +3425,18 @@
         "isRead",
         "readAt",
         "correlationId",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "OverrideAudit",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "authorize"],
+      "commands": [
+        "create",
+        "authorize"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -1962,7 +3448,8 @@
         "overrideReason",
         "authorizedBy",
         "authorizedAt",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
@@ -1970,13 +3457,17 @@
       "classification": "governed",
       "tenantScoped": true,
       "commands": [
+        "create",
         "markAsDefault",
         "markNotDefault",
         "markExpired",
         "markInvalid",
         "flagForFraud",
         "verify",
-        "updateToken"
+        "markVerificationFailed",
+        "updateToken",
+        "update",
+        "remove"
       ],
       "properties": [
         "id",
@@ -2001,8 +3492,9 @@
         "verificationMethod",
         "nickname",
         "metadata",
+        "expiresAt",
         "createdAt",
-        "expiresAt"
+        "updatedAt"
       ]
     },
     {
@@ -2018,7 +3510,8 @@
         "updateFraudStatus",
         "markFraudReviewed",
         "markFraudPassed",
-        "markFraudFailed"
+        "markFraudFailed",
+        "markAcceptedNotApplied"
       ],
       "properties": [
         "id",
@@ -2045,30 +3538,41 @@
         "reviewedBy",
         "description",
         "externalReference",
-        "metadata"
+        "metadata",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "PayrollPeriod",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create"],
+      "commands": [
+        "create",
+        "close",
+        "reopen",
+        "lock"
+      ],
       "properties": [
         "id",
         "tenantId",
         "periodStart",
         "periodEnd",
         "status",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "EmployeeDeduction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2081,16 +3585,18 @@
         "effectiveDate",
         "endDate",
         "maxAnnualAmount",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "PayrollApprovalHistory",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create"],
+      "commands": [
+        "create"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2101,14 +3607,21 @@
         "performedBy",
         "performedAt",
         "reason",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "PayrollRun",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["updateStatus"],
+      "commands": [
+        "create",
+        "process",
+        "approve",
+        "reject",
+        "markPaid"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2120,18 +3633,25 @@
         "totalNet",
         "approvedBy",
         "approvedAt",
+        "rejectedBy",
         "paidAt",
         "rejectReason",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "PrepComment",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "resolve", "unresolve", "softDelete"],
+      "commands": [
+        "create",
+        "edit",
+        "markResolved",
+        "unresolve",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2141,9 +3661,9 @@
         "isResolved",
         "resolvedAt",
         "resolvedBy",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2175,7 +3695,9 @@
         "notes",
         "generatedAt",
         "finalizedAt",
-        "isActive"
+        "isActive",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
@@ -2213,14 +3735,21 @@
         "sortOrder",
         "isCompleted",
         "completedAt",
-        "completedBy"
+        "completedBy",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "PrepMethod",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate",
+        "reactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2230,9 +3759,9 @@
         "estimatedDurationMinutes",
         "requiresCertification",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2305,7 +3834,8 @@
         "updateStatus",
         "updatePriority",
         "updateAssignment",
-        "updateDueDate"
+        "updateDueDate",
+        "updateDetails"
       ],
       "properties": [
         "id",
@@ -2325,6 +3855,10 @@
         "startByDate",
         "dueByDate",
         "priority",
+        "dishId",
+        "locationId",
+        "estimatedMinutes",
+        "dueByTime",
         "notes",
         "ingredients",
         "createdAt",
@@ -2335,7 +3869,13 @@
       "name": "PricingTier",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2348,9 +3888,9 @@
         "effectiveFrom",
         "effectiveTo",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2360,6 +3900,7 @@
       "commands": [
         "create",
         "update",
+        "completeDraftFromPrepDemand",
         "submit",
         "approveManager",
         "approveFinance",
@@ -2395,17 +3936,21 @@
         "submittedAt",
         "itemCategory",
         "priority",
-        "createdAt",
-        "updatedAt",
         "deletedAt",
-        "itemCount"
+        "itemCount",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "PurchaseRequisitionItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2420,9 +3965,9 @@
         "suggestedVendorName",
         "specifications",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2436,7 +3981,9 @@
         "markViewed",
         "accept",
         "reject",
-        "withdraw"
+        "withdraw",
+        "remove",
+        "generatePublicLink"
       ],
       "properties": [
         "id",
@@ -2465,16 +4012,21 @@
         "notes",
         "termsAndConditions",
         "lineItemCount",
+        "publicToken",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ProposalLineItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2489,9 +4041,9 @@
         "totalPrice",
         "sortOrder",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2505,7 +4057,8 @@
         "reject",
         "cancel",
         "markOrdered",
-        "markReceived"
+        "markReceived",
+        "updateTotals"
       ],
       "properties": [
         "id",
@@ -2526,18 +4079,21 @@
         "submittedAt",
         "receivedBy",
         "receivedAt",
-        "createdAt",
-        "updatedAt",
         "deletedAt",
         "itemCount",
-        "items"
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "PurchaseOrderItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2552,25 +4108,33 @@
         "discrepancyType",
         "discrepancyAmount",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "QACheck",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "complete"],
+      "commands": [
+        "create",
+        "complete",
+        "fail",
+        "requireReinspection",
+        "reinspect"
+      ],
       "properties": [
         "id",
         "tenantId",
         "location",
         "checkType",
         "result",
+        "status",
         "inspector",
         "notes",
         "completedAt",
+        "reinspectedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -2579,7 +4143,13 @@
       "name": "QACorrectiveAction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "resolve"],
+      "commands": [
+        "create",
+        "assign",
+        "escalate",
+        "markResolved",
+        "dismiss"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2589,8 +4159,11 @@
         "priority",
         "status",
         "resolutionNotes",
+        "escalatedTo",
+        "escalationReason",
         "dueDate",
         "resolvedAt",
+        "escalatedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -2599,7 +4172,9 @@
       "name": "QATemperatureLog",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["log"],
+      "commands": [
+        "log"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2618,7 +4193,13 @@
       "name": "RateLimitConfig",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete", "turnOn", "turnOff"],
+      "commands": [
+        "create",
+        "update",
+        "softDelete",
+        "turnOn",
+        "turnOff"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2629,16 +4210,21 @@
         "burstAllowance",
         "priority",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Recipe",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["update", "deactivate", "activate", "create"],
+      "commands": [
+        "update",
+        "deactivate",
+        "activate",
+        "create"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2647,14 +4233,23 @@
         "cuisineType",
         "description",
         "tags",
-        "isActive"
+        "isActive",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "RecipeVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "restore", "updateCosts"],
+      "commands": [
+        "create",
+        "markPublished",
+        "retract",
+        "approve",
+        "restore",
+        "updateCosts"
+      ],
       "properties": [
         "id",
         "recipeId",
@@ -2678,14 +4273,24 @@
         "stepCount",
         "totalCost",
         "costPerYield",
-        "createdAt"
+        "status",
+        "publishedAt",
+        "approvedAt",
+        "approvedBy",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "RecipeIngredient",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["updateQuantity", "updateWasteFactor", "create", "remove"],
+      "commands": [
+        "updateQuantity",
+        "updateWasteFactor",
+        "create",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2697,14 +4302,20 @@
         "preparationNotes",
         "isOptional",
         "wasteFactor",
-        "deletedAt"
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "RecipeStep",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "updateInstruction", "remove"],
+      "commands": [
+        "create",
+        "updateInstruction",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2718,7 +4329,9 @@
         "tips",
         "videoUrl",
         "imageUrl",
-        "deletedAt"
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
@@ -2737,7 +4350,8 @@
         "pause",
         "resume",
         "cancel",
-        "adjustSchedule"
+        "adjustSchedule",
+        "reverseRecognition"
       ],
       "properties": [
         "id",
@@ -2761,16 +4375,22 @@
         "description",
         "notes",
         "metadata",
+        "completedAt",
         "createdAt",
-        "updatedAt",
-        "completedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "RevenueRecognitionLine",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "recognize", "skip", "cancel"],
+      "commands": [
+        "create",
+        "recognize",
+        "skip",
+        "cancel",
+        "reverse"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2795,7 +4415,12 @@
       "name": "RolePolicy",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["update", "grant", "revoke"],
+      "commands": [
+        "create",
+        "update",
+        "grant",
+        "revoke"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2804,17 +4429,22 @@
         "permissions",
         "description",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "SampleData",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["seed", "clear", "reseed"],
+      "commands": [
+        "seed",
+        "clear",
+        "reseed"
+      ],
       "properties": [
+        "id",
         "tenantId",
         "seededAt",
         "clearedAt",
@@ -2822,14 +4452,23 @@
         "eventsCreated",
         "clientsCreated",
         "usersCreated",
-        "recipesCreated"
+        "recipesCreated",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "Schedule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "release", "close"],
+      "commands": [
+        "create",
+        "update",
+        "approve",
+        "reopen",
+        "release",
+        "close"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2838,18 +4477,28 @@
         "status",
         "publishedAt",
         "publishedBy",
+        "approvedBy",
+        "approvedAt",
         "notes",
         "shiftCount",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ScheduleShift",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove"],
+      "commands": [
+        "create",
+        "update",
+        "offerSwap",
+        "acceptSwap",
+        "declineSwap",
+        "cancelSwap",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2860,9 +4509,14 @@
         "shiftEnd",
         "roleDuringShift",
         "notes",
+        "swapOfferedTo",
+        "swapStatus",
+        "swapOfferedAt",
+        "swapAcceptedAt",
+        "inheritedContext",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -2899,20 +4553,25 @@
         "shippingMethod",
         "deliveredBy",
         "receivedBy",
-        "signature",
+        "signatureData",
         "notes",
         "internalNotes",
         "reference",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "ShipmentItem",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "updateReceived"],
+      "commands": [
+        "create",
+        "updateReceived",
+        "update",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2928,16 +4587,22 @@
         "conditionNotes",
         "lotNumber",
         "expirationDate",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "SmsAutomationRule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "activate", "deactivate", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2951,16 +4616,379 @@
         "recipientConfig",
         "isActive",
         "priority",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TimecardApproval",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "approve",
+        "reject",
+        "bulkApprove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "employeeId",
+        "payrollPeriodId",
+        "status",
+        "approvedBy",
+        "approvedAt",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PayrollLineItem",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "payrollRunId",
+        "employeeId",
+        "grossPay",
+        "netPay",
+        "totalDeductions",
+        "hoursWorked",
+        "hoursRegular",
+        "hoursOvertime",
+        "rateRegular",
+        "rateOvertime",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TipPool",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "allocate",
+        "distribute",
+        "finalizeDistribution",
+        "close"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "periodStart",
+        "periodEnd",
+        "periodId",
+        "eventId",
+        "totalTips",
+        "status",
+        "allocationRule",
+        "fixedShares",
+        "distributedAmount",
+        "distributedAt",
+        "distributedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "DisciplinaryAction",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "acknowledge",
+        "escalate",
+        "close"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "employeeId",
+        "actionType",
+        "reason",
+        "severity",
+        "status",
+        "issuedBy",
+        "escalatedTo",
+        "escalationReason",
+        "escalatedAt",
+        "issuedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "ActionMilestone",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "complete",
+        "miss"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "disciplinaryActionId",
+        "title",
+        "dueAt",
+        "status",
+        "completedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PerformanceReview",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "submit",
+        "signOff",
+        "acknowledge"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "employeeId",
+        "reviewerId",
+        "reviewPeriod",
+        "overallRating",
+        "status",
+        "submittedAt",
+        "signedOffAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TrainingCompletion",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "employeeId",
+        "trainingModuleId",
+        "completedAt",
+        "score",
+        "passed",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "OnboardingTask",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "remove"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "title",
+        "description",
+        "sortOrder",
+        "isRequired",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "OnboardingCompletion",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "complete"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "employeeId",
+        "onboardingTaskId",
+        "completedAt",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "OpenShift",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "claim",
+        "cancel"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "scheduleId",
+        "role",
+        "shiftStart",
+        "shiftEnd",
+        "status",
+        "claimedBy",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "DeliveryRoute",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "start",
+        "complete",
+        "assignDriver"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "name",
+        "driverId",
+        "routeDate",
+        "status",
+        "totalStops",
+        "distanceMiles",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "RouteStop",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "markArrived",
+        "complete",
+        "reorder"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "deliveryRouteId",
+        "eventId",
+        "address",
+        "sequence",
+        "scheduledAt",
+        "status",
+        "arrivedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PaymentRefundAttempt",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "markSucceeded",
+        "markFailed"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "paymentId",
+        "amount",
+        "reason",
+        "status",
+        "attemptedAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "PreventiveMaintenanceSchedule",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "update",
+        "complete",
+        "deactivate"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "scheduleNumber",
+        "areaId",
+        "equipmentId",
+        "title",
+        "description",
+        "frequency",
+        "intervalDays",
+        "nextDueAt",
+        "lastCompletedAt",
+        "assignedTo",
+        "estimatedHours",
+        "estimatedCost",
+        "status",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "StaffMember",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "updateProfile",
+        "deactivate",
+        "reactivate",
+        "changeRole"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "displayName",
+        "email",
+        "phone",
+        "role",
+        "status",
+        "notes",
+        "deletedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "StaffPerformance",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "remove", "complete"],
+      "commands": [
+        "create",
+        "update",
+        "submitForReview",
+        "sendBackToDraft",
+        "complete",
+        "acknowledge",
+        "remove"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -2975,7 +5003,9 @@
         "improvements",
         "goals",
         "notes",
+        "acknowledgementNotes",
         "completedAt",
+        "acknowledgedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -2985,13 +5015,15 @@
       "classification": "governed",
       "tenantScoped": true,
       "commands": [
+        "create",
         "assignTask",
         "removeTask",
         "updateCapacity",
         "deactivate",
         "activate",
         "updateEquipment",
-        "create"
+        "startMaintenance",
+        "endMaintenance"
       ],
       "properties": [
         "id",
@@ -3002,6 +5034,9 @@
         "capacitySimultaneousTasks",
         "equipmentList",
         "isActive",
+        "inMaintenance",
+        "maintenanceReason",
+        "maintenanceStartAt",
         "currentTaskCount",
         "notes",
         "createdAt",
@@ -3012,7 +5047,12 @@
       "name": "TimeEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["clockIn", "clockOut", "addEntry", "softDelete"],
+      "commands": [
+        "clockIn",
+        "clockOut",
+        "addEntry",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3025,16 +5065,20 @@
         "notes",
         "approvedBy",
         "approvedAt",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "TimecardEditRequest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "approve", "reject"],
+      "commands": [
+        "create",
+        "approve",
+        "reject"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3053,7 +5097,15 @@
       "name": "TimeOffRequest",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "approve", "reject", "cancel", "softDelete"],
+      "commands": [
+        "create",
+        "attachBalance",
+        "approve",
+        "reject",
+        "reconsider",
+        "cancel",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3066,39 +5118,30 @@
         "processedBy",
         "processedAt",
         "rejectionReason",
+        "balanceSnapshot",
+        "balanceUnit",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
-      ]
-    },
-    {
-      "name": "TrainingAssignment",
-      "classification": "governed",
-      "tenantScoped": true,
-      "commands": ["create", "softDelete"],
-      "properties": [
-        "id",
-        "tenantId",
-        "moduleId",
-        "employeeId",
-        "assignedToAll",
-        "assignedBy",
-        "dueDate",
-        "status",
-        "assignedAt",
-        "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "TrainingModule",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "markPublished",
+        "createVersion",
+        "archive",
+        "unarchive",
+        "softDelete"
+      ],
       "properties": [
-        "id",
         "tenantId",
+        "id",
+        "code",
         "title",
         "description",
         "contentUrl",
@@ -3106,18 +5149,443 @@
         "durationMinutes",
         "category",
         "isRequired",
+        "passThresholdPercent",
+        "maxAttempts",
+        "requiredRole",
         "isActive",
+        "status",
+        "version",
+        "publishedAt",
+        "archivedAt",
+        "notes",
         "createdBy",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TrainingQuestion",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "deactivate"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TrainingAssignment",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "start",
+        "submitPassingAttempt",
+        "submitFailedAttempt",
+        "submitFinalFailedAttempt",
+        "applyFirstShiftDueDate",
+        "markOverdue",
+        "waive"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "moduleId",
+        "moduleCode",
+        "moduleTitle",
+        "staffMemberId",
+        "staffRole",
+        "status",
+        "dueAt",
+        "dueDateReviewNeeded",
+        "firstShiftAt",
+        "startedAt",
+        "completedAt",
+        "waivedAt",
+        "waiverReason",
+        "waiverApprovedBy",
+        "attemptCount",
+        "lastAttemptId",
+        "lastScorePercent",
+        "passThresholdPercent",
+        "maxAttempts",
+        "managerReviewRequired",
+        "reminderSentAt",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "TrainingAttempt",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "assignmentId",
+        "moduleId",
+        "staffMemberId",
+        "attemptNumber",
+        "scorePercent",
+        "passThresholdPercent",
+        "passed",
+        "managerReviewRequired",
+        "answersJson",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "StaffTrainingSignal",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "recordSchedulabilityGranted",
+        "recordWaiverLogged"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "staffMemberId",
+        "moduleId",
+        "assignmentId",
+        "signalType",
+        "reason",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingModuleDefinition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "moduleId",
+        "code",
+        "title",
+        "description",
+        "contentType",
+        "contentUrl",
+        "durationMinutes",
+        "category",
+        "isRequired",
+        "passThresholdPercent",
+        "maxAttempts",
+        "requiredRole",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion01Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion02Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion03Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion04Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion05Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion06Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion07Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion08Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion09Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion10Definition",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create"
+      ],
+      "properties": [
+        "tenantId",
+        "id",
+        "questionId",
+        "moduleId",
+        "code",
+        "sectionTitle",
+        "displayOrder",
+        "prompt",
+        "optionA",
+        "optionB",
+        "optionC",
+        "optionD",
+        "correctOptionKey",
+        "explanation",
+        "whyItMatters",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "User",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "deactivate", "terminate", "updateRole"],
+      "commands": [
+        "create",
+        "update",
+        "deactivate",
+        "terminate",
+        "updateRole",
+        "reactivate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3136,16 +5604,23 @@
         "isActive",
         "avatarUrl",
         "roleId",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "VendorCatalog",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "update",
+        "updatePrice",
+        "deactivate",
+        "reactivate",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3169,9 +5644,9 @@
         "notes",
         "tags",
         "lastCostUpdate",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
@@ -3221,16 +5696,25 @@
         "slaBreachCount",
         "onTimeDeliveryRate",
         "qualityRating",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "Vendor",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "remove", "update", "addContact", "rate"],
+      "commands": [
+        "create",
+        "remove",
+        "approve",
+        "suspend",
+        "blacklist",
+        "update",
+        "addContact",
+        "rate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3249,6 +5733,13 @@
         "rating",
         "ratingCount",
         "notes",
+        "approvedAt",
+        "approvedBy",
+        "suspendedAt",
+        "suspendedReason",
+        "blacklistedAt",
+        "blacklistedReason",
+        "lastContactAddedAt",
         "createdAt",
         "updatedAt"
       ]
@@ -3257,7 +5748,12 @@
       "name": "VersionedEntity",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["register", "lock", "unlock", "updateName"],
+      "commands": [
+        "register",
+        "lock",
+        "unlock",
+        "updateName"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3274,7 +5770,12 @@
       "name": "EntityVersion",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "approve", "reject", "restore"],
+      "commands": [
+        "create",
+        "approve",
+        "reject",
+        "restore"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3288,15 +5789,21 @@
         "isApproved",
         "approvedAt",
         "approvedBy",
+        "createdBy",
         "createdAt",
-        "createdBy"
+        "updatedAt"
       ]
     },
     {
       "name": "VersionApproval",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "approve", "reject", "cancel"],
+      "commands": [
+        "create",
+        "approve",
+        "reject",
+        "cancel"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3305,14 +5812,21 @@
         "status",
         "comments",
         "reviewedAt",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "WasteEntry",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "softDelete"],
+      "commands": [
+        "create",
+        "approve",
+        "voidEntry",
+        "update",
+        "softDelete"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3324,19 +5838,57 @@
         "eventId",
         "loggedBy",
         "loggedAt",
+        "approvedBy",
+        "approvedAt",
+        "status",
         "unitCost",
         "totalCost",
         "notes",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
+      ]
+    },
+    {
+      "name": "WorkOrder",
+      "classification": "governed",
+      "tenantScoped": true,
+      "commands": [
+        "create",
+        "assign",
+        "start",
+        "complete",
+        "cancel",
+        "updatePriority",
+        "reschedule"
+      ],
+      "properties": [
+        "id",
+        "tenantId",
+        "equipmentId",
+        "equipmentName",
+        "title",
+        "type",
+        "priority",
+        "status",
+        "description",
+        "scheduledDate",
+        "assignedTo",
+        "completedAt",
+        "createdAt",
+        "updatedAt"
       ]
     },
     {
       "name": "Workflow",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "update", "activate", "deactivate"],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3345,32 +5897,39 @@
         "triggerType",
         "triggerConfig",
         "isActive",
+        "deletedAt",
         "createdAt",
-        "updatedAt",
-        "deletedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "WorkforceOptimization",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create", "start", "complete", "fail"],
+      "commands": [
+        "create",
+        "start",
+        "complete",
+        "fail"
+      ],
       "properties": [
         "id",
         "tenantId",
         "locationId",
         "optimizationType",
         "status",
+        "completedAt",
         "createdAt",
-        "updatedAt",
-        "completedAt"
+        "updatedAt"
       ]
     },
     {
       "name": "PerformancePrediction",
       "classification": "governed",
       "tenantScoped": true,
-      "commands": ["create"],
+      "commands": [
+        "create"
+      ],
       "properties": [
         "id",
         "tenantId",
@@ -3380,8 +5939,9 @@
         "predictionScore",
         "confidence",
         "factors",
+        "expiresAt",
         "createdAt",
-        "expiresAt"
+        "updatedAt"
       ]
     }
   ]

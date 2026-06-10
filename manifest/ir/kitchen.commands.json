@@ -326,6 +326,11 @@
   },
   {
     "entity": "BattleBoard",
+    "command": "syncFromEvent",
+    "commandId": "BattleBoard.syncFromEvent"
+  },
+  {
+    "entity": "BattleBoard",
     "command": "update",
     "commandId": "BattleBoard.update"
   },

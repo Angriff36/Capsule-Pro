@@ -3,7 +3,7 @@
 
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@repo/database";
+import { database } from "@/lib/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {

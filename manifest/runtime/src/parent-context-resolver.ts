@@ -69,26 +69,18 @@ function scalarTypeName(prop: { type?: { name?: string } } | undefined): string 
  * Enrich a create `body` with parent-owned fields inferred from each `belongsTo`
  * relationship whose FK is present. Mutates and returns the same `body` object.
  */
-export async function resolveParentContext(
+/** Commands that refresh parent-owned snapshot fields on an existing child row. */
+const PARENT_REFRESH_COMMANDS = new Set(["syncFromEvent"]);
+
+async function inheritFromParents(
   runtime: RuntimeEngine,
-  { entity, command, body }: ResolveParentContextParams
-): Promise<ResolveParentContextResult> {
+  child: IREntity,
+  body: Record<string, unknown>,
+  childParamNames: Set<string>,
+  resolveParentId: (localFk: string) => string | undefined,
+  respectExistingBody = true
+): Promise<string[]> {
   const inheritedFields: string[] = [];
-  if (command !== "create") {
-    return { body, inheritedFields };
-  }
-
-  const child = runtime.getEntity(entity) as IREntity | undefined;
-  if (!child) {
-    return { body, inheritedFields };
-  }
-
-  // User-facing inputs: a field accepted as a create param is never inherited.
-  const createCommand = runtime.getCommand("create", entity);
-  const childParamNames = new Set(
-    (createCommand?.parameters ?? []).map((p) => p.name)
-  );
-
   const childScalarTypes = new Map<string, string>();
   for (const prop of child.properties) {
     const type = scalarTypeName(prop);
@@ -106,7 +98,7 @@ export async function resolveParentContext(
     if (!localFk) {
       continue;
     }
-    const fkValue = body[localFk];
+    const fkValue = resolveParentId(localFk);
     if (typeof fkValue !== "string" || fkValue.length === 0) {
       continue;
     }
@@ -133,14 +125,14 @@ export async function resolveParentContext(
     const fkSet = new Set(fkFields);
     for (const [name, childType] of childScalarTypes) {
       if (ALWAYS_EXCLUDED.has(name)) continue;
-      if (childParamNames.has(name)) continue; // user-facing input, not inherited
-      if (fkSet.has(name)) continue; // FK columns are linkage, not inherited content
-      if (!parentScalarTypes.has(name)) continue; // parent must own it
-      if (parentScalarTypes.get(name) !== childType) continue; // type-compatible only
-      if (isMeaningful(body[name])) continue; // child override wins
+      if (childParamNames.has(name)) continue;
+      if (fkSet.has(name)) continue;
+      if (!parentScalarTypes.has(name)) continue;
+      if (parentScalarTypes.get(name) !== childType) continue;
+      if (respectExistingBody && isMeaningful(body[name])) continue;
 
       const parentValue = parent[name];
-      if (!isMeaningful(parentValue)) continue; // never copy empty parent values
+      if (!isMeaningful(parentValue)) continue;
 
       body[name] = parentValue;
       inheritedFields.push(name);
@@ -155,6 +147,99 @@ export async function resolveParentContext(
       });
     }
   }
+
+  return inheritedFields;
+}
+
+/**
+ * Refresh parent-owned snapshot fields on an existing child before
+ * `syncFromEvent` (or similar) runs. Loads the child instance, follows
+ * belongsTo FKs, and copies matching parent scalars into the command body.
+ */
+export async function refreshParentContext(
+  runtime: RuntimeEngine,
+  {
+    entity,
+    command,
+    instanceId,
+    body,
+  }: ResolveParentContextParams & { instanceId: string }
+): Promise<ResolveParentContextResult> {
+  if (!PARENT_REFRESH_COMMANDS.has(command)) {
+    return { body, inheritedFields: [] };
+  }
+
+  const child = runtime.getEntity(entity) as IREntity | undefined;
+  if (!child) {
+    return { body, inheritedFields: [] };
+  }
+
+  const instance = (await runtime.getInstance(entity, instanceId)) as
+    | Record<string, unknown>
+    | undefined;
+  if (!instance) {
+    return { body, inheritedFields: [] };
+  }
+
+  const syncCommand = runtime.getCommand(command, entity);
+  const childParamNames = new Set(
+    (syncCommand?.parameters ?? []).map((p) => p.name)
+  );
+
+  const inheritedFields = await inheritFromParents(
+    runtime,
+    child,
+    body,
+    childParamNames,
+    (localFk) => {
+      const fromBody = body[localFk];
+      if (typeof fromBody === "string" && fromBody.length > 0) {
+        return fromBody;
+      }
+      const fromInstance = instance[localFk];
+      return typeof fromInstance === "string" && fromInstance.length > 0
+        ? fromInstance
+        : undefined;
+    },
+    false
+  );
+
+  return { body, inheritedFields };
+}
+
+export async function resolveParentContext(
+  runtime: RuntimeEngine,
+  { entity, command, body }: ResolveParentContextParams
+): Promise<ResolveParentContextResult> {
+  const inheritedFields: string[] = [];
+  if (command !== "create") {
+    return { body, inheritedFields };
+  }
+
+  const child = runtime.getEntity(entity) as IREntity | undefined;
+  if (!child) {
+    return { body, inheritedFields };
+  }
+
+  // User-facing inputs: a field accepted as a create param is never inherited.
+  const createCommand = runtime.getCommand("create", entity);
+  const childParamNames = new Set(
+    (createCommand?.parameters ?? []).map((p) => p.name)
+  );
+
+  const copied = await inheritFromParents(
+    runtime,
+    child,
+    body,
+    childParamNames,
+    (localFk) => {
+      const fkValue = body[localFk];
+      return typeof fkValue === "string" && fkValue.length > 0
+        ? fkValue
+        : undefined;
+    }
+  );
+  inheritedFields.push(...copied);
 
   return { body, inheritedFields };
 }

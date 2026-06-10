@@ -306,6 +306,23 @@ const baseConfig: NextConfig = withToolbar(
         destination: "/staffing",
         permanent: false,
       },
+      // Phase D — tools battleboards used wrong entity APIs; command-board is canonical
+      {
+        source: "/tools/battleboards",
+        destination: "/command-board",
+        permanent: false,
+      },
+      {
+        source: "/tools/battleboards/:path*",
+        destination: "/command-board",
+        permanent: false,
+      },
+      // Legacy event timeline Gantt (no separate /timeline page)
+      {
+        source: "/events/:eventId/timeline",
+        destination: "/events/:eventId/battle-board",
+        permanent: false,
+      },
     ],
     rewrites,
     async headers() {

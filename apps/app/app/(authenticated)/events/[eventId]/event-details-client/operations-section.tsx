@@ -33,6 +33,7 @@ interface TemplateStaffing {
 
 interface OperationsSectionProps {
   eventId: string;
+  battleBoardHref: string;
   prepTasks: PrepTaskSummaryClient[];
   taskSummary: {
     pending: number;
@@ -52,6 +53,7 @@ interface OperationsSectionProps {
 
 export function OperationsSection({
   eventId,
+  battleBoardHref,
   prepTasks,
   taskSummary,
   onOpenGenerateModal,
@@ -215,7 +217,7 @@ export function OperationsSection({
 
           <div className="flex flex-wrap items-center gap-2">
             <Button asChild variant="outline">
-              <Link href={`/events/${eventId}/battle-board`}>
+              <Link href={battleBoardHref}>
                 <SwordsIcon className="mr-2 size-4" />
                 Open Battle Board
               </Link>
