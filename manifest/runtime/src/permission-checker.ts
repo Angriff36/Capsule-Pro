@@ -306,7 +306,7 @@ export function getAvailablePermissions(): Record<
   const result: Record<
     PermissionCategory,
     { action: PermissionAction; permission: Permission; description: string }[]
-  > = {} as any;
+  > = {} as Record<PermissionCategory, { action: PermissionAction; permission: Permission; description: string }[]>;
 
   for (const [category, actions] of Object.entries(PERMISSION_CATEGORIES)) {
     result[category as PermissionCategory] = actions.map((action) => ({

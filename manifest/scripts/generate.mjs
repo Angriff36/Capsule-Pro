@@ -545,7 +545,7 @@ console.log("[manifest/generate] Generating singular command dispatcher...");
     "    const currentUser = await requireCurrentUser();",
     "    const body = await request.json().catch(() => ({}));",
     "",
-    `    return ${dispatcherExecutorImportName}({`,
+    `    return await ${dispatcherExecutorImportName}({`,
     "      entity,",
     "      command: commandSlug,",
     "      body,",
