@@ -1,55 +1,74 @@
-# Task 10.9 — Schema Naming Convention Style Guide + CI Enforcement
+# Task: Atomic governed payroll write path (ManifestPayrollDataSource)
 
-**Picked because:** Baseline is green (api/runtime typecheck 0, schema/direct-write audits 0). Nearly
-all TIER 0–12 implementation tasks are DONE; remaining open items are either BLOCKED on upstream
-`@angriff36/manifest` keyword support or are pure evaluation docs. Task 10.9 is the single
-genuinely-actionable implementation item: not blocked, completable, real ongoing value (prevents
-future schema-naming drift), and the plan ranks schema hygiene highly.
+## Problem
+`apps/api/lib/payroll/manifest-payroll-data-source.ts` `savePayrollRecords()` ran
+`PayrollRun.create → PayrollRun.process → N× PayrollLineItem.create` as independent
+`runManifestCommandCore` invocations and **swallowed** the `process` and per-line-item
+failures (caught + logged + continued). Result: a failure partway through left a payroll
+run whose totals didn't match its partial line items, yet the method returned success —
+silent financial data loss no read could detect.
 
-## Discovery (corrects the plan)
-The plan said "4 PascalCase @@map anomalies." Reality (verified against schema.prisma):
-- **245 models** = 214 PascalCase-named + 31 legacy snake_case-named.
-- **20 models** resolve to a **PascalCase physical table** (not 4): 4 explicit `@@map("PascalCase")`
-  (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent) + **16 PascalCase models with NO `@@map`**
-  (table defaults to the verbatim PascalCase model name — the 16 IR-entity models added in Task 0.3).
-  Unifying rule: *resolved table name (= `@@map` value, else model name) must be snake_case*.
-- Existing docs conflict: `SCHEMAS.md:364` says "Tables: PascalCase" (conflates Prisma model name with
-  physical table); the 207 `@@map("snake_case")` models + `README.md §9` establish the real convention
-  (PascalCase model → snake_case table/columns).
+This was the open follow-up to commit `b6690d91b` (which made the *base*
+`PrismaPayrollDataSource` atomic via `$transaction`); the *governed* path was still
+non-atomic. (See memory: payroll-run-status-ir-drift.)
+
+## Root-cause fix (not a band-aid)
+The Manifest runtime already supports atomic multi-command writes: `createManifestRuntime`
+accepts `prismaOverride` (a Prisma tx client); the factory routes both reads and writes
+for entity stores through it (`prismaForWrites = prismaOverride ?? prisma`,
+manifest-runtime-factory.ts:379 + storeProvider:424/445). So wrapping the batch in one
+`database.$transaction` and threading `prismaOverride: tx` into each command makes the
+whole sequence all-or-nothing (read-your-writes lets `process` see the just-created run).
+Remove the swallow try/catch blocks so any failure rolls back.
 
 ## Plan
-- [ ] Create `manifest/governance/schema-naming-allowlist.json` — two frozen allowlists
-      (`legacySnakeCaseModels` [31], `pascalCaseTableExceptions` [20]) with reasons.
-- [ ] Create `manifest/scripts/lint-schema.mjs` — R1 model PascalCase; R2 resolved table snake_case;
-      R3 stale-allowlist hygiene. Report-only default; `--strict` exits 1; `--self-test` asserts.
-- [ ] Wire `manifest:lint-schema` + `:strict` in package.json.
-- [ ] Add "## Schema Naming Conventions" to `docs/database/CONTRIBUTING.md` (rules + why + exceptions).
-- [ ] Fix `SCHEMAS.md:364` model-vs-table conflict.
-- [ ] Verify: `--strict` exits 0 on real schema; `--self-test` exits 0; typecheck still green.
-- [ ] Update IMPLEMENTATION_PLAN.md (10.9 DONE + 4→20 correction), commit (explicit paths), tag, push.
+- [x] Verify runtime tx support (`prismaOverride`) + store reads use tx client
+- [x] Verify PayrollRun states (pending→processing→approved→paid) + process guard `status=="pending"`
+- [ ] Refactor `executeManifestCommand` to accept deps; add `makeCoreDeps(prismaOverride?)`
+- [ ] Wrap `savePayrollRecords` in `database.$transaction`, thread `txDeps`, drop swallows
+- [ ] New unit test `apps/api/__tests__/payroll/manifest-payroll-data-source.test.ts`:
+      atomic success (tx threaded into createManifestRuntime), line-item failure throws,
+      process failure throws, empty no-op
+- [ ] `pnpm --filter api typecheck` green
+- [ ] New test passes
+- [ ] Update IMPLEMENTATION_PLAN.md + memory; commit + tag + push
 
 ## Review
 
-**Done (v0.12.241).** All plan items complete and verified:
-- `manifest/scripts/lint-schema.mjs` — R1 (model PascalCase), R2 (resolved table snake_case),
-  R3 (allowlist hygiene). Report-only default; `--strict` CI gate; `--self-test` (11/11 assertions,
-  proves the rules can fail via positive+negative fixtures — Rule 9).
-- `manifest/governance/schema-naming-allowlist.json` — frozen: 31 legacy snake_case models + 20
-  PascalCase-table exceptions, each with a documented reason. Matches the repo's governance-JSON
-  allowlist pattern (bypasses.json / schema-drift-allowlist.json).
-- `package.json` — `manifest:lint-schema`, `:strict`, `:self-test`.
-- `docs/database/CONTRIBUTING.md` — new "## Schema Naming Conventions" canonical style guide (rules,
-  WHY, frozen exceptions, commands). `docs/database/SCHEMAS.md:364` model-vs-table conflict fixed.
-- `IMPLEMENTATION_PLAN.md` — 10.9 marked DONE; milestone row added; Prisma facts corrected (4→20).
+**Done (v0.12.246).** The governed payroll write path is now atomic and fail-loud.
 
-**Verification:** strict lint exits 0 on the real 245-model schema (0 violations); self-test exits 0;
-package.json + allowlist parse; api/runtime typecheck were green pre-change and this touches no TS.
+What changed (2 files):
+- `apps/api/lib/payroll/manifest-payroll-data-source.ts`:
+  - `coreDeps` → `makeCoreDeps(prismaOverride?)`; `executeManifestCommand` gained an
+    optional `deps` param (backward compatible — `savePayrollPeriod`/`savePayrollAudit`
+    keep the default non-tx deps and their intentional swallow contracts).
+  - `savePayrollRecords` wraps create→process→N×lineItem in ONE `database.$transaction`,
+    threading `prismaOverride: tx` into every command. Removed the process + line-item
+    swallow try/catch → any failure throws out of the callback → full rollback.
+- `apps/api/__tests__/payroll/manifest-payroll-data-source.test.ts` (NEW, 4 tests):
+  atomic success + tx-threading (proves all commands share one deps bound to the tx
+  client via `prismaOverride`), line-item failure throws, process failure throws + aborts
+  before line items, empty no-op.
 
-**Key correction recorded:** the long-cited "4 PascalCase @@map anomalies" undercounts — there are
-**20** models with PascalCase physical tables (4 explicit `@@map("PascalCase")` + 16 PascalCase models
-with NO `@@map`, the Task 0.3 IR-entity additions). The R2 rule (resolved table = `@@map` value else
-model name) unifies both into one check.
+Why this is the root fix, not a band-aid: the runtime already supported atomic
+multi-command writes (`createManifestRuntime` ctx `prismaOverride`; factory
+`prismaForWrites = prismaOverride ?? prisma`; the entity store uses that client for reads
+too → `PayrollRun.process` sees the just-created run via read-your-writes). So no saga was
+needed — just thread the transaction. Brings the governed path to parity with the base
+`PrismaPayrollDataSource` (Task 8.1).
 
-**Note:** staged only my own files (explicit paths). The working tree carries inherited noise — ~30
-CRLF-only `manifest/source/*.manifest` diffs, a CogniLayer auto-edit to CLAUDE.md, and untracked
-`docs-site/` — left untouched (not mine; per the concurrent-loop-shared-tree lesson, no `git add -A`).
+Verification:
+- `pnpm --filter api typecheck` → exit 0.
+- `pnpm --filter api test __tests__/payroll/manifest-payroll-data-source.test.ts` → 4/4 pass.
+- `pnpm --filter api test __tests__/payroll` → 6 files, 50 tests pass.
+- `pnpm --filter payroll-engine test` → 3 files, 46 tests pass.
+
+Parent-context guardrail (6a): N/A — this task changes a runtime persistence path's
+atomicity; it introduces no new parent→child UI/API surface and no IR/command-param change,
+so no parent-owned field becomes required input. `tenantId` is still injected by the runtime
+tenant context, not the caller.
+
+Remaining payroll follow-up (documented, not in scope): `runs/route.ts` zod enum +
+`approvals/route.ts` `PayrollRunStatus` unions still list legacy `completed`/`finalized`.
+The approvals SQL intentionally keeps `'completed'` for legacy rows, so narrowing the TS
+type alone would lie about runtime — needs a §14 vocabulary + legacy-data decision.

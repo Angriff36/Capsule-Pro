@@ -17,27 +17,49 @@ import type { PayrollAudit, PayrollPeriod, PayrollRecord } from "@repo/payroll-e
 import { PrismaPayrollDataSource } from "@repo/payroll-engine";
 import type { ManifestUserContext } from "@repo/manifest-runtime/run-manifest-command-core";
 import { runManifestCommandCore } from "@repo/manifest-runtime/run-manifest-command-core";
+import type { PrismaTransactionClient } from "@repo/manifest-runtime/manifest-runtime-factory";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { log } from "@repo/observability/log";
 
-/** deps object expected by runManifestCommandCore */
-const coreDeps = {
-  createRuntime: ({ user, entityName }: { user: ManifestUserContext; entityName: string }) =>
-    createManifestRuntime({ user, entityName }),
-};
+/**
+ * Build the deps object expected by runManifestCommandCore.
+ *
+ * When `prismaOverride` (a Prisma transaction client) is supplied, every
+ * Manifest write executed through these deps is routed to that transaction —
+ * letting multiple command invocations share ONE atomic database transaction.
+ * Reads issued during command execution (e.g. loading a PayrollRun to evaluate
+ * a transition guard) go through the same client, so they observe uncommitted
+ * writes from earlier commands in the batch (read-your-writes). See
+ * manifest-runtime-factory.ts (`prismaForWrites = prismaOverride ?? prisma`).
+ */
+function makeCoreDeps(prismaOverride?: PrismaTransactionClient) {
+  return {
+    createRuntime: ({ user, entityName }: { user: ManifestUserContext; entityName: string }) =>
+      createManifestRuntime({ user, entityName, prismaOverride }),
+  };
+}
+
+type CoreDeps = ReturnType<typeof makeCoreDeps>;
+
+/** Default (non-transactional) deps for standalone single-command writes. */
+const coreDeps = makeCoreDeps();
 
 /**
  * Execute a Manifest command and return the result.
- * Throws on failure so the PayrollService can surface errors.
+ * Throws on failure so the caller (and any wrapping transaction) can surface
+ * the error and roll back — failures are never swallowed.
  */
-async function executeManifestCommand(params: {
-  entity: string;
-  command: string;
-  body: Record<string, unknown>;
-  user: ManifestUserContext;
-  instanceId?: string;
-}): Promise<unknown> {
-  const result = await runManifestCommandCore(coreDeps, params);
+async function executeManifestCommand(
+  params: {
+    entity: string;
+    command: string;
+    body: Record<string, unknown>;
+    user: ManifestUserContext;
+    instanceId?: string;
+  },
+  deps: CoreDeps = coreDeps
+): Promise<unknown> {
+  const result = await runManifestCommandCore(deps, params);
 
   if (!result.ok) {
     throw new Error(
@@ -108,78 +130,98 @@ export class ManifestPayrollDataSource extends PrismaPayrollDataSource {
       { totalGross: 0, totalDeductions: 0, totalNet: 0 }
     );
 
-    // Create the payroll run
-    const runResult = await executeManifestCommand({
-      entity: "PayrollRun",
-      command: "create",
-      body: {
-        id: periodId,
-        payrollPeriodId: periodId,
-        runDate: new Date().toISOString(),
-      },
-      user: this.#user,
-    });
+    // Persist the run header, its processed totals, and every line item in a
+    // SINGLE database transaction.
+    //
+    // Why this matters: previously each command (PayrollRun.create →
+    // PayrollRun.process → N× PayrollLineItem.create) ran as an independent
+    // runtime invocation, and the process + line-item failures were caught and
+    // logged ("swallowed"). A failure partway through left a payroll run whose
+    // stored totals did not match its (partial) line items — yet
+    // savePayrollRecords still returned successfully, so no later read could
+    // detect the silent loss. On financial data that is unacceptable.
+    //
+    // The Manifest runtime routes all writes (and the entity reads issued during
+    // command execution) through `prismaOverride` — the tx client — so
+    // PayrollRun.process sees the just-created run via read-your-writes, and any
+    // failure throws out of the transaction callback, rolling the WHOLE batch
+    // back. This brings the governed write path to parity with the base
+    // PrismaPayrollDataSource (Task 8.1): all-or-nothing, no swallowed failures.
+    //
+    // The timeout is raised above Prisma's 5s default because the governed path
+    // runs the full command pipeline (policy, guards, middleware, outbox) per
+    // line item, which is heavier than the base path's raw upserts.
+    await database.$transaction(
+      async (tx) => {
+        const txDeps = makeCoreDeps(tx as unknown as PrismaTransactionClient);
 
-    // Extract the run ID (may be the same as periodId or auto-generated)
-    const payrollRunId =
-      (runResult as Record<string, unknown>)?.id ?? periodId;
-
-    // Process the run (set financial totals)
-    try {
-      await executeManifestCommand({
-        entity: "PayrollRun",
-        command: "process",
-        body: {
-          id: payrollRunId,
-          totalGross: summary.totalGross.toFixed(2),
-          totalDeductions: summary.totalDeductions.toFixed(2),
-          totalNet: summary.totalNet.toFixed(2),
-        },
-        user: this.#user,
-        instanceId: String(payrollRunId),
-      });
-    } catch (error) {
-      // Process may fail if the run was already processed — that's acceptable
-      log.info("PayrollRun.process skipped", {
-        payrollRunId,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-
-    // Create line items
-    for (const record of records) {
-      try {
-        await executeManifestCommand({
-          entity: "PayrollLineItem",
-          command: "create",
-          body: {
-            id: `${payrollRunId}_${record.employeeId}`,
-            payrollRunId: String(payrollRunId),
-            employeeId: record.employeeId,
-            grossPay: record.grossPay.toFixed(2),
-            netPay: record.netPay.toFixed(2),
-            totalDeductions: record.totalDeductions.toFixed(2),
-            hoursWorked: (record.hoursRegular + record.hoursOvertime).toFixed(2),
-            hoursRegular: record.hoursRegular.toFixed(2),
-            hoursOvertime: record.hoursOvertime.toFixed(2),
-            rateRegular: record.hoursRegular > 0
-              ? (record.regularPay / record.hoursRegular).toFixed(2)
-              : "0",
-            rateOvertime: record.hoursOvertime > 0
-              ? (record.overtimePay / record.hoursOvertime).toFixed(2)
-              : "0",
+        // Create the payroll run
+        const runResult = await executeManifestCommand(
+          {
+            entity: "PayrollRun",
+            command: "create",
+            body: {
+              id: periodId,
+              payrollPeriodId: periodId,
+              runDate: new Date().toISOString(),
+            },
+            user: this.#user,
           },
-          user: this.#user,
-        });
-      } catch (error) {
-        // Individual line item failures should not abort the entire batch
-        log.error("PayrollLineItem.create failed", {
-          employeeId: record.employeeId,
-          payrollRunId,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
+          txDeps
+        );
+
+        // Extract the run ID (may be the same as periodId or auto-generated)
+        const payrollRunId =
+          (runResult as Record<string, unknown>)?.id ?? periodId;
+
+        // Process the run (pending → processing; sets financial totals).
+        await executeManifestCommand(
+          {
+            entity: "PayrollRun",
+            command: "process",
+            body: {
+              id: payrollRunId,
+              totalGross: summary.totalGross.toFixed(2),
+              totalDeductions: summary.totalDeductions.toFixed(2),
+              totalNet: summary.totalNet.toFixed(2),
+            },
+            user: this.#user,
+            instanceId: String(payrollRunId),
+          },
+          txDeps
+        );
+
+        // Create line items
+        for (const record of records) {
+          await executeManifestCommand(
+            {
+              entity: "PayrollLineItem",
+              command: "create",
+              body: {
+                id: `${payrollRunId}_${record.employeeId}`,
+                payrollRunId: String(payrollRunId),
+                employeeId: record.employeeId,
+                grossPay: record.grossPay.toFixed(2),
+                netPay: record.netPay.toFixed(2),
+                totalDeductions: record.totalDeductions.toFixed(2),
+                hoursWorked: (record.hoursRegular + record.hoursOvertime).toFixed(2),
+                hoursRegular: record.hoursRegular.toFixed(2),
+                hoursOvertime: record.hoursOvertime.toFixed(2),
+                rateRegular: record.hoursRegular > 0
+                  ? (record.regularPay / record.hoursRegular).toFixed(2)
+                  : "0",
+                rateOvertime: record.hoursOvertime > 0
+                  ? (record.overtimePay / record.hoursOvertime).toFixed(2)
+                  : "0",
+              },
+              user: this.#user,
+            },
+            txDeps
+          );
+        }
+      },
+      { timeout: 120_000, maxWait: 15_000 }
+    );
   }
 
   /**
