@@ -12,6 +12,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
+import { resolveCurrentUser } from "@/app/lib/tenant";
 import {
   connectorRegistry,
   SupplierSyncService,
@@ -132,6 +133,7 @@ export async function POST(request: NextRequest) {
     // Build governed write callback for VendorCatalog Manifest commands
     const userId = clerkId;
     const tid = tenantId;
+    const currentUser = await resolveCurrentUser(request);
     const runVendorCatalogCommand = async (params: {
       command: "create" | "update" | "deactivate";
       body: Record<string, unknown>;
@@ -140,7 +142,7 @@ export async function POST(request: NextRequest) {
         entity: "VendorCatalog",
         command: params.command,
         body: params.body,
-        user: { id: userId as string, tenantId: tid as string, role: "admin" },
+        user: { id: userId as string, tenantId: tid as string, role: currentUser.role },
       });
       if (!result.ok) {
         const errorText = await result.text();

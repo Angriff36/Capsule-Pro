@@ -3,7 +3,7 @@ import { auth } from "@repo/auth/server";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 import {
@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
+    const currentUser = await resolveCurrentUser(request);
+
     const { orderId, status } = await request.json();
     if (!(orderId && status))
       return manifestErrorResponse("orderId and status required", 400);
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
       entity: "PurchaseOrder",
       command,
       body: { id: orderId, userId },
-      user: { id: userId, tenantId, role: "user" },
+      user: { id: userId, tenantId, role: currentUser.role },
     });
 
     if (result.status >= 400) return result;

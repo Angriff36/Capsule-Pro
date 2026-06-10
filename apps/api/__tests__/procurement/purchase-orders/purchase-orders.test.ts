@@ -69,7 +69,7 @@ vi.mock("@/lib/manifest-response", async () => {
 });
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser, resolveCurrentUser } from "@/app/lib/tenant";
 import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // Minimal Decimal stand-in for mocking Prisma Decimal return values
@@ -114,6 +114,11 @@ function authOk() {
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
   vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+  } as never);
+  vi.mocked(resolveCurrentUser).mockResolvedValue({
     id: TEST_USER_ID,
     tenantId: TEST_TENANT_ID,
     role: "admin",

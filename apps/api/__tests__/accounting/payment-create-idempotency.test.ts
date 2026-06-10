@@ -38,6 +38,7 @@ const mocks = vi.hoisted(() => ({
   manifestIdempotencyFindUniqueMock: vi.fn(),
   manifestIdempotencyUpsertMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
+  requireCurrentUserMock: vi.fn(),
   runCommandMock: vi.fn(),
 }));
 
@@ -67,6 +68,7 @@ vi.mock("@repo/database", () => ({
 
 vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
+  requireCurrentUser: mocks.requireCurrentUserMock,
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -140,6 +142,8 @@ const createdPayment = {
 beforeEach(() => {
   mocks.requireTenantIdMock.mockReset();
   mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
+  mocks.requireCurrentUserMock.mockReset();
+  mocks.requireCurrentUserMock.mockResolvedValue({ id: "user-1", tenantId: TENANT_ID, role: "manager" });
   mocks.paymentCreateMock.mockReset();
   mocks.paymentCreateMock.mockResolvedValue({
     ...createdPayment,

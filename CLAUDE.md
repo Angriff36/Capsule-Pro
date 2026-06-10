@@ -259,8 +259,9 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 86% context — saved before compacting]
-Files (1):
-  package.json (edit)
+[proactive bridge @ 87% context — saved before compacting]
+Files (2):
+  packages/database/prisma/migrations/20260610055049_repair_drift/migration.sql (edit)
+  apps/api/app/api/accounting/payments/route.ts (edit)
 
 # === END COGNILAYER ===

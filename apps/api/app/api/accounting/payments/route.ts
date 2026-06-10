@@ -13,7 +13,7 @@
 import { database, type Prisma } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireTenantId } from "@/app/lib/tenant";
+import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import {
   extractIdempotencyKey,
@@ -177,6 +177,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await requireTenantId();
+    const currentUser = await requireCurrentUser();
 
     let idempotencyKey: string | undefined;
     try {
@@ -238,9 +239,9 @@ export async function POST(request: NextRequest) {
     // ── Manifest runtime (governs all domain mutations) ──
     const manifestRuntime = await createManifestRuntime({
       user: {
-        id: invoice.clientId,
+        id: currentUser.id,
         tenantId,
-        role: "manager", // TODO: derive from actual auth context
+        role: currentUser.role,
       },
     });
 

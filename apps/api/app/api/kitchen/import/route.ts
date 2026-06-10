@@ -14,7 +14,7 @@ import { parseError as parseErrorToMessage } from "@repo/observability/error";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, resolveCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 // Uses createManifestRuntime — requires Node.js runtime (not Edge)
@@ -125,7 +125,8 @@ const parseListOpt = (val: string | undefined, separator = ";"): string[] => {
 async function importRecipes(
   rows: CsvRow[],
   tenantId: string,
-  userId: string
+  userId: string,
+  userRole: string
 ): Promise<ImportSummary> {
   const summary: ImportSummary = {
     imported: 0,
@@ -155,7 +156,7 @@ async function importRecipes(
         {
           entity: "Recipe",
           command: "create",
-          user: { id: userId, tenantId, role: "admin" },
+          user: { id: userId, tenantId, role: userRole },
           body: {
             tenantId,
             name,
@@ -193,7 +194,7 @@ async function importRecipes(
         {
           entity: "RecipeVersion",
           command: "create",
-          user: { id: userId, tenantId, role: "admin" },
+          user: { id: userId, tenantId, role: userRole },
           body: {
             tenantId,
             recipeId,
@@ -241,7 +242,8 @@ async function importRecipes(
 async function importDishes(
   rows: CsvRow[],
   tenantId: string,
-  _userId: string
+  _userId: string,
+  userRole: string
 ): Promise<ImportSummary> {
   const summary: ImportSummary = {
     imported: 0,
@@ -299,7 +301,7 @@ async function importDishes(
         {
           entity: "Dish",
           command: "create",
-          user: { id: _userId, tenantId, role: "admin" },
+          user: { id: _userId, tenantId, role: userRole },
           body: {
             tenantId,
             recipeId,
@@ -350,7 +352,8 @@ async function importDishes(
 async function importPrepLists(
   rows: CsvRow[],
   tenantId: string,
-  _userId: string
+  _userId: string,
+  userRole: string
 ): Promise<ImportSummary> {
   const summary: ImportSummary = {
     imported: 0,
@@ -404,7 +407,7 @@ async function importPrepLists(
         {
           entity: "PrepList",
           command: "create",
-          user: { id: _userId, tenantId, role: "admin" },
+          user: { id: _userId, tenantId, role: userRole },
           body: {
             tenantId,
             eventId: eventId ?? "00000000-0000-0000-0000-000000000000",
@@ -444,7 +447,7 @@ async function importPrepLists(
           {
             entity: "PrepListItem",
             command: "create",
-            user: { id: _userId, tenantId, role: "admin" },
+            user: { id: _userId, tenantId, role: userRole },
             body: {
               tenantId,
               prepListId,
@@ -535,6 +538,7 @@ export async function POST(request: Request) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    const currentUser = await resolveCurrentUser(request);
     const { searchParams } = new URL(request.url);
     const importType = searchParams.get("type") as ImportType | null;
 
@@ -591,15 +595,16 @@ export async function POST(request: Request) {
 
     // Dispatch to appropriate importer
     let summary: ImportSummary;
+    const userRole = currentUser.role;
     switch (importType) {
       case "recipes":
-        summary = await importRecipes(allRows, tenantId, userId);
+        summary = await importRecipes(allRows, tenantId, userId, userRole);
         break;
       case "dishes":
-        summary = await importDishes(allRows, tenantId, userId);
+        summary = await importDishes(allRows, tenantId, userId, userRole);
         break;
       case "prep-lists":
-        summary = await importPrepLists(allRows, tenantId, userId);
+        summary = await importPrepLists(allRows, tenantId, userId, userRole);
         break;
     }
 
