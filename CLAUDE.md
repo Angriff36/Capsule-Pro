@@ -259,13 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 75% context — saved before compacting]
-Files (6):
-  manifest/scripts/compile.mjs (edit)
-  manifest/runtime/src/runtime/loadManifests.ts (edit)
-  manifest/runtime/src/manifest-runtime-factory.ts (edit)
-  apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts (edit)
-  apps/api/__tests__/kitchen/provenance-verification.test.ts (create)
-  apps/api/__tests__/kitchen/provenance-verification.test.ts (edit)
+[proactive bridge @ 85% context — saved before compacting]
+Files (1):
+  manifest/scripts/generate-full-schema.mjs (edit)
 
 # === END COGNILAYER ===

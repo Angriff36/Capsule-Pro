@@ -52,7 +52,7 @@
 | 3 | ~~32~~ ~~**1**~~ **0** IR entities without Prisma model — ALL 189 MATCHED | **RESOLVED** | **All 189 IR entities match a Prisma model.** QACheck was the last unmatched... |
 | 4 | ~~Only 8~~ **145 entities have relationships** | **UPDATED** | 219 relationship declarations across 145 entities (was 12 across 8). Batch 1... |
 | 5 | ~~371~~ ~~301~~ ~~295~~ ~~294~~ **0** governed-entity direct-write violations | **VERIFIED 2026-06-07** (`pnpm manifest:audit-direct-writes`) | 72 files scanned, 250 hits. 11 allowed, 61 reported. Of reported... |
-| 6 | **5 of 19 RuntimeOptions wired (7 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore`... |
+| 6 | **6 of 19 RuntimeOptions wired (8 of 19 wired or passthrough)** | **UPDATED** | Factory wires 5 constructor-level: `storeProvider`, `idempotencyStore`... |
 | 7 | ~~90~~ **89** entities use GenericPrismaStore | **UPDATED** (Task 3.2/3.3) | 89 of 94 switch-case entities now route to GenericPrismaStore. Only... |
 | 8 | 0 reactions defined | **RESOLVED** (Task 9.2/9.2b) | **10 reactions** now defined (finance: 3, inventory: 1, events: 1, equipment... |
 | 9 | ~~1~~ **6** sagas (ProcessInvoicePayment, FinalizeEventWithReporting, AutoGeneratePrepList, + 3 more) | **RESOLVED** (Task 9.3) | 6 sagas defined: ProcessInvoicePayment (2 steps), FinalizeEventWithReporting (3... |
@@ -125,8 +125,8 @@
 ### Runtime Wiring
 
 - Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
-- **17 of 19 RuntimeOptions properties wired** (10 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2).
-- **3 of 19 NOT wired** (requireValidProvenance + expectedIRHash now handled; remaining: jobQueue, wasmEvaluator, encryptionProvider); additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
+- **18 of 19 RuntimeOptions properties wired** (11 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2). encryptionProvider added (v0.12.235).
+- **2 of 19 NOT wired** (requireValidProvenance + expectedIRHash now handled; encryptionProvider wired v0.12.235; remaining: jobQueue, wasmEvaluator); additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
 - Custom outbox implementation duplicates upstream `OutboxStore` contract
@@ -326,6 +326,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **Database drift resolved (20260610041450_repair_drift)** | Adds deleted_at column to tenant_events.event_followups; creates tenant_kitchen.qa_checks table with indexes. `pnpm db:check` reports zero drift. |
 | 2026-06-10 | **Verification baseline: 0 typecheck errors, 5,188 tests pass, 0 schema drift** | Confirmed clean across all validation surfaces. |
 | 2026-06-10 | **Task 9.6 COMPLETE: CLI commands — 91 scripts wired, scan CI gate** | All 20 done-when CLI commands + 16 subcommand variants wired. `manifest:scan` reports 191 warnings (all `durable` store target — expected). `seed`/`profile` don't exist in v2.2.0. |
+| 2026-06-10 | **EncryptionProvider wired — AES-256-GCM for 33 encrypted properties** | `encryption-provider.ts` + factory wiring. 15 tests. Key rotation via ENCRYPTION_KEY_PREVIOUS. Dev-safe (no key = plaintext). |
 
 ---
 
@@ -351,7 +352,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `requireValidProvenance` | IR integrity hash verification | **WIRED** (conditional on deps.requireValidProvenance) | -- |
 | `expectedIRHash` | Expected IR hash | **WIRED** (via irHash in provenance, verified by verifyProvenanceHash) | -- |
 | `wasmEvaluator` | WASM expression evaluation | NOT WIRED | Future |
-| `encryptionProvider` | Field-level encryption | NOT WIRED | Future |
+| `encryptionProvider` | Field-level AES-256-GCM encryption for `encrypted` properties | **WIRED** (conditional on ENCRYPTION_KEY env var) | 7.6 |
 ---
 
 ## Available Projections (27 projection directories in @angriff36/manifest@2.2.0)
@@ -426,7 +427,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 18. **Entity Property Modifiers at source level only:** 534 annotations, parser accepts but compiler does not emit to JSON.
 
-19. **`encrypted` modifier adopted but `encryptionProvider` NOT wired:** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) — encryption is a silent no-op at runtime. Requires implementing `EncryptionProvider` interface (`encrypt`/`decrypt`) and wiring via `RuntimeOptions.encryptionProvider` in the factory. High-priority security gap.
+19. **`encrypted` modifier + encryptionProvider WIRED (v0.12.235):** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) now encrypt at rest when `ENCRYPTION_KEY` env var is set (AES-256-GCM). Provider at `manifest/runtime/src/encryption-provider.ts` — key rotation via `ENCRYPTION_KEY_PREVIOUS`. Dev/test safe (no key = plaintext stored, no error). 15 tests.
 
 ---
 
@@ -1047,7 +1048,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Dead code total (graph + rules-engine + services) | **~2400+ lines** | same | -- |
 | CLI scripts using manifest | 13 of **40** (**33%**) | 13/37 | CORRECTED: 40 CLI commands total (was 35-37) |
 | GenericPrismaStore | Available (233 LOC), NOT used at runtime | same | -- |
-| RuntimeOptions wired | **7 of 19** (5 wired + 2 passthrough) | same | -- |
+| RuntimeOptions wired | **8 of 19** (6 wired + 2 passthrough) | 7 | UPDATED: encryptionProvider wired (conditional on ENCRYPTION_KEY) |
 | Direct-write violations (API) | **0** governed (21 bypassed + 47 ungoverned) | 191 | RESOLVED (v0.12.149) |
 | Direct-write violations (server actions) | **0** governed | 110 | RESOLVED (v0.12.149) |
 | Direct-write violations (packages) | **0** governed (documented bypasses) | 9+ | RESOLVED (v0.12.149) |

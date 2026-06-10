@@ -27,6 +27,7 @@ import { PostgresAuditSink } from "@angriff36/manifest/audit/postgres";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { PostgresOutboxStore } from "@angriff36/manifest/outbox/postgres";
 import { createCustomBuiltins } from "./manifest-builtins";
+import { createAesGcmEncryptionProvider } from "./encryption-provider";
 import {
   createIdentityMiddleware,
   createPrepInventoryDemandMiddleware,
@@ -178,6 +179,17 @@ export interface CreateManifestRuntimeDeps {
   profiling?: { enabled?: boolean; onProfileComplete?: (profile: unknown) => void; detailed?: boolean };
   /** Require IR provenance hash verification on first engine creation. */
   requireValidProvenance?: boolean;
+  /**
+   * Field-level encryption provider for `encrypted` property modifier.
+   * When supplied, properties marked `encrypted` in .manifest source are
+   * transparently encrypted at rest (AES-256-GCM envelope).
+   * When absent (dev/test), encrypted properties store as plaintext.
+   * Requires ENCRYPTION_KEY env var (64-char hex string).
+   */
+  encryptionProvider?: {
+    encrypt(plaintext: string): Promise<{ ciphertext: string; keyId: string }>;
+    decrypt(ciphertext: string, keyId: string): Promise<string>;
+  };
 }
 
 /** Context passed by the caller describing the acting user. */
@@ -523,6 +535,12 @@ export async function createManifestRuntime(
     approvalStore = new PostgresApprovalStore({ pool });
   }
 
+  // 9b. Field-level encryption provider (AES-256-GCM).
+  //    Activated when ENCRYPTION_KEY env var is set (64-char hex string).
+  //    When absent, encrypted properties are stored as plaintext (dev/test safe).
+  //    Supports key rotation via ENCRYPTION_KEY_PREVIOUS env var.
+  const encryptionProvider = createAesGcmEncryptionProvider();
+
   // 10. Assemble the runtime engine.
   //    customBuiltins injects the project's deterministic expression helpers
   //    (daysBetween/percent/containsAny/…) so guards and computed properties
@@ -549,6 +567,7 @@ export async function createManifestRuntime(
       ...(deps.evaluationLimits && { evaluationLimits: deps.evaluationLimits }),
       ...(deps.profiling && { profiling: deps.profiling }),
       ...(deps.flagProvider && { flagProvider: deps.flagProvider }),
+      ...(encryptionProvider && { encryptionProvider }),
     }
   );
 
