@@ -329,6 +329,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **EncryptionProvider wired — AES-256-GCM for 33 encrypted properties** | `encryption-provider.ts` + factory wiring. 15 tests. Key rotation via ENCRYPTION_KEY_PREVIOUS. Dev-safe (no key = plaintext). |
 | 2026-06-10 | **Entity concurrency extended to 8 entities (v0.12.237)** | versionProperty/versionAtProperty added to Event, CateringOrder, Invoice, Payment, VendorContract (3→8 total). Migration 20260610055049. Zero drift. |
 | 2026-06-10 | **SECURITY: Hardcoded roles replaced with actual auth context (v0.12.238)** | 4 route files fixed: payments (manager→currentUser), supplier-sync (admin→currentUser.role), kitchen/import (5× admin→userRole), procurement/update-status (user→currentUser.role). Also prevented manifest:generate drift that removed critical `await` from dispatcher (known production bug). |
+| 2026-06-10 | **Generator await drift fix + as-any removal (v0.12.239)** | generate.mjs template emits `return await`; 0 non-test as-any in runtime; 0 typecheck, 5205 tests pass, 0 route/schema drift |
 
 ---
 
@@ -431,7 +432,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 19. **`encrypted` modifier + encryptionProvider WIRED (v0.12.235):** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) now encrypt at rest when `ENCRYPTION_KEY` env var is set (AES-256-GCM). Provider at `manifest/runtime/src/encryption-provider.ts` — key rotation via `ENCRYPTION_KEY_PREVIOUS`. Dev/test safe (no key = plaintext stored, no error). 15 tests.
 
-20. **manifest:generate drift removes critical `await` from dispatcher:** The generated dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` uses `return await runManifestCommand(...)` but regeneration strips the `await`, causing unhandled rejections (production bug from v0.12.230). The producer needs a post-process pass to preserve `await` on return statements.
+20. **RESOLVED (v0.12.239):** Generator template in generate.mjs now emits `return await runManifestCommand(...)`. Regeneration preserves the await — verified with zero route drift.
 
 ---
 
@@ -1059,7 +1060,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Hybrid files (partial migration) | **0** | 12 | RESOLVED (v0.12.149) |
 | Total direct-write violations | **0** governed, **21** documented bypasses, **47** ungoverned infrastructure | 301 | RESOLVED (v0.12.149) |
 | `as any` in apps/api/app/ | **0** | 39 | RESOLVED (Task 10.7, 2026-06-07) |
-| `as any` in manifest/runtime/src/ | **0** (factory verified clean 2026-06-06) | 10 | RESOLVED |
+| `as any` in manifest/runtime/src/ | **0** (factory + permission-checker verified clean 2026-06-10) | 10 | RESOLVED |
 | `as any` in factory specifically | **0** (verified 2026-06-06) | 6 | RESOLVED |
 | `as unknown as` double-casts | **91** (architecturally necessary: test mocks, Prisma JSON, Vega-Lite) | 157 | RESOLVED (Task 10.8, v0.12.168: 42% reduction) |
 | Schema drift violations | **0** (110/110 entities clean, strict mode exit 0) | 179 | RESOLVED (v0.12.170) |
