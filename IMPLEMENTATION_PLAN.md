@@ -327,6 +327,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **Verification baseline: 0 typecheck errors, 5,188 tests pass, 0 schema drift** | Confirmed clean across all validation surfaces. |
 | 2026-06-10 | **Task 9.6 COMPLETE: CLI commands — 91 scripts wired, scan CI gate** | All 20 done-when CLI commands + 16 subcommand variants wired. `manifest:scan` reports 191 warnings (all `durable` store target — expected). `seed`/`profile` don't exist in v2.2.0. |
 | 2026-06-10 | **EncryptionProvider wired — AES-256-GCM for 33 encrypted properties** | `encryption-provider.ts` + factory wiring. 15 tests. Key rotation via ENCRYPTION_KEY_PREVIOUS. Dev-safe (no key = plaintext). |
+| 2026-06-10 | **Entity concurrency extended to 8 entities (v0.12.237)** | versionProperty/versionAtProperty added to Event, CateringOrder, Invoice, Payment, VendorContract (3→8 total). Migration 20260610055049. Zero drift. |
+| 2026-06-10 | **SECURITY: Hardcoded roles replaced with actual auth context (v0.12.238)** | 4 route files fixed: payments (manager→currentUser), supplier-sync (admin→currentUser.role), kitchen/import (5× admin→userRole), procurement/update-status (user→currentUser.role). Also prevented manifest:generate drift that removed critical `await` from dispatcher (known production bug). |
 
 ---
 
@@ -428,6 +430,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 18. **Entity Property Modifiers at source level only:** 534 annotations, parser accepts but compiler does not emit to JSON.
 
 19. **`encrypted` modifier + encryptionProvider WIRED (v0.12.235):** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) now encrypt at rest when `ENCRYPTION_KEY` env var is set (AES-256-GCM). Provider at `manifest/runtime/src/encryption-provider.ts` — key rotation via `ENCRYPTION_KEY_PREVIOUS`. Dev/test safe (no key = plaintext stored, no error). 15 tests.
+
+20. **manifest:generate drift removes critical `await` from dispatcher:** The generated dispatcher at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts` uses `return await runManifestCommand(...)` but regeneration strips the `await`, causing unhandled rejections (production bug from v0.12.230). The producer needs a post-process pass to preserve `await` on return statements.
 
 ---
 
