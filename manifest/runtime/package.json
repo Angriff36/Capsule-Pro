@@ -22,7 +22,8 @@
     "./command-resolver": "./src/command-resolver.ts",
     "./run-manifest-command-core": "./src/run-manifest-command-core.ts",
     "./bottleneck-detector": "./src/bottleneck-detector/index.ts",
-    "./flag-provider": "./src/flag-provider.ts"
+    "./flag-provider": "./src/flag-provider.ts",
+    "./prep-list-autogeneration": "./src/prep-list-autogeneration.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",

@@ -11,15 +11,13 @@
 
 ---
 
-## Task 10.14 — Quarantine Test Recovery (v0.12.229)
+## Task 10.14 — Quarantine Test Recovery (v0.12.230)
 
-**Status:** IN PROGRESS — Phase 2 (remaining 37 files)
+**Status:** COMPLETE — All 74 quarantine files recovered, baseline ZERO (v0.12.230)
 
-**v0.12.229 milestone (2026-06-09):**
-- Baseline: 74 → 37 (50% reduction)
-- Tests: 3,486 → 4,566 (+1,080 recovered)
-- 13 parallel subagents fixed 36 failing test files (513 failures → 0)
-- 0 typecheck errors, 4,566/4,566 tests pass
+**v0.12.230 milestone (2026-06-09):**
+- Baseline: 74 → 0 (100% recovery)
+- Tests: 5,130 pass, 0 fail, 0 typecheck errors
 
 **Production bugs found and fixed during recovery:**
 1. Missing `await` in manifest command dispatcher route (returned unhandled rejections instead of 500)
@@ -37,7 +35,9 @@
 
 **Global setup.ts enhanced:** Added @sentry/nextjs, @/app/lib/webhook-dispatch, @/lib/manifest/issue-log, @repo/notifications
 
-**Phase 2 in progress:** 5 parallel agents recovering remaining 37 quarantine files (kitchen 21, events/CRM/docs 14, manifest latency 1, sentry 1)
+**Post-quarantine fixes:**
+- `latency.test.ts` renamed to `.integration.test.ts` (not a unit test)
+- `prep-list-autogeneration.test.ts` fixed (barrel import → subpath export, `@repo/realtime` mock)
 
 ---
 

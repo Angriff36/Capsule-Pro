@@ -1137,3 +1137,29 @@ Search: training complete route, TrainingAssignment.start, TrainingAssignment.su
 **Pattern:** Pre-validation reads (findFirst for existence, validateInvoiceAccess, validateInvoiceBusinessRules) bypass Manifest per constitution S10. Side-effects (email sending via Resend) execute after the command only if `result.status === 200`, wrapped in try/catch as non-fatal. GET handler unchanged. `formatInvoiceResponse` helper kept but only used in PATCH send-reminder fallback; other handlers return the Manifest response shape (`{ success, result, events }`) consistent with all other migrated routes.
 
 Search: invoice route migration, Invoice.update command, Invoice.applyPayment, Invoice.voidInvoice, Invoice.send, governance migration, accounting invoices
+
+---
+
+## S25 — Quarantine Drain Complete (2026-06-09)
+
+All 74 quarantine test files recovered. Baseline at ZERO. 5,131 tests pass, 0 typecheck errors.
+
+**Production bugs found during test recovery:**
+1. Missing `await` in manifest command dispatcher route at `apps/api/app/api/manifest/[entity]/commands/[command]/route.ts:25` — `return runManifestCommand(...)` without `await` caused unhandled rejections to propagate instead of being caught by the try/catch and returned as 500 responses.
+2. Missing self-deactivation prevention in `apps/api/app/api/user/deactivate/route.ts` — no check for `body.userId === currentUser.id` returning 403.
+3. Stale IR file paths in `prove-manifest-source.test.ts` referencing deleted `packages/manifest-ir/` and `packages/manifest-adapters/` — updated to `manifest/ir/` and `manifest/runtime/dist/`.
+
+**Global test infrastructure improvements:**
+- `apps/api/test/setup.ts` enhanced with global mocks: `@sentry/nextjs`, `@/app/lib/webhook-dispatch`, `@/lib/manifest/issue-log`, `@repo/notifications`
+- `@repo/auth/server` and `@/app/lib/invariant` NOT added globally (broke accounting tests)
+- `apps/api/test/mocks/@repo/database.ts` enhanced with `MockDecimal` class and missing models (purchaseRequisition, vendorContract, etc.)
+
+**Root cause pattern catalog for future test work:**
+1. Generic dispatcher uses `requireCurrentUser()` (not `auth()+getTenantIdForOrg`)
+2. Command execution goes through `runManifestCommand` from `@/lib/manifest/execute-command` (not `createManifestRuntime`)
+3. Next.js App Router requires `params: Promise.resolve({entity, command})` in route handler calls
+4. Generated read routes use `findFirst` (not `findUnique`)
+5. `manifestErrorResponse` returns `{success, error, diagnostics}` not `{success, message}`
+6. Per-file database mocks override the global mock with incomplete model sets
+
+Search: quarantine drain, test recovery, 74 quarantine files, 5131 tests, mock infrastructure, root cause patterns, MockDecimal, prove-manifest-source, command dispatcher await, self-deactivate prevention

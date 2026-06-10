@@ -259,7 +259,28 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: C:/Projects/Manifest/src/manifest/masking.test.ts (create), C:/Projects/Manifest/src/manifest/masking.ts (create), C:/Projects/Manifest/src/manifest/runtime-engine.ts (edit)
+[proactive bridge @ 77% context — saved before compacting]
+Files (51):
+  C:/Projects/Manifest/src/manifest/runtime-engine.ts (edit)
+  C:/Projects/Manifest/src/manifest/runtime-masking.test.ts (create)
+  C:/Projects/Manifest/src/manifest/conformance/fixtures/93-data-masking.manifest (create)
+  C:/Projects/Manifest/src/manifest/conformance/expected/93-data-masking.results.json (create)
+  C:/Projects/Manifest/.automaker/features/data-masking/feature.json (create)
+  apps/api/test/setup.ts (edit)
+  C:/Projects/Manifest/docs/spec/semantics.md (edit)
+  C:/Projects/Manifest/src/manifest/parser.test.ts (edit)
+  apps/api/__tests__/collaboration/notifications/notification-commands.test.ts (create)
+  C:/Projects/Manifest/src/manifest/parser.ts (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+  apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts (edit)
+  C:/Projects/Manifest/src/manifest/types.ts (edit)
+  apps/api/app/api/manifest/[entity]/commands/[command]/route.ts (edit)
+  apps/api/__tests__/collaboration/notifications/notification-commands.test.ts (edit)
+  apps/api/__tests__/staff/workforce-optimization.test.ts (create)
+  C:/Projects/Manifest/src/manifest/ir-compiler.test.ts (edit)
+  C:/Projects/Manifest/docs/spec/ir/ir-v1.schema.json (edit)
+  apps/api/__tests__/procurement/purchase-orders/purchase-orders.test.ts (edit)
+  C:/Projects/Manifest/src/manifest/ir.ts (edit)
+  ... +31 more
 
 # === END COGNILAYER ===
