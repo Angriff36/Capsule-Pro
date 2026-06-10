@@ -41,6 +41,7 @@ import type { PrismaStoreConfig } from "./prisma-store";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
 import { loadMergedPrecompiledIR, loadPrecompiledIR, verifyProvenanceHash } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
+import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 
 // ---------------------------------------------------------------------------
@@ -253,40 +254,35 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
  * (`pnpm manifest:gen-prisma-meta`) updates the set automatically.
  */
 /**
- * Entities that PASS the metadata shape check (tenantId + [id]/[tenantId,id])
- * but are nevertheless KNOWN-BROKEN through GenericPrismaStore today, so they
- * are force-kept on PrismaJsonStore until the store gains the missing capability.
- *
- * ⚠️ TODO(manifest-flip): each entry here is a real bug to fix, not a permanent
- * exclusion. Remove an entry only after its create round-trips through
- * GenericPrismaStore to the real table (durable smoke green).
- *
- *   - "PrepList": Prisma's create for tenant_kitchen.prep_lists requires the
- *     `tenant` RELATION, but GenericPrismaStore only supplies the scalar
- *     `tenantId`, so create() throws:
- *         "Argument `tenant` is missing."
- *     Verified failing by the durable smoke on 2026-06-08. Fixing it means
- *     teaching GenericPrismaStore to connect required relations (out of scope
- *     for this task) OR giving PrepList a bespoke store. Until then it MUST
- *     stay on PrismaJsonStore so creates don't 500.
+ * Entities force-kept on PrismaJsonStore despite passing the metadata shape check.
+ * Empty after PrepList tenant-connect support (requiresTenantConnect in metadata).
  */
-const EXCLUDED_FROM_GENERIC_STORE: ReadonlySet<string> = new Set([
-  "PrepList",
-]);
+const EXCLUDED_FROM_GENERIC_STORE: ReadonlySet<string> = new Set([]);
+
+function modelHasTenantScope(meta: (typeof PRISMA_MODEL_METADATA)[string]): boolean {
+  return meta.fields.some(
+    (f) =>
+      f.irName === "tenantId" ||
+      f.name === "tenantId" ||
+      f.name === "tenant_id",
+  );
+}
+
+function pkShapeOk(pk: string[]): boolean {
+  if (pk.length === 1 && pk[0] === "id") return true;
+  if (pk.length === 2 && pk.includes("id")) {
+    return pk.some((p) => p === "tenantId" || p === "tenant_id");
+  }
+  return false;
+}
 
 const GENERIC_STORE_SAFE_ENTITIES: ReadonlySet<string> = (() => {
   const safe = new Set<string>();
   for (const [name, meta] of Object.entries(PRISMA_MODEL_METADATA)) {
-    // Honor the known-broken exclusion list even when the shape check passes.
     if (EXCLUDED_FROM_GENERIC_STORE.has(name)) {
       continue;
     }
-    const fieldNames = new Set(meta.fields.map((f) => f.name));
-    const pk = meta.pkFields;
-    const pkOk =
-      (pk.length === 1 && pk[0] === "id") ||
-      (pk.length === 2 && pk.includes("tenantId") && pk.includes("id"));
-    if (fieldNames.has("tenantId") && pkOk) {
+    if (modelHasTenantScope(meta) && pkShapeOk(meta.pkFields)) {
       safe.add(name);
     }
   }
@@ -310,7 +306,13 @@ function hasTypedStore(entityName: string): boolean {
   if (EXCLUDED_FROM_GENERIC_STORE.has(entityName)) {
     return false;
   }
-  return GENERIC_STORE_SAFE_ENTITIES.has(entityName);
+  // IR entity names (e.g. BankAccount) may differ from Prisma model keys
+  // (e.g. EmployeeBankAccount). Resolve via ENTITY_TO_PRISMA_MODEL bridge.
+  const modelKey = resolvePrismaModelKey(entityName);
+  return (
+    GENERIC_STORE_SAFE_ENTITIES.has(entityName) ||
+    GENERIC_STORE_SAFE_ENTITIES.has(modelKey)
+  );
 }
 
 // ---------------------------------------------------------------------------

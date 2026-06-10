@@ -37,6 +37,14 @@ projections:
     options:
       # Auth: Clerk (auth().protect() on protected routes) — constitution / AGENTS.md.
       authProvider: clerk
+      # Import the Clerk `auth()` helper from the repo wrapper (@repo/auth/server),
+      # NOT the raw `@clerk/nextjs` package. The nextjs projection defaults
+      # authImportPath to "@/lib/auth", which (per generator.js generateAuthImport)
+      # collapses to "@clerk/nextjs" — a module that does NOT export `auth` in Clerk
+      # v5+ (it lives under @clerk/nextjs/server), so the generated list routes would
+      # fail typecheck. Setting it explicitly keeps generated reads on the repo wrapper
+      # and the regen drift gate at zero. See generator.js:144-148.
+      authImportPath: "@repo/auth/server"
       # App-local DB + runtime + response import paths used by generated routes.
       databaseImportPath: "@repo/database"
       # App Router base directory. generate.mjs derives its staged-route prefix from this
@@ -78,3 +86,34 @@ projections:
       # The CLI's config schema (v2.2.0) does not yet validate multiSchema under
       # prisma.options — see prisma-projection.schema.json for the full spec.
       # When the CLI catches up, add multiSchema here to centralize placement.
+  # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
+  # Canonical options bag: manifest/scripts/prisma-store-options.generated.json
+  # (built by build-prisma-store-options.mjs from ENTITY_TO_PRISMA_MODEL + derive-prisma-options).
+  # Generation: pnpm manifest:generate-metadata (chains schema metadata + this projection).
+  # Runtime today uses schema-derived prisma-model-metadata.generated.ts for field coercion;
+  # this projection validates IR↔accessor alignment and feeds accessorNames into the bridge.
+  prisma-store:
+    output: manifest/runtime/src/generated/
+    options:
+      provider: postgresql
+      naming: snake_case
+      metadataOutput: manifest-prisma-store-metadata.generated.ts
+      registryOutput: prisma-store-registry.generated.ts
+      # IR entity name → Prisma client delegate. Mirror ENTITY_TO_PRISMA_MODEL in
+      # manifest/scripts/entity-domain-map.mjs. Regenerate via build-prisma-store-options.mjs.
+      accessorNames:
+        EventImportWorkflow: eventImport
+        BankAccount: employeeBankAccount
+        LogisticsRoute: deliveryRoute
+        Document: documents
+        SmsAutomationRule: sms_automation_rules
+        EventTimelineItem: eventTimeline
+        StorageLocation: storage_locations
+        BulkCombineRule: bulk_combine_rules
+        MethodVideo: method_videos
+        PrepListImport: prep_list_imports
+        QACorrectiveAction: correctiveAction
+        QATemperatureLog: temperatureLog
+        TaskBundleItem: task_bundle_items
+        TaskBundle: task_bundles
+        OpenShift: open_shifts

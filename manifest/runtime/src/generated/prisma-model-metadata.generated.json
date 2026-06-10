@@ -1373,6 +1373,14 @@
         "irName": "templateId"
       },
       {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -4315,6 +4323,14 @@
         "irName": "staffAssigned"
       },
       {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -5835,6 +5851,14 @@
       {
         "name": "qualityRating",
         "irName": "qualityRating"
+      },
+      {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt"
       },
       {
         "name": "createdAt",
@@ -11137,6 +11161,14 @@
         "irName": "voidedAt"
       },
       {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt"
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt"
       },
@@ -11271,6 +11303,14 @@
       {
         "name": "refundedAt",
         "irName": "refundedAt"
+      },
+      {
+        "name": "version",
+        "irName": "version"
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt"
       },
       {
         "name": "createdAt",
@@ -16644,6 +16684,1013 @@
       {
         "name": "completedAt",
         "irName": "completedAt"
+      }
+    ]
+  },
+  "EventImportWorkflow": {
+    "accessor": "eventImport",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId"
+      },
+      {
+        "name": "fileName",
+        "irName": "fileName"
+      },
+      {
+        "name": "mimeType",
+        "irName": "mimeType"
+      },
+      {
+        "name": "fileSize",
+        "irName": "fileSize"
+      },
+      {
+        "name": "content",
+        "irName": "content"
+      },
+      {
+        "name": "blobUrl",
+        "irName": "blobUrl"
+      },
+      {
+        "name": "fileType",
+        "irName": "fileType"
+      },
+      {
+        "name": "detectedFormat",
+        "irName": "detectedFormat"
+      },
+      {
+        "name": "parseStatus",
+        "irName": "parseStatus"
+      },
+      {
+        "name": "extractedData",
+        "irName": "extractedData"
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence"
+      },
+      {
+        "name": "parseErrors",
+        "irName": "parseErrors"
+      },
+      {
+        "name": "reportId",
+        "irName": "reportId"
+      },
+      {
+        "name": "battleBoardId",
+        "irName": "battleBoardId"
+      },
+      {
+        "name": "parsedAt",
+        "irName": "parsedAt"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "BankAccount": {
+    "accessor": "employeeBankAccount",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "employeeId",
+        "irName": "employeeId"
+      },
+      {
+        "name": "bankName",
+        "irName": "bankName"
+      },
+      {
+        "name": "accountType",
+        "irName": "accountType"
+      },
+      {
+        "name": "routingNumber",
+        "irName": "routingNumber"
+      },
+      {
+        "name": "accountNumber",
+        "irName": "accountNumber"
+      },
+      {
+        "name": "accountNumberLast4",
+        "irName": "accountNumberLast4"
+      },
+      {
+        "name": "accountHolderName",
+        "irName": "accountHolderName"
+      },
+      {
+        "name": "isDefault",
+        "irName": "isDefault"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt"
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod"
+      },
+      {
+        "name": "depositHistory",
+        "irName": "depositHistory"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "LogisticsRoute": {
+    "accessor": "deliveryRoute",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "routeNumber",
+        "irName": "routeNumber"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId"
+      },
+      {
+        "name": "scheduledDate",
+        "irName": "scheduledDate"
+      },
+      {
+        "name": "startTime",
+        "irName": "startTime"
+      },
+      {
+        "name": "endTime",
+        "irName": "endTime"
+      },
+      {
+        "name": "totalDistance",
+        "irName": "totalDistance"
+      },
+      {
+        "name": "totalDuration",
+        "irName": "totalDuration"
+      },
+      {
+        "name": "optimizationScore",
+        "irName": "optimizationScore"
+      },
+      {
+        "name": "optimizationAlgorithm",
+        "irName": "optimizationAlgorithm"
+      },
+      {
+        "name": "driverId",
+        "irName": "driverId"
+      },
+      {
+        "name": "vehicleId",
+        "irName": "vehicleId"
+      },
+      {
+        "name": "actualStartTime",
+        "irName": "actualStartTime"
+      },
+      {
+        "name": "actualEndTime",
+        "irName": "actualEndTime"
+      },
+      {
+        "name": "actualDistance",
+        "irName": "actualDistance"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "Document": {
+    "accessor": "documents",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "file_name",
+        "irName": "fileName"
+      },
+      {
+        "name": "file_type",
+        "irName": "fileType"
+      },
+      {
+        "name": "file_size",
+        "irName": "fileSize"
+      },
+      {
+        "name": "storage_path",
+        "irName": "storagePath"
+      },
+      {
+        "name": "parsed_data",
+        "irName": "parsedData"
+      },
+      {
+        "name": "parse_status",
+        "irName": "parseStatus"
+      },
+      {
+        "name": "parse_error",
+        "irName": "parseError"
+      },
+      {
+        "name": "parsed_at",
+        "irName": "parsedAt"
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId"
+      },
+      {
+        "name": "battle_board_id",
+        "irName": "battleBoardId"
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "SmsAutomationRule": {
+    "accessor": "sms_automation_rules",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "trigger_type",
+        "irName": "triggerType"
+      },
+      {
+        "name": "trigger_config",
+        "irName": "triggerConfig"
+      },
+      {
+        "name": "template_id",
+        "irName": "templateId"
+      },
+      {
+        "name": "custom_message",
+        "irName": "customMessage"
+      },
+      {
+        "name": "recipient_type",
+        "irName": "recipientType"
+      },
+      {
+        "name": "recipient_config",
+        "irName": "recipientConfig"
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive"
+      },
+      {
+        "name": "priority",
+        "irName": "priority"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "EventTimelineItem": {
+    "accessor": "eventTimeline",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId"
+      },
+      {
+        "name": "timelineTime",
+        "irName": "timelineTime"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "responsibleRole",
+        "irName": "responsibleRole"
+      },
+      {
+        "name": "isCompleted",
+        "irName": "isCompleted"
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "sortOrder",
+        "irName": "sortOrder"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "StorageLocation": {
+    "accessor": "storage_locations",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "storage_type",
+        "irName": "storageType"
+      },
+      {
+        "name": "temperature_min",
+        "irName": "temperatureMin"
+      },
+      {
+        "name": "temperature_max",
+        "irName": "temperatureMax"
+      },
+      {
+        "name": "temperature_unit",
+        "irName": "temperatureUnit"
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "BulkCombineRule": {
+    "accessor": "bulk_combine_rules",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "match_criteria",
+        "irName": "matchCriteria"
+      },
+      {
+        "name": "is_automatic",
+        "irName": "isAutomatic"
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "MethodVideo": {
+    "accessor": "method_videos",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "method_id",
+        "irName": "methodId"
+      },
+      {
+        "name": "title",
+        "irName": "title"
+      },
+      {
+        "name": "video_url",
+        "irName": "videoUrl"
+      },
+      {
+        "name": "thumbnail_url",
+        "irName": "thumbnailUrl"
+      },
+      {
+        "name": "duration_seconds",
+        "irName": "durationSeconds"
+      },
+      {
+        "name": "sort_order",
+        "irName": "sortOrder"
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "PrepListImport": {
+    "accessor": "prep_list_imports",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "source_system",
+        "irName": "sourceSystem"
+      },
+      {
+        "name": "external_id",
+        "irName": "externalId"
+      },
+      {
+        "name": "import_metadata",
+        "irName": "importMetadata"
+      },
+      {
+        "name": "imported_by",
+        "irName": "importedBy"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      }
+    ]
+  },
+  "QACorrectiveAction": {
+    "accessor": "correctiveAction",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "actionNumber",
+        "irName": "actionNumber"
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId"
+      },
+      {
+        "name": "relatedCheckId",
+        "irName": "relatedCheckId"
+      },
+      {
+        "name": "relatedTempLogId",
+        "irName": "relatedTempLogId"
+      },
+      {
+        "name": "severity",
+        "irName": "severity"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "title",
+        "irName": "title"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "rootCause",
+        "irName": "rootCause"
+      },
+      {
+        "name": "immediateAction",
+        "irName": "immediateAction"
+      },
+      {
+        "name": "preventiveAction",
+        "irName": "preventiveAction"
+      },
+      {
+        "name": "assignedTo",
+        "irName": "assignedTo"
+      },
+      {
+        "name": "dueDate",
+        "irName": "dueDate"
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt"
+      },
+      {
+        "name": "resolvedBy",
+        "irName": "resolvedBy"
+      },
+      {
+        "name": "resolutionNotes",
+        "irName": "resolutionNotes"
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod"
+      },
+      {
+        "name": "verifiedBy",
+        "irName": "verifiedBy"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "QATemperatureLog": {
+    "accessor": "temperatureLog",
+    "hasDeletedAt": true,
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "logNumber",
+        "irName": "logNumber"
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId"
+      },
+      {
+        "name": "equipmentId",
+        "irName": "equipmentId"
+      },
+      {
+        "name": "logType",
+        "irName": "logType"
+      },
+      {
+        "name": "itemName",
+        "irName": "itemName"
+      },
+      {
+        "name": "temperature",
+        "irName": "temperature"
+      },
+      {
+        "name": "unit",
+        "irName": "unit"
+      },
+      {
+        "name": "targetTemp",
+        "irName": "targetTemp"
+      },
+      {
+        "name": "withinRange",
+        "irName": "withinRange"
+      },
+      {
+        "name": "loggedAt",
+        "irName": "loggedAt"
+      },
+      {
+        "name": "loggedBy",
+        "irName": "loggedBy"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "correctiveAction",
+        "irName": "correctiveAction"
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "TaskBundleItem": {
+    "accessor": "task_bundle_items",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "bundle_id",
+      "task_id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "bundle_id",
+        "irName": "bundleId"
+      },
+      {
+        "name": "task_id",
+        "irName": "taskId"
+      },
+      {
+        "name": "sort_order",
+        "irName": "sortOrder"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      }
+    ]
+  },
+  "TaskBundle": {
+    "accessor": "task_bundles",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId"
+      },
+      {
+        "name": "name",
+        "irName": "name"
+      },
+      {
+        "name": "description",
+        "irName": "description"
+      },
+      {
+        "name": "is_template",
+        "irName": "isTemplate"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
+      }
+    ]
+  },
+  "OpenShift": {
+    "accessor": "open_shifts",
+    "hasDeletedAt": false,
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId"
+      },
+      {
+        "name": "id",
+        "irName": "id"
+      },
+      {
+        "name": "schedule_id",
+        "irName": "scheduleId"
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId"
+      },
+      {
+        "name": "shift_start",
+        "irName": "shiftStart"
+      },
+      {
+        "name": "shift_end",
+        "irName": "shiftEnd"
+      },
+      {
+        "name": "role_during_shift",
+        "irName": "roleDuringShift"
+      },
+      {
+        "name": "notes",
+        "irName": "notes"
+      },
+      {
+        "name": "status",
+        "irName": "status"
+      },
+      {
+        "name": "claimed_by",
+        "irName": "claimedBy"
+      },
+      {
+        "name": "claimed_at",
+        "irName": "claimedAt"
+      },
+      {
+        "name": "assigned_shift_id",
+        "irName": "assignedShiftId"
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt"
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt"
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt"
       }
     ]
   }

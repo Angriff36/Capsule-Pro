@@ -40,7 +40,7 @@ function loadPrismaMetadata() {
 // Bridge map: IR entity name → Prisma MODEL name for entities where the names differ.
 // Used by resolveAccessor() to look up the correct metadata entry.
 // Each entry verified against schema.prisma (constitution: never invent accessors).
-const ENTITY_TO_PRISMA_MODEL = {
+export const ENTITY_TO_PRISMA_MODEL = {
   EventImportWorkflow: "EventImport",      // model EventImport @@map("event_imports")
   BankAccount: "EmployeeBankAccount",       // model EmployeeBankAccount @@map("employee_bank_accounts")
   LogisticsRoute: "DeliveryRoute",          // model DeliveryRoute @@map("delivery_routes")

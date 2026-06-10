@@ -19,6 +19,8 @@ entity StaffMember {
   property deletedAt: datetime
 
   computed isActive: boolean = self.status == "active"
+  // Populates StaffMemberCreated.staffMemberId for reactions (entity uses `id`).
+  computed staffMemberId: string = self.id
 
   constraint requireDisplayName: self.displayName != null and self.displayName != "" "Display name is required"
   constraint validStatus: self.status in ["active", "inactive"] "Status must be active or inactive"

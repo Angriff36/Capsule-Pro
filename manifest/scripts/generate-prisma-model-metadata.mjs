@@ -16,6 +16,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
+import { ENTITY_TO_PRISMA_MODEL } from "./entity-domain-map.mjs";
 
 const root = resolve(process.cwd());
 const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
@@ -139,6 +140,9 @@ while ((mm = modelRe.exec(schema)) !== null) {
     pkFields = [idField ? idField.name : "id"];
   }
   const whereAccessor = pkFields.length > 1 ? pkFields.join("_") : pkFields[0];
+  // PrepList and similar models require `tenant: { connect: { id } }` on create —
+  // scalar tenantId alone is rejected by Prisma when the Account relation is required.
+  const requiresTenantConnect = /\btenant\s+Account\s+@relation\b/.test(body);
 
   models[name] = {
     accessor: accessorOf(name),
@@ -147,6 +151,7 @@ while ((mm = modelRe.exec(schema)) !== null) {
     pkFields,
     whereAccessor,
     hasDeletedAt,
+    ...(requiresTenantConnect ? { requiresTenantConnect: true } : {}),
     fields,
   };
 }
@@ -156,6 +161,16 @@ const versionMap = loadVersionProperties();
 for (const [entityName, versionProp] of versionMap) {
   if (models[entityName]) {
     models[entityName].versionProperty = versionProp;
+  }
+}
+
+// IR entity name aliases: when Manifest IR name differs from the Prisma model
+// key (see ENTITY_TO_PRISMA_MODEL in entity-domain-map.mjs), duplicate metadata
+// under the IR name so runtime store selection and GenericPrismaStore lookup
+// work without a separate name-resolution hop.
+for (const [irName, modelName] of Object.entries(ENTITY_TO_PRISMA_MODEL)) {
+  if (models[modelName] && !models[irName]) {
+    models[irName] = models[modelName];
   }
 }
 
@@ -184,6 +199,8 @@ export interface PrismaModelMeta {
   pkFields: string[];
   whereAccessor: string;
   hasDeletedAt: boolean;
+  /** When true, create() must use tenant: { connect: { id } } not scalar tenantId alone. */
+  requiresTenantConnect?: boolean;
   versionProperty?: string;
   fields: PrismaFieldMeta[];
 }
@@ -216,6 +233,30 @@ for (const [entityName, meta] of Object.entries(models)) {
 }
 writeFileSync(jsonOutPath, JSON.stringify(lightweight, null, 2) + "\n");
 
+// Runtime bridge map: IR entity name → Prisma model metadata key.
+// Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
+const bridgeOutPath = resolve(
+  root,
+  "manifest/runtime/src/generated/entity-to-prisma-model.generated.ts",
+);
+const bridgeHeader = `// Generated from manifest/scripts/entity-domain-map.mjs - DO NOT EDIT
+// Produced by manifest/scripts/generate-prisma-model-metadata.mjs
+// Re-run via \`pnpm manifest:generate-metadata\` after bridge map changes.
+/* eslint-disable */
+`;
+const bridgeBody = `export const ENTITY_TO_PRISMA_MODEL: Readonly<Record<string, string>> = ${JSON.stringify(
+  ENTITY_TO_PRISMA_MODEL,
+  null,
+  2,
+)};
+
+/** Resolve Manifest IR entity name to Prisma model metadata key. */
+export function resolvePrismaModelKey(entityName: string): string {
+  return ENTITY_TO_PRISMA_MODEL[entityName] ?? entityName;
+}
+`;
+writeFileSync(bridgeOutPath, bridgeHeader + "\n" + bridgeBody);
+
 process.stdout.write(
-  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\n`,
+  `wrote ${outPath}\nmodels: ${Object.keys(models).length}\njson: ${jsonOutPath}\nbridge: ${bridgeOutPath}\n`,
 );

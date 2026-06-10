@@ -114,7 +114,7 @@
     "manifest:generate": "node manifest/scripts/generate.mjs",
     "manifest:client": "node manifest/scripts/generate-capsule-client.mjs",
     "manifest:try-prisma": "node manifest/scripts/try-prisma.mjs",
-    "manifest:generate-metadata": "node manifest/scripts/generate-prisma-model-metadata.mjs",
+    "manifest:generate-metadata": "node manifest/scripts/generate-prisma-model-metadata.mjs && node manifest/scripts/build-prisma-store-options.mjs && node manifest/scripts/generate-prisma-store-projection.mjs",
     "manifest:derive-options": "node manifest/scripts/derive-prisma-options.mjs",
     "manifest:generate-zod": "node manifest/scripts/generate-zod-schemas.mjs",
     "manifest:generate-hooks": "node manifest/scripts/generate-react-query-hooks.mjs",

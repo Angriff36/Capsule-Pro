@@ -352,15 +352,42 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
+    it("routes IR-name-mismatched entities to PrismaStore via ENTITY_TO_PRISMA_MODEL bridge", async () => {
+      // Manifest IR names that map to different Prisma model keys must resolve
+      // through the bridge — otherwise hasTypedStore misses the metadata entry
+      // and store_json_fallback fires despite a real typed table existing.
+      const bridgedEntities = [
+        { ir: "BankAccount", model: "EmployeeBankAccount" },
+        { ir: "LogisticsRoute", model: "DeliveryRoute" },
+        { ir: "EventTimelineItem", model: "EventTimeline" },
+      ];
+
+      const deps = makeDeps();
+      const runtime = await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+
+      const engineOptions = (runtime as unknown as { options: unknown })
+        .options as { storeProvider: (name: string) => unknown };
+
+      for (const { ir } of bridgedEntities) {
+        prismaStoreConstructorSpy.mockClear();
+        prismaJsonStoreConstructorSpy.mockClear();
+        engineOptions.storeProvider(ir);
+        expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
+        expect(prismaStoreConstructorSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ entityName: ir, tenantId: "tenant-1" }),
+        );
+        expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
+      }
+    });
+
     it("routes tenant-scoped reconciled entities to PrismaStore (GenericPrismaStore flip regression)", async () => {
       // Regression guard for the PrismaJsonStore→GenericPrismaStore flip:
       // every tenant-scoped entity with a real [id] or [tenantId,id] model now
       // goes through PrismaStore (→ GenericPrismaStore → real typed table)
       // instead of the JSON blob. These previously emitted store_json_fallback
       // and silently wrote to manifest_entity.
-      // NOTE: PrepList is deliberately NOT here — it is in
-      // EXCLUDED_FROM_GENERIC_STORE (required `tenant` relation bug); see the
-      // dedicated PrepList test below.
       const flippedEntities = [
         "Venue",
         "Event",
@@ -389,14 +416,7 @@ describe("createManifestRuntime (shared factory)", () => {
       }
     });
 
-    it("keeps PrepList on PrismaJsonStore for now (EXCLUDED_FROM_GENERIC_STORE — required `tenant` relation bug)", async () => {
-      // PrepList has valid metadata (tenantId + [tenantId,id]) and PASSES the
-      // shape check, but GenericPrismaStore.create currently throws
-      // "Argument `tenant` is missing" because the prep_lists model requires the
-      // tenant RELATION, not just the scalar tenantId. Until that is fixed it is
-      // force-excluded and MUST route to PrismaJsonStore so creates don't 500.
-      // TODO(manifest-flip): flip PrepList back to PrismaStore once
-      // GenericPrismaStore connects required relations (durable smoke green).
+    it("routes PrepList to PrismaStore (requiresTenantConnect handled in GenericPrismaStore)", async () => {
       const deps = makeDeps();
 
       const runtime = await createManifestRuntime(deps, {
@@ -410,11 +430,11 @@ describe("createManifestRuntime (shared factory)", () => {
         .options as { storeProvider: (name: string) => unknown };
 
       engineOptions.storeProvider("PrepList");
-      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
-      expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ tenantId: "tenant-1", entityType: "PrepList" })
+      expect(prismaStoreConstructorSpy).toHaveBeenCalledTimes(1);
+      expect(prismaStoreConstructorSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ entityName: "PrepList", tenantId: "tenant-1" }),
       );
-      expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
+      expect(prismaJsonStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
     it("routes all 5 dedicated entities to PrismaStore", async () => {

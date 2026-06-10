@@ -240,7 +240,7 @@ export async function setupEventCompletely(
       Array<{ cnt: bigint }>
     >`SELECT COUNT(*) as cnt
        FROM tenant_events.event_staff
-       WHERE tenantId = ${tenantId}::uuid AND eventId = ${eventId}::uuid AND deletedAt IS NULL`;
+       WHERE "tenantId" = ${tenantId}::text AND "eventId" = ${eventId}::text AND "deletedAt" IS NULL`;
 
     if (Number(existingStaff[0].cnt) > 0) {
       result.steps.staffAssigned = {
@@ -269,7 +269,7 @@ export async function setupEventCompletely(
           Array<{ id: string }>
         >`SELECT id
            FROM tenant_events.event_staff
-           WHERE tenantId = ${tenantId}::uuid AND eventId = ${eventId}::uuid AND staffMemberId = ${emp.id}::uuid AND deletedAt IS NULL`;
+           WHERE "tenantId" = ${tenantId}::text AND "eventId" = ${eventId}::text AND "staffMemberId" = ${emp.id}::text AND "deletedAt" IS NULL`;
 
         if (alreadyAssigned.length > 0) continue;
 

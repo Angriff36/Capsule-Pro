@@ -22,6 +22,8 @@ export interface PrismaModelMeta {
   pkFields: string[];
   whereAccessor: string;
   hasDeletedAt: boolean;
+  /** When true, create() must use tenant: { connect: { id } } not scalar tenantId alone. */
+  requiresTenantConnect?: boolean;
   versionProperty?: string;
   fields: PrismaFieldMeta[];
 }
@@ -181,6 +183,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -359,6 +362,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -636,6 +640,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -1102,6 +1107,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -1258,6 +1264,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -1579,6 +1586,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -1691,6 +1699,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -1814,6 +1823,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -2324,6 +2334,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -2623,6 +2634,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -2768,6 +2780,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -3078,6 +3091,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -3300,6 +3314,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -3577,6 +3592,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -3609,7 +3646,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "EventProfitability": {
     "accessor": "eventProfitability",
@@ -4109,6 +4147,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -4320,6 +4359,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -4476,6 +4516,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -4643,6 +4684,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -4931,6 +4973,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5109,6 +5152,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5232,6 +5276,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5355,6 +5400,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5599,6 +5645,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5777,6 +5824,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -5889,6 +5937,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6034,6 +6083,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6377,6 +6427,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6566,6 +6617,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6788,6 +6840,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -6922,6 +6975,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -7232,6 +7286,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -7421,6 +7476,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -7577,6 +7633,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -7711,6 +7768,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -7878,6 +7936,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8111,6 +8170,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8278,6 +8338,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8401,6 +8462,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8535,6 +8597,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8691,6 +8754,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -8924,6 +8988,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9212,6 +9277,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9368,6 +9434,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9623,6 +9690,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9779,6 +9847,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -9946,6 +10015,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10080,6 +10150,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10280,6 +10351,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10392,6 +10464,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10548,6 +10621,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -10770,6 +10844,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -11102,6 +11177,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -11134,7 +11231,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "InventoryItem": {
     "accessor": "inventoryItem",
@@ -11146,6 +11244,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -11402,6 +11501,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -11602,6 +11702,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -11879,6 +11980,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12057,6 +12159,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12191,6 +12294,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12314,6 +12418,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12470,6 +12575,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12571,6 +12677,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12683,6 +12790,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -12762,6 +12870,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -13006,6 +13115,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -13272,6 +13382,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -13560,6 +13671,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -13716,6 +13828,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -13960,6 +14073,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -14149,6 +14263,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -14492,6 +14607,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -14681,6 +14797,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15013,6 +15130,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -15045,7 +15184,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "VendorContact": {
     "accessor": "vendorContact",
@@ -15057,6 +15197,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15202,6 +15343,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15325,6 +15467,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15547,6 +15690,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -15714,6 +15858,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16013,6 +16158,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16213,6 +16359,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16358,6 +16505,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16536,6 +16684,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16659,6 +16808,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16782,6 +16932,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -16894,6 +17045,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17017,6 +17169,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17162,6 +17315,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17285,6 +17439,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17464,6 +17619,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17631,6 +17787,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17777,6 +17934,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_employeeId_locationId",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -17867,6 +18025,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -18100,6 +18259,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -18524,6 +18684,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -20799,6 +20960,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24329,6 +24491,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24463,6 +24626,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24564,6 +24728,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -24676,6 +24841,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -26527,6 +26693,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -26994,6 +27161,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27250,6 +27418,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27428,6 +27597,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27562,6 +27732,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27841,6 +28012,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -27964,6 +28136,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -28263,6 +28436,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28295,7 +28490,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "PaymentMethod": {
     "accessor": "paymentMethod",
@@ -28307,6 +28503,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -28441,6 +28638,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -28608,6 +28806,28 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isId": false
       },
       {
+        "name": "version",
+        "irName": "version",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "versionAt",
+        "irName": "versionAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
         "name": "createdAt",
         "irName": "createdAt",
         "type": "DateTime",
@@ -28640,7 +28860,8 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
         "isUpdatedAt": false,
         "isId": false
       }
-    ]
+    ],
+    "versionProperty": "version"
   },
   "PaymentRefundAttempt": {
     "accessor": "paymentRefundAttempt",
@@ -28786,6 +29007,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29085,6 +29307,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29186,6 +29409,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29320,6 +29544,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29608,6 +29833,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -29820,6 +30046,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_entityType_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -30696,6 +30923,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -30852,6 +31080,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -30975,6 +31204,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31152,6 +31382,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31319,6 +31550,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31486,6 +31718,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31653,6 +31886,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31820,6 +32054,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -31976,6 +32211,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -32176,6 +32412,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -32409,6 +32646,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -32609,6 +32847,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -34090,6 +34329,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -34868,6 +35108,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35013,6 +35254,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35169,6 +35411,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35380,6 +35623,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35492,6 +35736,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35681,6 +35926,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35815,6 +36061,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -35971,6 +36218,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -36182,6 +36430,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -36448,6 +36697,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -36670,6 +36920,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -36793,6 +37044,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": false,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37026,6 +37278,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37248,6 +37501,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37448,6 +37702,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37604,6 +37859,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -37793,6 +38049,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -38092,6 +38349,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -38303,6 +38561,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -38857,6 +39116,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -39046,6 +39306,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -39202,6 +39463,7 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
     ],
     "whereAccessor": "tenantId_id",
     "hasDeletedAt": true,
+    "requiresTenantConnect": true,
     "fields": [
       {
         "name": "tenantId",
@@ -42267,6 +42529,2561 @@ export const PRISMA_MODEL_METADATA: Record<string, PrismaModelMeta> = {
       {
         "name": "completedAt",
         "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "EventImportWorkflow": {
+    "accessor": "eventImport",
+    "dbName": "event_imports",
+    "pgSchema": "tenant_events",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "requiresTenantConnect": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fileName",
+        "irName": "fileName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "mimeType",
+        "irName": "mimeType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fileSize",
+        "irName": "fileSize",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "content",
+        "irName": "content",
+        "type": "Bytes",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "blobUrl",
+        "irName": "blobUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "fileType",
+        "irName": "fileType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "detectedFormat",
+        "irName": "detectedFormat",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parseStatus",
+        "irName": "parseStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "extractedData",
+        "irName": "extractedData",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "confidence",
+        "irName": "confidence",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parseErrors",
+        "irName": "parseErrors",
+        "type": "String",
+        "isEnum": false,
+        "isList": true,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "reportId",
+        "irName": "reportId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "battleBoardId",
+        "irName": "battleBoardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsedAt",
+        "irName": "parsedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "BankAccount": {
+    "accessor": "employeeBankAccount",
+    "dbName": "employee_bank_accounts",
+    "pgSchema": "tenant_staff",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "employeeId",
+        "irName": "employeeId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bankName",
+        "irName": "bankName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accountType",
+        "irName": "accountType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "routingNumber",
+        "irName": "routingNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accountNumber",
+        "irName": "accountNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accountNumberLast4",
+        "irName": "accountNumberLast4",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "accountHolderName",
+        "irName": "accountHolderName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isDefault",
+        "irName": "isDefault",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verifiedAt",
+        "irName": "verifiedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "depositHistory",
+        "irName": "depositHistory",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "LogisticsRoute": {
+    "accessor": "deliveryRoute",
+    "dbName": "delivery_routes",
+    "pgSchema": "tenant_logistics",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "requiresTenantConnect": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "routeNumber",
+        "irName": "routeNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "scheduledDate",
+        "irName": "scheduledDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "startTime",
+        "irName": "startTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "endTime",
+        "irName": "endTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "totalDistance",
+        "irName": "totalDistance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "totalDuration",
+        "irName": "totalDuration",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optimizationScore",
+        "irName": "optimizationScore",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "optimizationAlgorithm",
+        "irName": "optimizationAlgorithm",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "driverId",
+        "irName": "driverId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "vehicleId",
+        "irName": "vehicleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actualStartTime",
+        "irName": "actualStartTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actualEndTime",
+        "irName": "actualEndTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actualDistance",
+        "irName": "actualDistance",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "Document": {
+    "accessor": "documents",
+    "dbName": null,
+    "pgSchema": "tenant",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": true
+      },
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "file_name",
+        "irName": "fileName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "file_type",
+        "irName": "fileType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "file_size",
+        "irName": "fileSize",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "storage_path",
+        "irName": "storagePath",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_data",
+        "irName": "parsedData",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parse_status",
+        "irName": "parseStatus",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parse_error",
+        "irName": "parseError",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "parsed_at",
+        "irName": "parsedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "battle_board_id",
+        "irName": "battleBoardId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "metadata",
+        "irName": "metadata",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "SmsAutomationRule": {
+    "accessor": "sms_automation_rules",
+    "dbName": "sms_automation_rules",
+    "pgSchema": "tenant_admin",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_type",
+        "irName": "triggerType",
+        "type": "sms_automation_trigger_type",
+        "isEnum": true,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "trigger_config",
+        "irName": "triggerConfig",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "template_id",
+        "irName": "templateId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "custom_message",
+        "irName": "customMessage",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipient_type",
+        "irName": "recipientType",
+        "type": "sms_recipient_type",
+        "isEnum": true,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "recipient_config",
+        "irName": "recipientConfig",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "priority",
+        "irName": "priority",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "EventTimelineItem": {
+    "accessor": "eventTimeline",
+    "dbName": "event_timeline",
+    "pgSchema": "tenant_events",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "requiresTenantConnect": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "timelineTime",
+        "irName": "timelineTime",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "responsibleRole",
+        "irName": "responsibleRole",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "isCompleted",
+        "irName": "isCompleted",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "completedAt",
+        "irName": "completedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sortOrder",
+        "irName": "sortOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "StorageLocation": {
+    "accessor": "storage_locations",
+    "dbName": null,
+    "pgSchema": "tenant_inventory",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "storage_type",
+        "irName": "storageType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "temperature_min",
+        "irName": "temperatureMin",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "temperature_max",
+        "irName": "temperatureMax",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "temperature_unit",
+        "irName": "temperatureUnit",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "BulkCombineRule": {
+    "accessor": "bulk_combine_rules",
+    "dbName": null,
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "match_criteria",
+        "irName": "matchCriteria",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_automatic",
+        "irName": "isAutomatic",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "MethodVideo": {
+    "accessor": "method_videos",
+    "dbName": null,
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "method_id",
+        "irName": "methodId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "video_url",
+        "irName": "videoUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "thumbnail_url",
+        "irName": "thumbnailUrl",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "duration_seconds",
+        "irName": "durationSeconds",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sort_order",
+        "irName": "sortOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_active",
+        "irName": "isActive",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "PrepListImport": {
+    "accessor": "prep_list_imports",
+    "dbName": null,
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "source_system",
+        "irName": "sourceSystem",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "external_id",
+        "irName": "externalId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "import_metadata",
+        "irName": "importMetadata",
+        "type": "Json",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "imported_by",
+        "irName": "importedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "QACorrectiveAction": {
+    "accessor": "correctiveAction",
+    "dbName": "corrective_actions",
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "requiresTenantConnect": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "actionNumber",
+        "irName": "actionNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "relatedCheckId",
+        "irName": "relatedCheckId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "relatedTempLogId",
+        "irName": "relatedTempLogId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "severity",
+        "irName": "severity",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "title",
+        "irName": "title",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "rootCause",
+        "irName": "rootCause",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "immediateAction",
+        "irName": "immediateAction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "preventiveAction",
+        "irName": "preventiveAction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assignedTo",
+        "irName": "assignedTo",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "dueDate",
+        "irName": "dueDate",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedAt",
+        "irName": "resolvedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolvedBy",
+        "irName": "resolvedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "resolutionNotes",
+        "irName": "resolutionNotes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verificationMethod",
+        "irName": "verificationMethod",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "verifiedBy",
+        "irName": "verifiedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "QATemperatureLog": {
+    "accessor": "temperatureLog",
+    "dbName": "temperature_logs",
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenantId",
+      "id"
+    ],
+    "whereAccessor": "tenantId_id",
+    "hasDeletedAt": true,
+    "requiresTenantConnect": true,
+    "fields": [
+      {
+        "name": "tenantId",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "logNumber",
+        "irName": "logNumber",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "eventId",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "equipmentId",
+        "irName": "equipmentId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "logType",
+        "irName": "logType",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "itemName",
+        "irName": "itemName",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "temperature",
+        "irName": "temperature",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "unit",
+        "irName": "unit",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "targetTemp",
+        "irName": "targetTemp",
+        "type": "Decimal",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "withinRange",
+        "irName": "withinRange",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "loggedAt",
+        "irName": "loggedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "loggedBy",
+        "irName": "loggedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "correctiveAction",
+        "irName": "correctiveAction",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "createdAt",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updatedAt",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": true,
+        "isId": false
+      },
+      {
+        "name": "deletedAt",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "TaskBundleItem": {
+    "accessor": "task_bundle_items",
+    "dbName": null,
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenant_id",
+      "bundle_id",
+      "task_id"
+    ],
+    "whereAccessor": "tenant_id_bundle_id_task_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "bundle_id",
+        "irName": "bundleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "task_id",
+        "irName": "taskId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "sort_order",
+        "irName": "sortOrder",
+        "type": "Int",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "TaskBundle": {
+    "accessor": "task_bundles",
+    "dbName": null,
+    "pgSchema": "tenant_kitchen",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "event_id",
+        "irName": "eventId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "name",
+        "irName": "name",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "description",
+        "irName": "description",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "is_template",
+        "irName": "isTemplate",
+        "type": "Boolean",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      }
+    ]
+  },
+  "OpenShift": {
+    "accessor": "open_shifts",
+    "dbName": null,
+    "pgSchema": "tenant_staff",
+    "pkFields": [
+      "tenant_id",
+      "id"
+    ],
+    "whereAccessor": "tenant_id_id",
+    "hasDeletedAt": false,
+    "fields": [
+      {
+        "name": "tenant_id",
+        "irName": "tenantId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "id",
+        "irName": "id",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "schedule_id",
+        "irName": "scheduleId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "location_id",
+        "irName": "locationId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shift_start",
+        "irName": "shiftStart",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "shift_end",
+        "irName": "shiftEnd",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "role_during_shift",
+        "irName": "roleDuringShift",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "notes",
+        "irName": "notes",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "status",
+        "irName": "status",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "claimed_by",
+        "irName": "claimedBy",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "claimed_at",
+        "irName": "claimedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "assigned_shift_id",
+        "irName": "assignedShiftId",
+        "type": "String",
+        "isEnum": false,
+        "isList": false,
+        "optional": true,
+        "hasDefault": false,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "created_at",
+        "irName": "createdAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "updated_at",
+        "irName": "updatedAt",
+        "type": "DateTime",
+        "isEnum": false,
+        "isList": false,
+        "optional": false,
+        "hasDefault": true,
+        "isUpdatedAt": false,
+        "isId": false
+      },
+      {
+        "name": "deleted_at",
+        "irName": "deletedAt",
         "type": "DateTime",
         "isEnum": false,
         "isList": false,

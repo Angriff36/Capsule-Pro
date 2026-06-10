@@ -155,11 +155,11 @@ async function fetchClientInteractions(
 
 async function fetchEventParticipation(tenantId: string, employeeId: string) {
   const result = await database.$queryRaw<Array<{ event_count: string }>>`
-    SELECT COUNT(DISTINCT eventId) as event_count
+    SELECT COUNT(DISTINCT "eventId") as event_count
     FROM tenant_events.event_staff
-    WHERE tenantId = ${tenantId}
-      AND staffMemberId = ${employeeId}
-      AND deletedAt IS NULL
+    WHERE "tenantId" = ${tenantId}
+      AND "staffMemberId" = ${employeeId}
+      AND "deletedAt" IS NULL
   `;
   return Number(result[0]?.event_count || 0);
 }

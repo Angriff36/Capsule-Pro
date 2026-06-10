@@ -105,9 +105,9 @@ const AdminDashboardPage = async ({
         COALESCE(
           (SELECT COUNT(*)
            FROM tenant_events.event_staff esa
-           WHERE esa.eventId = e.id
-             AND esa.tenantId = e.tenant_id
-             AND esa.deletedAt IS NULL
+           WHERE esa."eventId" = e.id::text
+             AND esa."tenantId" = e.tenant_id::text
+             AND esa."deletedAt" IS NULL
           ), 0
         ) as staff_count
       FROM tenant_events.events e

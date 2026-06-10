@@ -141,13 +141,17 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
           Array<{ total_revenue: string | null }>
         >(
           Prisma.sql`
-          SELECT COALESCE(SUM(total_amount), 0)::numeric AS total_revenue
-          FROM tenant_events.catering_orders
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
-            AND order_date >= ${effectiveStartDate}
-            AND order_date < ${effectiveEndDate}
+          SELECT COALESCE(SUM(co.total_amount), 0)::numeric AS total_revenue
+          FROM tenant_events.catering_orders co
+          INNER JOIN tenant_events.events ev
+            ON ev.tenant_id = co.tenant_id
+            AND ev.id = co.event_id
+          WHERE co.tenant_id = ${tenantId}::uuid
+            AND co.deleted_at IS NULL
+            AND ev.deleted_at IS NULL
+            AND ev.location_id = ${location.id}::uuid
+            AND co.order_date >= ${effectiveStartDate}
+            AND co.order_date < ${effectiveEndDate}
         `
         );
         return {
@@ -164,14 +168,18 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
         >(
           Prisma.sql`
           SELECT
-            COALESCE(SUM(budgeted_labor_cost), 0)::numeric AS budgeted_labor,
-            COALESCE(SUM(actual_labor_cost), 0)::numeric AS actual_labor
-          FROM tenant_events.event_profitability
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
-            AND calculated_at >= ${effectiveStartDate}
-            AND calculated_at < ${effectiveEndDate}
+            COALESCE(SUM(ep.budgeted_labor_cost), 0)::numeric AS budgeted_labor,
+            COALESCE(SUM(ep.actual_labor_cost), 0)::numeric AS actual_labor
+          FROM tenant_events.event_profitability ep
+          INNER JOIN tenant_events.events ev
+            ON ev.tenant_id = ep.tenant_id
+            AND ev.id = ep.event_id
+          WHERE ep.tenant_id = ${tenantId}::uuid
+            AND ep.deleted_at IS NULL
+            AND ev.deleted_at IS NULL
+            AND ev.location_id = ${location.id}::uuid
+            AND ep.calculated_at >= ${effectiveStartDate}
+            AND ep.calculated_at < ${effectiveEndDate}
         `
         );
         return {
@@ -209,14 +217,18 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
         >(
           Prisma.sql`
           SELECT
-            COALESCE(AVG(actual_gross_margin_pct), 0)::numeric AS avg_margin,
-            COALESCE(SUM(actual_revenue), 0)::numeric AS total_revenue
-          FROM tenant_events.event_profitability
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
-            AND calculated_at >= ${effectiveStartDate}
-            AND calculated_at < ${effectiveEndDate}
+            COALESCE(AVG(ep.actual_gross_margin_pct), 0)::numeric AS avg_margin,
+            COALESCE(SUM(ep.actual_revenue), 0)::numeric AS total_revenue
+          FROM tenant_events.event_profitability ep
+          INNER JOIN tenant_events.events ev
+            ON ev.tenant_id = ep.tenant_id
+            AND ev.id = ep.event_id
+          WHERE ep.tenant_id = ${tenantId}::uuid
+            AND ep.deleted_at IS NULL
+            AND ev.deleted_at IS NULL
+            AND ev.location_id = ${location.id}::uuid
+            AND ep.calculated_at >= ${effectiveStartDate}
+            AND ep.calculated_at < ${effectiveEndDate}
         `
         );
         return {
@@ -257,12 +269,19 @@ const MultiLocationDashboardPage = async ({ searchParams }: PageProps) => {
         >(
           Prisma.sql`
           SELECT
-            COALESCE(SUM(quantity_on_hand * unit_cost), 0)::numeric AS inventory_value,
-            COUNT(DISTINCT id)::bigint AS item_count
-          FROM tenant_inventory.inventory_items
-          WHERE tenant_id = ${tenantId}::uuid
-            AND deleted_at IS NULL
-            AND location_id = ${location.id}::uuid
+            COALESCE(SUM(st.quantity_on_hand * ii.unit_cost), 0)::numeric AS inventory_value,
+            COUNT(DISTINCT ii.id)::bigint AS item_count
+          FROM tenant_inventory.inventory_items ii
+          INNER JOIN tenant_inventory.inventory_stock st
+            ON st.tenant_id = ii.tenant_id
+            AND st.item_id = ii.id
+          INNER JOIN tenant_inventory.storage_locations sl
+            ON sl.tenant_id = st.tenant_id
+            AND sl.id = st.storage_location_id
+          WHERE ii.tenant_id = ${tenantId}::uuid
+            AND ii.deleted_at IS NULL
+            AND sl.deleted_at IS NULL
+            AND sl.location_id = ${location.id}::uuid
         `
         );
         return {

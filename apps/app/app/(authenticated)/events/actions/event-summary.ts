@@ -207,10 +207,10 @@ export async function generateEventSummary(
         esa.role,
         CONCAT(e.first_name, ' ', e.last_name) as employee_name
       FROM tenant_events.event_staff esa
-      LEFT JOIN tenant_staff.employees e ON esa.staffMemberId = e.id
-      WHERE esa.tenantId = ${tenantId}
-        AND esa.eventId = ${eventId}
-        AND esa.deletedAt IS NULL
+      LEFT JOIN tenant_staff.employees e ON esa."staffMemberId" = e.id::text
+      WHERE esa."tenantId" = ${tenantId}::text
+        AND esa."eventId" = ${eventId}::text
+        AND esa."deletedAt" IS NULL
     `
   );
 

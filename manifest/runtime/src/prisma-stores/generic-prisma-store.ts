@@ -42,6 +42,7 @@ import {
   reportOp,
   toDecimalInput,
 } from "./shared";
+import { resolvePrismaModelKey } from "../generated/entity-to-prisma-model.generated";
 import {
   PRISMA_MODEL_METADATA,
   type PrismaFieldMeta,
@@ -67,11 +68,14 @@ export class GenericPrismaStore implements Store<EntityInstance> {
     entityName: string,
     private readonly tenantId: string,
   ) {
-    const meta = PRISMA_MODEL_METADATA[entityName];
+    const modelKey = resolvePrismaModelKey(entityName);
+    const meta =
+      PRISMA_MODEL_METADATA[entityName] ?? PRISMA_MODEL_METADATA[modelKey];
     if (!meta) {
       throw new Error(
-        `GenericPrismaStore: no Prisma metadata for entity "${entityName}". ` +
-          `Run \`pnpm manifest:gen-prisma-meta\` after confirming the model exists in schema.prisma.`,
+        `GenericPrismaStore: no Prisma metadata for entity "${entityName}"` +
+          (modelKey !== entityName ? ` (resolved model key: "${modelKey}")` : "") +
+          `. Run \`pnpm manifest:generate-metadata\` after confirming the model exists in schema.prisma.`,
       );
     }
     // Dynamic delegate lookup: PrismaClient models are accessed by name
@@ -88,6 +92,16 @@ export class GenericPrismaStore implements Store<EntityInstance> {
     }
     this.meta = meta;
     this.delegate = delegate;
+  }
+
+  /** Physical tenant column (camelCase tenantId or legacy tenant_id). */
+  private tenantField(): PrismaFieldMeta | undefined {
+    return this.meta.fields.find(
+      (f) =>
+        f.irName === "tenantId" ||
+        f.name === "tenantId" ||
+        f.name === "tenant_id",
+    );
   }
 
   private coerce(field: PrismaFieldMeta, value: unknown): unknown {
@@ -116,8 +130,12 @@ export class GenericPrismaStore implements Store<EntityInstance> {
     const now = new Date();
     for (const field of this.meta.fields) {
       if (field.isUpdatedAt) continue; // Prisma manages @updatedAt
-      if (field.name === "tenantId") {
-        out.tenantId = this.tenantId; // never trust input tenantId
+      if (field.irName === "tenantId" || field.name === "tenantId" || field.name === "tenant_id") {
+        if (this.meta.requiresTenantConnect) {
+          out.tenant = { connect: { id: this.tenantId } };
+        } else {
+          out[field.name] = this.tenantId; // never trust input tenantId
+        }
         continue;
       }
       if (field.name === "id") {
@@ -159,7 +177,8 @@ export class GenericPrismaStore implements Store<EntityInstance> {
     if (this.meta.pkFields.length > 1) {
       const key: Record<string, unknown> = {};
       for (const pf of this.meta.pkFields) {
-        key[pf] = pf === "tenantId" ? this.tenantId : id;
+        key[pf] =
+          pf === "tenantId" || pf === "tenant_id" ? this.tenantId : id;
       }
       return { [this.meta.whereAccessor]: key };
     }
@@ -167,8 +186,14 @@ export class GenericPrismaStore implements Store<EntityInstance> {
   }
 
   private tenantFilter(extra?: Record<string, unknown>): Record<string, unknown> {
-    const where: Record<string, unknown> = { tenantId: this.tenantId, ...extra };
-    if (this.meta.hasDeletedAt) where.deletedAt = null;
+    const tenantCol = this.tenantField()?.name ?? "tenantId";
+    const where: Record<string, unknown> = { [tenantCol]: this.tenantId, ...extra };
+    if (this.meta.hasDeletedAt) {
+      const deletedField = this.meta.fields.find(
+        (f) => f.irName === "deletedAt" || f.name === "deletedAt" || f.name === "deleted_at",
+      );
+      where[deletedField?.name ?? "deletedAt"] = null;
+    }
     return where;
   }
 

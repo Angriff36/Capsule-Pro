@@ -430,10 +430,10 @@ export async function getAvailableEmployees(eventId: string) {
         AND e.is_active = true
         AND NOT EXISTS (
           SELECT 1 FROM tenant_events.event_staff esa
-          WHERE esa.tenantId = e.tenant_id
-            AND esa.staffMemberId = e.id
-            AND esa.eventId = $2
-            AND esa.deletedAt IS NULL
+          WHERE esa."tenantId" = e.tenant_id::text
+            AND esa."staffMemberId" = e.id::text
+            AND esa."eventId" = $2
+            AND esa."deletedAt" IS NULL
         )
       ORDER BY e.first_name, e.last_name`,
     tenantId,
