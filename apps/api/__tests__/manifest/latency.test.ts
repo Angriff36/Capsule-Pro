@@ -17,7 +17,7 @@ describe("manifest command dispatch latency", () => {
     // with readFileSync + JSON.parse (which is what a bundler would do at build time)
     const tRead = performance.now();
     const raw = readFileSync(
-      resolve(ROOT, "packages/manifest-ir/ir/kitchen/kitchen.commands.json"),
+      resolve(ROOT, "manifest/ir/kitchen.commands.json"),
       "utf-8"
     );
     const tParse = performance.now();
@@ -59,7 +59,7 @@ describe("manifest command dispatch latency", () => {
   it("measures kitchen.ir.json cold + warm load", () => {
     const irPath = resolve(
       ROOT,
-      "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+      "manifest/ir/kitchen.ir.json"
     );
 
     // ── Cold read + parse ──

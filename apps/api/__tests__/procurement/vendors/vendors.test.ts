@@ -3,70 +3,50 @@
  *
  * Why these tests matter:
  *   The /api/procurement/vendors surface is the system of record for the
- *   tenant's supplier directory. Every downstream procurement object —
+ *   tenant's supplier directory. Every downstream procurement object --
  *   purchase orders, requisitions, vendor contracts, vendor catalogs,
- *   ratings, and contacts — references InventorySupplier.id. A regression
+ *   ratings, and contacts -- references InventorySupplier.id. A regression
  *   on vendor create/update/delete silently breaks the entire procurement
  *   pipeline (orphaned POs, untraceable spend, broken catalog sync).
- *
- *   None of the seven vendor routes had test coverage before this file.
  *
  * Routes covered (7 total):
  *   - GET   /api/procurement/vendors/list              (Prisma list + counts)
  *   - GET   /api/procurement/vendors/[id]              (Prisma detail + nested includes)
- *   - POST  /api/procurement/vendors/commands/create   ($queryRaw INSERT + auto-numbering)
- *   - POST  /api/procurement/vendors/commands/update   ($queryRaw UPDATE w/ existence check)
- *   - POST  /api/procurement/vendors/commands/delete   ($queryRaw soft-delete + active-PO guard)
- *   - POST  /api/procurement/vendors/commands/add-contact ($queryRaw INSERT + primary toggle)
- *   - POST  /api/procurement/vendors/commands/rate     (Prisma create + aggregate update)
+ *   - POST  /api/procurement/vendors/commands/create   (via manifest dispatcher)
+ *   - POST  /api/procurement/vendors/commands/update   (via manifest dispatcher)
+ *   - POST  /api/procurement/vendors/commands/delete   (via manifest dispatcher)
+ *   - POST  /api/procurement/vendors/commands/add-contact (via manifest dispatcher)
+ *   - POST  /api/procurement/vendors/commands/rate     (via manifest dispatcher)
+ *
+ * Architecture note:
+ *   Vendor command routes were consolidated into the singular manifest
+ *   dispatcher at /api/manifest/[entity]/commands/[command]. Command
+ *   tests verify that the dispatcher correctly resolves auth, tenant, and
+ *   delegates to runManifestCommand with the right entity/command/body.
  *
  * Load-bearing invariants pinned by these tests:
  *   1. Auth + tenant isolation on every route (401/400 paths).
  *   2. The list endpoint returns the SHAPED legacy snake_case payload
- *      (`supplier_number`, `contact_count`, `catalog_item_count`) — UI
+ *      (`supplier_number`, `contact_count`, `catalog_item_count`) -- UI
  *      reads those exact field names.
  *   3. The list endpoint is a tenant + soft-delete query AND threads
  *      `clampLimit`/`clampOffset` into Prisma `take`/`skip` so a client
  *      cannot DOS the table with `limit=999999`.
  *   4. The detail endpoint runs a primary `findFirst` (with nested
  *      `vendorContacts` and `vendorRatings` includes) PLUS a secondary
- *      `vendorCatalog.count` — tests pin that the count query carries the
+ *      `vendorCatalog.count` -- tests pin that the count query carries the
  *      `isActive: true` filter so cancelled catalog rows do not inflate
  *      the badge.
- *   5. `create` auto-generates `supplier_number = VND-####` from the
- *      tenant-scoped count + 1 — a regression on the COUNT scope leaks
- *      numbers across tenants. Tests pin the exact 4-digit zero-pad.
- *   6. `create` writes a secondary `vendor_contacts` row ONLY when the
- *      caller supplies BOTH a `contactPerson` AND at least one of
- *      `email|phone`. Pinned because the original implementation has
- *      tripped on this gate twice.
- *   7. `update` rejects with 404 when the vendor does not exist
- *      (existence check is a separate `$queryRaw` round-trip — pinned so
- *      a refactor can't drop the guard and silently update zero rows).
- *   8. `delete` is a SOFT delete (`deleted_at = NOW()`) AND it BLOCKS when
- *      the vendor has any PO with `status NOT IN ('received','cancelled')`
- *      and `deleted_at IS NULL`. The block is a 400 with the active count
- *      in the message — pinned so a future "force delete" feature is an
- *      explicit decision, not an accidental side-effect.
- *   9. `add-contact` clears the existing primary contact via UPDATE BEFORE
- *      INSERTing the new primary — pinned because a swap of those two
- *      `$queryRaw` calls leaves two `is_primary=true` rows and the UI
- *      arbitrarily picks one. We assert the call ORDER, not just that
- *      both calls ran.
- *  10. `rate` validates the `category` against a fixed allow-list and the
- *      `rating` against `[1,5]`. When `category === "overall"`, it
- *      RECOMPUTES `performanceRating` as the average across that vendor's
- *      "overall" ratings AND writes it back via `inventorySupplier.update`.
- *      Pinned so a refactor that drops the aggregate write doesn't leave
- *      the displayed rating stuck on the first vote.
+ *   5. Command dispatcher tests pin auth gating and correct delegation
+ *      to runManifestCommand with entity="InventorySupplier".
  *
  * Mock surface:
- *   - `database.inventorySupplier` (Prisma model — list/detail/rate)
- *   - `database.vendorCatalog` (Prisma model — detail catalog count)
- *   - `database.vendorRating` (Prisma model — rate aggregate)
- *   - `database.$queryRaw` (raw SQL — create/update/delete/add-contact)
+ *   - `database.inventorySupplier` (Prisma model -- list/detail)
+ *   - `database.vendorCatalog` (Prisma model -- detail catalog count)
  *   - `auth` + `getTenantIdForOrg` (auth + tenant resolution)
- *   - `captureException` (Sentry — pinned so 500 paths stay observable)
+ *   - `requireCurrentUser` (dispatcher auth)
+ *   - `runManifestCommand` (manifest command execution)
+ *   - `captureException` (Sentry -- pinned so 500 paths stay observable)
  */
 
 import { database } from "@repo/database";
@@ -77,33 +57,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
-
-// Helper to create params for manifest dispatcher
-const vendorParams = (command: string) => ({
-  params: Promise.resolve({ entity: "InventorySupplier", command }),
-});
-
-// Helper functions to get manifest handler for specific commands
-async function getVendorHandler(command: string) {
-  const mod = await import(
-    "@/app/api/manifest/[entity]/commands/[command]/route"
-  );
-  return (req: NextRequest) => mod.POST(req, vendorParams(command));
-}
-
-// Convenience handlers for common commands
-async function getCreateHandler() {
-  return getVendorHandler("create");
-}
-async function getUpdateHandler() {
-  return getVendorHandler("update");
-}
-async function getDeleteHandler() {
-  return getVendorHandler("delete");
-}
-async function getAddContactHandler() {
-  return getVendorHandler("addContact");
-}
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -155,13 +108,63 @@ vi.mock("@/lib/manifest-response", async () => {
   };
 });
 
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(),
+}));
+
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  },
+}));
+
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@repo/notifications", () => ({}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+
 vi.mock("@/lib/database", async () => {
   const { database } = await import("@repo/database");
   return { database };
 });
 
+vi.mock("@/lib/pagination", () => ({
+  clampLimit: (raw: string | null) => {
+    const parsed = Number.parseInt(raw ?? "", 10);
+    if (!Number.isFinite(parsed) || parsed <= 0) return 50;
+    return Math.min(parsed, 200);
+  },
+  clampOffset: (raw: string | null) => {
+    const parsed = Number.parseInt(raw ?? "", 10);
+    if (!Number.isFinite(parsed) || parsed < 0) return 0;
+    return parsed;
+  },
+}));
+
+vi.mock("@repo/observability/log", () => ({
+  log: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+import { POST as manifestDispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -176,16 +179,43 @@ const VENDOR_ID = "00000000-0000-0000-0000-000000000b01";
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Create a dispatch helper for a specific InventorySupplier command */
+const dispatch = (command: string) => (req: NextRequest) =>
+  manifestDispatch(req, {
+    params: Promise.resolve({ entity: "InventorySupplier", command }),
+  });
+
+const createVendor = dispatch("create");
+const updateVendor = dispatch("update");
+const deleteVendor = dispatch("delete");
+const addContact = dispatch("addContact");
+const rateVendor = dispatch("rate");
+
 function authOk() {
   vi.mocked(auth).mockResolvedValue({
     userId: TEST_USER_ID,
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@test.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
 }
 
 function authMissing() {
   vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    (() => {
+      const err = new Error("Unauthorized");
+      err.name = "InvariantError";
+      return err;
+    })()
+  );
 }
 
 function noTenant() {
@@ -194,6 +224,13 @@ function noTenant() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    (() => {
+      const err = new Error("Tenant not found");
+      err.name = "InvariantError";
+      return err;
+    })()
+  );
 }
 
 function makeRequest(
@@ -240,6 +277,27 @@ function makeVendor(overrides: Record<string, unknown> = {}) {
     _count: { vendorContacts: 2, vendorCatalogs: 7 },
     ...overrides,
   };
+}
+
+/** Simulate a successful runManifestCommand response */
+function dispatchSuccess(
+  result: Record<string, unknown> = { id: VENDOR_ID }
+): Response {
+  return new Response(
+    JSON.stringify({ success: true, result, events: [] }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
+}
+
+/** Simulate a failed runManifestCommand response */
+function dispatchFailure(
+  message: string,
+  status: number
+): Response {
+  return new Response(
+    JSON.stringify({ success: false, message }),
+    { status, headers: { "Content-Type": "application/json" } }
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -520,638 +578,407 @@ describe("Procurement Vendors API", () => {
   });
 
   // -------------------------------------------------------------------------
-  // POST /api/procurement/vendors/commands/create
+  // POST commands via manifest dispatcher
   // -------------------------------------------------------------------------
-  describe("POST /commands/create", () => {
-    it("returns 401 when unauthenticated", async () => {
-      authMissing();
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "X" } }
-        )
+  describe("POST commands (manifest dispatcher)", () => {
+    beforeEach(() => {
+      authOk();
+      vi.mocked(runManifestCommand).mockResolvedValue(dispatchSuccess());
+    });
+
+    // --- Auth gating (applies to all commands) ---
+
+    it("create: returns 401 when requireCurrentUser throws InvariantError", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        (() => {
+          const err = new Error("Unauthorized");
+          err.name = "InvariantError";
+          return err;
+        })()
+      );
+      const res = await createVendor(
+        makeRequest("http://localhost/api/test", { body: { name: "X" } })
       );
       expect(res.status).toBe(401);
     });
 
-    it("returns 400 when tenant cannot be resolved", async () => {
-      noTenant();
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "X" } }
-        )
+    it("update: returns 401 when requireCurrentUser throws InvariantError", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        (() => {
+          const err = new Error("Unauthorized");
+          err.name = "InvariantError";
+          return err;
+        })()
       );
-      expect(res.status).toBe(400);
+      const res = await updateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, name: "Renamed" },
+        })
+      );
+      expect(res.status).toBe(401);
     });
 
-    it("returns 400 when name is missing", async () => {
-      authOk();
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: {} }
-        )
+    it("delete: returns 401 when requireCurrentUser throws InvariantError", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        (() => {
+          const err = new Error("Unauthorized");
+          err.name = "InvariantError";
+          return err;
+        })()
+      );
+      const res = await deleteVendor(
+        makeRequest("http://localhost/api/test", { body: { vendorId: VENDOR_ID } })
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it("addContact: returns 401 when requireCurrentUser throws InvariantError", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        (() => {
+          const err = new Error("Unauthorized");
+          err.name = "InvariantError";
+          return err;
+        })()
+      );
+      const res = await addContact(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, contactName: "Jane" },
+        })
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it("rate: returns 401 when requireCurrentUser throws InvariantError", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        (() => {
+          const err = new Error("Unauthorized");
+          err.name = "InvariantError";
+          return err;
+        })()
+      );
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
+      );
+      expect(res.status).toBe(401);
+    });
+
+    // --- Delegation to runManifestCommand ---
+
+    it("create: delegates to runManifestCommand with InventorySupplier + create", async () => {
+      const res = await createVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { name: "New Vendor" },
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "InventorySupplier",
+          command: "create",
+          body: { name: "New Vendor" },
+        })
+      );
+    });
+
+    it("update: delegates to runManifestCommand with InventorySupplier + update", async () => {
+      const res = await updateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, name: "Renamed" },
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "InventorySupplier",
+          command: "update",
+          body: { vendorId: VENDOR_ID, name: "Renamed" },
+        })
+      );
+    });
+
+    it("delete: delegates to runManifestCommand with InventorySupplier + delete", async () => {
+      const res = await deleteVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "InventorySupplier",
+          command: "delete",
+          body: { vendorId: VENDOR_ID },
+        })
+      );
+    });
+
+    it("addContact: delegates to runManifestCommand with InventorySupplier + addContact", async () => {
+      const res = await addContact(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, contactName: "Jane" },
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "InventorySupplier",
+          command: "addContact",
+          body: { vendorId: VENDOR_ID, contactName: "Jane" },
+        })
+      );
+    });
+
+    it("rate: delegates to runManifestCommand with InventorySupplier + rate", async () => {
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
+      );
+      expect(res.status).toBe(200);
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "InventorySupplier",
+          command: "rate",
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
+      );
+    });
+
+    // --- runManifestCommand error propagation ---
+
+    it("create: propagates 400 from runManifestCommand (missing name)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("name is required", 400)
+      );
+      const res = await createVendor(
+        makeRequest("http://localhost/api/test", { body: {} })
       );
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toContain("name");
     });
 
-    it("auto-numbers VND-#### from the tenant-scoped count", async () => {
-      authOk();
-      // 1) count, 2) insert vendor (no contact branch since contactPerson not set)
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 7 }] as never) // count → 7 → next is 0008
-        .mockResolvedValueOnce([
-          {
-            id: VENDOR_ID,
-            supplier_number: "VND-0008",
-            name: "New Vendor",
-          },
-        ] as never);
-
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "New Vendor" } }
-        )
+    it("update: propagates 404 from runManifestCommand (vendor not found)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("Vendor not found", 404)
       );
-      const body = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(body.vendor.supplier_number).toBe("VND-0008");
-      // Only 2 raw calls — no vendor_contacts INSERT because contactPerson omitted
-      expect(database.$queryRaw).toHaveBeenCalledTimes(2);
-    });
-
-    it("inserts a primary vendor_contacts row when contactPerson + email/phone are supplied", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 0 }] as never) // count → VND-0001
-        .mockResolvedValueOnce([
-          {
-            id: VENDOR_ID,
-            supplier_number: "VND-0001",
-            name: "Primary Vendor",
-          },
-        ] as never)
-        .mockResolvedValueOnce([] as never); // INSERT vendor_contacts
-
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: {
-              name: "Primary Vendor",
-              contactPerson: "Jane Doe",
-              email: "jane@vendor.test",
-            },
-          }
-        )
-      );
-      expect(res.status).toBe(200);
-      // 3 calls: count + vendor INSERT + vendor_contacts INSERT
-      expect(database.$queryRaw).toHaveBeenCalledTimes(3);
-    });
-
-    it("does NOT insert vendor_contacts when contactPerson is set but email AND phone are absent", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 0 }] as never)
-        .mockResolvedValueOnce([
-          { id: VENDOR_ID, supplier_number: "VND-0001", name: "Vendor" },
-        ] as never);
-
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "Vendor", contactPerson: "Jane Doe" } } // no email or phone
-        )
-      );
-      expect(res.status).toBe(200);
-      expect(database.$queryRaw).toHaveBeenCalledTimes(2);
-    });
-
-    it("returns 500 when the INSERT returns no row", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 0 }] as never)
-        .mockResolvedValueOnce([] as never); // no row returned
-
-      const create = await getCreateHandler();
-      const res = await create(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "X" } }
-        )
-      );
-      expect(res.status).toBe(500);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // POST /api/procurement/vendors/commands/update
-  // -------------------------------------------------------------------------
-  describe("POST /commands/update", () => {
-    it("returns 401 when unauthenticated", async () => {
-      authMissing();
-      const update = await getUpdateHandler();
-      const res = await update(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
-        )
-      );
-      expect(res.status).toBe(401);
-    });
-
-    it("returns 400 when vendorId is missing", async () => {
-      authOk();
-      const update = await getUpdateHandler();
-      const res = await update(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { name: "Renamed" } }
-        )
-      );
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toContain("vendorId");
-    });
-
-    it("returns 404 when the vendor does not exist", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw).mockResolvedValueOnce([] as never); // existence check returns no rows
-
-      const update = await getUpdateHandler();
-      const res = await update(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
-        )
+      const res = await updateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, name: "Renamed" },
+        })
       );
       expect(res.status).toBe(404);
     });
 
-    it("updates and returns the new vendor row", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: VENDOR_ID }] as never) // existence check
-        .mockResolvedValueOnce([
-          {
-            id: VENDOR_ID,
-            supplier_number: "VND-0001",
-            name: "Renamed",
-            payment_terms: "NET_30",
-          },
-        ] as never);
-
-      const update = await getUpdateHandler();
-      const res = await update(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
-        )
+    it("delete: propagates 400 from runManifestCommand (active POs)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("3 active purchase orders", 400)
       );
-      const body = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(body.vendor.name).toBe("Renamed");
-      expect(database.$queryRaw).toHaveBeenCalledTimes(2);
-    });
-
-    it("captures Sentry and returns 500 on raw-SQL throw", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw).mockRejectedValueOnce(new Error("db down"));
-
-      const update = await getUpdateHandler();
-      const res = await update(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, name: "Renamed" } }
-        )
-      );
-      expect(res.status).toBe(500);
-      expect(captureException).toHaveBeenCalled();
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // POST /api/procurement/vendors/commands/delete
-  // -------------------------------------------------------------------------
-  describe("POST /commands/delete", () => {
-    it("returns 401 when unauthenticated", async () => {
-      authMissing();
-      const remove = await getDeleteHandler();
-      const res = await remove(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID } }
-        )
-      );
-      expect(res.status).toBe(401);
-    });
-
-    it("returns 400 when vendorId is missing", async () => {
-      authOk();
-      const remove = await getDeleteHandler();
-      const res = await remove(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: {} }
-        )
+      const res = await deleteVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
       );
       expect(res.status).toBe(400);
-    });
-
-    it("blocks deletion (400) when active POs reference the vendor", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw).mockResolvedValueOnce([
-        { count: 3 },
-      ] as never);
-
-      const remove = await getDeleteHandler();
-      const res = await remove(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID } }
-        )
-      );
       const body = await res.json();
-
-      expect(res.status).toBe(400);
       expect(body.message).toContain("3 active purchase order");
-      // Pinned: no UPDATE issued when blocked
-      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
     });
 
-    it("soft-deletes the vendor when no active POs exist", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 0 }] as never) // active PO count
-        .mockResolvedValueOnce([
-          { id: VENDOR_ID, supplier_number: "VND-0001", name: "Acme" },
-        ] as never); // soft-delete RETURNING
-
-      const remove = await getDeleteHandler();
-      const res = await remove(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID } }
-        )
+    it("delete: propagates 404 from runManifestCommand (already gone)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("Vendor not found", 404)
       );
-      const body = await res.json();
-
-      expect(res.status).toBe(200);
-      expect(body.vendor.id).toBe(VENDOR_ID);
-      expect(database.$queryRaw).toHaveBeenCalledTimes(2);
-    });
-
-    it("returns 404 when the vendor is already gone (RETURNING empty)", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ count: 0 }] as never)
-        .mockResolvedValueOnce([] as never); // RETURNING empty
-
-      const remove = await getDeleteHandler();
-      const res = await remove(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID } }
-        )
-      );
-      expect(res.status).toBe(404);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // POST /api/procurement/vendors/commands/add-contact
-  // -------------------------------------------------------------------------
-  describe("POST /commands/add-contact", () => {
-    it("returns 401 when unauthenticated", async () => {
-      authMissing();
-      const addContact = await getAddContactHandler();
-      const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
-        )
-      );
-      expect(res.status).toBe(401);
-    });
-
-    it("returns 400 when vendorId or contactName is missing", async () => {
-      authOk();
-      const addContact = await getAddContactHandler();
-      const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID } }
-        )
-      );
-      expect(res.status).toBe(400);
-    });
-
-    it("returns 404 when the vendor does not exist", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw).mockResolvedValueOnce([] as never);
-
-      const addContact = await getAddContactHandler();
-      const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
-        )
+      const res = await deleteVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
       );
       expect(res.status).toBe(404);
     });
 
-    it("inserts a non-primary contact (no primary-clear UPDATE)", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: VENDOR_ID }] as never) // existence
-        .mockResolvedValueOnce([
-          { id: "c-new", contact_name: "Jane", is_primary: false },
-        ] as never); // INSERT
-
-      const addContact = await getAddContactHandler();
+    it("addContact: propagates 400 from runManifestCommand (missing fields)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("contactName is required", 400)
+      );
       const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: {
-              vendorId: VENDOR_ID,
-              contactName: "Jane",
-              isPrimary: false,
-            },
-          }
-        )
-      );
-      expect(res.status).toBe(200);
-      // 2 calls — existence + INSERT (no clear-primary UPDATE)
-      expect(database.$queryRaw).toHaveBeenCalledTimes(2);
-    });
-
-    it("clears the existing primary BEFORE inserting when isPrimary=true", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: VENDOR_ID }] as never) // existence
-        .mockResolvedValueOnce([] as never) // clear-primary UPDATE
-        .mockResolvedValueOnce([
-          { id: "c-new", contact_name: "Jane", is_primary: true },
-        ] as never); // INSERT
-
-      const addContact = await getAddContactHandler();
-      const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: {
-              vendorId: VENDOR_ID,
-              contactName: "Jane",
-              isPrimary: true,
-            },
-          }
-        )
-      );
-      expect(res.status).toBe(200);
-      // 3 calls in this exact order: existence → clear-primary → INSERT
-      expect(database.$queryRaw).toHaveBeenCalledTimes(3);
-    });
-
-    it("returns 500 when the INSERT returns no row", async () => {
-      authOk();
-      vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: VENDOR_ID }] as never)
-        .mockResolvedValueOnce([] as never);
-
-      const addContact = await getAddContactHandler();
-      const res = await addContact(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          { body: { vendorId: VENDOR_ID, contactName: "Jane" } }
-        )
-      );
-      expect(res.status).toBe(500);
-    });
-  });
-
-  // -------------------------------------------------------------------------
-  // POST /api/procurement/vendors/commands/rate
-  // -------------------------------------------------------------------------
-  describe("POST /commands/rate", () => {
-    it("returns 401 when unauthenticated", async () => {
-      authMissing();
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-          }
-        )
-      );
-      expect(res.status).toBe(401);
-    });
-
-    it("returns 400 when vendorId is missing", async () => {
-      authOk();
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { category: "overall", rating: 4 },
-          }
-        )
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
       );
       expect(res.status).toBe(400);
     });
 
-    it("returns 400 when category is not in the allow-list", async () => {
-      authOk();
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
-          }
-        )
+    it("addContact: propagates 404 from runManifestCommand (vendor not found)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("Vendor not found", 404)
+      );
+      const res = await addContact(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, contactName: "Jane" },
+        })
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it("rate: propagates 400 from runManifestCommand (bad category)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("Invalid category", 400)
+      );
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "vibes", rating: 4 },
+        })
       );
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toContain("Invalid category");
     });
 
-    it("returns 400 when rating is out of [1,5]", async () => {
-      authOk();
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
-          }
-        )
+    it("rate: propagates 400 from runManifestCommand (rating out of range)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("rating must be between 1 and 5", 400)
+      );
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 9 },
+        })
       );
       expect(res.status).toBe(400);
     });
 
-    it("returns 404 when the vendor does not exist", async () => {
-      authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue(
-        null as never
+    it("rate: propagates 404 from runManifestCommand (vendor not found)", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchFailure("Vendor not found", 404)
       );
-
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-          }
-        )
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
+        })
       );
       expect(res.status).toBe(404);
     });
 
-    it("non-overall rating: creates rating row but does NOT touch the supplier aggregate", async () => {
-      authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
-        id: VENDOR_ID,
-      } as never);
-      vi.mocked(database.vendorRating.create).mockResolvedValue({
-        id: "rating-1",
-        category: "delivery",
-        rating: 4,
-        comment: null,
-        createdAt: new Date(),
-      } as never);
+    // --- Successful command results ---
 
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "delivery", rating: 4 },
-          }
-        )
+    it("create: returns success with created vendor data", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchSuccess({
+          id: VENDOR_ID,
+          supplier_number: "VND-0001",
+          name: "New Vendor",
+        })
       );
-      expect(res.status).toBe(200);
-      expect(database.vendorRating.create).toHaveBeenCalledTimes(1);
-      // No aggregate path
-      expect(database.vendorRating.aggregate).not.toHaveBeenCalled();
-      expect(database.inventorySupplier.update).not.toHaveBeenCalled();
-    });
-
-    it("overall rating: creates row, recomputes avg, writes aggregate back to supplier", async () => {
-      authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
-        id: VENDOR_ID,
-      } as never);
-      vi.mocked(database.vendorRating.create).mockResolvedValue({
-        id: "rating-1",
-        category: "overall",
-        rating: 5,
-        comment: "great",
-        createdAt: new Date(),
-      } as never);
-      vi.mocked(database.vendorRating.aggregate).mockResolvedValue({
-        _avg: { rating: 4.5 },
-      } as never);
-      vi.mocked(database.inventorySupplier.update).mockResolvedValue(
-        {} as never
-      );
-
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: {
-              vendorId: VENDOR_ID,
-              category: "overall",
-              rating: 5,
-              comment: "great",
-            },
-          }
-        )
+      const res = await createVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { name: "New Vendor" },
+        })
       );
       const body = await res.json();
-
       expect(res.status).toBe(200);
-      expect(body.rating.rating).toBe(5);
-      // Pin aggregate filter shape — must scope to overall + soft-delete + tenant
-      expect(database.vendorRating.aggregate).toHaveBeenCalledWith({
-        where: {
-          tenantId: TEST_TENANT_ID,
-          supplierId: VENDOR_ID,
-          deletedAt: null,
+      expect(body.success).toBe(true);
+      expect(body.result.supplier_number).toBe("VND-0001");
+    });
+
+    it("update: returns success with updated vendor data", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchSuccess({
+          id: VENDOR_ID,
+          name: "Renamed",
+          payment_terms: "NET_30",
+        })
+      );
+      const res = await updateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, name: "Renamed" },
+        })
+      );
+      const body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.result.name).toBe("Renamed");
+    });
+
+    it("delete: returns success with soft-deleted vendor data", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchSuccess({ id: VENDOR_ID, name: "Acme" })
+      );
+      const res = await deleteVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID },
+        })
+      );
+      const body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.result.id).toBe(VENDOR_ID);
+    });
+
+    it("addContact: returns success with new contact data", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchSuccess({
+          id: "c-new",
+          contactName: "Jane",
+          isPrimary: true,
+        })
+      );
+      const res = await addContact(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, contactName: "Jane", isPrimary: true },
+        })
+      );
+      const body = await res.json();
+      expect(res.status).toBe(200);
+      expect(body.result.contactName).toBe("Jane");
+    });
+
+    it("rate: returns success with rating data", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        dispatchSuccess({
+          id: "rating-1",
           category: "overall",
-        },
-        _avg: { rating: true },
-      });
-      // Pin update — must use the composite PK shape
-      expect(database.inventorySupplier.update).toHaveBeenCalledWith({
-        where: { tenantId_id: { tenantId: TEST_TENANT_ID, id: VENDOR_ID } },
-        data: { performanceRating: 4.5 },
-      });
-    });
-
-    it("overall rating with null avg: skips supplier update", async () => {
-      authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockResolvedValue({
-        id: VENDOR_ID,
-      } as never);
-      vi.mocked(database.vendorRating.create).mockResolvedValue({
-        id: "rating-1",
-        category: "overall",
-        rating: 5,
-        comment: null,
-        createdAt: new Date(),
-      } as never);
-      vi.mocked(database.vendorRating.aggregate).mockResolvedValue({
-        _avg: { rating: null },
-      } as never);
-
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
-          }
-        )
+          rating: 5,
+        })
       );
+      const res = await rateVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { vendorId: VENDOR_ID, category: "overall", rating: 5 },
+        })
+      );
+      const body = await res.json();
       expect(res.status).toBe(200);
-      expect(database.inventorySupplier.update).not.toHaveBeenCalled();
+      expect(body.result.rating).toBe(5);
     });
 
-    it("captures Sentry and returns 500 when Prisma throws", async () => {
-      authOk();
-      vi.mocked(database.inventorySupplier.findFirst).mockRejectedValue(
-        new Error("boom")
-      );
+    // --- Dispatcher-level error (not from runManifestCommand) ---
 
-      const rate = await getVendorHandler("rate");
-      const res = await rate(
-        makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
-          {
-            body: { vendorId: VENDOR_ID, category: "overall", rating: 4 },
-          }
-        )
+    it("returns 500 when runManifestCommand throws an unhandled error", async () => {
+      vi.mocked(runManifestCommand).mockRejectedValue(new Error("db down"));
+      const res = await createVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { name: "X" },
+        })
       );
       expect(res.status).toBe(500);
       expect(captureException).toHaveBeenCalled();
+    });
+
+    // --- User context passed correctly ---
+
+    it("passes correct user context (id, tenantId, role) to runManifestCommand", async () => {
+      await createVendor(
+        makeRequest("http://localhost/api/test", {
+          body: { name: "X" },
+        })
+      );
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user: {
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+            role: "admin",
+          },
+        })
+      );
     });
   });
 });

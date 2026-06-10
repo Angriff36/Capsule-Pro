@@ -23,6 +23,9 @@ vi.mock("@repo/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    user: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -38,30 +41,23 @@ vi.mock("@/lib/manifest-runtime", () => ({
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
-
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
-        {
-          success: true,
-          ...(typeof data === "object" && data !== null ? data : { data }),
-        },
-        { status }
-      ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
-
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
 }));
 
+vi.mock("@repo/observability/log", () => ({
+  log: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
+
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
 const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_USER_ID = "user_payroll_test";
@@ -113,7 +109,7 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(401);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Unauthorized");
+      expect(body.error).toBe("Unauthorized");
     });
 
     it("should return 400 when tenant not found", async () => {
@@ -127,7 +123,7 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Tenant not found");
+      expect(body.error).toBe("Tenant not found");
     });
 
     it("should return payroll periods for authenticated user", async () => {
@@ -167,8 +163,8 @@ describe("Payroll Periods API", () => {
       expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -184,7 +180,7 @@ describe("Payroll Periods API", () => {
 
       expect(database.payrollPeriod.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         })
       );
     });
@@ -202,7 +198,7 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(500);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.error).toBe("Internal server error");
     });
   });
 
@@ -243,7 +239,7 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(404);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("PayrollPeriod not found");
+      expect(body.error).toBe("PayrollPeriod not found");
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
@@ -262,8 +258,8 @@ describe("Payroll Periods API", () => {
         expect.objectContaining({
           where: {
             id: "period-001",
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -288,27 +284,24 @@ describe("Payroll Periods API", () => {
 
   // ------------------------------------------------------------------ CREATE
   describe("POST /api/payroll/periods/commands/create", () => {
-    const mockRunCommand = vi.fn();
-
     beforeEach(() => {
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as never);
-
-      // Mock user lookup for create route
-      vi.mocked(database.user.findFirst).mockResolvedValue({
+      // The manifest command dispatcher uses requireCurrentUser, not auth+getTenantIdForOrg.
+      // requireCurrentUser is a global mock; set it to return a valid user.
+      vi.mocked(requireCurrentUser).mockResolvedValue({
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
-        authUserId: "clerk-123",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       } as never);
     });
 
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: null,
-        orgId: null,
-      } as never);
+      // requireCurrentUser throws InvariantError when user is unauthenticated
+      const invariantError = new Error("auth.userId must exist");
+      invariantError.name = "InvariantError";
+      vi.mocked(requireCurrentUser).mockRejectedValue(invariantError);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -328,8 +321,10 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(401);
     });
 
-    it("should return 400 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("should return 401 when tenant resolution fails", async () => {
+      const invariantError = new Error("Tenant not found");
+      invariantError.name = "InvariantError";
+      vi.mocked(requireCurrentUser).mockRejectedValue(invariantError);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -346,15 +341,14 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(400);
+      // InvariantError is caught by the dispatcher and returns 401
+      expect(response.status).toBe(401);
     });
 
     it("should create a period through manifest runtime", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "period-new" },
-        emittedEvents: [],
-      });
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(JSON.stringify({ success: true, result: { id: "period-new" }, events: [] }), { status: 200 })
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -377,18 +371,19 @@ describe("Payroll Periods API", () => {
       expect(body.success).toBe(true);
       expect(body.result).toEqual({ id: "period-new" });
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.objectContaining({ name: "Bi-Weekly Period" }),
-        { entityName: "PayrollPeriod" }
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PayrollPeriod",
+          command: "create",
+          body: expect.objectContaining({ name: "Bi-Weekly Period" }),
+        })
       );
     });
 
     it("should return 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "AdminOnlyPolicy" },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(JSON.stringify({ success: false, message: "Access denied by policy AdminOnlyPolicy" }), { status: 403 })
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -408,13 +403,9 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "end_date must be after start_date",
-        },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(JSON.stringify({ success: false, message: "Guard 0 failed: end_date must be after start_date" }), { status: 422 })
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -437,10 +428,9 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 400 when command fails without policy/guard", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "Invalid period data",
-      });
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(JSON.stringify({ success: false, message: "Invalid period data" }), { status: 400 })
+      );
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -459,7 +449,7 @@ describe("Payroll Periods API", () => {
     });
 
     it("should return 500 on unexpected error", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
+      vi.mocked(runManifestCommand).mockRejectedValue(new Error("Runtime crash"));
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -475,8 +465,11 @@ describe("Payroll Periods API", () => {
       expect(response.status).toBe(500);
     });
 
-    it("should return 400 when user not found in database", async () => {
-      vi.mocked(database.user.findFirst).mockResolvedValue(null as never);
+    it("should return 401 when user not found in database", async () => {
+      // requireCurrentUser throws InvariantError when user cannot be resolved
+      const invariantError = new Error("User not found in database");
+      invariantError.name = "InvariantError";
+      vi.mocked(requireCurrentUser).mockRejectedValue(invariantError);
 
       const request = new NextRequest(
         "http://localhost/api/manifest/[entity]/commands/[command]",
@@ -489,9 +482,8 @@ describe("Payroll Periods API", () => {
         params: Promise.resolve({ entity: "PayrollPeriod", command: "create" }),
       });
 
-      expect(response.status).toBe(400);
-      const body = await response.json();
-      expect(body.message).toBe("User not found in database");
+      // InvariantError is caught and returns 401
+      expect(response.status).toBe(401);
     });
   });
 });

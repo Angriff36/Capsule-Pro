@@ -18,8 +18,8 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
-  staffShiftsCreateValidated,
-  staffShiftsUpdateValidated,
+  staffShiftsCreateCommand,
+  staffShiftsUpdateCommand,
 } from "@/app/lib/routes";
 import {
   getAvailableEmployees,
@@ -256,10 +256,10 @@ export function ShiftForm({
     try {
       const url =
         isEditing && shift?.id
-          ? staffShiftsUpdateValidated()
-          : staffShiftsCreateValidated();
+          ? staffShiftsUpdateCommand()
+          : staffShiftsCreateCommand();
 
-      // NOTE: Keeping apiFetch for staff-shifts validated routes — custom validation endpoint, no generated StaffShifts function.
+      // Governed ScheduleShift create/update via the singular manifest dispatcher.
       const response = await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -32,17 +32,16 @@ export function listIrSources(): string[] {
   const repoRoot = resolveFromRepoRoot(".");
   const irDir = join(repoRoot, "manifest/ir");
   if (!existsSync(irDir)) {
-    return ["manifest/ir/kitchen.ir.json"];
+    return [];
   }
 
   try {
-    const files = readdirSync(irDir)
+    return readdirSync(irDir)
       .filter((name) => name.endsWith(".ir.json"))
       .sort()
       .map((name) => `manifest/ir/${name}`);
-    return files.length > 0 ? files : ["manifest/ir/kitchen.ir.json"];
   } catch {
-    return ["manifest/ir/kitchen.ir.json"];
+    return [];
   }
 }
 

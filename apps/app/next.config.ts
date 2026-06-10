@@ -209,7 +209,6 @@ const baseConfig: NextConfig = withToolbar(
       "@repo/webhooks",
       "@repo/notifications",
       "@repo/collaboration",
-      "@angriff36/manifest",
       "@repo/seo",
       "@repo/email",
       "@repo/storage",

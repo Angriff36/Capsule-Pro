@@ -8,7 +8,7 @@
  */
 
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "@/app/api/knowledge-base/entries/list/route";
 import { POST } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
@@ -417,8 +417,13 @@ const dispatch = (entity: string, command: string) => (req: NextRequest) =>
 const kbCreate = dispatch("KnowledgeBaseEntry", "create");
 
 describe("POST /api/knowledge-base/entries/commands/create (via dispatcher)", () => {
-  const { runManifestCommand: runCmd } = await import("@/lib/manifest/execute-command");
-  const { requireCurrentUser: reqCU } = await import("@/app/lib/tenant");
+  let runCmd: typeof import("@/lib/manifest/execute-command")["runManifestCommand"];
+  let reqCU: typeof import("@/app/lib/tenant")["requireCurrentUser"];
+
+  beforeAll(async () => {
+    ({ runManifestCommand: runCmd } = await import("@/lib/manifest/execute-command"));
+    ({ requireCurrentUser: reqCU } = await import("@/app/lib/tenant"));
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();

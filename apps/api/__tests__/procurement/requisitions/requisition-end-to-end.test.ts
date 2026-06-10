@@ -13,74 +13,28 @@
  * The create route must NOT pass instanceId.
  */
 
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
-// Mocks (vi.hoisted so dynamic imports resolve the same mock instances)
+// The global vitest setup (test/setup.ts + test/mocks/@repo/database.ts)
+// provides a full database mock with all models. Only need to mock auth,
+// response helpers, and runManifestCommand here.
 // ---------------------------------------------------------------------------
-
-const { mockDatabase, mockRunCommand, Prisma } = vi.hoisted(() => {
-  const mockPurchaseRequisitionStore = {
-    findMany: vi.fn(),
-    findUnique: vi.fn(),
-    findFirst: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    deleteMany: vi.fn(),
-  };
-  const mockUserStore = {
-    findFirst: vi.fn(),
-  };
-
-  // Minimal Decimal stand-in (enough for equality assertions)
-  class Decimal {
-    value: string;
-    constructor(v: string) {
-      this.value = v;
-    }
-    toString() {
-      return this.value;
-    }
-  }
-
-  return {
-    mockDatabase: {
-      purchaseRequisition: mockPurchaseRequisitionStore,
-      user: mockUserStore,
-    },
-    mockRunCommand: vi.fn(),
-    Prisma: { Decimal },
-  };
-});
-
-vi.mock("@repo/database", () => ({
-  database: mockDatabase,
-  Prisma,
-}));
-
-vi.mock("@/lib/database", () => ({
-  database: mockDatabase,
-}));
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/app/lib/tenant", () => ({
-  getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
-  requireTenantId: vi.fn(),
-  resolveCurrentUser: vi.fn(),
-}));
-
-vi.mock("@sentry/nextjs", () => ({
-  captureException: vi.fn(),
-}));
-
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(),
+// Mock runManifestCommand for tests that go through the generic dispatcher.
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({ success: true, result: {}, events: [] }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    )
+  ),
 }));
 
 vi.mock("@/lib/manifest-response", async () => {
@@ -94,19 +48,23 @@ vi.mock("@/lib/manifest-response", async () => {
         },
         { status }
       ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) => {
+      const body =
+        typeof message === "string"
+          ? { success: false, message }
+          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+      return NextResponse.json(body, { status });
+    },
   };
 });
 
-vi.mock("@/lib/manifest/execute-command", () => ({
-  runManifestCommand: vi.fn(),
-}));
-
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -132,10 +90,10 @@ const mockRequisition = {
   department: "Kitchen",
   justification: "Monthly restock",
   status: "draft",
-  subtotal: new Prisma.Decimal("100.00"),
-  estimatedTax: new Prisma.Decimal("10.00"),
-  estimatedShipping: new Prisma.Decimal("5.00"),
-  estimatedTotal: new Prisma.Decimal("115.00"),
+  subtotal: "100.00",
+  estimatedTax: "10.00",
+  estimatedShipping: "5.00",
+  estimatedTotal: "115.00",
   approvedBy: null,
   approvedAt: null,
   managerApprovalBy: null,
@@ -152,13 +110,6 @@ const mockRequisition = {
   createdAt: new Date("2026-04-28T10:00:00Z"),
   updatedAt: new Date("2026-04-28T10:00:00Z"),
   deletedAt: null,
-};
-
-const mockUser = {
-  id: TEST_USER_ID,
-  tenantId: TEST_TENANT_ID,
-  role: "admin",
-  authUserId: TEST_CLERK_ID,
 };
 
 function createMockRequest(
@@ -179,6 +130,32 @@ function manifestParams(entity: string, command: string) {
   return { params: Promise.resolve({ entity, command }) };
 }
 
+function authOk() {
+  vi.mocked(auth).mockResolvedValue({
+    orgId: TEST_ORG_ID,
+    userId: TEST_CLERK_ID,
+  } as any);
+  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+  } as never);
+}
+
+function authMissing() {
+  vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+  const InvariantError = class extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "InvariantError";
+    }
+  };
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthenticated") as never
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -194,12 +171,8 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
   describe("GET /api/procurement/requisitions/list", () => {
     it("returns requisitions persisted through PrismaStore", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.purchaseRequisition.findMany).mockResolvedValue([
+      authOk();
+      vi.mocked(database.purchaseRequisition.findMany).mockResolvedValue([
         mockRequisition,
       ] as never);
 
@@ -218,7 +191,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       expect(data.purchaseRequisitions[0].id).toBe("req-001");
       expect(data.purchaseRequisitions[0].status).toBe("draft");
 
-      expect(mockDatabase.purchaseRequisition.findMany).toHaveBeenCalledWith(
+      expect(database.purchaseRequisition.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenantId: TEST_TENANT_ID,
@@ -229,11 +202,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: null,
-        userId: null,
-      } as any);
-
+      authMissing();
       const { GET } = await import(
         "@/app/api/procurement/requisitions/list/route"
       );
@@ -247,14 +216,8 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("excludes soft-deleted requisitions from the list", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.purchaseRequisition.findMany).mockResolvedValue(
-        []
-      );
+      authOk();
+      vi.mocked(database.purchaseRequisition.findMany).mockResolvedValue([]);
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/list/route"
@@ -277,12 +240,9 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
   describe("GET /api/procurement/requisitions/[id] (detail)", () => {
     it("returns a single persisted requisition", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.purchaseRequisition.findUnique).mockResolvedValue(
+      authOk();
+      // Generated route uses findFirst, not findUnique
+      vi.mocked(database.purchaseRequisition.findFirst).mockResolvedValue(
         mockRequisition as never
       );
 
@@ -303,7 +263,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       expect(data.purchaseRequisition.status).toBe("draft");
       expect(data.purchaseRequisition.requisitionNumber).toBe("PR-2026-001");
 
-      expect(mockDatabase.purchaseRequisition.findUnique).toHaveBeenCalledWith(
+      expect(database.purchaseRequisition.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "req-001",
@@ -315,12 +275,8 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("returns 404 for non-existent requisition", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.purchaseRequisition.findUnique).mockResolvedValue(
+      authOk();
+      vi.mocked(database.purchaseRequisition.findFirst).mockResolvedValue(
         null
       );
 
@@ -341,32 +297,25 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
   // -----------------------------------------------------------------------
   // 3. Command routes — instanceId correctness (Blocker #1 fix)
+  //    These go through the generic dispatcher which uses requireCurrentUser
+  //    and runManifestCommand.
   // -----------------------------------------------------------------------
 
   describe("instanceId on command routes (Blocker #1 fix)", () => {
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never
-      );
-      mockRunCommand.mockClear();
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "req-new", status: "draft" },
-        emittedEvents: [],
-      });
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      authOk();
     });
 
     // -- Create: must NOT pass instanceId ------------------------------------
 
     it("create route does NOT pass instanceId", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "req-new", status: "draft" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -393,16 +342,29 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() })
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PurchaseRequisition",
+          command: "create",
+          user: {
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+            role: "admin",
+          },
+        })
       );
     });
 
-    // -- Update: must pass instanceId ---------------------------------------
+    // -- Update: command is sent through dispatcher --------------------------
 
-    it("update route passes instanceId to runCommand", async () => {
+    it("update route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "req-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -423,19 +385,25 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "update",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
+          entity: "PurchaseRequisition",
+          command: "update",
+          body: expect.objectContaining({ id: "req-001" }),
         })
       );
     });
 
-    // -- Submit: must pass instanceId ----------------------------------------
+    // -- Submit: command is sent through dispatcher ---------------------------
 
-    it("submit route passes instanceId to runCommand", async () => {
+    it("submit route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "req-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -456,19 +424,24 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "submit",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
+          entity: "PurchaseRequisition",
+          command: "submit",
         })
       );
     });
 
-    // -- Approve-manager: must pass instanceId --------------------------------
+    // -- Approve-manager: command is sent through dispatcher --------------------
 
-    it("approve-manager route passes instanceId to runCommand", async () => {
+    it("approve-manager route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "req-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -489,19 +462,24 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "approveManager",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
+          entity: "PurchaseRequisition",
+          command: "approveManager",
         })
       );
     });
 
-    // -- Reject: must pass instanceId -----------------------------------------
+    // -- Reject: command is sent through dispatcher ------------------------------
 
-    it("reject route passes instanceId to runCommand", async () => {
+    it("reject route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "req-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -523,12 +501,10 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "reject",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "PurchaseRequisition",
-          instanceId: "req-001",
+          entity: "PurchaseRequisition",
+          command: "reject",
         })
       );
     });
@@ -540,7 +516,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -557,7 +533,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("update route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -574,7 +550,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("submit route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -597,25 +573,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
 
   describe("command route error handling", () => {
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never
-      );
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      authOk();
     });
 
     it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        guardFailure: { index: 0, formatted: "Requisition number is required" },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Requisition number is required" }),
+          { status: 422, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -636,10 +603,12 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        policyDenial: { policyName: "AdminOnly" },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Policy denied: AdminOnly" }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -660,10 +629,12 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        error: "Something went wrong",
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Something went wrong" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -684,7 +655,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
     });
 
     it("returns 500 on unexpected exception", async () => {
-      mockRunCommand.mockRejectedValueOnce(new Error("Unexpected error"));
+      vi.mocked(runManifestCommand).mockRejectedValueOnce(new Error("Unexpected error"));
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"

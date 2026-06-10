@@ -7,7 +7,11 @@
  */
 
 import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
-import type { ConstraintOutcome, IREntity } from "@angriff36/manifest/ir";
+import type {
+  ConstraintOutcome,
+  IREntity,
+  OverrideRequest,
+} from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
 import { resolveParentContext } from "./parent-context-resolver";
 export { resolveParentContext } from "./parent-context-resolver";
@@ -24,6 +28,12 @@ export interface RunManifestCommandCoreParams {
   body: Record<string, unknown>;
   user: ManifestUserContext;
   instanceId?: string;
+  /**
+   * Constraint override requests forwarded to RuntimeEngine.runCommand.
+   * HTTP callers may instead supply a reserved `overrideRequests` key in the
+   * request body; it is extracted before the body reaches the engine.
+   */
+  overrideRequests?: OverrideRequest[];
 }
 
 export interface RunManifestCommandCoreDeps {
@@ -230,11 +240,29 @@ export function sanitizeCreateInitialTransitionInput(
   return [...new Set(removed)];
 }
 
+/**
+ * Pull the reserved `overrideRequests` key out of an HTTP request body so it
+ * reaches the engine as a runCommand option rather than command input.
+ */
+function extractOverrideRequests(
+  body: Record<string, unknown>
+): OverrideRequest[] | undefined {
+  const raw = body.overrideRequests;
+  if (!Array.isArray(raw) || raw.length === 0) {
+    delete body.overrideRequests;
+    return undefined;
+  }
+  delete body.overrideRequests;
+  return raw as OverrideRequest[];
+}
+
 export async function runManifestCommandCore(
   deps: RunManifestCommandCoreDeps,
   params: RunManifestCommandCoreParams
 ): Promise<RunManifestCommandCoreResult> {
   const { entity, command: commandSlug, body, user, instanceId } = params;
+  const overrideRequests =
+    params.overrideRequests ?? extractOverrideRequests(body);
 
   try {
     const resolved = resolveCommand(entity, commandSlug);
@@ -285,6 +313,7 @@ export async function runManifestCommandCore(
     const result = await runtime.runCommand(command, body, {
       entityName: entity,
       ...(resolvedInstanceId ? { instanceId: resolvedInstanceId } : {}),
+      ...(overrideRequests ? { overrideRequests } : {}),
     });
 
     if (!result.success) {

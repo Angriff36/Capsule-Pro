@@ -38,6 +38,40 @@ const { mockDatabase } = vi.hoisted(() => {
   };
 });
 
+
+// ── Standard infrastructure mocks ──
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    name = "InvariantError";
+  },
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+vi.mock("@/lib/manifest-response", () => ({
+  manifestSuccessResponse: vi.fn((data, status = 200) =>
+    new Response(JSON.stringify({ success: true, ...data }), { status })
+  ),
+  manifestErrorResponse: vi.fn((data, status = 400) =>
+    new Response(
+      JSON.stringify({
+        success: false,
+        ...(typeof data === "string" ? { message: data } : data),
+      }),
+      { status }
+    )
+  ),
+}));
 vi.mock("@repo/database", () => ({
   database: mockDatabase,
 }));
@@ -54,6 +88,7 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -67,7 +102,8 @@ vi.mock("@/lib/manifest-runtime", () => ({
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -289,41 +325,31 @@ describe("Notification Persistence (write → read alignment)", () => {
       id: TEST_USER_ID,
       tenantId: TEST_TENANT_ID,
       role: "admin",
-      authUserId: TEST_CLERK_ID,
     };
 
-    const mockRunCommand = vi.fn().mockResolvedValue({
-      success: true,
-      result: { id: "notif-003", isRead: true },
-      emittedEvents: [],
-    });
+    const mockRunManifestCommand = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ success: true, result: { id: "notif-003", isRead: true }, events: [] }), { status: 200 })
+    );
 
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      mockRunManifestCommand.mockClear();
+      vi.mocked(requireCurrentUser).mockResolvedValue(mockUser as never);
+      vi.mocked(runManifestCommand).mockImplementation(mockRunManifestCommand);
     });
 
     const instanceScopedVerbs = [
-      { verb: "markRead", file: "mark-read" },
-      { verb: "markDismissed", file: "mark-dismissed" },
-      { verb: "remove", file: "remove" },
+      { verb: "markRead", slug: "mark-read" },
+      { verb: "markDismissed", slug: "mark-dismissed" },
+      { verb: "remove", slug: "remove" },
     ];
 
-    for (const { verb, file } of instanceScopedVerbs) {
+    for (const { verb, slug } of instanceScopedVerbs) {
       it(`${verb} route passes instanceId to runCommand`, async () => {
         const mod = await import(
-          `@/app/api/collaboration/notifications/commands/${file}/route`
+          "@/app/api/manifest/[entity]/commands/[command]/route"
         );
         const request = createMockRequest(
-          `http://localhost:3000/api/collaboration/notifications/commands/${file}`,
+          `http://localhost:3000/api/manifest/Notification/commands/${slug}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "notif-003" }),
@@ -333,27 +359,26 @@ describe("Notification Persistence (write → read alignment)", () => {
         await mod.POST(request, {
           params: Promise.resolve({
             entity: "Notification",
-            command: "create",
+            command: slug,
           }),
         });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          verb,
-          expect.any(Object),
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "Notification",
-            instanceId: "notif-003",
+            entity: "Notification",
+            command: slug,
+            body: expect.objectContaining({ id: "notif-003" }),
           })
         );
       });
     }
 
-    it("create route does NOT pass instanceId", async () => {
+    it("create route does NOT include instanceId in body", async () => {
       const mod = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/commands/create",
+        "http://localhost:3000/api/manifest/Notification/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -367,10 +392,12 @@ describe("Notification Persistence (write → read alignment)", () => {
         params: Promise.resolve({ entity: "Notification", command: "create" }),
       });
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() })
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "Notification",
+          command: "create",
+          body: expect.not.objectContaining({ id: expect.anything() }),
+        })
       );
     });
   });

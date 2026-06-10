@@ -32,21 +32,14 @@ vi.mock("@/app/lib/tenant", () => ({
   resolveCurrentUser: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
-        {
-          success: true,
-          ...(typeof data === "object" && data !== null ? data : { data }),
-        },
-        { status }
-      ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
+vi.mock("@repo/observability/log", () => ({
+  log: {
+    debug: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+  },
+}));
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
@@ -101,7 +94,7 @@ describe("Payroll Runs API", () => {
       expect(response.status).toBe(401);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Unauthorized");
+      expect(body.error).toBe("Unauthorized");
     });
 
     it("should return 400 when tenant not found", async () => {
@@ -113,7 +106,7 @@ describe("Payroll Runs API", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Tenant not found");
+      expect(body.error).toBe("Tenant not found");
     });
 
     it("should return payroll runs for authenticated user", async () => {
@@ -144,8 +137,8 @@ describe("Payroll Runs API", () => {
       expect(database.payrollRun.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -159,7 +152,7 @@ describe("Payroll Runs API", () => {
 
       expect(database.payrollRun.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         })
       );
     });
@@ -175,7 +168,7 @@ describe("Payroll Runs API", () => {
       expect(response.status).toBe(500);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.error).toBe("Internal server error");
     });
 
     it("should return empty array when no runs exist", async () => {
@@ -230,7 +223,7 @@ describe("Payroll Runs API", () => {
       expect(response.status).toBe(404);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("PayrollRun not found");
+      expect(body.error).toBe("PayrollRun not found");
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
@@ -247,8 +240,8 @@ describe("Payroll Runs API", () => {
         expect.objectContaining({
           where: {
             id: "run-001",
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );

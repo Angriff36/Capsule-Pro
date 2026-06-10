@@ -16,13 +16,29 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
+vi.mock("@repo/database", () => ({
+  database: {
+    driver: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    vehicle: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    deliveryRoute: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 const tenantModule = vi.hoisted(() => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@/app/lib/tenant", () => tenantModule);
+vi.mock("@/lib/database", async () => {
+  const { database } = await import("@repo/database");
+  return { database };
+});
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
@@ -72,6 +88,10 @@ vi.mock("@/app/lib/webhook-dispatch", () => ({
   dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("@repo/notifications", () => ({}));
+vi.mock("@/lib/pagination", () => ({
+  clampLimit: vi.fn().mockReturnValue(50),
+  clampOffset: vi.fn().mockReturnValue(0),
+}));
 vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
   runManifestCommandCore: vi.fn(),
 }));

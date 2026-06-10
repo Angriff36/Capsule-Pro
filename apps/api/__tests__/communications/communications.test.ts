@@ -37,16 +37,60 @@ import {
 } from "@/app/api/manifest/[entity]/commands/[command]/route";
 
 // Mock dependencies
+vi.mock("@repo/database", () => ({
+  database: {
+    emailTemplate: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    emailWorkflow: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    sms_automation_rules: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    user: { findFirst: vi.fn(), findUnique: vi.fn(), findMany: vi.fn() },
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 vi.mock("@/lib/manifest/execute-command", () => ({
   runManifestCommand: vi.fn(),
+}));
+vi.mock("@/lib/manifest-response", () => ({
+  manifestSuccessResponse: vi.fn((data, status = 200) =>
+    new Response(JSON.stringify({ success: true, ...data }), { status })
+  ),
+  manifestErrorResponse: vi.fn((data, status = 400) =>
+    new Response(
+      JSON.stringify({
+        success: false,
+        ...(typeof data === "string" ? { message: data } : data),
+      }),
+      { status }
+    )
+  ),
+}));
+vi.mock("@/lib/pagination", () => ({
+  clampLimit: vi.fn((v) => Math.min(Number(v) || 50, 200)),
+  clampOffset: vi.fn((v) => Math.max(Number(v) || 0, 0)),
+}));
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error { name = "InvariantError"; },
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),

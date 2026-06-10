@@ -109,16 +109,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./"),
-      // Subpath exports must be listed before the catch-all @repo alias.
-      // Target the package's `src/` dir (not its root): the package.json
-      // `exports` map points every subpath at `./src/<subpath>`, so a string
-      // alias to `src` resolves both the bare import (→ src/index.ts) and every
-      // subpath (e.g. /run-manifest-command-core → src/run-manifest-command-core.ts).
-      // Pointing at the root only resolved the bare import and broke subpaths.
-      "@repo/manifest-runtime": path.resolve(
-        import.meta.dirname,
-        "../../manifest/runtime/src"
-      ),
       "@repo": path.resolve(import.meta.dirname, "../../packages"),
       "server-only": path.resolve(
         import.meta.dirname,

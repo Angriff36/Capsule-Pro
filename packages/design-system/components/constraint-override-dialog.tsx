@@ -1,6 +1,5 @@
 "use client";
 
-import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import {
   OVERRIDE_REASON_CODES,
   type OverrideReasonCode,
@@ -31,6 +30,38 @@ import {
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { AlertCircle, Info, ShieldAlert, TriangleAlert } from "lucide-react";
 import * as React from "react";
+
+/**
+ * UI-safe DTO mirror of the Manifest runtime constraint outcome shape.
+ *
+ * Architecture contract (docs/manifest-architecture-contract.md §1): UI
+ * packages must not import runtime packages (@angriff36/manifest), so this
+ * structural type is declared here. It must stay assignable from the runtime's
+ * `ConstraintOutcome` (manifest IR) — the apps/api boundary serializes
+ * constraint outcomes into exactly this shape.
+ */
+export interface ConstraintOutcome {
+  /** Stable constraint identifier */
+  code: string;
+  /** Constraint name for reference */
+  constraintName: string;
+  /** Severity level of the constraint */
+  severity: "ok" | "warn" | "block";
+  /** Formatted expression string */
+  formatted: string;
+  /** Optional message from constraint */
+  message?: string;
+  /** Structured details for UI (resolved values) */
+  details?: Record<string, unknown>;
+  /** Whether the constraint passed */
+  passed: boolean;
+  /** Whether the constraint was overridden */
+  overridden?: boolean;
+  /** User who authorized the override */
+  overriddenBy?: string;
+  /** Resolved expression values for debugging */
+  resolved?: Array<{ expression: string; value: unknown }>;
+}
 
 export interface ConstraintOverrideDialogProps {
   /**

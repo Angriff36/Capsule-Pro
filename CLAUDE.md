@@ -259,8 +259,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 90% context — saved before compacting]
-Files (1):
-  manifest/scripts/compile.mjs (edit)
+[Emergency bridge — running bridge was not updated]
+Files: C:/Projects/Manifest/src/manifest/masking.test.ts (create), C:/Projects/Manifest/src/manifest/masking.ts (create), C:/Projects/Manifest/src/manifest/runtime-engine.ts (edit)
 
 # === END COGNILAYER ===

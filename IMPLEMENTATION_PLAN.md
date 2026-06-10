@@ -11,6 +11,23 @@
 
 ---
 
+## Task 10.14 — Quarantine Test Recovery (In Progress)
+
+**Status:** 13 parallel subagents fixing 36 failing test files (513 failures)
+
+**Root causes identified:**
+1. Missing route params: Tests don't pass `{entity, command}` as Promise to the generic manifest dispatcher
+2. Deleted concrete routes: workforce-optimization (36 tests) imports per-entity routes that were consolidated into the generic dispatcher
+3. Missing per-file mocks: Route handlers crash (500) when auth, Sentry, execute-command, or other modules aren't mocked
+4. Mock drift: Database models referenced in tests don't exist in the mock object
+5. Search API response shape changes
+
+**Global setup.ts enhanced:** Added Sentry, webhook-dispatch, manifest-issue-log, and notifications mocks (auth and invariant reverted due to breaking accounting tests)
+
+**Remaining quarantine files:** 35 `.quarantine.test.ts` files (after current uncommitted batch of 16 is committed)
+
+---
+
 ## Validation Baseline (2026-06-09, comprehensive audit -- 31st revision, v0.12.215 target)
 
 ### Claim Verification Matrix

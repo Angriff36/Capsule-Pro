@@ -6,80 +6,30 @@
  * persists through the store, and the read path queries the same Prisma
  * model -- so a created contract is immediately visible in the list API.
  *
- * This test also verifies the `instanceId` fix: all command routes
- * (create, update, submit, approve, reject, activate, terminate) pass
- * `instanceId` to `runtime.runCommand` so the store can target the
- * correct entity row.
+ * Command routes go through the generic dispatcher which uses
+ * requireCurrentUser and runManifestCommand.
  */
 
+import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
-// Mocks (vi.hoisted so dynamic imports resolve the same mock instances)
+// The global vitest setup provides a full database mock with all models.
+// Only need to mock auth, response helpers, and runManifestCommand here.
 // ---------------------------------------------------------------------------
-
-const { mockDatabase, mockRunCommand, Prisma } = vi.hoisted(() => {
-  const mockVendorContractStore = {
-    findMany: vi.fn(),
-    findUnique: vi.fn(),
-    findFirst: vi.fn(),
-    create: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn(),
-    deleteMany: vi.fn(),
-  };
-  const mockUserStore = {
-    findFirst: vi.fn(),
-  };
-
-  // Minimal Decimal stand-in (enough for equality assertions)
-  class Decimal {
-    value: string;
-    constructor(v: string) {
-      this.value = v;
-    }
-    toString() {
-      return this.value;
-    }
-  }
-
-  return {
-    mockDatabase: {
-      vendorContract: mockVendorContractStore,
-      user: mockUserStore,
-    },
-    mockRunCommand: vi.fn(),
-    Prisma: { Decimal },
-  };
-});
-
-vi.mock("@repo/database", () => ({
-  database: mockDatabase,
-  Prisma,
-}));
-
-vi.mock("@/lib/database", () => ({
-  database: mockDatabase,
-}));
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/app/lib/tenant", () => ({
-  getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
-  requireTenantId: vi.fn(),
-  resolveCurrentUser: vi.fn(),
-}));
-
-vi.mock("@sentry/nextjs", () => ({
-  captureException: vi.fn(),
-}));
-
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({ success: true, result: {}, events: [] }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    )
+  ),
 }));
 
 vi.mock("@/lib/manifest-response", async () => {
@@ -93,19 +43,23 @@ vi.mock("@/lib/manifest-response", async () => {
         },
         { status }
       ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) => {
+      const body =
+        typeof message === "string"
+          ? { success: false, message }
+          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+      return NextResponse.json(body, { status });
+    },
   };
 });
 
-vi.mock("@/lib/manifest/execute-command", () => ({
-  runManifestCommand: vi.fn(),
-}));
-
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -135,8 +89,8 @@ const mockContract = {
   noticeDaysBeforeRenewal: 30,
   paymentTerms: "NET_30",
   deliveryTerms: "FOB Destination",
-  minimumOrderQuantity: new Prisma.Decimal("100.00"),
-  annualSpendCommitment: new Prisma.Decimal("50000.00"),
+  minimumOrderQuantity: "100.00",
+  annualSpendCommitment: "50000.00",
   spendToPeriod: null,
   currencyCode: "USD",
   approvedBy: null,
@@ -149,18 +103,11 @@ const mockContract = {
   complianceScore: 100,
   lastComplianceReview: null,
   slaBreachCount: 0,
-  onTimeDeliveryRate: new Prisma.Decimal("95.00"),
-  qualityRating: new Prisma.Decimal("4.5"),
+  onTimeDeliveryRate: "95.00",
+  qualityRating: "4.5",
   createdAt: new Date("2026-04-28T10:00:00Z"),
   updatedAt: new Date("2026-04-28T10:00:00Z"),
   deletedAt: null,
-};
-
-const mockUser = {
-  id: TEST_USER_ID,
-  tenantId: TEST_TENANT_ID,
-  role: "admin",
-  authUserId: TEST_CLERK_ID,
 };
 
 function createMockRequest(
@@ -181,6 +128,32 @@ function manifestParams(entity: string, command: string) {
   return { params: Promise.resolve({ entity, command }) };
 }
 
+function authOk() {
+  vi.mocked(auth).mockResolvedValue({
+    orgId: TEST_ORG_ID,
+    userId: TEST_CLERK_ID,
+  } as any);
+  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+  } as never);
+}
+
+function authMissing() {
+  vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+  const InvariantError = class extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "InvariantError";
+    }
+  };
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthenticated") as never
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -196,12 +169,8 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
   describe("GET /api/procurement/vendor-contracts/list", () => {
     it("returns vendor contracts persisted through store", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.vendorContract.findMany).mockResolvedValue([
+      authOk();
+      vi.mocked(database.vendorContract.findMany).mockResolvedValue([
         mockContract,
       ] as never);
 
@@ -221,7 +190,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(data.vendorContracts[0].contractNumber).toBe("VC-2026-001");
       expect(data.vendorContracts[0].status).toBe("draft");
 
-      expect(mockDatabase.vendorContract.findMany).toHaveBeenCalledWith(
+      expect(database.vendorContract.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenantId: TEST_TENANT_ID,
@@ -232,11 +201,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: null,
-        userId: null,
-      } as any);
-
+      authMissing();
       const { GET } = await import(
         "@/app/api/procurement/vendor-contracts/list/route"
       );
@@ -250,12 +215,8 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("excludes soft-deleted contracts from the list", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.vendorContract.findMany).mockResolvedValue([]);
+      authOk();
+      vi.mocked(database.vendorContract.findMany).mockResolvedValue([]);
 
       const { GET } = await import(
         "@/app/api/procurement/vendor-contracts/list/route"
@@ -278,12 +239,9 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
   describe("GET /api/procurement/vendor-contracts/[id] (detail)", () => {
     it("returns a single persisted vendor contract", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.vendorContract.findUnique).mockResolvedValue(
+      authOk();
+      // Generated route uses findFirst
+      vi.mocked(database.vendorContract.findFirst).mockResolvedValue(
         mockContract as never
       );
 
@@ -304,7 +262,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       expect(data.vendorContract.status).toBe("draft");
       expect(data.vendorContract.contractNumber).toBe("VC-2026-001");
 
-      expect(mockDatabase.vendorContract.findUnique).toHaveBeenCalledWith(
+      expect(database.vendorContract.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "vc-001",
@@ -316,12 +274,8 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 404 for non-existent contract", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.vendorContract.findUnique).mockResolvedValue(null);
+      authOk();
+      vi.mocked(database.vendorContract.findFirst).mockResolvedValue(null);
 
       const { GET } = await import(
         "@/app/api/procurement/vendor-contracts/[id]/route"
@@ -339,33 +293,24 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
   });
 
   // -----------------------------------------------------------------------
-  // 3. Command routes -- instanceId correctness (Blocker #1 fix)
+  // 3. Command routes -- go through generic dispatcher
   // -----------------------------------------------------------------------
 
-  describe("instanceId on command routes (Blocker #1 fix)", () => {
+  describe("command routes through generic dispatcher", () => {
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never
-      );
-      mockRunCommand.mockClear();
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "vc-new", status: "draft" },
-        emittedEvents: [],
-      });
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      authOk();
     });
 
-    // -- Create: passes instanceId from body.id ----------------------------
+    // -- Create ---------------------------------------------------------------
 
-    it("create route passes instanceId from body.id", async () => {
+    it("create route delegates to runManifestCommand", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-new", status: "draft" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -390,19 +335,29 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: undefined,
+          entity: "VendorContract",
+          command: "create",
+          user: {
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+            role: "admin",
+          },
         })
       );
     });
 
-    // -- Update: must pass instanceId --------------------------------------
+    // -- Update ---------------------------------------------------------------
 
-    it("update route passes instanceId to runCommand", async () => {
+    it("update route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -423,19 +378,25 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "update",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "update",
+          body: expect.objectContaining({ id: "vc-001" }),
         })
       );
     });
 
-    // -- Submit: must pass instanceId ---------------------------------------
+    // -- Submit ---------------------------------------------------------------
 
-    it("submit route passes instanceId to runCommand", async () => {
+    it("submit route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -456,19 +417,24 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "submit",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "submit",
         })
       );
     });
 
-    // -- Approve: must pass instanceId ------------------------------------
+    // -- Approve --------------------------------------------------------------
 
-    it("approve route passes instanceId to runCommand", async () => {
+    it("approve route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -489,19 +455,24 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "approve",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "approve",
         })
       );
     });
 
-    // -- Reject: must pass instanceId -------------------------------------
+    // -- Reject ---------------------------------------------------------------
 
-    it("reject route passes instanceId to runCommand", async () => {
+    it("reject route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -523,19 +494,24 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "reject",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "reject",
         })
       );
     });
 
-    // -- Activate: must pass instanceId ------------------------------------
+    // -- Activate -------------------------------------------------------------
 
-    it("activate route passes instanceId to runCommand", async () => {
+    it("activate route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -556,19 +532,24 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "activate",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "activate",
         })
       );
     });
 
-    // -- Terminate: must pass instanceId ------------------------------------
+    // -- Terminate ------------------------------------------------------------
 
-    it("terminate route passes instanceId to runCommand", async () => {
+    it("terminate route passes correct entity and command", async () => {
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: "vc-001" }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -590,12 +571,10 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       expect(response.status).toBe(200);
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "terminate",
-        expect.any(Object),
+      expect(runManifestCommand).toHaveBeenCalledWith(
         expect.objectContaining({
-          entityName: "VendorContract",
-          instanceId: "vc-001",
+          entity: "VendorContract",
+          command: "terminate",
         })
       );
     });
@@ -607,7 +586,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
   describe("command route authentication", () => {
     it("create route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -624,7 +603,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("update route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -641,7 +620,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("submit route returns 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
+      authMissing();
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -664,28 +643,16 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
 
   describe("command route error handling", () => {
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never
-      );
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      authOk();
     });
 
     it("returns 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "Contract number is required",
-        },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Contract number is required" }),
+          { status: 422, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -706,10 +673,12 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        policyDenial: { policyName: "AdminOnly" },
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Policy denied: AdminOnly" }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -730,10 +699,12 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValueOnce({
-        success: false,
-        error: "Something went wrong",
-      });
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "Something went wrong" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        )
+      );
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
@@ -754,7 +725,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
     });
 
     it("returns 500 on unexpected exception", async () => {
-      mockRunCommand.mockRejectedValueOnce(new Error("Unexpected error"));
+      vi.mocked(runManifestCommand).mockRejectedValueOnce(new Error("Unexpected error"));
 
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"

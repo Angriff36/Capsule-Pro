@@ -20,6 +20,35 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mocks
 // ---------------------------------------------------------------------------
 
+
+// ── Standard infrastructure mocks ──
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+vi.mock("@/lib/manifest-response", () => ({
+  manifestSuccessResponse: vi.fn((data, status = 200) =>
+    new Response(JSON.stringify({ success: true, ...data }), { status })
+  ),
+  manifestErrorResponse: vi.fn((data, status = 400) =>
+    new Response(
+      JSON.stringify({
+        success: false,
+        ...(typeof data === "string" ? { message: data } : data),
+      }),
+      { status }
+    )
+  ),
+}));
 vi.mock("@repo/database", async () => ({
   database: {
     purchaseOrder: {
@@ -49,6 +78,7 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
 vi.mock("@/app/lib/invariant", async () => {
@@ -66,8 +96,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
 
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -214,10 +245,10 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // 2. instanceId on instance-scoped command routes (Blocker #1 fix)
+  // 2. instanceId on instance-scoped command routes via dispatcher
   // -------------------------------------------------------------------------
 
-  describe("instanceId on command routes (Blocker #1 fix)", () => {
+  describe("instanceId on command routes via dispatcher", () => {
     const mockUser = {
       id: TEST_USER_ID,
       tenantId: TEST_TENANT_ID,
@@ -225,71 +256,68 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
       authUserId: TEST_CLERK_ID,
     };
 
-    const mockRunCommand = vi.fn().mockResolvedValue({
+    const mockRunCommandResult = {
       success: true,
       result: { id: "po-003", status: "approved" },
-      emittedEvents: [],
-    });
+      events: [],
+    };
 
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      vi.mocked(requireCurrentUser).mockResolvedValue(mockUser as never);
     });
 
     const instanceScopedVerbs = [
-      { verb: "submit", file: "submit" },
-      { verb: "approve", file: "approve" },
-      { verb: "reject", file: "reject" },
-      { verb: "cancel", file: "cancel" },
-      { verb: "markOrdered", file: "mark-ordered" },
-      { verb: "markReceived", file: "mark-received" },
+      "submit",
+      "approve",
+      "reject",
+      "cancel",
+      "markOrdered",
+      "markReceived",
     ];
 
-    for (const { verb, file } of instanceScopedVerbs) {
-      it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(
-          `@/app/api/inventory/purchase-orders/commands/${file}/route`
+    // Import the dispatcher route
+    const dispatcherMod = import("@/app/api/manifest/[entity]/commands/[command]/route");
+
+    for (const verb of instanceScopedVerbs) {
+      it(`${verb} passes id in body to runManifestCommand via dispatcher`, async () => {
+        const { POST } = await dispatcherMod;
+        vi.mocked(runManifestCommand).mockResolvedValue(
+          new Response(JSON.stringify(mockRunCommandResult), { status: 200 })
         );
+
         const request = createMockRequest(
-          `http://localhost:3000/api/inventory/purchase-orders/commands/${file}`,
+          `http://localhost:3000/api/manifest/PurchaseOrder/commands/${verb}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "po-003" }),
           }
         );
 
-        await mod.POST(request, {
+        await POST(request, {
           params: Promise.resolve({
             entity: "PurchaseOrder",
-            command: "create",
+            command: verb,
           }),
         });
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          verb,
-          expect.any(Object),
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "PurchaseOrder",
-            instanceId: "po-003",
+            entity: "PurchaseOrder",
+            command: verb,
+            body: expect.objectContaining({ id: "po-003" }),
           })
         );
       });
     }
 
-    it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+    it("create route passes body without instanceId to runManifestCommand", async () => {
+      const { POST } = await dispatcherMod;
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(JSON.stringify({ success: true, result: { id: "po-new" }, events: [] }), { status: 200 })
       );
+
       const request = createMockRequest(
-        "http://localhost:3000/api/inventory/purchase-orders/commands/create",
+        "http://localhost:3000/api/manifest/PurchaseOrder/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -299,15 +327,14 @@ describe("PurchaseOrder Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, {
+      await POST(request, {
         params: Promise.resolve({ entity: "PurchaseOrder", command: "create" }),
       });
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
-        expect.not.objectContaining({
-          instanceId: expect.anything(),
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "PurchaseOrder",
+          command: "create",
         })
       );
     });

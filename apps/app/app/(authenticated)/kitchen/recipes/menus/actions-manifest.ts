@@ -19,7 +19,7 @@
  * - Audit trail
  */
 
-import type { ConstraintOutcome } from "@angriff36/manifest/ir";
+import type { ConstraintOutcome } from "@repo/design-system/components/constraint-override-dialog";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUser, requireTenantId } from "../../../../lib/tenant";

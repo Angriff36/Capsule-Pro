@@ -209,10 +209,10 @@ export const commandBoardChat = (): string => "/api/command-board/chat";
 // Staff — Shifts
 // ---------------------------------------------------------------------------
 
-/** POST /api/staff/shifts/commands/create-validated */
-export const staffShiftsCreateValidated = (): string =>
-  "/api/staff/shifts/commands/create-validated";
+/** POST /api/manifest/ScheduleShift/commands/create (governed dispatcher) */
+export const staffShiftsCreateCommand = (): string =>
+  "/api/manifest/ScheduleShift/commands/create";
 
-/** POST /api/staff/shifts/commands/update-validated */
-export const staffShiftsUpdateValidated = (): string =>
-  "/api/staff/shifts/commands/update-validated";
+/** POST /api/manifest/ScheduleShift/commands/update (governed dispatcher) */
+export const staffShiftsUpdateCommand = (): string =>
+  "/api/manifest/ScheduleShift/commands/update";

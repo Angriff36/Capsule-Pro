@@ -169,10 +169,10 @@ describe("Email Templates API", () => {
         expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
-              tenant_id: TEST_TENANT_ID,
-              deleted_at: null,
+              tenantId: TEST_TENANT_ID,
+              deletedAt: null,
             }),
-            orderBy: [{ template_type: "asc" }, { name: "asc" }],
+            orderBy: [{ templateType: "asc" }, { name: "asc" }],
             skip: 0,
             take: 50,
           })
@@ -238,7 +238,7 @@ describe("Email Templates API", () => {
         expect(database.emailTemplate.findMany).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({
-              template_type: "welcome",
+              templateType: "welcome",
             }),
           })
         );
@@ -564,9 +564,9 @@ describe("Email Templates API", () => {
 
         expect(database.emailTemplate.findFirst).toHaveBeenCalledWith({
           where: {
-            tenant_id: TEST_TENANT_ID,
+            tenantId: TEST_TENANT_ID,
             id: TEST_TEMPLATE_ID,
-            deleted_at: null,
+            deletedAt: null,
           },
         });
       });

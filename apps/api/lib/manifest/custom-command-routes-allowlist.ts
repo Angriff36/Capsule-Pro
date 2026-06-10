@@ -16,6 +16,10 @@ export const CUSTOM_COMMAND_ROUTE_ALLOWLIST = [
   // PO status FSM with direct SQL (legacy procurement surface)
   "procurement/purchase-orders/commands/update-status/route.ts",
   "procurement/purchase-orders/commands/receive/route.ts",
+  // Kitchen dish create: governed Manifest constraint check + direct SQL persist + outbox event
+  "kitchen/dishes/commands/create/route.ts",
+  // Kitchen prep-list create: custom orchestration with Manifest constraint evaluation
+  "kitchen/prep-lists/commands/create/route.ts",
 ] as const;
 
 export function isCustomCommandRoute(relativeApiPath: string): boolean {

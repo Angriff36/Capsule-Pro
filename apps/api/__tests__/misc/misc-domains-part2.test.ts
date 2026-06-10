@@ -6,7 +6,7 @@
  *   - PurchaseOrderItem: create, remove, update (manifest command handlers)
  *   - SampleData: seed, reseed, clear (manifest command handlers)
  *   - ScheduleShift: create, remove, update (manifest command handlers)
- *   - User Preferences: GET (list), POST (upsert) — raw SQL routes
+ *   - User Preferences: GET (list), POST (upsert) — Prisma routes
  *   - MenuDish: create, remove, updateCourse (manifest command handlers)
  *
  * Each route is tested for: 401 (unauthenticated), 400 (bad request / tenant not found),
@@ -14,16 +14,68 @@
  */
 
 import { database } from "@repo/database";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
-vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+// InvariantError used by requireCurrentUser for auth failures
+class MockInvariantError extends Error {
+  name = "InvariantError";
+}
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: MockInvariantError,
+  invariant: (condition: unknown, message: string) => {
+    if (!condition) throw new MockInvariantError(message);
+  },
+}));
+
+// ── Standard infrastructure mocks ──
+vi.mock("@repo/database", () => ({
+  database: {
+    $queryRaw: vi.fn(),
+    $executeRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+    userPreference: {
+      findMany: vi.fn(),
+      upsert: vi.fn(),
+    },
+    user: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+    },
+    account: {
+      findFirst: vi.fn(),
+      create: vi.fn(),
+    },
+  },
+}));
+
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+vi.mock("@repo/auth/server", () => ({
+  auth: vi.fn(),
+  currentUser: vi.fn(),
+}));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-response", async () => {
@@ -49,12 +101,20 @@ vi.mock("@/lib/database", async () => {
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
+vi.mock("@repo/observability/log", () => ({
+  log: {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  },
+}));
 
 // --- Import mocked modules ---
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { getTenantIdForOrg, requireCurrentUser } = await import("@/app/lib/tenant");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Route imports ---
 
@@ -96,16 +156,18 @@ import {
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000090";
 const TEST_USER_ID = "user_misc_p2_test";
 const TEST_ORG_ID = "org_misc_p2_test";
-const OTHER_TENANT_ID = "00000000-0000-0000-0000-000000000099";
 
 // --- Helpers ---
 
 function mockAuth() {
-  vi.mocked(auth).mockResolvedValue({
-    userId: TEST_USER_ID,
-    orgId: TEST_ORG_ID,
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@example.com",
+    firstName: "Test",
+    lastName: "User",
   } as never);
-  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 }
 
 function makeRequest(
@@ -120,10 +182,34 @@ function makeRequest(
   });
 }
 
-function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
+/**
+ * Mock runManifestCommand to return a specific response.
+ * The route handler calls runManifestCommand which returns a Response.
+ */
+function mockRunManifestCommandResponse(
+  responseOrFn: Response | ((...args: unknown[]) => Response)
+) {
+  if (typeof responseOrFn === "function") {
+    vi.mocked(runManifestCommand).mockImplementation(
+      responseOrFn as unknown as (...args: unknown[]) => Promise<Response>
+    );
+  } else {
+    vi.mocked(runManifestCommand).mockResolvedValue(responseOrFn);
+  }
+}
+
+/** Create a successful manifest response (200) */
+function successResponse(result: unknown = { id: "result-001" }, events: unknown[] = []) {
+  return NextResponse.json({
+    success: true,
+    result,
+    events,
+  });
+}
+
+/** Create a manifest error response */
+function errorResponse(message: string, status: number) {
+  return NextResponse.json({ success: false, message }, { status });
 }
 
 // Shared command-route test factory
@@ -135,17 +221,10 @@ function testManifestCommandRoute(
   commandName: string
 ) {
   describe(label, () => {
-    const mockRunCommand = vi.fn();
-
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should return 401 for unauthenticated requests", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: null,
-        orgId: null,
-      } as never);
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new MockInvariantError("Unauthorized")
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
@@ -158,26 +237,29 @@ function testManifestCommandRoute(
       expect(json.message).toBe("Unauthorized");
     });
 
-    it("should return 400 when tenant not found", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("should return 401 when tenant not found", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new MockInvariantError("Tenant not found")
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
       });
       const response = await handler(request);
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
       const json = await response.json();
       expect(json.success).toBe(false);
       expect(json.message).toBe("Tenant not found");
     });
 
     it("should execute command successfully", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "result-001" },
-        emittedEvents: [{ type: `${entityName}Event` }],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(
+        successResponse({ id: "result-001" }, [
+          { type: `${entityName}Event` },
+        ])
+      );
 
       const payload = { id: "test-id", name: "Test payload" };
       const request = makeRequest(`http://localhost/api/${urlPath}`, payload);
@@ -189,35 +271,43 @@ function testManifestCommandRoute(
       expect(json.result).toEqual({ id: "result-001" });
       expect(json.events).toEqual([{ type: `${entityName}Event` }]);
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        commandName,
-        expect.objectContaining(payload),
-        { entityName }
-      );
+      expect(runManifestCommand).toHaveBeenCalledWith({
+        entity: entityName,
+        command: commandName,
+        body: expect.objectContaining(payload),
+        user: {
+          id: TEST_USER_ID,
+          tenantId: TEST_TENANT_ID,
+          role: "admin",
+        },
+      });
     });
 
-    it("should pass user context to manifest runtime", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "result-002" },
-        emittedEvents: [],
-      });
+    it("should pass user context from requireCurrentUser", async () => {
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({ id: "result-002" }));
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
       });
       await handler(request);
 
-      expect(createManifestRuntime).toHaveBeenCalledWith({
-        user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
-      });
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user: {
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+            role: "admin",
+          },
+        })
+      );
     });
 
     it("should return 403 on policy denial", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        policyDenial: { policyName: "RolePolicy" },
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(
+        errorResponse("Access denied by policy RolePolicy", 403)
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
@@ -227,18 +317,14 @@ function testManifestCommandRoute(
       expect(response.status).toBe(403);
       const json = await response.json();
       expect(json.success).toBe(false);
-      expect(json.message).toContain("Access denied");
       expect(json.message).toContain("RolePolicy");
     });
 
     it("should return 422 on guard failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        guardFailure: {
-          index: 0,
-          formatted: "Validation constraint violated",
-        },
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(
+        errorResponse("Guard 0 failed: Validation constraint violated", 422)
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
@@ -248,15 +334,14 @@ function testManifestCommandRoute(
       expect(response.status).toBe(422);
       const json = await response.json();
       expect(json.success).toBe(false);
-      expect(json.message).toContain("Guard 0 failed");
       expect(json.message).toContain("Validation constraint violated");
     });
 
     it("should return 400 on generic command failure", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: "Command execution failed",
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(
+        errorResponse("Command execution failed", 400)
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
@@ -270,10 +355,8 @@ function testManifestCommandRoute(
     });
 
     it("should return 400 with default message when error is null", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: false,
-        error: null,
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(errorResponse("Command failed", 400));
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {});
       const response = await handler(request);
@@ -284,7 +367,10 @@ function testManifestCommandRoute(
     });
 
     it("should return 500 on unexpected runtime exception", async () => {
-      mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
+      mockAuth();
+      vi.mocked(runManifestCommand).mockRejectedValue(
+        new Error("Runtime crash")
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
@@ -297,31 +383,30 @@ function testManifestCommandRoute(
       expect(json.message).toBe("Internal server error");
     });
 
-    it("should not call runCommand when authentication fails", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        userId: null,
-        orgId: null,
-      } as never);
+    it("should not call runManifestCommand when authentication fails", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new MockInvariantError("Unauthorized")
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
       });
       await handler(request);
 
-      expect(createManifestRuntime).not.toHaveBeenCalled();
-      expect(mockRunCommand).not.toHaveBeenCalled();
+      expect(runManifestCommand).not.toHaveBeenCalled();
     });
 
-    it("should not call runCommand when tenant is missing", async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it("should not call runManifestCommand when tenant is missing", async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new MockInvariantError("Tenant not found")
+      );
 
       const request = makeRequest(`http://localhost/api/${urlPath}`, {
         id: "test-id",
       });
       await handler(request);
 
-      expect(createManifestRuntime).not.toHaveBeenCalled();
-      expect(mockRunCommand).not.toHaveBeenCalled();
+      expect(runManifestCommand).not.toHaveBeenCalled();
     });
   });
 }
@@ -365,17 +450,9 @@ describe("ProposalLineItem API", () => {
   );
 
   describe("Entity-specific verification", () => {
-    const mockRunCommand = vi.fn();
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should always use entityName 'ProposalLineItem' for all commands", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: {},
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({}));
 
       const commands = [
         {
@@ -402,8 +479,8 @@ describe("ProposalLineItem API", () => {
         await fn(request);
       }
 
-      for (const call of mockRunCommand.mock.calls) {
-        expect(call[2]).toEqual({ entityName: "ProposalLineItem" });
+      for (const call of vi.mocked(runManifestCommand).mock.calls) {
+        expect(call[0].entity).toBe("ProposalLineItem");
       }
     });
   });
@@ -448,17 +525,9 @@ describe("PurchaseOrderItem API", () => {
   );
 
   describe("Entity-specific verification", () => {
-    const mockRunCommand = vi.fn();
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should always use entityName 'PurchaseOrderItem' for all commands", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: {},
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({}));
 
       const commands = [
         {
@@ -482,8 +551,8 @@ describe("PurchaseOrderItem API", () => {
         await fn(request);
       }
 
-      for (const call of mockRunCommand.mock.calls) {
-        expect(call[2]).toEqual({ entityName: "PurchaseOrderItem" });
+      for (const call of vi.mocked(runManifestCommand).mock.calls) {
+        expect(call[0].entity).toBe("PurchaseOrderItem");
       }
     });
   });
@@ -528,17 +597,9 @@ describe("SampleData API", () => {
   );
 
   describe("Entity-specific verification", () => {
-    const mockRunCommand = vi.fn();
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should always use entityName 'SampleData' for all commands", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: {},
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({}));
 
       const commands = [
         { fn: sampleDataSeed, path: "sampledata/seed" },
@@ -551,8 +612,8 @@ describe("SampleData API", () => {
         await fn(request);
       }
 
-      for (const call of mockRunCommand.mock.calls) {
-        expect(call[2]).toEqual({ entityName: "SampleData" });
+      for (const call of vi.mocked(runManifestCommand).mock.calls) {
+        expect(call[0].entity).toBe("SampleData");
       }
     });
   });
@@ -597,17 +658,9 @@ describe("ScheduleShift API", () => {
   );
 
   describe("Entity-specific verification", () => {
-    const mockRunCommand = vi.fn();
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should always use entityName 'ScheduleShift' for all commands", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: {},
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({}));
 
       const commands = [
         { fn: scheduleShiftCreate, path: "scheduleshift/create" },
@@ -622,8 +675,8 @@ describe("ScheduleShift API", () => {
         await fn(request);
       }
 
-      for (const call of mockRunCommand.mock.calls) {
-        expect(call[2]).toEqual({ entityName: "ScheduleShift" });
+      for (const call of vi.mocked(runManifestCommand).mock.calls) {
+        expect(call[0].entity).toBe("ScheduleShift");
       }
     });
   });
@@ -668,17 +721,9 @@ describe("MenuDish API", () => {
   );
 
   describe("Entity-specific verification", () => {
-    const mockRunCommand = vi.fn();
-    beforeEach(() => {
-      makeRuntime(mockRunCommand);
-    });
-
     it("should always use entityName 'MenuDish' for all commands", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: {},
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({}));
 
       const commands = [
         { fn: menuDishCreate, path: "menudish/create" },
@@ -693,17 +738,14 @@ describe("MenuDish API", () => {
         await fn(request);
       }
 
-      for (const call of mockRunCommand.mock.calls) {
-        expect(call[2]).toEqual({ entityName: "MenuDish" });
+      for (const call of vi.mocked(runManifestCommand).mock.calls) {
+        expect(call[0].entity).toBe("MenuDish");
       }
     });
 
     it("should call 'updateCourse' command for update-course route (not 'update')", async () => {
-      mockRunCommand.mockResolvedValue({
-        success: true,
-        result: { id: "md-001" },
-        emittedEvents: [],
-      });
+      mockAuth();
+      mockRunManifestCommandResponse(successResponse({ id: "md-001" }));
 
       const request = makeRequest(
         "http://localhost/api/menudish/update-course",
@@ -714,23 +756,34 @@ describe("MenuDish API", () => {
       );
       await menuDishUpdateCourse(request);
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "updateCourse",
-        expect.objectContaining({ id: "md-001", courseId: "course-1" }),
-        { entityName: "MenuDish" }
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "MenuDish",
+          command: "updateCourse",
+          body: expect.objectContaining({ id: "md-001", courseId: "course-1" }),
+        })
       );
     });
   });
 });
 
 // =====================================================================
-// USER PREFERENCES (raw SQL route — not manifest)
+// USER PREFERENCES (Prisma route — not manifest)
 // =====================================================================
 
 describe("User Preferences API", () => {
+  /** Set up auth mocks for user-preferences routes (which use auth() + getTenantIdForOrg directly) */
+  function mockUserPrefAuth() {
+    vi.mocked(auth).mockResolvedValue({
+      userId: TEST_USER_ID,
+      orgId: TEST_ORG_ID,
+    } as never);
+    vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  }
+
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAuth();
+    mockUserPrefAuth();
   });
 
   afterEach(() => {
@@ -742,6 +795,7 @@ describe("User Preferences API", () => {
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({
         orgId: null,
+        userId: null,
       } as never);
 
       const request = new NextRequest(
@@ -768,36 +822,46 @@ describe("User Preferences API", () => {
     });
 
     it("should use session userId instead of query param (IDOR fix)", async () => {
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(database.userPreference.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const request = new NextRequest("http://localhost/api/user-preferences");
       const response = await userPreferencesGet(request);
 
       expect(response.status).toBe(200);
+      // Verify findMany was called with session userId, not query param
+      expect(database.userPreference.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ userId: TEST_USER_ID }),
+        })
+      );
     });
 
     it("should return preferences for authenticated user", async () => {
       const mockPreferences = [
         {
           id: "pref-001",
-          preference_key: "theme",
-          preference_value: "dark",
+          preferenceKey: "theme",
+          preferenceValue: "dark",
           category: "ui",
           notes: null,
-          created_at: new Date("2026-01-01"),
-          updated_at: new Date("2026-01-01"),
+          createdAt: new Date("2026-01-01"),
+          updatedAt: new Date("2026-01-01"),
         },
         {
           id: "pref-002",
-          preference_key: "language",
-          preference_value: "en",
+          preferenceKey: "language",
+          preferenceValue: "en",
           category: "ui",
           notes: null,
-          created_at: new Date("2026-01-01"),
-          updated_at: new Date("2026-01-01"),
+          createdAt: new Date("2026-01-01"),
+          updatedAt: new Date("2026-01-01"),
         },
       ];
-      vi.mocked(database.$queryRaw).mockResolvedValue(mockPreferences as never);
+      vi.mocked(database.userPreference.findMany).mockResolvedValue(
+        mockPreferences as never
+      );
 
       const request = new NextRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
@@ -813,18 +877,26 @@ describe("User Preferences API", () => {
     });
 
     it("should pass category filter when provided", async () => {
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(database.userPreference.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const request = new NextRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}&category=ui`
       );
       await userPreferencesGet(request);
 
-      expect(database.$queryRaw).toHaveBeenCalled();
+      expect(database.userPreference.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ category: "ui" }),
+        })
+      );
     });
 
     it("should return empty array when no preferences exist", async () => {
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(database.userPreference.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const request = new NextRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
@@ -837,7 +909,7 @@ describe("User Preferences API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.$queryRaw).mockRejectedValue(
+      vi.mocked(database.userPreference.findMany).mockRejectedValue(
         new Error("Connection refused")
       );
 
@@ -852,15 +924,21 @@ describe("User Preferences API", () => {
     });
 
     it("should use tenant-scoped query (tenant isolation)", async () => {
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(database.userPreference.findMany).mockResolvedValue(
+        [] as never
+      );
 
       const request = new NextRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`
       );
       await userPreferencesGet(request);
 
-      // Verify $queryRaw was called — the SQL template includes tenantId
-      expect(database.$queryRaw).toHaveBeenCalledTimes(1);
+      // Verify findMany was called with tenantId filter
+      expect(database.userPreference.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ tenantId: TEST_TENANT_ID }),
+        })
+      );
     });
   });
 
@@ -869,6 +947,7 @@ describe("User Preferences API", () => {
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({
         orgId: null,
+        userId: null,
       } as never);
 
       const request = makeRequest(
@@ -931,7 +1010,9 @@ describe("User Preferences API", () => {
     });
 
     it("should use session userId instead of query param (IDOR fix)", async () => {
-      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+      vi.mocked(database.userPreference.upsert).mockResolvedValue(
+        {} as never
+      );
 
       const request = makeRequest("http://localhost/api/user-preferences", {
         preferenceKey: "theme",
@@ -940,10 +1021,22 @@ describe("User Preferences API", () => {
       const response = await userPreferencesPost(request);
 
       expect(response.status).toBe(200);
+      // Verify upsert uses session userId, not query param
+      expect(database.userPreference.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tenantId_userId_preferenceKey_category: expect.objectContaining({
+              userId: TEST_USER_ID,
+            }),
+          }),
+        })
+      );
     });
 
     it("should upsert a preference successfully", async () => {
-      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+      vi.mocked(database.userPreference.upsert).mockResolvedValue(
+        {} as never
+      );
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
@@ -960,11 +1053,13 @@ describe("User Preferences API", () => {
       const json = await response.json();
       expect(json.success).toBe(true);
 
-      expect(database.$executeRaw).toHaveBeenCalledTimes(1);
+      expect(database.userPreference.upsert).toHaveBeenCalledTimes(1);
     });
 
     it("should upsert preference without optional fields", async () => {
-      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+      vi.mocked(database.userPreference.upsert).mockResolvedValue(
+        {} as never
+      );
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
@@ -981,7 +1076,7 @@ describe("User Preferences API", () => {
     });
 
     it("should return 500 on database error", async () => {
-      vi.mocked(database.$executeRaw).mockRejectedValue(
+      vi.mocked(database.userPreference.upsert).mockRejectedValue(
         new Error("Write conflict")
       );
 
@@ -1000,7 +1095,9 @@ describe("User Preferences API", () => {
     });
 
     it("should include tenant scope in upsert query (tenant isolation)", async () => {
-      vi.mocked(database.$executeRaw).mockResolvedValue(1 as never);
+      vi.mocked(database.userPreference.upsert).mockResolvedValue(
+        {} as never
+      );
 
       const request = makeRequest(
         `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
@@ -1011,8 +1108,16 @@ describe("User Preferences API", () => {
       );
       await userPreferencesPost(request);
 
-      // $executeRaw was called — the SQL includes tenantId in INSERT and ON CONFLICT
-      expect(database.$executeRaw).toHaveBeenCalledTimes(1);
+      // Verify upsert was called with tenantId
+      expect(database.userPreference.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tenantId_userId_preferenceKey_category: expect.objectContaining({
+              tenantId: TEST_TENANT_ID,
+            }),
+          }),
+        })
+      );
     });
   });
 });
@@ -1060,7 +1165,14 @@ describe("Cross-cutting: malformed request body", () => {
   ];
 
   for (const { label, fn, path } of manifestRoutes) {
-    it(`${label}: should return 500 on malformed JSON body`, async () => {
+    it(`${label}: should handle malformed JSON body gracefully`, async () => {
+      // The route catches JSON parse errors via .catch(() => ({})), so malformed
+      // JSON results in an empty body being passed to runManifestCommand.
+      // If runManifestCommand returns an error response, we get a non-500 status.
+      // If runManifestCommand rejects, the outer catch returns 500.
+      // With the catch, body becomes {} so runManifestCommand is called normally.
+      mockRunManifestCommandResponse(errorResponse("Command failed", 400));
+
       const request = new NextRequest(`http://localhost/api/${path}`, {
         method: "POST",
         body: "not valid json {{{",
@@ -1068,14 +1180,17 @@ describe("Cross-cutting: malformed request body", () => {
       });
       const response = await fn(request);
 
-      expect(response.status).toBe(500);
+      // The route catches JSON parse failure gracefully (body becomes {})
+      // so it calls runManifestCommand. With our mock returning 400, we get 400.
+      expect(response.status).toBe(400);
       const json = await response.json();
       expect(json.success).toBe(false);
-      expect(json.message).toBe("Internal server error");
     });
   }
 
   it("User Preferences POST: should return 500 on malformed JSON body", async () => {
+    // The user-preferences route does NOT have a .catch() on req.json(),
+    // so malformed JSON throws and the outer catch returns 500.
     const request = new NextRequest(
       `http://localhost/api/user-preferences?userId=${TEST_USER_ID}`,
       {
@@ -1106,7 +1221,10 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
   });
 
   it("should handle auth throwing an exception for manifest routes", async () => {
-    vi.mocked(auth).mockRejectedValue(new Error("Auth service down"));
+    vi.mocked(requireCurrentUser).mockRejectedValue(
+      // Non-InvariantError exceptions are caught by the outer catch -> 500
+      new Error("Auth service down")
+    );
 
     const request = makeRequest(
       "http://localhost/api/proposallineitem/create",
@@ -1121,11 +1239,8 @@ describe("Cross-cutting: auth and tenant exceptions", () => {
   });
 
   it("should handle getTenantIdForOrg throwing for manifest routes", async () => {
-    vi.mocked(auth).mockResolvedValue({
-      userId: TEST_USER_ID,
-      orgId: TEST_ORG_ID,
-    } as never);
-    vi.mocked(getTenantIdForOrg).mockRejectedValue(
+    // requireCurrentUser is mocked and throws a generic error
+    vi.mocked(requireCurrentUser).mockRejectedValue(
       new Error("Tenant lookup failed")
     );
 

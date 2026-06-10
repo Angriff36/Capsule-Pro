@@ -35,17 +35,36 @@ const joinImpl: PrismaJoinFn = vi.fn((parts, separator) => {
   return parts.filter(Boolean).join(separator);
 });
 
+// Minimal Decimal stand-in for routes that use `new Prisma.Decimal(value)`
+class MockDecimal {
+  value: string;
+  constructor(v: string | number) {
+    this.value = String(v);
+  }
+  toString() {
+    return this.value;
+  }
+  gt(other: unknown) {
+    return Number(this.value) > Number(other);
+  }
+  lt(other: unknown) {
+    return Number(this.value) < Number(other);
+  }
+}
+
 export const Prisma: {
   sql: PrismaSqlFn;
   join: PrismaJoinFn;
   empty: {};
   PrismaClient: unknown;
+  Decimal: typeof MockDecimal;
 } = {
   sql: sqlImpl,
   join: joinImpl,
   empty: {},
   // Add other commonly used Prisma types/mocks
   PrismaClient: vi.fn(),
+  Decimal: MockDecimal as unknown as typeof MockDecimal,
 };
 
 // Re-export all Prisma types (you can add more as needed)
@@ -212,6 +231,10 @@ export const database: Record<string, unknown> = {
   // Budget models for auto-assignment budget checks
   budget: createMockModel(),
   eventBudget: createMockModel(),
+  // Procurement requisition & vendor contract models
+  purchaseRequisition: createMockModel(),
+  purchaseRequisitionItem: createMockModel(),
+  vendorContract: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

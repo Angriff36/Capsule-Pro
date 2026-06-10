@@ -57,12 +57,26 @@ vi.mock("@/lib/manifest/issue-log", () => ({
 }));
 
 // Keep existing mocks
+vi.mock("@repo/database", () => ({
+  database: {
+    inventoryTransfer: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@/lib/pagination", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/pagination")>("@/lib/pagination");
+  return actual;
+});
 
 // Safety net: keep manifest-runtime mock
 vi.mock("@/lib/manifest-runtime", () => ({

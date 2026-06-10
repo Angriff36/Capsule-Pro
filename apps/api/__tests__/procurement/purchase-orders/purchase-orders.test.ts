@@ -25,36 +25,24 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
-// Mocks
+// The global vitest setup (test/setup.ts + test/mocks/@repo/database.ts)
+// provides a full database mock with all models including inventorySupplier,
+// inventoryItem, purchaseOrder, purchaseOrderItem, etc. We only need to mock
+// auth and response helpers here.
 // ---------------------------------------------------------------------------
 
-vi.mock("@repo/database", () => ({
-  database: {
-    $queryRaw: vi.fn(),
-    $transaction: vi.fn(),
-    purchaseOrder: {
-      count: vi.fn(),
-      findMany: vi.fn(),
-      findFirst: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    purchaseOrderItem: {
-      findMany: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-    },
-  },
-}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-vi.mock("@/app/lib/tenant", () => ({
-  getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
-  requireTenantId: vi.fn(),
-  resolveCurrentUser: vi.fn(),
+
+// Mock runManifestCommand for tests that go through the generic dispatcher.
+// Individual tests override this with vi.doMock when they need specific behavior.
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({ success: true, result: {}, events: [] }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    )
+  ),
 }));
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
@@ -67,18 +55,40 @@ vi.mock("@/lib/manifest-response", async () => {
         },
         { status }
       ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
+    manifestErrorResponse: (
+      message: string | { error: string; diagnostics?: unknown[] },
+      status: number
+    ) => {
+      const body =
+        typeof message === "string"
+          ? { success: false, message }
+          : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+      return NextResponse.json(body, { status });
+    },
   };
 });
 
-vi.mock("@/lib/database", async () => {
-  const { database } = await import("@repo/database");
-  return { database };
-});
-
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
+
+// Minimal Decimal stand-in for mocking Prisma Decimal return values
+// (the receive route calls .lt() and .gt() on quantityReceived/quantityOrdered)
+class TestDecimal {
+  value: number;
+  constructor(v: string | number) {
+    this.value = Number(v);
+  }
+  toString() {
+    return String(this.value);
+  }
+  gt(other: unknown) {
+    return this.value > Number(other);
+  }
+  lt(other: unknown) {
+    return this.value < Number(other);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -103,10 +113,25 @@ function authOk() {
     orgId: TEST_ORG_ID,
   } as never);
   vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+  } as never);
 }
 
 function authMissing() {
   vi.mocked(auth).mockResolvedValue({ userId: null, orgId: null } as never);
+  // Generic dispatcher uses requireCurrentUser which throws InvariantError
+  const InvariantError = class extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "InvariantError";
+    }
+  };
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError("Unauthenticated") as never
+  );
 }
 
 function noTenant() {
@@ -467,6 +492,7 @@ describe("Procurement Purchase Orders API", () => {
 
   // -------------------------------------------------------------------------
   // POST /api/procurement/purchase-orders/commands/create
+  // Create has no concrete route -- goes through the generic dispatcher.
   // -------------------------------------------------------------------------
   describe("POST /commands/create", () => {
     it("returns 401 when unauthenticated", async () => {
@@ -484,8 +510,14 @@ describe("Procurement Purchase Orders API", () => {
       expect(res.status).toBe(401);
     });
 
-    it("returns 400 when vendorId is missing", async () => {
+    it("returns 400 when vendorId is missing (via command guard)", async () => {
       authOk();
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "vendorId is required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        )
+      );
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -507,8 +539,14 @@ describe("Procurement Purchase Orders API", () => {
       expect(body.message).toMatch(/vendorId/i);
     });
 
-    it("returns 400 when items array is empty", async () => {
+    it("returns 400 when items array is empty (via command guard)", async () => {
       authOk();
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: false, message: "items are required" }),
+          { status: 400, headers: { "Content-Type": "application/json" } }
+        )
+      );
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -522,27 +560,24 @@ describe("Procurement Purchase Orders API", () => {
       expect(res.status).toBe(400);
     });
 
-    it("creates a PO with computed PO number, subtotal, total, and line items", async () => {
+    it("delegates to runManifestCommand and returns the result", async () => {
       authOk();
-
-      // The route runs four $queryRaw calls: COUNT, INSERT po, INSERT poi (per item)
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{ count: 5 }]) // existing PO count → next is 0006
-        .mockResolvedValueOnce([
-          {
-            id: PO_ID,
-            po_number: "PO-2026-0006",
-            status: "submitted",
-            subtotal: "30",
-            total: "30",
-            created_at: new Date("2026-01-15"),
-          },
-        ]) // INSERT po RETURNING
-        .mockResolvedValueOnce([{}]) // INSERT poi #1
-        .mockResolvedValueOnce([{}]); // INSERT poi #2
-
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: {
+              id: PO_ID,
+              poNumber: "PO-2026-0006",
+              status: "submitted",
+              subtotal: 30,
+              total: 30,
+            },
+            events: [],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -567,19 +602,12 @@ describe("Procurement Purchase Orders API", () => {
 
       expect(res.status).toBe(200);
       const body = await res.json();
-      expect(body.order.po_number).toBe("PO-2026-0006");
-      // 4 raw calls: count + insert PO + insert items x2
-      expect(queryRaw).toHaveBeenCalledTimes(4);
+      expect(body.success).toBe(true);
     });
 
-    it("returns 500 when the INSERT does not return a row", async () => {
+    it("returns 500 when runManifestCommand throws", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{ count: 0 }]) // count
-        .mockResolvedValueOnce([]); // INSERT returned nothing → 500
-
+      vi.mocked(runManifestCommand).mockRejectedValueOnce(new Error("runtime error"));
       const { POST } = await import(
         "@/app/api/manifest/[entity]/commands/[command]/route"
       );
@@ -603,19 +631,20 @@ describe("Procurement Purchase Orders API", () => {
 
   // -------------------------------------------------------------------------
   // POST /api/procurement/purchase-orders/commands/update-status
+  // This route has a concrete implementation that validates transitions
+  // via $queryRaw and delegates the governed mutation to runManifestCommand.
   // -------------------------------------------------------------------------
   describe("POST /commands/update-status (state machine)", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "approved" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -623,14 +652,13 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when orderId or status missing", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -642,14 +670,13 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([]); // current status query → empty
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "approved" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(404);
     });
@@ -661,14 +688,13 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "received" }]);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "ordered" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(400);
       const body = await res.json();
@@ -684,14 +710,13 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "draft" }]);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "received" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(400);
     });
@@ -706,15 +731,29 @@ describe("Procurement Purchase Orders API", () => {
           { id: PO_ID, po_number: "PO-2026-0001", status: "submitted" },
         ]); // update RETURNING
 
+      // Mock runManifestCommand for the governed mutation
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: PO_ID }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      // Mock the final read of the updated PO
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue({
+        id: PO_ID,
+        poNumber: "PO-2026-0001",
+        status: "submitted",
+      } as never);
+
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "submitted" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -731,15 +770,27 @@ describe("Procurement Purchase Orders API", () => {
           { id: PO_ID, po_number: "PO-2026-0001", status: "approved" },
         ]);
 
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: PO_ID }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue({
+        id: PO_ID,
+        poNumber: "PO-2026-0001",
+        status: "approved",
+      } as never);
+
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "approved" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -754,15 +805,27 @@ describe("Procurement Purchase Orders API", () => {
           { id: PO_ID, po_number: "PO-2026-0001", status: "rejected" },
         ]);
 
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: PO_ID }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue({
+        id: PO_ID,
+        poNumber: "PO-2026-0001",
+        status: "rejected",
+      } as never);
+
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "rejected" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -777,15 +840,27 @@ describe("Procurement Purchase Orders API", () => {
           { id: PO_ID, po_number: "PO-2026-0001", status: "ordered" },
         ]);
 
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: PO_ID }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      vi.mocked(database.purchaseOrder.findFirst).mockResolvedValue({
+        id: PO_ID,
+        poNumber: "PO-2026-0001",
+        status: "ordered",
+      } as never);
+
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "ordered" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(200);
     });
@@ -797,35 +872,41 @@ describe("Procurement Purchase Orders API", () => {
       queryRaw.mockResolvedValueOnce([{ status: "cancelled" }]);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "approved" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(400);
     });
 
-    it("returns 500 when update query throws", async () => {
+    it("returns 500 when the read after command throws", async () => {
       authOk();
       const queryRaw = vi.mocked(database.$queryRaw);
       queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{ status: "draft" }])
-        .mockRejectedValueOnce(new Error("db error"));
+      queryRaw.mockResolvedValueOnce([{ status: "draft" }]);
+
+      vi.mocked(runManifestCommand).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ success: true, result: { id: PO_ID }, events: [] }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      // The final purchaseOrder.findFirst call throws
+      vi.mocked(database.purchaseOrder.findFirst).mockRejectedValue(new Error("db error") as never);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/update-status/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/update-status",
           { body: { orderId: PO_ID, status: "submitted" } }
-        ),
-        manifestParams("PurchaseOrder", "updateStatus")
+        )
       );
       expect(res.status).toBe(500);
     });
@@ -833,19 +914,19 @@ describe("Procurement Purchase Orders API", () => {
 
   // -------------------------------------------------------------------------
   // POST /api/procurement/purchase-orders/commands/receive
+  // This route has a concrete implementation using Prisma $transaction.
   // -------------------------------------------------------------------------
   describe("POST /commands/receive", () => {
     it("returns 401 when unauthenticated", async () => {
       authMissing();
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           { body: { orderId: PO_ID, items: [{ itemId: POI_ID }] } }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(401);
     });
@@ -853,33 +934,46 @@ describe("Procurement Purchase Orders API", () => {
     it("returns 400 when orderId or items missing", async () => {
       authOk();
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           { body: { orderId: PO_ID } }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(400);
     });
 
     it("returns allReceived: false when some items are still partial", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{}]) // UPDATE poi
-        .mockResolvedValueOnce([{}]) // UPDATE inventory_items
-        .mockResolvedValueOnce([{ count: 1 }]); // remaining count > 0
+
+      // Mock $transaction to execute the callback with the database mock
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
+
+      // Mock purchaseOrderItem.updateMany (quality partial)
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      // Mock purchaseOrderItem.findUnique (returns the item with its inventory itemId)
+      vi.mocked(database.purchaseOrderItem.findUnique).mockResolvedValue({
+        itemId: ITEM_ID,
+      } as never);
+      // Mock inventoryItem.updateMany (increment)
+      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      // Mock purchaseOrderItem.findMany for remaining check — Prisma returns Decimal objects
+      // with .lt() method, so we use TestDecimal instances
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
+        { quantityReceived: new TestDecimal(4), quantityOrdered: new TestDecimal(10) },
+        { quantityReceived: new TestDecimal(5), quantityOrdered: new TestDecimal(5) },
+      ] as never);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           {
             body: {
               orderId: PO_ID,
@@ -888,8 +982,7 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
@@ -898,20 +991,29 @@ describe("Procurement Purchase Orders API", () => {
 
     it("returns allReceived: true and marks PO received when every item is full", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{}]) // UPDATE poi
-        .mockResolvedValueOnce([{}]) // UPDATE inventory_items
-        .mockResolvedValueOnce([{ count: 0 }]) // no remaining items
-        .mockResolvedValueOnce([{}]); // UPDATE PO status='received'
+
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
+
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.purchaseOrderItem.findUnique).mockResolvedValue({
+        itemId: ITEM_ID,
+      } as never);
+      vi.mocked(database.inventoryItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      // All items fully received → remaining = 0
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
+        { quantityReceived: new TestDecimal(10), quantityOrdered: new TestDecimal(10) },
+      ] as never);
+      // Mock PO update to received
+      vi.mocked(database.purchaseOrder.update).mockResolvedValue({ id: PO_ID } as never);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           {
             body: {
               orderId: PO_ID,
@@ -920,29 +1022,38 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.allReceived).toBe(true);
-      expect(queryRaw).toHaveBeenCalledTimes(4);
+      // Verify PO was updated to received
+      expect(database.purchaseOrder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: "received" }),
+        })
+      );
     });
 
     it("skips inventory update when quantityReceived is zero", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw
-        .mockResolvedValueOnce([{}]) // UPDATE poi (quality=partial)
-        .mockResolvedValueOnce([{ count: 1 }]); // remaining items
+
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
+
+      // qty=0 → route skips inventory increment
+      vi.mocked(database.purchaseOrderItem.updateMany).mockResolvedValue({ count: 1 } as never);
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([
+        { quantityReceived: new TestDecimal(0), quantityOrdered: new TestDecimal(10) },
+      ] as never);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           {
             body: {
               orderId: PO_ID,
@@ -951,29 +1062,29 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(200);
-      // Only 2 calls: poi update + remaining count (no inventory update for qty=0)
-      expect(queryRaw).toHaveBeenCalledTimes(2);
+      // inventoryItem.updateMany should NOT have been called (qty=0 skips it)
+      expect(database.inventoryItem.updateMany).not.toHaveBeenCalled();
     });
 
     it("skips items with missing itemId or null quantityReceived", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      // Only the remaining-count query should run (all items skipped)
-      queryRaw
-        .mockResolvedValueOnce([{ count: 0 }])
-        .mockResolvedValueOnce([{}]);
+
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
+
+      // Both items will be skipped (missing itemId, null qty)
+      vi.mocked(database.purchaseOrderItem.findMany).mockResolvedValue([] as never);
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           {
             body: {
               orderId: PO_ID,
@@ -983,24 +1094,22 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(200);
     });
 
     it("returns 500 on database error", async () => {
       authOk();
-      const queryRaw = vi.mocked(database.$queryRaw);
-      queryRaw.mockReset();
-      queryRaw.mockRejectedValueOnce(new Error("db error"));
+
+      vi.mocked(database.$transaction).mockRejectedValue(new Error("db error"));
 
       const { POST } = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
+        "@/app/api/procurement/purchase-orders/commands/receive/route"
       );
       const res = await POST(
         makeRequest(
-          "http://localhost/api/manifest/[entity]/commands/[command]",
+          "http://localhost/api/procurement/purchase-orders/commands/receive",
           {
             body: {
               orderId: PO_ID,
@@ -1009,8 +1118,7 @@ describe("Procurement Purchase Orders API", () => {
               ],
             },
           }
-        ),
-        manifestParams("PurchaseOrder", "receive")
+        )
       );
       expect(res.status).toBe(500);
     });

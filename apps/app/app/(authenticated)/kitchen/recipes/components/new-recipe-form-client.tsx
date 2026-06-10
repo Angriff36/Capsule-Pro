@@ -1,6 +1,6 @@
 "use client";
 
-import type { ConstraintOutcome } from "@angriff36/manifest/ir";
+import type { ConstraintOutcome } from "@repo/design-system/components/constraint-override-dialog";
 import {
   ConstraintOverrideDialog,
   useConstraintOverride,

@@ -26,3 +26,23 @@ vi.mock("@/app/lib/tenant", () => ({
   requireCurrentUser: vi.fn(),
   resolveCurrentUser: vi.fn(),
 }));
+
+// Mock Sentry for all tests — the manifest command dispatcher and execute-command
+// both import captureException. Without this, route handlers crash at import time.
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
+  addBreadcrumb: vi.fn(),
+}));
+
+// Mock webhook dispatch — fire-and-forget in execute-command. Per-file mocks override.
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
+// Mock manifest issue log — used by execute-command for diagnostic logging.
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+
+// Mock notifications — empty stub. Most route handlers import this transitively.
+vi.mock("@repo/notifications", () => ({}));

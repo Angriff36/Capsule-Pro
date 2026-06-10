@@ -10,7 +10,7 @@
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { notFound } from "next/navigation";
-import { runManifestCommand } from "@/lib/manifest-command";
+import { apiUrl } from "@/app/lib/api";
 import { ProposalViewClient } from "./proposal-view-client";
 
 interface PublicProposalViewPageProps {
@@ -201,29 +201,21 @@ const PublicProposalViewPage = async ({
   const isExpired =
     proposal.validUntil && new Date(proposal.validUntil) < new Date();
 
-  // Mark proposal as viewed via governed Manifest command (first view only)
+  // Mark proposal as viewed via the public token-validated API route, which
+  // executes the governed Proposal.markViewed Manifest command (first view
+  // only — the route is a no-op otherwise).
   if (!proposal.viewedAt && proposal.status === "sent") {
     try {
-      // Synthetic system-user context for public route (no Clerk auth)
-      const adminUser = await database.user.findFirst({
-        where: { tenantId: proposal.tenantId, role: { in: ["owner", "admin"] }, deletedAt: null },
-        select: { id: true, role: true },
-      });
-      const systemUser = {
-        id: adminUser?.id ?? "system",
-        tenantId: proposal.tenantId,
-        role: adminUser?.role ?? "admin",
-      };
-      await runManifestCommand({
-        entity: "Proposal",
-        command: "markViewed",
-        body: {
-          id: proposal.id,
-          tenantId: proposal.tenantId,
-          viewedByInfo: "public-link",
-        },
-        user: systemUser,
-      });
+      const response = await fetch(
+        apiUrl(`/api/public/proposals/${token}/mark-viewed`),
+        { method: "POST", cache: "no-store" }
+      );
+      if (!response.ok) {
+        log.error(
+          `Failed to mark proposal as viewed (${response.status}):`,
+          await response.text().catch(() => "")
+        );
+      }
     } catch (err) {
       // Non-critical: markViewed failure must not block page render
       log.error("Failed to mark proposal as viewed via Manifest:", err);

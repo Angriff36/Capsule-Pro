@@ -5,22 +5,53 @@
  *   - Containers (create, update, deactivate)
  *   - Cycle Count Records (create, update, remove, verify)
  *   - Cycle Count Sessions (create, start, complete, finalize, cancel)
- *   - Locations (list via raw SQL GET)
+ *   - Locations (list via Prisma findMany GET)
  *   - Override Audits (create, authorize)
  *   - Performance Prediction (create)
  *   - Variance Reports (create, review, approve)
  *
- * Covers: 401 auth, 400 tenant-not-found, success (200), 403 policy denial,
+ * Covers: 401 auth, 200 success, 403 policy denial,
  *         422 guard failure, 400 generic command failure, 500 internal error,
  *         and tenant isolation for each route.
  */
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks — shared across all suites
 // ---------------------------------------------------------------------------
+
+// runManifestCommand is the core function the dispatcher calls
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
+}));
+
+// InvariantError is caught by the dispatcher → maps to 401
+vi.mock("@/app/lib/invariant", () => {
+  class InvariantError extends Error {
+    name = "InvariantError";
+    constructor(message: string) {
+      super(message);
+      this.name = "InvariantError";
+    }
+  }
+  return { InvariantError };
+});
+
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@repo/notifications", () => ({}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
 
 vi.mock("@repo/database", () => ({
   database: {
@@ -28,38 +59,47 @@ vi.mock("@repo/database", () => ({
     $transaction: vi.fn((fn: (tx: unknown) => unknown) => fn({})),
     $connect: vi.fn(),
     $disconnect: vi.fn(),
-  },
-  Prisma: {
-    sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
-      strings,
-      values,
-      get sql() {
-        return strings.reduce(
-          (acc: string, str: string, i: number) =>
-            acc + str + (values[i] !== undefined ? String(values[i]) : ""),
-          ""
-        );
-      },
-    })),
-    join: vi.fn(),
-    empty: {},
+    location: {
+      findMany: vi.fn(),
+    },
+    Prisma: {
+      sql: vi.fn((strings: TemplateStringsArray, ...values: unknown[]) => ({
+        strings,
+        values,
+        get sql() {
+          return strings.reduce(
+            (acc: string, str: string, i: number) =>
+              acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+            ""
+          );
+        },
+      })),
+      join: vi.fn(),
+      empty: {},
+    },
   },
 }));
+
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
+
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
+
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
+
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
 vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
+  const { NextResponse: NR } = await import("next/server");
   return {
     manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
+      NR.json(
         {
           success: true,
           ...(typeof data === "object" && data !== null ? data : { data }),
@@ -67,13 +107,8 @@ vi.mock("@/lib/manifest-response", async () => {
         { status }
       ),
     manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
+      NR.json({ success: false, message }, { status }),
   };
-});
-vi.mock("@/lib/database", async () => {
-  const mod =
-    await vi.importActual<typeof import("@repo/database")>("@repo/database");
-  return mod;
 });
 
 // ---------------------------------------------------------------------------
@@ -81,8 +116,13 @@ vi.mock("@/lib/database", async () => {
 // ---------------------------------------------------------------------------
 
 const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { getTenantIdForOrg, requireCurrentUser } = await import(
+  "@/app/lib/tenant"
+);
+const { InvariantError } = await import("@/app/lib/invariant");
+const { runManifestCommand } = await import(
+  "@/lib/manifest/execute-command"
+);
 const { database } = await import("@repo/database");
 
 // ---------------------------------------------------------------------------
@@ -133,31 +173,27 @@ const varianceReportReview = dispatch("VarianceReport", "review");
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000080";
 const OTHER_TENANT_ID = "99999999-9999-9999-9999-999999999999";
 const TEST_USER_ID = "user_misc_test";
+const TEST_USER_ROLE = "admin";
 const TEST_ORG_ID = "org_misc_test";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Set requireCurrentUser to resolve with an authenticated user. */
 function makeAuthedUser(tenantId = TEST_TENANT_ID) {
-  vi.mocked(auth).mockResolvedValue({
-    userId: TEST_USER_ID,
-    orgId: TEST_ORG_ID,
-  } as never);
-  vi.mocked(getTenantIdForOrg).mockResolvedValue(tenantId);
-}
-
-function makeUnauthedUser() {
-  vi.mocked(auth).mockResolvedValue({
-    userId: null,
-    orgId: null,
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId,
+    role: TEST_USER_ROLE,
   } as never);
 }
 
-function makeRuntime(mockRunCommand: ReturnType<typeof vi.fn>) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: mockRunCommand,
-  } as never);
+/** Set requireCurrentUser to reject with InvariantError (unauthenticated). */
+function makeUnauthedUser(message = "Unauthenticated") {
+  vi.mocked(requireCurrentUser).mockRejectedValue(
+    new InvariantError(message) as never
+  );
 }
 
 function postRequest(path: string, body: Record<string, unknown> = {}) {
@@ -167,7 +203,50 @@ function postRequest(path: string, body: Record<string, unknown> = {}) {
   });
 }
 
-/** Asserts the standard auth + tenant isolation for a manifest POST handler. */
+function mockCommandSuccess(result: Record<string, unknown>, events: Array<Record<string, unknown>> = []) {
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    NextResponse.json({
+      success: true,
+      result,
+      events,
+    }) as never
+  );
+}
+
+function mockCommandPolicyDenial(policyName: string) {
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    NextResponse.json(
+      {
+        success: false,
+        message: `Access denied: ${policyName} (role=${TEST_USER_ROLE})`,
+      },
+      { status: 403 }
+    ) as never
+  );
+}
+
+function mockCommandGuardFailure(index: number, formatted: string) {
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    NextResponse.json(
+      {
+        success: false,
+        message: `Guard ${index} failed: ${formatted}`,
+      },
+      { status: 422 }
+    ) as never
+  );
+}
+
+function mockCommandFailure(message: string, status = 400) {
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    NextResponse.json(
+      { success: false, message },
+      { status }
+    ) as never
+  );
+}
+
+/** Asserts the standard auth + command outcomes for a manifest POST handler. */
 async function assertManifestCommandRoute(
   handler: (req: NextRequest) => Promise<Response>,
   path: string,
@@ -175,38 +254,23 @@ async function assertManifestCommandRoute(
   entityName: string,
   body: Record<string, unknown>
 ) {
-  const mockRunCommand = vi.fn();
-
   // --- 401 unauthenticated ---
   makeUnauthedUser();
   const res401 = await handler(postRequest(path, body));
   expect(res401.status).toBe(401);
   expect(await res401.json()).toMatchObject({
     success: false,
-    message: "Unauthorized",
-  });
-
-  vi.clearAllMocks();
-
-  // --- 400 tenant not found ---
-  makeAuthedUser(null as never);
-  const res400 = await handler(postRequest(path, body));
-  expect(res400.status).toBe(400);
-  expect(await res400.json()).toMatchObject({
-    success: false,
-    message: "Tenant not found",
+    message: "Unauthenticated",
   });
 
   vi.clearAllMocks();
 
   // --- 200 success ---
   makeAuthedUser();
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result: { id: `${entityName.toLowerCase()}-001` },
-    emittedEvents: [{ type: `${entityName}Created` }],
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandSuccess(
+    { id: `${entityName.toLowerCase()}-001` },
+    [{ type: `${entityName}Created` }]
+  );
 
   const res200 = await handler(postRequest(path, body));
   expect(res200.status).toBe(200);
@@ -217,24 +281,24 @@ async function assertManifestCommandRoute(
   });
   expect(json200.events).toEqual([{ type: `${entityName}Created` }]);
 
-  expect(mockRunCommand).toHaveBeenCalledWith(
-    command,
-    expect.objectContaining(body),
-    { entityName }
+  expect(runManifestCommand).toHaveBeenCalledWith(
+    expect.objectContaining({
+      entity: entityName,
+      command,
+      body,
+      user: {
+        id: TEST_USER_ID,
+        tenantId: TEST_TENANT_ID,
+        role: TEST_USER_ROLE,
+      },
+    })
   );
-  expect(createManifestRuntime).toHaveBeenCalledWith({
-    user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID },
-  });
 
   vi.clearAllMocks();
 
   // --- 403 policy denial ---
   makeAuthedUser();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    policyDenial: { policyName: "ManagerOnlyPolicy" },
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandPolicyDenial("ManagerOnlyPolicy");
 
   const res403 = await handler(postRequest(path, body));
   expect(res403.status).toBe(403);
@@ -247,14 +311,7 @@ async function assertManifestCommandRoute(
 
   // --- 422 guard failure ---
   makeAuthedUser();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    guardFailure: {
-      index: 1,
-      formatted: "Validation check failed",
-    },
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandGuardFailure(1, "Validation check failed");
 
   const res422 = await handler(postRequest(path, body));
   expect(res422.status).toBe(422);
@@ -266,11 +323,7 @@ async function assertManifestCommandRoute(
 
   // --- 400 generic command failure ---
   makeAuthedUser();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error: "Command failed: invalid payload",
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandFailure("Command failed: invalid payload");
 
   const res400f = await handler(postRequest(path, body));
   expect(res400f.status).toBe(400);
@@ -282,11 +335,7 @@ async function assertManifestCommandRoute(
 
   // --- 400 with null error (default message) ---
   makeAuthedUser();
-  mockRunCommand.mockResolvedValue({
-    success: false,
-    error: null,
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandFailure("Command failed");
 
   const res400n = await handler(postRequest(path, body));
   expect(res400n.status).toBe(400);
@@ -297,8 +346,9 @@ async function assertManifestCommandRoute(
 
   // --- 500 internal server error ---
   makeAuthedUser();
-  mockRunCommand.mockRejectedValue(new Error("Runtime crash"));
-  makeRuntime(mockRunCommand);
+  vi.mocked(runManifestCommand).mockRejectedValue(
+    new Error("Runtime crash") as never
+  );
 
   const res500 = await handler(postRequest(path, body));
   expect(res500.status).toBe(500);
@@ -310,17 +360,18 @@ async function assertManifestCommandRoute(
 
   // --- Tenant isolation: user context passes correct tenantId ---
   makeAuthedUser(OTHER_TENANT_ID);
-  mockRunCommand.mockResolvedValue({
-    success: true,
-    result: { id: "isolated-001" },
-    emittedEvents: [],
-  });
-  makeRuntime(mockRunCommand);
+  mockCommandSuccess({ id: "isolated-001" });
 
   await handler(postRequest(path, body));
-  expect(createManifestRuntime).toHaveBeenCalledWith({
-    user: { id: TEST_USER_ID, tenantId: OTHER_TENANT_ID },
-  });
+  expect(runManifestCommand).toHaveBeenCalledWith(
+    expect.objectContaining({
+      user: {
+        id: TEST_USER_ID,
+        tenantId: OTHER_TENANT_ID,
+        role: TEST_USER_ROLE,
+      },
+    })
+  );
 }
 
 // ===================================================================== //
@@ -342,7 +393,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Container Commands", () => {
     describe("POST /api/container/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           containerCreate,
           "container/create",
@@ -354,7 +405,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/container/update", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           containerUpdate,
           "container/update",
@@ -366,7 +417,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/container/deactivate", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           containerDeactivate,
           "container/deactivate",
@@ -384,7 +435,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Cycle Count Record Commands", () => {
     describe("POST /api/cyclecountrecord/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccrCreate,
           "cyclecountrecord/create",
@@ -396,7 +447,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountrecord/update", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccrUpdate,
           "cyclecountrecord/update",
@@ -408,7 +459,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountrecord/remove", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccrRemove,
           "cyclecountrecord/remove",
@@ -420,7 +471,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountrecord/verify", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccrVerify,
           "cyclecountrecord/verify",
@@ -438,7 +489,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Cycle Count Session Commands", () => {
     describe("POST /api/cyclecountsession/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccsCreate,
           "cyclecountsession/create",
@@ -450,7 +501,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountsession/start", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccsStart,
           "cyclecountsession/start",
@@ -462,7 +513,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountsession/complete", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccsComplete,
           "cyclecountsession/complete",
@@ -474,7 +525,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountsession/finalize", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccsFinalize,
           "cyclecountsession/finalize",
@@ -486,7 +537,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/cyclecountsession/cancel", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           ccsCancel,
           "cyclecountsession/cancel",
@@ -499,45 +550,48 @@ describe("Misc Domains Part 1", () => {
   });
 
   // ------------------------------------------------------------------- //
-  // LOCATIONS (GET, raw SQL)                                             //
+  // LOCATIONS (GET, Prisma findMany)                                     //
   // ------------------------------------------------------------------- //
 
   describe("GET /api/locations", () => {
-    const mockLocations = [
+    const mockLocationRows = [
       {
         id: "loc-001",
         name: "Main Warehouse",
-        address_line_1: "123 Main St",
-        address_line_2: null,
+        addressLine1: "123 Main St",
+        addressLine2: null,
         city: "Seattle",
-        state_province: "WA",
-        postal_code: "98101",
-        country_code: "US",
+        stateProvince: "WA",
+        postalCode: "98101",
+        countryCode: "US",
         timezone: "America/Los_Angeles",
-        is_primary: true,
-        is_active: true,
-        created_at: new Date("2026-01-15"),
-        updated_at: new Date("2026-01-15"),
+        isPrimary: true,
+        isActive: true,
+        createdAt: new Date("2026-01-15"),
+        updatedAt: new Date("2026-01-15"),
       },
       {
         id: "loc-002",
         name: "Satellite Kitchen",
-        address_line_1: "456 Oak Ave",
-        address_line_2: "Suite 200",
+        addressLine1: "456 Oak Ave",
+        addressLine2: "Suite 200",
         city: "Portland",
-        state_province: "OR",
-        postal_code: "97201",
-        country_code: "US",
+        stateProvince: "OR",
+        postalCode: "97201",
+        countryCode: "US",
         timezone: "America/Los_Angeles",
-        is_primary: false,
-        is_active: true,
-        created_at: new Date("2026-02-10"),
-        updated_at: new Date("2026-03-01"),
+        isPrimary: false,
+        isActive: true,
+        createdAt: new Date("2026-02-10"),
+        updatedAt: new Date("2026-03-01"),
       },
     ];
 
     it("returns 401 for unauthenticated requests", async () => {
-      makeUnauthedUser();
+      vi.mocked(auth).mockResolvedValue({
+        userId: null,
+        orgId: null,
+      } as never);
 
       const req = new NextRequest("http://localhost/api/locations");
       const res = await locationsList(req);
@@ -563,8 +617,14 @@ describe("Misc Domains Part 1", () => {
     });
 
     it("returns locations list for authenticated user", async () => {
-      makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue(
+        mockLocationRows as never
+      );
 
       const req = new NextRequest("http://localhost/api/locations");
       const res = await locationsList(req);
@@ -578,20 +638,32 @@ describe("Misc Domains Part 1", () => {
       expect(body.locations[1].address_line_2).toBe("Suite 200");
     });
 
-    it("calls $queryRaw with correct tenant ID", async () => {
-      makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+    it("calls findMany with correct tenant ID", async () => {
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([] as never);
 
       const req = new NextRequest("http://localhost/api/locations");
       await locationsList(req);
 
-      expect(database.$queryRaw).toHaveBeenCalled();
+      expect(database.location.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ tenantId: TEST_TENANT_ID }),
+        })
+      );
     });
 
     it("filters active locations when isActive=true", async () => {
-      makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue([
-        mockLocations[0],
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([
+        mockLocationRows[0],
       ] as never);
 
       const req = new NextRequest(
@@ -602,11 +674,21 @@ describe("Misc Domains Part 1", () => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.locations).toHaveLength(1);
+      // Verify the filter was applied in the call
+      expect(database.location.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ isActive: true }),
+        })
+      );
     });
 
     it("returns empty array when no locations exist", async () => {
-      makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([] as never);
 
       const req = new NextRequest("http://localhost/api/locations");
       const res = await locationsList(req);
@@ -617,8 +699,12 @@ describe("Misc Domains Part 1", () => {
     });
 
     it("returns 500 on database error", async () => {
-      makeAuthedUser();
-      vi.mocked(database.$queryRaw).mockRejectedValue(
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockRejectedValue(
         new Error("DB connection lost")
       );
 
@@ -632,8 +718,14 @@ describe("Misc Domains Part 1", () => {
 
     it("enforces tenant isolation — only returns locations for user's tenant", async () => {
       // First call: tenant A
-      makeAuthedUser(TEST_TENANT_ID);
-      vi.mocked(database.$queryRaw).mockResolvedValue(mockLocations as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue(
+        mockLocationRows as never
+      );
 
       const reqA = new NextRequest("http://localhost/api/locations");
       const resA = await locationsList(reqA);
@@ -642,13 +734,24 @@ describe("Misc Domains Part 1", () => {
 
       // Second call: tenant B (different tenant)
       vi.clearAllMocks();
-      makeAuthedUser(OTHER_TENANT_ID);
-      vi.mocked(database.$queryRaw).mockResolvedValue([] as never);
+      vi.mocked(auth).mockResolvedValue({
+        userId: TEST_USER_ID,
+        orgId: TEST_ORG_ID,
+      } as never);
+      vi.mocked(getTenantIdForOrg).mockResolvedValue(OTHER_TENANT_ID as never);
+      vi.mocked(database.location.findMany).mockResolvedValue([] as never);
 
       const reqB = new NextRequest("http://localhost/api/locations");
       const resB = await locationsList(reqB);
       const bodyB = await resB.json();
       expect(bodyB.locations).toHaveLength(0);
+
+      // Verify the second call used the correct tenant
+      expect(database.location.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ tenantId: OTHER_TENANT_ID }),
+        })
+      );
     });
   });
 
@@ -658,7 +761,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Override Audit Commands", () => {
     describe("POST /api/overrideaudit/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           overrideAuditCreate,
           "overrideaudit/create",
@@ -670,7 +773,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/overrideaudit/authorize", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           overrideAuditAuthorize,
           "overrideaudit/authorize",
@@ -688,7 +791,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Performance Prediction Commands", () => {
     describe("POST /api/performanceprediction/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           perfPredictionCreate,
           "performanceprediction/create",
@@ -710,7 +813,7 @@ describe("Misc Domains Part 1", () => {
 
   describe("Variance Report Commands", () => {
     describe("POST /api/variancereport/create", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           varianceReportCreate,
           "variancereport/create",
@@ -726,7 +829,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/variancereport/review", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           varianceReportReview,
           "variancereport/review",
@@ -742,7 +845,7 @@ describe("Misc Domains Part 1", () => {
     });
 
     describe("POST /api/variancereport/approve", () => {
-      it("covers 401, 400, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
+      it("covers 401, 200, 403, 422, 400-fail, 500, and tenant isolation", async () => {
         await assertManifestCommandRoute(
           varianceReportApprove,
           "variancereport/approve",

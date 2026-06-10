@@ -7,6 +7,9 @@
  * body.userId resolves to the caller's own internal user id.
  *
  * These tests encode the WHY (lockout prevention), not just the WHAT (403).
+ *
+ * Uses the dedicated /api/user/deactivate route which includes self-deactivation
+ * prevention before delegating to runManifestCommand.
  */
 
 import { NextRequest } from "next/server";
@@ -36,6 +39,24 @@ vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    constructor(msg: string) {
+      super(msg);
+      this.name = "InvariantError";
+    }
+  },
+}));
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
 
 vi.mock("@/lib/manifest-response", async () => {
   const { NextResponse } = await import("next/server");
@@ -58,8 +79,8 @@ vi.mock("@/lib/manifest/execute-command", () => ({
 }));
 
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 const TENANT = "a0000000-0000-4000-a000-000000000001";
 const ORG = "org-test-1";
@@ -67,15 +88,10 @@ const CLERK = "clerk_self_001";
 const SELF_INTERNAL = "user-self-001";
 const OTHER_INTERNAL = "user-other-002";
 
-// Helper function to get manifest dispatcher POST with params
+// Helper function to get the dedicated user deactivate handler
 async function getDeactivateHandler() {
-  const mod = await import(
-    "@/app/api/manifest/[entity]/commands/[command]/route"
-  );
-  return (req: NextRequest) =>
-    mod.POST(req, {
-      params: Promise.resolve({ entity: "User", command: "deactivate" }),
-    });
+  const mod = await import("@/app/api/user/deactivate/route");
+  return (req: NextRequest) => mod.POST(req);
 }
 
 function makeRequest(body: unknown): NextRequest {
@@ -89,25 +105,38 @@ function makeRequest(body: unknown): NextRequest {
   );
 }
 
-describe("POST /api/user/deactivate — self-deactivation prevention", () => {
-  const runCommand = vi.fn();
+/** Mock requireCurrentUser to return an authenticated internal user */
+function mockAuthenticatedUser(overrides: Record<string, unknown> = {}) {
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: SELF_INTERNAL,
+    tenantId: TENANT,
+    role: "admin",
+    email: "admin@test.com",
+    firstName: "Self",
+    lastName: "Admin",
+    ...overrides,
+  } as never);
+}
 
+describe("POST /api/user/deactivate — self-deactivation prevention", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(auth).mockResolvedValue({ orgId: ORG, userId: CLERK } as any);
     vi.mocked(getTenantIdForOrg).mockResolvedValue(TENANT);
-    runCommand.mockReset();
-    runCommand.mockResolvedValue({
-      success: true,
-      result: { id: OTHER_INTERNAL },
-      emittedEvents: [],
-    });
-    vi.mocked(createManifestRuntime).mockResolvedValue({
-      runCommand,
-    } as any);
+    vi.mocked(runManifestCommand).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          success: true,
+          result: { id: OTHER_INTERNAL },
+          events: [],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      )
+    );
   });
 
   it("returns 403 and does NOT run command when caller targets own userId", async () => {
+    mockAuthenticatedUser({ id: SELF_INTERNAL });
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
     const deactivate = await getDeactivateHandler();
@@ -120,10 +149,11 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     expect(String(json.message ?? json.error ?? "")).toMatch(
       /cannot deactivate your own account/i
     );
-    expect(runCommand).not.toHaveBeenCalled();
+    expect(runManifestCommand).not.toHaveBeenCalled();
   });
 
   it("allows deactivating another user (passes through to runtime)", async () => {
+    mockAuthenticatedUser({ id: SELF_INTERNAL });
     mockDatabase.user.findFirst.mockResolvedValue({ id: SELF_INTERNAL });
 
     const deactivate = await getDeactivateHandler();
@@ -132,37 +162,44 @@ describe("POST /api/user/deactivate — self-deactivation prevention", () => {
     );
 
     expect(res.status).toBe(200);
-    expect(runCommand).toHaveBeenCalledWith(
-      "deactivate",
-      expect.objectContaining({ userId: OTHER_INTERNAL }),
+    expect(runManifestCommand).toHaveBeenCalledWith(
       expect.objectContaining({
-        entityName: "User",
-        instanceId: OTHER_INTERNAL,
+        entity: "User",
+        command: "deactivate",
+        body: expect.objectContaining({ userId: OTHER_INTERNAL }),
+        user: expect.objectContaining({ id: SELF_INTERNAL }),
       })
     );
   });
 
-  it("allows the command when the caller's internal user record cannot be resolved (fail-open vs. command-level guards)", async () => {
-    // If we can't resolve the caller's internal id, we don't have grounds to
-    // block — the manifest policy will still enforce role-based access. This
-    // documents the chosen behavior so a future change to fail-closed is a
-    // deliberate decision, not an accident.
-    mockDatabase.user.findFirst.mockResolvedValue(null);
+  it("allows the command when targeting a different user even with same role", async () => {
+    // Verifies the self-deactivation check only blocks when caller targets
+    // their own userId — a different user with the same role is allowed.
+    // The manifest policy layer will still enforce role-based access.
+    mockAuthenticatedUser({ id: SELF_INTERNAL });
 
     const deactivate = await getDeactivateHandler();
     const res = await deactivate(
-      makeRequest({ userId: SELF_INTERNAL, reason: "x" })
+      makeRequest({ userId: OTHER_INTERNAL, reason: "restructuring" })
     );
 
     expect(res.status).toBe(200);
-    expect(runCommand).toHaveBeenCalled();
+    expect(runManifestCommand).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({ userId: OTHER_INTERNAL, reason: "restructuring" }),
+      })
+    );
   });
 
   it("returns 401 when unauthenticated", async () => {
-    vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
+    // requireCurrentUser throws InvariantError when not authenticated
+    const { InvariantError } = await import("@/app/lib/invariant");
+    vi.mocked(requireCurrentUser).mockRejectedValue(
+      new InvariantError("Unauthenticated")
+    );
     const deactivate = await getDeactivateHandler();
     const res = await deactivate(makeRequest({ userId: SELF_INTERNAL }));
     expect(res.status).toBe(401);
-    expect(runCommand).not.toHaveBeenCalled();
+    expect(runManifestCommand).not.toHaveBeenCalled();
   });
 });

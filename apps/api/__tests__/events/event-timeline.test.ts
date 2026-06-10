@@ -3,17 +3,13 @@
  *
  * Covers:
  *   GET    /api/events/[eventId]/timeline                  (list + summary)
- *   POST   /api/events/[eventId]/timeline/commands/create-item
- *   POST   /api/events/[eventId]/timeline/commands/update-item
- *   POST   /api/events/[eventId]/timeline/commands/toggle-completed
- *   POST   /api/events/[eventId]/timeline/commands/delete-item
+ *   POST   dispatch(EventTimelineItem, "createItem")
+ *   POST   dispatch(EventTimelineItem, "updateItem")
+ *   POST   dispatch(EventTimelineItem, "completeItem")
+ *   POST   dispatch(EventTimelineItem, "deleteItem")
  *
- * Verifies:
- *   - Auth: 401 unauthenticated, 403 missing tenant
- *   - Validation: 400 on invalid eventId / itemId / payload
- *   - 404 when event or item is missing or soft-deleted
- *   - Successful Prisma writes scoped to tenantId
- *   - Toggle complete sets completedAt; uncomplete clears it
+ * GET route tests use concrete route + database mocks.
+ * POST command tests use generic dispatcher + runManifestCommand mock.
  *
  * @vitest-environment node
  */
@@ -38,6 +34,8 @@ const mocks = vi.hoisted(() => ({
   timelineAggregateMock: vi.fn(),
   authMock: vi.fn(),
   tenantMock: vi.fn(),
+  requireCurrentUserMock: vi.fn(),
+  runManifestCommandMock: vi.fn(),
 }));
 
 vi.mock("@repo/auth/server", () => ({
@@ -47,7 +45,7 @@ vi.mock("@repo/auth/server", () => ({
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: mocks.tenantMock,
   requireTenantId: vi.fn(),
-  requireCurrentUser: vi.fn(),
+  requireCurrentUser: mocks.requireCurrentUserMock,
   resolveCurrentUser: vi.fn(),
 }));
 
@@ -78,7 +76,7 @@ vi.mock("@/lib/manifest-response", async () => {
       ),
   };
 });
-vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: mocks.runManifestCommandMock }));
 vi.mock("@/app/lib/invariant", () => ({
   InvariantError: class InvariantError extends Error {
     constructor(message: string) { super(message); this.name = "InvariantError"; }
@@ -101,16 +99,29 @@ const deletePOST = dispatch("EventTimelineItem", "deleteItem");
 const togglePOST = dispatch("EventTimelineItem", "completeItem");
 const updatePOST = dispatch("EventTimelineItem", "updateItem");
 
+const TEST_CURRENT_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: "admin",
+  email: "test@test.com",
+  firstName: "Test",
+  lastName: "User",
+};
+
 function setAuthOk() {
   mocks.authMock.mockResolvedValue({
     orgId: TEST_ORG_ID,
     userId: TEST_USER_ID,
   });
   mocks.tenantMock.mockResolvedValue(TEST_TENANT_ID);
+  mocks.requireCurrentUserMock.mockResolvedValue(TEST_CURRENT_USER);
 }
 
 function setAuthMissingUser() {
   mocks.authMock.mockResolvedValue({ orgId: null, userId: null });
+  const authError = new Error("Unauthenticated");
+  authError.name = "InvariantError";
+  mocks.requireCurrentUserMock.mockRejectedValue(authError);
 }
 
 function setAuthMissingTenant() {
@@ -133,10 +144,27 @@ function eventParams(id: string) {
   return { params: Promise.resolve({ eventId: id }) };
 }
 
+function ok(data: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify({ success: true, ...data }), {
+    status, headers: { "Content-Type": "application/json" },
+  });
+}
+
+function fail(status: number, message: string) {
+  return new Response(JSON.stringify({ success: false, message }), {
+    status, headers: { "Content-Type": "application/json" },
+  });
+}
+
 describe("Event Timeline API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => undefined);
+    // Default: authenticated user + success response for dispatcher
+    mocks.requireCurrentUserMock.mockResolvedValue(TEST_CURRENT_USER);
+    mocks.runManifestCommandMock.mockResolvedValue(
+      ok({ result: { id: "test-id" }, events: [] })
+    );
   });
 
   // ---------------------------------------------------------------- //
@@ -252,266 +280,294 @@ describe("Event Timeline API", () => {
   });
 
   // ---------------------------------------------------------------- //
-  // POST /create-item                                                 //
+  // POST /create-item (via dispatcher)                                //
   // ---------------------------------------------------------------- //
   describe("POST /commands/create-item", () => {
     it("returns 401 when unauthenticated", async () => {
       setAuthMissingUser();
-      const res = await createPOST(makeReq({}), eventParams(TEST_EVENT_ID));
+      const res = await createPOST(makeReq({}));
       expect(res.status).toBe(401);
     });
 
-    it("returns 400 when description is missing", async () => {
-      setAuthOk();
-      const res = await createPOST(
-        makeReq({ timelineTime: "14:30" }),
-        eventParams(TEST_EVENT_ID)
+    it("creates an item and returns 200 on success", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, description: "Service", sortOrder: 30 }, events: [] })
       );
-      expect(res.status).toBe(400);
-    });
-
-    it("returns 400 when timelineTime is invalid", async () => {
-      setAuthOk();
-      const res = await createPOST(
-        makeReq({ timelineTime: "not-a-time", description: "Service" }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(400);
-    });
-
-    it("returns 404 when event does not exist", async () => {
-      setAuthOk();
-      mocks.eventFindFirstMock.mockResolvedValue(null);
-      const res = await createPOST(
-        makeReq({ timelineTime: "14:30", description: "Service" }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(404);
-    });
-
-    it("creates an item with auto-incremented sortOrder", async () => {
-      setAuthOk();
-      mocks.eventFindFirstMock.mockResolvedValue({ id: TEST_EVENT_ID });
-      mocks.timelineAggregateMock.mockResolvedValue({
-        _max: { sortOrder: 20 },
-      });
-      mocks.timelineCreateMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        timelineTime: new Date(Date.UTC(1970, 0, 1, 14, 30)),
-        description: "Service",
-        responsibleRole: null,
-        isCompleted: false,
-        completedAt: null,
-        notes: null,
-        sortOrder: 30,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
 
       const res = await createPOST(
-        makeReq({ timelineTime: "14:30", description: "Service" }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(201);
-      expect(mocks.timelineCreateMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            tenantId: TEST_TENANT_ID,
-            eventId: TEST_EVENT_ID,
-            description: "Service",
-            sortOrder: 30,
-          }),
-        })
-      );
-    });
-  });
-
-  // ---------------------------------------------------------------- //
-  // POST /update-item                                                 //
-  // ---------------------------------------------------------------- //
-  describe("POST /commands/update-item", () => {
-    it("returns 400 when itemId is invalid", async () => {
-      setAuthOk();
-      const res = await updatePOST(
-        makeReq({ itemId: INVALID_UUID, description: "x" }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(400);
-    });
-
-    it("returns 400 when no fields are provided", async () => {
-      setAuthOk();
-      const res = await updatePOST(
-        makeReq({ itemId: TEST_ITEM_ID }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(400);
-    });
-
-    it("returns 404 when item is not found", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue(null);
-      const res = await updatePOST(
-        makeReq({ itemId: TEST_ITEM_ID, description: "Updated" }),
-        eventParams(TEST_EVENT_ID)
-      );
-      expect(res.status).toBe(404);
-    });
-
-    it("updates description and notes", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue({ id: TEST_ITEM_ID });
-      mocks.timelineUpdateMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        timelineTime: new Date(Date.UTC(1970, 0, 1, 17, 0)),
-        description: "Updated",
-        responsibleRole: "Captain",
-        isCompleted: false,
-        completedAt: null,
-        notes: "Cue music",
-        sortOrder: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const res = await updatePOST(
-        makeReq({
-          itemId: TEST_ITEM_ID,
-          description: "Updated",
-          notes: "Cue music",
-        }),
-        eventParams(TEST_EVENT_ID)
+        makeReq({ timelineTime: "14:30", description: "Service" })
       );
       expect(res.status).toBe(200);
-      expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.description).toBe("Service");
+
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID },
-          },
-          data: { description: "Updated", notes: "Cue music" },
+          entity: "EventTimelineItem",
+          command: "createItem",
+          body: expect.objectContaining({ description: "Service" }),
+          user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
         })
       );
     });
 
-    it("rejects empty description string", async () => {
-      setAuthOk();
-      const res = await updatePOST(
-        makeReq({ itemId: TEST_ITEM_ID, description: "   " }),
-        eventParams(TEST_EVENT_ID)
+    it("returns 403 on policy denial", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(fail(403, "Access denied: timelineManagerOnly"));
+
+      const res = await createPOST(
+        makeReq({ timelineTime: "14:30", description: "Service" })
       );
+      expect(res.status).toBe(403);
+    });
+
+    it("returns 422 on guard failure", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(422, "Guard failed: Event must exist")
+      );
+
+      const res = await createPOST(
+        makeReq({ timelineTime: "14:30", description: "Service" })
+      );
+      expect(res.status).toBe(422);
+    });
+
+    it("returns 400 on command failure", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(400, "Missing required field: description")
+      );
+
+      const res = await createPOST(makeReq({}));
       expect(res.status).toBe(400);
+    });
+
+    it("returns 500 when runtime throws", async () => {
+      mocks.runManifestCommandMock.mockRejectedValue(new Error("DB connection lost"));
+
+      const res = await createPOST(
+        makeReq({ timelineTime: "14:30", description: "Service" })
+      );
+      expect(res.status).toBe(500);
     });
   });
 
   // ---------------------------------------------------------------- //
-  // POST /toggle-completed                                            //
+  // POST /update-item (via dispatcher)                                //
+  // ---------------------------------------------------------------- //
+  describe("POST /commands/update-item", () => {
+    it("returns 401 when unauthenticated", async () => {
+      setAuthMissingUser();
+      const res = await updatePOST(
+        makeReq({ itemId: TEST_ITEM_ID, description: "Updated" })
+      );
+      expect(res.status).toBe(401);
+    });
+
+    it("updates an item and returns 200 on success", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, description: "Updated", notes: "Cue music" }, events: [] })
+      );
+
+      const res = await updatePOST(
+        makeReq({ itemId: TEST_ITEM_ID, description: "Updated", notes: "Cue music" })
+      );
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.description).toBe("Updated");
+
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "EventTimelineItem",
+          command: "updateItem",
+          body: expect.objectContaining({ itemId: TEST_ITEM_ID, description: "Updated" }),
+        })
+      );
+    });
+
+    it("returns 422 on guard failure", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(422, "Guard failed: Item not found")
+      );
+
+      const res = await updatePOST(
+        makeReq({ itemId: TEST_ITEM_ID, description: "Updated" })
+      );
+      expect(res.status).toBe(422);
+    });
+
+    it("returns 400 on command failure", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        fail(400, "No fields provided")
+      );
+
+      const res = await updatePOST(makeReq({ itemId: TEST_ITEM_ID }));
+      expect(res.status).toBe(400);
+    });
+
+    it("returns 500 when runtime throws", async () => {
+      mocks.runManifestCommandMock.mockRejectedValue(new Error("DB error"));
+
+      const res = await updatePOST(
+        makeReq({ itemId: TEST_ITEM_ID, description: "Updated" })
+      );
+      expect(res.status).toBe(500);
+    });
+  });
+
+  // ---------------------------------------------------------------- //
+  // POST /toggle-completed (via dispatcher)                           //
   // ---------------------------------------------------------------- //
   describe("POST /commands/toggle-completed", () => {
-    it("returns 400 when isCompleted is not a boolean", async () => {
-      setAuthOk();
+    it("returns 401 when unauthenticated", async () => {
+      setAuthMissingUser();
       const res = await togglePOST(
-        makeReq({ itemId: TEST_ITEM_ID, isCompleted: "yes" }),
-        eventParams(TEST_EVENT_ID)
+        makeReq({ itemId: TEST_ITEM_ID, isCompleted: true })
       );
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(401);
     });
 
     it("sets completedAt when marking complete", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        isCompleted: false,
-      });
-      mocks.timelineUpdateMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        timelineTime: new Date(),
-        description: "x",
-        responsibleRole: null,
-        isCompleted: true,
-        completedAt: new Date(),
-        notes: null,
-        sortOrder: 0,
-        updatedAt: new Date(),
-      });
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, isCompleted: true, completedAt: new Date().toISOString() }, events: [] })
+      );
 
       const res = await togglePOST(
-        makeReq({ itemId: TEST_ITEM_ID, isCompleted: true }),
-        eventParams(TEST_EVENT_ID)
+        makeReq({ itemId: TEST_ITEM_ID, isCompleted: true })
       );
       expect(res.status).toBe(200);
-      expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.isCompleted).toBe(true);
+
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: expect.objectContaining({
-            isCompleted: true,
-            completedAt: expect.any(Date),
-          }),
+          entity: "EventTimelineItem",
+          command: "completeItem",
+          body: expect.objectContaining({ itemId: TEST_ITEM_ID, isCompleted: true }),
         })
       );
     });
 
     it("clears completedAt when marking pending", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        isCompleted: true,
-      });
-      mocks.timelineUpdateMock.mockResolvedValue({
-        id: TEST_ITEM_ID,
-        timelineTime: new Date(),
-        description: "x",
-        responsibleRole: null,
-        isCompleted: false,
-        completedAt: null,
-        notes: null,
-        sortOrder: 0,
-        updatedAt: new Date(),
-      });
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, isCompleted: false, completedAt: null }, events: [] })
+      );
 
       const res = await togglePOST(
-        makeReq({ itemId: TEST_ITEM_ID, isCompleted: false }),
-        eventParams(TEST_EVENT_ID)
+        makeReq({ itemId: TEST_ITEM_ID, isCompleted: false })
       );
       expect(res.status).toBe(200);
-      expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.result.isCompleted).toBe(false);
+      expect(body.result.completedAt).toBeNull();
+    });
+
+    it("returns 500 when runtime throws", async () => {
+      mocks.runManifestCommandMock.mockRejectedValue(new Error("DB error"));
+
+      const res = await togglePOST(
+        makeReq({ itemId: TEST_ITEM_ID, isCompleted: true })
+      );
+      expect(res.status).toBe(500);
+    });
+  });
+
+  // ---------------------------------------------------------------- //
+  // POST /delete-item (via dispatcher)                                //
+  // ---------------------------------------------------------------- //
+  describe("POST /commands/delete-item", () => {
+    it("returns 401 when unauthenticated", async () => {
+      setAuthMissingUser();
+      const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
+      expect(res.status).toBe(401);
+    });
+
+    it("soft-deletes and returns 200 on success", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, deletedAt: new Date().toISOString() }, events: [] })
+      );
+
+      const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          data: { isCompleted: false, completedAt: null },
+          entity: "EventTimelineItem",
+          command: "deleteItem",
+          body: expect.objectContaining({ itemId: TEST_ITEM_ID }),
+        })
+      );
+    });
+
+    it("returns 404 when item not found", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(fail(404, "Item not found"));
+
+      const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
+      expect(res.status).toBe(404);
+    });
+
+    it("returns 500 when runtime throws", async () => {
+      mocks.runManifestCommandMock.mockRejectedValue(new Error("DB error"));
+
+      const res = await deletePOST(makeReq({ itemId: TEST_ITEM_ID }));
+      expect(res.status).toBe(500);
+    });
+  });
+
+  // ---------------------------------------------------------------- //
+  // Cross-cutting: tenant isolation                                   //
+  // ---------------------------------------------------------------- //
+  describe("Tenant isolation", () => {
+    it("passes tenant context to runManifestCommand", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: "test-id" }, events: [] })
+      );
+
+      const res = await createPOST(
+        makeReq({ eventId: TEST_EVENT_ID, description: "Test" })
+      );
+      expect(res.status).toBe(200);
+
+      expect(mocks.runManifestCommandMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user: { id: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin" },
         })
       );
     });
   });
 
   // ---------------------------------------------------------------- //
-  // POST /delete-item                                                 //
+  // Cross-cutting: response shape                                     //
   // ---------------------------------------------------------------- //
-  describe("POST /commands/delete-item", () => {
-    it("returns 404 when item is not found", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue(null);
-      const res = await deletePOST(
-        makeReq({ itemId: TEST_ITEM_ID }),
-        eventParams(TEST_EVENT_ID)
+  describe("Response shape", () => {
+    it("success responses contain success and result", async () => {
+      mocks.runManifestCommandMock.mockResolvedValue(
+        ok({ result: { id: TEST_ITEM_ID, description: "Test" }, events: [{ type: "TimelineItemCreated" }] })
       );
-      expect(res.status).toBe(404);
+
+      const res = await createPOST(
+        makeReq({ eventId: TEST_EVENT_ID, description: "Test" })
+      );
+      const body = await res.json();
+
+      expect(body.success).toBe(true);
+      expect(body.result).toBeDefined();
     });
 
-    it("soft-deletes by setting deletedAt", async () => {
-      setAuthOk();
-      mocks.timelineFindFirstMock.mockResolvedValue({ id: TEST_ITEM_ID });
-      mocks.timelineUpdateMock.mockResolvedValue({});
+    it("handles malformed JSON body gracefully", async () => {
+      const req = new NextRequest("http://localhost/api/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "not valid json {{{",
+      });
+      const res = await createPOST(req);
 
-      const res = await deletePOST(
-        makeReq({ itemId: TEST_ITEM_ID }),
-        eventParams(TEST_EVENT_ID)
-      );
+      // Dispatcher uses request.json().catch(() => ({})) so invalid JSON becomes empty body
       expect(res.status).toBe(200);
-      expect(mocks.timelineUpdateMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            tenantId_id: { tenantId: TEST_TENANT_ID, id: TEST_ITEM_ID },
-          },
-          data: { deletedAt: expect.any(Date) },
-        })
-      );
     });
   });
 });

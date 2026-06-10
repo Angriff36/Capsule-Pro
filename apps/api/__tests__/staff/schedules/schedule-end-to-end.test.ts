@@ -6,9 +6,8 @@
  * through the SchedulePrismaStore, and the read path queries the same Prisma
  * model — so a created schedule is immediately visible in the list API.
  *
- * This test also verifies the `instanceId` fix: instance-scoped command routes
- * (update, release, close) must pass `instanceId` to `runtime.runCommand` so
- * the store can target the correct entity row.
+ * This test also verifies the command dispatcher correctly routes Schedule
+ * commands through requireCurrentUser + runManifestCommand.
  *
  * Note: The manifest's `blockNoShifts` (release) and `blockNotPublished` (close)
  * constraints may exhibit the polarity bug described in IMPLEMENTATION_PLAN.md
@@ -20,12 +19,11 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
-// Mocks — uses the global database mock from apps/api/test/mocks/@repo/database.ts
-// which now includes schedule and scheduleShift models.
+// Mocks
 // ---------------------------------------------------------------------------
 
-vi.mock("@repo/database", () => ({
-  database: {
+const { mockDatabase } = vi.hoisted(() => ({
+  mockDatabase: {
     schedule: {
       count: vi.fn(),
       findMany: vi.fn(),
@@ -43,7 +41,15 @@ vi.mock("@repo/database", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    user: {
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+    },
   },
+}));
+
+vi.mock("@repo/database", () => ({
+  database: mockDatabase,
 }));
 vi.mock("@/lib/database", async () => {
   const { database } = await import("@repo/database");
@@ -93,10 +99,24 @@ vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
+vi.mock("@/app/lib/webhook-dispatch", () => ({
+  dispatchWebhooks: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@repo/notifications", () => ({}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
+
+vi.mock("@/lib/manifest/issue-log", () => ({
+  logManifestIssue: vi.fn(),
+}));
+
 // Import mocked modules after vi.mock setup
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest/execute-command";
 
 // ---------------------------------------------------------------------------
 // Test constants
@@ -140,6 +160,32 @@ function createMockRequest(
   );
 }
 
+/** Helper to get manifest dispatcher POST with entity/command params */
+function scheduleParams(command: string) {
+  return {
+    params: Promise.resolve({ entity: "Schedule", command }),
+  };
+}
+
+async function getScheduleCommandHandler(command: string) {
+  const mod = await import(
+    "@/app/api/manifest/[entity]/commands/[command]/route"
+  );
+  return (req: NextRequest) => mod.POST(req, scheduleParams(command));
+}
+
+/** Mock requireCurrentUser to return an authenticated internal user */
+function mockAuthenticatedUser() {
+  vi.mocked(requireCurrentUser).mockResolvedValue({
+    id: TEST_USER_ID,
+    tenantId: TEST_TENANT_ID,
+    role: "admin",
+    email: "test@test.com",
+    firstName: "Test",
+    lastName: "User",
+  } as never);
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -147,6 +193,11 @@ function createMockRequest(
 describe("Schedule Persistence (write → read alignment)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(auth).mockResolvedValue({
+      orgId: TEST_ORG_ID,
+      userId: TEST_CLERK_ID,
+    } as any);
+    vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
   });
 
   // -------------------------------------------------------------------------
@@ -161,11 +212,6 @@ describe("Schedule Persistence (write → read alignment)", () => {
         schedule_date: new Date("2026-05-01"),
       });
 
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findMany).mockResolvedValue([
         mockSchedule,
       ] as never);
@@ -208,11 +254,6 @@ describe("Schedule Persistence (write → read alignment)", () => {
     });
 
     it("excludes soft-deleted schedules from the list", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findMany).mockResolvedValue([]);
 
       const { GET } = await import("@/app/api/staff/schedules/list/route");
@@ -241,11 +282,6 @@ describe("Schedule Persistence (write → read alignment)", () => {
         published_by: TEST_USER_ID,
       });
 
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findFirst).mockResolvedValue(
         mockSchedule as never
       );
@@ -277,11 +313,6 @@ describe("Schedule Persistence (write → read alignment)", () => {
     });
 
     it("returns 404 for non-existent schedule", async () => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findFirst).mockResolvedValue(null);
 
       const { GET } = await import("@/app/api/staff/schedules/[id]/route");
@@ -298,76 +329,53 @@ describe("Schedule Persistence (write → read alignment)", () => {
   });
 
   // -------------------------------------------------------------------------
-  // 3. Command routes pass instanceId for instance-scoped verbs
+  // 3. Command routes use the generic manifest dispatcher
   // -------------------------------------------------------------------------
 
-  describe("instanceId on command routes (Blocker #1 fix)", () => {
-    const mockUser = {
-      id: TEST_USER_ID,
-      tenantId: TEST_TENANT_ID,
-      role: "admin",
-      authUserId: TEST_CLERK_ID,
-    };
-
-    const mockRunCommand = vi.fn().mockResolvedValue({
-      success: true,
-      result: { id: "sched-003", status: "draft" },
-      emittedEvents: [],
-    });
-
+  describe("command routes via manifest dispatcher", () => {
     beforeEach(() => {
-      vi.mocked(auth).mockResolvedValue({
-        orgId: TEST_ORG_ID,
-        userId: TEST_CLERK_ID,
-      } as any);
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
-      mockRunCommand.mockClear();
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: mockRunCommand,
-      } as any);
+      mockAuthenticatedUser();
+      vi.mocked(runManifestCommand).mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: true,
+            result: { id: "sched-003", status: "draft" },
+            events: [],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        )
+      );
     });
 
-    const instanceScopedVerbs = [
-      { verb: "update", file: "update" },
-      { verb: "release", file: "release" },
-      { verb: "close", file: "close" },
-    ];
+    const instanceScopedVerbs = ["update", "release", "close"];
 
-    for (const { verb, file } of instanceScopedVerbs) {
-      it(`${verb} route passes instanceId to runCommand`, async () => {
-        const mod = await import(
-          `@/app/api/staff/schedules/commands/${file}/route`
-        );
+    for (const verb of instanceScopedVerbs) {
+      it(`${verb} route sends correct entity/command to runManifestCommand`, async () => {
+        const handler = await getScheduleCommandHandler(verb);
         const request = createMockRequest(
-          `http://localhost:3000/api/staff/schedules/commands/${file}`,
+          `http://localhost:3000/api/manifest/Schedule/commands/${verb}`,
           {
             method: "POST",
             body: JSON.stringify({ id: "sched-003" }),
           }
         );
 
-        await mod.POST(request, {
-          params: Promise.resolve({ entity: "Schedule", command: "create" }),
-        });
+        await handler(request);
 
-        expect(mockRunCommand).toHaveBeenCalledWith(
-          verb,
-          expect.any(Object),
+        expect(runManifestCommand).toHaveBeenCalledWith(
           expect.objectContaining({
-            entityName: "Schedule",
-            instanceId: "sched-003",
+            entity: "Schedule",
+            command: verb,
+            body: expect.objectContaining({ id: "sched-003" }),
           })
         );
       });
     }
 
-    it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
-        "@/app/api/manifest/[entity]/commands/[command]/route"
-      );
+    it("create route sends correct entity/command", async () => {
+      const handler = await getScheduleCommandHandler("create");
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/commands/create",
+        "http://localhost:3000/api/manifest/Schedule/commands/create",
         {
           method: "POST",
           body: JSON.stringify({
@@ -377,14 +385,13 @@ describe("Schedule Persistence (write → read alignment)", () => {
         }
       );
 
-      await mod.POST(request, {
-        params: Promise.resolve({ entity: "Schedule", command: "create" }),
-      });
+      await handler(request);
 
-      expect(mockRunCommand).toHaveBeenCalledWith(
-        "create",
-        expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() })
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "Schedule",
+          command: "create",
+        })
       );
     });
   });

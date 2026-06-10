@@ -15,17 +15,42 @@
  * Covers: 401 auth, 400 validation, success, 500 error, tenant isolation.
  */
 
-import { database } from "@repo/database";
+import { database as databaseFromLib } from "@/lib/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks ---
 
+vi.mock("@repo/database", () => ({
+  database: {
+    client: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    clientContact: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    dish: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    documentVersion: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    equipment: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    event: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    ingredient: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    inventoryItem: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    invoice: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    kitchenTask: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    knowledgeBaseEntry: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    lead: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    menu: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    proposal: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    recipe: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    venue: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+  },
+}));
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireTenantId: vi.fn(),
   requireCurrentUser: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
@@ -98,11 +123,30 @@ vi.mock("@/lib/pagination", () => ({
   },
 }));
 
-vi.mock("@/lib/database", async () => {
-  const mod =
-    await vi.importActual<typeof import("@repo/database")>("@repo/database");
-  return mod;
-});
+vi.mock("@/lib/database", () => ({
+  database: {
+    client: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    clientContact: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    dish: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    documentVersion: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    equipment: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    event: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    ingredient: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    inventoryItem: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    invoice: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    kitchenTask: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    knowledgeBaseEntry: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    lead: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    menu: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    proposal: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    recipe: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    venue: { count: vi.fn(), findMany: vi.fn(), findFirst: vi.fn(), findUnique: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    $queryRaw: vi.fn(),
+    $transaction: vi.fn((fn) => fn({})),
+    $connect: vi.fn(),
+    $disconnect: vi.fn(),
+  },
+}));
 
 // --- Import mocked modules ---
 
@@ -289,36 +333,36 @@ describe("Search API", () => {
   it("searches across all entity types by default", async () => {
     mockAuth();
 
-    vi.mocked(database.event.findMany).mockResolvedValue([]);
-    vi.mocked(database.event.count).mockResolvedValue(0);
-    vi.mocked(database.client.findMany).mockResolvedValue([]);
-    vi.mocked(database.client.count).mockResolvedValue(0);
-    vi.mocked(database.clientContact.findMany).mockResolvedValue([]);
-    vi.mocked(database.clientContact.count).mockResolvedValue(0);
-    vi.mocked(database.venue.findMany).mockResolvedValue([]);
-    vi.mocked(database.venue.count).mockResolvedValue(0);
-    vi.mocked(database.inventoryItem.findMany).mockResolvedValue([]);
-    vi.mocked(database.inventoryItem.count).mockResolvedValue(0);
-    vi.mocked(database.knowledgeBaseEntry.findMany).mockResolvedValue([]);
-    vi.mocked(database.knowledgeBaseEntry.count).mockResolvedValue(0);
-    vi.mocked(database.kitchenTask.findMany).mockResolvedValue([]);
-    vi.mocked(database.kitchenTask.count).mockResolvedValue(0);
-    vi.mocked(database.recipe.findMany).mockResolvedValue([]);
-    vi.mocked(database.recipe.count).mockResolvedValue(0);
-    vi.mocked(database.dish.findMany).mockResolvedValue([]);
-    vi.mocked(database.dish.count).mockResolvedValue(0);
-    vi.mocked(database.equipment.findMany).mockResolvedValue([]);
-    vi.mocked(database.equipment.count).mockResolvedValue(0);
-    vi.mocked(database.ingredient.findMany).mockResolvedValue([]);
-    vi.mocked(database.ingredient.count).mockResolvedValue(0);
-    vi.mocked(database.menu.findMany).mockResolvedValue([]);
-    vi.mocked(database.menu.count).mockResolvedValue(0);
-    vi.mocked(database.lead.findMany).mockResolvedValue([]);
-    vi.mocked(database.lead.count).mockResolvedValue(0);
-    vi.mocked(database.proposal.findMany).mockResolvedValue([]);
-    vi.mocked(database.proposal.count).mockResolvedValue(0);
-    vi.mocked(database.invoice.findMany).mockResolvedValue([]);
-    vi.mocked(database.invoice.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.event.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.event.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.client.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.client.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.clientContact.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.clientContact.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.venue.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.venue.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.inventoryItem.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.inventoryItem.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.knowledgeBaseEntry.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.knowledgeBaseEntry.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.kitchenTask.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.kitchenTask.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.recipe.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.recipe.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.dish.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.dish.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.equipment.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.equipment.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.ingredient.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.ingredient.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.menu.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.menu.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.lead.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.lead.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.proposal.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.proposal.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.invoice.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.invoice.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=acme&page=1&limit=10"
@@ -341,7 +385,7 @@ describe("Search API", () => {
   it("filters by type parameter to search only one entity", async () => {
     mockAuth();
 
-    vi.mocked(database.event.findMany).mockResolvedValue([
+    vi.mocked(databaseFromLib.event.findMany).mockResolvedValue([
       {
         id: "evt-1",
         tenantId: TEST_TENANT_ID,
@@ -352,7 +396,7 @@ describe("Search API", () => {
         status: "confirmed",
       },
     ] as never);
-    vi.mocked(database.event.count).mockResolvedValue(1);
+    vi.mocked(databaseFromLib.event.count).mockResolvedValue(1);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=acme&type=events"
@@ -369,15 +413,15 @@ describe("Search API", () => {
   it("passes tenant ID to filter for tenant isolation", async () => {
     mockAuth();
 
-    vi.mocked(database.event.findMany).mockResolvedValue([]);
-    vi.mocked(database.event.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.event.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=test&type=events"
     );
     await searchGet(req);
 
-    const findManyCall = vi.mocked(database.event.findMany).mock
+    const findManyCall = vi.mocked(databaseFromLib.event.findMany).mock
       .calls[0][0] as {
       where: { tenantId: string; deletedAt: unknown };
     };
@@ -387,15 +431,15 @@ describe("Search API", () => {
   it("clamps limit to max 50", async () => {
     mockAuth();
 
-    vi.mocked(database.event.findMany).mockResolvedValue([]);
-    vi.mocked(database.event.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.event.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=test&type=events&limit=999"
     );
     await searchGet(req);
 
-    const findManyCall = vi.mocked(database.event.findMany).mock
+    const findManyCall = vi.mocked(databaseFromLib.event.findMany).mock
       .calls[0][0] as {
       take: number;
     };
@@ -404,7 +448,7 @@ describe("Search API", () => {
 
   it("returns 500 when database throws an error", async () => {
     mockAuth();
-    vi.mocked(database.event.findMany).mockRejectedValue(
+    vi.mocked(databaseFromLib.event.findMany).mockRejectedValue(
       new Error("DB connection lost")
     );
 
@@ -711,7 +755,7 @@ describe("Document Versions - List", () => {
       },
     ];
 
-    vi.mocked(database.documentVersion.findMany).mockResolvedValue(
+    vi.mocked(databaseFromLib.documentVersion.findMany).mockResolvedValue(
       versions as never
     );
 
@@ -728,21 +772,21 @@ describe("Document Versions - List", () => {
 
   it("scopes list query to tenant for isolation", async () => {
     mockAuth();
-    vi.mocked(database.documentVersion.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.documentVersion.findMany).mockResolvedValue([]);
 
     const req = createMockRequest(
       "http://localhost:3000/api/documents/versions/list?documentType=contract&documentId=doc-1"
     );
     await docVersionList(req);
 
-    const findManyCall = vi.mocked(database.documentVersion.findMany).mock
+    const findManyCall = vi.mocked(databaseFromLib.documentVersion.findMany).mock
       .calls[0][0] as { where: { tenantId: string } };
     expect(findManyCall.where.tenantId).toBe(TEST_TENANT_ID);
   });
 
   it("returns 500 on database error", async () => {
     mockAuth();
-    vi.mocked(database.documentVersion.findMany).mockRejectedValue(
+    vi.mocked(databaseFromLib.documentVersion.findMany).mockRejectedValue(
       new Error("DB error")
     );
 
@@ -1253,15 +1297,15 @@ describe("Tenant Isolation Across Operations", () => {
 
   it("search never queries without tenant filter", async () => {
     mockAuth();
-    vi.mocked(database.event.findMany).mockResolvedValue([]);
-    vi.mocked(database.event.count).mockResolvedValue(0);
+    vi.mocked(databaseFromLib.event.findMany).mockResolvedValue([]);
+    vi.mocked(databaseFromLib.event.count).mockResolvedValue(0);
 
     const req = createMockRequest(
       "http://localhost:3000/api/search?q=test&type=events"
     );
     await searchGet(req);
 
-    const call = vi.mocked(database.event.findMany).mock.calls[0][0] as {
+    const call = vi.mocked(databaseFromLib.event.findMany).mock.calls[0][0] as {
       where: { tenantId: string };
     };
     expect(call.where.tenantId).toBe(TEST_TENANT_ID);

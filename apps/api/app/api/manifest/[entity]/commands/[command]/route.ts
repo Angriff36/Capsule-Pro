@@ -12,10 +12,13 @@ export const runtime = "nodejs";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ entity: string; command: string }> }
+  context?: { params?: Promise<{ entity: string; command: string }> }
 ): Promise<Response> {
   try {
-    const { entity, command: commandSlug } = await params;
+    if (!context?.params) {
+      return manifestErrorResponse("Missing route params", 400);
+    }
+    const { entity, command: commandSlug } = await context.params;
     const currentUser = await requireCurrentUser();
     const body = await request.json().catch(() => ({}));
 

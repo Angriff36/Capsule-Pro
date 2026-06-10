@@ -1,10 +1,10 @@
 {
-  "auditVersion": "2026-05-27",
-  "root": "C:\\projects\\capsule-pro",
+  "auditVersion": "2026-06-09",
+  "root": "C:\\Projects\\capsule-pro",
   "counts": {
-    "FAIL": 23,
-    "WARN": 10,
-    "PASS": 128,
+    "FAIL": 0,
+    "WARN": 5,
+    "PASS": 155,
     "INFO": 15
   },
   "results": [
@@ -72,12 +72,6 @@
       "level": "PASS",
       "id": "api-glue.manifestRuntime.exists",
       "message": "Required file exists: apps/api/lib/manifest-runtime.ts",
-      "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "api-glue.manifestCommandHandler.exists",
-      "message": "Required file is missing: apps/api/lib/manifest-command-handler.ts",
       "details": []
     },
     {
@@ -156,6 +150,18 @@
       "level": "PASS",
       "id": "runtime-package.irContract.exists",
       "message": "Required file exists: manifest/runtime/src/ir-contract.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "runtime-package.commandResolver.exists",
+      "message": "Required file exists: manifest/runtime/src/command-resolver.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "runtime-package.runCommandCore.exists",
+      "message": "Required file exists: manifest/runtime/src/run-manifest-command-core.ts",
       "details": []
     },
     {
@@ -285,39 +291,39 @@
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "manifest-package-dep.version-drift",
-      "message": "root package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
+      "level": "PASS",
+      "id": "manifest-package-dep.normal",
+      "message": "root package.json uses @angriff36/manifest 2.2.0",
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "manifest-package-dep.version-drift",
-      "message": "apps/api/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
+      "level": "PASS",
+      "id": "manifest-package-dep.normal",
+      "message": "apps/api/package.json uses @angriff36/manifest 2.2.0",
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "manifest-package-dep.version-drift",
-      "message": "manifest/runtime/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
+      "level": "PASS",
+      "id": "manifest-package-dep.normal",
+      "message": "manifest/runtime/package.json uses @angriff36/manifest 2.2.0",
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "manifest-package-dep.version-drift",
-      "message": "packages/mcp-server/package.json uses normal @angriff36/manifest version 2.2.0 (expected currently 1.0.32)",
+      "level": "PASS",
+      "id": "manifest-package-dep.normal",
+      "message": "packages/mcp-server/package.json uses @angriff36/manifest 2.2.0",
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "frontend-manifest-runtime-dep.present",
-      "message": "apps/app should not depend on @angriff36/manifest; found dependencies:2.2.0",
+      "level": "PASS",
+      "id": "frontend-manifest-runtime-dep.absent",
+      "message": "apps/app does not declare @angriff36/manifest",
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "frontend-manifest-runtime-dep.present",
-      "message": "apps/app should not depend on @repo/manifest-runtime; found dependencies:workspace:*",
+      "level": "PASS",
+      "id": "frontend-manifest-runtime-dep.absent",
+      "message": "apps/app does not declare @repo/manifest-runtime",
       "details": []
     },
     {
@@ -400,6 +406,18 @@
     },
     {
       "level": "PASS",
+      "id": "runtime-package.export.exists",
+      "message": "@repo/manifest-runtime exports ./command-resolver",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "runtime-package.export.exists",
+      "message": "@repo/manifest-runtime exports ./run-manifest-command-core",
+      "details": []
+    },
+    {
+      "level": "PASS",
       "id": "mcp-runtime-dep.workspace",
       "message": "packages/mcp-server depends on @repo/manifest-runtime via workspace:*",
       "details": []
@@ -417,9 +435,9 @@
       "details": []
     },
     {
-      "level": "WARN",
-      "id": "manifest-lock.github-package.unproven",
-      "message": "Could not prove @angriff36/manifest resolves from GitHub Packages in pnpm-lock.yaml",
+      "level": "PASS",
+      "id": "manifest-lock.github-package",
+      "message": "pnpm-lock resolves @angriff36/manifest from GitHub Packages URL",
       "details": []
     },
     {
@@ -459,9 +477,9 @@
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
       "id": "dispatcher.next16-params-promise",
-      "message": "missing Next 16 params Promise shape",
+      "message": "has Next 16 params Promise shape",
       "details": []
     },
     {
@@ -513,15 +531,9 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "execute.import-runtime-type",
-      "message": "imports RuntimeEngine type from official package",
-      "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "execute.import-resolveCommand",
-      "message": "imports resolveCommand from command-resolver",
+      "level": "PASS",
+      "id": "execute.import-run-command-core",
+      "message": "imports runManifestCommandCore from approved runtime core",
       "details": []
     },
     {
@@ -555,21 +567,15 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "execute.calls-resolveCommand",
-      "message": "calls resolveCommand",
+      "level": "PASS",
+      "id": "execute.calls-run-command-core",
+      "message": "delegates to runManifestCommandCore",
       "details": []
     },
     {
       "level": "PASS",
       "id": "execute.calls-createManifestRuntime",
       "message": "calls createManifestRuntime shim",
-      "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "execute.calls-runtime-runCommand",
-      "message": "calls runtime.runCommand",
       "details": []
     },
     {
@@ -591,15 +597,21 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "execute.create-bootstrap",
-      "message": "bootstraps create commands with runtime.createInstance",
+      "level": "PASS",
+      "id": "execute.no-direct-repo-runtime",
+      "message": "execute-command only imports the approved run-manifest-command-core entry from @repo/manifest-runtime",
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "execute.no-direct-repo-runtime",
-      "message": "execute-command must go through apps/api/lib/manifest-runtime shim, not @repo/manifest-runtime directly",
+      "level": "PASS",
+      "id": "execute.no-inline-resolveCommand",
+      "message": "execute-command must not resolve commands inline; resolution lives in run-manifest-command-core",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "execute.no-inline-runtime-runCommand",
+      "message": "execute-command must not call runtime.runCommand inline; execution lives in run-manifest-command-core",
       "details": []
     },
     {
@@ -621,19 +633,25 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "resolver.import-registry-helper",
-      "message": "missing command registry helper import from @repo/manifest-runtime/commands-registry",
+      "level": "PASS",
+      "id": "resolver.api-reexports-shared",
+      "message": "has resolveCommand re-export from @repo/manifest-runtime/command-resolver",
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
+      "id": "resolver.import-registry-helper",
+      "message": "has command registry helper import (commands-registry)",
+      "details": []
+    },
+    {
+      "level": "PASS",
       "id": "resolver.exports-resolveCommand",
       "message": "exports resolveCommand",
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
       "id": "resolver.handles-kebab",
       "message": "documents or implements slug/kebab to camel command mapping",
       "details": []
@@ -751,15 +769,14 @@
     {
       "level": "INFO",
       "id": "command-route-count",
-      "message": "Command route files found: 7",
+      "message": "Command route files found: 6",
       "details": [
-        "apps/api/app/api/communications/email-templates/commands/create/route.ts",
         "apps/api/app/api/events/profitability/commands/recalculate/route.ts",
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts",
+        "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts",
         "apps/api/app/api/manifest/[entity]/commands/[command]/route.ts",
         "apps/api/app/api/procurement/purchase-orders/commands/receive/route.ts",
-        "apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts",
-        "apps/api/app/api/staff/shifts/commands/create-validated/route.ts",
-        "apps/api/app/api/staff/shifts/commands/update-validated/route.ts"
+        "apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts"
       ]
     },
     {
@@ -771,7 +788,7 @@
     {
       "level": "PASS",
       "id": "command-routes.low-count",
-      "message": "Command route count is low (7); dispatcher model appears active",
+      "message": "Command route count is low (6); dispatcher model appears active",
       "details": []
     },
     {
@@ -783,13 +800,19 @@
     {
       "level": "PASS",
       "id": "command-route.allowlisted-custom",
-      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/communications/email-templates/commands/create/route.ts",
+      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/events/profitability/commands/recalculate/route.ts",
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "command-route.allowlisted-but-thin",
-      "message": "Allowlisted command route looks like a thin Manifest wrapper and should use dispatcher: apps/api/app/api/events/profitability/commands/recalculate/route.ts",
+      "level": "PASS",
+      "id": "command-route.allowlisted-custom",
+      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/kitchen/dishes/commands/create/route.ts",
+      "details": []
+    },
+    {
+      "level": "PASS",
+      "id": "command-route.allowlisted-custom",
+      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/kitchen/prep-lists/commands/create/route.ts",
       "details": []
     },
     {
@@ -799,32 +822,16 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "command-route.allowlisted-but-thin",
-      "message": "Allowlisted command route looks like a thin Manifest wrapper and should use dispatcher: apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts",
-      "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "command-route.allowlisted-but-thin",
-      "message": "Allowlisted command route looks like a thin Manifest wrapper and should use dispatcher: apps/api/app/api/staff/shifts/commands/create-validated/route.ts",
+      "level": "PASS",
+      "id": "command-route.allowlisted-custom",
+      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts",
       "details": []
     },
     {
       "level": "PASS",
-      "id": "command-route.allowlisted-custom",
-      "message": "Custom command route is allowlisted and not a thin wrapper: apps/api/app/api/staff/shifts/commands/update-validated/route.ts",
+      "id": "command-routes.no-generated-wrappers",
+      "message": "No generated/thin command wrappers remain outside dispatcher",
       "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "command-routes.generated-wrappers",
-      "message": "Generated/thin command wrappers remain outside dispatcher",
-      "details": [
-        "apps/api/app/api/events/profitability/commands/recalculate/route.ts",
-        "apps/api/app/api/procurement/purchase-orders/commands/update-status/route.ts",
-        "apps/api/app/api/staff/shifts/commands/create-validated/route.ts"
-      ]
     },
     {
       "level": "INFO",
@@ -851,59 +858,35 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "frontend.manifest-runtime-imports",
-      "message": "apps/app frontend imports Manifest runtime packages",
-      "details": [
-        "apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts: imports @repo/manifest-runtime/prisma-store",
-        "apps/app/app/(authenticated)/kitchen/prep-lists/components/prep-list-form-with-constraints.tsx: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/prep-tasks/actions.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/recipes/[recipeId]/components/recipe-detail-edit-button.tsx: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts: imports @repo/manifest-runtime/prisma-store",
-        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest.ts: imports @repo/manifest-runtime",
-        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest.ts: imports @repo/manifest-runtime/prisma-store",
-        "apps/app/app/(authenticated)/kitchen/recipes/components/new-recipe-form-client.tsx: imports @angriff36/manifest/ir",
-        "apps/app/app/(authenticated)/kitchen/recipes/menus/actions-manifest.ts: imports @angriff36/manifest/ir",
-        "apps/app/lib/manifest-command.ts: imports @repo/manifest-runtime/manifest-runtime-factory",
-        "apps/app/lib/manifest-command.ts: imports @repo/manifest-runtime/run-manifest-command-core"
-      ]
+      "level": "PASS",
+      "id": "frontend.no-manifest-runtime-imports",
+      "message": "apps/app frontend does not import @angriff36/manifest or @repo/manifest-runtime",
+      "details": []
     },
     {
-      "level": "FAIL",
-      "id": "callsites.old-command-paths",
-      "message": "Code still calls old concrete command URLs instead of dispatcher",
-      "details": [
-        "packages/mcp-server/src/lib/route-conformance-scan.ts:247: \"Add apps/api/app/api/manifest/[entity]/commands/[command]/route.ts\",",
-        "packages/mcp-server/src/plugins/route-resolution.ts:181: ? \"apps/api/app/api/manifest/[entity]/commands/[command]/route.ts\""
-      ]
+      "level": "PASS",
+      "id": "callsites.no-old-command-paths",
+      "message": "No unallowlisted call sites use old /api/.../commands/... paths",
+      "details": []
     },
     {
       "level": "WARN",
       "id": "callsites.allowlisted-custom-command-paths",
-      "message": "Found 5 old command-path call sites, but they appear allowlisted custom routes",
+      "message": "Found 7 old command-path call sites, but they appear allowlisted custom routes",
       "details": [
-        "apps/app/app/lib/routes.ts:212: /** POST /api/staff/shifts/commands/create-validated */",
-        "apps/app/app/lib/routes.ts:214: \"/api/staff/shifts/commands/create-validated\";",
-        "apps/app/app/lib/routes.ts:216: /** POST /api/staff/shifts/commands/update-validated */",
-        "apps/app/app/lib/routes.ts:218: \"/api/staff/shifts/commands/update-validated\";",
-        "apps/api/app/api/events/profitability/commands/recalculate/route.ts:2: * POST /api/events/profitability/commands/recalculate"
+        "apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts:9: * `POST /api/kitchen/prep-lists/commands/create`, which runs the governed",
+        "apps/app/app/(authenticated)/kitchen/prep-lists/actions-manifest.ts:100: response = await apiPostJsonServer(\"/api/kitchen/prep-lists/commands/create\", {",
+        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts:9: * `POST /api/kitchen/dishes/commands/create`, which runs the governed",
+        "apps/app/app/(authenticated)/kitchen/recipes/actions-manifest-v2.ts:138: response = await apiPostJsonServer(\"/api/kitchen/dishes/commands/create\", {",
+        "apps/api/app/api/events/profitability/commands/recalculate/route.ts:2: * POST /api/events/profitability/commands/recalculate",
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts:2: * POST /api/kitchen/dishes/commands/create",
+        "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts:2: * POST /api/kitchen/prep-lists/commands/create"
       ]
     },
     {
       "level": "PASS",
       "id": "callsites.dispatcher-paths",
-      "message": "Found 14 dispatcher-style command call sites",
+      "message": "Found 20 dispatcher-style command call sites",
       "details": []
     },
     {
@@ -921,7 +904,7 @@
     {
       "level": "PASS",
       "id": "generator.templates-runManifestCommand",
-      "message": "generator templates/delegates to runManifestCommand",
+      "message": "generator templates/delegates to runManifestCommand (directly or via dispatcherExecutorImportName config)",
       "details": []
     },
     {
@@ -949,78 +932,10 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "imports.deep-runtime-paths",
-      "message": "Bad deep/absolute imports found",
-      "details": [
-        "manifest/runtime/src/__tests__/allergen-acknowledge-idempotency.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/catering-order-parent-context-runtime.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/__tests__/commands-registry.test.ts: ../commands-registry.js",
-        "manifest/runtime/src/__tests__/conformance-index.test.ts: ../runtime/loadManifests",
-        "manifest/runtime/src/__tests__/create-initial-transition-input.test.ts: ../run-manifest-command-core",
-        "manifest/runtime/src/__tests__/email-workflow-governance.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/facility-governance.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/facility-work-order-parent-context-runtime.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/__tests__/feature-flags.test.ts: ../flag-provider",
-        "manifest/runtime/src/__tests__/manifest-builtins.test.ts: ../manifest-builtins.js",
-        "manifest/runtime/src/__tests__/overrideable-constraints.test.ts: ../runtime/loadManifests",
-        "manifest/runtime/src/__tests__/parent-context-propagation.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/__tests__/parent-context-propagation.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/proposal-parent-context-runtime.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/__tests__/reactions-conformance-runtime.test.ts: ../manifest-builtins.js",
-        "manifest/runtime/src/__tests__/reactions-conformance-runtime.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/revenue-recognition-parent-context-runtime.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/__tests__/venue-governance.test.ts: ../run-manifest-command-core.js",
-        "manifest/runtime/src/__tests__/waste-shipment-parent-context-runtime.test.ts: ../parent-context-resolver.js",
-        "manifest/runtime/src/bottleneck-detector/ai-suggestions.ts: ./types",
-        "manifest/runtime/src/bottleneck-detector/detector.ts: ./types",
-        "manifest/runtime/src/bottleneck-detector/detector.ts: ./types",
-        "manifest/runtime/src/bottleneck-detector/detector.ts: ./types",
-        "manifest/runtime/src/bottleneck-detector/index.ts: ./ai-suggestions",
-        "manifest/runtime/src/bottleneck-detector/index.ts: ./detector",
-        "manifest/runtime/src/bottleneck-detector/index.ts: ./types",
-        "manifest/runtime/src/command-resolver.ts: ./commands-registry",
-        "manifest/runtime/src/event-import-runtime.ts: ./ir-contract",
-        "manifest/runtime/src/event-import-runtime.ts: ./runtime-engine",
-        "manifest/runtime/src/index.ts: ./ir-contract",
-        "manifest/runtime/src/index.ts: ./runtime-engine",
-        "manifest/runtime/src/index.ts: ./prisma-store",
-        "manifest/runtime/src/index.ts: ./prep-list-autogeneration",
-        "manifest/runtime/src/index.ts: ./manifest-telemetry-collector",
-        "manifest/runtime/src/index.ts: ./permission-checker",
-        "manifest/runtime/src/index.ts: ./permission-guard",
-        "manifest/runtime/src/index.ts: ./prep-task-dependency-engine",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./manifest-builtins",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./middleware",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./permission-guard",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./pg-pool",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-idempotency-store",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-json-store",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-store",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./prisma-store",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./runtime/loadManifests",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./runtime-engine",
-        "manifest/runtime/src/manifest-runtime-factory.ts: ./generated/prisma-model-metadata.generated",
-        "manifest/runtime/src/middleware/index.ts: ./rbac-middleware",
-        "manifest/runtime/src/middleware/index.ts: ./identity-middleware",
-        "manifest/runtime/src/middleware/index.ts: ./prep-inventory-demand-middleware",
-        "manifest/runtime/src/middleware/rbac-middleware.ts: ../permission-guard",
-        "manifest/runtime/src/middleware/rbac-middleware.ts: ../permission-checker",
-        "manifest/runtime/src/permission-guard.ts: ./permission-checker",
-        "manifest/runtime/src/prisma-idempotency-store.ts: ./utils/to-json",
-        "manifest/runtime/src/prisma-json-store.ts: ./utils/to-json",
-        "manifest/runtime/src/prisma-json-store.ts: ./prisma-store",
-        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/generic-prisma-store",
-        "manifest/runtime/src/prisma-store.ts: ./prisma-stores/broken-read-batch16-inventory-transfer",
-        "manifest/runtime/src/prisma-stores/broken-read-batch16-inventory-transfer.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/generic-prisma-store.ts: ./shared",
-        "manifest/runtime/src/prisma-stores/generic-prisma-store.ts: ../generated/prisma-model-metadata.generated",
-        "manifest/runtime/src/run-manifest-command-core.ts: ./command-resolver",
-        "manifest/runtime/src/run-manifest-command-core.ts: ./parent-context-resolver",
-        "manifest/runtime/src/run-manifest-command-core.ts: ./parent-context-resolver",
-        "manifest/runtime/src/runtime-engine.ts: ./manifest-builtins",
-        "manifest/runtime/src/runtime/loadManifests.ts: ../ir-contract"
-      ]
+      "level": "PASS",
+      "id": "imports.no-deep-runtime-paths",
+      "message": "No imports deep-link into manifest/runtime/src, manifest/runtime/dist, or absolute Windows paths",
+      "details": []
     },
     {
       "level": "PASS",
@@ -1032,24 +947,6 @@
       "level": "PASS",
       "id": "imports.dependency-declared",
       "message": "apps/api imports @angriff36/manifest and declares it in dependencies:2.2.0",
-      "details": []
-    },
-    {
-      "level": "PASS",
-      "id": "imports.dependency-declared",
-      "message": "apps/app imports @angriff36/manifest and declares it in dependencies:2.2.0",
-      "details": []
-    },
-    {
-      "level": "PASS",
-      "id": "imports.dependency-declared",
-      "message": "apps/app imports @repo/manifest-runtime and declares it in dependencies:workspace:*",
-      "details": []
-    },
-    {
-      "level": "FAIL",
-      "id": "imports.dependency-missing",
-      "message": "packages/design-system imports @angriff36/manifest but does not declare it in packages/design-system/package.json",
       "details": []
     },
     {
@@ -1071,9 +968,9 @@
       "details": []
     },
     {
-      "level": "FAIL",
-      "id": "imports.dependency-missing",
-      "message": "manifest/runtime imports @repo/manifest-runtime but does not declare it in manifest/runtime/package.json",
+      "level": "PASS",
+      "id": "imports.dependency-self-reference",
+      "message": "manifest/runtime imports @repo/manifest-runtime via package self-reference (own exports map)",
       "details": []
     },
     {
@@ -1087,7 +984,6 @@
         "apps/api/app/api/analytics/bottlenecks/route.ts: imports @repo/manifest-runtime/bottleneck-detector",
         "apps/api/app/api/calendar/sync/trigger/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/command-board/simulations/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
-        "apps/api/app/api/communications/email-templates/commands/create/route.ts: imports @angriff36/manifest",
         "apps/api/app/api/cron/contract-expiration-alerts/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/cron/email-reminders/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/cron/inventory-audit/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
@@ -1098,9 +994,15 @@
         "apps/api/app/api/inventory/batch/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/kitchen/allergens/update-dish/route.ts: imports @repo/manifest-runtime/route-helpers",
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts: imports @angriff36/manifest/ir",
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts: imports @repo/manifest-runtime",
+        "apps/api/app/api/kitchen/dishes/commands/create/route.ts: imports @repo/manifest-runtime/prisma-store",
         "apps/api/app/api/kitchen/import/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/prep-lists/autogenerate/process/route.ts: imports @repo/manifest-runtime",
+        "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts: imports @angriff36/manifest/ir",
+        "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts: imports @repo/manifest-runtime",
+        "apps/api/app/api/kitchen/prep-lists/commands/create/route.ts: imports @repo/manifest-runtime/prisma-store",
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts: imports @angriff36/manifest/ir",
         "apps/api/app/api/kitchen/prep-lists/save-db/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/recipes/[id]/composite/restore-version/route.ts: imports @repo/manifest-runtime/route-helpers",
@@ -1112,10 +1014,10 @@
         "apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/kitchen/tasks/[id]/claim-shadow-manifest/route.ts: imports @repo/manifest-runtime/route-helpers",
         "apps/api/app/api/public/contracts/[token]/sign/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
+        "apps/api/app/api/public/proposals/[token]/mark-viewed/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/public/proposals/[token]/respond/route.ts: imports @repo/manifest-runtime/run-manifest-command-core",
         "apps/api/app/api/shipments/[id]/helpers.ts: imports @repo/manifest-runtime/run-manifest-command-core",
-        "apps/api/app/api/shipments/[id]/items/[itemId]/helpers.ts: imports @repo/manifest-runtime/run-manifest-command-core",
-        "apps/api/app/api/staff/shifts/commands/create-validated/route.ts: imports @repo/manifest-runtime/run-manifest-command-core"
+        "apps/api/app/api/shipments/[id]/items/[itemId]/helpers.ts: imports @repo/manifest-runtime/run-manifest-command-core"
       ]
     },
     {
@@ -1133,7 +1035,6 @@
         "apps/api/app/api/calendar/sync/trigger/route.ts:29: createManifestRuntime({",
         "apps/api/app/api/command-board/simulations/route.ts:197: createManifestRuntime({",
         "apps/api/app/api/command-board/simulations/route.ts:317: createManifestRuntime({",
-        "apps/api/app/api/communications/email-templates/commands/create/route.ts:75: const runtime = await createManifestRuntime({",
         "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts:102: const runtime = await createManifestRuntime({",
         "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts:203: const runtime = await createManifestRuntime({",
         "apps/api/app/api/communications/sms/automation-rules/route.ts:133: const runtime = await createManifestRuntime({",
@@ -1172,9 +1073,7 @@
         "apps/api/app/api/shipments/[id]/helpers.ts:208: createManifestRuntime({",
         "apps/api/app/api/shipments/[id]/items/[itemId]/helpers.ts:29: createManifestRuntime({",
         "apps/api/app/api/smsautomationrule/activate/route.ts:48: const runtime = await createManifestRuntime({",
-        "apps/api/app/api/smsautomationrule/deactivate/route.ts:48: const runtime = await createManifestRuntime({",
-        "apps/api/app/api/staff/shifts/commands/create-validated/route.ts:107: const runtime = await createManifestRuntime({",
-        "apps/api/app/api/staff/shifts/commands/update-validated/route.ts:123: const runtime = await createManifestRuntime({"
+        "apps/api/app/api/smsautomationrule/deactivate/route.ts:48: const runtime = await createManifestRuntime({"
       ]
     },
     {
@@ -1191,7 +1090,6 @@
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:139: const lineResult = await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:162: const scheduleResult = await manifestRuntime.runCommand(",
         "apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts:182: await manifestRuntime.runCommand(",
-        "apps/api/app/api/communications/email-templates/commands/create/route.ts:83: const result = await runtime.runCommand(\"create\", body, {",
         "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts:106: const result = await runtime.runCommand(",
         "apps/api/app/api/communications/sms/automation-rules/[id]/route.ts:207: const result = await runtime.runCommand(",
         "apps/api/app/api/communications/sms/automation-rules/route.ts:137: const result = await runtime.runCommand(\"create\", body, {",
@@ -1224,8 +1122,6 @@
         "apps/api/app/api/kitchen/tasks/sync-claims/route.ts:114: const result = await runtime.runCommand(",
         "apps/api/app/api/smsautomationrule/activate/route.ts:52: const result = await runtime.runCommand(",
         "apps/api/app/api/smsautomationrule/deactivate/route.ts:52: const result = await runtime.runCommand(",
-        "apps/api/app/api/staff/shifts/commands/create-validated/route.ts:130: const result = await runtime.runCommand(\"create\", body, {",
-        "apps/api/app/api/staff/shifts/commands/update-validated/route.ts:128: const result = await runtime.runCommand(\"update\", body, {",
         "apps/api/lib/manifest-runtime.ts:80: * const result = await runtime.runCommand(\"claim\", { userId: \"user-123\" }, {"
       ]
     },
@@ -1242,7 +1138,7 @@
       "details": []
     },
     {
-      "level": "FAIL",
+      "level": "PASS",
       "id": "mcp.ir-loader.not-kitchen-only",
       "message": "MCP IR loader must not be hard-wired only to kitchen.ir.json",
       "details": []

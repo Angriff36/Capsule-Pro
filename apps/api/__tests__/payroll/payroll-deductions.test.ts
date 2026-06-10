@@ -32,22 +32,6 @@ vi.mock("@/app/lib/tenant", () => ({
   resolveCurrentUser: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
-        {
-          success: true,
-          ...(typeof data === "object" && data !== null ? data : { data }),
-        },
-        { status }
-      ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
-
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
 
@@ -104,7 +88,7 @@ describe("Employee Deductions API", () => {
       expect(response.status).toBe(401);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Unauthorized");
+      expect(body.error).toBe("Unauthorized");
     });
 
     it("should return 400 when tenant not found", async () => {
@@ -118,7 +102,7 @@ describe("Employee Deductions API", () => {
       expect(response.status).toBe(400);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Tenant not found");
+      expect(body.error).toBe("Tenant not found");
     });
 
     it("should return deductions for authenticated user", async () => {
@@ -163,8 +147,8 @@ describe("Employee Deductions API", () => {
       expect(database.employeeDeduction.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
@@ -182,7 +166,7 @@ describe("Employee Deductions API", () => {
 
       expect(database.employeeDeduction.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          orderBy: { created_at: "desc" },
+          orderBy: { createdAt: "desc" },
         })
       );
     });
@@ -200,7 +184,7 @@ describe("Employee Deductions API", () => {
       expect(response.status).toBe(500);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("Internal server error");
+      expect(body.error).toBe("Internal server error");
     });
   });
 
@@ -247,7 +231,7 @@ describe("Employee Deductions API", () => {
       expect(response.status).toBe(404);
       const body = await response.json();
       expect(body.success).toBe(false);
-      expect(body.message).toBe("EmployeeDeduction not found");
+      expect(body.error).toBe("EmployeeDeduction not found");
     });
 
     it("should enforce tenant isolation on detail queries", async () => {
@@ -266,8 +250,8 @@ describe("Employee Deductions API", () => {
         expect.objectContaining({
           where: {
             id: "deduction-001",
-            tenant_id: TEST_TENANT_ID,
-            deleted_at: null,
+            tenantId: TEST_TENANT_ID,
+            deletedAt: null,
           },
         })
       );
