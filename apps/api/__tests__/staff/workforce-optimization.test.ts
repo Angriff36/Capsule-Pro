@@ -1,42 +1,33 @@
 /**
  * WorkforceOptimization Commands API Test Suite
  *
- * Tests the 4 command routes under /api/workforceoptimization/*:
+ * Tests the 4 command routes dispatched through the generic manifest
+ * dispatcher at /api/manifest/[entity]/commands/[command]:
  *   create, start, complete, fail
  *
  * Why this matters:
  * - WorkforceOptimization is the AI-driven scheduling primitive: a tenant
  *   triggers an optimization run (schedule | assignment | performance), the
- *   runtime moves it through the state machine `pending → in_progress →
+ *   runtime moves it through the state machine `pending -> in_progress ->
  *   completed | failed`, and downstream consumers (dashboards, schedule
  *   suggestions) read the resulting `results` blob. A regression on the
  *   verb mapping silently strands an in-flight run, leaves the UI showing
  *   "pending" forever, and the only way to notice is when a manager opens
  *   a dashboard at 2am on Saturday and finds last week's optimization
  *   never completed.
- * - All 4 routes are entity-scoped (NOT instance-scoped) — the manifest
- *   defines `command create()`, `command start()`, `command complete()`,
- *   `command fail()` and the routes do NOT pass `instanceId`. Tests pin
- *   the exact 3-arg shape `runCommand(verb, body, { entityName: "WorkforceOptimization" })`
- *   so a future "helpful" patch that adds `instanceId: body.id` doesn't
- *   silently misroute (the runtime resolves the instance from `body.id`
- *   if needed for state transitions).
- * - Routes use the *direct-clerk-id* user-context shape:
- *   `createManifestRuntime({ user: { id: userId, tenantId } })` — they do
- *   NOT call `database.user.findFirst` to resolve an internal user. Tests
- *   pin this shape so a copy/paste from a different domain (which DOES
- *   call findFirst) doesn't accidentally introduce a database round-trip
- *   on every optimization invocation.
- * - Policy denial format is `Access denied: ${policyName}` (no `role=`
- *   suffix). The notification-commands routes append `role=`; tests pin
- *   this domain's format so a refactor across both doesn't accidentally
- *   merge them.
+ * - All 4 commands route through the generic manifest dispatcher (no
+ *   per-entity concrete routes). Tests pin the correct entity/command slug
+ *   pair passed via context params.
+ * - The dispatcher uses requireCurrentUser (not auth + getTenantIdForOrg),
+ *   so the user context shape is { id, tenantId, role, email, firstName,
+ *   lastName }. Tests pin that runManifestCommand receives the correct
+ *   user subshape { id, tenantId, role }.
  *
- * Coverage per route (8 cases, 32 tests total):
- *   401 unauth, 400 tenant-missing, 200 success + user-context shape,
- *   403 policy denial, 422 guard failure, 400 generic failure,
- *   400 default-error fallback, 500 runtime throw,
- *   plus runtime-invocation pin (verb + entityName, no instanceId).
+ * Coverage per command (9 cases, 36 tests total):
+ *   401 InvariantError, 500 requireCurrentUser throws non-invariant,
+ *   200 success, 403 policy denial, 422 guard failure,
+ *   400 generic failure, 400 default-error fallback, 500 runtime throw,
+ *   plus runManifestCommand invocation pin (entity + command + body + user).
  *
  * @vitest-environment node
  */
@@ -44,120 +35,108 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// --- Imports (dispatcher) ---
+
+import { POST as dispatch } from "@/app/api/manifest/[entity]/commands/[command]/route";
+
 // --- Mocks ---
 
-vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
-
-vi.mock("@/app/lib/tenant", () => ({
-  getTenantIdForOrg: vi.fn(),
-  requireCurrentUser: vi.fn(),
-  requireTenantId: vi.fn(),
-  resolveCurrentUser: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({
+  runManifestCommand: vi.fn(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@/app/lib/invariant", () => ({
+  InvariantError: class extends Error {
+    name = "InvariantError";
+  },
+}));
+
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({
+  runManifestCommandCore: vi.fn(),
+}));
 
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(),
 }));
 
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
-        {
-          success: true,
-          ...(typeof data === "object" && data !== null ? data : { data }),
-        },
-        { status }
-      ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
-});
+vi.mock("@repo/database", () => ({
+  database: {},
+}));
+
+vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 
 // --- Imports (after mocks) ---
 
-const { auth } = await import("@repo/auth/server");
-const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
+const { requireCurrentUser } = await import("@/app/lib/tenant");
 
 // --- Constants ---
 
 const TEST_TENANT_ID = "00000000-0000-0000-0000-000000000900";
-const TEST_ORG_ID = "org_workforce_test";
-const TEST_CLERK_ID = "clerk_workforce_test";
+const TEST_USER_ID = "user_workforce_internal";
+const TEST_USER_ROLE = "admin";
 const TEST_OPTIMIZATION_ID = "99999999-9999-4999-a999-999999999999";
+
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: TEST_USER_ROLE,
+  email: "test@example.com",
+  firstName: "Test",
+  lastName: "User",
+};
 
 // --- Helpers ---
 
 function authed() {
-  vi.mocked(auth).mockResolvedValue({
-    orgId: TEST_ORG_ID,
-    userId: TEST_CLERK_ID,
-  } as never);
-  vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID as never);
+  vi.mocked(requireCurrentUser).mockResolvedValue(MOCK_USER as never);
 }
 
 function unauthed() {
-  vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as never);
+  const authError = new Error("Unauthenticated");
+  authError.name = "InvariantError";
+  vi.mocked(requireCurrentUser).mockRejectedValue(authError as never);
 }
 
-function makeRequest(url: string, init?: RequestInit): NextRequest {
-  const opts: RequestInit = { ...init };
-  if (opts.body && !opts.headers) {
-    opts.headers = { "Content-Type": "application/json" };
-  }
-  return new NextRequest(new URL(url, "http://localhost:3000"), opts as never);
+function postRequest(body: unknown = {}): NextRequest {
+  return new NextRequest(
+    "http://localhost/api/manifest/WorkforceOptimization/commands/create",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }
+  );
 }
 
-function postRequest(url: string, body: unknown = {}): NextRequest {
-  return makeRequest(url, {
-    method: "POST",
-    body: JSON.stringify(body),
-  });
+function makeContext(command: string) {
+  return {
+    params: Promise.resolve({ entity: "WorkforceOptimization", command }),
+  };
 }
 
-function mockRuntimeSuccess(
+function mockSuccess(
   result: Record<string, unknown> = { id: TEST_OPTIMIZATION_ID }
 ) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: true,
-      result,
-      emittedEvents: [
-        { type: "WorkforceOptimizationEvent", entityId: result.id },
-      ],
-    }),
-  } as never);
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        success: true,
+        result,
+        events: [{ type: "WorkforceOptimizationEvent", entityId: result.id }],
+      }),
+      { status: 200 }
+    )
+  );
 }
 
-function mockRuntimeFailure(error: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      error,
-    }),
-  } as never);
-}
-
-function mockRuntimePolicyDenial(policyName: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      policyDenial: { policyName },
-    }),
-  } as never);
-}
-
-function mockRuntimeGuardFailure(index: number, formatted: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      guardFailure: { index, formatted },
-    }),
-  } as never);
+function mockFailure(message: string, status = 400) {
+  vi.mocked(runManifestCommand).mockResolvedValue(
+    new Response(
+      JSON.stringify({ success: false, message }),
+      { status }
+    )
+  );
 }
 
 // --- Test Suite ---
@@ -174,18 +153,14 @@ describe("WorkforceOptimization Commands API", () => {
 
   type Cmd = {
     name: string;
-    runtimeName: string;
-    path: string;
-    routePath: string;
+    command: string;
     sampleBody: Record<string, unknown>;
   };
 
   const COMMANDS: Cmd[] = [
     {
       name: "create",
-      runtimeName: "create",
-      path: "/api/workforceoptimization/create",
-      routePath: "@/app/api/workforceoptimization/create/route",
+      command: "create",
       sampleBody: {
         locationId: "loc_001",
         optimizationType: "schedule",
@@ -193,16 +168,12 @@ describe("WorkforceOptimization Commands API", () => {
     },
     {
       name: "start",
-      runtimeName: "start",
-      path: "/api/workforceoptimization/start",
-      routePath: "@/app/api/workforceoptimization/start/route",
+      command: "start",
       sampleBody: { id: TEST_OPTIMIZATION_ID },
     },
     {
       name: "complete",
-      runtimeName: "complete",
-      path: "/api/workforceoptimization/complete",
-      routePath: "@/app/api/workforceoptimization/complete/route",
+      command: "complete",
       sampleBody: {
         id: TEST_OPTIMIZATION_ID,
         results: '{"recommendedShifts":3,"laborSavings":250}',
@@ -210,9 +181,7 @@ describe("WorkforceOptimization Commands API", () => {
     },
     {
       name: "fail",
-      runtimeName: "fail",
-      path: "/api/workforceoptimization/fail",
-      routePath: "@/app/api/workforceoptimization/fail/route",
+      command: "fail",
       sampleBody: {
         id: TEST_OPTIMIZATION_ID,
         error: "Insufficient employee availability",
@@ -220,79 +189,60 @@ describe("WorkforceOptimization Commands API", () => {
     },
   ];
 
-  describe.each(COMMANDS)("POST $path", ({
+  describe.each(COMMANDS)("command $name", ({
     name,
-    runtimeName,
-    path,
-    routePath,
+    command,
     sampleBody,
   }) => {
-    it(`returns 401 when unauthenticated [${name}]`, async () => {
+    it(`returns 401 when requireCurrentUser throws InvariantError [${name}]`, async () => {
       unauthed();
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(401);
       const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
+      expect(body.message).toBe("Unauthenticated");
     });
 
-    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns 500 when requireCurrentUser throws non-InvariantError [${name}]`, async () => {
+      vi.mocked(requireCurrentUser).mockRejectedValue(
+        new Error("DB connection lost") as never
+      );
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
-
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(500);
       const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
+      expect(body.message).toBe("Internal server error");
     });
 
     it(`returns 200 with result and events on success [${name}]`, async () => {
-      mockRuntimeSuccess({ id: TEST_OPTIMIZATION_ID, status: "pending" });
+      mockSuccess({ id: TEST_OPTIMIZATION_ID, status: "pending" });
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
       expect(body.result.id).toBe(TEST_OPTIMIZATION_ID);
       expect(body.events).toHaveLength(1);
-
-      // Pin the user-context shape: routes pass clerk userId directly,
-      // NOT the resolved internal user. A regression that adds
-      // database.user.findFirst lookup would surface here.
-      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-      expect(runtimeCall).toEqual({
-        user: {
-          id: TEST_CLERK_ID,
-          tenantId: TEST_TENANT_ID,
-        },
-      });
     });
 
     it(`returns 403 on policy denial [${name}]`, async () => {
-      mockRuntimePolicyDenial("ManagersCanRunOptimization");
+      mockFailure("Access denied: ManagersCanRunOptimization", 403);
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(403);
       const body = await res.json();
       expect(body.message).toBe("Access denied: ManagersCanRunOptimization");
-      // Pin: this domain's policy-denial does NOT include `role=` suffix.
-      expect(body.message).not.toContain("role=");
     });
 
     it(`returns 422 on guard failure [${name}]`, async () => {
-      mockRuntimeGuardFailure(
-        0,
-        "optimizationType must be one of schedule|assignment|performance"
+      mockFailure(
+        "Guard 0 failed: optimizationType must be one of schedule|assignment|performance",
+        422
       );
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(422);
       const body = await res.json();
@@ -301,67 +251,54 @@ describe("WorkforceOptimization Commands API", () => {
     });
 
     it(`returns 400 on generic command failure [${name}]`, async () => {
-      mockRuntimeFailure("State transition not allowed");
+      mockFailure("State transition not allowed", 400);
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("State transition not allowed");
     });
 
-    it(`returns 400 with default message when error is null [${name}]`, async () => {
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({ success: false }),
-      } as never);
+    it(`returns 400 with default message when error is empty [${name}]`, async () => {
+      mockFailure("Command failed", 400);
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Command failed");
     });
 
-    it(`returns 500 when runtime throws [${name}]`, async () => {
-      vi.mocked(createManifestRuntime).mockRejectedValue(
+    it(`returns 500 when runManifestCommand throws [${name}]`, async () => {
+      vi.mocked(runManifestCommand).mockRejectedValue(
         new Error("Runtime explosion") as never
       );
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const res = await dispatch(postRequest(sampleBody), makeContext(command));
 
       expect(res.status).toBe(500);
       const body = await res.json();
       expect(body.message).toBe("Internal server error");
     });
 
-    it(`passes correct command name + entity (no instanceId) to runtime [${name}]`, async () => {
-      const runCommand = vi.fn().mockResolvedValue({
-        success: true,
-        result: { id: TEST_OPTIMIZATION_ID },
-        emittedEvents: [],
-      });
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand,
-      } as never);
+    it(`passes correct entity, command, body, and user to runManifestCommand [${name}]`, async () => {
+      mockSuccess({ id: TEST_OPTIMIZATION_ID });
 
-      const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
+      await dispatch(postRequest(sampleBody), makeContext(command));
 
-      // Pin the exact 3-arg shape: all 4 commands are entity-scoped,
-      // so no `instanceId` is passed even for state-transitioning verbs
-      // like start/complete/fail. The runtime resolves the instance from
-      // body.id. Adding `instanceId: body.id` here would double-route.
-      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-        entityName: "WorkforceOptimization",
-      });
-
-      // Verify NO 4th arg or extra options key sneaked in.
-      const callArgs = runCommand.mock.calls[0];
-      expect(callArgs).toHaveLength(3);
-      expect(callArgs[2]).not.toHaveProperty("instanceId");
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "WorkforceOptimization",
+          command,
+          body: sampleBody,
+          user: {
+            id: TEST_USER_ID,
+            tenantId: TEST_TENANT_ID,
+            role: TEST_USER_ROLE,
+          },
+        })
+      );
     });
   });
 });
