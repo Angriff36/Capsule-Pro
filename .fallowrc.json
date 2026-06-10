@@ -1,21 +1,65 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "entry": ["src/index.{ts,tsx,js,jsx}", "src/main.{ts,tsx,js,jsx}"],
+  "entry": [
+    "apps/*/app/**/page.{ts,tsx,js,jsx}",
+    "apps/*/app/**/layout.{ts,tsx,js,jsx}",
+    "apps/*/app/**/route.{ts,tsx,js,jsx}",
+    "apps/*/app/**/loading.{ts,tsx,js,jsx}",
+    "apps/*/app/**/error.{ts,tsx,js,jsx}",
+    "apps/*/app/**/not-found.{ts,tsx,js,jsx}",
+    "apps/*/next.config.{ts,js,mjs,cjs}",
+    "src/index.{ts,tsx,js,jsx}",
+    "src/main.{ts,tsx,js,jsx}",
+    "scripts/**/*.{ts,tsx,js,jsx,mjs,cjs}",
+    "tools/**/*.{ts,tsx,js,jsx,mjs,cjs}",
+    "manifest/scripts/**/*.{ts,tsx,js,jsx,mjs,cjs}"
+  ],
+  "dynamicallyLoaded": [
+    "apps/*/app/**/page.{ts,tsx,js,jsx}",
+    "apps/*/app/**/layout.{ts,tsx,js,jsx}",
+    "apps/*/app/**/route.{ts,tsx,js,jsx}",
+    "apps/*/app/**/loading.{ts,tsx,js,jsx}",
+    "apps/*/app/**/error.{ts,tsx,js,jsx}",
+    "apps/*/app/**/not-found.{ts,tsx,js,jsx}"
+  ],
   "workspaces": {
-    "packages": ["apps/*", "packages/*", "manifest/runtime"]
+    "patterns": ["apps/*", "packages/*", "manifest", "manifest/runtime"]
   },
+  "ignorePatterns": [
+    "**/.next/**",
+    "**/.next-dev/**",
+    "**/.next-dev-webpack/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/node_modules/**",
+    "**/.turbo/**",
+    "**/.tmp/**",
+    "**/**generated**/**",
+    "**/generated/**"
+  ],
   "duplicates": {
     "minOccurrences": 3,
     "ignore": [
       "**/lib/**",
       "**/legacy/**",
-      "**/__generated__/**",
+      "**/**generated**/**",
       "**/generated/**",
-      "**/__tests__**"
+      "**/**tests**/**"
     ],
     "mode": "mild"
   },
   "rules": {
-    "unused-dependencies": "warn"
+    "unresolved-imports": "error",
+    "unlisted-dependencies": "error",
+    "circular-dependencies": "error",
+    "unused-files": "warn",
+    "unused-exports": "warn",
+    "unused-types": "warn",
+    "unused-dependencies": "warn",
+    "unused-dev-dependencies": "warn",
+    "duplicate-exports": "warn",
+    "boundary-violation": "warn",
+    "stale-suppressions": "warn"
   }
 }

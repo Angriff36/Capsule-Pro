@@ -2,28 +2,14 @@
  * Prep List Auto-Generation Tests
  *
  * Tests for event-driven prep list generation functionality.
+ * These functions live in @repo/manifest-runtime but we test
+ * the contract by mocking the database layer.
+ *
+ * @vitest-environment node
  */
 
-import { database, type OutboxStatus } from "@repo/database";
-import {
-  generatePrepListImmediately,
-  type PrepListAutoGenerationInput,
-  processPendingPrepListGenerations,
-  triggerPrepListAutoGeneration,
-} from "@repo/manifest-runtime";
+import { database } from "@repo/database";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// Mock the database
-vi.mock("@repo/database", () => ({
-  database: {
-    outboxEvent: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      update: vi.fn(),
-      count: vi.fn(),
-    },
-  },
-}));
 
 describe("Prep List Auto-Generation", () => {
   beforeEach(() => {
@@ -32,8 +18,7 @@ describe("Prep List Auto-Generation", () => {
 
   describe("triggerPrepListAutoGeneration", () => {
     it("should create an outbox event for prep list generation", async () => {
-      const mockCreate = vi.mocked(database.outboxEvent.create);
-      mockCreate.mockResolvedValue({
+      vi.mocked(database.outboxEvent.create).mockResolvedValue({
         id: "outbox-123",
         tenantId: "tenant-123",
         aggregateType: "Event",
@@ -45,9 +30,11 @@ describe("Prep List Auto-Generation", () => {
         updatedAt: new Date(),
         publishedAt: null,
         error: null,
-      });
+      } as never);
 
-      const input: PrepListAutoGenerationInput = {
+      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime");
+
+      const input = {
         db: database,
         tenantId: "tenant-123",
         eventId: "event-456",
@@ -61,7 +48,7 @@ describe("Prep List Auto-Generation", () => {
       const result = await triggerPrepListAutoGeneration(input);
 
       expect(result.success).toBe(true);
-      expect(mockCreate).toHaveBeenCalledWith({
+      expect(database.outboxEvent.create).toHaveBeenCalledWith({
         data: {
           tenantId: "tenant-123",
           aggregateType: "Event",
@@ -83,27 +70,25 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should handle errors gracefully", async () => {
-      const mockCreate = vi.mocked(database.outboxEvent.create);
-      mockCreate.mockRejectedValue(new Error("Database error"));
+      vi.mocked(database.outboxEvent.create).mockRejectedValue(new Error("Database error") as never);
 
-      const input: PrepListAutoGenerationInput = {
+      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime");
+
+      const result = await triggerPrepListAutoGeneration({
         db: database,
         tenantId: "tenant-123",
         eventId: "event-456",
         eventTitle: "Test Event",
         guestCount: 100,
         userId: "user-789",
-      };
-
-      const result = await triggerPrepListAutoGeneration(input);
+      });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe("Database error");
     });
 
     it("should use default batch multiplier when not provided", async () => {
-      const mockCreate = vi.mocked(database.outboxEvent.create);
-      mockCreate.mockResolvedValue({
+      vi.mocked(database.outboxEvent.create).mockResolvedValue({
         id: "outbox-123",
         tenantId: "tenant-123",
         aggregateType: "Event",
@@ -115,20 +100,20 @@ describe("Prep List Auto-Generation", () => {
         updatedAt: new Date(),
         publishedAt: null,
         error: null,
-      });
+      } as never);
 
-      const input: PrepListAutoGenerationInput = {
+      const { triggerPrepListAutoGeneration } = await import("@repo/manifest-runtime");
+
+      await triggerPrepListAutoGeneration({
         db: database,
         tenantId: "tenant-123",
         eventId: "event-456",
         eventTitle: "Test Event",
         guestCount: 100,
         userId: "user-789",
-      };
+      });
 
-      await triggerPrepListAutoGeneration(input);
-
-      expect(mockCreate).toHaveBeenCalledWith({
+      expect(database.outboxEvent.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           payload: expect.objectContaining({
             batchMultiplier: 1,
@@ -140,10 +125,7 @@ describe("Prep List Auto-Generation", () => {
 
   describe("processPendingPrepListGenerations", () => {
     it("should process pending prep list generation events", async () => {
-      const mockFindMany = vi.mocked(database.outboxEvent.findMany);
-      const mockUpdate = vi.mocked(database.outboxEvent.update);
-
-      mockFindMany.mockResolvedValue([
+      vi.mocked(database.outboxEvent.findMany).mockResolvedValue([
         {
           id: "outbox-1",
           tenantId: "tenant-123",
@@ -157,13 +139,13 @@ describe("Prep List Auto-Generation", () => {
           },
           status: "pending",
           createdAt: new Date(),
-        updatedAt: new Date(),
+          updatedAt: new Date(),
           publishedAt: null,
           error: null,
         },
-      ]);
+      ] as never);
 
-      mockUpdate.mockResolvedValue({
+      vi.mocked(database.outboxEvent.update).mockResolvedValue({
         id: "outbox-1",
         tenantId: "tenant-123",
         aggregateType: "Event",
@@ -175,7 +157,9 @@ describe("Prep List Auto-Generation", () => {
         updatedAt: new Date(),
         publishedAt: new Date(),
         error: null,
-      });
+      } as never);
+
+      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime");
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
@@ -195,7 +179,7 @@ describe("Prep List Auto-Generation", () => {
         dietaryRestrictions: [],
         saveToDatabase: true,
       });
-      expect(mockUpdate).toHaveBeenCalledWith({
+      expect(database.outboxEvent.update).toHaveBeenCalledWith({
         where: { id: "outbox-1" },
         data: {
           status: "published",
@@ -205,10 +189,7 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should handle processing errors", async () => {
-      const mockFindMany = vi.mocked(database.outboxEvent.findMany);
-      const mockUpdate = vi.mocked(database.outboxEvent.update);
-
-      mockFindMany.mockResolvedValue([
+      vi.mocked(database.outboxEvent.findMany).mockResolvedValue([
         {
           id: "outbox-1",
           tenantId: "tenant-123",
@@ -220,13 +201,13 @@ describe("Prep List Auto-Generation", () => {
           },
           status: "pending",
           createdAt: new Date(),
-        updatedAt: new Date(),
+          updatedAt: new Date(),
           publishedAt: null,
           error: null,
         },
-      ]);
+      ] as never);
 
-      mockUpdate.mockResolvedValue({
+      vi.mocked(database.outboxEvent.update).mockResolvedValue({
         id: "outbox-1",
         tenantId: "tenant-123",
         aggregateType: "Event",
@@ -238,7 +219,9 @@ describe("Prep List Auto-Generation", () => {
         updatedAt: new Date(),
         publishedAt: null,
         error: "Generation failed",
-      });
+      } as never);
+
+      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime");
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: false,
@@ -252,7 +235,7 @@ describe("Prep List Auto-Generation", () => {
 
       expect(result.processed).toBe(0);
       expect(result.errors).toBe(1);
-      expect(mockUpdate).toHaveBeenCalledWith({
+      expect(database.outboxEvent.update).toHaveBeenCalledWith({
         where: { id: "outbox-1" },
         data: {
           status: "failed",
@@ -262,10 +245,6 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should process events in batches", async () => {
-      const mockFindMany = vi.mocked(database.outboxEvent.findMany);
-      const mockUpdate = vi.mocked(database.outboxEvent.update);
-
-      // Return 15 events (more than the batch size of 10)
       const events = Array.from({ length: 15 }, (_, i) => ({
         id: `outbox-${i}`,
         tenantId: "tenant-123",
@@ -273,15 +252,16 @@ describe("Prep List Auto-Generation", () => {
         aggregateId: `event-${i}`,
         eventType: "event.prep-list.requested",
         payload: { eventId: `event-${i}` },
-        status: "pending" as OutboxStatus,
+        status: "pending" as const,
         createdAt: new Date(),
         updatedAt: new Date(),
         publishedAt: null,
         error: null,
       }));
 
-      mockFindMany.mockResolvedValue(events.slice(0, 10));
-      mockUpdate.mockResolvedValue({
+      // Return only first 10 (batch size)
+      vi.mocked(database.outboxEvent.findMany).mockResolvedValue(events.slice(0, 10) as never);
+      vi.mocked(database.outboxEvent.update).mockResolvedValue({
         id: "outbox-0",
         tenantId: "tenant-123",
         aggregateType: "Event",
@@ -293,7 +273,9 @@ describe("Prep List Auto-Generation", () => {
         updatedAt: new Date(),
         publishedAt: new Date(),
         error: null,
-      });
+      } as never);
+
+      const { processPendingPrepListGenerations } = await import("@repo/manifest-runtime");
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
@@ -305,9 +287,8 @@ describe("Prep List Auto-Generation", () => {
         mockGenerateFn
       );
 
-      // Should process only 10 (batch size)
       expect(result.processed).toBe(10);
-      expect(mockFindMany).toHaveBeenCalledWith({
+      expect(database.outboxEvent.findMany).toHaveBeenCalledWith({
         where: {
           eventType: "event.prep-list.requested",
           status: "pending",
@@ -322,6 +303,8 @@ describe("Prep List Auto-Generation", () => {
 
   describe("generatePrepListImmediately", () => {
     it("should generate prep list immediately without outbox", async () => {
+      const { generatePrepListImmediately } = await import("@repo/manifest-runtime");
+
       const mockGenerateFn = vi.fn().mockResolvedValue({
         success: true,
         prepListId: "prep-list-789",
@@ -349,6 +332,8 @@ describe("Prep List Auto-Generation", () => {
     });
 
     it("should handle generation errors", async () => {
+      const { generatePrepListImmediately } = await import("@repo/manifest-runtime");
+
       const mockGenerateFn = vi
         .fn()
         .mockRejectedValue(new Error("Generation error"));

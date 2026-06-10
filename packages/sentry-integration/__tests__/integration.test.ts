@@ -1,4 +1,16 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Mock the Sentry shim before any module that imports it loads.
+// Root cause: queue.ts:303 calls addBreadcrumb against an unmocked @sentry/nextjs
+// via @repo/observability/sentry re-export.
+vi.mock("@repo/observability/sentry", () => ({
+  addBreadcrumb: vi.fn(),
+  captureException: vi.fn(),
+  captureMessage: vi.fn(),
+  startSpan: vi.fn((_opts, fn: () => any) => fn()),
+  withScope: vi.fn((_opts, fn: (scope: any) => any) => fn({ setTag: vi.fn(), setExtra: vi.fn() })),
+}));
+
 import { InMemoryJobStore, SentryJobQueue } from "../src/queue";
 import type { SentryIssueAlertPayload } from "../src/types";
 import { isBlockedPath } from "../src/types";

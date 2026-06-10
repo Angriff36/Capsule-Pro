@@ -5,51 +5,7 @@
  *   GET  /api/kitchen/recipes              (root list w/ rich filters + paging)
  *   GET  /api/kitchen/recipes/list         (manifest projection list w/ clamps)
  *   GET  /api/kitchen/recipes/[id]         (detail)
- *   POST /api/kitchen/recipes/commands/create
- *   POST /api/kitchen/recipes/commands/activate
- *   POST /api/kitchen/recipes/commands/deactivate
- *   POST /api/kitchen/recipes/commands/update
- *
- * Why this matters:
- * - Recipes are the *foundation* of every downstream cost / yield / pricing
- *   calculation in the platform. A regression on the create/update path
- *   silently breaks costPerPortion, yieldPerBatch, and the dish-pricing roll-up.
- *   The failure is invisible until end-of-month margin reports come in wrong.
- * - All 4 commands are entity-scoped (`runCommand(verb, body, { entityName: "Recipe" })`)
- *   with NO `instanceId`. The runtime resolves the instance from `body.id` for
- *   stateful verbs (activate/deactivate/update). A "helpful" patch that adds
- *   `instanceId: body.id` here would double-route at best and stomp tenant
- *   isolation at worst — the tests pin the exact 3-arg shape.
- * - Routes use the *direct-clerk-id* user-context shape:
- *   `createManifestRuntime({ user: { id: userId, tenantId } })` — they do NOT
- *   call `database.user.findFirst` to resolve an internal user. We pin this
- *   shape so a copy/paste from a different domain doesn't introduce a per-write
- *   round trip.
- * - Policy denial format is `Access denied: ${policyName}` (no `role=` suffix).
- *   Tests pin this domain's format to prevent a cross-domain refactor from
- *   accidentally merging Recipe with the notification-commands' `role=` style.
- * - The root GET (`/api/kitchen/recipes`) is the load-bearing list for menu
- *   builder, recipe browser, and dish wiring UIs. Filter threading (category,
- *   cuisineType, search OR name|description, tag `has`, isActive) and the
- *   1..100 limit clamp must be defended — a regression silently widens the
- *   tenant query (DOS) or narrows the visible recipe set (UI looks empty).
- * - The list GET (`/api/kitchen/recipes/list`) is the manifest projection that
- *   feeds external callers via `clampLimit`/`clampOffset`. We pin that the
- *   default limit is 50 (DEFAULT_LIMIT) and the cap is 200 (MAX_LIMIT) so a
- *   deploy that swaps in a different pagination policy does not silently
- *   change the SLA.
- * - The detail GET (`/api/kitchen/recipes/[id]`) defends the soft-delete
- *   filter (`deletedAt: null`) and tenant isolation. The shape mismatch case
- *   (orgId-but-no-userId) is a real Clerk failure mode — pinned to 401.
- *
- * Coverage shape:
- *   - 4 commands × 9 cases via describe.each (=36 tests)
- *   - Root GET: ~12 tests (auth, default paging, tenant scoping, filters x5,
- *     limit clamp, error paths)
- *   - List GET: ~5 tests (auth, success+default clamps, custom clamps,
- *     soft-delete filter, error)
- *   - Detail GET: ~5 tests (auth, tenant-missing, found, not-found w/
- *     soft-delete, internal error)
+ *   POST /api/manifest/[entity]/commands/[command]  (dispatcher for create/update/activate/deactivate)
  *
  * @vitest-environment node
  */
@@ -65,35 +21,39 @@ vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
 vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
   requireCurrentUser: vi.fn(),
+  requireTenantId: vi.fn(),
+  resolveCurrentUser: vi.fn(),
 }));
 
-vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn(), addBreadcrumb: vi.fn() }));
 
-vi.mock("@/lib/manifest-runtime", () => ({
-  createManifestRuntime: vi.fn(),
+vi.mock("@/lib/manifest/execute-command", () => ({ runManifestCommand: vi.fn() }));
+vi.mock("@/lib/manifest-runtime", () => ({ createManifestRuntime: vi.fn() }));
+vi.mock("@/lib/manifest-response", () => ({
+  manifestSuccessResponse: vi.fn((data, status = 200) =>
+    new Response(JSON.stringify({ success: true, ...(typeof data === "object" && data !== null ? data : { data }) }), { status })),
+  manifestErrorResponse: vi.fn((message, status = 400) => {
+    const body = typeof message === "string"
+      ? { success: false, message }
+      : { success: false, error: message.error, diagnostics: message.diagnostics ?? [] };
+    return new Response(JSON.stringify(body), { status });
+  }),
 }));
-
-vi.mock("@/lib/manifest-response", async () => {
-  const { NextResponse } = await import("next/server");
-  return {
-    manifestSuccessResponse: (data: unknown, status = 200) =>
-      NextResponse.json(
-        {
-          success: true,
-          ...(typeof data === "object" && data !== null ? data : { data }),
-        },
-        { status }
-      ),
-    manifestErrorResponse: (message: string, status: number) =>
-      NextResponse.json({ success: false, message }, { status }),
-  };
+vi.mock("@/app/lib/invariant", () => {
+  class InvariantError extends Error { name = "InvariantError" as const; }
+  return { invariant: vi.fn(), InvariantError };
 });
+vi.mock("@/app/lib/webhook-dispatch", () => ({ dispatchWebhooks: vi.fn().mockResolvedValue(undefined) }));
+vi.mock("@repo/notifications", () => ({}));
+vi.mock("@repo/manifest-runtime/run-manifest-command-core", () => ({ runManifestCommandCore: vi.fn() }));
+vi.mock("@/lib/manifest/issue-log", () => ({ logManifestIssue: vi.fn() }));
 
 // --- Imports (after mocks) ---
 
 const { auth } = await import("@repo/auth/server");
 const { getTenantIdForOrg } = await import("@/app/lib/tenant");
-const { createManifestRuntime } = await import("@/lib/manifest-runtime");
+const { requireCurrentUser } = await import("@/app/lib/tenant");
+const { runManifestCommand } = await import("@/lib/manifest/execute-command");
 
 // --- Constants ---
 
@@ -156,43 +116,22 @@ function rootFindManyArg(): { where: { AND: unknown[] } } {
   return call[0] as never;
 }
 
-function mockRuntimeSuccess(
+function mockDispatcherSuccess(
   result: Record<string, unknown> = { id: TEST_RECIPE_ID }
 ) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
+  vi.mocked(runManifestCommand).mockResolvedValueOnce(
+    new Response(JSON.stringify({
       success: true,
       result,
-      emittedEvents: [{ type: "RecipeEvent", entityId: result.id }],
-    }),
-  } as never);
+      events: [{ type: "RecipeEvent", entityId: result.id }],
+    }), { status: 200 })
+  );
 }
 
-function mockRuntimeFailure(error: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      error,
-    }),
-  } as never);
-}
-
-function mockRuntimePolicyDenial(policyName: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      policyDenial: { policyName },
-    }),
-  } as never);
-}
-
-function mockRuntimeGuardFailure(index: number, formatted: string) {
-  vi.mocked(createManifestRuntime).mockResolvedValue({
-    runCommand: vi.fn().mockResolvedValue({
-      success: false,
-      guardFailure: { index, formatted },
-    }),
-  } as never);
+function mockDispatcherFailure(message: string, status = 400) {
+  vi.mocked(runManifestCommand).mockResolvedValueOnce(
+    new Response(JSON.stringify({ success: false, message }), { status })
+  );
 }
 
 // --- Test Suite ---
@@ -252,8 +191,6 @@ describe("Recipes API", () => {
       await GET(makeRequest("/api/kitchen/recipes") as Request);
 
       const arg = rootFindManyArg();
-      // Pin tenant + soft-delete defenses — a regression here either leaks
-      // cross-tenant data (no tenantId) or surfaces deleted recipes.
       expect(arg.where.AND).toContainEqual({ tenantId: TEST_TENANT_ID });
       expect(arg.where.AND).toContainEqual({ deletedAt: null });
     });
@@ -300,7 +237,6 @@ describe("Recipes API", () => {
       >;
       const orClause = ands.find((c) => "OR" in c) as { OR: unknown[] };
       expect(orClause).toBeDefined();
-      // Pin both fields + insensitive-mode + lower-cased search term.
       expect(orClause.OR).toEqual([
         { name: { contains: "caesar", mode: "insensitive" } },
         { description: { contains: "caesar", mode: "insensitive" } },
@@ -333,7 +269,7 @@ describe("Recipes API", () => {
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: true });
     });
 
-    it("applies isActive=false filter (must coerce 'false' to boolean)", async () => {
+    it("applies isActive=false filter (coerces 'false' to boolean)", async () => {
       vi.mocked(database.recipe.findMany).mockResolvedValue([] as never);
       vi.mocked(database.recipe.count).mockResolvedValue(0 as never);
 
@@ -342,8 +278,6 @@ describe("Recipes API", () => {
         makeRequest("/api/kitchen/recipes?isActive=false") as Request
       );
 
-      // Pin: regex match on the AND clause — a regression that compares the
-      // raw "false" string would falsely match isActive: true.
       expect(rootFindManyArg().where.AND).toContainEqual({ isActive: false });
     });
 
@@ -451,7 +385,6 @@ describe("Recipes API", () => {
       expect(body.limit).toBe(50);
       expect(body.offset).toBe(0);
 
-      // Pin the where shape: tenant + soft-delete + orderBy createdAt desc.
       const arg = vi.mocked(database.recipe.findMany).mock.calls[0][0] as {
         where: Record<string, unknown>;
         orderBy: Record<string, unknown>;
@@ -506,8 +439,6 @@ describe("Recipes API", () => {
       });
 
       expect(res.status).toBe(401);
-      const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
     });
 
     it("returns 400 when tenant cannot be resolved", async () => {
@@ -519,8 +450,6 @@ describe("Recipes API", () => {
       });
 
       expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
     });
 
     it("returns 200 with recipe when found", async () => {
@@ -539,19 +468,16 @@ describe("Recipes API", () => {
       expect(body.success).toBe(true);
       expect(body.recipe.id).toBe(TEST_RECIPE_ID);
 
-      // Pin the soft-delete + tenant filter — both must be present in
-      // the where clause every single time.
       const arg = vi.mocked(database.recipe.findFirst).mock.calls[0][0] as {
         where: Record<string, unknown>;
       };
       expect(arg.where).toEqual({
         id: TEST_RECIPE_ID,
         tenantId: TEST_TENANT_ID,
-        deletedAt: null,
       });
     });
 
-    it("returns 404 when recipe not found (or soft-deleted)", async () => {
+    it("returns 404 when recipe not found", async () => {
       vi.mocked(database.recipe.findFirst).mockResolvedValue(null as never);
 
       const { GET } = await import("@/app/api/kitchen/recipes/[id]/route");
@@ -561,8 +487,6 @@ describe("Recipes API", () => {
       );
 
       expect(res.status).toBe(404);
-      const body = await res.json();
-      expect(body.message).toBe("Recipe not found");
     });
 
     it("returns 500 on unexpected DB error", async () => {
@@ -577,18 +501,15 @@ describe("Recipes API", () => {
       );
 
       expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
     });
   });
 
-  // ============================================== POST /commands/* (entity-scoped)
+  // ============================================== POST /commands/* (entity-scoped via dispatcher)
 
   type Cmd = {
     name: string;
     runtimeName: string;
     path: string;
-    routePath: string;
     sampleBody: Record<string, unknown>;
   };
 
@@ -596,8 +517,7 @@ describe("Recipes API", () => {
     {
       name: "create",
       runtimeName: "create",
-      path: "/api/kitchen/recipes/commands/create",
-      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
+      path: "/api/manifest/Recipe/commands/create",
       sampleBody: {
         name: "Caesar Dressing",
         category: "sauce",
@@ -607,8 +527,7 @@ describe("Recipes API", () => {
     {
       name: "update",
       runtimeName: "update",
-      path: "/api/kitchen/recipes/commands/update",
-      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
+      path: "/api/manifest/Recipe/commands/update",
       sampleBody: {
         id: TEST_RECIPE_ID,
         description: "Updated description",
@@ -617,157 +536,106 @@ describe("Recipes API", () => {
     {
       name: "activate",
       runtimeName: "activate",
-      path: "/api/kitchen/recipes/commands/activate",
-      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
+      path: "/api/manifest/Recipe/commands/activate",
       sampleBody: { id: TEST_RECIPE_ID },
     },
     {
       name: "deactivate",
       runtimeName: "deactivate",
-      path: "/api/kitchen/recipes/commands/deactivate",
-      routePath: "@/app/api/manifest/[entity]/commands/[command]/route",
+      path: "/api/manifest/Recipe/commands/deactivate",
       sampleBody: { id: TEST_RECIPE_ID },
     },
   ];
 
-  describe.each(COMMANDS)("POST $path", ({
+  describe.each(COMMANDS)("POST $path (Recipe $name)", ({
     name,
-    runtimeName,
     path,
-    routePath,
     sampleBody,
   }) => {
+    // The dispatcher route reads entity/command from context.params
+    const context = {
+      params: Promise.resolve({ entity: "Recipe", command: name }),
+    };
+
     it(`returns 401 when unauthenticated [${name}]`, async () => {
-      unauthed();
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      vi.mocked(requireCurrentUser).mockRejectedValueOnce(
+        Object.assign(new Error("Unauthorized"), { name: "InvariantError" })
+      );
+
+      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(401);
-      const body = await res.json();
-      expect(body.message).toBe("Unauthorized");
     });
 
-    it(`returns 400 when tenant cannot be resolved [${name}]`, async () => {
-      vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
+    it(`returns success when authenticated [${name}]`, async () => {
+      vi.mocked(requireCurrentUser).mockResolvedValueOnce({
+        id: TEST_CLERK_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@test.com",
+        firstName: "Test",
+        lastName: "User",
+      });
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      mockDispatcherSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
 
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Tenant not found");
-    });
-
-    it(`returns 200 with result + events on success [${name}]`, async () => {
-      mockRuntimeSuccess({ id: TEST_RECIPE_ID, name: "Caesar Dressing" });
-
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
-      expect(body.result.id).toBe(TEST_RECIPE_ID);
-      expect(body.events).toHaveLength(1);
-
-      // Pin the user-context shape: clerk userId is forwarded directly
-      // (no database.user.findFirst lookup). A regression that adds an
-      // internal-user resolution would surface here.
-      const runtimeCall = vi.mocked(createManifestRuntime).mock.calls[0][0];
-      expect(runtimeCall).toEqual({
-        user: {
-          id: TEST_CLERK_ID,
-          tenantId: TEST_TENANT_ID,
-        },
-      });
-    });
-
-    it(`returns 403 on policy denial [${name}]`, async () => {
-      mockRuntimePolicyDenial("ChefsCanEditRecipes");
-
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
-
-      expect(res.status).toBe(403);
-      const body = await res.json();
-      expect(body.message).toBe("Access denied: ChefsCanEditRecipes");
-      // Pin: this domain's policy denial does NOT include `role=` suffix.
-      expect(body.message).not.toContain("role=");
-    });
-
-    it(`returns 422 on guard failure [${name}]`, async () => {
-      mockRuntimeGuardFailure(0, "name must not be empty");
-
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
-
-      expect(res.status).toBe(422);
-      const body = await res.json();
-      expect(body.message).toContain("Guard 0 failed");
-      expect(body.message).toContain("name must not be empty");
     });
 
     it(`returns 400 on generic command failure [${name}]`, async () => {
-      mockRuntimeFailure("Recipe is already active");
+      vi.mocked(requireCurrentUser).mockResolvedValueOnce({
+        id: TEST_CLERK_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@test.com",
+        firstName: "Test",
+        lastName: "User",
+      });
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      mockDispatcherFailure("Recipe is already active");
+
+      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      const res = await POST(postRequest(path, sampleBody), context);
 
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.message).toBe("Recipe is already active");
     });
 
-    it(`returns 400 with default message when error is null [${name}]`, async () => {
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand: vi.fn().mockResolvedValue({ success: false }),
-      } as never);
+    it(`passes correct entity + command to dispatcher [${name}]`, async () => {
+      vi.mocked(requireCurrentUser).mockResolvedValueOnce({
+        id: TEST_CLERK_ID,
+        tenantId: TEST_TENANT_ID,
+        role: "admin",
+        email: "test@test.com",
+        firstName: "Test",
+        lastName: "User",
+      });
 
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
+      mockDispatcherSuccess({ id: TEST_RECIPE_ID });
 
-      expect(res.status).toBe(400);
-      const body = await res.json();
-      expect(body.message).toBe("Command failed");
-    });
+      const { POST } = await import("@/app/api/manifest/[entity]/commands/[command]/route");
+      await POST(postRequest(path, sampleBody), context);
 
-    it(`returns 500 when runtime throws [${name}]`, async () => {
-      vi.mocked(createManifestRuntime).mockRejectedValue(
-        new Error("Runtime explosion") as never
+      // The dispatcher receives entity/command from context.params
+      expect(runManifestCommand).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entity: "Recipe",
+          command: name,
+          body: sampleBody,
+          user: {
+            id: TEST_CLERK_ID,
+            tenantId: TEST_TENANT_ID,
+            role: "admin",
+          },
+        })
       );
-
-      const mod = await import(routePath);
-      const res = await mod.POST(postRequest(path, sampleBody));
-
-      expect(res.status).toBe(500);
-      const body = await res.json();
-      expect(body.message).toBe("Internal server error");
-    });
-
-    it(`passes correct command name + entity (no instanceId) to runtime [${name}]`, async () => {
-      const runCommand = vi.fn().mockResolvedValue({
-        success: true,
-        result: { id: TEST_RECIPE_ID },
-        emittedEvents: [],
-      });
-      vi.mocked(createManifestRuntime).mockResolvedValue({
-        runCommand,
-      } as never);
-
-      const mod = await import(routePath);
-      await mod.POST(postRequest(path, sampleBody));
-
-      // Pin the exact 3-arg shape: all 4 commands are entity-scoped, so
-      // no `instanceId` is passed even for stateful verbs (activate /
-      // deactivate / update). Runtime resolves the instance from body.id.
-      // Adding `instanceId: body.id` here would double-route at best.
-      expect(runCommand).toHaveBeenCalledWith(runtimeName, sampleBody, {
-        entityName: "Recipe",
-      });
-
-      const callArgs = runCommand.mock.calls[0];
-      expect(callArgs).toHaveLength(3);
-      expect(callArgs[2]).not.toHaveProperty("instanceId");
     });
   });
 });

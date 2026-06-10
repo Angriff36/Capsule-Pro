@@ -11,20 +11,33 @@
 
 ---
 
-## Task 10.14 — Quarantine Test Recovery (In Progress)
+## Task 10.14 — Quarantine Test Recovery (v0.12.229)
 
-**Status:** 13 parallel subagents fixing 36 failing test files (513 failures)
+**Status:** IN PROGRESS — Phase 2 (remaining 37 files)
 
-**Root causes identified:**
-1. Missing route params: Tests don't pass `{entity, command}` as Promise to the generic manifest dispatcher
-2. Deleted concrete routes: workforce-optimization (36 tests) imports per-entity routes that were consolidated into the generic dispatcher
-3. Missing per-file mocks: Route handlers crash (500) when auth, Sentry, execute-command, or other modules aren't mocked
-4. Mock drift: Database models referenced in tests don't exist in the mock object
-5. Search API response shape changes
+**v0.12.229 milestone (2026-06-09):**
+- Baseline: 74 → 37 (50% reduction)
+- Tests: 3,486 → 4,566 (+1,080 recovered)
+- 13 parallel subagents fixed 36 failing test files (513 failures → 0)
+- 0 typecheck errors, 4,566/4,566 tests pass
 
-**Global setup.ts enhanced:** Added Sentry, webhook-dispatch, manifest-issue-log, and notifications mocks (auth and invariant reverted due to breaking accounting tests)
+**Production bugs found and fixed during recovery:**
+1. Missing `await` in manifest command dispatcher route (returned unhandled rejections instead of 500)
+2. Missing self-deactivation prevention in /api/user/deactivate route
+3. Stale IR file paths referencing deleted packages (manifest-ir, manifest-adapters)
 
-**Remaining quarantine files:** 35 `.quarantine.test.ts` files (after current uncommitted batch of 16 is committed)
+**Root cause patterns fixed across all test files (catalog for future recovery):**
+1. `requireCurrentUser` (not `auth()+getTenantIdForOrg`) is the dispatcher's auth mechanism
+2. `runManifestCommand` (not `createManifestRuntime`) is the command execution path
+3. `params: Promise.resolve({entity, command})` required for Next.js App Router
+4. Prisma field names are camelCase (assertions had snake_case drift)
+5. `manifestErrorResponse` returns `{success, error, diagnostics}` not `{success, message}`
+6. Per-file `@repo/database` mocks override the global mock with incomplete model sets
+7. Generated read routes use `findFirst` not `findUnique`
+
+**Global setup.ts enhanced:** Added @sentry/nextjs, @/app/lib/webhook-dispatch, @/lib/manifest/issue-log, @repo/notifications
+
+**Phase 2 in progress:** 5 parallel agents recovering remaining 37 quarantine files (kitchen 21, events/CRM/docs 14, manifest latency 1, sentry 1)
 
 ---
 
