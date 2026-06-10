@@ -174,6 +174,21 @@ async function compileMergedManifests() {
     compiledAt: new Date().toISOString(),
   });
 
+  // Compute provenance hashes after merge. contentHash = SHA-256 of serialized IR
+  // (covers the exact bytes that land on disk). irHash = SHA-256 of all source
+  // .manifest contents (sorted for determinism).
+  const crypto = await import("node:crypto");
+  const irJson = JSON.stringify(mergedIR, null, 2);
+  const contentHash = crypto.createHash("sha256").update(irJson).digest("hex");
+  const sourceHashes = compiledEntries
+    .map((e) => crypto.createHash("sha256").update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8")).digest("hex"))
+    .sort();
+  const irHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
+  if (mergedIR.provenance) {
+    mergedIR.provenance.contentHash = contentHash;
+    mergedIR.provenance.irHash = irHash;
+  }
+
   if (duplicateWarnings.length > 0) {
     console.warn(
       `[manifest/compile] Merge dropped ${duplicateWarnings.length} duplicate definitions`
