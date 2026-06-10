@@ -75,7 +75,7 @@ export async function GET(request: Request) {
         WHERE tenant_id = ${tenantId}
           AND deleted_at IS NULL
           ${status ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-          AND (status = 'pending' OR status = 'completed' OR status = 'approved')
+          AND (status = 'pending' OR status = 'processing' OR status = 'completed' OR status = 'approved')
       `
     );
 
@@ -134,7 +134,7 @@ export async function GET(request: Request) {
         WHERE pr.tenant_id = ${tenantId}
           AND pr.deleted_at IS NULL
           ${status ? Prisma.sql`AND pr.status = ${status}` : Prisma.empty}
-          AND (pr.status = 'pending' OR pr.status = 'completed' OR pr.status = 'approved')
+          AND (pr.status = 'pending' OR pr.status = 'processing' OR pr.status = 'completed' OR pr.status = 'approved')
         GROUP BY pr.id, pr.tenant_id, pr.payroll_period_id, pr.run_date, pr.status,
           pr.total_gross, pr.total_deductions, pr.total_net, pr.approved_by, pr.approved_at,
           pr.paid_at, pr.reject_reason, pr.created_at, pr.updated_at, pp.period_start, pp.period_end

@@ -21,18 +21,19 @@ import type { PayrollDataSource } from "../services";
  * Prisma-based implementation of PayrollDataSource
  * Connects the payroll engine to the actual database
  */
-export class PrismaPayrollDataSource implements PayrollDataSource {
-  readonly #prisma: Omit<
-    PrismaClient,
-    "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
-  >;
+// $transaction is intentionally RETAINED on the injected client: savePayrollRecords
+// must persist the payroll run header and all line items atomically (see below).
+// The connection-lifecycle methods stay hidden — this data source never opens,
+// closes, or extends the client.
+type PayrollPrismaClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$use" | "$extends"
+>;
 
-  constructor(
-    prisma: Omit<
-      PrismaClient,
-      "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
-    >
-  ) {
+export class PrismaPayrollDataSource implements PayrollDataSource {
+  readonly #prisma: PayrollPrismaClient;
+
+  constructor(prisma: PayrollPrismaClient) {
     this.#prisma = prisma;
   }
 
@@ -269,8 +270,11 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
 
     const tenantId = records[0].tenantId;
     const periodId = records[0].periodId;
+    // The run shares the period id (the create payload below sets `id: periodId`),
+    // so the run id is known up front and never depends on the upsert result.
+    const payrollRunId = periodId;
 
-    // First, get or create the payroll run
+    // Aggregate the run-level totals from the individual records.
     const summary = records.reduce(
       (acc, record) => ({
         totalGross: acc.totalGross + record.grossPay,
@@ -280,76 +284,91 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
       { totalGross: 0, totalDeductions: 0, totalNet: 0 }
     );
 
-    const payrollRun = await this.#prisma.payrollRun.upsert({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: periodId,
-        },
-      },
-      create: {
-        tenantId,
-        id: periodId,
-        payrollPeriodId: periodId,
-        runDate: new Date(),
-        status: "completed",
-        totalGross: summary.totalGross,
-        totalDeductions: summary.totalDeductions,
-        totalNet: summary.totalNet,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      update: {
-        totalGross: summary.totalGross,
-        totalDeductions: summary.totalDeductions,
-        totalNet: summary.totalNet,
-        status: "completed",
-        updatedAt: new Date(),
-      },
-    });
-
-    // Save payroll line items
-    for (const record of records) {
-      await this.#prisma.payrollLineItem.upsert({
+    // Persist the run header AND every line item in a SINGLE transaction.
+    //
+    // Why this matters: previously the run upsert and the N line-item upserts
+    // ran as independent statements. A failure partway through the loop left a
+    // payroll run whose stored totals did not match its (partial) line items —
+    // a silently inconsistent payroll that no later read could detect. Wrapping
+    // the whole batch in one transaction makes it all-or-nothing.
+    await this.#prisma.$transaction(async (tx) => {
+      await tx.payrollRun.upsert({
         where: {
           tenantId_id: {
-            tenantId: record.tenantId,
-            id: `${payrollRun.id}_${record.employeeId}`,
+            tenantId,
+            id: payrollRunId,
           },
         },
         create: {
-          tenantId: record.tenantId,
-          id: `${payrollRun.id}_${record.employeeId}`,
-          payrollRunId: payrollRun.id,
-          employeeId: record.employeeId,
-          hoursRegular: record.hoursRegular,
-          hoursOvertime: record.hoursOvertime,
-          rateRegular: record.regularPay / record.hoursRegular || 0,
-          rateOvertime: record.overtimePay / record.hoursOvertime || 0,
-          grossPay: record.grossPay,
-          deductions: JSON.stringify({
-            preTax: record.preTaxDeductions,
-            postTax: record.postTaxDeductions,
-          }),
-          netPay: record.netPay,
-          createdAt: record.createdAt || new Date(),
+          tenantId,
+          id: payrollRunId,
+          payrollPeriodId: periodId,
+          runDate: new Date(),
+          // IR PayrollRun state machine: pending -> processing -> approved -> paid.
+          // A generated run has had its totals computed, i.e. it has been
+          // processed. "completed" is NOT a valid IR status — persisting it
+          // poisoned later transitions (the `approve` command guards
+          // `self.status == "processing"`) and hid the run from the approvals
+          // queue. "processing" matches what the governed Manifest write path
+          // (ManifestPayrollDataSource: create -> process) produces.
+          status: "processing",
+          totalGross: summary.totalGross,
+          totalDeductions: summary.totalDeductions,
+          totalNet: summary.totalNet,
+          createdAt: new Date(),
           updatedAt: new Date(),
         },
         update: {
-          hoursRegular: record.hoursRegular,
-          hoursOvertime: record.hoursOvertime,
-          rateRegular: record.regularPay / record.hoursRegular || 0,
-          rateOvertime: record.overtimePay / record.hoursOvertime || 0,
-          grossPay: record.grossPay,
-          deductions: JSON.stringify({
-            preTax: record.preTaxDeductions,
-            postTax: record.postTaxDeductions,
-          }),
-          netPay: record.netPay,
+          totalGross: summary.totalGross,
+          totalDeductions: summary.totalDeductions,
+          totalNet: summary.totalNet,
+          status: "processing",
           updatedAt: new Date(),
         },
       });
-    }
+
+      for (const record of records) {
+        await tx.payrollLineItem.upsert({
+          where: {
+            tenantId_id: {
+              tenantId: record.tenantId,
+              id: `${payrollRunId}_${record.employeeId}`,
+            },
+          },
+          create: {
+            tenantId: record.tenantId,
+            id: `${payrollRunId}_${record.employeeId}`,
+            payrollRunId,
+            employeeId: record.employeeId,
+            hoursRegular: record.hoursRegular,
+            hoursOvertime: record.hoursOvertime,
+            rateRegular: record.regularPay / record.hoursRegular || 0,
+            rateOvertime: record.overtimePay / record.hoursOvertime || 0,
+            grossPay: record.grossPay,
+            deductions: JSON.stringify({
+              preTax: record.preTaxDeductions,
+              postTax: record.postTaxDeductions,
+            }),
+            netPay: record.netPay,
+            createdAt: record.createdAt || new Date(),
+            updatedAt: new Date(),
+          },
+          update: {
+            hoursRegular: record.hoursRegular,
+            hoursOvertime: record.hoursOvertime,
+            rateRegular: record.regularPay / record.hoursRegular || 0,
+            rateOvertime: record.overtimePay / record.hoursOvertime || 0,
+            grossPay: record.grossPay,
+            deductions: JSON.stringify({
+              preTax: record.preTaxDeductions,
+              postTax: record.postTaxDeductions,
+            }),
+            netPay: record.netPay,
+            updatedAt: new Date(),
+          },
+        });
+      }
+    });
   }
 
   async savePayrollAudit(audit: PayrollAudit): Promise<void> {
