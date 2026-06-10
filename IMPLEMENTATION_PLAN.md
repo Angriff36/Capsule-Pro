@@ -88,7 +88,7 @@
 
 - 226 models, 29 enums, 12 PostgreSQL schemas, ~6,430 LOC in schema.prisma
 - Two naming conventions: ~146 models use camelCase fields + `@map("snake_case")`; ~40 legacy models use raw `snake_case` fields without `@map`
-- 4 PascalCase @@map anomalies (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent)
+- **20 models with PascalCase physical tables** (NOT 4): 4 with explicit @@map("PascalCase") (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent) + 16 PascalCase models with NO @@map (Task 0.3 IR-entity additions: Budget, Deal, Vendor, SampleData, FacilityWorkOrder, AiEventSetupSession, AutomatedFollowup, EntityVersion, EventWaitlistEntry, FacilitySchedule, LogisticsDispatch, PerformancePrediction, StaffPerformance, VersionApproval, VersionedEntity, WorkforceOptimization). Frozen in manifest/governance/schema-naming-allowlist.json; enforced by pnpm manifest:lint-schema:strict (Task 10.9).
 - **166 Prisma models match IR entities**
 - **69 Prisma-only models** (infrastructure: Account, Location, UserPreference, Role, OutboxEvent, ManifestEntity, audit_*, admin_*, etc.)
 - **~~16~~ 0 IR entities without Prisma model** (all 16 now have Prisma model declarations from Task 0.3). ~~Additionally 15 entities with models but wrong accessor names~~ RESOLVED 2026-06-08 (Task 2.1): accessor remaps auto-resolved via metadata bridge; only QACheck remains unmatched (different concept from QualityCheck).
@@ -173,6 +173,7 @@ pnpm manifest:validate manifest/ir/kitchen.ir.json  # Validate IR
 pnpm manifest:try-prisma <Entity>    # Per-entity schema projection diff
 pnpm manifest:audit-direct-writes    # Find writes bypassing runtime
 pnpm manifest:audit-schema-drift     # Schema drift audit
+pnpm manifest:lint-schema:strict        # Schema naming-convention gate (model/table casing)
 pnpm db:check                        # Prisma schema drift check
 git diff --stat apps/api/app/api/    # Check for route drift after regen
 ```
@@ -331,6 +332,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **SECURITY: Hardcoded roles replaced with actual auth context (v0.12.238)** | 4 route files fixed: payments (manager→currentUser), supplier-sync (admin→currentUser.role), kitchen/import (5× admin→userRole), procurement/update-status (user→currentUser.role). Also prevented manifest:generate drift that removed critical `await` from dispatcher (known production bug). |
 | 2026-06-10 | **Generator await drift fix + as-any removal (v0.12.239)** | generate.mjs template emits `return await`; 0 non-test as-any in runtime; 0 typecheck, 5205 tests pass, 0 route/schema drift |
 | 2026-06-10 | **Manifest 2.2.0 → 2.3.1 upgrade verified + feature re-evaluation (v0.12.240)** | Zero route drift on regen, 0 typecheck (api/runtime/app), 5684 tests pass (5222 API + 154 runtime + 308 app). `compile.mjs` made idempotent (reuse prior `compiledAt` when source contentHash unchanged) + honest dynamic `compilerVersion` (was hardcoded "2.2.0"); zod-gen temp-copy workaround removed (2.3.1 ships proper `.js` extensions, the workaround broke under it); stale generated client regenerated (datetime command-params `number`→`string`), surfacing + fixing a `Number(dateString)`→NaN bug in `routes-view.tsx`. Newly-available keywords re-evaluated vs Capsule's serverless + reads-bypass-runtime architecture: `realtime`=REJECT (semantics.md L427 needs single-instance server; already have @repo/realtime/Ably), `masked`=NO-OP (semantics.md L219 generated reads bypass engine), `async`/`webhook`=DEFER, `mixin`/`rateLimit`/`retry`/`schedule`/entity-`extends`=STILL BLOCKED. |
+| 2026-06-10 | **Task 10.9: Schema naming-convention lint + style guide (CI gate)** | New `manifest/scripts/lint-schema.mjs` (R1 model PascalCase, R2 resolved table snake_case, R3 allowlist hygiene; report-only default, `--strict` CI gate, `--self-test` 11/11) + frozen `manifest/governance/schema-naming-allowlist.json` (31 legacy snake_case models + 20 PascalCase-table exceptions). Style guide added to docs/database/CONTRIBUTING.md; SCHEMAS.md model-vs-table conflict fixed. Strict lint exits 0 on 245-model schema. CORRECTION: the long-cited "4 PascalCase @@map anomalies" undercounts — there are 20 models with PascalCase physical tables (4 explicit @@map("PascalCase") + 16 PascalCase models with NO @@map, the Task 0.3 IR-entity additions). |
 
 ---
 
@@ -869,10 +871,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Complete.** See Completed Milestones for details.
 
-### 10.9 Fix schema naming convention anomalies
-- **Done when:** Document the exact mapping convention in a schema style guide. Establish CI-enforced convention for new models.
-- **Why:** 195 PascalCase models coexist with 31 legacy snake_case models. 4 PascalCase @@map values (Tenant, ActivityFeed, EmployeeDeduction, OutboxEvent) deviate from the snake_case convention. Mixed enum casing.
-- **Source to change:** `docs/database/CONTRIBUTING.md` (add style guide).
+### 10.9 Fix schema naming convention anomalies — ✅ DONE 2026-06-10
+
+> **Complete.** See Completed Milestones for details.
 
 ### 10.10 Investigate skipped test suite — ✅ DONE 2026-06-05
 

@@ -361,10 +361,18 @@ Account (1) ──< (N) Report
 
 ### Naming Conventions
 
-- **Tables**: `PascalCase` (e.g., `KitchenTask`, `EventImport`)
-- **Columns**: `camelCase` (e.g., `tenantId`, `createdAt`)
-- **Indexes**: Implicit via `@@index()` attributes
-- **Maps**: `@map("snake_case")` for PostgreSQL snake_case
+> **Canonical style guide + machine-enforced rules:** see
+> [`CONTRIBUTING.md` → Schema Naming Conventions](./CONTRIBUTING.md#schema-naming-conventions).
+> `pnpm manifest:lint-schema:strict` is the CI gate.
+
+- **Prisma model name**: `PascalCase` (e.g., `KitchenTask`, `EventImport`).
+- **Physical table name**: `snake_case` via `@@map("snake_case")` (e.g., model `KitchenTask`
+  → table `kitchen_tasks`). The model name is *not* the table name — they are decoupled by `@@map`.
+- **Prisma field name**: `camelCase` (e.g., `tenantId`, `createdAt`); **physical column**:
+  `snake_case` via `@map("snake_case")`.
+- **Indexes**: Implicit via `@@index()` attributes.
+- **Frozen exceptions** (do not extend): 31 legacy `snake_case`-named models and 20 models with
+  `PascalCase` physical tables, tracked in `manifest/governance/schema-naming-allowlist.json`.
 
 ### Column Patterns
 

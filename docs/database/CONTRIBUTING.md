@@ -28,6 +28,75 @@ Notes:
 4. Avoid `prisma db push` (disabled in this repo).
 5. If you intentionally want a destructive reset, use `pnpm --filter @repo/database exec prisma migrate reset --force`.
 
+## Schema Naming Conventions
+
+> **Why this section exists:** the 245-model `schema.prisma` grew two conventions plus accumulated
+> drift. Without a single source of truth + a gate, every new model picks an arbitrary shape and the
+> producer/store/route layers drift apart (the exact failure class Manifest automation is meant to
+> remove). These rules are **machine-enforced** by `pnpm manifest:lint-schema:strict` (CI gate);
+> the frozen exceptions live in `manifest/governance/schema-naming-allowlist.json`.
+
+### Canonical convention for NEW models
+
+| Surface | Convention | Example |
+|---|---|---|
+| Prisma **model** name | `PascalCase` | `model KitchenTask` |
+| Physical **table** name | `snake_case` via `@@map(...)` | `@@map("kitchen_tasks")` |
+| Prisma **field** name | `camelCase` | `tenantId`, `createdAt` |
+| Physical **column** name | `snake_case` via `@map(...)` | `@map("tenant_id")` |
+| **Enum** name | `PascalCase` | `enum ShipmentStatus` |
+
+```prisma
+model KitchenTask {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("kitchen_tasks")   // physical table is snake_case — REQUIRED on every PascalCase model
+  @@schema("tenant_kitchen")
+}
+```
+
+Key point: **the model name and the table name are decoupled.** Prisma Client uses the model name
+(`prisma.kitchenTask`); the database uses the `@@map` value. A `PascalCase` model with **no** `@@map`
+silently creates a `PascalCase` table — that is the anomaly this gate prevents.
+
+### The two enforced rules
+
+- **R1 — model name must be `PascalCase`.** New `snake_case`-named models are rejected.
+- **R2 — the resolved physical table name must be `snake_case`.** The resolved name is the `@@map`
+  value if present, else the model name verbatim. So a new `PascalCase` model **must** add
+  `@@map("snake_case")`, and `@@map("PascalCase")` is rejected.
+- **R3 (hygiene)** — every allowlist entry must still correspond to a model in the schema, so the
+  exception lists cannot quietly rot.
+
+### Frozen exceptions (do not extend)
+
+These capture today's reality so the linter passes on the current schema while blocking new drift.
+**Do not add an entry to make a new model pass — fix the model instead.**
+
+- **31 legacy `snake_case`-named models** (`legacySnakeCaseModels`): pre-Manifest tables whose Prisma
+  model name is itself `snake_case` (model name == table, raw `snake_case` fields). e.g. `audit_log`,
+  `documents`, `open_shifts`, `skills`. Renaming them is a data-migration cost we are not paying.
+- **20 models with a `PascalCase` physical table** (`pascalCaseTableExceptions`): (a) 4 with an
+  explicit `@@map("PascalCase")` locked in by historical migrations — `Tenant`, `ActivityFeed`,
+  `EmployeeDeduction`, `OutboxEvent`; (b) 16 `PascalCase` models with **no** `@@map`, added in Task
+  0.3 from IR entities (e.g. `Budget`, `Deal`, `Vendor`, `SampleData`, `FacilityWorkOrder`), whose
+  table defaults to the verbatim model name.
+
+To clear an exception properly: rename the table via a migration (`pnpm db:dev --create-only`),
+then remove the entry from the allowlist (R3 will otherwise flag it as stale).
+
+### Commands
+
+```bash
+pnpm manifest:lint-schema           # report only
+pnpm manifest:lint-schema:strict    # exit 1 on any violation (CI gate)
+pnpm manifest:lint-schema:self-test # assert the rules can fail (positive + negative fixtures)
+```
+
+Report artifacts (gitignored): `manifest/reports/schema-naming/schema-naming.{json,md}`.
+
 ### `SHADOW_DATABASE_URL` and migrate dev (scoping)
 
 - **Purpose:** Prisma Migrate uses a **shadow database** during `migrate dev`.
