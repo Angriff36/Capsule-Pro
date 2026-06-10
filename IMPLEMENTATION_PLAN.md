@@ -325,6 +325,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **PrismaProjection validation fix (152 default-value errors)** | CollectionCase.dunningStage @default(0)→@default("") on String; EventStaff shiftStart/shiftEnd @default(0) removed on DateTime; 149 additional @default("") on non-String fields (Int/Float/Decimal/DateTime). Root cause: post-processing regexes required \S+ after type but many fields had @default("") immediately after type. Fix: final line-by-line post-assembly pass. `prisma validate` now passes on generated 256-model schema. |
 | 2026-06-10 | **Database drift resolved (20260610041450_repair_drift)** | Adds deleted_at column to tenant_events.event_followups; creates tenant_kitchen.qa_checks table with indexes. `pnpm db:check` reports zero drift. |
 | 2026-06-10 | **Verification baseline: 0 typecheck errors, 5,188 tests pass, 0 schema drift** | Confirmed clean across all validation surfaces. |
+| 2026-06-10 | **Task 9.6 COMPLETE: CLI commands — 91 scripts wired, scan CI gate** | All 20 done-when CLI commands + 16 subcommand variants wired. `manifest:scan` reports 191 warnings (all `durable` store target — expected). `seed`/`profile` don't exist in v2.2.0. |
 
 ---
 
@@ -424,6 +425,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 17. **Federation export (`@angriff36/manifest/federation`):** Full multi-service mesh. Low priority (monolith). Task 12.1.
 
 18. **Entity Property Modifiers at source level only:** 534 annotations, parser accepts but compiler does not emit to JSON.
+
+19. **`encrypted` modifier adopted but `encryptionProvider` NOT wired:** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) — encryption is a silent no-op at runtime. Requires implementing `EncryptionProvider` interface (`encrypt`/`decrypt`) and wiring via `RuntimeOptions.encryptionProvider` in the factory. High-priority security gap.
 
 ---
 
@@ -760,11 +763,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Complete.** See Completed Milestones for details.
 
-### 9.6 Adopt CLI commands for development workflow
-- **Done when:** Key unused CLI commands integrated into standard workflow: `validate`, `coverage`, `watch`, `fmt`, `docs`, `diagram`, `mock`, `lint-routes`, `audit-routes`, `enforce-surface`, `audit-governance`, `diff`, `migrate`, `changelog`, `runtime-check`, `doctor`, `integration-check`, `config`, `versions`, `plugins`. 6 orphaned scripts identified and given package.json entries or removed.
-- **Why:** 35 CLI commands available, 15 have package.json scripts, 20 unused. 6 scripts have no package.json entry at all (orphaned). Many provide direct value (validate, coverage, watch, fmt, diff, audit-governance, doctor).
-- **Source to change:** `package.json` scripts section, orphaned script cleanup.
-- **Progress (v0.12.201):** Added `manifest:coverage:json` (`--format json`), `manifest:coverage:strict` (`--strict`), and `manifest:emit` (IR emit script) to package.json.
+### 9.6 Adopt CLI commands for development workflow — ✅ DONE 2026-06-10
+
+> **Complete.** All 20 done-when CLI commands wired (validate, coverage, watch, fmt, docs, diagram, mock, lint-routes, audit-routes, enforce-surface, audit-governance, diff, migrate, changelog, runtime-check, doctor, integration-check, config, versions, plugins). 16 additional subcommand variants added (diff:breaking, diff:ir-vs-ir, versions:list/save/verify/diff/changelog/tag/rollback, config:validate/defaults/effective, scan, scan:strict). Total: 91 manifest:* scripts in package.json. `manifest:scan` wired as CI gate (191 warnings — all `durable` store target, expected for custom provider). `seed` and `profile` CLI commands do not exist in v2.2.0.
 
 ### 9.7 Property modifier adoption -- DONE (2026-06-08)
 
