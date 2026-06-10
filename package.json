@@ -8,7 +8,7 @@
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
-    "@angriff36/manifest": "2.4.0",
+    "@angriff36/manifest": "2.4.1",
     "@auto-it/first-time-contributor": "^11.3.6",
     "@babel/parser": "^7.29.7",
     "@biomejs/biome": "2.4.15",
@@ -71,7 +71,7 @@
       "@types/react-dom": "19.2.3",
       "mobile>react": "19.1.0",
       "mobile>@types/react": "~19.1.10",
-      "prisma": "7.3.0",
+      "prisma": "7.8.0",
       "@prisma/client": "7.8.0",
       "@prisma/adapter-neon": "7.8.0",
       "baseline-browser-mapping": "^2.9.19"
@@ -120,6 +120,8 @@
     "manifest:generate-hooks": "node manifest/scripts/generate-react-query-hooks.mjs",
     "manifest:generate-schema": "node manifest/scripts/generate-full-schema.mjs",
     "manifest:schema:full": "node manifest/scripts/derive-prisma-options.mjs && node manifest/scripts/generate-full-schema.mjs",
+    "manifest:schema:check": "node manifest/scripts/check-schema-drift.mjs",
+    "manifest:schema:check:self-test": "node manifest/scripts/check-schema-drift.mjs --self-test",
     "manifest:openapi": "node manifest/scripts/generate-openapi.mjs",
     "manifest:kysely": "node manifest/scripts/generate-kysely.mjs",
     "manifest:materialized-views": "node manifest/scripts/generate-materialized-views.mjs",
@@ -136,7 +138,7 @@
     "manifest:routes:ir": "tsx manifest/scripts/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate manifest/ir/kitchen.ir.json",
     "manifest:validate-ai": "pnpm exec manifest validate-ai manifest/ir/kitchen.ir.json --min-score 100",
-    "manifest:ci": "pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor && pnpm manifest:check",
+    "manifest:ci": "pnpm manifest:validate && pnpm manifest:validate-ai && pnpm manifest:doctor && pnpm manifest:check && pnpm manifest:schema:check",
     "manifest:registries": "node manifest/scripts/emit-registries.mjs",
     "manifest:audit-ir-drift": "node manifest/scripts/audit-ir-drift.mjs",
     "manifest:audit-ir-drift:strict": "node manifest/scripts/audit-ir-drift.mjs --strict",

@@ -111,6 +111,6 @@ Canonical handler: `apps/api/lib/manifest/execute-command.ts` → `runManifestCo
 ## Exit criteria (all must be true before declaring the initiative done)
 1. `pnpm manifest:generate` produces schema + routes (+ stores) with **zero** broken `database.*` accessors.
 2. `pnpm --filter api typecheck` and `next build` are green with no generated-surface drift.
-3. CI drift gate: re-running generation produces no diff against committed artifacts.
+3. CI drift gate: re-running generation produces no diff against committed artifacts. **(Schema projection: SATISFIED 2026-06-10 — `pnpm manifest:schema:check` regenerates `prisma-options.generated.json` + `generated-schema.prisma` and fails on drift; wired into `manifest:ci`. Routes already drift-gated since Phase 1. Live `schema.prisma` replacement is Phase 2b, not yet gated.)**
 4. Sections A–C above are `DONE`; D evaluated and resolved.
 5. No file outside `node_modules` hand-edits a `// Generated from Manifest IR - DO NOT EDIT` file.
