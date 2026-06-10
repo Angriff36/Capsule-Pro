@@ -38,7 +38,7 @@ import { PrismaIdempotencyStore } from "./prisma-idempotency-store";
 import { PrismaJsonStore } from "./prisma-json-store";
 import type { PrismaStoreConfig } from "./prisma-store";
 import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
-import { loadMergedPrecompiledIR, loadPrecompiledIR } from "./runtime/loadManifests";
+import { loadMergedPrecompiledIR, loadPrecompiledIR, verifyProvenanceHash } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
 import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
 
@@ -176,6 +176,8 @@ export interface CreateManifestRuntimeDeps {
   flagProvider?: (name: string) => unknown;
   /** Per-command profiling toggle + callback. */
   profiling?: { enabled?: boolean; onProfileComplete?: (profile: unknown) => void; detailed?: boolean };
+  /** Require IR provenance hash verification on first engine creation. */
+  requireValidProvenance?: boolean;
 }
 
 /** Context passed by the caller describing the acting user. */
@@ -371,6 +373,24 @@ export async function createManifestRuntime(
 
   // 2. Load precompiled IR.
   const ir = getManifestIR();
+
+  // 2b. Verify IR provenance integrity (once per process lifetime).
+  //    Compares a deterministic SHA-256 of the IR against the stored irHash.
+  //    This detects file tampering or corruption without modifying the IR.
+  //    Verification is opt-in via deps.requireValidProvenance; when enabled,
+  //    a mismatch throws before any command can execute.
+  const provenanceResult = verifyProvenanceHash(ir);
+  if (!provenanceResult.valid) {
+    if (deps.requireValidProvenance) {
+      throw new Error(
+        `[manifest-runtime] IR provenance verification failed: ${provenanceResult.error}`
+      );
+    }
+    // Log warning but don't block — allows gradual rollout.
+    deps.log.info(
+      `[manifest-runtime] IR provenance warning: ${provenanceResult.error}`
+    );
+  }
 
   // 3. Create a shared event collector for transactional outbox pattern.
   const eventCollector: EmittedEvent[] = [];

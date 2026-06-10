@@ -35,6 +35,11 @@ vi.mock("@repo/manifest-runtime/runtime/loadManifests", () => {
   return {
     loadPrecompiledIR: vi.fn(bundle),
     loadMergedPrecompiledIR: vi.fn(bundle),
+    verifyProvenanceHash: vi.fn(() => ({
+      valid: true,
+      storedHash: "test-hash",
+      computedHash: "test-hash",
+    })),
   };
 });
 
@@ -488,6 +493,66 @@ describe("createManifestRuntime (shared factory)", () => {
           user: { id: "user-1", tenantId: "tenant-1" },
         })
       ).rejects.toThrow("Edge runtime is unsupported");
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // Provenance verification
+  // -----------------------------------------------------------------------
+  describe("provenance verification", () => {
+    it("calls verifyProvenanceHash on engine creation", async () => {
+      const deps = makeDeps();
+
+      await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+
+      const { verifyProvenanceHash } = await import(
+        "@repo/manifest-runtime/runtime/loadManifests"
+      );
+      expect(verifyProvenanceHash).toHaveBeenCalledTimes(1);
+    });
+
+    it("throws when requireValidProvenance is true and verification fails", async () => {
+      const { verifyProvenanceHash } = await import(
+        "@repo/manifest-runtime/runtime/loadManifests"
+      );
+      vi.mocked(verifyProvenanceHash).mockReturnValueOnce({
+        valid: false,
+        storedHash: "abc",
+        computedHash: "def",
+        error: "IR provenance verification failed: hash mismatch",
+      });
+
+      const deps = makeDeps();
+      deps.requireValidProvenance = true;
+
+      await expect(
+        createManifestRuntime(deps, {
+          user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+        })
+      ).rejects.toThrow("IR provenance verification failed");
+    });
+
+    it("logs warning when requireValidProvenance is false and verification fails", async () => {
+      const { verifyProvenanceHash } = await import(
+        "@repo/manifest-runtime/runtime/loadManifests"
+      );
+      vi.mocked(verifyProvenanceHash).mockReturnValueOnce({
+        valid: false,
+        storedHash: "abc",
+        computedHash: "def",
+        error: "IR provenance verification failed: hash mismatch",
+      });
+
+      const deps = makeDeps();
+
+      // Should NOT throw — just log a warning
+      const engine = await createManifestRuntime(deps, {
+        user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
+      });
+      expect(engine).toBeDefined();
+      // The log mock is a no-op spy, so we just verify no throw occurred.
     });
   });
 });

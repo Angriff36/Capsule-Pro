@@ -390,6 +390,104 @@ export function invalidateMergedIRCache(): void {
   cachedMergedBundle = null;
   cachedPrecompiledBundle = null;
   cachedPrecompiledPath = "";
+  provenanceVerified = false;
+}
+
+// ---------------------------------------------------------------------------
+// Provenance verification
+// ---------------------------------------------------------------------------
+
+/**
+ * Deterministic JSON serialization matching RuntimeEngine.verifyIRHash().
+ * Recursively sorts all object keys so the output is byte-identical for
+ * structurally equal inputs.
+ */
+function deterministicStringify(obj: unknown): string {
+  return JSON.stringify(obj, (_, value) => {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return Object.keys(value as Record<string, unknown>)
+        .sort()
+        .reduce<Record<string, unknown>>((sorted, key) => {
+          sorted[key] = (value as Record<string, unknown>)[key];
+          return sorted;
+        }, {});
+    }
+    return value;
+  });
+}
+
+export interface ProvenanceVerificationResult {
+  valid: boolean;
+  storedHash: string;
+  computedHash: string;
+  error?: string;
+}
+
+let provenanceVerified = false;
+let lastVerificationResult: ProvenanceVerificationResult | null = null;
+
+/**
+ * Verify the IR's provenance hash (irHash) by recomputing the deterministic
+ * hash of the loaded IR and comparing it to the stored value.
+ *
+ * This matches the algorithm used by RuntimeEngine.verifyIRHash():
+ *   1. Strip irHash from provenance (set to "")
+ *   2. Serialize with deterministic JSON (sorted keys)
+ *   3. SHA-256 hash
+ *   4. Compare to stored irHash
+ *
+ * Verification runs once per process lifetime and caches the result.
+ * Returns the verification result.
+ */
+export function verifyProvenanceHash(
+  ir: IR
+): ProvenanceVerificationResult {
+  if (provenanceVerified && lastVerificationResult) {
+    return lastVerificationResult;
+  }
+
+  const storedHash = ir.provenance?.irHash ?? "";
+
+  if (!storedHash) {
+    const result: ProvenanceVerificationResult = {
+      valid: false,
+      storedHash: "",
+      computedHash: "",
+      error: "No irHash in provenance — IR was compiled without hash generation",
+    };
+    lastVerificationResult = result;
+    provenanceVerified = true;
+    return result;
+  }
+
+  // Build canonical copy: strip irHash from provenance before hashing
+  const canonical = JSON.parse(JSON.stringify(ir)) as IR;
+  if (canonical.provenance) {
+    canonical.provenance.irHash = "";
+  }
+
+  const computedHash = createHash("sha256")
+    .update(deterministicStringify(canonical))
+    .digest("hex");
+
+  const result: ProvenanceVerificationResult = {
+    valid: computedHash === storedHash,
+    storedHash,
+    computedHash,
+  };
+
+  if (!result.valid) {
+    result.error = `IR provenance verification failed: computed ${computedHash.slice(0, 12)}… but stored ${storedHash.slice(0, 12)}…`;
+  }
+
+  lastVerificationResult = result;
+  provenanceVerified = true;
+  return result;
+}
+
+/** Get the last verification result (null if not yet verified). */
+export function getProvenanceVerification(): ProvenanceVerificationResult | null {
+  return lastVerificationResult;
 }
 
 /**

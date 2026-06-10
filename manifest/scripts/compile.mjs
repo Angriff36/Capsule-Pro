@@ -20,6 +20,25 @@ import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
 import { getConfigPaths } from "./read-config.mjs";
 
 /**
+ * Deterministic JSON serialization: recursively sorts all object keys so the
+ * output is byte-identical for structurally equal inputs.  Matches the
+ * algorithm used by RuntimeEngine.verifyIRHash() upstream.
+ */
+function deterministicStringify(obj) {
+  return JSON.stringify(obj, (_, value) => {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      return Object.keys(value)
+        .sort()
+        .reduce((sorted, key) => {
+          sorted[key] = value[key];
+          return sorted;
+        }, {});
+    }
+    return value;
+  });
+}
+
+/**
  * Post-compile enrichment: populate computed property `dependencies` arrays.
  *
  * The upstream parser's `extractDependencies` only captures standalone
@@ -174,18 +193,31 @@ async function compileMergedManifests() {
     compiledAt: new Date().toISOString(),
   });
 
-  // Compute provenance hashes after merge. contentHash = SHA-256 of serialized IR
-  // (covers the exact bytes that land on disk). irHash = SHA-256 of all source
-  // .manifest contents (sorted for determinism).
+  // Compute provenance hashes after merge.
+  // Per IR spec: contentHash = SHA-256 of source manifest(s) (provenance of where
+  // the IR came from). irHash = deterministic SHA-256 of the IR JSON itself
+  // (runtime integrity — matches what RuntimeEngine.verifyIRHash() computes).
   const crypto = await import("node:crypto");
-  const irJson = JSON.stringify(mergedIR, null, 2);
-  const contentHash = crypto.createHash("sha256").update(irJson).digest("hex");
+
+  // contentHash: hash of all source .manifest contents (sorted for determinism).
   const sourceHashes = compiledEntries
     .map((e) => crypto.createHash("sha256").update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8")).digest("hex"))
     .sort();
-  const irHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
+  const contentHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
+
+  // irHash: deterministic hash of the IR JSON (sorted keys, irHash stripped from
+  // provenance — matches RuntimeEngine.verifyIRHash() algorithm).
+  // We must compute BEFORE writing irHash into the provenance, then set it.
   if (mergedIR.provenance) {
     mergedIR.provenance.contentHash = contentHash;
+    mergedIR.provenance.irHash = ""; // clear for canonical computation
+  }
+  const canonicalIR = JSON.parse(JSON.stringify(mergedIR));
+  const irHash = crypto
+    .createHash("sha256")
+    .update(deterministicStringify(canonicalIR))
+    .digest("hex");
+  if (mergedIR.provenance) {
     mergedIR.provenance.irHash = irHash;
   }
 
