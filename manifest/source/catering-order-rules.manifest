@@ -37,6 +37,8 @@ entity CateringOrder {
   property dietaryRestrictions: string = ""
   property staffRequired: int = 0
   property staffAssigned: int = 0
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 

@@ -39,6 +39,8 @@ entity VendorContract {
   property slaBreachCount: int = 0
   property onTimeDeliveryRate: decimal = 0
   property qualityRating: decimal = 0
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 

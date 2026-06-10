@@ -259,8 +259,8 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 85% context — saved before compacting]
+[proactive bridge @ 86% context — saved before compacting]
 Files (1):
-  manifest/scripts/generate-full-schema.mjs (edit)
+  package.json (edit)
 
 # === END COGNILAYER ===

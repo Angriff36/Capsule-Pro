@@ -663,6 +663,8 @@ model Event {
   notes                String?
   tags                 String[]
   templateId           String?          @map("template_id")
+  version              Int              @default(0)
+  versionAt            DateTime?
   createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime         @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime?        @map("deleted_at") @db.Timestamptz(6)
@@ -1763,6 +1765,8 @@ model CateringOrder {
   dietary_restrictions  String?
   staff_required        Int?      @default(0)
   staff_assigned        Int?      @default(0)
+  version               Int       @default(0)
+  versionAt             DateTime?
   createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -2312,6 +2316,8 @@ model VendorContract {
   slaBreachCount          Int       @default(0) @map("sla_breach_count")
   onTimeDeliveryRate      Decimal   @default(0) @map("on_time_delivery_rate") @db.Decimal(5, 2)
   qualityRating           Decimal   @default(0) @map("quality_rating") @db.Decimal(2, 1)
+  version                 Int       @default(0)
+  versionAt               DateTime?
   createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt               DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -4658,6 +4664,8 @@ model Invoice {
   viewedAt          DateTime?     @map("viewed_at") @db.Timestamptz(6)
   paidAt            DateTime?     @map("paid_at") @db.Timestamptz(6)
   voidedAt          DateTime?     @map("voided_at") @db.Timestamptz(6)
+  version           Int           @default(0)
+  versionAt         DateTime?
   createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime      @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt         DateTime?     @map("deleted_at") @db.Timestamptz(6)
@@ -4722,6 +4730,8 @@ model Payment {
   processedAt            DateTime? @map("processed_at") @db.Timestamptz(6)
   completedAt            DateTime? @map("completed_at") @db.Timestamptz(6)
   refundedAt             DateTime? @map("refunded_at") @db.Timestamptz(6)
+  version                Int       @default(0)
+  versionAt              DateTime?
   createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt              DateTime? @map("deleted_at") @db.Timestamptz(6)

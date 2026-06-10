@@ -1,0 +1,13 @@
+ALTER TABLE "tenant_accounting"."payments" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "versionAt" TIMESTAMP(3);
+
+ALTER TABLE "tenant_crm"."crm_scoring_rules" ADD COLUMN IF NOT EXISTS "deleted_at" TIMESTAMPTZ(6);
+
+ALTER TABLE "tenant_events"."catering_orders" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "versionAt" TIMESTAMP(3);
+
+ALTER TABLE "tenant_events"."events" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "versionAt" TIMESTAMP(3);
+
+ALTER TABLE "tenant_inventory"."vendor_contracts" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN IF NOT EXISTS "versionAt" TIMESTAMP(3);

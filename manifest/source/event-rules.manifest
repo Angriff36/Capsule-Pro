@@ -27,6 +27,8 @@ entity Event {
   property venueAddress: string = ""
   searchable property notes: string = ""
   property required tags: array<string>
+  versionProperty version: number
+  versionAtProperty versionAt: number
   timestamps
   property deletedAt: datetime
 
