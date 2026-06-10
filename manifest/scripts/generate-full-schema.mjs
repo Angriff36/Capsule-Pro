@@ -377,22 +377,62 @@ console.log("  Type mismatches fixed: " + typeFixCount);
 //     PrismaProjection emits @default("") for empty defaults, but DateTime/Int/
 //     Float/Decimal/Boolean fields can't accept a string default.
 //     Strategy: strip @default("") from all non-String fields.
+//     Also fix @default(0) on String/DateTime fields.
 // ---------------------------------------------------------------------------
 let genDefaultFixCount = 0;
-// Strip @default("") on DateTime, Int, Float, Decimal, Boolean, BigInt fields
+const lines = generatedCode.split("\n");
+for (let i = 0; i < lines.length; i++) {
+  const line = lines[i];
+  // Fix @default("") on non-String fields → remove @default entirely
+  if (line.includes('@default("")')) {
+    const typeMatch = line.match(/^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/);
+    if (typeMatch) {
+      lines[i] = line.replace(/\s*@default\(""\)/, "");
+      genDefaultFixCount++;
+    }
+  }
+  // Fix @default(0) on String fields → @default("")
+  if (line.includes('@default(0)')) {
+    const typeMatch = line.match(/^\s+\w+\s+(String)(\??)/);
+    if (typeMatch) {
+      lines[i] = line.replace(/@default\(0\)/, '@default("")');
+      genDefaultFixCount++;
+    }
+  }
+  // Fix @default(0) on DateTime fields → remove @default entirely
+  if (line.includes('@default(0)')) {
+    const typeMatch = line.match(/^\s+\w+\s+(DateTime)(\??)/);
+    if (typeMatch) {
+      lines[i] = line.replace(/\s*@default\(0\)/, "");
+      genDefaultFixCount++;
+    }
+  }
+}
+generatedCode = lines.join("\n");
+// Fix @default("0") on Int/Float fields → @default(0)
 generatedCode = generatedCode.replace(
-  /(\s+\w+\s+(?:DateTime|Int|Float|Decimal|Boolean|BigInt)\??\s+\S+(?:\s+@[^\n]+)*?)\s+@default\(""\)/g,
+  /(\s+\w+\s+(?:Int|Float)\??(?:\s+\S+)?)\s+@default\("([0-9.]+)"\)/g,
+  (_match, prefix, val) => {
+    genDefaultFixCount++;
+    return prefix.trimEnd() + " @default(" + Math.floor(parseFloat(val)) + ")";
+  }
+);
+// Fix @default(0) on String fields → @default("")
+// (IR default 0 on a string-typed field produces invalid Prisma)
+generatedCode = generatedCode.replace(
+  /(\s+\w+\s+String\??(?:\s+\S+)*?)\s+@default\(0\)/g,
+  (_match, prefix) => {
+    genDefaultFixCount++;
+    return prefix + ' @default("")';
+  }
+);
+// Fix @default(0) on DateTime fields → remove @default entirely
+// (IR default 0 on a datetime-typed field produces invalid Prisma)
+generatedCode = generatedCode.replace(
+  /(\s+\w+\s+DateTime\??(?:\s+\S+)*?)\s+@default\(0\)/g,
   (_match, prefix) => {
     genDefaultFixCount++;
     return prefix;
-  }
-);
-// Fix @default("0") on Int/Float fields → @default(0)
-generatedCode = generatedCode.replace(
-  /(\s+\w+\s+(?:Int|Float)\??\s+\S+(?:\s+@[^\n]+)?)\s+@default\("([0-9.]+)"\)/g,
-  (_match, prefix, val) => {
-    genDefaultFixCount++;
-    return prefix + " @default(" + Math.floor(parseFloat(val)) + ")";
   }
 );
 console.log("  Generated default fixes: " + genDefaultFixCount);
@@ -716,9 +756,48 @@ const totalModels = (output.match(/^model /gm) || []).length;
 console.log("\nTotal: " + totalModels + " models (" + generatedModelCount + " generated + " + infraBlocks.length + " infra)");
 
 // ---------------------------------------------------------------------------
+// 8b. Final default fix on the assembled output
+//     Earlier per-section fixes may miss cases due to pipeline ordering.
+//     Apply a definitive line-by-line pass on the fully assembled output.
+// ---------------------------------------------------------------------------
+let finalDefaultFixes = 0;
+const outputLines = output.split("\n");
+for (let i = 0; i < outputLines.length; i++) {
+  const line = outputLines[i];
+  // Fix @default("") on non-String fields → strip @default
+  if (line.includes('@default("")')) {
+    const typeMatch = line.match(/^\s+\w+\s+(DateTime|Int|Float|Decimal|Boolean|BigInt)(\??)/);
+    if (typeMatch) {
+      outputLines[i] = line.replace(/\s*@default\(""\)/, "");
+      finalDefaultFixes++;
+    }
+  }
+  // Fix @default(0) on String fields → @default("")
+  if (line.includes("@default(0)")) {
+    const typeMatch = line.match(/^\s+\w+\s+(String)(\??)/);
+    if (typeMatch) {
+      outputLines[i] = line.replace(/@default\(0\)/, '@default("")');
+      finalDefaultFixes++;
+    }
+  }
+  // Fix @default(0) on DateTime fields → strip @default
+  if (line.includes("@default(0)")) {
+    const typeMatch = line.match(/^\s+\w+\s+(DateTime)(\??)/);
+    if (typeMatch) {
+      outputLines[i] = line.replace(/\s*@default\(0\)/, "");
+      finalDefaultFixes++;
+    }
+  }
+}
+const finalOutput = outputLines.join("\n");
+if (finalDefaultFixes > 0) {
+  console.log("  Final default fixes on assembled output: " + finalDefaultFixes);
+}
+
+// ---------------------------------------------------------------------------
 // 9. Write output
 // ---------------------------------------------------------------------------
-writeFileSync(OUTPUT_PATH, output);
+writeFileSync(OUTPUT_PATH, finalOutput);
 console.log("Output: " + OUTPUT_PATH);
 
 // ---------------------------------------------------------------------------

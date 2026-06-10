@@ -322,6 +322,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-09 | **Quarantine test recovery: 606 tests recovered from 8/66 files (v0.12.227)** | Migrated 8 quarantined test files from... |
 | 2026-06-10 | **IR provenance verification wired** | compile.mjs hashes match IR spec (contentHash = sources, irHash = deterministic IR). verifyProvenanceHash() in loadManifests.ts. Factory opts in via requireValidProvenance. 9 new tests. |
 | 2026-06-10 | **Training test recovery (10 describe.skip → describe)** | 49 new passing tests. All 10 skipped training test suites recovered: $queryRaw → Prisma ORM, createManifestRuntime → runManifestCommand. v0.12.233. |
+| 2026-06-10 | **PrismaProjection validation fix (152 default-value errors)** | CollectionCase.dunningStage @default(0)→@default("") on String; EventStaff shiftStart/shiftEnd @default(0) removed on DateTime; 149 additional @default("") on non-String fields (Int/Float/Decimal/DateTime). Root cause: post-processing regexes required \S+ after type but many fields had @default("") immediately after type. Fix: final line-by-line post-assembly pass. `prisma validate` now passes on generated 256-model schema. |
+| 2026-06-10 | **Database drift resolved (20260610041450_repair_drift)** | Adds deleted_at column to tenant_events.event_followups; creates tenant_kitchen.qa_checks table with indexes. `pnpm db:check` reports zero drift. |
+| 2026-06-10 | **Verification baseline: 0 typecheck errors, 5,188 tests pass, 0 schema drift** | Confirmed clean across all validation surfaces. |
 
 ---
 
@@ -989,7 +992,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Section | Target | Status |
 |---|---|---|
 | A | Hand-rolled Prisma stores -> GenericPrismaStore or codegen | NEAR-DONE (89/94 use GenericPrismaStore, 5 custom by design) |
-| B | Hand-authored Prisma schema -> PrismaProjection + mapping config | IN PROGRESS (189/189 matched, 252 models, prisma validate passes — QACheck model added v0.12.216) |
+| B | Hand-authored Prisma schema -> PrismaProjection + mapping config | IN PROGRESS (189/189 matched, 256 models generated, `prisma validate` PASSES on full generated schema — 152 default-value errors fixed v0.12.234) |
 | C | Route accessor hack -> schema-aware accessor resolution | DONE (2026-05-30) |
 | D | ENTITY_DOMAIN_MAP consolidation | DONE (2026-06-04) |
 | E | Explicitly NOT for phase-out (keep) | N/A |
