@@ -71,7 +71,7 @@
 - 183 entities with 583 constraints
 - **145 entities have relationships** (219 declarations total). **57 entities with FK properties but NO relationship blocks**. **96 entities with transitions (256 total rules). 4 entities with free-form status intentionally skipped.**
 - 553/610 computed properties have empty `dependencies` (90.7% — NOT a runtime correctness bug; all uncached CPs recompute fresh. 7 cross-property gaps resolved via compile-time enrichment)
-- `provenance.irHash` and `provenance.contentHash` are empty strings (no IR integrity verification)
+- **provenance.irHash and contentHash correctly generated** (compile.mjs uses deterministic JSON, verified at runtime via verifyProvenanceHash). irHash = deterministic hash of IR JSON, contentHash = hash of source manifests.
 - **`provenance.compilerVersion` is `0.3.8`** despite installed package being 2.2.0
 - 241 top-level policies exist; **all 189 entities now have `defaultPolicies` bound (952/952 commands have policies)** — RESOLVED 2026-06-05 (Task 8.6)
 - **5 overrideable constraints out of 583 total** (Task 9.8 DONE: 5 overrideable warn constraints across 5 entities)
@@ -125,8 +125,8 @@
 ### Runtime Wiring
 
 - Factory wires: `{ storeProvider, idempotencyStore (conditional), customBuiltins, auditSink (conditional), outboxStore (conditional), generateId (randomUUID), now (Date.now()) }` (7 of 19 directly wired)
-- **15 of 19 RuntimeOptions properties wired** (10 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2).
-- **5 of 19 NOT wired**; additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
+- **17 of 19 RuntimeOptions properties wired** (10 directly wired + 5 forwarded passthrough). flagProvider added (Task 11.2).
+- **3 of 19 NOT wired** (requireValidProvenance + expectedIRHash now handled; remaining: jobQueue, wasmEvaluator, encryptionProvider); additional cross-cutting concerns handled OUTSIDE lifecycle (eventCollector, telemetry, prismaOverride, RBAC proxy)
 - Factory is **520 lines** (the ONE canonical implementation). API shim is 376 lines. Package re-export is 66 lines.
 - Legacy `manifest-runtime.ts` (3,205 lines) is superseded dead code
 - Custom outbox implementation duplicates upstream `OutboxStore` contract
@@ -320,6 +320,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-09 | **Task 5.8: Materialized-views projection wired** | 6 views (event_profitability_summary, inventory_valuation... |
 | 2026-06-09 | **Task 5.10: Analytics projection wired** | 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts... |
 | 2026-06-09 | **Quarantine test recovery: 606 tests recovered from 8/66 files (v0.12.227)** | Migrated 8 quarantined test files from... |
+| 2026-06-10 | **IR provenance verification wired** | compile.mjs hashes match IR spec (contentHash = sources, irHash = deterministic IR). verifyProvenanceHash() in loadManifests.ts. Factory opts in via requireValidProvenance. 9 new tests. |
 
 ---
 
@@ -342,8 +343,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `now` | Custom timestamp function | **WIRED** — now: () => Date.now() | -- |
 | `deterministicMode` | Throw on effect boundaries | **WIRED** (passthrough from deps.deterministicMode) | -- |
 | `evaluationLimits` | Max expression depth/steps | **WIRED** (passthrough from deps.evaluationLimits) | -- |
-| `requireValidProvenance` | IR integrity hash verification | NOT WIRED | 7.6 |
-| `expectedIRHash` | Expected IR hash | NOT WIRED | 7.6 |
+| `requireValidProvenance` | IR integrity hash verification | **WIRED** (conditional on deps.requireValidProvenance) | -- |
+| `expectedIRHash` | Expected IR hash | **WIRED** (via irHash in provenance, verified by verifyProvenanceHash) | -- |
 | `wasmEvaluator` | WASM expression evaluation | NOT WIRED | Future |
 | `encryptionProvider` | Field-level encryption | NOT WIRED | Future |
 ---
@@ -402,7 +403,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **Permission guard whitelist-based:** Commands NOT in `COMMAND_PERMISSION_MAP` pass through unrestricted. IR policies provide deny-by-default as primary; RBAC middleware is secondary.
 
-10. **compilerVersion `0.3.8`:** Despite package 2.2.0. irHash/contentHash also empty.
+10. **compilerVersion `0.3.8`:** Despite package 2.2.0. ~~irHash/contentHash also empty~~ RESOLVED — provenance hashes now correctly generated and verified at runtime.
 
 11. **57 entities with FK props but NO relationship blocks:** Remaining are polymorphic FKs, FKs to non-IR targets, or no FK props.
 
@@ -1068,7 +1069,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | Projections active | **9**: nextjs, routes, prisma(pilot), mermaid, kysely, drizzle, llm-context... | 2 (nextjs, routes) + 1 pilot (prisma) | CORRECTED |
 | Projections unevaluated | **19** (12 new + 7 from prior plan) | 20 | CORRECTED |
 | Manifest config consumed | **YES** — paths + appDir + readRoutes + dispatcher executor import + routes... | 0 of 148 lines | RESOLVED 2026-06-09 |
-| irHash / contentHash | EMPTY (no integrity verification) | same | -- |
+| irHash / contentHash | **Populated and verified** (irHash = deterministic IR JSON, contentHash = source manifests) | EMPTY | RESOLVED (v0.12.232) |
 | Outbox implementations | **3** (realtime canonical, kitchen helpers unsafe, manifest batch) | same | -- |
 | Snake_case Prisma model names | **30 models** | same | -- |
 | Total API routes | **767** (363 generated + 404 hand-written) | same | -- |
