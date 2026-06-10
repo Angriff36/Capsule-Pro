@@ -17,7 +17,7 @@
 
 **v0.12.230 milestone (2026-06-09):**
 - Baseline: 74 → 0 (100% recovery)
-- Tests: 5,130 pass, 0 fail, 0 typecheck errors
+- Tests: 5,188 pass, 0 fail, 0 typecheck errors
 
 **Production bugs found and fixed during recovery:**
 1. Missing `await` in manifest command dispatcher route (returned unhandled rejections instead of 500)
@@ -321,6 +321,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-09 | **Task 5.10: Analytics projection wired** | 3 surfaces: tracking-plan.json (2.2MB, 4,250 events), events.ts... |
 | 2026-06-09 | **Quarantine test recovery: 606 tests recovered from 8/66 files (v0.12.227)** | Migrated 8 quarantined test files from... |
 | 2026-06-10 | **IR provenance verification wired** | compile.mjs hashes match IR spec (contentHash = sources, irHash = deterministic IR). verifyProvenanceHash() in loadManifests.ts. Factory opts in via requireValidProvenance. 9 new tests. |
+| 2026-06-10 | **Training test recovery (10 describe.skip → describe)** | 49 new passing tests. All 10 skipped training test suites recovered: $queryRaw → Prisma ORM, createManifestRuntime → runManifestCommand. v0.12.233. |
 
 ---
 
@@ -1053,7 +1054,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `as any` in factory specifically | **0** (verified 2026-06-06) | 6 | RESOLVED |
 | `as unknown as` double-casts | **91** (architecturally necessary: test mocks, Prisma JSON, Vega-Lite) | 157 | RESOLVED (Task 10.8, v0.12.168: 42% reduction) |
 | Schema drift violations | **0** (110/110 entities clean, strict mode exit 0) | 179 | RESOLVED (v0.12.170) |
-| describe.skip test suites | 1 (sales-reporting) | 1 | -- |
+| describe.skip test suites | 0 | 1 (sales-reporting) | RESOLVED v0.12.233 |
 | apiFetch call sites | **~1,052** across **~107 files** (~40 replaced via generated client) | 1,098/169 | UPDATED (Task 6.2 batches 1-21) |
 | Frontend data caching | TanStack Query installed, **94 files** migrated to generated client, hooks... | 5/31 | UPDATED (Task 6.2 batches 1-21) |
 | use-*.ts files | **11** (10 renamed to `*.ts` in Task 6.5, 1 TanStack Query) | 21 | RESOLVED (Task 6.5, 2026-06-07) |
