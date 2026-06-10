@@ -1101,6 +1101,27 @@ Search: tenant declarations, tenant tenantId, mergeIrs, ir-utils.mjs, kitchen.ir
 
 ---
 
+## Section 27 — PrismaProjection default-value fix (2026-06-10)
+
+### Problem
+`generate-full-schema.mjs` produced 3 `prisma validate` errors from `@default(0)` on String/DateTime fields, plus 149 `@default("")` on non-String fields (Int/Float/Decimal/DateTime). All invalid Prisma.
+
+### Root cause
+The post-processing regexes in section 5e required `\S+` (at least one non-whitespace token) between the field type and `@default(...)`. Many fields have the default immediately after the type with no intermediate attributes (e.g., `guestCount Int? @default("")`). The regex couldn't match these.
+
+### Fix
+Added section 8b — a final post-assembly line-by-line pass on the COMPLETE output after all other post-processing. Processes all 3 error classes:
+1. `@default(0)` on String → `@default("")`
+2. `@default(0)` on DateTime → removed
+3. `@default("")` on non-String (Int/Float/Decimal/DateTime/Boolean/BigInt) → removed
+
+### Result
+`prisma validate` now PASSES on the generated 256-model schema (191 IR + 70 infra-core). Database drift also resolved via migration `20260610041450_repair_drift` (adds event_followups.deleted_at + creates qa_checks table).
+
+Search: PrismaProjection, generate-full-schema, @default validation, prisma validate, default fix, database drift, repair_drift
+
+---
+
 ## 26. Governance migration: training/complete route (2026-06-06)
 
 `apps/api/app/api/training/complete/route.ts` migrated from direct Prisma writes to Manifest runtime governance.
