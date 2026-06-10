@@ -1162,8 +1162,8 @@ export interface EventStaff {
   staffMemberId: string;
   role?: string;
   notes?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart: string;
+  shiftEnd: string;
   status?: string;
   confirmedAt: string;
   checkedInAt: string;

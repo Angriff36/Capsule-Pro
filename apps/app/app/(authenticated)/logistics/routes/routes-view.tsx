@@ -157,7 +157,9 @@ export function RoutesView() {
     try {
       const route = await logisticsRouteCreate({
         name: createForm.name,
-        scheduledStart: createForm.scheduledDate ? Number(createForm.scheduledDate) : undefined,
+        scheduledStart: createForm.scheduledDate
+          ? new Date(createForm.scheduledDate).toISOString()
+          : undefined,
       });
       if (route) {
         setRoutes((prev) => [route as unknown as DeliveryRoute, ...prev]);
@@ -240,7 +242,9 @@ export function RoutesView() {
       const route = await logisticsRouteUpdate({
         id: editingRoute.id,
         name: editForm.name,
-        scheduledStart: editForm.scheduledDate ? Number(editForm.scheduledDate) : undefined,
+        scheduledStart: editForm.scheduledDate
+          ? new Date(editForm.scheduledDate).toISOString()
+          : undefined,
       });
       if (route) {
         setRoutes((prev) =>

@@ -7175,8 +7175,8 @@ export interface BulkOrderRuleCreateInput {
   freeItemQuantity?: number;
   shippingIncluded?: boolean;
   priority?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
 }
 
 export interface BulkOrderRuleUpdateInput {
@@ -7191,8 +7191,8 @@ export interface BulkOrderRuleUpdateInput {
   freeItemQuantity?: number;
   shippingIncluded?: boolean;
   priority?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
   isActive?: boolean;
 }
 
@@ -7517,7 +7517,7 @@ export interface CollectionCaseResetDunningInput {
 export interface CollectionCaseCreatePaymentPlanInput {
   id?: string;
   planId?: string;
-  nextPaymentDue?: number;
+  nextPaymentDue?: string;
 }
 
 export interface CollectionCaseMarkDisputedInput {
@@ -7580,7 +7580,7 @@ export interface CollectionActionSkipInput {
 
 export interface CollectionActionRescheduleInput {
   id?: string;
-  newScheduledFor?: number;
+  newScheduledFor?: string;
   reason?: string;
 }
 
@@ -8420,7 +8420,7 @@ export interface EquipmentCreateInput {
   manufacturer?: string;
   model?: string;
   purchaseDate?: string;
-  warrantyExpiry?: number;
+  warrantyExpiry?: string;
   maintenanceIntervalDays?: number;
   maxUsageHours?: number;
   notes?: string;
@@ -9071,8 +9071,8 @@ export interface EventStaffAssignInput {
   staffMemberId?: string;
   role?: string;
   notes?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart?: string;
+  shiftEnd?: string;
 }
 
 export interface EventStaffConfirmInput {
@@ -9081,8 +9081,8 @@ export interface EventStaffConfirmInput {
 
 export interface EventStaffUpdateShiftInput {
   id?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart?: string;
+  shiftEnd?: string;
 }
 
 export interface EventStaffUpdateRoleInput {
@@ -9833,7 +9833,7 @@ export interface ProcurementBudgetAlertAcknowledgeInput {
 export interface AuditScheduleCreateInput {
   name?: string;
   frequency?: string;
-  nextRunAt?: number;
+  nextRunAt?: string;
 }
 
 export interface AuditScheduleUpdateInput {
@@ -10693,8 +10693,8 @@ export interface LogisticsRouteCreateInput {
   driverId?: string;
   startLocation?: string;
   endLocation?: string;
-  scheduledStart?: number;
-  scheduledEnd?: number;
+  scheduledStart?: string;
+  scheduledEnd?: string;
   distance?: number;
   estimatedDuration?: number;
   stops?: number;
@@ -10712,8 +10712,8 @@ export interface LogisticsRouteUpdateInput {
   driverId?: string;
   startLocation?: string;
   endLocation?: string;
-  scheduledStart?: number;
-  scheduledEnd?: number;
+  scheduledStart?: string;
+  scheduledEnd?: string;
   distance?: number;
   estimatedDuration?: number;
   stops?: number;
@@ -10755,7 +10755,7 @@ export interface LogisticsDispatchAssignInput {
   driverId?: string;
   vehicleId?: string;
   priority?: string;
-  estimatedDeliveryTime?: number;
+  estimatedDeliveryTime?: string;
   notes?: string;
 }
 
@@ -10778,7 +10778,7 @@ export interface LogisticsDispatchReassignInput {
   id?: string;
   driverId?: string;
   vehicleId?: string;
-  estimatedDeliveryTime?: number;
+  estimatedDeliveryTime?: string;
   notes?: string;
 }
 
@@ -11443,8 +11443,8 @@ export interface PricingTierCreateInput {
   maxQuantity?: number;
   unitCost?: number;
   discountPercent?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
 }
 
 export interface PricingTierUpdateInput {
@@ -11455,8 +11455,8 @@ export interface PricingTierUpdateInput {
   maxQuantity?: number;
   unitCost?: number;
   discountPercent?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
   isActive?: boolean;
 }
 
@@ -11479,7 +11479,7 @@ export interface PurchaseRequisitionCreateInput {
   locationId?: string;
   department?: string;
   requestedBy?: string;
-  requiredBy?: number;
+  requiredBy?: string;
   justification?: string;
   priority?: string;
   itemCategory?: string;
@@ -11488,7 +11488,7 @@ export interface PurchaseRequisitionCreateInput {
 export interface PurchaseRequisitionUpdateInput {
   id?: string;
   justification?: string;
-  requiredBy?: number;
+  requiredBy?: string;
   priority?: string;
   department?: string;
 }
@@ -11571,7 +11571,7 @@ export interface ProposalCreateInput {
   title?: string;
   guestCount?: number;
   taxRate?: number;
-  validUntil?: number;
+  validUntil?: string;
   notes?: string;
   termsAndConditions?: string;
 }
@@ -11589,7 +11589,7 @@ export interface ProposalUpdateInput {
   taxAmount?: number;
   discountAmount?: number;
   total?: number;
-  validUntil?: number;
+  validUntil?: string;
   notes?: string;
   termsAndConditions?: string;
 }
@@ -12131,8 +12131,8 @@ export interface ScheduleCloseInput {
 export interface ScheduleShiftCreateInput {
   scheduleId?: string;
   employeeId?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart?: string;
+  shiftEnd?: string;
   roleDuringShift?: string;
   notes?: string;
 }
@@ -12141,8 +12141,8 @@ export interface ScheduleShiftUpdateInput {
   id?: string;
   employeeId?: string;
   locationId?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart?: string;
+  shiftEnd?: string;
   roleDuringShift?: string;
   notes?: string;
 }
@@ -12342,8 +12342,8 @@ export interface PayrollLineItemUpdateInput {
 }
 
 export interface TipPoolCreateInput {
-  periodStart?: number;
-  periodEnd?: number;
+  periodStart?: string;
+  periodEnd?: string;
   eventId?: string;
   totalTips?: number;
 }
@@ -12465,8 +12465,8 @@ export interface OnboardingCompletionCompleteInput {
 export interface OpenShiftCreateInput {
   scheduleId?: string;
   role?: string;
-  shiftStart?: number;
-  shiftEnd?: number;
+  shiftStart?: string;
+  shiftEnd?: string;
 }
 
 export interface OpenShiftClaimInput {
@@ -12720,8 +12720,8 @@ export interface TimeEntryAddEntryInput {
   employeeId?: string;
   locationId?: string;
   shiftId?: string;
-  clockIn?: number;
-  clockOut?: number;
+  clockIn?: string;
+  clockOut?: string;
   breakMinutes?: number;
   notes?: string;
 }
@@ -12735,8 +12735,8 @@ export interface TimeEntrySoftDeleteInput {
 export interface TimecardEditRequestCreateInput {
   timeEntryId?: string;
   employeeId?: string;
-  requestedClockIn?: number;
-  requestedClockOut?: number;
+  requestedClockIn?: string;
+  requestedClockOut?: string;
   requestedBreakMinutes?: number;
   reason?: string;
 }
@@ -13037,8 +13037,8 @@ export interface VendorCatalogCreateInput {
   leadTimeMaxDays?: number;
   minimumOrderQuantity?: number;
   orderMultiple?: number;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
   supplierSku?: string;
   notes?: string;
   tags?: string;
@@ -13060,18 +13060,18 @@ export interface VendorCatalogUpdateInput {
   minimumOrderQuantity?: number;
   orderMultiple?: number;
   isActive?: boolean;
-  effectiveFrom?: number;
-  effectiveTo?: number;
+  effectiveFrom?: string;
+  effectiveTo?: string;
   supplierSku?: string;
   notes?: string;
   tags?: string;
-  lastCostUpdate?: number;
+  lastCostUpdate?: string;
 }
 
 export interface VendorCatalogUpdatePriceInput {
   id?: string;
   newBaseUnitCost?: number;
-  effectiveFrom?: number;
+  effectiveFrom?: string;
   reason?: string;
 }
 

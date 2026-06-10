@@ -10,7 +10,14 @@
  * All manifests are compiled and merged into manifest/ir/kitchen.ir.json
  */
 
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
+import { createRequire } from "node:module";
 import { join } from "node:path";
 import {
   compileToIR,
@@ -18,6 +25,18 @@ import {
 } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
 import { getConfigPaths } from "./read-config.mjs";
+
+// Honest provenance: read the installed compiler version from the package
+// itself instead of a hardcoded literal (which silently goes stale on every
+// `@angriff36/manifest` bump). The package exposes `./package.json` in exports.
+const require = createRequire(import.meta.url);
+const COMPILER_VERSION = (() => {
+  try {
+    return require("@angriff36/manifest/package.json").version ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+})();
 
 /**
  * Deterministic JSON serialization: recursively sorts all object keys so the
@@ -181,6 +200,38 @@ async function compileMergedManifests() {
 
   enforceNoDuplicateCommandIntent(compiledEntries);
 
+  const crypto = await import("node:crypto");
+
+  // contentHash: hash of all source .manifest contents (sorted for determinism).
+  // Computed BEFORE merge so it can drive a deterministic `compiledAt`.
+  const sourceHashes = compiledEntries
+    .map((e) => crypto.createHash("sha256").update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8")).digest("hex"))
+    .sort();
+  const contentHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
+
+  // Idempotent provenance timestamp: if the committed IR was produced from the
+  // SAME sources (identical contentHash), reuse its `compiledAt` so re-running
+  // `pnpm manifest:compile` is byte-identical (zero git drift — phase-out
+  // exit criterion #3). A live `new Date()` here previously dirtied the IR,
+  // provenance, and merge-report on every run even when nothing changed.
+  // The timestamp now means "when the sources last actually changed."
+  const compiledAt = (() => {
+    if (existsSync(OUTPUT_FILE)) {
+      try {
+        const prior = JSON.parse(readFileSync(OUTPUT_FILE, "utf8"));
+        if (
+          prior?.provenance?.contentHash === contentHash &&
+          prior?.provenance?.compiledAt
+        ) {
+          return prior.provenance.compiledAt;
+        }
+      } catch {
+        // Unreadable/old format — fall through to a fresh timestamp.
+      }
+    }
+    return new Date().toISOString();
+  })();
+
   const {
     ir: mergedIR,
     duplicateWarnings,
@@ -188,23 +239,15 @@ async function compileMergedManifests() {
   } = mergeIrs(compiledEntries, {
     contentHash: "",
     irHash: "",
-    compilerVersion: "2.2.0",
+    compilerVersion: COMPILER_VERSION,
     schemaVersion: "1.0",
-    compiledAt: new Date().toISOString(),
+    compiledAt,
   });
 
   // Compute provenance hashes after merge.
   // Per IR spec: contentHash = SHA-256 of source manifest(s) (provenance of where
   // the IR came from). irHash = deterministic SHA-256 of the IR JSON itself
   // (runtime integrity — matches what RuntimeEngine.verifyIRHash() computes).
-  const crypto = await import("node:crypto");
-
-  // contentHash: hash of all source .manifest contents (sorted for determinism).
-  const sourceHashes = compiledEntries
-    .map((e) => crypto.createHash("sha256").update(readFileSync(join(MANIFESTS_DIR, e.source), "utf8")).digest("hex"))
-    .sort();
-  const contentHash = crypto.createHash("sha256").update(sourceHashes.join("\n")).digest("hex");
-
   // irHash: deterministic hash of the IR JSON (sorted keys, irHash stripped from
   // provenance — matches RuntimeEngine.verifyIRHash() algorithm).
   // We must compute BEFORE writing irHash into the provenance, then set it.

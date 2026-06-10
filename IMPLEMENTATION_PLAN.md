@@ -62,7 +62,7 @@
 
 ### Package & IR
 
-- `@angriff36/manifest@2.2.0` (confirmed from npm package + runtime dependency)
+- `@angriff36/manifest@2.3.1` (upgraded from 2.2.0 on 2026-06-10, v0.12.240, verified zero-drift). `compile.mjs` now reads this version dynamically for IR provenance (was hardcoded). Newly-available keywords: `async`, `saga`, `webhook`, contextual `masked` + `realtime` — see Known Blockers #15/#21 for architecture-fit verdicts (realtime REJECT, masked NO-OP).
 - IR: **202 entities (ALL durable)**, 999 commands, 981 events (-18 from duplicate removal in v0.12.201), 6 sagas, 3 approval blocks, 241 policies, 92 source files. **3 feature flags** using `flag()` builtin in guards/constraints.
 - **987/987 commands have policies bound** (was 0/952 before Task 8.6). 202/202 entities have `defaultPolicies`.
 - **6 sagas** defined: `ProcessInvoicePayment` (2 steps with compensate), `FinalizeEventWithReporting` (3 steps), `AutoGeneratePrepList` (2 steps), + 3 additional multi-step workflows
@@ -330,6 +330,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | 2026-06-10 | **Entity concurrency extended to 8 entities (v0.12.237)** | versionProperty/versionAtProperty added to Event, CateringOrder, Invoice, Payment, VendorContract (3→8 total). Migration 20260610055049. Zero drift. |
 | 2026-06-10 | **SECURITY: Hardcoded roles replaced with actual auth context (v0.12.238)** | 4 route files fixed: payments (manager→currentUser), supplier-sync (admin→currentUser.role), kitchen/import (5× admin→userRole), procurement/update-status (user→currentUser.role). Also prevented manifest:generate drift that removed critical `await` from dispatcher (known production bug). |
 | 2026-06-10 | **Generator await drift fix + as-any removal (v0.12.239)** | generate.mjs template emits `return await`; 0 non-test as-any in runtime; 0 typecheck, 5205 tests pass, 0 route/schema drift |
+| 2026-06-10 | **Manifest 2.2.0 → 2.3.1 upgrade verified + feature re-evaluation (v0.12.240)** | Zero route drift on regen, 0 typecheck (api/runtime/app), 5684 tests pass (5222 API + 154 runtime + 308 app). `compile.mjs` made idempotent (reuse prior `compiledAt` when source contentHash unchanged) + honest dynamic `compilerVersion` (was hardcoded "2.2.0"); zod-gen temp-copy workaround removed (2.3.1 ships proper `.js` extensions, the workaround broke under it); stale generated client regenerated (datetime command-params `number`→`string`), surfacing + fixing a `Number(dateString)`→NaN bug in `routes-view.tsx`. Newly-available keywords re-evaluated vs Capsule's serverless + reads-bypass-runtime architecture: `realtime`=REJECT (semantics.md L427 needs single-instance server; already have @repo/realtime/Ably), `masked`=NO-OP (semantics.md L219 generated reads bypass engine), `async`/`webhook`=DEFER, `mixin`/`rateLimit`/`retry`/`schedule`/entity-`extends`=STILL BLOCKED. |
 
 ---
 
@@ -365,7 +366,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 | `projections/nextjs` | Next.js route generation (list + detail) | YES -- active, generates routes |
 | `projections/routes` | Route metadata/registry | YES -- produces `manifest/runtime/routes.manifest.json` |
 | `projections/prisma` | Prisma schema model generation | PARTIAL -- pilot harness for 4 entities, not in CI |
-| `projections/zod` | Zod input validation schemas | YES -- `pnpm manifest:generate-zod` produces 202 entity schemas with constraint-derived refinements (.min, .max, .int). Output: `manifest/generated/schemas/*.schema.ts`. Upstream packaging bug workaround: missing `.js` extension on ESM imports patched locally. |
+| `projections/zod` | Zod input validation schemas | YES -- `pnpm manifest:generate-zod` produces 202 entity schemas with constraint-derived refinements (.min, .max, .int). Output: `manifest/generated/schemas/*.schema.ts`. (v2.3.1 ships proper `.js` extensions on internal imports — the temp-copy+regex-patch workaround was removed in v0.12.240; the generator now imports in place.) |
 | `projections/react-query` | React Query hooks | NO -- blocked (Phase 5 eval) |
 | `projections/openapi` | OpenAPI spec generation | NO -- blocked (Phase 5 eval) |
 | `projections/drizzle` | Drizzle ORM schema | YES -- active, pnpm manifest:drizzle, 191 tables + 156 relations |
@@ -412,19 +413,19 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 9. **Permission guard whitelist-based:** Commands NOT in `COMMAND_PERMISSION_MAP` pass through unrestricted. IR policies provide deny-by-default as primary; RBAC middleware is secondary.
 
-10. **compilerVersion `0.3.8`:** Despite package 2.2.0. ~~irHash/contentHash also empty~~ RESOLVED — provenance hashes now correctly generated and verified at runtime.
+10. **compilerVersion ~~`0.3.8`/`2.2.0` hardcoded~~ RESOLVED (v0.12.240):** `compile.mjs` now reads `compilerVersion` dynamically from the installed `@angriff36/manifest/package.json` (honestly `2.3.1`); was a hardcoded literal that silently went stale. `compiledAt` is also reused when source `contentHash` is unchanged → `pnpm manifest:compile` is idempotent (no more 3-file churn). `loadManifests.ts:254` synthetic inline path still hardcodes "2.2.0" (not the committed-artifact producer; left as-is). irHash/contentHash correctly generated + verified at runtime.
 
 11. **57 entities with FK props but NO relationship blocks:** Remaining are polymorphic FKs, FKs to non-IR targets, or no FK props.
 
 12. **39 exports, 4 used (10.3%):** Major unused: Reactions, Sagas, Approvals, State Transitions, Entity Concurrency, Webhooks, WASM, Encryption, Profiling, Agent SDK, Plugin system.
 
-13. **Manifest vNext features blocked on compiler:** `schedule`, `mixin`, `rateLimit`, `retry`, `async` keywords not in v2.2.0. Only `overrideable` (fully) and `flag()` (runtime-only) available.
+13. **Manifest vNext features partially unblocked in v2.3.1:** `async`, `saga`, `webhook` keywords now PARSE (re-verified 2026-06-10 against lexer.js KEYWORDS). STILL ABSENT: `schedule`, `mixin`, `rateLimit`, `retry`, and entity-level `extends` (the v2.3.1 `extends` keyword is role-inheritance only — `parseRole`). `async`=DEFER (needs jobQueue worker, serverless-hostile); `webhook`=DEFER (no projection emits the HTTP route).
 
 14. **Payroll-engine 100% disconnected:** Sets invalid status values, constructor strips `$transaction`, zero Manifest awareness.
 
-15. **`realtime` modifier not in v2.2.0:** Task 9.10 BLOCKED pending package upgrade.
+15. **`realtime` modifier present in v2.3.1 but REJECTED for Capsule (serverless):** The SSE event stream is per-engine in-memory; `docs/manifest-official/spec/semantics.md` §"Realtime Entities" (L427) requires a long-lived single-instance server — "serverless or multi-instance fan-out needs an external event bus and is out of scope." Capsule deploys to Vercel serverless AND already ships `@repo/realtime` (Ably + transactional outbox, the correct serverless pattern). **Task 9.10 = REJECT, not BLOCKED.**
 
-16. **`manifest generate-tests` not in v2.2.0:** Task 9.17 BLOCKED pending package upgrade.
+16. **`manifest generate-tests` still absent in v2.3.1:** re-verified 2026-06-10 (0 hits for `generate-tests`/`generateTests` in `dist`). Task 9.17 remains BLOCKED pending package support.
 
 17. **Federation export (`@angriff36/manifest/federation`):** Full multi-service mesh. Low priority (monolith). Task 12.1.
 
@@ -433,6 +434,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 19. **`encrypted` modifier + encryptionProvider WIRED (v0.12.235):** 14 entities with 33 encrypted properties (BankAccount, Client, User, PaymentMethod, Vendor, etc.) now encrypt at rest when `ENCRYPTION_KEY` env var is set (AES-256-GCM). Provider at `manifest/runtime/src/encryption-provider.ts` — key rotation via `ENCRYPTION_KEY_PREVIOUS`. Dev/test safe (no key = plaintext stored, no error). 15 tests.
 
 20. **RESOLVED (v0.12.239):** Generator template in generate.mjs now emits `return await runManifestCommand(...)`. Regeneration preserves the await — verified with zero route drift.
+
+21. **`masked` data masking present in v2.3.1 but a NO-OP for Capsule:** `docs/manifest-official/spec/semantics.md` §"Property Masking" (L211/L219) — masking is applied ONLY in `RuntimeEngine.getInstance`/`getAllInstances`, and "Generated Next.js read routes query the store directly and bypass the engine — they are NOT masked in this release (follow-up feature)." Every Capsule read bypasses the runtime (Constitution §10), so the modifier would imply protection that does not exist (violates "fail loud"). Adopt only if/when sensitive reads route through the runtime.
 
 ---
 
@@ -785,8 +788,9 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Complete.** See Completed Milestones for details.
 
-### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions — **BLOCKED (feature not in v2.2.0)**
-- **BLOCKED 2026-06-07.** The `realtime` modifier does NOT exist in @angriff36/manifest v2.2.0. Exhaustive search confirmed: zero type definitions, source files, or exports contain "realtime" as a modifier keyword. The plan referenced "Official docs `/extensibility/realtime-subscriptions`" but that path does not exist in the current documentation. This feature was listed in the 10th revision based on docs discovery but is not implemented in the installed package. Blocked pending package upgrade to a version that includes realtime support.
+### 9.10 Evaluate and adopt `realtime` entity modifier for SSE subscriptions — **REJECT (architecturally incompatible with serverless)**
+- **REJECT 2026-06-10 (v0.12.240).** The `realtime` flag + SSE projection NOW EXISTS in v2.3.1 (entity-level `realtime` flag → `nextjs.subscribe` SSE route + `nextjs.subscriptionHook` EventSource hook + shared singleton runtime). But it is architecturally incompatible with Capsule: `docs/manifest-official/spec/semantics.md` §"Realtime Entities" (L427) states the SSE event stream is "per-engine-instance and in-memory… requires a long-lived Node server process and a **single-instance deployment**; serverless or multi-instance fan-out needs an external event bus and is out of scope." Capsule deploys to **Vercel serverless** (command writes and SSE subscribers run in different invocations → the subscriber would never observe events) AND already ships `@repo/realtime` (Ably + transactional outbox) — the correct serverless realtime pattern. **Decision: REJECT.** Revisit only if the API moves to a long-lived single-instance deployment.
+- ~~**BLOCKED 2026-06-07.** The `realtime` modifier does NOT exist in @angriff36/manifest v2.2.0.~~ Superseded: it exists in v2.3.1 (verified), but is rejected for the serverless reason above.
 - **Original done-when:** At least 5 high-value entities use the `realtime` modifier. SSE endpoints auto-generated. `use{Entity}Realtime` React hooks integrated in frontend. Auto-reconnect verified.
 - **Why (future):** The `realtime` modifier would auto-generate SSE endpoints (`GET /api/{entity}/realtime`) and React hooks. Currently ZERO realtime infrastructure exists -- all data refresh is polling-based via 1,092 `apiFetch` call sites. High-value candidates: KitchenTask (live task board), Event (real-time event status), InventoryItem (stock level monitoring), NotificationRules (instant notification delivery), ScheduleShift (real-time schedule changes). This would replace polling with push-based updates for critical workflows.
 - **Doc:** Referenced path `/extensibility/realtime-subscriptions` does not exist in current docs.
@@ -818,7 +822,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Complete.** See Completed Milestones for details.
 
-### 9.17 Wire AI conformance test generator (`manifest generate-tests`) — **BLOCKED (command not in v2.2.0)**
+### 9.17 Wire AI conformance test generator (`manifest generate-tests`) — **BLOCKED (command still absent in v2.3.1)**
+> **Re-verified 2026-06-10:** `generate-tests`/`generateTests` returns 0 hits across `node_modules/@angriff36/manifest/dist` in v2.3.1. Still blocked.
 - **BLOCKED 2026-06-07.** The `manifest generate-tests` CLI command does NOT exist in @angriff36/manifest v2.2.0. Exhaustive search confirmed: zero hits for `generate-tests`, `generateTests`, or `generate_tests` in the package. The 13th revision referenced this as a discovered feature, but the command is not available in the installed version. Blocked pending package upgrade to a version that includes the AI conformance test generator.
 - **Original done-when:** `pnpm manifest:generate-tests` produces test suites from IR for at least 10 entities. Tests cover command conformance, policy compliance, and guard safety.
 - **Why (future):** The `manifest generate-tests` command would auto-generate test suites from IR definitions. Produces command conformance tests, policy compliance tests, and guard safety tests for all 189 entities. Automates the bulk of Task 8.5 conformance test authoring. Currently zero auto-generated tests exist.
@@ -893,10 +898,10 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Why:** The 9th revision research uncovered several high-value Manifest features that are fully implemented in the package but have zero adoption: Async Commands, Feature Flags, Mixin Composition, Scheduled Commands. The 12th revision added Rate Limiting, Command Retry Policies, Dynamic Data Masking, and cataloged 116 planned features across v1.9-v1.12. These features would replace hand-rolled patterns with Manifest-native alternatives, reducing code and increasing consistency. agent-sdk and ir-diff are covered in Tier 5 (Tasks 5.12, 5.13).
 >
-> **Tier 11 Status:** Tasks 11.1, 11.3, 11.4, 11.5, 11.6 are BLOCKED -- the Manifest v2.2.0 compiler does not support `schedule`, `mixin`, `rateLimit`, `retry`, or `async` keywords. Only `overrideable` (fully supported) and `flag()` (runtime-only, not parser) are available as vNext features in v2.2.0. Task 11.12 DONE. Tasks 11.2, 11.7-11.11 remain open.
+> **Tier 11 Status (re-verified 2026-06-10 against v2.3.1 lexer.js KEYWORDS):** `async`, `saga`, `webhook` keywords now PARSE in v2.3.1. Task 11.1 (async) = **DEFER** (keyword available but needs a jobQueue worker; serverless-hostile). Tasks 11.3 (mixin), 11.4 (schedule), 11.5 (rateLimit), 11.6 (retry) = **STILL BLOCKED** — those keywords are absent from v2.3.1 KEYWORDS. Task 11.11 (entity `extends`) = STILL BLOCKED (v2.3.1 `extends` is role-inheritance only). Task 11.12 DONE. Tasks 11.2, 11.7-11.10 remain open.
 
-### 11.1 Implement Async Commands for long-running operations -- **BLOCKED (keyword not in v2.2.0 compiler)**
-- **BLOCKED 2026-06-08.** The `async command` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Only `overrideable` and `flag()` are supported as vNext features (`overrideable` fully, `flag()` runtime-only not parser). The `schedule`, `mixin`, `rateLimit`, and `retry` keywords are not recognized by the compiler/parser and will cause parse errors if used. Blocked pending package upgrade.
+### 11.1 Implement Async Commands for long-running operations -- **DEFER (keyword available in v2.3.1; needs jobQueue worker)**
+- **DEFER 2026-06-10 (v0.12.240).** The `async` keyword IS now supported by the v2.3.1 compiler (verified in lexer.js KEYWORDS). However, adoption is deferred: `async command` requires a `jobQueue` adapter + a long-lived background worker to drain it, which is serverless-hostile on Capsule's Vercel deployment (would need an external queue + worker process). Revisit when a worker runtime exists. ~~BLOCKED 2026-06-08: not in v2.2.0~~ superseded.
 - **Done when:** At least 3 long-running operations converted to `async command`. `jobQueue` RuntimeOption wired. Auto-synthesized `CommandNameCompleted`/`CommandNameFailed` events verified.
 - **Why:** The `async command <name>()` prefix defers execution to a background worker, returning `{ jobId, status: "pending" }` immediately. The `JobQueue` adapter interface supports pluggable backends. High-value candidates: report generation (currently blocks HTTP request), batch imports (vendor catalog sync), payroll processing (runs for minutes). These operations currently either block the request or use ad-hoc queue mechanisms.
 - **Backpressure:** Async command returns immediately with jobId. Completion event fires when done. Failed commands produce `CommandNameFailed` event.
@@ -907,31 +912,31 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 
 > **Complete.** See Completed Milestones for details.
 
-### 11.3 Adopt Mixin Composition for shared properties -- **BLOCKED (keyword not in v2.2.0 compiler)**
-- **BLOCKED 2026-06-08.** The `mixin` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
+### 11.3 Adopt Mixin Composition for shared properties -- **BLOCKED (keyword still not in v2.3.1 compiler)**
+- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `mixin` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
 - **Done when:** `Auditable` mixin created (createdAt, updatedAt, deletedAt, tenantId). Applied to entities with heavy repetition. Source file duplication measurably reduced.
 - **Why:** 189 entities have heavy repetition of common property sets: timestamps (createdAt/updatedAt), tenantId, audit fields, status fields. The `mixin Auditable { ... }` construct allows property/constraint reuse across entities. Currently every entity repeats these declarations verbatim. A single mixin could eliminate duplication across 150+ entities.
 - **Backpressure:** Entities using mixin compile and run identically to entities with inline declarations. `pnpm manifest:compile` succeeds.
 - **Source to change:** `manifest/source/*.manifest` (extract shared properties into mixins).
 
-### 11.4 Implement Scheduled Commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
-- **BLOCKED 2026-06-08.** The `schedule` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
+### 11.4 Implement Scheduled Commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
+- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `schedule` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
 - **Done when:** At least 3 scheduled commands defined. Next.js cron routes auto-generated and registered. Schedules execute on time.
 - **Why:** The `schedule <name> { cron "0 6 * * *" } run <command>` construct auto-generates Next.js cron routes. Zero scheduled commands exist today. Candidates: daily reconciliation (invoice/payroll), nightly inventory sync (supplier connectors), expiration checks (vendor contracts, certifications, licenses). These are currently either manual or implemented as ad-hoc cron jobs outside the Manifest lifecycle.
 - **Backpressure:** Cron route fires at scheduled time. Command executes through full Manifest lifecycle (RBAC, audit, policies).
 - **Source to change:** `manifest/source/*.manifest` (add `schedule` blocks).
 - **Spec:** `specs/scheduled-commands.md`
 
-### 11.5 Adopt Rate Limiting for high-traffic commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
-- **BLOCKED 2026-06-08.** The `rateLimit` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
+### 11.5 Adopt Rate Limiting for high-traffic commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
+- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `rateLimit` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
 - **Done when:** At least 3 high-traffic commands have `rateLimit` blocks. `RateLimitConfig` entity governs limits through Manifest rather than external middleware.
 - **Why:** The `rateLimit { window, maxRequests, scope, strategy }` block is a Manifest DSL feature for command-level rate limiting with per-user, per-tenant, or global scope. Capsule has a `RateLimitConfig` entity and rate-limiting infrastructure outside Manifest. Migrating to Manifest-native rate limiting centralizes the policy.
 - **Backpressure:** Command exceeding rate limit returns `rateLimitExceeded` with retry-after metadata.
 - **Source to change:** `manifest/source/*.manifest` (add `rateLimit` blocks to commands).
 - **Doc:** Rate limiting documented at command level in Manifest DSL docs. NOTE: `/features/security-features` URL returns 404.
 
-### 11.6 Adopt Command Retry Policies for transient-failure commands -- **BLOCKED (keyword not in v2.2.0 compiler)**
-- **BLOCKED 2026-06-08.** The `retry` keyword is NOT supported by the @angriff36/manifest v2.2.0 compiler. Blocked pending package upgrade.
+### 11.6 Adopt Command Retry Policies for transient-failure commands -- **BLOCKED (keyword still not in v2.3.1 compiler)**
+- **BLOCKED 2026-06-08, re-verified 2026-06-10.** The `retry` keyword is NOT in the v2.3.1 lexer KEYWORDS set. Blocked pending package upgrade.
 - **Done when:** At least 3 commands with external dependencies have `retry` blocks. Notification `sendEmail` and report generation use Manifest-native retry.
 - **Why:** The `retry { maxAttempts, backoff, initialDelay, maxDelay, jitter }` block provides configurable retry with exponential backoff for transient failures. Auto-synthesized `{Command}RetryAttempted` and `{Command}RetryExhausted` events. Currently retry logic is hand-rolled or absent.
 - **Backpressure:** Transient failure triggers retry. Exhausted retries emit `RetryExhausted` event.
@@ -957,7 +962,7 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `package.json` scripts section.
 - **Doc:** Official docs `/extensibility/runtime-tooling`
 
-### 11.10 Evaluate Time-Travel Debugger for command debugging — BLOCKED (not in v2.2.0)
+### 11.10 Evaluate Time-Travel Debugger for command debugging — BLOCKED (re-verified absent in v2.3.1: no `./debug` export)
 - **BLOCKED 2026-06-09.** The `@angriff36/manifest/debug` export does NOT exist in v2.2.0 despite prior plan claim. The package.json exports map has 28 entries — no `./debug`. No file in `dist/manifest/` contains "debug" or "time-travel". The `serialize()`/`restore()` API exists for single-point snapshots but is not step-by-step replay.
 - **Done when:** `@angriff36/manifest/debug` export exists and is verified functional.
 - **Why:** A time-travel debugger would record every `mutate` during command execution and enable stepping forward/backward through state changes. Invaluable for debugging complex multi-step commands (VendorContract lifecycle, PayrollRun processing, EventGuest RSVP flow).
@@ -965,7 +970,8 @@ git diff --stat apps/api/app/api/    # Check for route drift after regen
 - **Source to change:** `manifest/runtime/src/manifest-runtime-factory.ts`. Import from `@angriff36/manifest/debug`.
 - **Doc:** Official docs `/extensibility/runtime-tooling` (NOTE: may also be aspirational, not shipped)
 
-### 11.11 Evaluate entity inheritance (`extends`) for entity hierarchies
+### 11.11 Evaluate entity inheritance (`extends`) for entity hierarchies — **STILL BLOCKED (v2.3.1)**
+- **BLOCKED, re-verified 2026-06-10.** The v2.3.1 `extends` keyword is consumed ONLY by `parseRole()` (role inheritance, pre-existing). `EntityNode` in the v2.3.1 type definitions has NO inheritance field — entity-level `extends` is not supported. Blocked pending package support for entity inheritance.
 - **Done when:** Decision documented on using entity inheritance to reduce repetition across entity families. If adopted, identify entity hierarchies and create base entities.
 - **Why:** The `extends` keyword enables single inheritance for entities, allowing shared properties/constraints to be defined once in a base entity. Complements mixin composition (Task 11.3) for hierarchical relationships. Candidate hierarchies: Event→CateringEvent, InventoryItem→WasteEntry.
 - **Backpressure:** Child entity inherits parent properties/constraints. `pnpm manifest:compile` succeeds.

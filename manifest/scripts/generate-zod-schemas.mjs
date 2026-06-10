@@ -12,10 +12,9 @@
  *
  * Output: one <EntityName>.schema.ts per entity, plus an index.ts barrel.
  */
-import { readFileSync, existsSync, mkdirSync, writeFileSync, readdirSync, mkdtempSync } from "node:fs";
+import { readFileSync, existsSync, mkdirSync, writeFileSync, readdirSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { resolve, basename, dirname, join } from "node:path";
-import { tmpdir } from "node:os";
+import { resolve, basename } from "node:path";
 
 const IR_PATH = resolve("manifest/ir/kitchen.ir.json");
 const PKG_ROOT = resolve(
@@ -47,20 +46,14 @@ if (!existsSync(PKG_ZOD)) {
 const ir = JSON.parse(readFileSync(IR_PATH, "utf-8"));
 console.log(`Loaded IR: ${ir.entities?.length ?? 0} entities`);
 
-// Import the projection — work around missing .js extension in upstream ESM imports
-// (constraint-analysis imported without .js, fails under Node ESM resolution)
-const generatorSrc = readFileSync(PKG_ZOD, "utf-8");
-const patchedSrc = generatorSrc.replace(
-  /from '(?:\.\.\/)+(constraint-analysis)'/g,
-  (match, mod) => {
-    const absPath = resolve(PKG_ROOT, `${mod}.js`);
-    return `from '${pathToFileURL(absPath).href}'`;
-  }
-);
-const tmpFile = join(tmpdir(), `zod-generator-${Date.now()}.mjs`);
-writeFileSync(tmpFile, patchedSrc, "utf-8");
-
-const { ZodProjection } = await import(pathToFileURL(tmpFile).href);
+// Import the ZodProjection directly from the installed package. Earlier package
+// versions (<=2.2.0) shipped an extensionless ESM import of `constraint-analysis`
+// that broke Node's resolver, which forced a copy-and-patch into a temp file.
+// @angriff36/manifest 2.3.x ships proper `.js` extensions on its internal
+// imports, so importing the generator in place resolves cleanly — and the old
+// temp-copy actually BROKE under 2.3.1 (relative imports resolved against the
+// temp dir, not the package). Direct import is both simpler and correct.
+const { ZodProjection } = await import(pathToFileURL(PKG_ZOD).href);
 
 // Generate zod.entity surface (one file per entity — cleanest, no name collisions)
 const projection = new ZodProjection();
