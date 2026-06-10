@@ -12171,13 +12171,13 @@ export interface ScheduleShiftRemoveInput {
 }
 
 export interface ShipmentCreateInput {
-  shipmentNumber?: string;
-  supplierId?: string;
-  eventId?: string;
   scheduledDate?: string;
   carrier?: string;
   shippingMethod?: string;
   notes?: string;
+  shipmentNumber?: string;
+  supplierId?: string;
+  eventId?: string;
 }
 
 export interface ShipmentUpdateInput {
@@ -12188,6 +12188,7 @@ export interface ShipmentUpdateInput {
   estimatedDeliveryDate?: string;
   shippingCost?: number;
   notes?: string;
+  internalNotes?: string;
 }
 
 export interface ShipmentScheduleInput {
