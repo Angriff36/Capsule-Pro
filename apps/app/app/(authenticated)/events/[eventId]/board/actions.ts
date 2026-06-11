@@ -354,7 +354,10 @@ export async function getDraftImpact(
   const drafts: StaffDraftInput[] = [];
   for (const card of cards) {
     const envelope = parseDraftEnvelope(card.metadata);
-    if (envelope?.draftAction.kind === "assign-staff") {
+    if (
+      envelope?.draftState === "draft" &&
+      envelope.draftAction.kind === "assign-staff"
+    ) {
       drafts.push({
         cardId: card.id,
         staffMemberId: envelope.draftAction.entityId,
