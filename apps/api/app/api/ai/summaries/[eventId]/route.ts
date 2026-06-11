@@ -43,8 +43,8 @@ interface EventSummaryData {
   }>;
   staffAssignments: Array<{
     role: string | null;
-    shiftStart: number | null;
-    shiftEnd: number | null;
+    shiftStart: Date | null;
+    shiftEnd: Date | null;
   }>;
   allergenWarnings: Array<{
     severity: string;

@@ -473,6 +473,12 @@ export async function addEventStaff(
     throw new Error("Employee not found or inactive");
   }
 
+  // Placeholder shift = event date (no real shift schedule from this flow).
+  const eventRow = await database.$queryRaw<Array<{ event_date: Date | null }>>`
+    SELECT event_date FROM tenant_events.events
+    WHERE tenant_id = ${user.tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
+  const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).toISOString();
+
   // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
   const result = await runManifestCommand({
     entity: "EventStaff",
@@ -482,8 +488,8 @@ export async function addEventStaff(
       staffMemberId: employeeId,
       role,
       notes: "",
-      shiftStart: 0,
-      shiftEnd: 0,
+      shiftStart: shiftPlaceholder,
+      shiftEnd: shiftPlaceholder,
     },
     user: { id: user.id, tenantId: user.tenantId, role: user.role },
   });

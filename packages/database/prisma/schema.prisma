@@ -6507,8 +6507,8 @@ model EventStaff {
   staffMemberId String
   role          String?   @default("")
   notes         String?   @default("")
-  shiftStart    Int?      @default(0)
-  shiftEnd      Int?      @default(0)
+  shiftStart    DateTime? @db.Timestamptz(6)
+  shiftEnd      DateTime? @db.Timestamptz(6)
   status        String?   @default("assigned")
   confirmedAt   DateTime?
   checkedInAt   DateTime?

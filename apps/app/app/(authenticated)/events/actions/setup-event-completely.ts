@@ -56,8 +56,9 @@ export async function setupEventCompletely(
       client_id: string | null;
       venue_name: string | null;
       venue_entity_id: string | null;
+      event_date: Date | null;
     }>
-  >`SELECT id, name, client_id, venue_name, venue_entity_id
+  >`SELECT id, name, client_id, venue_name, venue_entity_id, event_date
      FROM tenant_events.events
      WHERE tenant_id = ${tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
 
@@ -273,7 +274,9 @@ export async function setupEventCompletely(
 
         if (alreadyAssigned.length > 0) continue;
 
-        // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
+        // Route through Manifest runtime (EventStaff.assign) instead of raw SQL.
+        // Placeholder shift = event date (no real shift schedule at setup time).
+        const shiftPlaceholder = (event.event_date ?? new Date()).toISOString();
         const assignResult = await runManifestCommand({
           entity: "EventStaff",
           command: "assign",
@@ -282,8 +285,8 @@ export async function setupEventCompletely(
             staffMemberId: emp.id,
             role: "staff",
             notes: "",
-            shiftStart: 0,
-            shiftEnd: 0,
+            shiftStart: shiftPlaceholder,
+            shiftEnd: shiftPlaceholder,
           },
           user: { id: currentUser.id, tenantId: currentUser.tenantId, role: currentUser.role },
         });
