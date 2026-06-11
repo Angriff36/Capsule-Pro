@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  commitEventBoard,
   createStaffDraftCard,
   getDraftImpact,
   getEventBoardData,
@@ -80,6 +81,22 @@ export function useRemoveDraftCard(eventId: string) {
 
   return useMutation({
     mutationFn: (cardId: string) => removeDraftCard(cardId),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: boardKeys.data(eventId) });
+    },
+  });
+}
+
+/**
+ * Commits all draft cards on the board (atomic apps/api endpoint). Returns the
+ * full CommitResponse so the dialog can read `failedCardId` / `error`.
+ * Invalidation matches the impact key by prefix, refreshing both queries.
+ */
+export function useCommitBoard(eventId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (boardId: string) => commitEventBoard(boardId, eventId),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: boardKeys.data(eventId) });
     },

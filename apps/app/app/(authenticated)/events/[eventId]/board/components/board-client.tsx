@@ -3,17 +3,21 @@
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { cn } from "@repo/design-system/lib/utils";
 import { useEffect, useMemo, useState } from "react";
-import type { EventBoardData, PaletteStaff } from "../actions";
+import { toast } from "sonner";
+import type { CommitResponse, EventBoardData, PaletteStaff } from "../actions";
 import { getOrCreateEventBoard } from "../actions";
+import { buildBoardDisplayRows } from "../board-display";
 import {
+  useCommitBoard,
   useCreateStaffDraft,
   useDraftImpact,
   useEventBoardData,
   useRemoveDraftCard,
 } from "../board-hooks";
 import { computeBranchStatus, resolveTemplate } from "../templates";
+import { CommitDialog } from "./commit-dialog";
+import { ImpactRail } from "./impact-rail";
 import { Palette } from "./palette";
 import { ShiftDialog, type ShiftDialogSubmit } from "./shift-dialog";
 import { TreeCanvas } from "./tree-canvas";
@@ -73,16 +77,43 @@ export function BoardClient({
   }, [board, staffDrafts.length]);
 
   const impact = useDraftImpact(eventId, boardId, drafts.length > 0);
-  const conflictCount = drafts.length > 0 ? impact.data?.conflicts.length : 0;
 
   const createDraft = useCreateStaffDraft(eventId);
   const removeDraft = useRemoveDraftCard(eventId);
+  const commitBoard = useCommitBoard(eventId);
   const paletteById = useMemo(
     () => new Map(palette.map((p) => [p.id, p])),
     [palette]
   );
   const [pendingStaff, setPendingStaff] = useState<PaletteStaff | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
+  const [commitOpen, setCommitOpen] = useState(false);
+
+  // Display-ready rows (ids -> names) so rail + dialog stay presentational.
+  const liveImpact = drafts.length > 0 ? impact.data : undefined;
+  const { conflictRows, missingRateNames, dialogDrafts } =
+    buildBoardDisplayRows({
+      impact: liveImpact,
+      staffDrafts,
+      paletteById,
+      committedStaff: board.committedStaff,
+    });
+
+  const commitResult: CommitResponse | null = commitBoard.isError
+    ? { success: false, error: commitBoard.error.message }
+    : (commitBoard.data ?? null);
+
+  const handleCommitSuccess = (res: CommitResponse) => {
+    if (!res.success) return; // failure: dialog stays open showing the error
+    setCommitOpen(false); // invalidation refreshes cards -> tokens flip green
+    const n = res.committedCount;
+    toast.success(`Committed ${n} draft${n === 1 ? "" : "s"}`);
+  };
+
+  const handleCommitConfirm = () => {
+    if (!boardId) return;
+    commitBoard.mutate(boardId, { onSuccess: handleCommitSuccess });
+  };
 
   const handleDragEnd = (e: DragEndEvent) => {
     if (e.over?.id !== "branch-staff") return;
@@ -136,13 +167,20 @@ export function BoardClient({
         <Badge variant="secondary">
           {drafts.length} draft{drafts.length === 1 ? "" : "s"}
         </Badge>
-        {conflictCount !== undefined && conflictCount > 0 && (
+        {conflictRows.length > 0 && (
           <Badge variant="destructive">
-            {conflictCount} conflict{conflictCount === 1 ? "" : "s"}
+            {conflictRows.length} conflict{conflictRows.length === 1 ? "" : "s"}
           </Badge>
         )}
         <div className="ml-auto">
-          <Button disabled size="sm" title="coming in Task 11">
+          <Button
+            disabled={drafts.length === 0 || boardId === null}
+            onClick={() => {
+              commitBoard.reset(); // clear a stale failure from a prior attempt
+              setCommitOpen(true);
+            }}
+            size="sm"
+          >
             Review &amp; Commit
           </Button>
         </div>
@@ -165,9 +203,7 @@ export function BoardClient({
             <TreeCanvas
               battleBoardHref={`/events/${eventId}/battle-board`}
               committedStaff={board.committedStaff}
-              conflicts={
-                drafts.length > 0 ? (impact.data?.conflicts ?? []) : []
-              }
+              conflicts={liveImpact?.conflicts ?? []}
               draftCards={board.draftCards}
               event={board.event}
               onRemoveDraft={(cardId) => removeDraft.mutate(cardId)}
@@ -177,29 +213,15 @@ export function BoardClient({
             />
           </div>
 
-          {/* RIGHT — impact rail + AI placeholder (Task 11) */}
-          <div className="min-h-0 space-y-3 overflow-y-auto rounded-lg border border-border bg-background p-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Impact &amp; AI — Task 11
-            </h3>
-            {drafts.length > 0 && impact.data ? (
-              <dl className="space-y-2 text-sm">
-                <ImpactRow label="Labor cost" value={`$${impact.data.laborCost}`} />
-                <ImpactRow
-                  label="Total hours"
-                  value={impact.data.totalHours.toFixed(1)}
-                />
-                <ImpactRow
-                  label="Conflicts"
-                  value={String(impact.data.conflicts.length)}
-                  warn={impact.data.conflicts.length > 0}
-                />
-              </dl>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Drop staff onto the board to see live impact.
-              </p>
-            )}
+          {/* RIGHT — impact rail + AI placeholder */}
+          <div className="min-h-0 overflow-y-auto rounded-lg border border-border bg-background p-3">
+            <ImpactRail
+              conflictRows={conflictRows}
+              draftCount={drafts.length}
+              impact={liveImpact}
+              impactLoading={impact.isPending}
+              missingRateNames={missingRateNames}
+            />
           </div>
         </div>
       </DndContext>
@@ -212,30 +234,16 @@ export function BoardClient({
         pending={createDraft.isPending}
         staff={pendingStaff}
       />
-    </div>
-  );
-}
 
-function ImpactRow({
-  label,
-  value,
-  warn,
-}: {
-  label: string;
-  value: string;
-  warn?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd
-        className={cn(
-          "font-medium tabular-nums",
-          warn && "text-destructive"
-        )}
-      >
-        {value}
-      </dd>
+      <CommitDialog
+        committing={commitBoard.isPending}
+        drafts={dialogDrafts}
+        impact={liveImpact}
+        onConfirm={handleCommitConfirm}
+        onOpenChange={setCommitOpen}
+        open={commitOpen}
+        result={commitResult}
+      />
     </div>
   );
 }
