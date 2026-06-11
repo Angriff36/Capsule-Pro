@@ -134,7 +134,9 @@ async function inheritFromParents(
       const parentValue = parent[name];
       if (!isMeaningful(parentValue)) continue;
 
-      body[name] = parentValue;
+      // R2: GenericPrismaStore returns DateTime columns as JS Date objects verbatim.
+      // The engine datetime contract requires epoch-ms numbers — never Date objects.
+      body[name] = parentValue instanceof Date ? parentValue.getTime() : parentValue;
       inheritedFields.push(name);
     }
 
@@ -181,10 +183,13 @@ export async function refreshParentContext(
     return { body, inheritedFields: [] };
   }
 
-  const syncCommand = runtime.getCommand(command, entity);
-  const childParamNames = new Set(
-    (syncCommand?.parameters ?? []).map((p) => p.name)
-  );
+  // R3: For refresh commands (syncFromEvent) the sync command's own parameters ARE the
+  // fields to refresh — they must NOT be used as a skip-set. inheritFromParents uses
+  // childParamNames to skip user-facing create inputs; for a refresh the parent values
+  // should overwrite any stale body values unconditionally. Pass an empty set so all
+  // matching parent fields are copied (and respectExistingBody=false already ensures
+  // existing body values don't prevent the refresh).
+  const childParamNames = new Set<string>();
 
   const inheritedFields = await inheritFromParents(
     runtime,

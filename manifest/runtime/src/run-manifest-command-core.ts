@@ -10,6 +10,7 @@ import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import type {
   ConstraintOutcome,
   IREntity,
+  IRCommand,
   OverrideRequest,
 } from "@angriff36/manifest/ir";
 import { resolveCommand } from "./command-resolver";
@@ -23,6 +24,63 @@ export interface ManifestUserContext {
   id: string;
   tenantId: string;
   role: string;
+}
+
+// ---------------------------------------------------------------------------
+// R1 — Boundary datetime coercion
+// ---------------------------------------------------------------------------
+
+/**
+ * Collect the set of parameter names typed `datetime` for a given command,
+ * using the public `runtime.getCommand` API (same pattern as parent-context-resolver).
+ * Returns an empty set when the command or its parameters are not found.
+ */
+function datetimeParamNames(
+  runtime: RuntimeEngine,
+  entity: string,
+  command: string
+): Set<string> {
+  const cmd = (runtime as unknown as {
+    getCommand?: (name: string, entity?: string) => IRCommand | undefined;
+  }).getCommand?.(command, entity);
+  const names = new Set<string>();
+  for (const p of cmd?.parameters ?? []) {
+    if ((p as { type?: { name?: string } }).type?.name === "datetime") {
+      names.add(p.name);
+    }
+  }
+  return names;
+}
+
+/**
+ * Coerce datetime-typed body values to epoch-ms numbers before the engine
+ * receives them.  The engine validates datetime fields with
+ * `typeof value === 'number' && Number.isFinite(value)` (E_TYPE_DATETIME).
+ *
+ * Coercion rules (conservative — only fields whose IR type is `datetime`):
+ *   - `value instanceof Date`             → value.getTime()
+ *   - `typeof value === 'string'` and non-empty and Date.parse is finite → Date.parse(value)
+ *   - number / null / undefined / ""      → unchanged
+ *
+ * Mutates the body in place (callers already own the body object).
+ */
+function coerceBodyDatetimes(
+  body: Record<string, unknown>,
+  dtNames: Set<string>
+): void {
+  for (const name of dtNames) {
+    if (!Object.hasOwn(body, name)) continue;
+    const val = body[name];
+    if (val instanceof Date) {
+      body[name] = val.getTime();
+    } else if (typeof val === "string" && val.length > 0) {
+      const ms = Date.parse(val);
+      if (Number.isFinite(ms)) {
+        body[name] = ms;
+      }
+    }
+    // numbers, null, undefined, "" — pass through unchanged
+  }
 }
 
 export interface RunManifestCommandCoreParams {
@@ -282,6 +340,34 @@ export async function runManifestCommandCore(
 
     const command = resolved.command;
     const runtime = await deps.createRuntime({ user, entityName: entity });
+
+    // R1 — Boundary datetime coercion: coerce ISO strings and Date objects to
+    // epoch-ms before the engine validates them. Scoped to fields IR-typed
+    // `datetime` only — never sniffs arbitrary string fields.
+    //
+    // For `create`, the body is a full instance seed validated against entity
+    // PROPERTIES (persistPreparedCreate), not just the command's parameters —
+    // a datetime property absent from the param list (e.g. eventDate when
+    // create only declares id/clientId) still fails E_TYPE_DATETIME. Union the
+    // entity's datetime-typed properties into the coercion set for create.
+    try {
+      const dtNames = datetimeParamNames(runtime, entity, command);
+      if (command === "create") {
+        const entityIr = runtime.getEntity(entity) as IREntity | undefined;
+        for (const prop of entityIr?.properties ?? []) {
+          if (
+            (prop as { type?: { name?: string } }).type?.name === "datetime"
+          ) {
+            dtNames.add(prop.name);
+          }
+        }
+      }
+      if (dtNames.size > 0) {
+        coerceBodyDatetimes(body, dtNames);
+      }
+    } catch {
+      // Best-effort; if IR lookup fails, proceed unchanged.
+    }
 
     // Parent-context propagation: for a `create` carrying a parent FK (e.g.
     // BattleBoard.create with eventId), load the parent server-side and inherit

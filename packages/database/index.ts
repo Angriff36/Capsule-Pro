@@ -20,6 +20,12 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 neonConfig.webSocketConstructor = ws;
 // Use HTTP fetch for queries when possible; avoids WebSocket "Connection terminated unexpectedly" (neondatabase/serverless#168)
 neonConfig.poolQueryViaFetch = true;
+// R5: Serialize Date objects as UTC when writing to `timestamp without time zone` columns.
+// Without this the Neon driver uses the Node.js process local timezone, producing
+// timestamps that are off by the server's UTC offset (e.g. +7h on US Pacific).
+// Cast required: neonConfig TypeScript types omit this property even though the
+// runtime honours it (see @neondatabase/serverless prepareValue in index.js).
+(neonConfig as unknown as Record<string, unknown>).parseInputDatesAsUTC = true;
 
 const connectionString = keys().DATABASE_URL;
 // Dev-only: confirm which host we're using (no credentials)

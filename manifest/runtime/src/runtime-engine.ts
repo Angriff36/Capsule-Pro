@@ -143,6 +143,25 @@ export class ManifestRuntimeEngine extends RuntimeEngine {
 
     const result = await super.runCommand(commandName, input, options);
 
+    // R4 — Surface command failures so silently-swallowed reaction failures
+    // (e.g. BattleBoard.create triggered by EventCreated reaction) appear in
+    // api logs instead of vanishing. Non-throwing; best-effort structured log.
+    if (!result.success) {
+      try {
+        const err =
+          (result as unknown as { error?: unknown }).error ??
+          (result as unknown as { message?: unknown }).message ??
+          "unknown error";
+        const guard = (result as unknown as { guardFailure?: { formatted?: string } }).guardFailure;
+        const detail = guard?.formatted ?? String(err);
+        console.error(
+          `[manifest-runtime] command failed: ${options.entityName ?? "??"}.${commandName} — ${detail}`
+        );
+      } catch {
+        // Defensive: never let logging crash the call path.
+      }
+    }
+
     // Fire the telemetry hook only when there is something to report.
     if (
       result.success &&
