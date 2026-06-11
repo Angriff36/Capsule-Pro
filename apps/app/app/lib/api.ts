@@ -24,8 +24,6 @@ const normalizeBaseUrl = (value: string | undefined): string | null => {
   return value.replace(TRAILING_SLASH_RE, "");
 };
 
-const resolvedApiBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
-
 export const getApiBaseUrl = (): string => {
   // On the client, we MUST return an empty string to use the Next.js rewrite proxy.
   // This avoids CORS issues and ensures session cookies are shared correctly.
@@ -33,6 +31,7 @@ export const getApiBaseUrl = (): string => {
     return "";
   }
 
+  const resolvedApiBaseUrl = normalizeBaseUrl(process.env.NEXT_PUBLIC_API_URL);
   if (resolvedApiBaseUrl) {
     return resolvedApiBaseUrl;
   }

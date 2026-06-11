@@ -27,6 +27,28 @@ const draftCard = (id: string, staffId: string) => ({
   },
 });
 
+const dishDraftCard = (id: string, dishId: string) => ({
+  id,
+  title: `Dish ${dishId}`,
+  content: "",
+  cardType: "entity",
+  status: "pending",
+  color: "#ec4899",
+  groupId: "",
+  metadata: {
+    eventBoardDraft: {
+      draftAction: {
+        kind: "add-dish",
+        entityType: "Dish",
+        entityId: dishId,
+        params: { quantityServings: "120", course: "Main", specialInstructions: "no nuts" },
+      },
+      draftState: "draft",
+      committedRecordId: null,
+    },
+  },
+});
+
 function makeDeps(overrides: Partial<Record<string, unknown>> = {}) {
   const calls: Array<{ entity: string; command: string; body: Record<string, unknown>; instanceId?: string }> = [];
   const deps = {
@@ -123,6 +145,57 @@ describe("commitEventBoardDrafts", () => {
     expect(result.success).toBe(true);
     if (result.success) expect(result.committedCount).toBe(0);
     expect(deps.runCommand).not.toHaveBeenCalled();
+  });
+
+  it("runs EventDish.create for add-dish drafts (quantity parsed to int)", async () => {
+    const { deps, calls } = makeDeps({
+      loadDraftCards: vi.fn(async () => [dishDraftCard("c9", "dish-1")]),
+    });
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.committedCount).toBe(1);
+    const creates = calls.filter((c) => c.entity === "EventDish" && c.command === "create");
+    expect(creates).toHaveLength(1);
+    expect(creates[0].body).toMatchObject({
+      eventId: "e1",
+      dishId: "dish-1",
+      // Envelope params are strings; the int command param must arrive as a number.
+      quantityServings: 120,
+      course: "Main",
+      specialInstructions: "no nuts",
+    });
+    const flips = calls.filter((c) => c.entity === "CommandBoardCard" && c.command === "update");
+    expect(flips).toHaveLength(1);
+    const flippedMeta = JSON.parse(flips[0].body.newMetadata as string);
+    expect(flippedMeta.eventBoardDraft.draftState).toBe("committed");
+    expect(flippedMeta.eventBoardDraft.committedRecordId).toMatch(/^created-EventDish/);
+  });
+
+  it("fails with failedCardId on a malformed dish quantity", async () => {
+    const bad = dishDraftCard("c9", "dish-1");
+    bad.metadata.eventBoardDraft.draftAction.params.quantityServings = "zero";
+    const { deps } = makeDeps({ loadDraftCards: vi.fn(async () => [bad]) });
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error).toContain("Invalid dish quantity");
+      expect(result.failedCardId).toBe("c9");
+    }
+  });
+
+  it("skips unknown draft kinds (no data model yet) without failing", async () => {
+    const vehicle = dishDraftCard("c8", "veh-1");
+    vehicle.metadata.eventBoardDraft.draftAction.kind = "assign-vehicle";
+    const { deps, calls } = makeDeps({
+      loadDraftCards: vi.fn(async () => [vehicle, dishDraftCard("c9", "dish-1")]),
+    });
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.committedCount).toBe(1);
+    expect(calls.some((c) => c.entity === "EventDish")).toBe(true);
+    // The unknown-kind card is untouched: no flip for it.
+    const flips = calls.filter((c) => c.entity === "CommandBoardCard");
+    expect(flips).toHaveLength(1);
   });
 
   it("surfaces failedCardId when an EventStaff.create fails", async () => {

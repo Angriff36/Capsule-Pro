@@ -30,7 +30,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { battleBoardCreate } from "@/app/lib/manifest-client.generated";
@@ -45,9 +45,11 @@ const BOARD_TYPES = [
 
 export default function NewBattleBoardPage() {
   const router = useRouter();
+  // Prefill when arriving from an event (e.g. the event board's "create ↗").
+  const searchParams = useSearchParams();
   const [boardName, setBoardName] = useState("");
   const [boardType, setBoardType] = useState("dish_ranking");
-  const [eventId, setEventId] = useState("");
+  const [eventId, setEventId] = useState(searchParams?.get("eventId") ?? "");
   const [description, setDescription] = useState("");
   const [isTemplate, setIsTemplate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -169,7 +171,7 @@ export default function NewBattleBoardPage() {
                     placeholder="Paste an event UUID to link this board"
                     value={eventId}
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Link this board to an existing event for automatic data
                     population.
                   </p>
@@ -200,7 +202,7 @@ export default function NewBattleBoardPage() {
                   />
                   <div className="space-y-0.5">
                     <Label htmlFor="isTemplate">Save as template</Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       Templates can be reused across multiple events.
                     </p>
                   </div>

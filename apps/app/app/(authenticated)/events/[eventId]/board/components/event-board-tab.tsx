@@ -1,4 +1,4 @@
-import { getEventBoardData, getStaffPalette } from "../actions";
+import { getDishPalette, getEventBoardData, getStaffPalette } from "../actions";
 import { BoardClient } from "./board-client";
 
 /**
@@ -7,12 +7,14 @@ import { BoardClient } from "./board-client";
  * the event page never fires a governed CommandBoard.create write.
  */
 export async function EventBoardTab({ eventId }: { eventId: string }) {
-  const [data, palette] = await Promise.all([
+  const [data, palette, dishPalette] = await Promise.all([
     getEventBoardData(eventId),
     getStaffPalette(),
+    getDishPalette(),
   ]);
   return (
     <BoardClient
+      dishPalette={dishPalette}
       eventId={eventId}
       initialBoardId={data.boardId}
       initialData={data}

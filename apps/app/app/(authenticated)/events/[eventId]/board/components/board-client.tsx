@@ -1,15 +1,29 @@
 "use client";
 
-import { DndContext, type DragEndEvent } from "@dnd-kit/core";
+import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import type { CommitResponse, EventBoardData, PaletteStaff } from "../actions";
+import type {
+  CommitResponse,
+  EventBoardData,
+  PaletteDish,
+  PaletteStaff,
+} from "../actions";
 import { getOrCreateEventBoard } from "../actions";
 import { buildBoardDisplayRows } from "../board-display";
 import {
   useCommitBoard,
+  useCreateDishDraft,
   useCreateStaffDraft,
   useDraftImpact,
   useEventBoardData,
@@ -17,13 +31,15 @@ import {
 } from "../board-hooks";
 import { computeBranchStatus, resolveTemplate } from "../templates";
 import { CommitDialog } from "./commit-dialog";
+import { DishDialog, type DishDialogSubmit } from "./dish-dialog";
 import { ImpactRail } from "./impact-rail";
-import { Palette } from "./palette";
+import { DragGhost, type DragItem, Palette } from "./palette";
 import { ShiftDialog, type ShiftDialogSubmit } from "./shift-dialog";
 import { TreeCanvas } from "./tree-canvas";
 import { TreeOutline } from "./tree-outline";
 
 interface BoardClientProps {
+  dishPalette: PaletteDish[];
   eventId: string;
   initialBoardId: string | null;
   initialData: EventBoardData;
@@ -35,13 +51,16 @@ export function BoardClient({
   initialBoardId,
   initialData,
   palette,
+  dishPalette,
 }: BoardClientProps) {
   // Lazy board creation: the tab content unmounts when inactive, so mount ==
   // tab activation. The governed CommandBoard.create only fires when the user
   // actually opens the Command Board tab (and no board exists yet).
   const [boardId, setBoardId] = useState<string | null>(initialBoardId);
   useEffect(() => {
-    if (boardId !== null) return;
+    if (boardId !== null) {
+      return;
+    }
     let cancelled = false;
     getOrCreateEventBoard(eventId).then(
       (res) => !cancelled && setBoardId(res.boardId),
@@ -61,6 +80,9 @@ export function BoardClient({
   const staffDrafts = drafts.filter(
     (c) => c.envelope.draftAction.kind === "assign-staff"
   );
+  const dishDrafts = drafts.filter(
+    (c) => c.envelope.draftAction.kind === "add-dish"
+  );
 
   const { template, status } = useMemo(() => {
     const tpl = resolveTemplate(board.event.eventType);
@@ -71,30 +93,41 @@ export function BoardClient({
         counts: {
           ...board.committedCounts,
           staff: board.committedCounts.staff + staffDrafts.length,
+          menu: board.committedCounts.menu + dishDrafts.length,
         },
       }),
     };
-  }, [board, staffDrafts.length]);
+  }, [board, staffDrafts.length, dishDrafts.length]);
 
-  const impact = useDraftImpact(eventId, boardId, drafts.length > 0);
+  const impact = useDraftImpact(eventId, boardId, staffDrafts.length > 0);
 
-  const createDraft = useCreateStaffDraft(eventId);
+  const createStaffDraft = useCreateStaffDraft(eventId);
+  const createDishDraft = useCreateDishDraft(eventId);
   const removeDraft = useRemoveDraftCard(eventId);
   const commitBoard = useCommitBoard(eventId);
   const paletteById = useMemo(
     () => new Map(palette.map((p) => [p.id, p])),
     [palette]
   );
+  const [activeDrag, setActiveDrag] = useState<DragItem | null>(null);
   const [pendingStaff, setPendingStaff] = useState<PaletteStaff | null>(null);
+  const [pendingDish, setPendingDish] = useState<PaletteDish | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [commitOpen, setCommitOpen] = useState(false);
 
+  // Distance threshold separates clicks (token expansion, links) from drags
+  // and gives the cursor change a beat before the ghost appears.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
+
   // Display-ready rows (ids -> names) so rail + dialog stay presentational.
-  const liveImpact = drafts.length > 0 ? impact.data : undefined;
+  const liveImpact = staffDrafts.length > 0 ? impact.data : undefined;
   const { conflictRows, missingRateNames, dialogDrafts } =
     buildBoardDisplayRows({
       impact: liveImpact,
       staffDrafts,
+      dishDrafts,
       paletteById,
       committedStaff: board.committedStaff,
     });
@@ -104,44 +137,67 @@ export function BoardClient({
     : (commitBoard.data ?? null);
 
   const handleCommitSuccess = (res: CommitResponse) => {
-    if (!res.success) return; // failure: dialog stays open showing the error
+    if (!res.success) {
+      return; // failure: dialog stays open showing the error
+    }
     setCommitOpen(false); // invalidation refreshes cards -> tokens flip green
     const n = res.committedCount;
     toast.success(`Committed ${n} draft${n === 1 ? "" : "s"}`);
   };
 
   const handleCommitConfirm = () => {
-    if (!boardId) return;
+    if (!boardId) {
+      return;
+    }
     commitBoard.mutate(boardId, { onSuccess: handleCommitSuccess });
   };
 
+  const handleDragStart = (e: DragStartEvent) => {
+    const item = e.active.data.current as DragItem | undefined;
+    setActiveDrag(item ?? null);
+  };
+
   const handleDragEnd = (e: DragEndEvent) => {
-    if (e.over?.id !== "branch-staff") return;
-    const staff = e.active.data.current?.staff as PaletteStaff | undefined;
-    if (staff) {
+    const item = e.active.data.current as DragItem | undefined;
+    setActiveDrag(null);
+    if (!item) {
+      return;
+    }
+    if (e.over?.id === "branch-staff" && item.kind === "staff") {
       setDraftError(null);
-      setPendingStaff(staff);
+      setPendingStaff(item.staff);
+    } else if (e.over?.id === "branch-menu" && item.kind === "dish") {
+      setDraftError(null);
+      setPendingDish(item.dish);
     }
   };
 
-  const handleConfirm = async (input: ShiftDialogSubmit) => {
-    if (!pendingStaff) return;
-    // If the lazy mount-effect create failed (it swallows rejection and never
-    // re-runs), confirm is the retry point: re-attempt board creation here.
-    let targetBoardId = boardId;
-    if (targetBoardId === null) {
-      try {
-        const res = await getOrCreateEventBoard(eventId);
-        targetBoardId = res.boardId;
-        setBoardId(targetBoardId);
-      } catch (err) {
-        setDraftError(
-          err instanceof Error ? err.message : "Failed to create event board"
-        );
-        return;
-      }
+  /** Lazy-create retry point: the mount-effect create swallows rejections. */
+  const resolveBoardId = async (): Promise<string | null> => {
+    if (boardId !== null) {
+      return boardId;
     }
-    createDraft.mutate(
+    try {
+      const res = await getOrCreateEventBoard(eventId);
+      setBoardId(res.boardId);
+      return res.boardId;
+    } catch (err) {
+      setDraftError(
+        err instanceof Error ? err.message : "Failed to create event board"
+      );
+      return null;
+    }
+  };
+
+  const handleStaffConfirm = async (input: ShiftDialogSubmit) => {
+    if (!pendingStaff) {
+      return;
+    }
+    const targetBoardId = await resolveBoardId();
+    if (targetBoardId === null) {
+      return;
+    }
+    createStaffDraft.mutate(
       {
         boardId: targetBoardId,
         staff: { id: pendingStaff.id, name: pendingStaff.name },
@@ -149,8 +205,38 @@ export function BoardClient({
       },
       {
         onSuccess: (res) => {
-          if (res.success) setPendingStaff(null);
-          else setDraftError(res.error ?? "Failed to create draft card");
+          if (res.success) {
+            setPendingStaff(null);
+          } else {
+            setDraftError(res.error ?? "Failed to create draft card");
+          }
+        },
+        onError: (err) => setDraftError(err.message),
+      }
+    );
+  };
+
+  const handleDishConfirm = async (input: DishDialogSubmit) => {
+    if (!pendingDish) {
+      return;
+    }
+    const targetBoardId = await resolveBoardId();
+    if (targetBoardId === null) {
+      return;
+    }
+    createDishDraft.mutate(
+      {
+        boardId: targetBoardId,
+        dish: { id: pendingDish.id, name: pendingDish.name },
+        ...input,
+      },
+      {
+        onSuccess: (res) => {
+          if (res.success) {
+            setPendingDish(null);
+          } else {
+            setDraftError(res.error ?? "Failed to create draft card");
+          }
         },
         onError: (err) => setDraftError(err.message),
       }
@@ -158,10 +244,12 @@ export function BoardClient({
   };
 
   return (
-    <div className="flex h-[calc(100vh-15rem)] min-h-[480px] flex-col gap-3">
+    <div className="flex h-[calc(100vh-12.5rem)] min-h-[560px] flex-col gap-3">
       {/* Top bar */}
       <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-background px-4 py-2.5">
-        <h2 className="truncate text-base font-semibold">{board.event.title}</h2>
+        <h2 className="truncate font-semibold text-base">
+          {board.event.title}
+        </h2>
         <Badge variant="outline">{template.label}</Badge>
         <Badge variant="secondary">{status.readyPercent}% ready</Badge>
         <Badge variant="secondary">
@@ -186,25 +274,31 @@ export function BoardClient({
         </div>
       </div>
 
-      <DndContext onDragEnd={handleDragEnd}>
-        <div className="grid min-h-0 flex-1 grid-cols-[260px_minmax(0,1fr)_300px] gap-3">
+      <DndContext
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        sensors={sensors}
+      >
+        <div className="grid min-h-0 flex-1 grid-cols-[15rem_minmax(0,1fr)_17.5rem] gap-4">
           {/* LEFT — outline + palette */}
-          <div className="flex min-h-0 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-background p-3">
+          <div className="flex min-h-0 flex-col gap-4 overflow-hidden rounded-lg border border-border/70 bg-muted/20 p-3">
             <TreeOutline status={status} />
-            <Palette palette={palette} />
+            <Palette dishPalette={dishPalette} palette={palette} />
           </div>
 
           {/* CENTER — tree canvas */}
           <div
-            className="relative min-h-0 rounded-lg border border-border bg-background"
+            className="relative min-h-0 rounded-xl border border-border bg-[radial-gradient(ellipse_at_center,rgba(167,139,250,0.06),transparent_70%)] bg-background"
             data-board-canvas
             id="event-board-canvas"
           >
             <TreeCanvas
-              battleBoardHref={`/events/${eventId}/battle-board`}
+              battleBoards={board.battleBoards}
+              committedDishes={board.committedDishes}
               committedStaff={board.committedStaff}
               conflicts={liveImpact?.conflicts ?? []}
               draftCards={board.draftCards}
+              dragKind={activeDrag?.kind ?? null}
               event={board.event}
               onRemoveDraft={(cardId) => removeDraft.mutate(cardId)}
               paletteById={paletteById}
@@ -213,26 +307,41 @@ export function BoardClient({
             />
           </div>
 
-          {/* RIGHT — impact rail + AI placeholder */}
-          <div className="min-h-0 overflow-y-auto rounded-lg border border-border bg-background p-3">
+          {/* RIGHT — impact rail + AI assistant */}
+          <div className="min-h-0 overflow-y-auto rounded-lg border border-border/70 bg-muted/20 p-3">
             <ImpactRail
               conflictRows={conflictRows}
-              draftCount={drafts.length}
+              dishDraftCount={dishDrafts.length}
               impact={liveImpact}
               impactLoading={impact.isPending}
               missingRateNames={missingRateNames}
+              staffDraftCount={staffDrafts.length}
             />
           </div>
         </div>
+
+        {/* Cursor-following ghost — the visual confirmation a drag is live. */}
+        <DragOverlay dropAnimation={null}>
+          {activeDrag ? <DragGhost item={activeDrag} /> : null}
+        </DragOverlay>
       </DndContext>
 
       <ShiftDialog
         errorMessage={draftError}
         eventDate={board.event.eventDate}
         onClose={() => setPendingStaff(null)}
-        onConfirm={handleConfirm}
-        pending={createDraft.isPending}
+        onConfirm={handleStaffConfirm}
+        pending={createStaffDraft.isPending}
         staff={pendingStaff}
+      />
+
+      <DishDialog
+        dish={pendingDish}
+        errorMessage={draftError}
+        guestCount={board.event.guestCount}
+        onClose={() => setPendingDish(null)}
+        onConfirm={handleDishConfirm}
+        pending={createDishDraft.isPending}
       />
 
       <CommitDialog

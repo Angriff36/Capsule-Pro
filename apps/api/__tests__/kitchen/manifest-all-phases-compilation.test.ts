@@ -18,7 +18,7 @@
  * These are real compilation tests — no mocks, no DB, just file reads + IR compilation.
  */
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
@@ -36,6 +36,32 @@ const MANIFEST_DIR = join(
   process.cwd(),
   "../../manifest/source"
 );
+
+// The flat source/ root was restructured into domain subdirectories
+// (2026-06-10, "Flat source/ → domain subdirs"). Index every *.manifest once
+// so specs keep referring to bare names regardless of which subdir owns them.
+const MANIFEST_PATH_INDEX: Map<string, string> = (() => {
+  const index = new Map<string, string>();
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.name.endsWith(".manifest")) {
+        index.set(entry.name.replace(/\.manifest$/, ""), full);
+      }
+    }
+  };
+  walk(MANIFEST_DIR);
+  return index;
+})();
+
+function resolveManifestPath(manifestName: string): string {
+  return (
+    MANIFEST_PATH_INDEX.get(manifestName) ??
+    join(MANIFEST_DIR, `${manifestName}.manifest`)
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Manifest spec definitions — entities + expected commands for all 25 manifests
@@ -585,7 +611,7 @@ const EXPECTED_ENTITY_MAPPING: Record<string, string> = {
 // ---------------------------------------------------------------------------
 
 async function compileManifest(manifestName: string) {
-  const manifestPath = join(MANIFEST_DIR, `${manifestName}.manifest`);
+  const manifestPath = resolveManifestPath(manifestName);
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
   return { ir, diagnostics, source };
@@ -613,7 +639,7 @@ describe("Manifest All-Phases Compilation", () => {
     phase,
     entities,
   }) => {
-    const manifestPath = join(MANIFEST_DIR, `${manifest}.manifest`);
+    const manifestPath = resolveManifestPath(manifest);
 
     it("manifest file exists on disk", () => {
       expect(
@@ -712,7 +738,7 @@ describe("Manifest All-Phases Compilation", () => {
       manifest,
       knownCompilerIssue,
     }) => {
-      const manifestPath = join(MANIFEST_DIR, `${manifest}.manifest`);
+      const manifestPath = resolveManifestPath(manifest);
 
       it("manifest file exists on disk", () => {
         expect(
@@ -750,7 +776,7 @@ describe("Manifest All-Phases Compilation", () => {
       for (const [entityName, expectedManifest] of Object.entries(
         EXPECTED_ENTITY_MAPPING
       )) {
-        const manifestPath = join(MANIFEST_DIR, `${expectedManifest}.manifest`);
+        const manifestPath = resolveManifestPath(expectedManifest);
         expect(
           existsSync(manifestPath),
           `Manifest file for entity '${entityName}' should exist: ${expectedManifest}.manifest`

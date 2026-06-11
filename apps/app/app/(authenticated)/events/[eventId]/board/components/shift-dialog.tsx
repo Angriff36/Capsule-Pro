@@ -24,20 +24,20 @@ function toDatetimeLocalInput(base: Date, hours: number): string {
 
 export interface ShiftDialogSubmit {
   role: string;
+  shiftEnd: string;
   /** ISO strings */
   shiftStart: string;
-  shiftEnd: string;
 }
 
 interface ShiftDialogProps {
-  /** Non-null opens the dialog for this palette member. */
-  staff: PaletteStaff | null;
+  errorMessage: string | null;
   /** Event date ISO string — shift defaults to 16:00–23:00 local on this day. */
   eventDate: string;
-  pending: boolean;
-  errorMessage: string | null;
-  onConfirm: (input: ShiftDialogSubmit) => void;
   onClose: () => void;
+  onConfirm: (input: ShiftDialogSubmit) => void;
+  pending: boolean;
+  /** Non-null opens the dialog for this palette member. */
+  staff: PaletteStaff | null;
 }
 
 export function ShiftDialog({
@@ -54,7 +54,9 @@ export function ShiftDialog({
 
   // Re-seed inputs each time the dialog opens for a new palette member.
   useEffect(() => {
-    if (!staff) return;
+    if (!staff) {
+      return;
+    }
     const base = new Date(eventDate);
     setRole(staff.role);
     setStart(toDatetimeLocalInput(base, 16));
@@ -104,7 +106,7 @@ export function ShiftDialog({
             />
           </div>
           {errorMessage && (
-            <p className="text-sm text-destructive">{errorMessage}</p>
+            <p className="text-destructive text-sm">{errorMessage}</p>
           )}
         </div>
         <DialogFooter>

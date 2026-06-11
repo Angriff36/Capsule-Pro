@@ -1,18 +1,18 @@
 "use server";
 
 import { database } from "@repo/database";
-import { runManifestCommand } from "@/lib/manifest-command";
 import { apiPostJsonServer } from "@/app/lib/api-server";
 import { requireCurrentUser } from "@/app/lib/tenant";
+import { runManifestCommand } from "@/lib/manifest-command";
 import {
+  type DraftEnvelope,
   parseDraftEnvelope,
   writeDraftEnvelope,
-  type DraftEnvelope,
 } from "./draft-metadata";
 import {
   computeStaffImpact,
-  type StaffImpact,
   type StaffDraftInput,
+  type StaffImpact,
 } from "./impact";
 
 // ---------------------------------------------------------------------------
@@ -20,14 +20,8 @@ import {
 // ---------------------------------------------------------------------------
 
 export interface EventBoardData {
-  event: {
-    id: string;
-    title: string;
-    eventType: string;
-    eventDate: string;
-    guestCount: number;
-    venueName: string;
-  };
+  /** Battle boards already linked to this event (real editor lives at /events/battle-boards/[id]). */
+  battleBoards: Array<{ id: string; name: string }>;
   boardId: string | null;
   committedCounts: {
     staff: number;
@@ -36,21 +30,43 @@ export interface EventBoardData {
     equipment: number;
     battleboard: number;
   };
-  draftCards: Array<{ cardId: string; envelope: DraftEnvelope; title: string }>;
+  committedDishes: Array<{
+    eventDishId: string;
+    dishId: string;
+    name: string;
+    course: string;
+    quantityServings: number;
+  }>;
   committedStaff: Array<{
     staffMemberId: string;
     name: string;
     role: string;
     avatarUrl: string | null;
   }>;
+  draftCards: Array<{ cardId: string; envelope: DraftEnvelope; title: string }>;
+  event: {
+    id: string;
+    title: string;
+    eventType: string;
+    eventDate: string;
+    guestCount: number;
+    venueName: string;
+  };
 }
 
 export interface PaletteStaff {
+  avatarUrl: string | null;
+  hourlyRate: string | null;
   id: string;
   name: string;
   role: string;
-  avatarUrl: string | null;
-  hourlyRate: string | null;
+}
+
+export interface PaletteDish {
+  category: string;
+  id: string;
+  name: string;
+  pricePerPerson: string | null;
 }
 
 const COMMITTED_STAFF_STATUSES = ["assigned", "confirmed", "checked_in"];
@@ -71,14 +87,18 @@ export async function getOrCreateEventBoard(
     orderBy: { createdAt: "asc" },
     select: { id: true },
   });
-  if (existing) return { boardId: existing.id };
+  if (existing) {
+    return { boardId: existing.id };
+  }
 
   // Fetch event title for the board name
   const event = await database.event.findFirst({
     where: { tenantId, id: eventId, deletedAt: null },
     select: { title: true },
   });
-  if (!event) throw new Error("Event not found");
+  if (!event) {
+    throw new Error("Event not found");
+  }
 
   const result = await runManifestCommand({
     entity: "CommandBoard",
@@ -100,7 +120,9 @@ export async function getOrCreateEventBoard(
   }
 
   const createdId = (result.result as { id?: string } | null)?.id;
-  if (createdId) return { boardId: createdId };
+  if (createdId) {
+    return { boardId: createdId };
+  }
 
   // Fallback: re-query (handles race where another request created it first)
   const fallback = await database.commandBoard.findFirst({
@@ -108,7 +130,9 @@ export async function getOrCreateEventBoard(
     orderBy: { createdAt: "asc" },
     select: { id: true },
   });
-  if (fallback) return { boardId: fallback.id };
+  if (fallback) {
+    return { boardId: fallback.id };
+  }
 
   throw new Error("CommandBoard.create did not return an id");
 }
@@ -135,7 +159,9 @@ export async function getEventBoardData(
       venueName: true,
     },
   });
-  if (!event) throw new Error("Event not found");
+  if (!event) {
+    throw new Error("Event not found");
+  }
 
   // --- Committed staff count + roster (same query, reuse results) ---
   const committedStaffRows = await database.eventStaff.findMany({
@@ -153,7 +179,12 @@ export async function getEventBoardData(
     staffIds.length > 0
       ? await database.user.findMany({
           where: { tenantId, id: { in: staffIds } },
-          select: { id: true, firstName: true, lastName: true, avatarUrl: true },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
         })
       : [];
 
@@ -169,15 +200,44 @@ export async function getEventBoardData(
     };
   });
 
-  // --- Menu count (EventDish) ---
-  const menuCount = await database.eventDish.count({
+  // --- Committed menu (EventDish roster + dish names) ---
+  const eventDishRows = await database.eventDish.findMany({
+    where: { tenantId, eventId, deletedAt: null },
+    select: { id: true, dishId: true, course: true, quantityServings: true },
+  });
+  const dishIds = [...new Set(eventDishRows.map((r) => r.dishId))];
+  const dishRows =
+    dishIds.length > 0
+      ? await database.dish.findMany({
+          where: { tenantId, id: { in: dishIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+  const dishNameMap = new Map(dishRows.map((d) => [d.id, d.name]));
+  const committedDishes = eventDishRows.map((row) => ({
+    eventDishId: row.id,
+    dishId: row.dishId,
+    name: dishNameMap.get(row.dishId) ?? "Unknown dish",
+    course: row.course ?? "",
+    quantityServings: row.quantityServings,
+  }));
+
+  // --- Vehicles: delivery routes scheduled for this event (read-path) ---
+  const vehicleRouteCount = await database.deliveryRoute.count({
     where: { tenantId, eventId, deletedAt: null },
   });
 
-  // --- BattleBoard count ---
-  const battleboardCount = await database.battleBoard.count({
+  // --- Battle boards linked to this event (the real editor at /events/battle-boards/[id]) ---
+  // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
+  const battleBoardRows = await database.battleBoard.findMany({
     where: { tenantId, eventId, deletedAt: null },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, board_name: true },
   });
+  const battleBoards = battleBoardRows.map((b) => ({
+    id: b.id,
+    name: b.board_name,
+  }));
 
   // --- Board id ---
   const board = await database.commandBoard.findFirst({
@@ -214,13 +274,15 @@ export async function getEventBoardData(
     boardId,
     committedCounts: {
       staff: committedStaffRows.length,
-      menu: menuCount,
-      vehicles: 0, // TODO: vehicle entity in a later plan
-      equipment: 0, // TODO: equipment entity in a later plan
-      battleboard: battleboardCount,
+      menu: committedDishes.length,
+      vehicles: vehicleRouteCount,
+      equipment: 0, // no event↔equipment data model exists yet (see leaf copy)
+      battleboard: battleBoards.length,
     },
     draftCards,
     committedStaff,
+    committedDishes,
+    battleBoards,
   };
 }
 
@@ -250,7 +312,30 @@ export async function getStaffPalette(): Promise<PaletteStaff[]> {
     name: `${u.firstName} ${u.lastName}`.trim(),
     role: u.role,
     avatarUrl: u.avatarUrl ?? null,
-    hourlyRate: u.hourlyRate != null ? u.hourlyRate.toFixed(2) : null,
+    hourlyRate: u.hourlyRate == null ? null : u.hourlyRate.toFixed(2),
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// 3b. getDishPalette
+// ---------------------------------------------------------------------------
+
+export async function getDishPalette(): Promise<PaletteDish[]> {
+  const user = await requireCurrentUser();
+  const { tenantId } = user;
+
+  const dishes = await database.dish.findMany({
+    where: { tenantId, isActive: true, deletedAt: null },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, category: true, pricePerPerson: true },
+  });
+
+  return dishes.map((d) => ({
+    id: d.id,
+    name: d.name,
+    category: d.category ?? "",
+    pricePerPerson:
+      d.pricePerPerson == null ? null : d.pricePerPerson.toFixed(2),
   }));
 }
 
@@ -305,7 +390,69 @@ export async function createStaffDraftCard(input: {
   });
 
   if (!result.ok) {
-    return { success: false, error: result.message || "Failed to create draft card" };
+    return {
+      success: false,
+      error: result.message || "Failed to create draft card",
+    };
+  }
+  return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// 4b. createDishDraftCard
+// ---------------------------------------------------------------------------
+
+export async function createDishDraftCard(input: {
+  boardId: string;
+  dish: { id: string; name: string };
+  quantityServings: number;
+  course: string;
+  specialInstructions: string;
+}): Promise<{ success: true } | { success: false; error?: string }> {
+  const user = await requireCurrentUser();
+
+  const envelope: DraftEnvelope = {
+    draftAction: {
+      kind: "add-dish",
+      entityType: "Dish",
+      entityId: input.dish.id,
+      params: {
+        quantityServings: String(input.quantityServings),
+        course: input.course,
+        specialInstructions: input.specialInstructions,
+      },
+    },
+    draftState: "draft",
+    committedRecordId: null,
+  };
+
+  const result = await runManifestCommand({
+    entity: "CommandBoardCard",
+    command: "create",
+    body: {
+      boardId: input.boardId,
+      title: input.dish.name,
+      content: "",
+      cardType: "entity",
+      status: "pending",
+      positionX: 0,
+      positionY: 0,
+      width: 200,
+      height: 150,
+      color: "#ec4899",
+      metadata: writeDraftEnvelope("{}", envelope),
+      groupId: "",
+      entityId: input.dish.id,
+      entityType: "Dish",
+    },
+    user: { id: user.id, tenantId: user.tenantId, role: user.role },
+  });
+
+  if (!result.ok) {
+    return {
+      success: false,
+      error: result.message || "Failed to create draft card",
+    };
   }
   return { success: true };
 }
@@ -330,7 +477,10 @@ export async function removeDraftCard(
   });
 
   if (!result.ok) {
-    return { success: false, error: result.message || "Failed to remove draft card" };
+    return {
+      success: false,
+      error: result.message || "Failed to remove draft card",
+    };
   }
   return { success: true };
 }
@@ -397,7 +547,12 @@ export async function getDraftImpact(
       shiftStart: { not: null },
       shiftEnd: { not: null },
     },
-    select: { staffMemberId: true, shiftStart: true, shiftEnd: true, eventId: true },
+    select: {
+      staffMemberId: true,
+      shiftStart: true,
+      shiftEnd: true,
+      eventId: true,
+    },
   });
 
   // Batch-fetch labels for the other events
@@ -411,10 +566,17 @@ export async function getDraftImpact(
       : [];
   const eventTitleMap = new Map(otherEvents.map((e) => [e.id, e.title]));
 
-  const busyIntervals: Record<string, Array<{ start: string; end: string; label: string }>> = {};
+  const busyIntervals: Record<
+    string,
+    Array<{ start: string; end: string; label: string }>
+  > = {};
   for (const a of otherAssignments) {
-    if (!a.shiftStart || !a.shiftEnd) continue;
-    if (!busyIntervals[a.staffMemberId]) busyIntervals[a.staffMemberId] = [];
+    if (!(a.shiftStart && a.shiftEnd)) {
+      continue;
+    }
+    if (!busyIntervals[a.staffMemberId]) {
+      busyIntervals[a.staffMemberId] = [];
+    }
     busyIntervals[a.staffMemberId].push({
       start: a.shiftStart.toISOString(),
       end: a.shiftEnd.toISOString(),
@@ -444,10 +606,9 @@ export async function commitEventBoard(
 
   let response: Response;
   try {
-    response = await apiPostJsonServer(
-      `/api/command-board/${boardId}/commit`,
-      { eventId }
-    );
+    response = await apiPostJsonServer(`/api/command-board/${boardId}/commit`, {
+      eventId,
+    });
   } catch (error) {
     return {
       success: false,

@@ -3,11 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   commitEventBoard,
+  createDishDraftCard,
   createStaffDraftCard,
+  type EventBoardData,
   getDraftImpact,
   getEventBoardData,
   removeDraftCard,
-  type EventBoardData,
 } from "./actions";
 
 // ============================================================================
@@ -28,7 +29,10 @@ export const boardKeys = {
  * Board data for an event. The EventBoardTab server component hydrates the
  * initial data; TanStack Query manages refetches after draft mutations.
  */
-export function useEventBoardData(eventId: string, initialData: EventBoardData) {
+export function useEventBoardData(
+  eventId: string,
+  initialData: EventBoardData
+) {
   return useQuery({
     queryKey: boardKeys.data(eventId),
     queryFn: () => getEventBoardData(eventId),
@@ -69,6 +73,19 @@ export function useCreateStaffDraft(eventId: string) {
   return useMutation({
     mutationFn: (input: Parameters<typeof createStaffDraftCard>[0]) =>
       createStaffDraftCard(input),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: boardKeys.data(eventId) });
+    },
+  });
+}
+
+/** Creates an add-dish draft card on the board. */
+export function useCreateDishDraft(eventId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: Parameters<typeof createDishDraftCard>[0]) =>
+      createDishDraftCard(input),
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: boardKeys.data(eventId) });
     },

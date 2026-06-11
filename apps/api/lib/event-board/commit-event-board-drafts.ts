@@ -20,29 +20,34 @@
 
 export interface ManifestUser {
   id: string;
-  tenantId: string;
   role: string;
+  tenantId: string;
 }
 
 export interface DraftCardRow {
-  id: string;
-  title: string;
-  content: string;
   cardType: string;
-  status: string;
   color: string;
+  content: string;
   groupId: string;
+  id: string;
   metadata: unknown; // Prisma Json — string OR object depending on the read path
+  status: string;
+  title: string;
 }
 
 export interface CommandCall {
-  entity: string;
-  command: string;
   body: Record<string, unknown>;
+  command: string;
+  entity: string;
   instanceId?: string;
 }
 
 export interface CommitDeps {
+  loadDraftCards: (
+    tx: unknown,
+    boardId: string,
+    tenantId: string
+  ) => Promise<DraftCardRow[]>;
   /**
    * Row-lock the board (SELECT ... FOR UPDATE) and return its eventId.
    * Returns null when the board does not exist (or is soft-deleted).
@@ -55,18 +60,13 @@ export interface CommitDeps {
     boardId: string,
     tenantId: string
   ) => Promise<{ eventId: string | null } | null>;
-  loadDraftCards: (
-    tx: unknown,
-    boardId: string,
-    tenantId: string
-  ) => Promise<DraftCardRow[]>;
-  transact: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
   runCommand: (
     tx: unknown,
     params: CommandCall & { user: ManifestUser }
   ) => Promise<
     { success: true; instanceId?: string } | { success: false; error?: string }
   >;
+  transact: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
 }
 
 export type CommitResult =
@@ -80,20 +80,22 @@ export type CommitResult =
 const DRAFT_METADATA_KEY = "eventBoardDraft";
 
 interface DraftAction {
-  kind: string;
-  entityType: string;
   entityId: string;
+  entityType: string;
+  kind: string;
   params: Record<string, string>;
 }
 
 interface DraftEnvelope {
+  committedRecordId: string | null;
   draftAction: DraftAction;
   draftState: "draft" | "committed" | "failed";
-  committedRecordId: string | null;
 }
 
 function isDraftEnvelope(value: unknown): value is DraftEnvelope {
-  if (typeof value !== "object" || value === null) return false;
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
   const v = value as Record<string, unknown>;
   const action = v.draftAction as Record<string, unknown> | undefined;
   return (
@@ -131,6 +133,65 @@ function normalizeMetadata(metadata: unknown): Record<string, unknown> {
     }
   }
   return {};
+}
+
+// ---------------------------------------------------------------------------
+// Draft kind → governed domain command
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps a draft action to its governed create command, or null for kinds that
+ * are not committable yet (skipped, not failed). Throws CommitError for
+ * malformed params on a known kind — the card is real but unusable.
+ */
+function buildDomainCommand(
+  action: DraftAction,
+  eventId: string,
+  cardId: string
+): CommandCall | null {
+  if (action.kind === "assign-staff") {
+    // Engine datetime contract = epoch milliseconds: ISO strings are REJECTED
+    // with E_TYPE_DATETIME at create validation, so parse the envelope's ISO
+    // shift times here.
+    const shiftStartMs = Date.parse(action.params.shiftStart ?? "");
+    const shiftEndMs = Date.parse(action.params.shiftEnd ?? "");
+    if (Number.isNaN(shiftStartMs) || Number.isNaN(shiftEndMs)) {
+      throw new CommitError(`Invalid shift times on card ${cardId}`, cardId);
+    }
+    return {
+      entity: "EventStaff",
+      command: "create",
+      body: {
+        eventId,
+        staffMemberId: action.entityId,
+        role: action.params.role ?? "",
+        notes: "",
+        shiftStart: shiftStartMs,
+        shiftEnd: shiftEndMs,
+      },
+    };
+  }
+
+  if (action.kind === "add-dish") {
+    // quantityServings is an int command param — the envelope stores strings.
+    const quantity = Number.parseInt(action.params.quantityServings ?? "", 10);
+    if (Number.isNaN(quantity) || quantity <= 0) {
+      throw new CommitError(`Invalid dish quantity on card ${cardId}`, cardId);
+    }
+    return {
+      entity: "EventDish",
+      command: "create",
+      body: {
+        eventId,
+        dishId: action.entityId,
+        quantityServings: quantity,
+        specialInstructions: action.params.specialInstructions ?? "",
+        course: action.params.course ?? "",
+      },
+    };
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -181,42 +242,23 @@ export async function commitEventBoardDrafts(
         if (!isDraftEnvelope(envelope) || envelope.draftState !== "draft") {
           continue;
         }
-        // Only assign-staff drafts are committable today; later kinds
-        // (add-dish, assign-vehicle, ...) are skipped, not failed.
-        if (envelope.draftAction.kind !== "assign-staff") {
+        // Committable kinds: assign-staff, add-dish. Unknown kinds
+        // (assign-vehicle, ... — no data model yet) are skipped, not failed.
+        const domainCall = buildDomainCommand(
+          envelope.draftAction,
+          eventId,
+          card.id
+        );
+        if (!domainCall) {
           continue;
         }
 
-        // 1. Governed domain write: EventStaff.create (auto-creates the row;
-        //    the engine only auto-instantiates commands named `create` —
-        //    `assign` without an existing row was a silent no-op).
-        //    Engine datetime contract = epoch milliseconds: ISO strings are
-        //    REJECTED with E_TYPE_DATETIME at create validation, so the
-        //    envelope's ISO shift times must be parsed here.
-        const shiftStartMs = Date.parse(envelope.draftAction.params.shiftStart ?? "");
-        const shiftEndMs = Date.parse(envelope.draftAction.params.shiftEnd ?? "");
-        if (Number.isNaN(shiftStartMs) || Number.isNaN(shiftEndMs)) {
-          throw new CommitError(
-            `Invalid shift times on card ${card.id}`,
-            card.id
-          );
-        }
-        const assign = await deps.runCommand(tx, {
-          entity: "EventStaff",
-          command: "create",
-          body: {
-            eventId,
-            staffMemberId: envelope.draftAction.entityId,
-            role: envelope.draftAction.params.role ?? "",
-            notes: "",
-            shiftStart: shiftStartMs,
-            shiftEnd: shiftEndMs,
-          },
-          user,
-        });
+        // 1. Governed domain write (EventStaff.create / EventDish.create —
+        //    the engine only auto-instantiates commands named `create`).
+        const assign = await deps.runCommand(tx, { ...domainCall, user });
         if (!assign.success) {
           throw new CommitError(
-            `EventStaff.create failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
+            `${domainCall.entity}.${domainCall.command} failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
             card.id
           );
         }

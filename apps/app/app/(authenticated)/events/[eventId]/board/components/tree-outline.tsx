@@ -1,7 +1,7 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { TriangleAlert } from "lucide-react";
 import type { BoardStatus, BranchState, BranchStatus } from "../templates";
 
 const BAR_COLOR: Record<BranchState, string> = {
@@ -13,15 +13,25 @@ const BAR_COLOR: Record<BranchState, string> = {
 };
 
 function barPercent(branch: BranchStatus): number {
-  if (branch.state === "excluded") return 0;
-  if (branch.needed <= 0) return branch.have > 0 ? 100 : 0;
+  if (branch.state === "excluded") {
+    return 0;
+  }
+  if (branch.needed <= 0) {
+    return branch.have > 0 ? 100 : 0;
+  }
   return Math.min(100, Math.round((branch.have / branch.needed) * 100));
 }
 
 function countLabel(branch: BranchStatus): string {
-  if (branch.state === "excluded") return "n/a";
-  if (branch.state === "ready") return branch.needed > 0 ? `${branch.have}/${branch.needed} ✓` : "✓";
-  if (branch.needed > 0) return `${branch.have}/${branch.needed}`;
+  if (branch.state === "excluded") {
+    return "n/a";
+  }
+  if (branch.state === "ready") {
+    return branch.needed > 0 ? `${branch.have}/${branch.needed} ✓` : "✓";
+  }
+  if (branch.needed > 0) {
+    return `${branch.have}/${branch.needed}`;
+  }
   return branch.have > 0 ? `${branch.have}` : "—";
 }
 
@@ -30,10 +40,10 @@ export function TreeOutline({ status }: { status: BoardStatus }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <h3 className="font-semibold text-muted-foreground text-xs uppercase tracking-wide">
           Outline
         </h3>
-        <span className="text-xs font-semibold tabular-nums">
+        <span className="font-semibold text-xs tabular-nums">
           {status.readyPercent}% ready
         </span>
       </div>

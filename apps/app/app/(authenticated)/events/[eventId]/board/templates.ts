@@ -1,19 +1,24 @@
-export type BranchKey = "staff" | "menu" | "vehicles" | "equipment" | "battleboard";
+export type BranchKey =
+  | "staff"
+  | "menu"
+  | "vehicles"
+  | "equipment"
+  | "battleboard";
 export type BranchRequirement = "required" | "optional" | "excluded";
 
 export interface BranchDef {
+  color: string; // hex used for branch stroke/leaf outline
   key: BranchKey;
   label: string;
-  color: string; // hex used for branch stroke/leaf outline
-  requirement: BranchRequirement;
   /** Minimum count needed; receives guestCount for ratio rules. */
   minNeeded: (guestCount: number) => number;
+  requirement: BranchRequirement;
 }
 
 export interface EventBoardTemplate {
+  branches: BranchDef[];
   key: string;
   label: string;
-  branches: BranchDef[];
 }
 
 const zero = () => 0;
@@ -31,7 +36,10 @@ const BASE_BRANCHES: Omit<BranchDef, "requirement" | "minNeeded">[] = [
 function makeTemplate(
   key: string,
   label: string,
-  rules: Record<BranchKey, { requirement: BranchRequirement; minNeeded?: (g: number) => number }>
+  rules: Record<
+    BranchKey,
+    { requirement: BranchRequirement; minNeeded?: (g: number) => number }
+  >
 ): EventBoardTemplate {
   return {
     key,
@@ -39,7 +47,9 @@ function makeTemplate(
     branches: BASE_BRANCHES.map((b) => ({
       ...b,
       requirement: rules[b.key].requirement,
-      minNeeded: rules[b.key].minNeeded ?? (rules[b.key].requirement === "required" ? one : zero),
+      minNeeded:
+        rules[b.key].minNeeded ??
+        (rules[b.key].requirement === "required" ? one : zero),
     })),
   };
 }
@@ -72,15 +82,20 @@ export function resolveTemplate(eventType: string): EventBoardTemplate {
   return TEMPLATES[eventType] ?? TEMPLATES.general;
 }
 
-export type BranchState = "ready" | "partial" | "missing" | "optional" | "excluded";
+export type BranchState =
+  | "ready"
+  | "partial"
+  | "missing"
+  | "optional"
+  | "excluded";
 
 export interface BranchStatus {
+  color: string;
+  have: number;
   key: BranchKey;
   label: string;
-  color: string;
-  requirement: BranchRequirement;
   needed: number;
-  have: number;
+  requirement: BranchRequirement;
   state: BranchState;
 }
 
@@ -94,18 +109,36 @@ export function computeBranchStatus(
   input: { guestCount: number; counts: Record<BranchKey, number> }
 ): BoardStatus {
   const branches = template.branches.map((b): BranchStatus => {
-    const needed = b.requirement === "excluded" ? 0 : b.minNeeded(input.guestCount);
+    const needed =
+      b.requirement === "excluded" ? 0 : b.minNeeded(input.guestCount);
     const have = input.counts[b.key] ?? 0;
     let state: BranchState;
-    if (b.requirement === "excluded") state = "excluded";
-    else if (b.requirement === "optional" && needed === 0) state = have > 0 ? "ready" : "optional";
-    else if (have >= needed) state = "ready";
-    else if (have > 0) state = "partial";
-    else state = "missing";
-    return { key: b.key, label: b.label, color: b.color, requirement: b.requirement, needed, have, state };
+    if (b.requirement === "excluded") {
+      state = "excluded";
+    } else if (b.requirement === "optional" && needed === 0) {
+      state = have > 0 ? "ready" : "optional";
+    } else if (have >= needed) {
+      state = "ready";
+    } else if (have > 0) {
+      state = "partial";
+    } else {
+      state = "missing";
+    }
+    return {
+      key: b.key,
+      label: b.label,
+      color: b.color,
+      requirement: b.requirement,
+      needed,
+      have,
+      state,
+    };
   });
   const required = branches.filter((b) => b.requirement === "required");
   const satisfied = required.filter((b) => b.state === "ready").length;
-  const readyPercent = required.length === 0 ? 100 : Math.round((satisfied / required.length) * 100);
+  const readyPercent =
+    required.length === 0
+      ? 100
+      : Math.round((satisfied / required.length) * 100);
   return { branches, readyPercent };
 }

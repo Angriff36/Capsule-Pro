@@ -6,22 +6,22 @@ import Link from "next/link";
 import { initials } from "./palette";
 
 export interface StaffTokenProps {
-  kind: "draft" | "committed";
-  name: string;
-  role: string;
   avatarUrl: string | null;
-  /** Fixed-2 string (e.g. "24.50") when known. */
-  hourlyRate?: string | null;
-  /** ISO strings. */
-  shiftStart?: string;
-  shiftEnd?: string;
   /** Label of the conflicting commitment, when the impact check flagged one. */
   conflictWith?: string;
   expanded: boolean;
-  onToggle: () => void;
+  /** Fixed-2 string (e.g. "24.50") when known. */
+  hourlyRate?: string | null;
+  kind: "draft" | "committed";
+  name: string;
   /** Draft-only: remove the underlying draft card. */
   onRemove?: () => void;
+  onToggle: () => void;
   removing?: boolean;
+  role: string;
+  shiftEnd?: string;
+  /** ISO strings. */
+  shiftStart?: string;
   staffHref?: string;
 }
 
@@ -54,7 +54,7 @@ export function StaffToken(props: StaffTokenProps) {
         className={cn(
           "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105",
           kind === "draft" &&
-            "outline-dashed outline-2 outline-offset-1 outline-amber-500"
+            "outline-dashed outline-2 outline-amber-500 outline-offset-1"
         )}
         onClick={onToggle}
         type="button"
@@ -67,20 +67,20 @@ export function StaffToken(props: StaffTokenProps) {
             src={avatarUrl}
           />
         ) : (
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/15 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/15 font-semibold text-[11px] text-indigo-600 dark:text-indigo-400">
             {initials(name)}
           </span>
         )}
         {kind === "committed" && (
           <span
             aria-hidden
-            className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500"
+            className="absolute -right-0.5 -bottom-0.5 h-2.5 w-2.5 rounded-full border-2 border-background bg-emerald-500"
           />
         )}
         {conflictWith && (
           <span
             aria-hidden
-            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive"
+            className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive"
           >
             <TriangleAlert className="h-2.5 w-2.5 text-destructive-foreground" />
           </span>
@@ -93,9 +93,9 @@ export function StaffToken(props: StaffTokenProps) {
 
 function ExpandedCard(props: StaffTokenProps) {
   return (
-    <div className="absolute left-1/2 top-full z-20 mt-2 w-[220px] -translate-x-1/2 rounded-lg border border-border bg-popover p-3 text-left shadow-lg">
-      <p className="truncate text-sm font-semibold">{props.name}</p>
-      <p className="truncate text-xs text-muted-foreground">
+    <div className="absolute top-full left-1/2 z-20 mt-2 w-[220px] -translate-x-1/2 rounded-lg border border-border bg-popover p-3 text-left shadow-lg">
+      <p className="truncate font-semibold text-sm">{props.name}</p>
+      <p className="truncate text-muted-foreground text-xs">
         {props.role || "—"}
       </p>
       {props.shiftStart && props.shiftEnd && (
@@ -104,10 +104,10 @@ function ExpandedCard(props: StaffTokenProps) {
         </p>
       )}
       {props.hourlyRate && (
-        <p className="text-xs text-muted-foreground">${props.hourlyRate}/hr</p>
+        <p className="text-muted-foreground text-xs">${props.hourlyRate}/hr</p>
       )}
       {props.conflictWith && (
-        <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-destructive">
+        <p className="mt-1.5 flex items-center gap-1 font-medium text-destructive text-xs">
           <TriangleAlert className="h-3 w-3 shrink-0" />
           conflicts with {props.conflictWith}
         </p>
@@ -115,7 +115,7 @@ function ExpandedCard(props: StaffTokenProps) {
       <div className="mt-2 flex items-center justify-between gap-2">
         {props.kind === "draft" && props.onRemove ? (
           <button
-            className="rounded-md border border-destructive/40 px-2 py-1 text-xs font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+            className="rounded-md border border-destructive/40 px-2 py-1 font-medium text-destructive text-xs transition-colors hover:bg-destructive/10 disabled:opacity-50"
             disabled={props.removing}
             onClick={props.onRemove}
             type="button"
@@ -127,7 +127,7 @@ function ExpandedCard(props: StaffTokenProps) {
         )}
         {props.staffHref && (
           <Link
-            className="text-xs font-medium text-primary hover:underline"
+            className="font-medium text-primary text-xs hover:underline"
             href={props.staffHref}
           >
             Profile →

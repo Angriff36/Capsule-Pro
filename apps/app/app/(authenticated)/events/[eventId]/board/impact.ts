@@ -1,22 +1,22 @@
 export interface StaffDraftInput {
   cardId: string;
-  staffMemberId: string;
-  shiftStart: string; // ISO
   shiftEnd: string; // ISO
+  shiftStart: string; // ISO
+  staffMemberId: string;
 }
 
 export interface BusyInterval {
-  start: string;
   end: string;
   label: string;
+  start: string;
 }
 
 export interface StaffImpactInput {
+  /** staffMemberId -> existing commitments */
+  busyIntervals: Record<string, BusyInterval[]>;
   drafts: StaffDraftInput[];
   /** staffMemberId -> hourly rate as fixed-2 string (Decimal.toFixed(2)) */
   rates: Record<string, string>;
-  /** staffMemberId -> existing commitments */
-  busyIntervals: Record<string, BusyInterval[]>;
 }
 
 export interface StaffConflict {
@@ -26,10 +26,10 @@ export interface StaffConflict {
 }
 
 export interface StaffImpact {
-  laborCost: string; // fixed-2
-  totalHours: number;
-  missingRateStaffIds: string[];
   conflicts: StaffConflict[];
+  laborCost: string; // fixed-2
+  missingRateStaffIds: string[];
+  totalHours: number;
 }
 
 function hoursBetween(startIso: string, endIso: string): number {
@@ -38,7 +38,9 @@ function hoursBetween(startIso: string, endIso: string): number {
 }
 
 function overlaps(aStart: string, aEnd: string, b: BusyInterval): boolean {
-  return new Date(aStart) < new Date(b.end) && new Date(b.start) < new Date(aEnd);
+  return (
+    new Date(aStart) < new Date(b.end) && new Date(b.start) < new Date(aEnd)
+  );
 }
 
 export function computeStaffImpact(input: StaffImpactInput): StaffImpact {
@@ -58,7 +60,11 @@ export function computeStaffImpact(input: StaffImpactInput): StaffImpact {
     }
     for (const busy of input.busyIntervals[draft.staffMemberId] ?? []) {
       if (overlaps(draft.shiftStart, draft.shiftEnd, busy)) {
-        conflicts.push({ cardId: draft.cardId, staffMemberId: draft.staffMemberId, with: busy.label });
+        conflicts.push({
+          cardId: draft.cardId,
+          staffMemberId: draft.staffMemberId,
+          with: busy.label,
+        });
         break; // one conflict per draft is enough to surface
       }
     }

@@ -1259,3 +1259,52 @@ Search: EventStaff create assign silent no-op, shouldAutoCreateInstance, event_s
 Also: `.next-dev/dev/types` typegen corruption reappeared after dev-server runs (known gotcha — `rm -rf apps/api/.next-dev/dev/types`). Pre-existing `manifest:schema:check` staleness (~5k lines, from the source restructure) still open — fix is `pnpm manifest:schema:full` + commit.
 
 Search: event tree command board v1, event board tab, draft commit pipeline, NEXT_PUBLIC_API_URL vercel split brain, prod API divine-math, prisma-store-registry module not found junction, api dev 500 governed commands
+
+---
+
+## 33. Runtime store-metadata regression: IR-projection metadata adopted prematurely (FIXED 2026-06-11)
+
+**Symptom class:** every governed write through GenericPrismaStore (i.e. ~all generic-store entities) threw at store CONSTRUCTION — `GenericPrismaStore: Prisma client has no delegate "event_staffs"` — so commands 500'd even after the §32 bundling fix. This is why event-board drops "didn't persist" beyond the env split-brain.
+
+**Root cause:** commit `a73572259` ("manifest changes") swapped the runtime's metadata authority from the LIVE schema-derived `prisma-model-metadata.generated.ts` to the Phase-4 IR-projection `manifest-prisma-store-metadata.generated.ts` (factory import, registry `createGenericPrismaStore`, event-prisma-store). The projection metadata describes the IR-PROJECTED schema world (snake_plural accessors like `event_staffs`, column-named fields like `tenant_id`), which the live PrismaClient does not expose: audit found **173/191 entities with a delegate name missing from the live client** (only 15 matched — exactly the `ENTITY_TO_PRISMA_MODEL` bridge entries threaded through `accessorNames`). Field names were equally wrong for camelCase-field models (Prisma create args need FIELD names like `boardId`, not column names like `board_id`). Nothing caught it because store construction is mocked in unit tests and §32's live verification only reached the 401 auth gate, never an authenticated write.
+
+**Fix (producer-level, constitution §10):**
+- `build-prisma-store-options.mjs`: `metadataImportPath` → `./prisma-model-metadata.generated` (live schema metadata) so the generated registry constructs GenericPrismaStore with metadata matching the real client.
+- `manifest-runtime-factory.ts` + `prisma-stores/event-prisma-store.ts`: import `PRISMA_MODEL_METADATA` from `./generated/prisma-model-metadata.generated` (reverting a73572259's swap).
+- Regenerated via `pnpm manifest:generate-metadata`. The IR-projection metadata file is still generated (it correctly describes the future Phase-2b projected schema) but is NOT the runtime authority until the live schema is IR-generated.
+
+**Rule for future agents:** the runtime's GenericPrismaStore metadata MUST be derived from the live `schema.prisma` (`generate-prisma-model-metadata.mjs`) as long as the live schema is hand-authored. Do not point the runtime at the prisma-store projection output before Phase 2b lands (generated == live).
+
+**Also fixed in the same increment:** pre-existing strict parent-context gate failure — `EventStaff.create`'s `role` param (added in §31) needed a FALSE_POSITIVE override (per-assignment shift role ≠ StaffMember.role job title) in `manifest/governance/parent-context-overrides.json`. And `apps/app/.env.local` repointed: DATABASE_URL → ep-square-dust, NEXT_PUBLIC_API_URL → http://localhost:2223 (closes the §32 split-brain for apps/app local dev).
+
+Search: GenericPrismaStore no delegate, event_staffs accessor missing, manifest-prisma-store-metadata wrong accessors, prisma-model-metadata live authority, a73572259 regression, store metadata 173 entities, governed writes throw at construction
+
+---
+
+## 34. Event board v1.1: EventDish IR↔schema reconciliation + menu/battle-board/vehicles wiring (2026-06-11)
+
+**EventDish source reconciled to the live table (§14 class):** `manifest/source/events/event-dish-rules.manifest` props renamed `quantity→quantityServings`, `courseLabel→course`, `notes→specialInstructions`, and `sortOrder` REMOVED (live `event_dishes` has no sort_order column — removed rather than invented). Every prior `EventDish.create` call was silently dropping quantity/course/notes (irName mismatch against the live store metadata); the documents/parse route was already double-passing live-named extras as a workaround (now cleaned). Callers updated: `events/actions/event-dishes.ts` (×2) + `events/documents/parse/route.ts`. Regen chain run: `manifest:compile` + `manifest:generate` + `manifest:client` + `manifest:routes:ir` + `manifest:generate-metadata`.
+
+**Event board v1.1 (UI + pipeline):**
+- Menu branch is now a real drag target: dish palette tab (`getDishPalette`), `add-dish` draft envelopes, DishDialog (servings default = guest count), commit orchestrator `buildDomainCommand` maps `add-dish → EventDish.create` (string envelope params → int). Unknown kinds still skipped, not failed.
+- Battle-board leaf links to the REAL editor `/events/battle-boards/[boardId]` (the `/events/[eventId]/battle-board` route never existed); `getEventBoardData` returns `battleBoards[]`; zero-board state links to `/events/battle-boards/new?eventId=…` (new page now prefills from the query param).
+- Vehicles leaf shows the real `DeliveryRoute` count for the event (read-path) + a `/logistics/routes` link. Equipment leaf states plainly there is no event↔equipment data model yet (do NOT invent one — constitution).
+- DnD: PointerSensor(distance 4) + DragOverlay ghost + valid-target leaf pulse; layout widened (15rem/1fr/17.5rem grid), hub/excluded chips inset from the canvas border, AI-assistant panel styled as a real coming-soon card.
+
+**Pre-existing test debt fixed:** `manifest-all-phases-compilation.test.ts` (147 failures) still used flat `manifest/source/*.manifest` paths from before the 2026-06-10 domain-subdir restructure — now resolves via a recursive `MANIFEST_PATH_INDEX`.
+
+Search: EventDish quantityServings course specialInstructions rename, sortOrder removed, event board menu drag dish, add-dish draft commit, battle board leaf real route, delivery route count vehicles leaf, manifest compilation test subdirs
+
+---
+
+## 35. CommandBoardCard.create — requiresTenantConnect vs composite-FK relations (FIXED 2026-06-11)
+
+**Symptom:** every `CommandBoardCard.create` (event-board draft cards) 500'd with `PrismaClientValidationError: Argument 'board' is missing` — confirmed live in the browser (drop → dialog → "Adding…" → silent failure; zero cards on the board despite the server action returning success, because the apps/api 500 surfaced as a failed governed command).
+
+**Root cause:** the schema-metadata generator (`generate-prisma-model-metadata.mjs`) set `requiresTenantConnect: true` for ANY model with a `tenant Account @relation` (regex-only). `GenericPrismaStore` then writes `tenant: { connect: { id } }` (Prisma "checked" create input). For `CommandBoardCard` that breaks: `tenantId` is ALSO a foreign-key field of the `board` (`@relation(fields: [tenantId, boardId])`) and `group` (`[tenantId, groupId]`) composite relations. Once the tenant write is a relation-connect, Prisma can no longer accept scalar `boardId`/`groupId` to satisfy those composite FKs — it demands `board: { connect }` too. PrepList (the entity `requiresTenantConnect` was introduced for) has tenantId in NO other relation, so its connect is fine. This is why the §32 prod-DB (ep-divine-math, 10 migrations behind) test "created 2 draft cards" but square-dust (current schema) could not.
+
+**Fix:** `requiresTenantConnect` is now `hasTenantRelation && !otherRelationUsesTenantId`, where `otherRelationUsesTenantId` is true when any `@relation(fields:[…])` besides the tenant relation includes `tenantId` in a composite (length > 1) FK list. Such models write FLAT scalar keys (the repo's flat-key convention — one scalar `tenantId` satisfies every composite FK at once), which is the correct "unchecked" Prisma create. Verified: `CommandBoardCard`/`CommandBoardGroup` → false; `CommandBoard`/`PrepList` → true. Regenerated via `pnpm manifest:generate-metadata`.
+
+**Live E2E (square-dust, local API): VERIFIED FULL ROUNDTRIP** — drag staff → DragOverlay ghost → drop highlights the staff leaf → shift dialog → draft card persists (`CommandBoardCard.create` 200, envelope in metadata) → Review & Commit → `POST /api/command-board/[id]/commit` 200 → 2 real `tenant_events.event_staff` rows (status "assigned") + both cards flipped to `draftState:"committed"` with `committedRecordId` = the EventStaff ids → UI shows Staff 2/1 ✓, 0 drafts. The §32 split-brain is fully closed (root `.env.local` `NEXT_PUBLIC_API_URL` was ALSO still pointing at the prod Vercel API — that's the file the app actually loads; both root and apps/app now → http://localhost:2223).
+
+Search: CommandBoardCard requiresTenantConnect, Argument board is missing, composite FK tenantId relation, GenericPrismaStore checked unchecked create, flat keys tenant connect, event board commit verified, NEXT_PUBLIC_API_URL root env split brain
