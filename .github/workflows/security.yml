@@ -44,6 +44,13 @@ jobs:
           cache: "pnpm"
 
       - name: Install dependencies
+        # --no-frozen-lockfile is intentional: the lockfile still contains a
+        # file:../Manifest specifier left over from a broken local-dev override
+        # that was since removed from pnpm-workspace.yaml and package.json.
+        # pnpm will re-resolve @angriff36/manifest@2.4.1 from GitHub Packages
+        # using the NPM_TOKEN and update the lockfile in-place.
+        # Once a developer regenerates pnpm-lock.yaml locally and commits it,
+        # this can be reverted back to --frozen-lockfile.
         run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --no-frozen-lockfile
         env:
           NPM_TOKEN: ${{ github.token }}
