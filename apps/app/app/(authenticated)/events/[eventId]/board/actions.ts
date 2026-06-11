@@ -404,7 +404,7 @@ export async function getDraftImpact(
   const otherEvents =
     otherEventIds.length > 0
       ? await database.event.findMany({
-          where: { id: { in: otherEventIds } },
+          where: { tenantId, id: { in: otherEventIds } },
           select: { id: true, title: true },
         })
       : [];
