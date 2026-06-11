@@ -1207,3 +1207,15 @@ New `manifest:generate-metadata` chain: `generate-prisma-model-metadata.mjs` →
 The `EventStaff` model → `event_staff` table (schema.prisma:6503) has camelCase physical columns with NO `@map` (`eventId`, `tenantId`, `staffMemberId`, `deletedAt`). Unquoted raw SQL (`WHERE tenantId = $1`) FAILS at runtime in Postgres (folds to `tenantid`). All 13 raw-SQL references to `tenant_events.event_staff` across apps/api + apps/app now quote these columns. Not caught by typecheck/unit tests (mocked DB) — runtime-only correctness.
 
 Search: event_staff camelCase columns, quoted identifiers raw SQL, tenant_events.event_staff, column does not exist postgres lowercase
+
+---
+
+## 29. EventStaff shiftStart/shiftEnd live-schema drift (found 2026-06-11, plan-review)
+
+IR declares `EventStaff.shiftStart`/`shiftEnd` as `datetime` (`manifest/source/events/event-staff-rules.manifest`), but the LIVE schema has `shiftStart Int? @default(0)` / `shiftEnd Int?` (schema.prisma:6510; `0_init` migration created INTEGER columns). The §12e source fix changed `number→int` at the time; a later pass retyped the source to `datetime` (v0.12.215 class) without migrating the live columns. No production path has ever written a non-zero value — every `EventStaff.assign` caller passes `shiftStart: 0` (`setup-event-completely.ts:278`, `battle-board/actions/tasks.ts:478`). Writing a real ISO datetime through the generic store would fail Prisma validation against `Int?`.
+
+**Resolution planned:** `docs/plans/2026-06-11-event-tree-board-v1.md` Task 4 — migrate the columns to `Timestamptz(6)` via `pnpm db:dev --create-only --name event_staff_shift_times_to_timestamptz` (null the legacy zeros) and align both legacy callers to ISO strings. Until that lands, do NOT pass real shift times to `EventStaff.assign`.
+
+Also confirmed in the same review: `CommandBoardCard` has TWO block-severity enum constraints (`validStatus` AND `validCardType in ["task","note","reference","checklist","entity"]`) — any new card flow must use enum values, custom kinds belong in `metadata` (a Prisma `Json` column that reads back as string OR object — normalize both). `runManifestCommand` (apps/app/lib/manifest-command.ts) returns `{ ok, message, result }`, created id at `result.result.id`.
+
+Search: EventStaff shiftStart Int datetime drift, event_staff shift columns integer, validCardType enum, metadata Json string object, event tree board plan
