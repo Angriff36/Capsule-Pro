@@ -116,8 +116,12 @@ Report artifacts (gitignored): `manifest/reports/schema-naming/schema-naming.{js
   `pnpm --filter @repo/database exec prisma migrate dev …` or `npx prisma migrate dev`)
   **without** going through **`pnpm db:dev`** is **unsupported** — it skips the
   repo guard and may run migrate dev without the intended checks. Use
-  **`pnpm db:dev`** (with extra args after `--`, e.g. `pnpm db:dev -- --create-only --name foo`)
-  as the only migrate-dev entrypoint.
+  **`pnpm db:dev`** (pass flags directly WITHOUT a literal `--`, e.g.
+  `pnpm db:dev --create-only --name foo`) as the only migrate-dev entrypoint.
+  ⚠ Do NOT use `pnpm db:dev -- --create-only …`: with Prisma 7 / pnpm 10 the literal
+  `--` is forwarded to prisma, which ignores the flags and prompts interactively for a
+  migration name — in non-TTY contexts this leaves a zombie `migrate dev` that can apply
+  pending migrations unattended (observed 2026-06-11; see manifest/notes.md §29).
 
 ### Neon: create `capsule_shadow` and write `SHADOW_DATABASE_URL` (local only)
 
