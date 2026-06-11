@@ -46,7 +46,32 @@ function makeCoreDeps(prismaOverride: PrismaTransactionClient) {
 }
 
 const deps: CommitDeps = {
-  transact: (fn) => database.$transaction(fn, { timeout: 30_000 }),
+  transact: (fn) =>
+    database.$transaction(fn, { timeout: 30_000, maxWait: 15_000 }),
+
+  /**
+   * Row-lock the board for the transaction's duration (FOR UPDATE) and return
+   * its eventId for board↔event validation. Physical table is
+   * tenant_events.command_boards (model CommandBoard @@map/@@schema in
+   * packages/database/prisma/schema.prisma); tenant_id / event_id / deleted_at
+   * are snake_case via @map, id is unmapped.
+   */
+  lockBoard: async (tx, boardId, tenantId) => {
+    const rows = await (tx as Prisma.TransactionClient).$queryRaw<
+      Array<{ event_id: string | null }>
+    >`
+      SELECT "event_id"
+      FROM "tenant_events"."command_boards"
+      WHERE "tenant_id" = ${tenantId}::uuid
+        AND "id" = ${boardId}::uuid
+        AND "deleted_at" IS NULL
+      FOR UPDATE
+    `;
+    if (rows.length === 0) {
+      return null;
+    }
+    return { eventId: rows[0].event_id };
+  },
 
   loadDraftCards: async (tx, boardId, tenantId) => {
     const rows = await (tx as Prisma.TransactionClient).commandBoardCard.findMany({
@@ -112,15 +137,29 @@ export async function POST(
       return manifestErrorResponse("eventId is required", 400);
     }
 
-    const result = await commitEventBoardDrafts(deps, {
-      boardId,
-      eventId,
-      user: {
-        id: currentUser.id,
-        tenantId: currentUser.tenantId,
-        role: currentUser.role,
-      },
-    });
+    // Error classification: expected commit failures (governed-command
+    // rejections, board validation) come back as { success: false } → 422
+    // with a client-safe message. Unexpected throws (tx timeout, connection
+    // failure, programming bug) propagate out of the orchestrator → capture
+    // to Sentry and mask behind a generic 500.
+    let result;
+    try {
+      result = await commitEventBoardDrafts(deps, {
+        boardId,
+        eventId,
+        user: {
+          id: currentUser.id,
+          tenantId: currentUser.tenantId,
+          role: currentUser.role,
+        },
+      });
+    } catch (error) {
+      captureException(error);
+      return Response.json(
+        { success: false, error: "Internal error during commit" },
+        { status: 500 }
+      );
+    }
 
     return Response.json(result, { status: result.success ? 200 : 422 });
   } catch (error) {

@@ -43,6 +43,18 @@ export interface CommandCall {
 }
 
 export interface CommitDeps {
+  /**
+   * Row-lock the board (SELECT ... FOR UPDATE) and return its eventId.
+   * Returns null when the board does not exist (or is soft-deleted).
+   * The lock serializes concurrent commits of the same board: a second
+   * committer blocks until the first transaction ends, then sees the flipped
+   * cards and no-ops.
+   */
+  lockBoard: (
+    tx: unknown,
+    boardId: string,
+    tenantId: string
+  ) => Promise<{ eventId: string | null } | null>;
   loadDraftCards: (
     tx: unknown,
     boardId: string,
@@ -89,6 +101,8 @@ function isDraftEnvelope(value: unknown): value is DraftEnvelope {
     action !== null &&
     typeof action.kind === "string" &&
     typeof action.entityId === "string" &&
+    typeof action.params === "object" &&
+    action.params !== null &&
     (v.draftState === "draft" ||
       v.draftState === "committed" ||
       v.draftState === "failed")
@@ -123,11 +137,17 @@ function normalizeMetadata(metadata: unknown): Record<string, unknown> {
 // Orchestrator
 // ---------------------------------------------------------------------------
 
-/** Internal control-flow error carrying the failing card for the result DTO. */
+/**
+ * Internal control-flow error for EXPECTED commit failures (governed-command
+ * rejections, board validation) whose messages are safe to surface to the
+ * client as a 422. Unexpected errors (tx timeout, connection failure,
+ * TypeError, ...) are NOT wrapped — they propagate out of
+ * commitEventBoardDrafts for the route to capture and mask as a generic 500.
+ */
 class CommitError extends Error {
-  readonly failedCardId: string;
+  readonly failedCardId?: string;
 
-  constructor(message: string, failedCardId: string) {
+  constructor(message: string, failedCardId?: string) {
     super(message);
     this.name = "CommitError";
     this.failedCardId = failedCardId;
@@ -142,6 +162,16 @@ export async function commitEventBoardDrafts(
 
   try {
     const committedCount = await deps.transact(async (tx) => {
+      // FIRST operation: row-lock the board (FOR UPDATE). Serializes
+      // concurrent commits of the same board and validates board↔event.
+      const board = await deps.lockBoard(tx, boardId, user.tenantId);
+      if (!board) {
+        throw new CommitError("Board not found");
+      }
+      if (board.eventId && board.eventId !== eventId) {
+        throw new CommitError("Board does not belong to this event");
+      }
+
       const cards = await deps.loadDraftCards(tx, boardId, user.tenantId);
       let committed = 0;
 
@@ -224,12 +254,11 @@ export async function commitEventBoardDrafts(
       return {
         success: false,
         error: error.message,
-        failedCardId: error.failedCardId,
+        ...(error.failedCardId ? { failedCardId: error.failedCardId } : {}),
       };
     }
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
+    // Unexpected failure (tx timeout, connection error, programming bug):
+    // propagate to the caller — the route captures it and masks the message.
+    throw error;
   }
 }
