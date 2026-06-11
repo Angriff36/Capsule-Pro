@@ -7,7 +7,8 @@ import { GripVertical, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { PaletteStaff } from "../actions";
 
-function initials(name: string): string {
+/** Shared initials fallback for avatar circles (also used by staff tokens). */
+export function initials(name: string): string {
   return name
     .split(/\s+/)
     .filter(Boolean)

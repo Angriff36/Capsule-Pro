@@ -1,10 +1,9 @@
 "use client";
 
-import { DndContext, useDroppable, type DragEndEvent } from "@dnd-kit/core";
+import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
-import { X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { EventBoardData, PaletteStaff } from "../actions";
 import { getOrCreateEventBoard } from "../actions";
@@ -17,6 +16,7 @@ import {
 import { computeBranchStatus, resolveTemplate } from "../templates";
 import { Palette } from "./palette";
 import { ShiftDialog, type ShiftDialogSubmit } from "./shift-dialog";
+import { TreeCanvas } from "./tree-canvas";
 import { TreeOutline } from "./tree-outline";
 
 interface BoardClientProps {
@@ -77,6 +77,10 @@ export function BoardClient({
 
   const createDraft = useCreateStaffDraft(eventId);
   const removeDraft = useRemoveDraftCard(eventId);
+  const paletteById = useMemo(
+    () => new Map(palette.map((p) => [p.id, p])),
+    [palette]
+  );
   const [pendingStaff, setPendingStaff] = useState<PaletteStaff | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
 
@@ -152,19 +156,24 @@ export function BoardClient({
             <Palette palette={palette} />
           </div>
 
-          {/* CENTER — canvas placeholder (Task 10) */}
+          {/* CENTER — tree canvas */}
           <div
-            className="flex min-h-0 flex-col items-center justify-center gap-4 rounded-lg border border-border bg-background p-4"
+            className="relative min-h-0 rounded-lg border border-border bg-background"
             data-board-canvas
             id="event-board-canvas"
           >
-            <p className="text-sm text-muted-foreground">
-              Tree canvas — coming in Task 10
-            </p>
-            <StaffDropZone
-              drafts={staffDrafts}
-              onRemove={(cardId) => removeDraft.mutate(cardId)}
+            <TreeCanvas
+              battleBoardHref={`/events/${eventId}/battle-board`}
+              committedStaff={board.committedStaff}
+              conflicts={
+                drafts.length > 0 ? (impact.data?.conflicts ?? []) : []
+              }
+              draftCards={board.draftCards}
+              event={board.event}
+              onRemoveDraft={(cardId) => removeDraft.mutate(cardId)}
+              paletteById={paletteById}
               removing={removeDraft.isPending}
+              status={status}
             />
           </div>
 
@@ -203,51 +212,6 @@ export function BoardClient({
         pending={createDraft.isPending}
         staff={pendingStaff}
       />
-    </div>
-  );
-}
-
-/** Temporary droppable so the drag flow is testable before Task 10's canvas. */
-function StaffDropZone({
-  drafts,
-  onRemove,
-  removing,
-}: {
-  drafts: EventBoardData["draftCards"];
-  onRemove: (cardId: string) => void;
-  removing: boolean;
-}) {
-  const { isOver, setNodeRef } = useDroppable({ id: "branch-staff" });
-  return (
-    <div
-      className={cn(
-        "w-full max-w-sm rounded-lg border-2 border-dashed p-4 text-center transition-colors",
-        isOver ? "border-indigo-500 bg-indigo-500/10" : "border-border"
-      )}
-      ref={setNodeRef}
-    >
-      <p className="text-sm font-medium">Staff branch — drop staff here</p>
-      {drafts.length > 0 && (
-        <ul className="mt-3 space-y-1.5 text-left">
-          {drafts.map((card) => (
-            <li
-              className="flex items-center justify-between gap-2 rounded-md border border-border/60 bg-muted/40 px-2 py-1 text-sm"
-              key={card.cardId}
-            >
-              <span className="truncate">{card.title}</span>
-              <button
-                aria-label={`Remove draft ${card.title}`}
-                className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive disabled:opacity-50"
-                disabled={removing}
-                onClick={() => onRemove(card.cardId)}
-                type="button"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
