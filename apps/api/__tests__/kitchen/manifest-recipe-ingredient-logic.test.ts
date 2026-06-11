@@ -62,7 +62,7 @@ async function getRuntime(manifestFile: string) {
 
 describe("Manifest Runtime - RecipeVersion.totalTimeMinutes computed", () => {
   it("sums prep + cook + rest time (regression: was hardcoded 0)", async () => {
-    const runtime = await getRuntime("recipe-rules.manifest");
+    const runtime = await getRuntime("kitchen/recipe-rules.manifest");
 
     // Keep total <= 480 and difficulty < 4 to avoid the warn constraints, which
     // the current runtime treats as blocking on createInstance (see
@@ -92,7 +92,7 @@ describe("Manifest Runtime - RecipeVersion.totalTimeMinutes computed", () => {
   });
 
   it("yields 0 only when all component times are 0", async () => {
-    const runtime = await getRuntime("recipe-rules.manifest");
+    const runtime = await getRuntime("kitchen/recipe-rules.manifest");
 
     await runtime.createInstance("RecipeVersion", {
       id: "rv-2",
@@ -117,7 +117,7 @@ describe("Manifest Runtime - RecipeVersion.totalTimeMinutes computed", () => {
 
 describe("Manifest Runtime - Ingredient.recordLot persists expiry", () => {
   it("assigns expiresAt to currentLotExpiresAt (regression: was dropped)", async () => {
-    const runtime = await getRuntime("ingredient-rules.manifest");
+    const runtime = await getRuntime("kitchen/ingredient-rules.manifest");
 
     // shelfLifeDays > 0 avoids warnNoShelfLife; empty allergens avoids
     // warnMajorAllergen — both warn-level constraints block createInstance today.

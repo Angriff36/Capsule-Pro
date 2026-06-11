@@ -22,7 +22,7 @@ const MANIFEST_DIR = join(
 );
 
 async function getRolePolicyRuntime(userRole: string) {
-  const manifestPath = join(MANIFEST_DIR, "role-policy-rules.manifest");
+  const manifestPath = join(MANIFEST_DIR, "platform/role-policy-rules.manifest");
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
 
@@ -94,7 +94,7 @@ const ALLOWED_ROLES = ["admin", "owner"];
 
 describe("RolePolicy adminOnly Policy Enforcement", () => {
   it("compiles role-policy-rules.manifest successfully", async () => {
-    const manifestPath = join(MANIFEST_DIR, "role-policy-rules.manifest");
+    const manifestPath = join(MANIFEST_DIR, "platform/role-policy-rules.manifest");
     const source = readFileSync(manifestPath, "utf-8");
     const { ir } = await compileToIR(source);
 
@@ -106,7 +106,7 @@ describe("RolePolicy adminOnly Policy Enforcement", () => {
   });
 
   it("IR contains adminOnly policy with correct role restriction", async () => {
-    const manifestPath = join(MANIFEST_DIR, "role-policy-rules.manifest");
+    const manifestPath = join(MANIFEST_DIR, "platform/role-policy-rules.manifest");
     const source = readFileSync(manifestPath, "utf-8");
     const { ir } = await compileToIR(source);
 

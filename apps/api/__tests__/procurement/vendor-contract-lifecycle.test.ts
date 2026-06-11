@@ -35,7 +35,7 @@ async function getRuntime() {
   const manifestPath = join(
     process.cwd(),
     "../../manifest/source",
-    "vendor-contract-rules.manifest"
+    "procurement/vendor-contract-rules.manifest"
   );
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);

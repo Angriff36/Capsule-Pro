@@ -164,7 +164,7 @@ describe("Projection Snapshot: Universal Dispatcher", () => {
   it("dispatcher snapshot matches golden file", async () => {
     // The dispatcher is a universal handler — not entity-specific.
     // Snapshot it once from any entity to catch generator-level changes.
-    const ir = await compileManifest(join(MANIFEST_ROOT, "prep-task-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest"));
     const code = generateArtifact(ir, "nextjs.dispatcher", "PrepTask", "claim");
     assertGoldenSnapshot("universal-dispatcher.snapshot.ts", code);
     assertDispatcherStructure(code);
@@ -173,28 +173,28 @@ describe("Projection Snapshot: Universal Dispatcher", () => {
 
 describe("Projection Snapshots: Entity Read Routes", () => {
   it("PrepTask read route matches golden file", async () => {
-    const ir = await compileManifest(join(MANIFEST_ROOT, "prep-task-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest"));
     const code = generateArtifact(ir, "nextjs.route", "PrepTask");
     assertGoldenSnapshot("preptask-route.snapshot.ts", code);
     assertRouteStructure(code, "PrepTask");
   });
 
   it("AdminTask read route matches golden file", async () => {
-    const ir = await compileManifest(join(MANIFEST_ROOT, "admin-task-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "core/admin-task-rules.manifest"));
     const code = generateArtifact(ir, "nextjs.route", "AdminTask");
     assertGoldenSnapshot("admintask-route.snapshot.ts", code);
     assertRouteStructure(code, "AdminTask");
   });
 
   it("CateringOrder read route matches golden file", async () => {
-    const ir = await compileManifest(join(MANIFEST_ROOT, "catering-order-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "events/catering-order-rules.manifest"));
     const code = generateArtifact(ir, "nextjs.route", "CateringOrder");
     assertGoldenSnapshot("cateringorder-route.snapshot.ts", code);
     assertRouteStructure(code, "CateringOrder");
   });
 
   it("BattleBoard read route matches golden file", async () => {
-    const ir = await compileManifest(join(MANIFEST_ROOT, "battle-board-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "events/battle-board-rules.manifest"));
     const code = generateArtifact(ir, "nextjs.route", "BattleBoard");
     assertGoldenSnapshot("battleboard-route.snapshot.ts", code);
     assertRouteStructure(code, "BattleBoard");
@@ -213,15 +213,15 @@ describe("Projection Snapshots: Entity Read Routes", () => {
 
 describe("Projection determinism", () => {
   it("generates identical output on repeated calls", async () => {
-    const ir = await compileManifest(join(MANIFEST_ROOT, "admin-task-rules.manifest"));
+    const ir = await compileManifest(join(MANIFEST_ROOT, "core/admin-task-rules.manifest"));
     const code1 = generateArtifact(ir, "nextjs.route", "AdminTask");
     const code2 = generateArtifact(ir, "nextjs.route", "AdminTask");
     expect(code1).toBe(code2);
   });
 
   it("different entities produce different read routes", async () => {
-    const adminIR = await compileManifest(join(MANIFEST_ROOT, "admin-task-rules.manifest"));
-    const battleIR = await compileManifest(join(MANIFEST_ROOT, "battle-board-rules.manifest"));
+    const adminIR = await compileManifest(join(MANIFEST_ROOT, "core/admin-task-rules.manifest"));
+    const battleIR = await compileManifest(join(MANIFEST_ROOT, "events/battle-board-rules.manifest"));
     const adminRoute = generateArtifact(adminIR, "nextjs.route", "AdminTask");
     const battleRoute = generateArtifact(battleIR, "nextjs.route", "BattleBoard");
     expect(adminRoute).not.toBe(battleRoute);

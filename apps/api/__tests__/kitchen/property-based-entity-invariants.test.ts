@@ -161,7 +161,7 @@ const fcPayrollRunCreate = fc.record({
 
 describe("Property-Based: VendorContract invariants", () => {
   it("create is deterministic — same input always produces same status", async () => {
-    const runtime = await getRuntime("vendor-contract-rules.manifest");
+    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcVendorContractCreate, async (input) => {
         const r1 = await runCommand(runtime, "create", input);
@@ -177,7 +177,7 @@ describe("Property-Based: VendorContract invariants", () => {
   });
 
   it("transition safety — only declared transitions succeed from draft", async () => {
-    const runtime = await getRuntime("vendor-contract-rules.manifest");
+    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
     // Transitions from 'draft': to pending_approval or cancelled only
     const validTargets = ["pending_approval", "cancelled"];
     const invalidTargets = ["active", "terminated", "renewed", "rejected", "pending_activation"];
@@ -205,7 +205,7 @@ describe("Property-Based: VendorContract invariants", () => {
   });
 
   it("computed properties agree with state — isActive iff status=active", async () => {
-    const runtime = await getRuntime("vendor-contract-rules.manifest");
+    const runtime = await getRuntime("procurement/vendor-contract-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcVendorContractCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -226,7 +226,7 @@ describe("Property-Based: VendorContract invariants", () => {
 
 describe("Property-Based: EventGuest invariants", () => {
   it("create defaults to pending RSVP status", async () => {
-    const runtime = await getRuntime("event-guest-rules.manifest");
+    const runtime = await getRuntime("events/event-guest-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -242,7 +242,7 @@ describe("Property-Based: EventGuest invariants", () => {
   });
 
   it("RSVP transition safety — can confirm or decline from pending, not back", async () => {
-    const runtime = await getRuntime("event-guest-rules.manifest");
+    const runtime = await getRuntime("events/event-guest-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -272,7 +272,7 @@ describe("Property-Based: EventGuest invariants", () => {
   });
 
   it("computed dietary flags are consistent with input", async () => {
-    const runtime = await getRuntime("event-guest-rules.manifest");
+    const runtime = await getRuntime("events/event-guest-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcEventGuestCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -289,7 +289,7 @@ describe("Property-Based: EventGuest invariants", () => {
 
 describe("Property-Based: CateringOrder invariants", () => {
   it("create defaults to draft status", async () => {
-    const runtime = await getRuntime("catering-order-rules.manifest");
+    const runtime = await getRuntime("events/catering-order-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -303,7 +303,7 @@ describe("Property-Based: CateringOrder invariants", () => {
   });
 
   it("transition safety — draft can only go to confirmed or cancelled", async () => {
-    const runtime = await getRuntime("catering-order-rules.manifest");
+    const runtime = await getRuntime("events/catering-order-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -322,7 +322,7 @@ describe("Property-Based: CateringOrder invariants", () => {
   });
 
   it("lifecycle chain — draft→confirmed→in_progress→delivered→completed", async () => {
-    const runtime = await getRuntime("catering-order-rules.manifest");
+    const runtime = await getRuntime("events/catering-order-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcCateringOrderCreate, async (input) => {
         let inst = await runCommand(runtime, "create", input);
@@ -355,7 +355,7 @@ describe("Property-Based: CateringOrder invariants", () => {
 
 describe("Property-Based: InventoryItem invariants", () => {
   it("quantityAvailable = quantityOnHand - quantityReserved", async () => {
-    const runtime = await getRuntime("inventory-rules.manifest");
+    const runtime = await getRuntime("inventory/inventory-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcInventoryItemCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -370,7 +370,7 @@ describe("Property-Based: InventoryItem invariants", () => {
   });
 
   it("totalValue = quantityOnHand * unitCost", async () => {
-    const runtime = await getRuntime("inventory-rules.manifest");
+    const runtime = await getRuntime("inventory/inventory-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcInventoryItemCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -385,7 +385,7 @@ describe("Property-Based: InventoryItem invariants", () => {
   });
 
   it("needsReorder is true when quantityAvailable < reorderLevel", async () => {
-    const runtime = await getRuntime("inventory-rules.manifest");
+    const runtime = await getRuntime("inventory/inventory-rules.manifest");
     // Use constrained inputs to ensure we test both sides of the threshold
     const fcLowStock = fc.record({
       itemNumber: fc.string({ minLength: 1, maxLength: 20 }),
@@ -413,7 +413,7 @@ describe("Property-Based: InventoryItem invariants", () => {
   });
 
   it("isBelowPar is true when quantityAvailable < parLevel", async () => {
-    const runtime = await getRuntime("inventory-rules.manifest");
+    const runtime = await getRuntime("inventory/inventory-rules.manifest");
     const fcLowStock = fc.record({
       itemNumber: fc.string({ minLength: 1, maxLength: 20 }),
       name: fc.string({ minLength: 1, maxLength: 100 }),
@@ -443,7 +443,7 @@ describe("Property-Based: InventoryItem invariants", () => {
 
 describe("Property-Based: PayrollRun invariants", () => {
   it("create defaults to pending status", async () => {
-    const runtime = await getRuntime("payroll-rules.manifest");
+    const runtime = await getRuntime("staff/payroll-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -459,7 +459,7 @@ describe("Property-Based: PayrollRun invariants", () => {
   });
 
   it("transition safety — pending can go to processing or rejected", async () => {
-    const runtime = await getRuntime("payroll-rules.manifest");
+    const runtime = await getRuntime("staff/payroll-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);
@@ -479,7 +479,7 @@ describe("Property-Based: PayrollRun invariants", () => {
   });
 
   it("lifecycle chain — pending→processing→approved→paid", async () => {
-    const runtime = await getRuntime("payroll-rules.manifest");
+    const runtime = await getRuntime("staff/payroll-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         let inst = await runCommand(runtime, "create", input);
@@ -504,7 +504,7 @@ describe("Property-Based: PayrollRun invariants", () => {
   });
 
   it("computed status flags are mutually exclusive", async () => {
-    const runtime = await getRuntime("payroll-rules.manifest");
+    const runtime = await getRuntime("staff/payroll-rules.manifest");
     await fc.assert(
       fc.asyncProperty(fcPayrollRunCreate, async (input) => {
         const instance = await runCommand(runtime, "create", input);

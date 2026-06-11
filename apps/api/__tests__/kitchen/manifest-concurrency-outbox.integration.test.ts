@@ -61,7 +61,7 @@ function normalizeIR(ir: IR): IR {
 async function getTestRuntimeWithPrismaStore() {
   const manifestPath = join(
     process.cwd(),
-    "../../manifest/source/prep-task-rules.manifest"
+    "../../manifest/source/kitchen/prep-task-rules.manifest"
   );
   const source = readFileSync(manifestPath, "utf-8");
   const { ir, diagnostics } = await compileToIR(source);
@@ -305,7 +305,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       // Compile manifest for runtime1
       const manifestPath = join(
         process.cwd(),
-        "../../manifest/source/prep-task-rules.manifest"
+        "../../manifest/source/kitchen/prep-task-rules.manifest"
       );
       const source1 = readFileSync(manifestPath, "utf-8");
       const { ir: ir1, diagnostics: diagnostics1 } = await compileToIR(source1);
@@ -512,7 +512,7 @@ describe("Manifest Runtime - Concurrency + Outbox Integration", () => {
       // Compile manifest for otherRuntime
       const otherManifestPath = join(
         process.cwd(),
-        "../../manifest/source/prep-task-rules.manifest"
+        "../../manifest/source/kitchen/prep-task-rules.manifest"
       );
       const otherSource = readFileSync(otherManifestPath, "utf-8");
       const { ir: otherIR, diagnostics: otherDiagnostics } =

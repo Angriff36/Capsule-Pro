@@ -13,11 +13,11 @@ const TEST_TENANT_ID = "tenant-prep-demand";
 async function buildRuntime() {
   const manifestRoot = join(process.cwd(), "../../manifest/source");
   const manifestFiles = [
-    "prep-list-rules.manifest",
-    "inventory-rules.manifest",
-    "inventory-supplier-rules.manifest",
-    "vendor-catalog-rules.manifest",
-    "procurement-requisition-rules.manifest",
+    "kitchen/prep-list-rules.manifest",
+    "inventory/inventory-rules.manifest",
+    "inventory/inventory-supplier-rules.manifest",
+    "procurement/vendor-catalog-rules.manifest",
+    "procurement/procurement-requisition-rules.manifest",
   ];
   const compiled = [];
 
@@ -29,7 +29,9 @@ async function buildRuntime() {
         diagnostics.map((diagnostic) => diagnostic.message).join("; ")
       );
     }
-    compiled.push(enforceCommandOwnership(ir, file.replace(".manifest", "")));
+    // Ownership lookup is keyed by the bare manifest name, not the domain path.
+    const manifestName = file.replace(".manifest", "").split("/").pop();
+    compiled.push(enforceCommandOwnership(ir, manifestName));
   }
 
   const [base] = compiled;

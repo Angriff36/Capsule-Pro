@@ -15,9 +15,9 @@ async function buildRuntime() {
   );
 
   const manifestFiles = [
-    "event-rules.manifest",
-    "prep-list-rules.manifest",
-    "prep-task-rules.manifest",
+    "events/event-rules.manifest",
+    "kitchen/prep-list-rules.manifest",
+    "kitchen/prep-task-rules.manifest",
   ];
 
   const compiled = [];
@@ -29,7 +29,8 @@ async function buildRuntime() {
         diagnostics.map((diagnostic) => diagnostic.message).join("; ")
       );
     }
-    const manifestName = file.replace(".manifest", "");
+    // Ownership lookup is keyed by the bare manifest name, not the domain path.
+    const manifestName = file.replace(".manifest", "").split("/").pop();
     compiled.push(enforceCommandOwnership(ir, manifestName));
   }
 

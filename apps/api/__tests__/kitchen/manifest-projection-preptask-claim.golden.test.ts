@@ -19,7 +19,7 @@ import { enforceCommandOwnership } from "@repo/manifest-runtime/ir-contract";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_ROOT = join(process.cwd(), "../../manifest/source");
-const MANIFEST_PATH = join(MANIFEST_ROOT, "prep-task-rules.manifest");
+const MANIFEST_PATH = join(MANIFEST_ROOT, "kitchen/prep-task-rules.manifest");
 
 const SNAP_DIR = join(process.cwd(), "__tests__/kitchen/__snapshots__");
 const SNAP_FILE = join(SNAP_DIR, "preptask-claim-command.snapshot.ts");

@@ -36,7 +36,7 @@ import {
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
-const MANIFEST_FILE = "employee-availability-rules.manifest";
+const MANIFEST_FILE = "core/employee-availability-rules.manifest";
 const TENANT = "test-tenant-456";
 
 function manifestSource() {

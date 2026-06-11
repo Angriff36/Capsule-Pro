@@ -33,7 +33,7 @@ describe("manifest loader invariants", () => {
   it("changes hash when a manifest file changes", async () => {
     const dir = await createFixtureDir();
     const fixture = await readFile(
-      join(FIXTURE_DIR, "menu-rules.manifest"),
+      join(FIXTURE_DIR, "kitchen/menu-rules.manifest"),
       "utf8"
     );
     const targetFile = join(dir, "menu-rules.manifest");
@@ -54,11 +54,11 @@ describe("manifest loader invariants", () => {
   it("produces deterministic compiled IR for identical inputs", async () => {
     const dir = await createFixtureDir();
     const menu = await readFile(
-      join(FIXTURE_DIR, "menu-rules.manifest"),
+      join(FIXTURE_DIR, "kitchen/menu-rules.manifest"),
       "utf8"
     );
     const station = await readFile(
-      join(FIXTURE_DIR, "station-rules.manifest"),
+      join(FIXTURE_DIR, "kitchen/station-rules.manifest"),
       "utf8"
     );
 

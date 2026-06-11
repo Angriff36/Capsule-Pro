@@ -30,7 +30,7 @@ import {
 import { describe, expect, it } from "vitest";
 import { inMemoryStoreProvider } from "../test-helpers";
 
-const MANIFEST_FILE = "catering-order-rules.manifest";
+const MANIFEST_FILE = "events/catering-order-rules.manifest";
 
 function manifestSource() {
   return readFileSync(
