@@ -445,7 +445,7 @@ export function detectQueryIntent(request: string): string | null {
   return null;
 }
 
-function buildPlanningInstructions(
+export function buildPlanningInstructions(
   catalog: CommandCatalog,
   userRequest: string,
   aliases: ReturnType<typeof resolveAliases>
@@ -460,26 +460,26 @@ function buildPlanningInstructions(
           )
           .join("\n");
 
-  const commandRegistry = JSON.stringify(
-    catalog.commands.map((command) => ({
-      entityCommand: `${command.source.entity}.${command.source.command}`,
-      route: command.path,
-      method: command.method,
-      params: command.params.map((param) => ({
-        name: param.name,
-        type: param.type,
-        required: param.required,
-        location: param.location,
-      })),
-    })),
-    null,
-    2
-  );
+  // Compact one-line-per-command format. The previous pretty-printed JSON
+  // registry was ~130K tokens for ~1000 commands, which alone exceeded the
+  // model's context window (context_length_exceeded on every planning call).
+  const commandRegistry = catalog.commands
+    .map((command) => {
+      const params = command.params
+        .map(
+          (param) =>
+            `${param.name}:${param.type}${param.required ? "*" : ""}`
+        )
+        .join(", ");
+      return `${command.source.entity}.${command.source.command}(${params})`;
+    })
+    .join("\n");
 
   return [
     "Return only JSON matching the provided schema.",
     "Plan executable manifest commands only from canonical route surface.",
     "Canonical command registry is included below. Do not invent commands, args, or aliases outside this registry.",
+    "Registry format: one command per line as Entity.command(param:type, ...) where '*' after a type marks a required param.",
     "Every commandSequence entry must exactly match entityCommand names from the registry.",
     "Every argsKv name must exactly match a param.name for that entityCommand in the registry.",
     "For required params in the registry, include values of the correct type.",
