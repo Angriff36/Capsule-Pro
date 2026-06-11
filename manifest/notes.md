@@ -1221,3 +1221,11 @@ IR declares `EventStaff.shiftStart`/`shiftEnd` as `datetime` (`manifest/source/e
 Also confirmed in the same review: `CommandBoardCard` has TWO block-severity enum constraints (`validStatus` AND `validCardType in ["task","note","reference","checklist","entity"]`) — any new card flow must use enum values, custom kinds belong in `metadata` (a Prisma `Json` column that reads back as string OR object — normalize both). `runManifestCommand` (apps/app/lib/manifest-command.ts) returns `{ ok, message, result }`, created id at `result.result.id`.
 
 Search: EventStaff shiftStart Int datetime drift, event_staff shift columns integer, validCardType enum, metadata Json string object, event tree board plan
+
+---
+
+## 30. Event board atomic commit endpoint (Task 6, 2026-06-11)
+
+New governed shared-tx cascade: `POST /api/command-board/[boardId]/commit` (apps/api/app/api/command-board/[boardId]/commit/route.ts) commits every assign-staff draft card on a board — `EventStaff.assign` + `CommandBoardCard.update` envelope flip per card — inside ONE `database.$transaction` threaded through the Manifest runtime via `prismaOverride` (same `makeCoreDeps(tx)` pattern as ManifestPayrollDataSource). Orchestration is pure/DI in apps/api/lib/event-board/commit-event-board-drafts.ts (re-implements the draft-envelope normalize/parse contract locally — apps/api must not import apps/app). Any command failure throws out of the tx callback → full rollback; route returns 200/422 with `{ success, committedCount | error, failedCardId }`. App-side server action `commitEventBoard(boardId, eventId)` in board/actions.ts posts via `apiPostJsonServer` (cookie-forwarded).
+
+Search: event board commit, prismaOverride shared transaction, commitEventBoardDrafts, command-board commit route, draft envelope flip committed

@@ -2,6 +2,7 @@
 
 import { database } from "@repo/database";
 import { runManifestCommand } from "@/lib/manifest-command";
+import { apiPostJsonServer } from "@/app/lib/api-server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import {
   parseDraftEnvelope,
@@ -425,5 +426,53 @@ export async function getDraftImpact(
 }
 
 // ---------------------------------------------------------------------------
-// 7. commitEventBoard — NOT implemented (Task 6)
+// 7. commitEventBoard
 // ---------------------------------------------------------------------------
+
+/** Mirrors CommitResult from apps/api lib/event-board/commit-event-board-drafts.ts. */
+export type CommitResponse =
+  | { success: true; committedCount: number }
+  | { success: false; error: string; failedCardId?: string };
+
+export async function commitEventBoard(
+  boardId: string,
+  eventId: string
+): Promise<CommitResponse> {
+  // Auth context travels via forwarded session cookies (apiPostJsonServer);
+  // apps/api re-resolves the acting user itself.
+  await requireCurrentUser();
+
+  let response: Response;
+  try {
+    response = await apiPostJsonServer(
+      `/api/command-board/${boardId}/commit`,
+      { eventId }
+    );
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Commit API unreachable",
+    };
+  }
+
+  const payload = (await response.json().catch(() => null)) as
+    | CommitResponse
+    | { error?: string }
+    | null;
+
+  if (payload && "success" in payload && typeof payload.success === "boolean") {
+    return payload as CommitResponse;
+  }
+
+  if (!response.ok) {
+    return {
+      success: false,
+      error:
+        (payload && "error" in payload && typeof payload.error === "string"
+          ? payload.error
+          : undefined) ?? `Commit failed (${response.status})`,
+    };
+  }
+
+  return { success: false, error: "Malformed commit response" };
+}
