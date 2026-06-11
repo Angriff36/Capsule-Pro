@@ -15,6 +15,7 @@
     "@clack/prompts": "^1.4.0",
     "@clerk/testing": "^2.0.33",
     "@playwright/test": "1.60.0",
+    "@previewjs/config-helper-nextjs": "^1.0.29",
     "@repo/typescript-config": "workspace:*",
     "@secretlint/secretlint-rule-database-connection-string": "^13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "^13.0.2",
@@ -50,48 +51,8 @@
   },
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a",
   "pnpm": {
-    "peerDependencyRules": {
-      "allowedVersions": {
-        "@types/react": ">=19",
-        "@types/react-dom": ">=19",
-        "ai": ">=6",
-        "react": ">=19",
-        "react-dom": ">=19",
-        "next": ">=15",
-        "zod": ">=4"
-      }
-    },
     "overrides": {
-      "parse5": "^7.2.1",
-      "@babel/core": "7.29.7",
-      "next": "16.2.6",
-      "react": "19.2.6",
-      "react-dom": "19.2.6",
-      "@types/react": "19.2.15",
-      "@types/react-dom": "19.2.3",
-      "mobile>react": "19.1.0",
-      "mobile>@types/react": "~19.1.10",
-      "prisma": "7.8.0",
-      "@prisma/client": "7.8.0",
-      "@prisma/adapter-neon": "7.8.0",
-      "baseline-browser-mapping": "^2.9.19"
-    },
-    "ignoredBuiltDependencies": [
-      "@clerk/shared",
-      "bufferutil",
-      "core-js",
-      "core-js-pure",
-      "protobufjs"
-    ],
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "@sentry/cli",
-      "esbuild",
-      "prisma",
-      "sharp"
-    ],
-    "patchedDependencies": {
-      "ultracite": "patches/ultracite.patch"
+      "@angriff36/manifest": "file:../Manifest"
     }
   },
   "scripts": {
@@ -262,10 +223,5 @@
     "check:manifest:structure": "node tools/manifest-structure-audit.mjs",
     "check:manifest:domain": "node tools/manifest-domain-drift-audit.mjs"
   },
-  "type": "module",
-  "pnpm": {
-    "overrides": {
-      "@angriff36/manifest": "file:../Manifest"
-    }
-  }
+  "type": "module"
 }
