@@ -765,6 +765,8 @@ interface EventDetailsClientProps {
   prepLists?: PrepListSummary[];
   hasBudget?: boolean;
   battleBoardHref: string;
+  /** Server-rendered Command Board tab — passed from page.tsx to cross the server/client boundary */
+  board: import("react").ReactNode;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -785,6 +787,7 @@ export function EventDetailsClient({
   prepLists = [],
   hasBudget = false,
   battleBoardHref,
+  board,
 }: EventDetailsClientProps) {
   const router = useRouter();
 
@@ -1432,6 +1435,7 @@ export function EventDetailsClient({
         <Separator />
         <EventDetailTabs
           battleBoardHref={battleBoardHref}
+          board={board}
           battleboard={
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <SwordsIcon className="h-12 w-12 mb-3 opacity-40" />

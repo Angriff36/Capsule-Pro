@@ -22,6 +22,7 @@ type EventMode = "planning" | "execution" | "reports";
 
 const PLANNING_TABS = [
   "overview",
+  "board",
   "menu",
   "copilot",
   "guests",
@@ -58,6 +59,7 @@ interface EventDetailTabsProps {
   eventDate: string | Date | null | undefined;
   eventStatus: string | null;
   overview: ReactNode;
+  board: ReactNode;
   menu: ReactNode;
   copilot: ReactNode;
   guests: ReactNode;
@@ -73,6 +75,7 @@ interface EventDetailTabsProps {
 
 const TAB_LABELS: Record<string, string> = {
   overview: "Overview",
+  board: "Command Board",
   menu: "Menu",
   copilot: "Copilot",
   guests: "Guests",
@@ -121,6 +124,7 @@ export function EventDetailTabs({
   eventDate,
   eventStatus,
   overview,
+  board,
   menu,
   copilot,
   guests,
@@ -213,6 +217,7 @@ export function EventDetailTabs({
 
   const tabContent: Record<string, ReactNode> = {
     overview,
+    board,
     menu,
     copilot,
     guests,

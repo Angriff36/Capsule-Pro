@@ -8,6 +8,7 @@ import { resolveEventBattleBoardHref } from "../../../lib/battle-boards/resolve-
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { DeleteEventButton } from "../components/delete-event-button";
+import { EventBoardTab } from "./board/components/event-board-tab";
 import { EventExportButton } from "./components/export-button";
 import { EventDetailsClient } from "./event-details-client";
 import { fetchAllEventDetailsData } from "./event-details-data";
@@ -140,6 +141,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       <EventDetailsClient
         allEventData={data}
         battleBoardHref={battleBoardHref}
+        board={<EventBoardTab eventId={eventId} />}
         budget={null}
         event={{
           ...event,
