@@ -177,6 +177,7 @@ export function EventStaffClient({
       try {
         const result = await eventStaffAssign({
           eventId,
+          staffMemberId: selectedEmployee,
           role: assignRole,
           notes: assignNotes.trim() || undefined,
         });

@@ -73,6 +73,24 @@ const deps: CommitDeps = {
     return { eventId: rows[0].event_id };
   },
 
+  /**
+   * Active assignments for the event — the commit dedupe baseline. The status
+   * filter mirrors the committed-roster query in the app's getEventBoardData
+   * (apps/app .../events/[eventId]/board/actions.ts).
+   */
+  loadActiveStaff: async (tx, eventId, tenantId) => {
+    const rows = await (tx as Prisma.TransactionClient).eventStaff.findMany({
+      where: {
+        tenantId,
+        eventId,
+        status: { in: ["assigned", "confirmed", "checked_in"] },
+        deletedAt: null,
+      },
+      select: { id: true, staffMemberId: true },
+    });
+    return rows;
+  },
+
   loadDraftCards: async (tx, boardId, tenantId) => {
     const rows = await (tx as Prisma.TransactionClient).commandBoardCard.findMany({
       where: { tenantId, boardId, deletedAt: null },

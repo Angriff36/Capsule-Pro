@@ -11,7 +11,7 @@ import {
 } from "@dnd-kit/core";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
   CommitResponse,
@@ -57,14 +57,22 @@ export function BoardClient({
   // tab activation. The governed CommandBoard.create only fires when the user
   // actually opens the Command Board tab (and no board exists yet).
   const [boardId, setBoardId] = useState<string | null>(initialBoardId);
+  // StrictMode double-fires this effect; reusing the in-flight promise keeps
+  // the governed CommandBoard.create to a single call per mount cycle.
+  const boardCreateRef = useRef<Promise<{ boardId: string }> | null>(null);
   useEffect(() => {
     if (boardId !== null) {
       return;
     }
     let cancelled = false;
-    getOrCreateEventBoard(eventId).then(
+    boardCreateRef.current ??= getOrCreateEventBoard(eventId);
+    boardCreateRef.current.then(
       (res) => !cancelled && setBoardId(res.boardId),
-      () => undefined // surfaced on first draft attempt; board stays null
+      () => {
+        // Surfaced on first draft attempt; board stays null. Clear the ref so
+        // a later mount (or resolveBoardId) can retry.
+        boardCreateRef.current = null;
+      }
     );
     return () => {
       cancelled = true;
@@ -191,6 +199,21 @@ export function BoardClient({
 
   const handleStaffConfirm = async (input: ShiftDialogSubmit) => {
     if (!pendingStaff) {
+      return;
+    }
+    // Duplicate guard: a staff member already committed or drafted on this
+    // board gets no second card (the server guard catches races; this keeps
+    // the obvious case instant).
+    const alreadyOnBoard =
+      board.committedStaff.some(
+        (s) => s.staffMemberId === pendingStaff.id
+      ) ||
+      staffDrafts.some(
+        (c) => c.envelope.draftAction.entityId === pendingStaff.id
+      );
+    if (alreadyOnBoard) {
+      setPendingStaff(null);
+      toast.info(`${pendingStaff.name} is already on this event`);
       return;
     }
     const targetBoardId = await resolveBoardId();

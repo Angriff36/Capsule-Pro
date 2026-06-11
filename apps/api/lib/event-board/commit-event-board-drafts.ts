@@ -43,6 +43,17 @@ export interface CommandCall {
 }
 
 export interface CommitDeps {
+  /**
+   * Active EventStaff rows for the event (non-deleted, committed-status —
+   * mirrors the committed-roster filter in the app's getEventBoardData).
+   * Used to skip assign-staff drafts whose staff member is already assigned
+   * instead of creating a duplicate row.
+   */
+  loadActiveStaff: (
+    tx: unknown,
+    eventId: string,
+    tenantId: string
+  ) => Promise<Array<{ id: string; staffMemberId: string }>>;
   loadDraftCards: (
     tx: unknown,
     boardId: string,
@@ -69,8 +80,20 @@ export interface CommitDeps {
   transact: <T>(fn: (tx: unknown) => Promise<T>) => Promise<T>;
 }
 
+/** Assign-staff draft skipped because the staff member is already assigned. */
+export interface SkippedDuplicate {
+  cardId: string;
+  /** EventStaff row the card now points at (null if the create returned no id). */
+  existingRecordId: string | null;
+  staffMemberId: string;
+}
+
 export type CommitResult =
-  | { success: true; committedCount: number }
+  | {
+      success: true;
+      committedCount: number;
+      skippedDuplicates: SkippedDuplicate[];
+    }
   | { success: false; error: string; failedCardId?: string };
 
 // ---------------------------------------------------------------------------
@@ -222,7 +245,7 @@ export async function commitEventBoardDrafts(
   const { boardId, eventId, user } = input;
 
   try {
-    const committedCount = await deps.transact(async (tx) => {
+    const outcome = await deps.transact(async (tx) => {
       // FIRST operation: row-lock the board (FOR UPDATE). Serializes
       // concurrent commits of the same board and validates board↔event.
       const board = await deps.lockBoard(tx, boardId, user.tenantId);
@@ -234,43 +257,33 @@ export async function commitEventBoardDrafts(
       }
 
       const cards = await deps.loadDraftCards(tx, boardId, user.tenantId);
+
+      // Dedupe map for assign-staff drafts: staffMemberId → EventStaff row id.
+      // Seeded with the event's existing active assignments; grows as this
+      // batch creates new ones (so within-batch duplicates resolve to the row
+      // created by the first draft).
+      const activeStaff = await deps.loadActiveStaff(tx, eventId, user.tenantId);
+      const staffRecordByMember = new Map<string, string | null>(
+        activeStaff.map((row) => [row.staffMemberId, row.id])
+      );
+
       let committed = 0;
+      const skippedDuplicates: SkippedDuplicate[] = [];
 
-      for (const card of cards) {
-        const metadata = normalizeMetadata(card.metadata);
-        const envelope = metadata[DRAFT_METADATA_KEY];
-        if (!isDraftEnvelope(envelope) || envelope.draftState !== "draft") {
-          continue;
-        }
-        // Committable kinds: assign-staff, add-dish. Unknown kinds
-        // (assign-vehicle, ... — no data model yet) are skipped, not failed.
-        const domainCall = buildDomainCommand(
-          envelope.draftAction,
-          eventId,
-          card.id
-        );
-        if (!domainCall) {
-          continue;
-        }
-
-        // 1. Governed domain write (EventStaff.create / EventDish.create —
-        //    the engine only auto-instantiates commands named `create`).
-        const assign = await deps.runCommand(tx, { ...domainCall, user });
-        if (!assign.success) {
-          throw new CommitError(
-            `${domainCall.entity}.${domainCall.command} failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
-            card.id
-          );
-        }
-
-        // 2. Flip the card's envelope to committed. CommandBoardCard.update is
-        //    a FULL-FIELD command (every mutate runs), so the current values of
-        //    all other fields must be passed back unchanged — only newMetadata
-        //    actually changes. Merge existing metadata keys; don't drop them.
+      // Flip the card's envelope to committed. CommandBoardCard.update is a
+      // FULL-FIELD command (every mutate runs), so the current values of all
+      // other fields must be passed back unchanged — only newMetadata actually
+      // changes. Merge existing metadata keys; don't drop them.
+      const flipCard = async (
+        card: DraftCardRow,
+        metadata: Record<string, unknown>,
+        envelope: DraftEnvelope,
+        committedRecordId: string | null
+      ): Promise<void> => {
         const flippedEnvelope: DraftEnvelope = {
           ...envelope,
           draftState: "committed",
-          committedRecordId: assign.instanceId ?? null,
+          committedRecordId,
         };
         const flip = await deps.runCommand(tx, {
           entity: "CommandBoardCard",
@@ -296,14 +309,76 @@ export async function commitEventBoardDrafts(
             card.id
           );
         }
+      };
+
+      for (const card of cards) {
+        const metadata = normalizeMetadata(card.metadata);
+        const envelope = metadata[DRAFT_METADATA_KEY];
+        if (!isDraftEnvelope(envelope) || envelope.draftState !== "draft") {
+          continue;
+        }
+
+        // Idempotency + within-batch dedupe: an assign-staff draft whose
+        // staff member already has an active assignment (pre-existing row OR
+        // one created earlier in this batch) is NOT re-created — the card
+        // flips to committed pointing at the existing record and is reported
+        // in skippedDuplicates.
+        if (envelope.draftAction.kind === "assign-staff") {
+          const staffMemberId = envelope.draftAction.entityId;
+          const existing = staffRecordByMember.get(staffMemberId);
+          if (existing !== undefined) {
+            await flipCard(card, metadata, envelope, existing);
+            skippedDuplicates.push({
+              cardId: card.id,
+              staffMemberId,
+              existingRecordId: existing,
+            });
+            continue;
+          }
+        }
+
+        // Committable kinds: assign-staff, add-dish. Unknown kinds
+        // (assign-vehicle, ... — no data model yet) are skipped, not failed.
+        const domainCall = buildDomainCommand(
+          envelope.draftAction,
+          eventId,
+          card.id
+        );
+        if (!domainCall) {
+          continue;
+        }
+
+        // 1. Governed domain write (EventStaff.create / EventDish.create —
+        //    the engine only auto-instantiates commands named `create`).
+        const assign = await deps.runCommand(tx, { ...domainCall, user });
+        if (!assign.success) {
+          throw new CommitError(
+            `${domainCall.entity}.${domainCall.command} failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
+            card.id
+          );
+        }
+
+        if (envelope.draftAction.kind === "assign-staff") {
+          staffRecordByMember.set(
+            envelope.draftAction.entityId,
+            assign.instanceId ?? null
+          );
+        }
+
+        // 2. Flip the card's envelope to committed.
+        await flipCard(card, metadata, envelope, assign.instanceId ?? null);
 
         committed += 1;
       }
 
-      return committed;
+      return { committed, skippedDuplicates };
     });
 
-    return { success: true, committedCount };
+    return {
+      success: true,
+      committedCount: outcome.committed,
+      skippedDuplicates: outcome.skippedDuplicates,
+    };
   } catch (error) {
     if (error instanceof CommitError) {
       return {

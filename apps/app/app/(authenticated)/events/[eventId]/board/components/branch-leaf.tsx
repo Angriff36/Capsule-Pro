@@ -132,7 +132,7 @@ export function StaffLeafBody({
       ref={setNodeRef}
     >
       {committedStaff.map((staff) => {
-        const key = `committed-${staff.staffMemberId}`;
+        const key = `committed-${staff.id}`;
         return (
           <StaffToken
             avatarUrl={staff.avatarUrl}

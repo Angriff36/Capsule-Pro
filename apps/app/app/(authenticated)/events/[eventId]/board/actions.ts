@@ -38,6 +38,7 @@ export interface EventBoardData {
     quantityServings: number;
   }>;
   committedStaff: Array<{
+    id: string;
     staffMemberId: string;
     name: string;
     role: string;
@@ -119,19 +120,22 @@ export async function getOrCreateEventBoard(
     throw new Error(result.message || "Failed to create event board");
   }
 
-  const createdId = (result.result as { id?: string } | null)?.id;
-  if (createdId) {
-    return { boardId: createdId };
-  }
-
-  // Fallback: re-query (handles race where another request created it first)
-  const fallback = await database.commandBoard.findFirst({
+  // Convergence: a concurrent creator (e.g. StrictMode double-fire) may have
+  // inserted another board between our findFirst and create. Re-query with
+  // the same oldest-wins ordering so every racer returns the SAME board; the
+  // loser's row stays orphaned but unused.
+  const winner = await database.commandBoard.findFirst({
     where: { tenantId, eventId, deletedAt: null },
     orderBy: { createdAt: "asc" },
     select: { id: true },
   });
-  if (fallback) {
-    return { boardId: fallback.id };
+  if (winner) {
+    return { boardId: winner.id };
+  }
+
+  const createdId = (result.result as { id?: string } | null)?.id;
+  if (createdId) {
+    return { boardId: createdId };
   }
 
   throw new Error("CommandBoard.create did not return an id");
@@ -171,7 +175,7 @@ export async function getEventBoardData(
       status: { in: COMMITTED_STAFF_STATUSES },
       deletedAt: null,
     },
-    select: { staffMemberId: true, role: true },
+    select: { id: true, staffMemberId: true, role: true },
   });
 
   const staffIds = committedStaffRows.map((r) => r.staffMemberId);
@@ -193,6 +197,7 @@ export async function getEventBoardData(
   const committedStaff = committedStaffRows.map((row) => {
     const u = staffUserMap.get(row.staffMemberId);
     return {
+      id: row.id,
       staffMemberId: row.staffMemberId,
       name: u ? `${u.firstName} ${u.lastName}`.trim() : row.staffMemberId,
       role: row.role ?? "",
@@ -351,6 +356,30 @@ export async function createStaffDraftCard(input: {
   role: string;
 }): Promise<{ success: true } | { success: false; error?: string }> {
   const user = await requireCurrentUser();
+
+  // Duplicate guard: if this staff member already has a live assign-staff
+  // card on the board (draft or committed), reuse it instead of creating a
+  // second one. A "failed" card may be re-drafted.
+  const existingCards = await database.commandBoardCard.findMany({
+    where: {
+      tenantId: user.tenantId,
+      boardId: input.boardId,
+      cardType: "entity",
+      deletedAt: null,
+    },
+    select: { metadata: true },
+  });
+  for (const card of existingCards) {
+    const existing = parseDraftEnvelope(card.metadata);
+    if (
+      existing &&
+      existing.draftAction.kind === "assign-staff" &&
+      existing.draftAction.entityId === input.staff.id &&
+      existing.draftState !== "failed"
+    ) {
+      return { success: true };
+    }
+  }
 
   const envelope: DraftEnvelope = {
     draftAction: {
@@ -593,7 +622,16 @@ export async function getDraftImpact(
 
 /** Mirrors CommitResult from apps/api lib/event-board/commit-event-board-drafts.ts. */
 export type CommitResponse =
-  | { success: true; committedCount: number }
+  | {
+      success: true;
+      committedCount: number;
+      /** Assign-staff drafts skipped because the staff member was already assigned. */
+      skippedDuplicates?: Array<{
+        cardId: string;
+        existingRecordId: string | null;
+        staffMemberId: string;
+      }>;
+    }
   | { success: false; error: string; failedCardId?: string };
 
 export async function commitEventBoard(

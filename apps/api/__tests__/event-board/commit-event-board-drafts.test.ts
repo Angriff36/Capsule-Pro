@@ -54,6 +54,7 @@ function makeDeps(overrides: Partial<Record<string, unknown>> = {}) {
   const deps = {
     lockBoard: vi.fn(async () => ({ eventId: "e1" })),
     loadDraftCards: vi.fn(async () => [draftCard("c1", "s1"), draftCard("c2", "s2")]),
+    loadActiveStaff: vi.fn(async () => [] as Array<{ id: string; staffMemberId: string }>),
     transact: vi.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn({ fake: "tx" })),
     runCommand: vi.fn(async (_tx: unknown, params: (typeof calls)[number]) => {
       calls.push(params);
@@ -196,6 +197,65 @@ describe("commitEventBoardDrafts", () => {
     // The unknown-kind card is untouched: no flip for it.
     const flips = calls.filter((c) => c.entity === "CommandBoardCard");
     expect(flips).toHaveLength(1);
+  });
+
+  it("skips drafts whose staff already has an active assignment and flips them to the existing row", async () => {
+    const { deps, calls } = makeDeps({
+      loadActiveStaff: vi.fn(async () => [{ id: "es-existing", staffMemberId: "s1" }]),
+    });
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      // Only s2 actually committed; s1 was already assigned.
+      expect(result.committedCount).toBe(1);
+      expect(result.skippedDuplicates).toEqual([
+        { cardId: "c1", staffMemberId: "s1", existingRecordId: "es-existing" },
+      ]);
+    }
+    const assigns = calls.filter((c) => c.entity === "EventStaff" && c.command === "create");
+    expect(assigns).toHaveLength(1);
+    expect(assigns[0].body).toMatchObject({ staffMemberId: "s2" });
+    // BOTH cards flip to committed — the duplicate points at the EXISTING row.
+    const flips = calls.filter((c) => c.entity === "CommandBoardCard" && c.command === "update");
+    expect(flips).toHaveLength(2);
+    const dupFlip = flips.find((f) => f.instanceId === "c1");
+    expect(dupFlip).toBeDefined();
+    const dupMeta = JSON.parse(dupFlip?.body.newMetadata as string);
+    expect(dupMeta.eventBoardDraft.draftState).toBe("committed");
+    expect(dupMeta.eventBoardDraft.committedRecordId).toBe("es-existing");
+  });
+
+  it("dedupes within the batch — first draft wins, later duplicates point at the first-created row", async () => {
+    const { deps, calls } = makeDeps({
+      loadDraftCards: vi.fn(async () => [draftCard("c1", "s1"), draftCard("c2", "s1")]),
+    });
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(true);
+    const assigns = calls.filter((c) => c.entity === "EventStaff" && c.command === "create");
+    expect(assigns).toHaveLength(1);
+    const createdId = "created-EventStaff-1"; // first runCommand call in the mock
+    if (result.success) {
+      expect(result.committedCount).toBe(1);
+      expect(result.skippedDuplicates).toEqual([
+        { cardId: "c2", staffMemberId: "s1", existingRecordId: createdId },
+      ]);
+    }
+    const flips = calls.filter((c) => c.entity === "CommandBoardCard" && c.command === "update");
+    expect(flips).toHaveLength(2);
+    const dupFlip = flips.find((f) => f.instanceId === "c2");
+    const dupMeta = JSON.parse(dupFlip?.body.newMetadata as string);
+    expect(dupMeta.eventBoardDraft.draftState).toBe("committed");
+    expect(dupMeta.eventBoardDraft.committedRecordId).toBe(createdId);
+  });
+
+  it("reports an empty skippedDuplicates array on the normal path", async () => {
+    const { deps } = makeDeps();
+    const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.committedCount).toBe(2);
+      expect(result.skippedDuplicates).toEqual([]);
+    }
   });
 
   it("surfaces failedCardId when an EventStaff.create fails", async () => {

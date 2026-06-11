@@ -1308,3 +1308,59 @@ Search: EventDish quantityServings course specialInstructions rename, sortOrder 
 **Live E2E (square-dust, local API): VERIFIED FULL ROUNDTRIP** — drag staff → DragOverlay ghost → drop highlights the staff leaf → shift dialog → draft card persists (`CommandBoardCard.create` 200, envelope in metadata) → Review & Commit → `POST /api/command-board/[id]/commit` 200 → 2 real `tenant_events.event_staff` rows (status "assigned") + both cards flipped to `draftState:"committed"` with `committedRecordId` = the EventStaff ids → UI shows Staff 2/1 ✓, 0 drafts. The §32 split-brain is fully closed (root `.env.local` `NEXT_PUBLIC_API_URL` was ALSO still pointing at the prod Vercel API — that's the file the app actually loads; both root and apps/app now → http://localhost:2223).
 
 Search: CommandBoardCard requiresTenantConnect, Argument board is missing, composite FK tenantId relation, GenericPrismaStore checked unchecked create, flat keys tenant connect, event board commit verified, NEXT_PUBLIC_API_URL root env split brain
+
+---
+
+## 36. Runtime datetime coercion bugs — R1/R2/R3/R4/R5 (FIXED 2026-06-11)
+
+Four connected datetime bugs diagnosed and fixed in the Manifest runtime layer.
+
+### R1 — Boundary coercion (run-manifest-command-core.ts)
+**Problem:** Callers (forms, server actions) may send ISO strings or `Date` objects for datetime command parameters. The engine validates `typeof value === 'number'` (E_TYPE_DATETIME ~line 1318 of runtime-engine.js) and rejects non-numbers.
+**Fix:** `coerceBodyDatetimes()` in `run-manifest-command-core.ts` — called after runtime creation, scoped to IR-typed `datetime` field names only (conservative: never sniffs arbitrary string fields). `Date` → `.getTime()`; non-empty string with finite `Date.parse` → `Date.parse(value)`; numbers/null/undefined/"" unchanged.
+**Extension (review round 2):** for `create` commands the coercion set is the UNION of the command's datetime params AND the entity's datetime-typed PROPERTIES (`runtime.getEntity`). Reason: auto-create validates the FULL body against entity properties (`persistPreparedCreate`), so a datetime property present in the body but absent from the create param list (e.g. `eventDate` when create declares only id/clientId) still fails E_TYPE_DATETIME under param-only coercion. Verified by failing-first conformance tests.
+**Fact-check during review:** the claim "Event.create does not exist in the IR" is FALSE for current `kitchen.ir.json` — Event entity.commands includes `"create"` and `ir.commands` has 1 create with `entity:'Event'` carrying `eventDate:datetime` (185 create commands total across 202 entities). Also verified: `compileToIR` does NOT auto-generate create commands (even with `store ... in durable`), and an entity whose IR truly lacks a create command cannot run create at all — engine returns `Command 'create' not found` BEFORE the shouldAutoCreateInstance branch (runtime-engine.js getCommand checks `entity.commands.includes(name)`). "Engine auto-creates create commands" refers to auto-creating the INSTANCE for commands named create, not synthesizing missing commands.
+
+### R2 — Date objects from GenericPrismaStore (parent-context-resolver.ts)
+**Problem:** `GenericPrismaStore.mapToManifestEntity` returns DateTime columns as JS `Date` objects verbatim (`entity[field.irName] = row[field.name] ?? null`). When `inheritFromParents` copies a parent value into the child create body, it copied the `Date` object. Engine rejects it with E_TYPE_DATETIME.
+**Fix:** In `inheritFromParents`, one-liner coerce: `body[name] = parentValue instanceof Date ? parentValue.getTime() : parentValue`.
+
+### R3 — refreshParentContext skip-set inverted (parent-context-resolver.ts)
+**Problem:** `refreshParentContext` built `childParamNames` from the `syncFromEvent` command's own parameters (the six snapshot fields: `eventDate, clientId, guestCount, venueName, venueAddress, locationId`). Then `inheritFromParents` skipped every name in that set with `if (childParamNames.has(name)) continue`. Result: body stayed `{id}`-only, engine ran `mutate eventDate = eventDate` on the stored `Date` object → E_TYPE_DATETIME. Sync ALWAYS silently failed.
+**Fix:** Pass `new Set<string>()` (empty) as `childParamNames` for the refresh path. The `respectExistingBody=false` argument already ensures existing body values are overwritten; the skip-set was wrong only for refresh commands where the sync params ARE the fields to populate.
+
+### R4 — Swallowed reaction failures (runtime-engine.ts)
+**Problem:** The upstream engine's reaction dispatcher calls `this.runCommand(...)` for `on EventCreated run BattleBoard.create` but only reads `reactionResult.emittedEvents`; `success:false` is silently dropped. Our `ManifestRuntimeEngine.runCommand` override had no visibility either.
+**Fix:** Added structured `console.error('[manifest-runtime] command failed: ...')` immediately after `super.runCommand()` returns `result.success === false`. Non-throwing, best-effort. Makes all governed-command failures (including reaction-triggered ones) visible in API logs.
+
+### R5 — Neon driver local-timezone offset (+7h) (packages/database/index.ts + standalone.ts)
+**Problem:** `neonConfig.parseInputDatesAsUTC` defaults to `false` in `@neondatabase/serverless`. When `false`, the Neon pg-compat layer serializes `Date` objects using LOCAL time components (via `Iu()` branch in `prepareValue`) when writing to `timestamp without time zone` DB columns. On a US Pacific machine (UTC-7) this stores timestamps +7h ahead of actual UTC. EventStaff `createdAt` was 7h ahead of the correlated outbox `inserted_at`.
+**Root cause location:** `node_modules/@neondatabase/serverless/index.js` — `prepareValue` function: `r instanceof Date ? Au.parseInputDatesAsUTC ? Tu(r) : Iu(r)` where `Au.parseInputDatesAsUTC` defaults `!1`.
+**Fix:** Added `neonConfig.parseInputDatesAsUTC = true` in BOTH `packages/database/index.ts` AND `packages/database/standalone.ts` (after the existing `neonConfig.poolQueryViaFetch = true` line). This is a process-wide setting; one call covers all queries. **Note:** This also affects reads — Neon will now parse returned `timestamp` (no-tz) values as UTC. If any column was intentionally storing local times (unlikely given the flat-key convention), that would need re-evaluation. All Capsule-Pro DateTime columns store UTC epoch-ms-derived values, so this is safe.
+
+Search: datetime coercion, E_TYPE_DATETIME, parseInputDatesAsUTC, neon driver UTC offset, inheritFromParents Date object, syncFromEvent skip-set, refreshParentContext bug, reaction failure swallowed, manifest-runtime command failed log
+
+## 37. Event board duplicate-assignment fixes + CommandBoardCard metadata IR type finding (2026-06-11)
+
+Root-caused Event Board bug batch (B1a–B1f). App-side: committed staff tokens now keyed by
+EventStaff row `id` (branch-leaf.tsx; `EventBoardData.committedStaff` gained `id`); commit pipeline
+(`apps/api/lib/event-board/commit-event-board-drafts.ts`) dedupes assign-staff drafts — new
+`loadActiveStaff` dep seeds a staffMemberId→rowId map (mirrors getEventBoardData committed filter:
+status in assigned/confirmed/checked_in, deletedAt null), pre-assigned or within-batch duplicate
+drafts flip to committed pointing at the EXISTING row and are reported in the new
+`skippedDuplicates` array on `CommitResult` (commit no longer creates duplicate event_staff rows).
+`getOrCreateEventBoard` converges on the oldest board after a governed create (StrictMode race left
+an orphan CommandBoard row); mount effect deduped via in-flight-promise ref. Draft creation guarded
+server-side (existing draft for same entityId/kind returned as success, no second card) and
+client-side (already drafted/committed staff short-circuits). Staff page `handleAssign` was missing
+`staffMemberId: selectedEmployee` — EventStaff.assign always failed its guard.
+
+**IR FINDING (for the manifest-source agent):** `CommandBoardCard.create` param `metadata` and
+`update` param `newMetadata` are STRING-typed in kitchen.ir.json (`{"name":"string"}`), so governed
+writes JSON.stringify the draft envelope and Postgres stores `jsonb_typeof(metadata)='string'`
+(double-encoded) — jsonb path queries don't work on those rows. App/api read paths normalize
+string-or-object (`normalizeMetadata`) so behavior is correct but the column content is wrong-typed.
+Proper fix = change the IR param to a json/object type in manifest/source (NOT a consumer-side hack).
+3 legacy string-typed rows exist in dev DB.
+
+Search: event board duplicate staff, skippedDuplicates, loadActiveStaff, committed-token key, CommandBoardCard metadata string jsonb, double-encoded metadata, getOrCreateEventBoard race, StrictMode double create
