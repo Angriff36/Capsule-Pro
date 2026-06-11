@@ -138,7 +138,16 @@ export function TreeCanvas({
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       >
         <defs>
-          <linearGradient id="etb-opal" x1="0" x2="0" y1="1" y2="0">
+          {/* userSpaceOnUse: a perfectly vertical stroke has a zero-width bounding
+              box, so objectBoundingBox gradients degenerate to a solid color. */}
+          <linearGradient
+            gradientUnits="userSpaceOnUse"
+            id="etb-opal"
+            x1="500"
+            x2="500"
+            y1="520"
+            y2="70"
+          >
             <stop offset="0" stopColor="#a78bfa" />
             <stop offset=".5" stopColor="#67e8f9" />
             <stop offset="1" stopColor="#f0abfc" />
@@ -157,7 +166,14 @@ export function TreeCanvas({
             </linearGradient>
           ))}
           {battleboard && (
-            <linearGradient id="etb-g-battleboard" x1="0" x2="0" y1="1" y2="0">
+            <linearGradient
+              gradientUnits="userSpaceOnUse"
+              id="etb-g-battleboard"
+              x1="500"
+              x2="500"
+              y1="70"
+              y2="46"
+            >
               <stop offset="0" stopColor="#a78bfa" />
               <stop offset="1" stopColor={battleboard.color} />
             </linearGradient>
