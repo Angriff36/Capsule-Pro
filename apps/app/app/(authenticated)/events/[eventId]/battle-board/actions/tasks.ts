@@ -477,6 +477,7 @@ export async function addEventStaff(
   const eventRow = await database.$queryRaw<Array<{ event_date: Date | null }>>`
     SELECT event_date FROM tenant_events.events
     WHERE tenant_id = ${user.tenantId}::uuid AND id = ${eventId}::uuid AND deleted_at IS NULL`;
+  if (eventRow.length === 0) throw new Error("Event not found");
   const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).toISOString();
 
   // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
