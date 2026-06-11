@@ -1,8 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 import { resolveEventBattleBoardHref } from "../../../lib/battle-boards/resolve-event-board-href";
 import { getTenantIdForOrg } from "../../../lib/tenant";
@@ -141,7 +143,22 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
       <EventDetailsClient
         allEventData={data}
         battleBoardHref={battleBoardHref}
-        board={<EventBoardTab eventId={eventId} />}
+        board={
+          <Suspense
+            fallback={
+              <div className="space-y-3">
+                <Skeleton className="h-12 w-full" />
+                <div className="grid grid-cols-[260px_minmax(0,1fr)_300px] gap-3">
+                  <Skeleton className="h-96 w-full" />
+                  <Skeleton className="h-96 w-full" />
+                  <Skeleton className="h-96 w-full" />
+                </div>
+              </div>
+            }
+          >
+            <EventBoardTab eventId={eventId} />
+          </Suspense>
+        }
         budget={null}
         event={{
           ...event,
