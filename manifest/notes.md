@@ -1364,3 +1364,37 @@ Proper fix = change the IR param to a json/object type in manifest/source (NOT a
 3 legacy string-typed rows exist in dev DB.
 
 Search: event board duplicate staff, skippedDuplicates, loadActiveStaff, committed-token key, CommandBoardCard metadata string jsonb, double-encoded metadata, getOrCreateEventBoard race, StrictMode double create
+
+## 38. Policy alignment, EventStaff unreachable transition, perf, governed data repair (2026-06-11)
+
+Completion of the board-propagation fix batch (§36–§37). Commits f257af45b..9dec7158b.
+
+- **BattleBoardDefaultAccess role gap (FIXED):** Event.create allowed roles
+  `staff`/`catering_manager`/`event_manager` that BattleBoard's default policy denied — the
+  EventCreated→BattleBoard.create reaction was silently policy-denied for those roles (reaction
+  dispatch ignores `reactionResult.success`). Role list is now the union of both policies
+  (8 roles, battle-board-rules.manifest:63).
+- **EventStaff "unassigned" was unreachable (FIXED):** the `unassign` command + `validStatus`
+  constraint + lifecycle comment all referenced `unassigned`, but the transition table omitted
+  it → unassign could NEVER succeed. Added as terminal destination from `assigned`/`confirmed`
+  (event-staff-rules.manifest:138-141). Same §14 contract-inconsistency class.
+- **Governed dev-data repair (ep-square-dust):** `BattleBoard.syncFromEvent` backfilled ALL 32
+  boards with NULL parent snapshots (live proof of the §36 refresh fix); duplicate Alex Chen
+  `event_staff` row 487e0ecc governed-unassigned (keeper b1b1b60b); orphan race-created
+  `command_boards` row 125b0e98 archived. Headless governed execution pattern: one-off
+  tsx script building runManifestCommandCore with admin service context (deleted after).
+- **CommandBoardCard.metadata json-type verdict (DECISION PENDING):** the IR type system DOES
+  support `json` (prisma projection DEFAULT_TYPE_MAPPING maps json→Json; pydantic/dart/graphql
+  projections recognize it). Migrating metadata (string→json) requires: source param+property
+  type change, app-side raw-object writes (drop JSON.stringify), generated-client regen.
+  Until then metadata stays a double-encoded jsonb string scalar; all read paths are tolerant.
+- **Event detail perf:** board tab server content now renders only when `?tab=board` (was ~12
+  queries on EVERY tab navigation); getEventBoardData 9 sequential RTTs → 2 Promise.all batches;
+  getRelatedEvents narrowed (14-field select, take 50); palettes capped (take 200). Deferred:
+  staleTimes, 30s clock-interval re-render, React.cache auth dedupe.
+- **Neon driver local-time serialization (FIXED, §36 R5):** `parseInputDatesAsUTC = true` in
+  packages/database/{index,standalone}.ts. Rows written BEFORE the fix on non-UTC dev machines
+  keep their +offset skew (e.g. the two pre-fix event_staff rows); prod (UTC) never skewed.
+- **Pre-existing warn-only IR provenance mismatch** (computed vs stored hash) logged by the
+  runtime before AND after these recompiles — predates this batch, `requireValidProvenance`
+  not set, manifest:ci provenance gates pass. Worth a future look.
