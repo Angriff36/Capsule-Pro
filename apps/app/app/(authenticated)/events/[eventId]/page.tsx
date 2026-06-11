@@ -27,6 +27,7 @@ interface EventDetailsPageProps {
   params: Promise<{
     eventId: string;
   }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 /**
@@ -43,7 +44,10 @@ interface EventDetailsPageProps {
  *
  * @see event-details-data.ts for query implementation details
  */
-const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
+const EventDetailsPage = async ({
+  params,
+  searchParams,
+}: EventDetailsPageProps) => {
   const { eventId } = await params;
   const { orgId } = await auth();
 
@@ -57,8 +61,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Fetch all event details data using parallel queries
-  const data = await fetchAllEventDetailsData(tenantId, eventId);
+  // Fetch main event data and battleBoardHref concurrently — they are independent.
+  const [data, battleBoardHref] = await Promise.all([
+    fetchAllEventDetailsData(tenantId, eventId),
+    resolveEventBattleBoardHref(database, tenantId, eventId),
+  ]);
 
   if (!data.event) {
     notFound();
@@ -97,11 +104,14 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   const prepTasksForClient: Awaited<ReturnType<typeof serializePrepTasks>> =
     serializePrepTasks(prepTasks);
 
-  const battleBoardHref = await resolveEventBattleBoardHref(
-    database,
-    tenantId,
-    eventId
-  );
+  // Determine the active tab from searchParams so we can skip the ~9-query
+  // board loader when the user is on any other tab. Switching to "board"
+  // triggers a navigation, delivering this component again with tab=board.
+  const resolvedSearchParams = await searchParams;
+  const activeTab =
+    typeof resolvedSearchParams.tab === "string"
+      ? resolvedSearchParams.tab
+      : null;
 
   return (
     <>
@@ -144,20 +154,22 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         allEventData={data}
         battleBoardHref={battleBoardHref}
         board={
-          <Suspense
-            fallback={
-              <div className="space-y-3">
-                <Skeleton className="h-12 w-full" />
-                <div className="grid grid-cols-[260px_minmax(0,1fr)_300px] gap-3">
-                  <Skeleton className="h-96 w-full" />
-                  <Skeleton className="h-96 w-full" />
-                  <Skeleton className="h-96 w-full" />
+          activeTab === "board" ? (
+            <Suspense
+              fallback={
+                <div className="space-y-3">
+                  <Skeleton className="h-12 w-full" />
+                  <div className="grid grid-cols-[260px_minmax(0,1fr)_300px] gap-3">
+                    <Skeleton className="h-96 w-full" />
+                    <Skeleton className="h-96 w-full" />
+                    <Skeleton className="h-96 w-full" />
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <EventBoardTab eventId={eventId} />
-          </Suspense>
+              }
+            >
+              <EventBoardTab eventId={eventId} />
+            </Suspense>
+          ) : null
         }
         budget={null}
         event={{

@@ -276,6 +276,23 @@ export const getRelatedEvents = cache(
         NOT: { id: eventId },
       },
       orderBy: [{ eventDate: "asc" }, { createdAt: "desc" }],
+      take: 50,
+      select: {
+        id: true,
+        title: true,
+        eventType: true,
+        eventDate: true,
+        guestCount: true,
+        status: true,
+        venueName: true,
+        venueAddress: true,
+        ticketPrice: true,
+        ticketTier: true,
+        eventFormat: true,
+        accessibilityOptions: true,
+        featuredMediaUrl: true,
+        tags: true,
+      },
     });
   }
 );

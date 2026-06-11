@@ -151,37 +151,67 @@ export async function getEventBoardData(
   const user = await requireCurrentUser();
   const { tenantId } = user;
 
-  // --- Event core ---
-  const event = await database.event.findFirst({
-    where: { tenantId, id: eventId, deletedAt: null },
-    select: {
-      id: true,
-      title: true,
-      eventType: true,
-      eventDate: true,
-      guestCount: true,
-      venueName: true,
-    },
-  });
+  // --- Batch 1: all queries independent of each other ---
+  const [
+    event,
+    committedStaffRows,
+    eventDishRows,
+    vehicleRouteCount,
+    battleBoardRows,
+    board,
+  ] = await Promise.all([
+    database.event.findFirst({
+      where: { tenantId, id: eventId, deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        eventType: true,
+        eventDate: true,
+        guestCount: true,
+        venueName: true,
+      },
+    }),
+    database.eventStaff.findMany({
+      where: {
+        tenantId,
+        eventId,
+        status: { in: COMMITTED_STAFF_STATUSES },
+        deletedAt: null,
+      },
+      select: { id: true, staffMemberId: true, role: true },
+    }),
+    database.eventDish.findMany({
+      where: { tenantId, eventId, deletedAt: null },
+      select: { id: true, dishId: true, course: true, quantityServings: true },
+    }),
+    database.deliveryRoute.count({
+      where: { tenantId, eventId, deletedAt: null },
+    }),
+    // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
+    database.battleBoard.findMany({
+      where: { tenantId, eventId, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, board_name: true },
+    }),
+    database.commandBoard.findFirst({
+      where: { tenantId, eventId, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+      select: { id: true },
+    }),
+  ]);
+
   if (!event) {
     throw new Error("Event not found");
   }
 
-  // --- Committed staff count + roster (same query, reuse results) ---
-  const committedStaffRows = await database.eventStaff.findMany({
-    where: {
-      tenantId,
-      eventId,
-      status: { in: COMMITTED_STAFF_STATUSES },
-      deletedAt: null,
-    },
-    select: { id: true, staffMemberId: true, role: true },
-  });
-
+  const boardId = board?.id ?? null;
   const staffIds = committedStaffRows.map((r) => r.staffMemberId);
-  const staffUsers =
+  const dishIds = [...new Set(eventDishRows.map((r) => r.dishId))];
+
+  // --- Batch 2: queries that depend on batch 1 results ---
+  const [staffUsers, dishRows, cardRows] = await Promise.all([
     staffIds.length > 0
-      ? await database.user.findMany({
+      ? database.user.findMany({
           where: { tenantId, id: { in: staffIds } },
           select: {
             id: true,
@@ -190,10 +220,23 @@ export async function getEventBoardData(
             avatarUrl: true,
           },
         })
-      : [];
+      : Promise.resolve([]),
+    dishIds.length > 0
+      ? database.dish.findMany({
+          where: { tenantId, id: { in: dishIds } },
+          select: { id: true, name: true },
+        })
+      : Promise.resolve([]),
+    boardId
+      ? database.commandBoardCard.findMany({
+          where: { tenantId, boardId, deletedAt: null },
+          select: { id: true, title: true, metadata: true },
+        })
+      : Promise.resolve([]),
+  ]);
 
+  // --- Assemble committed staff ---
   const staffUserMap = new Map(staffUsers.map((u) => [u.id, u]));
-
   const committedStaff = committedStaffRows.map((row) => {
     const u = staffUserMap.get(row.staffMemberId);
     return {
@@ -205,19 +248,7 @@ export async function getEventBoardData(
     };
   });
 
-  // --- Committed menu (EventDish roster + dish names) ---
-  const eventDishRows = await database.eventDish.findMany({
-    where: { tenantId, eventId, deletedAt: null },
-    select: { id: true, dishId: true, course: true, quantityServings: true },
-  });
-  const dishIds = [...new Set(eventDishRows.map((r) => r.dishId))];
-  const dishRows =
-    dishIds.length > 0
-      ? await database.dish.findMany({
-          where: { tenantId, id: { in: dishIds } },
-          select: { id: true, name: true },
-        })
-      : [];
+  // --- Assemble committed menu ---
   const dishNameMap = new Map(dishRows.map((d) => [d.id, d.name]));
   const committedDishes = eventDishRows.map((row) => ({
     eventDishId: row.id,
@@ -227,43 +258,17 @@ export async function getEventBoardData(
     quantityServings: row.quantityServings,
   }));
 
-  // --- Vehicles: delivery routes scheduled for this event (read-path) ---
-  const vehicleRouteCount = await database.deliveryRoute.count({
-    where: { tenantId, eventId, deletedAt: null },
-  });
-
-  // --- Battle boards linked to this event (the real editor at /events/battle-boards/[id]) ---
-  // NOTE: the column is snake_case `board_name` (no @map on this legacy field).
-  const battleBoardRows = await database.battleBoard.findMany({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: { createdAt: "asc" },
-    select: { id: true, board_name: true },
-  });
   const battleBoards = battleBoardRows.map((b) => ({
     id: b.id,
     name: b.board_name,
   }));
 
-  // --- Board id ---
-  const board = await database.commandBoard.findFirst({
-    where: { tenantId, eventId, deletedAt: null },
-    orderBy: { createdAt: "asc" },
-    select: { id: true },
-  });
-  const boardId = board?.id ?? null;
-
   // --- Draft cards ---
   const draftCards: EventBoardData["draftCards"] = [];
-  if (boardId) {
-    const cards = await database.commandBoardCard.findMany({
-      where: { tenantId, boardId, deletedAt: null },
-      select: { id: true, title: true, metadata: true },
-    });
-    for (const card of cards) {
-      const envelope = parseDraftEnvelope(card.metadata);
-      if (envelope) {
-        draftCards.push({ cardId: card.id, envelope, title: card.title });
-      }
+  for (const card of cardRows) {
+    const envelope = parseDraftEnvelope(card.metadata);
+    if (envelope) {
+      draftCards.push({ cardId: card.id, envelope, title: card.title });
     }
   }
 
@@ -299,9 +304,11 @@ export async function getStaffPalette(): Promise<PaletteStaff[]> {
   const user = await requireCurrentUser();
   const { tenantId } = user;
 
+  // TODO: replace with server-side search once user counts grow past 200
   const users = await database.user.findMany({
     where: { tenantId, isActive: true, deletedAt: null },
     orderBy: { firstName: "asc" },
+    take: 200,
     select: {
       id: true,
       firstName: true,
@@ -329,9 +336,11 @@ export async function getDishPalette(): Promise<PaletteDish[]> {
   const user = await requireCurrentUser();
   const { tenantId } = user;
 
+  // TODO: replace with server-side search once dish counts grow past 200
   const dishes = await database.dish.findMany({
     where: { tenantId, isActive: true, deletedAt: null },
     orderBy: { name: "asc" },
+    take: 200,
     select: { id: true, name: true, category: true, pricePerPerson: true },
   });
 
