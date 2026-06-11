@@ -36,7 +36,9 @@ export function buildBoardDisplayRows(input: {
       key: c.cardId,
       text: `${staffName(c.staffMemberId)} — conflicts with ${c.with}`,
     })),
-    missingRateNames: impact?.missingRateStaffIds.map(staffName) ?? [],
+    // Dedupe: missingRateStaffIds is per-draft, so a rate-less member with two
+    // drafted shifts would otherwise be listed twice.
+    missingRateNames: [...new Set(impact?.missingRateStaffIds ?? [])].map(staffName),
     dialogDrafts: staffDrafts.map((card) => {
       const params = card.envelope.draftAction.params;
       return {
