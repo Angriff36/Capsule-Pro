@@ -1,0 +1,2788 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "69dd779d39dffdcf5b1fe9881ba76b16027784d558f706ff0f4ae9abc47721a8",
+    "irHash": "a19588a3f71f3c427a0fbef6ec368777a751bb9df90f6396ecd996c2088d6858",
+    "compilerVersion": "2.4.1",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-10T18:32:43.041Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "TimeEntry",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "shiftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "approvedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "approvedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isClockedIn",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockIn"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockOut"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isCompleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockIn"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockOut"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "totalMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockOut"
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockIn"
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "/",
+              "left": {
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockOut"
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "clockIn"
+                }
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 60000
+                }
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "totalHours",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "conditional",
+            "condition": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "totalMinutes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "consequent": {
+              "kind": "binary",
+              "operator": "/",
+              "left": {
+                "kind": "binary",
+                "operator": "-",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "totalMinutes"
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "breakMinutes"
+                }
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 60
+                }
+              }
+            },
+            "alternate": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isApproved",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "approvedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [
+        {
+          "name": "shift",
+          "kind": "belongsTo",
+          "target": "ScheduleShift",
+          "foreignKey": {
+            "fields": [
+              "tenantId",
+              "shiftId"
+            ],
+            "references": [
+              "tenantId",
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "employee",
+          "kind": "belongsTo",
+          "target": "User",
+          "foreignKey": {
+            "fields": [
+              "employeeId"
+            ]
+          }
+        },
+        {
+          "name": "location",
+          "kind": "belongsTo",
+          "target": "Facility",
+          "foreignKey": {
+            "fields": [
+              "locationId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "clockIn",
+        "clockOut",
+        "addEntry",
+        "softDelete"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "TimecardEditRequest",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "requestedClockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "requestedClockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "requestedBreakMinutes",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "pending"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isPending",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "pending"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isApproved",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "approved"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isRejected",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "rejected"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isProcessed",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "pending"
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [
+        {
+          "name": "timeEntry",
+          "kind": "belongsTo",
+          "target": "TimeEntry",
+          "foreignKey": {
+            "fields": [
+              "tenantId",
+              "timeEntryId"
+            ],
+            "references": [
+              "tenantId",
+              "id"
+            ]
+          }
+        },
+        {
+          "name": "employee",
+          "kind": "belongsTo",
+          "target": "User",
+          "foreignKey": {
+            "fields": [
+              "employeeId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create",
+        "approve",
+        "reject"
+      ],
+      "constraints": [
+        {
+          "name": "validStatus",
+          "code": "validStatus",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "pending"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "approved"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "rejected"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid edit request status",
+          "overrideable": false
+        }
+      ],
+      "policies": [],
+      "defaultPolicies": [
+        "TimecardEditRequestDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true,
+      "transitions": [
+        {
+          "property": "status",
+          "from": "pending",
+          "to": [
+            "approved",
+            "rejected"
+          ]
+        }
+      ]
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "TimeEntry",
+      "target": "durable",
+      "config": {}
+    },
+    {
+      "entity": "TimecardEditRequest",
+      "target": "durable",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "TimeEntryClockedIn",
+      "channel": "staff.timeentry.clocked_in",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimeEntryClockedOut",
+      "channel": "staff.timeentry.clocked_out",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "totalHours",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockedOutAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimeEntryAdded",
+      "channel": "staff.timeentry.added",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "totalHours",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimeEntryDeleted",
+      "channel": "staff.timeentry.deleted",
+      "payload": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimecardEditRequested",
+      "channel": "staff.timecard.edit.requested",
+      "payload": [
+        {
+          "name": "editRequestId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "requestedClockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "requestedClockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimecardEditApproved",
+      "channel": "staff.timecard.edit.approved",
+      "payload": [
+        {
+          "name": "editRequestId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "approvedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "approvedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "TimecardEditRejected",
+      "channel": "staff.timecard.edit.rejected",
+      "payload": [
+        {
+          "name": "editRequestId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "rejectedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "rejectedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "clockIn",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockAlreadyClockedIn",
+          "code": "blockAlreadyClockedIn",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isClockedIn"
+          },
+          "severity": "block",
+          "messageTemplate": "Employee '{employeeId}' is already clocked in",
+          "detailsMapping": {
+            "employeeId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            },
+            "clockIn": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Employee ID is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "employeeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "employeeId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "locationId",
+          "expression": {
+            "kind": "identifier",
+            "name": "locationId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shiftId",
+          "expression": {
+            "kind": "identifier",
+            "name": "shiftId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockIn",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockOut",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "breakMinutes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryClockedIn"
+      ]
+    },
+    {
+      "name": "clockOut",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isClockedIn"
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockNotClockedIn",
+          "code": "blockNotClockedIn",
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "severity": "block",
+          "messageTemplate": "Cannot clock out - no active clock-in found",
+          "detailsMapping": {
+            "employeeId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            }
+          },
+          "overrideable": false
+        },
+        {
+          "name": "warnLongShift",
+          "code": "warnLongShift",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockIn"
+              }
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 43200000
+              }
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Clock-out after 12+ hours for employee '{employeeId}'",
+          "detailsMapping": {
+            "employeeId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            },
+            "clockIn": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "clockIn"
+            },
+            "durationMs": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              },
+              "right": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "clockIn"
+              }
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Must be clocked in to clock out"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockOut",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "breakMinutes",
+          "expression": {
+            "kind": "identifier",
+            "name": "breakMinutes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryClockedOut"
+      ]
+    },
+    {
+      "name": "addEntry",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "breakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "clockIn"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clockOut"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "clockOut"
+            },
+            "right": {
+              "kind": "identifier",
+              "name": "clockIn"
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnLongEntry",
+          "code": "warnLongEntry",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "identifier",
+                "name": "clockOut"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "clockIn"
+              }
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 43200000
+              }
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Manual time entry exceeds 12 hours for employee '{employeeId}'",
+          "detailsMapping": {
+            "employeeId": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "clockIn": {
+              "kind": "identifier",
+              "name": "clockIn"
+            },
+            "clockOut": {
+              "kind": "identifier",
+              "name": "clockOut"
+            },
+            "durationMs": {
+              "kind": "binary",
+              "operator": "-",
+              "left": {
+                "kind": "identifier",
+                "name": "clockOut"
+              },
+              "right": {
+                "kind": "identifier",
+                "name": "clockIn"
+              }
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Employee ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Clock-in time is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Clock-out must be after clock-in"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "employeeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "employeeId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "locationId",
+          "expression": {
+            "kind": "identifier",
+            "name": "locationId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shiftId",
+          "expression": {
+            "kind": "identifier",
+            "name": "shiftId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockIn",
+          "expression": {
+            "kind": "identifier",
+            "name": "clockIn"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clockOut",
+          "expression": {
+            "kind": "identifier",
+            "name": "clockOut"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "breakMinutes",
+          "expression": {
+            "kind": "identifier",
+            "name": "breakMinutes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryAdded"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "TimeEntry",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "TimeEntryDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Time entry is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "TimeEntryDeleted"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "TimecardEditRequest",
+      "parameters": [
+        {
+          "name": "timeEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "requestedClockIn",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "requestedClockOut",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "requestedBreakMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "timeEntryId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "timeEntryId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "reason"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "TimecardEditRequestDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Time entry ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Employee ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Reason is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "timeEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "timeEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "employeeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "employeeId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "requestedClockIn",
+          "expression": {
+            "kind": "identifier",
+            "name": "requestedClockIn"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "requestedClockOut",
+          "expression": {
+            "kind": "identifier",
+            "name": "requestedClockOut"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "requestedBreakMinutes",
+          "expression": {
+            "kind": "identifier",
+            "name": "requestedBreakMinutes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "reason",
+          "expression": {
+            "kind": "identifier",
+            "name": "reason"
+          }
+        }
+      ],
+      "emits": [
+        "TimecardEditRequested"
+      ]
+    },
+    {
+      "name": "approve",
+      "entity": "TimecardEditRequest",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "pending"
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockAlreadyProcessed",
+          "code": "blockAlreadyProcessed",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isProcessed"
+          },
+          "severity": "block",
+          "messageTemplate": "Edit request has already been processed (status: '{status}')",
+          "detailsMapping": {
+            "timeEntryId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "timeEntryId"
+            },
+            "employeeId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            },
+            "status": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "TimecardEditRequestDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only approve pending requests"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "approved"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "TimecardEditApproved"
+      ]
+    },
+    {
+      "name": "reject",
+      "entity": "TimecardEditRequest",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "pending"
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockAlreadyProcessed",
+          "code": "blockAlreadyProcessed",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isProcessed"
+          },
+          "severity": "block",
+          "messageTemplate": "Edit request has already been processed (status: '{status}')",
+          "detailsMapping": {
+            "timeEntryId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "timeEntryId"
+            },
+            "employeeId": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            },
+            "status": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "TimecardEditRequestDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only reject pending requests"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "rejected"
+            }
+          }
+        }
+      ],
+      "emits": [
+        "TimecardEditRejected"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "StaffCanClockInOut",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "All staff can clock in and out"
+    },
+    {
+      "name": "ManagersCanAddEntries",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Leads and managers can add manual time entries"
+    },
+    {
+      "name": "ManagersCanDeleteEntries",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can delete time entries"
+    },
+    {
+      "name": "StaffCanRequestEdit",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "All staff can request timecard edits"
+    },
+    {
+      "name": "ManagersCanApproveEdits",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can approve timecard edits"
+    },
+    {
+      "name": "TimeEntryDefaultAccess",
+      "entity": "TimeEntry",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "hr_admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "payroll_admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Time entry management"
+    },
+    {
+      "name": "TimecardEditRequestDefaultAccess",
+      "entity": "TimecardEditRequest",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "hr_admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "payroll_admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Time entry management"
+    }
+  ],
+  "reactions": []
+}

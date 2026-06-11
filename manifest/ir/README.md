@@ -17,10 +17,17 @@ reads from `manifest/ir/`:
 
 Files in this directory:
 
-- `kitchen.ir.json` — full merged IR (source of truth for codegen + runtime).
+- `kitchen.ir.json` — full merged IR (canonical for validate/codegen; large monolith).
+- `shards/*.ir.json` — per-source IR shards (one per `.manifest`; smaller diffs).
+- `module-graph.json` — source → entity/command counts (module graph index).
 - `kitchen.commands.json` — flat command index.
 - `kitchen.merge-report.json` — per-compile merge/dedup report.
-- `kitchen.provenance.json` — compiler version + (currently empty) content hashes.
-- `candidate-schema.prisma` — an experimental Prisma-projection output (NOT the
-  live schema; the live schema is hand-authored at
-  `packages/database/prisma/schema.prisma`).
+- `kitchen.provenance.json` — compiler version + content hashes.
+
+**Three Prisma schemas (do not conflate):**
+
+| File | Role |
+|------|------|
+| `packages/database/prisma/schema.prisma` | **Live** DB schema (hand-authored until Phase 2b). |
+| `generated-schema.prisma` | IR projection for **CI drift gate** (`pnpm manifest:schema:check`). |
+| `candidate-schema.prisma` | **Dev-only** additive harness (`emit-full-schema.mjs`); not deployed. |

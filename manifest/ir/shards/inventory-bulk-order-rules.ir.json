@@ -1,0 +1,2478 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "d7e2dcf819891efe902a6bf1c367ed4b4356587b330a56e16c003eebd74da499",
+    "irHash": "7c20dfc8b2e81a4b8baf3270a9ea984244c50b9491a555b7e00aba55cf2f6e2b",
+    "compilerVersion": "2.4.1",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-10T18:32:42.856Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "BulkOrderRule",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "discount"
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "discount"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isEffective",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "<=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ],
+          "cache": {
+            "strategy": "request"
+          }
+        },
+        {
+          "name": "hasDiscountAction",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "action"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "discountPercent"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "hasFreeShipping",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "action"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              }
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "shippingIncluded"
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "activate",
+        "deactivate",
+        "adjustPriority",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireRuleName",
+          "code": "requireRuleName",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "ruleName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "ruleName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Rule name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireMinimumQuantity",
+          "code": "requireMinimumQuantity",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "minimumQuantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Minimum quantity must be at least 1",
+          "overrideable": false
+        },
+        {
+          "name": "requireRuleType",
+          "code": "requireRuleType",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "ruleType"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "free_shipping"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "threshold"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Rule type must be discount, free_shipping, or threshold",
+          "overrideable": false
+        },
+        {
+          "name": "requireAction",
+          "code": "requireAction",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "action"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "free_shipping"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Action must be discount or free_shipping",
+          "overrideable": false
+        },
+        {
+          "name": "validDiscount",
+          "code": "validDiscount",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "discountPercent"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "discountPercent"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 100
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Discount percent must be between 0 and 100",
+          "overrideable": false
+        },
+        {
+          "name": "warnNoDiscount",
+          "code": "warnNoDiscount",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "action"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "discountPercent"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isActive"
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Bulk order rule '{ruleName}' has discount action but 0% discount — verify this is intentional",
+          "detailsMapping": {
+            "ruleName": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "ruleName"
+            },
+            "action": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "action"
+            },
+            "discountPercent": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "discountPercent"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [],
+      "defaultPolicies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "BulkOrderRule",
+      "target": "durable",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "BulkOrderRuleCreated",
+      "channel": "inventory.bulk-order-rule.created",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleUpdated",
+      "channel": "inventory.bulk-order-rule.updated",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleActivated",
+      "channel": "inventory.bulk-order-rule.activated",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "activatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleSuspended",
+      "channel": "inventory.bulk-order-rule.suspended",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "suspendedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRulePriorityAdjusted",
+      "channel": "inventory.bulk-order-rule.priority-adjusted",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newPriority",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleDeactivated",
+      "channel": "inventory.bulk-order-rule.deactivated",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "create",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "ruleType"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "threshold"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "action"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "discountPercent"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "identifier",
+              "name": "discountPercent"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 100
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Minimum quantity must be at least 1"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid rule type"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid action"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Discount percent must be between 0 and 100"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleName",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleType",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "action",
+          "expression": {
+            "kind": "identifier",
+            "name": "action"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "thresholdQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "thresholdQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "freeItemQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "freeItemQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shippingIncluded",
+          "expression": {
+            "kind": "identifier",
+            "name": "shippingIncluded"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "decimal",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "ruleType"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "threshold"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "action"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "discountPercent"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "identifier",
+              "name": "discountPercent"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 100
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnDiscountIncrease",
+          "code": "warnDiscountIncrease",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "identifier",
+                  "name": "action"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "identifier",
+                  "name": "discountPercent"
+                },
+                "right": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "discountPercent"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "discountPercent"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "messageTemplate": "Discount increased from {oldPct}% to {newPct}% for rule '{ruleName}'",
+          "detailsMapping": {
+            "ruleName": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "oldPct": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "discountPercent"
+            },
+            "newPct": {
+              "kind": "identifier",
+              "name": "discountPercent"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Minimum quantity must be at least 1"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid rule type"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid action"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Discount percent must be between 0 and 100"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleName",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleType",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "action",
+          "expression": {
+            "kind": "identifier",
+            "name": "action"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "thresholdQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "thresholdQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "freeItemQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "freeItemQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shippingIncluded",
+          "expression": {
+            "kind": "identifier",
+            "name": "shippingIncluded"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleUpdated"
+      ]
+    },
+    {
+      "name": "activate",
+      "entity": "BulkOrderRule",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot activate a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already active"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleActivated"
+      ]
+    },
+    {
+      "name": "deactivate",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "self"
+          },
+          "property": "isActive"
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot deactivate a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already inactive"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleSuspended"
+      ]
+    },
+    {
+      "name": "adjustPriority",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "newPriority",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "newPriority"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot adjust priority of a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Priority must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "newPriority"
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRulePriorityAdjusted"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnActiveRule",
+          "code": "warnActiveRule",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "messageTemplate": "Deleting active bulk order rule '{ruleName}'",
+          "detailsMapping": {
+            "ruleName": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "ruleName"
+            },
+            "reason": {
+              "kind": "identifier",
+              "name": "reason"
+            }
+          },
+          "overrideable": false
+        }
+      ],
+      "policies": [
+        "BulkOrderRuleDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleDeactivated"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "BulkOrderRuleDefaultAccess",
+      "entity": "BulkOrderRule",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_lead"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "inventory_manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Bulk order management"
+    }
+  ],
+  "reactions": []
+}

@@ -17,7 +17,7 @@
   "adapterDerived": {
     "InventoryTransfer": {
       "transferNumber": {
-        "rule": "Generated server-side by InventoryTransferPrismaStore.create in packages/manifest-adapters/src/prisma-stores/broken-read-batch16-inventory-transfer.ts. Pattern: `TRF-${count+1, zero-padded to 6}` where count is tenant-scoped prisma.inventoryTransfer.count(). The UI does not send transferNumber; the manifest does not declare it as a create param. Matches the contract in apps/api/__tests__/inventory/transfers/transfers.quarantine.test.ts.",
+        "rule": "Generated server-side by InventoryTransferPrismaStore.create in manifest/runtime/src/prisma-stores/inventory-transfer-prisma-store.ts. Pattern: `TRF-${count+1, zero-padded to 6}` where count is tenant-scoped prisma.inventoryTransfer.count(). The UI does not send transferNumber; the manifest does not declare it as a create param. Matches the contract in apps/api/__tests__/inventory/transfers/transfers.quarantine.test.ts.",
         "owner": "inventory-platform",
         "reviewBy": "2027-01-01"
       },

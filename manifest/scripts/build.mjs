@@ -145,12 +145,26 @@ function generateReactQueryHooks() {
   console.log("[manifest/build] TanStack Query hooks generated.");
 }
 
+function cleanupGeneratedOrphans() {
+  console.log("[manifest/build] Step 6: Cleaning generated/ orphan artifacts...");
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const result = spawnSync(bin, ["exec", "node", "manifest/scripts/cleanup-generated-orphans.mjs"], {
+    stdio: "inherit",
+    shell: process.platform === "win32",
+  });
+  if (result.status !== 0) {
+    console.error("[manifest/build] Generated cleanup failed.");
+    process.exit(1);
+  }
+}
+
 function main() {
   compileMergedManifests();
   generateFromIR();
   generateRouteSurface();
   auditRouteBoundaries();
   generateReactQueryHooks();
+  cleanupGeneratedOrphans();
   console.log("[manifest/build] Build complete!");
 }
 

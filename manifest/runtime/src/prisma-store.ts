@@ -16,10 +16,12 @@ import type {
   Station,
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
-import { GenericPrismaStore } from "./prisma-stores/generic-prisma-store";
-// Boilerplate store imports removed — 81 entities now use GenericPrismaStore.
-// Only custom stores with genuine business logic retain specific imports.
-import { InventoryTransferPrismaStore } from "./prisma-stores/broken-read-batch16-inventory-transfer";
+import {
+  createGenericPrismaStore,
+  type PrismaClientLike,
+} from "./generated/prisma-store-registry.generated";
+import { EventPrismaStore } from "./prisma-stores/event-prisma-store";
+import { InventoryTransferPrismaStore } from "./prisma-stores/inventory-transfer-prisma-store";
 
 // Re-export stores that are used internally AND re-exported from index.ts
 
@@ -802,10 +804,9 @@ export function createPrismaStoreProvider(
         return new StationPrismaStore(prisma, tenantId);
       case "InventoryTransfer":
         return new InventoryTransferPrismaStore(prisma, tenantId, userId);
+      case "Event":
+        return new EventPrismaStore(prisma, tenantId);
       default: {
-        // 81 boilerplate entities now handled by GenericPrismaStore.
-        // The PrismaStore constructor (line ~2942) instantiates GenericPrismaStore
-        // when createPrismaStoreProvider returns undefined.
         return undefined;
       }
     }
@@ -963,10 +964,10 @@ export class PrismaStore implements Store<EntityInstance> {
         config.tenantId,
         config.userId ?? ""
       )(config.entityName) as Store<EntityInstance> | undefined) ??
-      new GenericPrismaStore(
-        config.prisma,
+      createGenericPrismaStore(
+        config.prisma as unknown as PrismaClientLike,
         config.entityName,
-        config.tenantId
+        config.tenantId,
       );
     this.outboxWriter = config.outboxWriter;
     this.eventCollector = config.eventCollector;

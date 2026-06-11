@@ -1,0 +1,671 @@
+{
+  "version": 1,
+  "compiledAt": "2026-06-10T18:32:43.156Z",
+  "contentHash": "71a5f0e41655d18d1908ff318f1cfbf566b131616727e56fdbd2eb90793ab6ca",
+  "sources": [
+    {
+      "path": "ai/ai-event-setup-rules.manifest",
+      "domain": "ai",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "ai/knowledge-base-rules.manifest",
+      "domain": "ai",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "core/admin-chat-participant-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 4,
+      "events": 4
+    },
+    {
+      "path": "core/admin-task-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 8,
+      "events": 4
+    },
+    {
+      "path": "core/alerts-config-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "core/allergen-warning-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "core/bank-account-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "core/chart-of-account-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "core/container-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "core/crm-admin-extended-rules.manifest",
+      "domain": "core",
+      "entities": 7,
+      "commands": 25,
+      "events": 25
+    },
+    {
+      "path": "core/document-version-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "core/email-template-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "core/email-workflow-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 5,
+      "events": 4
+    },
+    {
+      "path": "core/employee-availability-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "core/employee-certification-rules.manifest",
+      "domain": "core",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "crm/client-interaction-rules.manifest",
+      "domain": "crm",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "crm/client-rules.manifest",
+      "domain": "crm",
+      "entities": 3,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "crm/deal-rules.manifest",
+      "domain": "crm",
+      "entities": 1,
+      "commands": 8,
+      "events": 8
+    },
+    {
+      "path": "crm/lead-rules.manifest",
+      "domain": "crm",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "crm/proposal-rules.manifest",
+      "domain": "crm",
+      "entities": 2,
+      "commands": 12,
+      "events": 12
+    },
+    {
+      "path": "events/battle-board-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 10,
+      "events": 10
+    },
+    {
+      "path": "events/catering-order-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 9,
+      "events": 9
+    },
+    {
+      "path": "events/command-board-rules.manifest",
+      "domain": "events",
+      "entities": 5,
+      "commands": 17,
+      "events": 17
+    },
+    {
+      "path": "events/event-automation-rules.manifest",
+      "domain": "events",
+      "entities": 3,
+      "commands": 20,
+      "events": 20
+    },
+    {
+      "path": "events/event-budget-rules.manifest",
+      "domain": "events",
+      "entities": 2,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "events/event-contract-rules.manifest",
+      "domain": "events",
+      "entities": 2,
+      "commands": 12,
+      "events": 12
+    },
+    {
+      "path": "events/event-dish-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "events/event-guest-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "events/event-import-workflow.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 18,
+      "events": 18
+    },
+    {
+      "path": "events/event-report-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "events/event-rules.manifest",
+      "domain": "events",
+      "entities": 3,
+      "commands": 18,
+      "events": 19
+    },
+    {
+      "path": "events/event-staff-rules.manifest",
+      "domain": "events",
+      "entities": 1,
+      "commands": 8,
+      "events": 8
+    },
+    {
+      "path": "events/events-extended-rules.manifest",
+      "domain": "events",
+      "entities": 8,
+      "commands": 37,
+      "events": 37
+    },
+    {
+      "path": "finance/budget-rules.manifest",
+      "domain": "finance",
+      "entities": 1,
+      "commands": 8,
+      "events": 8
+    },
+    {
+      "path": "finance/collections-rules.manifest",
+      "domain": "finance",
+      "entities": 3,
+      "commands": 27,
+      "events": 23
+    },
+    {
+      "path": "finance/invoice-rules.manifest",
+      "domain": "finance",
+      "entities": 1,
+      "commands": 11,
+      "events": 9
+    },
+    {
+      "path": "finance/payment-method-rules.manifest",
+      "domain": "finance",
+      "entities": 1,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "finance/payment-rules.manifest",
+      "domain": "finance",
+      "entities": 1,
+      "commands": 10,
+      "events": 6
+    },
+    {
+      "path": "finance/pricing-tier-rules.manifest",
+      "domain": "finance",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "finance/revenue-recognition-rules.manifest",
+      "domain": "finance",
+      "entities": 2,
+      "commands": 18,
+      "events": 15
+    },
+    {
+      "path": "integrations/sms-automation-rules.manifest",
+      "domain": "integrations",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "integrations/version-control-rules.manifest",
+      "domain": "integrations",
+      "entities": 3,
+      "commands": 12,
+      "events": 12
+    },
+    {
+      "path": "inventory/bulk-order-rules.manifest",
+      "domain": "inventory",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "inventory/cycle-count-rules.manifest",
+      "domain": "inventory",
+      "entities": 3,
+      "commands": 17,
+      "events": 17
+    },
+    {
+      "path": "inventory/inventory-extended-rules.manifest",
+      "domain": "inventory",
+      "entities": 12,
+      "commands": 38,
+      "events": 36
+    },
+    {
+      "path": "inventory/inventory-rules.manifest",
+      "domain": "inventory",
+      "entities": 1,
+      "commands": 9,
+      "events": 9
+    },
+    {
+      "path": "inventory/inventory-supplier-rules.manifest",
+      "domain": "inventory",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "inventory/inventory-transaction-rules.manifest",
+      "domain": "inventory",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "inventory/inventory-transfer-rules.manifest",
+      "domain": "inventory",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "kitchen/dish-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 10,
+      "events": 10
+    },
+    {
+      "path": "kitchen/ingredient-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "kitchen/kitchen-extended-rules.manifest",
+      "domain": "kitchen",
+      "entities": 15,
+      "commands": 39,
+      "events": 39
+    },
+    {
+      "path": "kitchen/kitchen-task-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 15,
+      "events": 15
+    },
+    {
+      "path": "kitchen/menu-rules.manifest",
+      "domain": "kitchen",
+      "entities": 2,
+      "commands": 12,
+      "events": 13
+    },
+    {
+      "path": "kitchen/prep-comment-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "kitchen/prep-list-rules.manifest",
+      "domain": "kitchen",
+      "entities": 2,
+      "commands": 16,
+      "events": 17
+    },
+    {
+      "path": "kitchen/prep-method-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 4,
+      "events": 4
+    },
+    {
+      "path": "kitchen/prep-task-plan-workflow.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 16,
+      "events": 16
+    },
+    {
+      "path": "kitchen/prep-task-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 14,
+      "events": 14
+    },
+    {
+      "path": "kitchen/recipe-rules.manifest",
+      "domain": "kitchen",
+      "entities": 4,
+      "commands": 17,
+      "events": 17
+    },
+    {
+      "path": "kitchen/station-rules.manifest",
+      "domain": "kitchen",
+      "entities": 1,
+      "commands": 9,
+      "events": 9
+    },
+    {
+      "path": "operations/equipment-rules.manifest",
+      "domain": "operations",
+      "entities": 2,
+      "commands": 12,
+      "events": 12
+    },
+    {
+      "path": "operations/facilities-all-rules.manifest",
+      "domain": "operations",
+      "entities": 5,
+      "commands": 27,
+      "events": 27
+    },
+    {
+      "path": "operations/logistics-all-rules.manifest",
+      "domain": "operations",
+      "entities": 4,
+      "commands": 26,
+      "events": 26
+    },
+    {
+      "path": "operations/shipment-rules.manifest",
+      "domain": "operations",
+      "entities": 2,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "operations/work-order-rules.manifest",
+      "domain": "operations",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "operations/workforce-ai-rules.manifest",
+      "domain": "operations",
+      "entities": 2,
+      "commands": 5,
+      "events": 6
+    },
+    {
+      "path": "platform/api-key-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "platform/notification-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 4,
+      "events": 4
+    },
+    {
+      "path": "platform/override-audit-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 2,
+      "events": 2
+    },
+    {
+      "path": "platform/rate-limit-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "platform/reactions.manifest",
+      "domain": "platform",
+      "entities": 0,
+      "commands": 0,
+      "events": 0
+    },
+    {
+      "path": "platform/role-policy-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 4,
+      "events": 4
+    },
+    {
+      "path": "platform/sample-data-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 3,
+      "events": 3
+    },
+    {
+      "path": "platform/user-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "platform/workflow-rules.manifest",
+      "domain": "platform",
+      "entities": 1,
+      "commands": 4,
+      "events": 4
+    },
+    {
+      "path": "procurement/procurement-requisition-rules.manifest",
+      "domain": "procurement",
+      "entities": 2,
+      "commands": 12,
+      "events": 12
+    },
+    {
+      "path": "procurement/purchase-order-rules.manifest",
+      "domain": "procurement",
+      "entities": 2,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "procurement/vendor-catalog-rules.manifest",
+      "domain": "procurement",
+      "entities": 1,
+      "commands": 6,
+      "events": 6
+    },
+    {
+      "path": "procurement/vendor-contract-rules.manifest",
+      "domain": "procurement",
+      "entities": 1,
+      "commands": 10,
+      "events": 10
+    },
+    {
+      "path": "procurement/vendor-rules.manifest",
+      "domain": "procurement",
+      "entities": 1,
+      "commands": 8,
+      "events": 8
+    },
+    {
+      "path": "quality/qa-rules.manifest",
+      "domain": "quality",
+      "entities": 3,
+      "commands": 11,
+      "events": 11
+    },
+    {
+      "path": "quality/waste-entry-rules.manifest",
+      "domain": "quality",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "staff/labor-budget-rules.manifest",
+      "domain": "staff",
+      "entities": 2,
+      "commands": 9,
+      "events": 9
+    },
+    {
+      "path": "staff/payroll-rules.manifest",
+      "domain": "staff",
+      "entities": 4,
+      "commands": 13,
+      "events": 13
+    },
+    {
+      "path": "staff/schedule-rules.manifest",
+      "domain": "staff",
+      "entities": 2,
+      "commands": 13,
+      "events": 13
+    },
+    {
+      "path": "staff/staff-logistics-extended-rules.manifest",
+      "domain": "staff",
+      "entities": 14,
+      "commands": 46,
+      "events": 46
+    },
+    {
+      "path": "staff/staff-member-rules.manifest",
+      "domain": "staff",
+      "entities": 1,
+      "commands": 5,
+      "events": 5
+    },
+    {
+      "path": "staff/staff-performance-rules.manifest",
+      "domain": "staff",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "staff/time-entry-rules.manifest",
+      "domain": "staff",
+      "entities": 2,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "staff/time-off-request-rules.manifest",
+      "domain": "staff",
+      "entities": 1,
+      "commands": 7,
+      "events": 7
+    },
+    {
+      "path": "staff/training-assignment-rules.manifest",
+      "domain": "staff",
+      "entities": 0,
+      "commands": 0,
+      "events": 7
+    },
+    {
+      "path": "staff/training-module-rules.manifest",
+      "domain": "staff",
+      "entities": 5,
+      "commands": 20,
+      "events": 18
+    },
+    {
+      "path": "staff/training-module-sel-rules.manifest",
+      "domain": "staff",
+      "entities": 11,
+      "commands": 11,
+      "events": 4
+    }
+  ],
+  "merged": {
+    "path": "kitchen.ir.json",
+    "entities": 202,
+    "commands": 1000,
+    "events": 982
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * BROKEN_PRISMA_READ batch 16 — InventoryTransfer Prisma store.
+ * InventoryTransfer Prisma store (bespoke — not generic metadata-driven).
  *
  * Why this exists (per IMPLEMENTATION_PLAN.md "InventoryTransfer.transferNumber — deferred"):
  *

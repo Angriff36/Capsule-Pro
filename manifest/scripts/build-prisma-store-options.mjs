@@ -20,7 +20,7 @@ const root = resolve(here, "../..");
 const prismaOptionsPath = join(here, "prisma-options.generated.json");
 const metadataJsonPath = join(
   root,
-  "manifest/runtime/src/generated/prisma-model-metadata.generated.json",
+  "manifest/generated/runtime/prisma-model-metadata.generated.json",
 );
 const outPath = join(here, "prisma-store-options.generated.json");
 
@@ -46,6 +46,8 @@ const options = {
   naming: prismaOptions.naming ?? "snake_case",
   metadataOutput: "manifest-prisma-store-metadata.generated.ts",
   registryOutput: "prisma-store-registry.generated.ts",
+  metadataImportPath: "./manifest-prisma-store-metadata.generated.js",
+  storeImportPath: "@angriff36/manifest/stores/prisma-generic",
   accessorNames,
   tableMappings: prismaOptions.tableMappings ?? {},
   columnMappings: prismaOptions.columnMappings ?? {},

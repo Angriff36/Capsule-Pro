@@ -1,0 +1,4092 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "d621b38bb098cb07f8c0034eef245d08323dc63dccf363fdfe095842a0c61416",
+    "irHash": "fb57a2d6bea85badfa1d6d7dc50609b1f8f4f1e40c1a71d41a6c82482c5167c2",
+    "compilerVersion": "2.4.1",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-10T18:32:43.060Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [
+    {
+      "name": "SelOnboardingTrainingModuleDefinition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel_event_staff_onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "SEL Event Staff — Onboarding Training"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Required pre-shift training for all Mangia staff working SEL Friday Lunch events. Covers client context, compliance requirements, pre-event workflow, buffet service, and wrap-up procedures. Must be completed before first shift."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "contentType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "interactive"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "contentUrl",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "TBD"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "durationMinutes",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 20
+          },
+          "modifiers": []
+        },
+        {
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isRequired",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "passThresholdPercent",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 80
+          },
+          "modifiers": []
+        },
+        {
+          "name": "maxAttempts",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 3
+          },
+          "modifiers": []
+        },
+        {
+          "name": "requiredRole",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "staff"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingModuleDefinitionAccess"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion01Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q1"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q1"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Context"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Mangia is SEL's only catering vendor on Friday Lunch events."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "True"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "False"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "B"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "False. Mangia is not SEL's only Friday Lunch vendor."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Staff need to understand we earn our spot."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion01Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion02Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q2"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q2"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Context"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 2
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "What is SEL's primary reason for choosing Mangia over other vendors?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "We are the cheapest option"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "We are the closest to campus"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Professionalism, quality, and consistency"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "We have the most staff available"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "SEL chooses Mangia for professionalism, quality, and consistency."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "This is the service standard every SEL shift must reinforce."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion02Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion03Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q3"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q3"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Compliance"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 3
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Your WA State Food Worker Card must be current..."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Within 30 days of your first shift"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Before your first shift"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Within your first week"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "By the end of your first month"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "B"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Your WA State Food Worker Card must be current before your first shift."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "No current card means you are not shift-ready."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion03Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion04Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q4"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q4"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Compliance"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 4
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Where do you pick up your SEL visitor badge?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "At your assigned building"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "At the Mangia vehicle"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "At Building One security desk"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The BOH Lead brings it to you"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Pick up the badge at Building One security desk."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Arriving at the right check-in point prevents delays."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion04Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion05Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q5"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q5"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Compliance"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 5
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Where must your visitor badge be worn at all times on SEL campus?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "In your pocket for safekeeping"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Clipped to your bag"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Above the waistline, visible at all times"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Anywhere comfortable"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Wear the badge above the waistline and keep it visible."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Campus badge rules are mandatory, not optional."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion05Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion06Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q6"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q6"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Pre-Event Workflow"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 6
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Put the pre-event steps in the correct order:"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Badge → Clock in → Arrive → Meet crew"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Arrive → Clock in → Badge → Meet crew"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Arrive → Badge → Clock in → Meet crew"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Clock in → Arrive → Badge → Meet crew"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "B"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The correct order is Arrive → Clock in → Badge → Meet crew."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The sequence matters for timekeeping, access, and crew readiness."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion06Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion07Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q7"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q7"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Pre-Event Workflow"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 7
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "When do you clock in on Nowsta?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "After you pick up your badge"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "When the BOH Lead arrives"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "At your scheduled start time when you arrive on site"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "When service begins"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Clock in at your scheduled start time when you arrive on site."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Nowsta timekeeping starts when you are on site and ready to work."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion07Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion08Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q8"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q8"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Buffet Service"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 8
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "During buffet service, which portion do Mangia staff always serve?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Side dishes only"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Everything equally"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The protein"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Whatever the BOH Lead decides on the day"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Mangia staff always serve the protein during buffet service."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Serving responsibilities need to stay consistent across lines."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion08Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion09Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q9"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q9"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Buffet Service"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 9
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "What is the typical staffing configuration per buffet line?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "1 Server + 1 Runner"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "3 Servers"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "2 Servers + 1 Runner"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "2 Runners + 1 Server"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "C"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "A typical line uses 2 Servers and 1 Runner."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Knowing the standard line build helps staff slot in quickly."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion09Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion10Definition",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "questionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "sel-event-staff-onboarding-q10"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "moduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "training-module-sel-event-staff-onboarding"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "code",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Q10"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "sectionTitle",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Wrap-Up"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "displayOrder",
+          "type": {
+            "name": "int",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 10
+          },
+          "modifiers": []
+        },
+        {
+          "name": "prompt",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Which of the following is the correct final checkout sequence?"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionA",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Clock out → Return badge → Sign out → Check in with BOH Lead"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionB",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Check in with BOH Lead → Sign out of staff sheet → Return SEL badge → Clock out of Nowsta"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionC",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Return badge → Clock out → Sign out → Check in with BOH Lead"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optionD",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "Sign out → Return badge → Check in with BOH Lead → Clock out"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "correctOptionKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "B"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "explanation",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The correct sequence is Check in with BOH Lead → Sign out → Return badge → Clock out."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "whyItMatters",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "The checkout order closes accountability and campus access correctly."
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "modifiers": [
+            "readonly"
+          ]
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "question",
+          "kind": "belongsTo",
+          "target": "TrainingQuestion",
+          "foreignKey": {
+            "fields": [
+              "questionId"
+            ]
+          }
+        },
+        {
+          "name": "module",
+          "kind": "belongsTo",
+          "target": "TrainingModule",
+          "foreignKey": {
+            "fields": [
+              "moduleId"
+            ]
+          }
+        }
+      ],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": [],
+      "defaultPolicies": [
+        "SelOnboardingTrainingQuestion10Access"
+      ],
+      "key": [
+        "tenantId",
+        "id"
+      ],
+      "timestamps": true
+    }
+  ],
+  "enums": [],
+  "stores": [
+    {
+      "entity": "SelOnboardingTrainingModuleDefinition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion01Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion02Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion03Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion04Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion05Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion06Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion07Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion08Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion09Definition",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "SelOnboardingTrainingQuestion10Definition",
+      "target": "memory",
+      "config": {}
+    }
+  ],
+  "events": [
+    {
+      "name": "StaffMemberCreated",
+      "channel": "staff.member.created",
+      "payload": [
+        {
+          "name": "staffMemberId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "firstShiftAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "dueAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "StaffMemberFirstShiftScheduled",
+      "channel": "staff.member.first-shift-scheduled",
+      "payload": [
+        {
+          "name": "staffMemberId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "firstShiftAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "dueAt",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingDefinitionCreated",
+      "channel": "training.sel-onboarding.definition-created",
+      "payload": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SelOnboardingTrainingQuestionDefinitionCreated",
+      "channel": "training.sel-onboarding.question-definition-created",
+      "payload": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingModuleDefinition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingModuleDefinitionAccess"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion01Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion01Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion02Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion02Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion03Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion03Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion04Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion04Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion05Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion05Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion06Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion06Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion07Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion07Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion08Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion08Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion09Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion09Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "SelOnboardingTrainingQuestion10Definition",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "policies": [
+        "SelOnboardingTrainingQuestion10Access"
+      ],
+      "actions": [],
+      "emits": [
+        "SelOnboardingTrainingQuestionDefinitionCreated"
+      ]
+    }
+  ],
+  "policies": [
+    {
+      "name": "SelOnboardingTrainingModuleDefinitionAccess",
+      "entity": "SelOnboardingTrainingModuleDefinition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion01Access",
+      "entity": "SelOnboardingTrainingQuestion01Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion02Access",
+      "entity": "SelOnboardingTrainingQuestion02Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion03Access",
+      "entity": "SelOnboardingTrainingQuestion03Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion04Access",
+      "entity": "SelOnboardingTrainingQuestion04Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion05Access",
+      "entity": "SelOnboardingTrainingQuestion05Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion06Access",
+      "entity": "SelOnboardingTrainingQuestion06Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion07Access",
+      "entity": "SelOnboardingTrainingQuestion07Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion08Access",
+      "entity": "SelOnboardingTrainingQuestion08Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion09Access",
+      "entity": "SelOnboardingTrainingQuestion09Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "SelOnboardingTrainingQuestion10Access",
+      "entity": "SelOnboardingTrainingQuestion10Definition",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "system"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "reactions": [
+    {
+      "event": "SelOnboardingTrainingDefinitionCreated",
+      "targetEntity": "TrainingModule",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "moduleId"
+      },
+      "params": [
+        {
+          "name": "id",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "moduleId"
+          }
+        },
+        {
+          "name": "code",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "code"
+          }
+        },
+        {
+          "name": "title",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "title"
+          }
+        },
+        {
+          "name": "description",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "description"
+          }
+        },
+        {
+          "name": "contentUrl",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "contentUrl"
+          }
+        },
+        {
+          "name": "contentType",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "contentType"
+          }
+        },
+        {
+          "name": "durationMinutes",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "durationMinutes"
+          }
+        },
+        {
+          "name": "category",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "category"
+          }
+        },
+        {
+          "name": "isRequired",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "isRequired"
+          }
+        },
+        {
+          "name": "passThresholdPercent",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "passThresholdPercent"
+          }
+        },
+        {
+          "name": "maxAttempts",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "maxAttempts"
+          }
+        },
+        {
+          "name": "requiredRole",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "requiredRole"
+          }
+        },
+        {
+          "name": "createdBy",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "system"
+            }
+          }
+        },
+        {
+          "name": "publishImmediately",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "SelOnboardingTrainingQuestionDefinitionCreated",
+      "targetEntity": "TrainingQuestion",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "questionId"
+      },
+      "params": [
+        {
+          "name": "id",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "questionId"
+          }
+        },
+        {
+          "name": "moduleId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "moduleId"
+          }
+        },
+        {
+          "name": "code",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "code"
+          }
+        },
+        {
+          "name": "sectionTitle",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "sectionTitle"
+          }
+        },
+        {
+          "name": "displayOrder",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "displayOrder"
+          }
+        },
+        {
+          "name": "prompt",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "prompt"
+          }
+        },
+        {
+          "name": "optionA",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "optionA"
+          }
+        },
+        {
+          "name": "optionB",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "optionB"
+          }
+        },
+        {
+          "name": "optionC",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "optionC"
+          }
+        },
+        {
+          "name": "optionD",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "optionD"
+          }
+        },
+        {
+          "name": "correctOptionKey",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "correctOptionKey"
+          }
+        },
+        {
+          "name": "explanation",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "explanation"
+          }
+        },
+        {
+          "name": "whyItMatters",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "whyItMatters"
+          }
+        }
+      ]
+    },
+    {
+      "event": "StaffMemberCreated",
+      "targetEntity": "TrainingAssignment",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "call",
+        "callee": {
+          "kind": "identifier",
+          "name": "uuid"
+        },
+        "args": []
+      },
+      "params": [
+        {
+          "name": "id",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "uuid"
+            },
+            "args": []
+          }
+        },
+        {
+          "name": "moduleId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "training-module-sel-event-staff-onboarding"
+            }
+          }
+        },
+        {
+          "name": "moduleCode",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "sel_event_staff_onboarding"
+            }
+          }
+        },
+        {
+          "name": "moduleTitle",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "SEL Event Staff — Onboarding Training"
+            }
+          }
+        },
+        {
+          "name": "staffMemberId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "staffMemberId"
+          }
+        },
+        {
+          "name": "staffRole",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "role"
+          }
+        },
+        {
+          "name": "passThresholdPercent",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 80
+            }
+          }
+        },
+        {
+          "name": "maxAttempts",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 3
+            }
+          }
+        },
+        {
+          "name": "firstShiftAt",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "firstShiftAt"
+          }
+        },
+        {
+          "name": "dueAt",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "dueAt"
+          }
+        },
+        {
+          "name": "dueDateReviewNeeded",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "StaffMemberFirstShiftScheduled",
+      "targetEntity": "TrainingAssignment",
+      "targetCommand": "applyFirstShiftDueDate",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "identifier",
+          "name": "payload"
+        },
+        "property": "staffMemberId"
+      },
+      "params": [
+        {
+          "name": "assignmentId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "assignmentId"
+          }
+        },
+        {
+          "name": "moduleId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "training-module-sel-event-staff-onboarding"
+            }
+          }
+        },
+        {
+          "name": "staffMemberId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "staffMemberId"
+          }
+        },
+        {
+          "name": "firstShiftAt",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "firstShiftAt"
+          }
+        },
+        {
+          "name": "dueAt",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "dueAt"
+          }
+        }
+      ]
+    }
+  ],
+  "sagas": [
+    {
+      "name": "InstallSelOnboardingTraining",
+      "steps": [
+        {
+          "name": "moduleDefinition",
+          "commandEntity": "SelOnboardingTrainingModuleDefinition",
+          "command": "create"
+        },
+        {
+          "name": "question01",
+          "commandEntity": "SelOnboardingTrainingQuestion01Definition",
+          "command": "create"
+        },
+        {
+          "name": "question02",
+          "commandEntity": "SelOnboardingTrainingQuestion02Definition",
+          "command": "create"
+        },
+        {
+          "name": "question03",
+          "commandEntity": "SelOnboardingTrainingQuestion03Definition",
+          "command": "create"
+        },
+        {
+          "name": "question04",
+          "commandEntity": "SelOnboardingTrainingQuestion04Definition",
+          "command": "create"
+        },
+        {
+          "name": "question05",
+          "commandEntity": "SelOnboardingTrainingQuestion05Definition",
+          "command": "create"
+        },
+        {
+          "name": "question06",
+          "commandEntity": "SelOnboardingTrainingQuestion06Definition",
+          "command": "create"
+        },
+        {
+          "name": "question07",
+          "commandEntity": "SelOnboardingTrainingQuestion07Definition",
+          "command": "create"
+        },
+        {
+          "name": "question08",
+          "commandEntity": "SelOnboardingTrainingQuestion08Definition",
+          "command": "create"
+        },
+        {
+          "name": "question09",
+          "commandEntity": "SelOnboardingTrainingQuestion09Definition",
+          "command": "create"
+        },
+        {
+          "name": "question10",
+          "commandEntity": "SelOnboardingTrainingQuestion10Definition",
+          "command": "create"
+        }
+      ],
+      "onFailure": "abort",
+      "emits": []
+    }
+  ]
+}

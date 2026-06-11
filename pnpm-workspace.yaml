@@ -5,3 +5,4 @@ packages:
 
 overrides:
   "@types/react": "19.2.15"
+  "@angriff36/manifest": "file:../Manifest"

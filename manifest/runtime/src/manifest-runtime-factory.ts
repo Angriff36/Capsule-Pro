@@ -42,7 +42,7 @@ import { createPrismaOutboxWriter, PrismaStore } from "./prisma-store";
 import { loadMergedPrecompiledIR, loadPrecompiledIR, verifyProvenanceHash } from "./runtime/loadManifests";
 import { ManifestRuntimeEngine } from "./runtime-engine";
 import { resolvePrismaModelKey } from "./generated/entity-to-prisma-model.generated";
-import { PRISMA_MODEL_METADATA } from "./generated/prisma-model-metadata.generated";
+import { PRISMA_MODEL_METADATA } from "./generated/manifest-prisma-store-metadata.generated";
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -229,6 +229,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   // of PrismaJsonStore (JSON blob). Manifest source + Prisma schema aligned.
   "Driver",
   "Vehicle",
+  "Event",
 ]);
 
 /**

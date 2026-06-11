@@ -80,7 +80,7 @@ function loadMetadata(): Record<string, ModelMeta> {
   const here = dirname(fileURLToPath(import.meta.url));
   const path = resolve(
     here,
-    "../../../../manifest/runtime/src/generated/prisma-model-metadata.generated.ts"
+    "../../../../manifest/generated/runtime/prisma-model-metadata.generated.ts"
   );
   const src = readFileSync(path, "utf8");
   const b = src.indexOf("{", src.indexOf("PRISMA_MODEL_METADATA"));

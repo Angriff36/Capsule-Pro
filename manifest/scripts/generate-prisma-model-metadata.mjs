@@ -22,7 +22,7 @@ const root = resolve(process.cwd());
 const schemaPath = resolve(root, "packages/database/prisma/schema.prisma");
 const outPath = resolve(
   root,
-  "manifest/runtime/src/generated/prisma-model-metadata.generated.ts",
+  "manifest/generated/runtime/prisma-model-metadata.generated.ts",
 );
 
 /**
@@ -220,7 +220,7 @@ writeFileSync(outPath, header + "\n" + body);
 // Contains only the accessor + field-name metadata needed for route generation.
 const jsonOutPath = resolve(
   root,
-  "manifest/runtime/src/generated/prisma-model-metadata.generated.json",
+  "manifest/generated/runtime/prisma-model-metadata.generated.json",
 );
 const lightweight = {};
 for (const [entityName, meta] of Object.entries(models)) {
@@ -228,6 +228,7 @@ for (const [entityName, meta] of Object.entries(models)) {
     accessor: meta.accessor,
     hasDeletedAt: meta.hasDeletedAt,
     pkFields: meta.pkFields,
+    ...(meta.requiresTenantConnect ? { requiresTenantConnect: true } : {}),
     fields: meta.fields.map((f) => ({ name: f.name, irName: f.irName })),
   };
 }
@@ -237,7 +238,7 @@ writeFileSync(jsonOutPath, JSON.stringify(lightweight, null, 2) + "\n");
 // Consumed by manifest-runtime-factory (hasTypedStore) and GenericPrismaStore.
 const bridgeOutPath = resolve(
   root,
-  "manifest/runtime/src/generated/entity-to-prisma-model.generated.ts",
+  "manifest/generated/runtime/entity-to-prisma-model.generated.ts",
 );
 const bridgeHeader = `// Generated from manifest/scripts/entity-domain-map.mjs - DO NOT EDIT
 // Produced by manifest/scripts/generate-prisma-model-metadata.mjs

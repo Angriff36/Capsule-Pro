@@ -9,17 +9,32 @@ Legend: **Status** = `BLOCKED` (waiting on a phase) · `READY` (replacement prov
 ---
 
 ## A. Hand-rolled Prisma stores → IR-driven store generation/provider (Phase 4)
-Replaced by: a generic IR-driven store provider OR a generated store projection (see prompt).
-(~95 `*PrismaStore` classes total across the dir + provider file.)
+Replaced by: `@angriff36/manifest/stores/prisma-generic` + `prisma-store` projection metadata/registry.
 
-| Path | LOC | Replaced by | Status |
+| Path | LOC (approx) | Replaced by | Status |
 |---|---|---|---|
-| `manifest/runtime/src/prisma-stores/` (entire dir, **43 files**) | 12,207 | generated/generic stores | BLOCKED (Phase 4) |
-| `manifest/runtime/src/prisma-store.ts` (`createPrismaStoreProvider` switch) | 3,075 | IR-driven provider (lookup, not switch) | BLOCKED (Phase 4) |
-| `prisma-stores/broken-read-batch*` naming convention | — | n/a (artifact of manual migration) | BLOCKED |
+| `manifest/runtime/src/prisma-stores/generic-prisma-store.ts` | 323 | package `GenericPrismaStore` | **DONE** (2026-06-10) |
+| `manifest/runtime/src/prisma-stores/` (remainder: **4 files**) | ~350 | package generic + bespoke exceptions | **PARTIAL** — bespoke stores remain |
+| `manifest/runtime/src/prisma-store.ts` (`createPrismaStoreProvider` switch) | ~990 | registry `createGenericPrismaStore` + 6 bespoke cases | **PARTIAL** — switch for exceptions only |
+| `prisma-stores/broken-read-batch*` naming | — | `inventory-transfer-prisma-store.ts` | **DONE** (renamed 2026-06-10) |
 
-**Do NOT delete `prisma-stores/shared.ts` blindly** — its coercion helpers (`toDecimalInput`,
-`asJsonInput`, `asNullableDate`) may still be needed by the generic provider. Migrate, then delete.
+**Remaining bespoke stores (intentional):** PrepTask, KitchenTask, PrepTaskPlanWorkflow, Station, InventoryTransfer, Event (`event-prisma-store.ts`).
+
+**Do NOT delete `prisma-stores/shared.ts` blindly** — still used by bespoke stores. Package `coercion.ts` covers generic path.
+
+**Generated root consolidation (2026-06-10):** Runtime Prisma metadata now lives at `manifest/generated/runtime/` (tracked). `manifest/runtime/src/generated` is a junction to that path. Orphan Prisma client copy under `manifest/generated/models/` removed via `cleanup-generated-orphans.mjs` (wired into `manifest:build`).
+
+**Structural debt progress (2026-06-10):**
+| Issue | Status |
+|---|---|
+| Two `generated/` roots | **PARTIAL** — single canonical tree; junction preserves TS imports |
+| `index.ts` god file | **DONE** — thin barrel (~220 LOC); `kitchen/` modules |
+| Flat `source/` | **DONE** — 94 files → domain subdirs; `module-graph.json` + IR shards |
+| `kitchen.ir.json` monolith | **PARTIAL** — shards + module graph; merged file still canonical |
+| Three schemas | **DOCUMENTED** — `ir/README.md` roles table; candidate banner |
+| Root planning sprawl | **PARTIAL** — root `PROMPT_*.md` → `docs/planning/root-snapshots/` |
+| `manifest/generated/models/` naming | **DONE** — orphan tree deleted |
+| Runtime `dist/` / `node_modules/` | **DONE** — `manifest/runtime/.gitignore` |
 
 ## B. Hand-authored Prisma schema → `PrismaProjection` + mapping config (Phases 2–3)
 | Path | What changes | Status |

@@ -18,7 +18,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { createRequire } from "node:module";
-import { join } from "node:path";
+import { join, relative } from "node:path";
 import {
   compileToIR,
   validateCommandIntentRegistry,
@@ -141,6 +141,32 @@ const {
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
+const SHARDS_DIR = join(OUTPUT_DIR, "shards");
+const MODULE_GRAPH_FILE = join(OUTPUT_DIR, "module-graph.json");
+
+/**
+ * Recursively discover .manifest files under srcDir (supports domain subdirs).
+ * Returns posix-style relative paths sorted for determinism.
+ */
+function discoverManifestFiles(dir) {
+  const found = [];
+  const walk = (currentDir) => {
+    for (const entry of readdirSync(currentDir, { withFileTypes: true }).sort(
+      (a, b) => a.name.localeCompare(b.name),
+    )) {
+      const fullPath = join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+      } else if (entry.isFile() && entry.name.endsWith(".manifest")) {
+        found.push(
+          relative(MANIFESTS_DIR, fullPath).split("\\").join("/"),
+        );
+      }
+    }
+  };
+  walk(dir);
+  return found.sort();
+}
 
 function enforceNoDuplicateCommandIntent(compiledEntries) {
   const diagnostics = validateCommandIntentRegistry(
@@ -168,12 +194,11 @@ async function compileMergedManifests() {
   // Ensure output directory exists
   mkdirSync(OUTPUT_DIR, { recursive: true });
 
-  // Read all .manifest files
-  const manifestFiles = readdirSync(MANIFESTS_DIR)
-    .filter((f) => f.endsWith(".manifest"))
-    .sort();
+  const manifestFiles = discoverManifestFiles(MANIFESTS_DIR);
 
-  console.log(`[manifest/compile] Found ${manifestFiles.length} manifest(s)`);
+  console.log(
+    `[manifest/compile] Found ${manifestFiles.length} manifest(s) under ${MANIFESTS_DIR}`,
+  );
 
   // Compile each manifest to IR
   const compiledEntries = [];
@@ -191,11 +216,18 @@ async function compileMergedManifests() {
       process.exit(1);
     }
 
-    const manifestName = manifestFile.replace(/\.manifest$/, "");
+    const manifestName = manifestFile
+      .replace(/\.manifest$/, "")
+      .replace(/\//g, "-");
+    const ownedIr = enforceCommandOwnership(ir, manifestName);
     compiledEntries.push({
       source: manifestFile,
-      ir: enforceCommandOwnership(ir, manifestName),
+      ir: ownedIr,
     });
+
+    mkdirSync(SHARDS_DIR, { recursive: true });
+    const shardPath = join(SHARDS_DIR, `${manifestName}.ir.json`);
+    writeFileSync(shardPath, JSON.stringify(ownedIr, null, 2));
   }
 
   enforceNoDuplicateCommandIntent(compiledEntries);
@@ -323,6 +355,29 @@ async function compileMergedManifests() {
   const provenanceFile = join(OUTPUT_DIR, "kitchen.provenance.json");
   writeFileSync(provenanceFile, JSON.stringify(mergedIR.provenance, null, 2));
   writeFileSync(MERGE_REPORT_FILE, JSON.stringify(mergeReport, null, 2));
+
+  const moduleGraph = {
+    version: 1,
+    compiledAt: mergedIR.provenance?.compiledAt ?? null,
+    contentHash: mergedIR.provenance?.contentHash ?? null,
+    sources: compiledEntries.map(({ source, ir }) => ({
+      path: source,
+      domain: source.includes("/") ? source.split("/")[0] : "root",
+      entities: ir.entities?.length ?? 0,
+      commands: ir.commands?.length ?? 0,
+      events: ir.events?.length ?? 0,
+    })),
+    merged: {
+      path: "kitchen.ir.json",
+      entities: mergedIR.entities?.length ?? 0,
+      commands: mergedIR.commands?.length ?? 0,
+      events: mergedIR.events?.length ?? 0,
+    },
+  };
+  writeFileSync(MODULE_GRAPH_FILE, JSON.stringify(moduleGraph, null, 2));
+  console.log(
+    `[manifest/compile] Emitted module graph (${moduleGraph.sources.length} sources) + IR shards`,
+  );
 
   console.log("[manifest/compile] Compilation complete!");
 }

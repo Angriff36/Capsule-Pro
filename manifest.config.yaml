@@ -89,11 +89,11 @@ projections:
   # Manifest IR → Prisma store metadata (keys by IR entity name, not Prisma model name).
   # Canonical options bag: manifest/scripts/prisma-store-options.generated.json
   # (built by build-prisma-store-options.mjs from ENTITY_TO_PRISMA_MODEL + derive-prisma-options).
-  # Generation: pnpm manifest:generate-metadata (chains schema metadata + this projection).
-  # Runtime today uses schema-derived prisma-model-metadata.generated.ts for field coercion;
-  # this projection validates IR↔accessor alignment and feeds accessorNames into the bridge.
+  # Generation: pnpm manifest:generate-metadata (IR projection + schema flag merge).
+  # Runtime authority: manifest-prisma-store-metadata.generated.ts via prisma-store-registry.generated.ts.
+  # Schema-derived prisma-model-metadata is auxiliary (requiresTenantConnect merge, bridge, route options).
   prisma-store:
-    output: manifest/runtime/src/generated/
+    output: manifest/generated/runtime/
     options:
       provider: postgresql
       naming: snake_case

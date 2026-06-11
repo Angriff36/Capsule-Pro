@@ -262,5 +262,10 @@
     "check:manifest:structure": "node tools/manifest-structure-audit.mjs",
     "check:manifest:domain": "node tools/manifest-domain-drift-audit.mjs"
   },
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "overrides": {
+      "@angriff36/manifest": "file:../Manifest"
+    }
+  }
 }

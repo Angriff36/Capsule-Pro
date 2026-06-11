@@ -1,0 +1,838 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "6db0605307221ee3a373069b53c893d4f0a9be5a87299071d32d85745b9a23ba",
+    "irHash": "583efc77d2de0b79ad1f77a7a3fbc7b333468cf751c0a558cbc9feeb1fc3b166",
+    "compilerVersion": "2.4.1",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-06-10T18:32:42.985Z"
+  },
+  "tenant": {
+    "property": "tenantId",
+    "type": {
+      "name": "string",
+      "nullable": false
+    },
+    "contextPath": "context.tenantId"
+  },
+  "modules": [],
+  "values": [],
+  "entities": [],
+  "enums": [],
+  "stores": [],
+  "events": [],
+  "commands": [],
+  "policies": [],
+  "reactions": [
+    {
+      "event": "PaymentProcessed",
+      "targetEntity": "Invoice",
+      "targetCommand": "applyPayment",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "invoiceId"
+      },
+      "params": [
+        {
+          "name": "paymentAmount",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "amount"
+          }
+        },
+        {
+          "name": "paymentId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "id"
+          }
+        }
+      ]
+    },
+    {
+      "event": "PaymentRefunded",
+      "targetEntity": "Invoice",
+      "targetCommand": "recordRefund",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "invoiceId"
+      },
+      "params": [
+        {
+          "name": "refundAmount",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "refundAmount"
+          }
+        },
+        {
+          "name": "paymentId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "id"
+          }
+        }
+      ]
+    },
+    {
+      "event": "WasteEntryCreated",
+      "targetEntity": "InventoryItem",
+      "targetCommand": "waste",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "identifier",
+          "name": "payload"
+        },
+        "property": "inventoryItemId"
+      },
+      "params": [
+        {
+          "name": "quantity",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "quantity"
+          }
+        },
+        {
+          "name": "reason",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "waste entry"
+            }
+          }
+        },
+        {
+          "name": "lotId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "userId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "loggedBy"
+          }
+        }
+      ]
+    },
+    {
+      "event": "CollectionPaymentRecorded",
+      "targetEntity": "Invoice",
+      "targetCommand": "applyPayment",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "invoiceId"
+      },
+      "params": [
+        {
+          "name": "paymentAmount",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "amount"
+          }
+        },
+        {
+          "name": "paymentId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "paymentId"
+          }
+        }
+      ]
+    },
+    {
+      "event": "ContractSigned",
+      "targetEntity": "Event",
+      "targetCommand": "confirm",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "eventId"
+      },
+      "params": [
+        {
+          "name": "userId",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "system"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "MaintenanceWorkOrderCompleted",
+      "targetEntity": "Equipment",
+      "targetCommand": "recordMaintenance",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "equipmentId"
+      },
+      "params": [
+        {
+          "name": "maintenanceDate",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "completedDate"
+          }
+        },
+        {
+          "name": "maintenanceType",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "corrective"
+            }
+          }
+        },
+        {
+          "name": "performedBy",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "userId"
+          }
+        },
+        {
+          "name": "cost",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "actualCost"
+          }
+        },
+        {
+          "name": "notes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Auto-recorded from work order completion"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "MaintenanceWorkOrderCompleted",
+      "targetEntity": "Equipment",
+      "targetCommand": "updateStatus",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "equipmentId"
+      },
+      "params": [
+        {
+          "name": "newStatus",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "active"
+            }
+          }
+        },
+        {
+          "name": "reason",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Maintenance work order completed"
+            }
+          }
+        },
+        {
+          "name": "userId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "userId"
+          }
+        }
+      ]
+    },
+    {
+      "event": "ShipmentItemReceived",
+      "targetEntity": "InventoryItem",
+      "targetCommand": "restock",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "itemId"
+      },
+      "params": [
+        {
+          "name": "quantity",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "quantityReceived"
+          }
+        },
+        {
+          "name": "costPerUnit",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "name": "userId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "payload"
+            },
+            "property": "userId"
+          }
+        }
+      ]
+    },
+    {
+      "event": "LeadConvertedToClient",
+      "targetEntity": "Deal",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "id"
+      },
+      "params": [
+        {
+          "name": "leadId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "id"
+          }
+        },
+        {
+          "name": "title",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "companyName"
+          }
+        },
+        {
+          "name": "value",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "estimatedValue"
+          }
+        },
+        {
+          "name": "currency",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "USD"
+            }
+          }
+        },
+        {
+          "name": "stage",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "new"
+            }
+          }
+        },
+        {
+          "name": "probability",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 25
+            }
+          }
+        },
+        {
+          "name": "expectedCloseDate",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "name": "assignedTo",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "notes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Auto-created from lead conversion"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "ProposalAccepted",
+      "targetEntity": "Event",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "member",
+        "object": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "payload"
+          },
+          "property": "result"
+        },
+        "property": "id"
+      },
+      "params": [
+        {
+          "name": "clientId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "clientId"
+          }
+        },
+        {
+          "name": "eventNumber",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "proposalNumber"
+          }
+        },
+        {
+          "name": "title",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "title"
+          }
+        },
+        {
+          "name": "eventType",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "eventDate",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "name": "guestCount",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "name": "venueName",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "venueAddress",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "notes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Auto-created from accepted proposal"
+            }
+          }
+        },
+        {
+          "name": "tags",
+          "expression": {
+            "kind": "array",
+            "elements": []
+          }
+        },
+        {
+          "name": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "draft"
+            }
+          }
+        },
+        {
+          "name": "budget",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "total"
+          }
+        },
+        {
+          "name": "ticketPrice",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "name": "ticketTier",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "eventFormat",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ]
+    },
+    {
+      "event": "EventCreated",
+      "targetEntity": "BattleBoard",
+      "targetCommand": "create",
+      "resolve": {
+        "kind": "literal",
+        "value": {
+          "kind": "null"
+        }
+      },
+      "params": [
+        {
+          "name": "boardName",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": " - Battle Board"
+              }
+            }
+          }
+        },
+        {
+          "name": "boardType",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "event-specific"
+            }
+          }
+        },
+        {
+          "name": "eventId",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "payload"
+              },
+              "property": "result"
+            },
+            "property": "id"
+          }
+        },
+        {
+          "name": "description",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "isTemplate",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "name": "notes",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        },
+        {
+          "name": "tags",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

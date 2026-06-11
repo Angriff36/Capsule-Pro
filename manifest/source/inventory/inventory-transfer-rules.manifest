@@ -43,7 +43,7 @@ entity InventoryTransfer {
 
   // requestedBy + transferNumber are intentionally NOT command params here.
   //   - requestedBy is adapter-derived from RuntimeContext.user.id by
-  //     InventoryTransferPrismaStore (see broken-read-batch16-inventory-transfer.ts).
+  //     InventoryTransferPrismaStore (see inventory-transfer-prisma-store.ts).
   //   - transferNumber is generated server-side as `TRF-<count+1, zero-padded>`
   //     by the same store. The UI does not send either field.
   // Both decisions documented in scripts/manifest/schema-drift-allowlist.json

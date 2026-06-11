@@ -259,9 +259,10 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[proactive bridge @ 87% context — saved before compacting]
-Files (2):
-  packages/database/prisma/migrations/20260610055049_repair_drift/migration.sql (edit)
-  apps/api/app/api/accounting/payments/route.ts (edit)
+[proactive bridge @ 85% context — saved before compacting]
+Files (3):
+  apps/app/__tests__/api/command-board/agent-loop-context-budget.test.ts (create)
+  apps/app/app/api/command-board/chat/agent-loop.ts (edit)
+  apps/app/__tests__/api/command-board/agent-loop-followup-intent.test.ts (create)
 
 # === END COGNILAYER ===

@@ -100,7 +100,11 @@ const candidate =
   "\n\n// ===== Manifest-generated durable models (additive; no hand twin) =====\n\n" +
   newBlocks.join("\n\n") +
   "\n";
-writeFileSync(OUT, candidate);
+const banner =
+  "// DEV-ONLY — candidate-schema.prisma is NOT the live schema.\n" +
+  "// Live: packages/database/prisma/schema.prisma\n" +
+  "// CI drift gate: manifest/ir/generated-schema.prisma (pnpm manifest:schema:check)\n\n";
+writeFileSync(OUT, banner + candidate);
 
 const summary = [
   `[emit-full-schema] ADDITIVE — wrote ${OUT}`,

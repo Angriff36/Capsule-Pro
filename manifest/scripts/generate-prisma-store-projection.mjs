@@ -6,11 +6,11 @@
  * manifest/prisma-store-options.generated.json (built by build-prisma-store-options.mjs).
  *
  * Output (separate from schema-derived prisma-model-metadata.generated.ts):
- *   manifest/runtime/src/generated/manifest-prisma-store-metadata.generated.ts
- *   manifest/runtime/src/generated/prisma-store-registry.generated.ts
+ *   manifest/generated/runtime/manifest-prisma-store-metadata.generated.ts
+ *   manifest/generated/runtime/prisma-store-registry.generated.ts
  *
- * Runtime still uses schema-derived metadata for field coercion; this projection
- * validates IR↔store alignment and supplies IR-keyed accessorNames.
+ * Runtime authority: manifest-prisma-store-metadata.generated.ts (IR projection).
+ * Schema-derived prisma-model-metadata is merged for requiresTenantConnect only.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
@@ -19,7 +19,7 @@ import { pathToFileURL } from "node:url";
 const root = resolve(process.cwd());
 const irPath = join(root, "manifest/ir/kitchen.ir.json");
 const optionsPath = join(root, "manifest/scripts/prisma-store-options.generated.json");
-const outDir = join(root, "manifest/runtime/src/generated");
+const outDir = join(root, "manifest/generated/runtime");
 const pkgPrismaStore = resolve(
   root,
   "node_modules/@angriff36/manifest/dist/manifest/projections/prisma-store/generator.js",
@@ -67,9 +67,30 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
+const schemaMetaPath = join(outDir, "prisma-model-metadata.generated.json");
+
+function enrichWithSchemaFlags(code) {
+  if (!existsSync(schemaMetaPath)) return code;
+  const schemaMeta = JSON.parse(readFileSync(schemaMetaPath, "utf8"));
+  const match = code.match(
+    /export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ([\s\S]+);\s*$/,
+  );
+  if (!match) return code;
+  const metadata = JSON.parse(match[1]);
+  for (const [name, meta] of Object.entries(metadata)) {
+    const schema = schemaMeta[name];
+    if (schema?.requiresTenantConnect) {
+      meta.requiresTenantConnect = true;
+    }
+  }
+  const headerEnd = code.indexOf("export const PRISMA_MODEL_METADATA");
+  const header = code.slice(0, headerEnd);
+  return `${header}export const PRISMA_MODEL_METADATA: PrismaModelMetadata = ${JSON.stringify(metadata, null, 2)};\n`;
+}
+
 for (const artifact of metaResult.artifacts) {
   const outPath = join(outDir, "manifest-prisma-store-metadata.generated.ts");
-  writeFileSync(outPath, artifact.code);
+  writeFileSync(outPath, enrichWithSchemaFlags(artifact.code));
   console.log(`wrote ${outPath}`);
 }
 for (const artifact of registryResult.artifacts) {
