@@ -133,3 +133,31 @@ unattended. Rules: (1) NEVER take over a background agent's task without confirm
 `pnpm db:dev` with a literal `--` (Prisma 7 ignores flags after it → interactive prompt → zombie);
 CONTRIBUTING.md fixed; CLAUDE.md line 98 still has the broken form (self-mod denied — needs user).
 (3) DB-mutating tasks must have exactly ONE executor.
+
+## Lesson (2026-06-11): Orchestrate with explicit model tiers; agents inherit the expensive default
+
+**What happened:** Launched a 4-agent investigation workflow without model overrides — every
+agent inherited the main-loop model. The user corrected: the main session is the ORCHESTRATOR
+(design + decisions); delegate gathering/building to haiku/sonnet/opus per task complexity.
+**Rule:** When spawning agents, ALWAYS set `model` explicitly per CLAUDE.md tiers (haiku =
+exploration/file reads, sonnet = debugging/building, opus/main = architecture + decisions).
+The orchestrator reviews diffs between waves and makes the judgment calls — never delegates those.
+
+## Lesson (2026-06-11): A subagent's "final" message may be mid-task narration — check before trusting
+
+**What happened:** Two sonnet builders (B1, T) returned with narration like "Now I'll add the
+tests..." instead of a report — they had stopped mid-flight. Treating that return as completion
+would have shipped half-done work.
+**Rule:** On agent return, verify the message is the requested REPORT (files/tests/verification
+evidence). If it reads like a progress note, resume the agent via SendMessage with its agentId
+and demand completion + the report format.
+
+## Lesson (2026-06-11): IR entity.commands is a string array — commands live top-level
+
+**What happened:** Orchestrator asserted "Event.create doesn't exist in IR" from
+`entity.commands.find(c => c.name === 'create')` — but `entity.commands` holds command-name
+STRINGS; the objects live in `ir.commands` (with `.entity`). A builder agent fact-checked and
+corrected the premise (the resulting fix was still right, for a different reason).
+**Rule:** kitchen.ir.json shape: `ir.commands[] = {name, entity, parameters,...}`;
+`ir.entities[].commands = string[]`. Verify IR claims against the schema
+(node_modules/@angriff36/manifest/docs/spec/ir/ir-v1.schema.json) before asserting absence.

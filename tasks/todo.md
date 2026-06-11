@@ -29,29 +29,37 @@ against local ep-square-dust. Symptoms: (1) event info not propagating to Battle
 - DISCOVERED: ~93 pre-existing api test failures (stale manifest/source flat paths after
   domain-subdir reorg) → new Wave B Agent T.
 
-## Wave B — manifest source + perf (after Wave A)
+## Wave B — manifest source + perf — DONE
 
-### Agent M: policy alignment + recompile
-- [ ] M1. battle-board-rules.manifest: BattleBoardDefaultAccess roles must include the
-      EventDefaultAccess roles (staff, catering_manager, event_manager) since
-      BattleBoard.create is a system cascade of Event.create. Recompile + drift gates.
+### Agent M: policy alignment + recompile — DONE
+- [x] M1. BattleBoardDefaultAccess = union of both role lists (8 roles). manifest:ci green.
+- [x] M2 (investigation): `json` IR type EXISTS (prisma projection maps json→Json).
+      Implementing for CommandBoardCard.metadata = source type change + app-side
+      object-writes + client regen. DEFERRED — decision needed (reads stay tolerant).
 
-### Agent B2: perf (event detail page + board tab)
-- [ ] B2a. getEventBoardData: Promise.all the independent queries (9 RTT → 2-3).
-- [ ] B2b. page.tsx: render EventBoardTab only when the board tab is active.
-- [ ] B2c. resolveEventBattleBoardHref: run concurrently with main fetch.
-- [ ] B2d. getRelatedEvents: add take + narrow select (currently ALL tenant events, full
-      rows, serialized into client payload).
-- [ ] B2e. Palettes: cap (take) staff/dish queries.
-- [ ] B2f (deferred, note only): experimental.staleTimes, 30s clock interval re-render,
-      React.cache dedupe of per-render auth/tenant lookups.
+### Agent B2: perf — DONE (app typecheck green)
+- [x] B2a. getEventBoardData: 9 sequential RTTs → 2 Promise.all batches.
+- [x] B2b. EventBoardTab server content only renders when ?tab=board.
+- [x] B2c. resolveEventBattleBoardHref concurrent with main fetch.
+- [x] B2d. getRelatedEvents: 14-field select + take 50.
+- [x] B2e. Palettes capped (take 200).
+- [~] B2f deferred: staleTimes, 30s clock interval, React.cache auth dedupe.
 
-## Wave C — data repair + verification
-- [ ] C1. Backfill board 8a2e158b snapshot via fixed governed BattleBoard.syncFromEvent.
-- [ ] C2. Remove duplicate EventStaff row + orphan CommandBoard 125b0e98 via governed
-      commands if they exist (NO direct SQL without user approval).
-- [ ] C3. Full verification: runtime tests, api/app typecheck, targeted vitest, manifest:ci.
-- [ ] C4. Commit in atomic chunks with explicit paths (no git add -A).
+### Agent T: pre-existing api test failures — DONE
+- [x] 93 ENOENT failures (stale flat manifest/source paths) → 0. Full suite 5,259 pass.
+
+## Wave C — data repair + verification — DONE
+- [x] C1. syncFromEvent backfilled ALL 32 battle boards (live proof of runtime fix);
+      board 8a2e158b snapshot verified (eventDate/guests/venue/client populated).
+- [x] C2. Duplicate EventStaff 487e0ecc governed-unassigned (keeper b1b1b60b);
+      orphan CommandBoard 125b0e98 archived+soft-deleted. BONUS root-cause fix:
+      EventStaff transition table omitted "unassigned" → unassign could never
+      succeed; fixed in source + recompiled (user can veto — unpushed).
+- [x] C3. Verification: runtime 172 pass; api suite 5,259 pass; app+api typecheck
+      green; manifest:ci green (validate-ai 100/100, zero schema drift).
+- [x] C4. Commits: f257af45b (runtime datetime), 3809f3af2 (board correctness),
+      1dcc0d8b3 (policy), 4d2c75031 (perf), 5eb27c829 (test paths),
+      9dec7158b (EventStaff transitions). Nothing pushed.
 
 ## Known non-goals (flagged, not fixed here)
 - CSV/PDF importer bypasses runtime (raw SQL insert; already on the violations list).
@@ -60,4 +68,20 @@ against local ep-square-dust. Symptoms: (1) event info not propagating to Battle
   decision on multi-shift assignments before a migration.
 
 ## Review
-(to be filled at completion)
+
+All three user symptoms root-caused and fixed; 6 commits on main (unpushed).
+1. Propagation: engine epoch-ms datetime contract broke the chain at 3 points
+   (form ISO strings, reaction-inherited Date objects, syncFromEvent skip-set) —
+   plus silent reaction failure swallowing and a policy role gap. All fixed at
+   the runtime layer (one boundary coercion fixes every HTTP caller forever).
+2. Duplicate key: real duplicate data (no dedupe at any layer) + keying by
+   staffMemberId. Fixed render keys + commit idempotency + draft guards + the
+   underlying never-working unassign transition.
+3. Perf: board queries ran on every tab click (now conditional), 9-RTT
+   sequential loader (now 2 batches), unbounded queries (now bounded).
+Bonus fixes: Neon local-time serialization (+7h dev skew), staff page assign
+never sending staffMemberId, 93 stale-path test failures, orphan board rows.
+Open items: CommandBoardCard.metadata json-type migration (decision),
+importer runtime bypass (pre-existing violation list), event_staff partial
+unique index (product decision on multi-shift).
+User action: restart both dev servers to load the new runtime code.
