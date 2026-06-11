@@ -122,3 +122,14 @@ entity properties + command params. If they disagree, the target is drift-blocke
 Manifest entity to the schema FIRST (use `Client` as the template for rich CRM entities; property
 names must match Prisma field names so GenericPrismaStore maps 1:1), then migrate. Json columns the UI
 never sets stay OUT of the command surface (default NULL — lossless, no object/string double-encoding).
+
+## 2026-06-11 — Background agents: verify dead before takeover
+A resumed background agent (Task 4 schema migration) produced no output for 35+ min; I assumed it
+died and completed the task myself in the SAME working tree. It was alive — two agents ran the
+same DB-mutating task concurrently. Worst moment: an orphaned `prisma migrate dev` (stuck on an
+interactive prompt from the broken `pnpm db:dev -- --create-only` form) applied a migration
+unattended. Rules: (1) NEVER take over a background agent's task without confirming it's stopped
+(TaskOutput/TaskStop) — silence ≠ dead; output files are written only on completion. (2) Never run
+`pnpm db:dev` with a literal `--` (Prisma 7 ignores flags after it → interactive prompt → zombie);
+CONTRIBUTING.md fixed; CLAUDE.md line 98 still has the broken form (self-mod denied — needs user).
+(3) DB-mutating tasks must have exactly ONE executor.
