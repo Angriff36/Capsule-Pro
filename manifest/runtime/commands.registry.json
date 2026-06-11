@@ -1766,6 +1766,11 @@
   },
   {
     "entity": "EventStaff",
+    "command": "create",
+    "commandId": "EventStaff.create"
+  },
+  {
+    "entity": "EventStaff",
     "command": "markNoShow",
     "commandId": "EventStaff.markNoShow"
   },

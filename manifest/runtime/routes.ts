@@ -2356,6 +2356,11 @@ export function battleBoardStartVotingPath(): string {
   return "/api/manifest/battleboard/commands/start-voting";
 }
 
+/** POST /api/manifest/battleboard/commands/sync-from-event */
+export function battleBoardSyncFromEventPath(): string {
+  return "/api/manifest/battleboard/commands/sync-from-event";
+}
+
 /** POST /api/manifest/battleboard/commands/update */
 export function battleBoardUpdatePath(): string {
   return "/api/manifest/battleboard/commands/update";
@@ -3789,6 +3794,11 @@ export function eventStaffCheckOutPath(): string {
 /** POST /api/manifest/eventstaff/commands/confirm */
 export function eventStaffConfirmPath(): string {
   return "/api/manifest/eventstaff/commands/confirm";
+}
+
+/** POST /api/manifest/eventstaff/commands/create */
+export function eventStaffCreatePath(): string {
+  return "/api/manifest/eventstaff/commands/create";
 }
 
 /** POST /api/manifest/eventstaff/commands/mark-no-show */
@@ -7509,6 +7519,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BattleBoard.recordImport", path: "/api/manifest/battleboard/commands/record-import", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.removeDish", path: "/api/manifest/battleboard/commands/remove-dish", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.startVoting", path: "/api/manifest/battleboard/commands/start-voting", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.syncFromEvent", path: "/api/manifest/battleboard/commands/sync-from-event", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.update", path: "/api/manifest/battleboard/commands/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.vote", path: "/api/manifest/battleboard/commands/vote", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BoardAnnotation.create", path: "/api/manifest/boardannotation/commands/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -7796,6 +7807,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventStaff.checkIn", path: "/api/manifest/eventstaff/commands/check-in", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.checkOut", path: "/api/manifest/eventstaff/commands/check-out", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.confirm", path: "/api/manifest/eventstaff/commands/confirm", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventStaff.create", path: "/api/manifest/eventstaff/commands/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.markNoShow", path: "/api/manifest/eventstaff/commands/mark-no-show", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.unassign", path: "/api/manifest/eventstaff/commands/unassign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventStaff.updateRole", path: "/api/manifest/eventstaff/commands/update-role", method: "POST", source: "command", auth: true, tenant: true },

@@ -7,30 +7,14 @@ import * as client from "./manifest-client.generated";
 import type { PaginatedResponse } from "./manifest-client.generated";
 import { executeCommand, type CommandEnvelope } from "./manifest-client";
 import type {
+  AiEventSetupSession,
+  KnowledgeBaseEntry,
   AdminChatParticipant,
   AdminTask,
-  AiEventSetupSession,
   AlertsConfig,
   AllergenWarning,
-  ApiKey,
   BankAccount,
-  BattleBoard,
-  Budget,
-  BulkOrderRule,
-  CateringOrder,
   ChartOfAccount,
-  ClientInteraction,
-  Client,
-  ClientContact,
-  ClientPreference,
-  CollectionCase,
-  CollectionAction,
-  CollectionPaymentPlan,
-  CommandBoard,
-  CommandBoardCard,
-  CommandBoardGroup,
-  CommandBoardConnection,
-  CommandBoardLayout,
   Container,
   ProposalTemplate,
   InteractionAttachment,
@@ -39,18 +23,26 @@ import type {
   Document,
   AdminChatThread,
   AdminChatMessage,
-  CycleCountSession,
-  CycleCountRecord,
-  VarianceReport,
-  Deal,
-  Dish,
   DocumentVersion,
   EmailTemplate,
   EmailWorkflow,
   EmployeeAvailability,
   EmployeeCertification,
-  Equipment,
-  MaintenanceWorkOrder,
+  ClientInteraction,
+  Client,
+  ClientContact,
+  ClientPreference,
+  Deal,
+  Lead,
+  Proposal,
+  ProposalLineItem,
+  BattleBoard,
+  CateringOrder,
+  CommandBoard,
+  CommandBoardCard,
+  CommandBoardGroup,
+  CommandBoardConnection,
+  CommandBoardLayout,
   AutomatedFollowup,
   EventTimelineItem,
   EventWaitlistEntry,
@@ -74,12 +66,24 @@ import type {
   BoardProjection,
   BoardAnnotation,
   Note,
-  Facility,
-  FacilityArea,
-  FacilityAsset,
-  FacilitySchedule,
-  FacilityWorkOrder,
-  Ingredient,
+  Budget,
+  CollectionCase,
+  CollectionAction,
+  CollectionPaymentPlan,
+  Invoice,
+  PaymentMethod,
+  Payment,
+  PricingTier,
+  RevenueRecognitionSchedule,
+  RevenueRecognitionLine,
+  SmsAutomationRule,
+  VersionedEntity,
+  EntityVersion,
+  VersionApproval,
+  BulkOrderRule,
+  CycleCountSession,
+  CycleCountRecord,
+  VarianceReport,
   StorageLocation,
   InventoryStock,
   InventoryAlert,
@@ -96,7 +100,8 @@ import type {
   InventorySupplier,
   InventoryTransaction,
   InventoryTransfer,
-  Invoice,
+  Dish,
+  Ingredient,
   TemperatureProbe,
   TemperatureLog,
   TemperatureReading,
@@ -113,54 +118,62 @@ import type {
   MethodVideo,
   PrepListImport,
   KitchenTask,
-  KnowledgeBaseEntry,
-  LaborBudget,
-  BudgetAlert,
-  Lead,
-  Driver,
-  Vehicle,
-  LogisticsRoute,
-  LogisticsDispatch,
   Menu,
   MenuDish,
-  Notification,
-  OverrideAudit,
-  PaymentMethod,
-  Payment,
-  PayrollPeriod,
-  EmployeeDeduction,
-  PayrollApprovalHistory,
-  PayrollRun,
   PrepComment,
   PrepList,
   PrepListItem,
   PrepMethod,
   PrepTaskPlanWorkflow,
   PrepTask,
-  PricingTier,
-  PurchaseRequisition,
-  PurchaseRequisitionItem,
-  Proposal,
-  ProposalLineItem,
-  PurchaseOrder,
-  PurchaseOrderItem,
-  QACheck,
-  QACorrectiveAction,
-  QATemperatureLog,
-  RateLimitConfig,
   Recipe,
   RecipeVersion,
   RecipeIngredient,
   RecipeStep,
-  RevenueRecognitionSchedule,
-  RevenueRecognitionLine,
-  RolePolicy,
-  SampleData,
-  Schedule,
-  ScheduleShift,
+  Station,
+  Equipment,
+  MaintenanceWorkOrder,
+  Facility,
+  FacilityArea,
+  FacilityAsset,
+  FacilitySchedule,
+  FacilityWorkOrder,
+  Driver,
+  Vehicle,
+  LogisticsRoute,
+  LogisticsDispatch,
   Shipment,
   ShipmentItem,
-  SmsAutomationRule,
+  WorkOrder,
+  WorkforceOptimization,
+  PerformancePrediction,
+  ApiKey,
+  Notification,
+  OverrideAudit,
+  RateLimitConfig,
+  RolePolicy,
+  SampleData,
+  User,
+  Workflow,
+  PurchaseRequisition,
+  PurchaseRequisitionItem,
+  PurchaseOrder,
+  PurchaseOrderItem,
+  VendorCatalog,
+  VendorContract,
+  Vendor,
+  QACheck,
+  QACorrectiveAction,
+  QATemperatureLog,
+  WasteEntry,
+  LaborBudget,
+  BudgetAlert,
+  PayrollPeriod,
+  EmployeeDeduction,
+  PayrollApprovalHistory,
+  PayrollRun,
+  Schedule,
+  ScheduleShift,
   TimecardApproval,
   PayrollLineItem,
   TipPool,
@@ -177,7 +190,6 @@ import type {
   PreventiveMaintenanceSchedule,
   StaffMember,
   StaffPerformance,
-  Station,
   TimeEntry,
   TimecardEditRequest,
   TimeOffRequest,
@@ -197,18 +209,6 @@ import type {
   SelOnboardingTrainingQuestion08Definition,
   SelOnboardingTrainingQuestion09Definition,
   SelOnboardingTrainingQuestion10Definition,
-  User,
-  VendorCatalog,
-  VendorContract,
-  Vendor,
-  VersionedEntity,
-  EntityVersion,
-  VersionApproval,
-  WasteEntry,
-  WorkOrder,
-  Workflow,
-  WorkforceOptimization,
-  PerformancePrediction,
 } from "./manifest-types.generated";
 
 /**
@@ -216,6 +216,16 @@ import type {
  * Usage: queryKeys.entityName.lists() / queryKeys.entityName.detail(id)
  */
 export const queryKeys = {
+  aiEventSetupSession: {
+    all: ["aiEventSetupSession"] as const,
+    lists: () => [...queryKeys.aiEventSetupSession.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.aiEventSetupSession.all, "detail", id] as const,
+  },
+  knowledgeBaseEntry: {
+    all: ["knowledgeBaseEntry"] as const,
+    lists: () => [...queryKeys.knowledgeBaseEntry.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.knowledgeBaseEntry.all, "detail", id] as const,
+  },
   adminChatParticipant: {
     all: ["adminChatParticipant"] as const,
     lists: () => [...queryKeys.adminChatParticipant.all, "list"] as const,
@@ -225,11 +235,6 @@ export const queryKeys = {
     all: ["adminTask"] as const,
     lists: () => [...queryKeys.adminTask.all, "list"] as const,
     detail: (id: string) => [...queryKeys.adminTask.all, "detail", id] as const,
-  },
-  aiEventSetupSession: {
-    all: ["aiEventSetupSession"] as const,
-    lists: () => [...queryKeys.aiEventSetupSession.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.aiEventSetupSession.all, "detail", id] as const,
   },
   alertsConfig: {
     all: ["alertsConfig"] as const,
@@ -241,100 +246,15 @@ export const queryKeys = {
     lists: () => [...queryKeys.allergenWarning.all, "list"] as const,
     detail: (id: string) => [...queryKeys.allergenWarning.all, "detail", id] as const,
   },
-  apiKey: {
-    all: ["apiKey"] as const,
-    lists: () => [...queryKeys.apiKey.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.apiKey.all, "detail", id] as const,
-  },
   bankAccount: {
     all: ["bankAccount"] as const,
     lists: () => [...queryKeys.bankAccount.all, "list"] as const,
     detail: (id: string) => [...queryKeys.bankAccount.all, "detail", id] as const,
   },
-  battleBoard: {
-    all: ["battleBoard"] as const,
-    lists: () => [...queryKeys.battleBoard.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.battleBoard.all, "detail", id] as const,
-  },
-  budget: {
-    all: ["budget"] as const,
-    lists: () => [...queryKeys.budget.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.budget.all, "detail", id] as const,
-  },
-  bulkOrderRule: {
-    all: ["bulkOrderRule"] as const,
-    lists: () => [...queryKeys.bulkOrderRule.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.bulkOrderRule.all, "detail", id] as const,
-  },
-  cateringOrder: {
-    all: ["cateringOrder"] as const,
-    lists: () => [...queryKeys.cateringOrder.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.cateringOrder.all, "detail", id] as const,
-  },
   chartOfAccount: {
     all: ["chartOfAccount"] as const,
     lists: () => [...queryKeys.chartOfAccount.all, "list"] as const,
     detail: (id: string) => [...queryKeys.chartOfAccount.all, "detail", id] as const,
-  },
-  clientInteraction: {
-    all: ["clientInteraction"] as const,
-    lists: () => [...queryKeys.clientInteraction.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.clientInteraction.all, "detail", id] as const,
-  },
-  client: {
-    all: ["client"] as const,
-    lists: () => [...queryKeys.client.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.client.all, "detail", id] as const,
-  },
-  clientContact: {
-    all: ["clientContact"] as const,
-    lists: () => [...queryKeys.clientContact.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.clientContact.all, "detail", id] as const,
-  },
-  clientPreference: {
-    all: ["clientPreference"] as const,
-    lists: () => [...queryKeys.clientPreference.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.clientPreference.all, "detail", id] as const,
-  },
-  collectionCase: {
-    all: ["collectionCase"] as const,
-    lists: () => [...queryKeys.collectionCase.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.collectionCase.all, "detail", id] as const,
-  },
-  collectionAction: {
-    all: ["collectionAction"] as const,
-    lists: () => [...queryKeys.collectionAction.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.collectionAction.all, "detail", id] as const,
-  },
-  collectionPaymentPlan: {
-    all: ["collectionPaymentPlan"] as const,
-    lists: () => [...queryKeys.collectionPaymentPlan.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.collectionPaymentPlan.all, "detail", id] as const,
-  },
-  commandBoard: {
-    all: ["commandBoard"] as const,
-    lists: () => [...queryKeys.commandBoard.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.commandBoard.all, "detail", id] as const,
-  },
-  commandBoardCard: {
-    all: ["commandBoardCard"] as const,
-    lists: () => [...queryKeys.commandBoardCard.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.commandBoardCard.all, "detail", id] as const,
-  },
-  commandBoardGroup: {
-    all: ["commandBoardGroup"] as const,
-    lists: () => [...queryKeys.commandBoardGroup.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.commandBoardGroup.all, "detail", id] as const,
-  },
-  commandBoardConnection: {
-    all: ["commandBoardConnection"] as const,
-    lists: () => [...queryKeys.commandBoardConnection.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.commandBoardConnection.all, "detail", id] as const,
-  },
-  commandBoardLayout: {
-    all: ["commandBoardLayout"] as const,
-    lists: () => [...queryKeys.commandBoardLayout.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.commandBoardLayout.all, "detail", id] as const,
   },
   container: {
     all: ["container"] as const,
@@ -376,31 +296,6 @@ export const queryKeys = {
     lists: () => [...queryKeys.adminChatMessage.all, "list"] as const,
     detail: (id: string) => [...queryKeys.adminChatMessage.all, "detail", id] as const,
   },
-  cycleCountSession: {
-    all: ["cycleCountSession"] as const,
-    lists: () => [...queryKeys.cycleCountSession.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.cycleCountSession.all, "detail", id] as const,
-  },
-  cycleCountRecord: {
-    all: ["cycleCountRecord"] as const,
-    lists: () => [...queryKeys.cycleCountRecord.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.cycleCountRecord.all, "detail", id] as const,
-  },
-  varianceReport: {
-    all: ["varianceReport"] as const,
-    lists: () => [...queryKeys.varianceReport.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.varianceReport.all, "detail", id] as const,
-  },
-  deal: {
-    all: ["deal"] as const,
-    lists: () => [...queryKeys.deal.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.deal.all, "detail", id] as const,
-  },
-  dish: {
-    all: ["dish"] as const,
-    lists: () => [...queryKeys.dish.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.dish.all, "detail", id] as const,
-  },
   documentVersion: {
     all: ["documentVersion"] as const,
     lists: () => [...queryKeys.documentVersion.all, "list"] as const,
@@ -426,15 +321,80 @@ export const queryKeys = {
     lists: () => [...queryKeys.employeeCertification.all, "list"] as const,
     detail: (id: string) => [...queryKeys.employeeCertification.all, "detail", id] as const,
   },
-  equipment: {
-    all: ["equipment"] as const,
-    lists: () => [...queryKeys.equipment.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.equipment.all, "detail", id] as const,
+  clientInteraction: {
+    all: ["clientInteraction"] as const,
+    lists: () => [...queryKeys.clientInteraction.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.clientInteraction.all, "detail", id] as const,
   },
-  maintenanceWorkOrder: {
-    all: ["maintenanceWorkOrder"] as const,
-    lists: () => [...queryKeys.maintenanceWorkOrder.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.maintenanceWorkOrder.all, "detail", id] as const,
+  client: {
+    all: ["client"] as const,
+    lists: () => [...queryKeys.client.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.client.all, "detail", id] as const,
+  },
+  clientContact: {
+    all: ["clientContact"] as const,
+    lists: () => [...queryKeys.clientContact.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.clientContact.all, "detail", id] as const,
+  },
+  clientPreference: {
+    all: ["clientPreference"] as const,
+    lists: () => [...queryKeys.clientPreference.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.clientPreference.all, "detail", id] as const,
+  },
+  deal: {
+    all: ["deal"] as const,
+    lists: () => [...queryKeys.deal.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.deal.all, "detail", id] as const,
+  },
+  lead: {
+    all: ["lead"] as const,
+    lists: () => [...queryKeys.lead.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.lead.all, "detail", id] as const,
+  },
+  proposal: {
+    all: ["proposal"] as const,
+    lists: () => [...queryKeys.proposal.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.proposal.all, "detail", id] as const,
+  },
+  proposalLineItem: {
+    all: ["proposalLineItem"] as const,
+    lists: () => [...queryKeys.proposalLineItem.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.proposalLineItem.all, "detail", id] as const,
+  },
+  battleBoard: {
+    all: ["battleBoard"] as const,
+    lists: () => [...queryKeys.battleBoard.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.battleBoard.all, "detail", id] as const,
+  },
+  cateringOrder: {
+    all: ["cateringOrder"] as const,
+    lists: () => [...queryKeys.cateringOrder.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.cateringOrder.all, "detail", id] as const,
+  },
+  commandBoard: {
+    all: ["commandBoard"] as const,
+    lists: () => [...queryKeys.commandBoard.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.commandBoard.all, "detail", id] as const,
+  },
+  commandBoardCard: {
+    all: ["commandBoardCard"] as const,
+    lists: () => [...queryKeys.commandBoardCard.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.commandBoardCard.all, "detail", id] as const,
+  },
+  commandBoardGroup: {
+    all: ["commandBoardGroup"] as const,
+    lists: () => [...queryKeys.commandBoardGroup.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.commandBoardGroup.all, "detail", id] as const,
+  },
+  commandBoardConnection: {
+    all: ["commandBoardConnection"] as const,
+    lists: () => [...queryKeys.commandBoardConnection.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.commandBoardConnection.all, "detail", id] as const,
+  },
+  commandBoardLayout: {
+    all: ["commandBoardLayout"] as const,
+    lists: () => [...queryKeys.commandBoardLayout.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.commandBoardLayout.all, "detail", id] as const,
   },
   automatedFollowup: {
     all: ["automatedFollowup"] as const,
@@ -551,35 +511,95 @@ export const queryKeys = {
     lists: () => [...queryKeys.note.all, "list"] as const,
     detail: (id: string) => [...queryKeys.note.all, "detail", id] as const,
   },
-  facility: {
-    all: ["facility"] as const,
-    lists: () => [...queryKeys.facility.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.facility.all, "detail", id] as const,
+  budget: {
+    all: ["budget"] as const,
+    lists: () => [...queryKeys.budget.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.budget.all, "detail", id] as const,
   },
-  facilityArea: {
-    all: ["facilityArea"] as const,
-    lists: () => [...queryKeys.facilityArea.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.facilityArea.all, "detail", id] as const,
+  collectionCase: {
+    all: ["collectionCase"] as const,
+    lists: () => [...queryKeys.collectionCase.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.collectionCase.all, "detail", id] as const,
   },
-  facilityAsset: {
-    all: ["facilityAsset"] as const,
-    lists: () => [...queryKeys.facilityAsset.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.facilityAsset.all, "detail", id] as const,
+  collectionAction: {
+    all: ["collectionAction"] as const,
+    lists: () => [...queryKeys.collectionAction.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.collectionAction.all, "detail", id] as const,
   },
-  facilitySchedule: {
-    all: ["facilitySchedule"] as const,
-    lists: () => [...queryKeys.facilitySchedule.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.facilitySchedule.all, "detail", id] as const,
+  collectionPaymentPlan: {
+    all: ["collectionPaymentPlan"] as const,
+    lists: () => [...queryKeys.collectionPaymentPlan.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.collectionPaymentPlan.all, "detail", id] as const,
   },
-  facilityWorkOrder: {
-    all: ["facilityWorkOrder"] as const,
-    lists: () => [...queryKeys.facilityWorkOrder.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.facilityWorkOrder.all, "detail", id] as const,
+  invoice: {
+    all: ["invoice"] as const,
+    lists: () => [...queryKeys.invoice.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.invoice.all, "detail", id] as const,
   },
-  ingredient: {
-    all: ["ingredient"] as const,
-    lists: () => [...queryKeys.ingredient.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.ingredient.all, "detail", id] as const,
+  paymentMethod: {
+    all: ["paymentMethod"] as const,
+    lists: () => [...queryKeys.paymentMethod.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.paymentMethod.all, "detail", id] as const,
+  },
+  payment: {
+    all: ["payment"] as const,
+    lists: () => [...queryKeys.payment.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.payment.all, "detail", id] as const,
+  },
+  pricingTier: {
+    all: ["pricingTier"] as const,
+    lists: () => [...queryKeys.pricingTier.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.pricingTier.all, "detail", id] as const,
+  },
+  revenueRecognitionSchedule: {
+    all: ["revenueRecognitionSchedule"] as const,
+    lists: () => [...queryKeys.revenueRecognitionSchedule.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.revenueRecognitionSchedule.all, "detail", id] as const,
+  },
+  revenueRecognitionLine: {
+    all: ["revenueRecognitionLine"] as const,
+    lists: () => [...queryKeys.revenueRecognitionLine.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.revenueRecognitionLine.all, "detail", id] as const,
+  },
+  smsAutomationRule: {
+    all: ["smsAutomationRule"] as const,
+    lists: () => [...queryKeys.smsAutomationRule.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.smsAutomationRule.all, "detail", id] as const,
+  },
+  versionedEntity: {
+    all: ["versionedEntity"] as const,
+    lists: () => [...queryKeys.versionedEntity.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.versionedEntity.all, "detail", id] as const,
+  },
+  entityVersion: {
+    all: ["entityVersion"] as const,
+    lists: () => [...queryKeys.entityVersion.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.entityVersion.all, "detail", id] as const,
+  },
+  versionApproval: {
+    all: ["versionApproval"] as const,
+    lists: () => [...queryKeys.versionApproval.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.versionApproval.all, "detail", id] as const,
+  },
+  bulkOrderRule: {
+    all: ["bulkOrderRule"] as const,
+    lists: () => [...queryKeys.bulkOrderRule.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.bulkOrderRule.all, "detail", id] as const,
+  },
+  cycleCountSession: {
+    all: ["cycleCountSession"] as const,
+    lists: () => [...queryKeys.cycleCountSession.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.cycleCountSession.all, "detail", id] as const,
+  },
+  cycleCountRecord: {
+    all: ["cycleCountRecord"] as const,
+    lists: () => [...queryKeys.cycleCountRecord.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.cycleCountRecord.all, "detail", id] as const,
+  },
+  varianceReport: {
+    all: ["varianceReport"] as const,
+    lists: () => [...queryKeys.varianceReport.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.varianceReport.all, "detail", id] as const,
   },
   storageLocation: {
     all: ["storageLocation"] as const,
@@ -661,10 +681,15 @@ export const queryKeys = {
     lists: () => [...queryKeys.inventoryTransfer.all, "list"] as const,
     detail: (id: string) => [...queryKeys.inventoryTransfer.all, "detail", id] as const,
   },
-  invoice: {
-    all: ["invoice"] as const,
-    lists: () => [...queryKeys.invoice.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.invoice.all, "detail", id] as const,
+  dish: {
+    all: ["dish"] as const,
+    lists: () => [...queryKeys.dish.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.dish.all, "detail", id] as const,
+  },
+  ingredient: {
+    all: ["ingredient"] as const,
+    lists: () => [...queryKeys.ingredient.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.ingredient.all, "detail", id] as const,
   },
   temperatureProbe: {
     all: ["temperatureProbe"] as const,
@@ -746,46 +771,6 @@ export const queryKeys = {
     lists: () => [...queryKeys.kitchenTask.all, "list"] as const,
     detail: (id: string) => [...queryKeys.kitchenTask.all, "detail", id] as const,
   },
-  knowledgeBaseEntry: {
-    all: ["knowledgeBaseEntry"] as const,
-    lists: () => [...queryKeys.knowledgeBaseEntry.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.knowledgeBaseEntry.all, "detail", id] as const,
-  },
-  laborBudget: {
-    all: ["laborBudget"] as const,
-    lists: () => [...queryKeys.laborBudget.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.laborBudget.all, "detail", id] as const,
-  },
-  budgetAlert: {
-    all: ["budgetAlert"] as const,
-    lists: () => [...queryKeys.budgetAlert.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.budgetAlert.all, "detail", id] as const,
-  },
-  lead: {
-    all: ["lead"] as const,
-    lists: () => [...queryKeys.lead.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.lead.all, "detail", id] as const,
-  },
-  driver: {
-    all: ["driver"] as const,
-    lists: () => [...queryKeys.driver.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.driver.all, "detail", id] as const,
-  },
-  vehicle: {
-    all: ["vehicle"] as const,
-    lists: () => [...queryKeys.vehicle.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.vehicle.all, "detail", id] as const,
-  },
-  logisticsRoute: {
-    all: ["logisticsRoute"] as const,
-    lists: () => [...queryKeys.logisticsRoute.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.logisticsRoute.all, "detail", id] as const,
-  },
-  logisticsDispatch: {
-    all: ["logisticsDispatch"] as const,
-    lists: () => [...queryKeys.logisticsDispatch.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.logisticsDispatch.all, "detail", id] as const,
-  },
   menu: {
     all: ["menu"] as const,
     lists: () => [...queryKeys.menu.all, "list"] as const,
@@ -795,46 +780,6 @@ export const queryKeys = {
     all: ["menuDish"] as const,
     lists: () => [...queryKeys.menuDish.all, "list"] as const,
     detail: (id: string) => [...queryKeys.menuDish.all, "detail", id] as const,
-  },
-  notification: {
-    all: ["notification"] as const,
-    lists: () => [...queryKeys.notification.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.notification.all, "detail", id] as const,
-  },
-  overrideAudit: {
-    all: ["overrideAudit"] as const,
-    lists: () => [...queryKeys.overrideAudit.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.overrideAudit.all, "detail", id] as const,
-  },
-  paymentMethod: {
-    all: ["paymentMethod"] as const,
-    lists: () => [...queryKeys.paymentMethod.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.paymentMethod.all, "detail", id] as const,
-  },
-  payment: {
-    all: ["payment"] as const,
-    lists: () => [...queryKeys.payment.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.payment.all, "detail", id] as const,
-  },
-  payrollPeriod: {
-    all: ["payrollPeriod"] as const,
-    lists: () => [...queryKeys.payrollPeriod.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.payrollPeriod.all, "detail", id] as const,
-  },
-  employeeDeduction: {
-    all: ["employeeDeduction"] as const,
-    lists: () => [...queryKeys.employeeDeduction.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.employeeDeduction.all, "detail", id] as const,
-  },
-  payrollApprovalHistory: {
-    all: ["payrollApprovalHistory"] as const,
-    lists: () => [...queryKeys.payrollApprovalHistory.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.payrollApprovalHistory.all, "detail", id] as const,
-  },
-  payrollRun: {
-    all: ["payrollRun"] as const,
-    lists: () => [...queryKeys.payrollRun.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.payrollRun.all, "detail", id] as const,
   },
   prepComment: {
     all: ["prepComment"] as const,
@@ -866,61 +811,6 @@ export const queryKeys = {
     lists: () => [...queryKeys.prepTask.all, "list"] as const,
     detail: (id: string) => [...queryKeys.prepTask.all, "detail", id] as const,
   },
-  pricingTier: {
-    all: ["pricingTier"] as const,
-    lists: () => [...queryKeys.pricingTier.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.pricingTier.all, "detail", id] as const,
-  },
-  purchaseRequisition: {
-    all: ["purchaseRequisition"] as const,
-    lists: () => [...queryKeys.purchaseRequisition.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.purchaseRequisition.all, "detail", id] as const,
-  },
-  purchaseRequisitionItem: {
-    all: ["purchaseRequisitionItem"] as const,
-    lists: () => [...queryKeys.purchaseRequisitionItem.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.purchaseRequisitionItem.all, "detail", id] as const,
-  },
-  proposal: {
-    all: ["proposal"] as const,
-    lists: () => [...queryKeys.proposal.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.proposal.all, "detail", id] as const,
-  },
-  proposalLineItem: {
-    all: ["proposalLineItem"] as const,
-    lists: () => [...queryKeys.proposalLineItem.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.proposalLineItem.all, "detail", id] as const,
-  },
-  purchaseOrder: {
-    all: ["purchaseOrder"] as const,
-    lists: () => [...queryKeys.purchaseOrder.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.purchaseOrder.all, "detail", id] as const,
-  },
-  purchaseOrderItem: {
-    all: ["purchaseOrderItem"] as const,
-    lists: () => [...queryKeys.purchaseOrderItem.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.purchaseOrderItem.all, "detail", id] as const,
-  },
-  qACheck: {
-    all: ["qACheck"] as const,
-    lists: () => [...queryKeys.qACheck.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.qACheck.all, "detail", id] as const,
-  },
-  qACorrectiveAction: {
-    all: ["qACorrectiveAction"] as const,
-    lists: () => [...queryKeys.qACorrectiveAction.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.qACorrectiveAction.all, "detail", id] as const,
-  },
-  qATemperatureLog: {
-    all: ["qATemperatureLog"] as const,
-    lists: () => [...queryKeys.qATemperatureLog.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.qATemperatureLog.all, "detail", id] as const,
-  },
-  rateLimitConfig: {
-    all: ["rateLimitConfig"] as const,
-    lists: () => [...queryKeys.rateLimitConfig.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.rateLimitConfig.all, "detail", id] as const,
-  },
   recipe: {
     all: ["recipe"] as const,
     lists: () => [...queryKeys.recipe.all, "list"] as const,
@@ -941,35 +831,65 @@ export const queryKeys = {
     lists: () => [...queryKeys.recipeStep.all, "list"] as const,
     detail: (id: string) => [...queryKeys.recipeStep.all, "detail", id] as const,
   },
-  revenueRecognitionSchedule: {
-    all: ["revenueRecognitionSchedule"] as const,
-    lists: () => [...queryKeys.revenueRecognitionSchedule.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.revenueRecognitionSchedule.all, "detail", id] as const,
+  station: {
+    all: ["station"] as const,
+    lists: () => [...queryKeys.station.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.station.all, "detail", id] as const,
   },
-  revenueRecognitionLine: {
-    all: ["revenueRecognitionLine"] as const,
-    lists: () => [...queryKeys.revenueRecognitionLine.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.revenueRecognitionLine.all, "detail", id] as const,
+  equipment: {
+    all: ["equipment"] as const,
+    lists: () => [...queryKeys.equipment.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.equipment.all, "detail", id] as const,
   },
-  rolePolicy: {
-    all: ["rolePolicy"] as const,
-    lists: () => [...queryKeys.rolePolicy.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.rolePolicy.all, "detail", id] as const,
+  maintenanceWorkOrder: {
+    all: ["maintenanceWorkOrder"] as const,
+    lists: () => [...queryKeys.maintenanceWorkOrder.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.maintenanceWorkOrder.all, "detail", id] as const,
   },
-  sampleData: {
-    all: ["sampleData"] as const,
-    lists: () => [...queryKeys.sampleData.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.sampleData.all, "detail", id] as const,
+  facility: {
+    all: ["facility"] as const,
+    lists: () => [...queryKeys.facility.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.facility.all, "detail", id] as const,
   },
-  schedule: {
-    all: ["schedule"] as const,
-    lists: () => [...queryKeys.schedule.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.schedule.all, "detail", id] as const,
+  facilityArea: {
+    all: ["facilityArea"] as const,
+    lists: () => [...queryKeys.facilityArea.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.facilityArea.all, "detail", id] as const,
   },
-  scheduleShift: {
-    all: ["scheduleShift"] as const,
-    lists: () => [...queryKeys.scheduleShift.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.scheduleShift.all, "detail", id] as const,
+  facilityAsset: {
+    all: ["facilityAsset"] as const,
+    lists: () => [...queryKeys.facilityAsset.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.facilityAsset.all, "detail", id] as const,
+  },
+  facilitySchedule: {
+    all: ["facilitySchedule"] as const,
+    lists: () => [...queryKeys.facilitySchedule.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.facilitySchedule.all, "detail", id] as const,
+  },
+  facilityWorkOrder: {
+    all: ["facilityWorkOrder"] as const,
+    lists: () => [...queryKeys.facilityWorkOrder.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.facilityWorkOrder.all, "detail", id] as const,
+  },
+  driver: {
+    all: ["driver"] as const,
+    lists: () => [...queryKeys.driver.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.driver.all, "detail", id] as const,
+  },
+  vehicle: {
+    all: ["vehicle"] as const,
+    lists: () => [...queryKeys.vehicle.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.vehicle.all, "detail", id] as const,
+  },
+  logisticsRoute: {
+    all: ["logisticsRoute"] as const,
+    lists: () => [...queryKeys.logisticsRoute.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.logisticsRoute.all, "detail", id] as const,
+  },
+  logisticsDispatch: {
+    all: ["logisticsDispatch"] as const,
+    lists: () => [...queryKeys.logisticsDispatch.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.logisticsDispatch.all, "detail", id] as const,
   },
   shipment: {
     all: ["shipment"] as const,
@@ -981,10 +901,155 @@ export const queryKeys = {
     lists: () => [...queryKeys.shipmentItem.all, "list"] as const,
     detail: (id: string) => [...queryKeys.shipmentItem.all, "detail", id] as const,
   },
-  smsAutomationRule: {
-    all: ["smsAutomationRule"] as const,
-    lists: () => [...queryKeys.smsAutomationRule.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.smsAutomationRule.all, "detail", id] as const,
+  workOrder: {
+    all: ["workOrder"] as const,
+    lists: () => [...queryKeys.workOrder.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.workOrder.all, "detail", id] as const,
+  },
+  workforceOptimization: {
+    all: ["workforceOptimization"] as const,
+    lists: () => [...queryKeys.workforceOptimization.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.workforceOptimization.all, "detail", id] as const,
+  },
+  performancePrediction: {
+    all: ["performancePrediction"] as const,
+    lists: () => [...queryKeys.performancePrediction.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.performancePrediction.all, "detail", id] as const,
+  },
+  apiKey: {
+    all: ["apiKey"] as const,
+    lists: () => [...queryKeys.apiKey.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.apiKey.all, "detail", id] as const,
+  },
+  notification: {
+    all: ["notification"] as const,
+    lists: () => [...queryKeys.notification.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.notification.all, "detail", id] as const,
+  },
+  overrideAudit: {
+    all: ["overrideAudit"] as const,
+    lists: () => [...queryKeys.overrideAudit.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.overrideAudit.all, "detail", id] as const,
+  },
+  rateLimitConfig: {
+    all: ["rateLimitConfig"] as const,
+    lists: () => [...queryKeys.rateLimitConfig.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.rateLimitConfig.all, "detail", id] as const,
+  },
+  rolePolicy: {
+    all: ["rolePolicy"] as const,
+    lists: () => [...queryKeys.rolePolicy.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.rolePolicy.all, "detail", id] as const,
+  },
+  sampleData: {
+    all: ["sampleData"] as const,
+    lists: () => [...queryKeys.sampleData.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.sampleData.all, "detail", id] as const,
+  },
+  user: {
+    all: ["user"] as const,
+    lists: () => [...queryKeys.user.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.user.all, "detail", id] as const,
+  },
+  workflow: {
+    all: ["workflow"] as const,
+    lists: () => [...queryKeys.workflow.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.workflow.all, "detail", id] as const,
+  },
+  purchaseRequisition: {
+    all: ["purchaseRequisition"] as const,
+    lists: () => [...queryKeys.purchaseRequisition.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.purchaseRequisition.all, "detail", id] as const,
+  },
+  purchaseRequisitionItem: {
+    all: ["purchaseRequisitionItem"] as const,
+    lists: () => [...queryKeys.purchaseRequisitionItem.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.purchaseRequisitionItem.all, "detail", id] as const,
+  },
+  purchaseOrder: {
+    all: ["purchaseOrder"] as const,
+    lists: () => [...queryKeys.purchaseOrder.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.purchaseOrder.all, "detail", id] as const,
+  },
+  purchaseOrderItem: {
+    all: ["purchaseOrderItem"] as const,
+    lists: () => [...queryKeys.purchaseOrderItem.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.purchaseOrderItem.all, "detail", id] as const,
+  },
+  vendorCatalog: {
+    all: ["vendorCatalog"] as const,
+    lists: () => [...queryKeys.vendorCatalog.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.vendorCatalog.all, "detail", id] as const,
+  },
+  vendorContract: {
+    all: ["vendorContract"] as const,
+    lists: () => [...queryKeys.vendorContract.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.vendorContract.all, "detail", id] as const,
+  },
+  vendor: {
+    all: ["vendor"] as const,
+    lists: () => [...queryKeys.vendor.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.vendor.all, "detail", id] as const,
+  },
+  qACheck: {
+    all: ["qACheck"] as const,
+    lists: () => [...queryKeys.qACheck.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.qACheck.all, "detail", id] as const,
+  },
+  qACorrectiveAction: {
+    all: ["qACorrectiveAction"] as const,
+    lists: () => [...queryKeys.qACorrectiveAction.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.qACorrectiveAction.all, "detail", id] as const,
+  },
+  qATemperatureLog: {
+    all: ["qATemperatureLog"] as const,
+    lists: () => [...queryKeys.qATemperatureLog.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.qATemperatureLog.all, "detail", id] as const,
+  },
+  wasteEntry: {
+    all: ["wasteEntry"] as const,
+    lists: () => [...queryKeys.wasteEntry.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.wasteEntry.all, "detail", id] as const,
+  },
+  laborBudget: {
+    all: ["laborBudget"] as const,
+    lists: () => [...queryKeys.laborBudget.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.laborBudget.all, "detail", id] as const,
+  },
+  budgetAlert: {
+    all: ["budgetAlert"] as const,
+    lists: () => [...queryKeys.budgetAlert.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.budgetAlert.all, "detail", id] as const,
+  },
+  payrollPeriod: {
+    all: ["payrollPeriod"] as const,
+    lists: () => [...queryKeys.payrollPeriod.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.payrollPeriod.all, "detail", id] as const,
+  },
+  employeeDeduction: {
+    all: ["employeeDeduction"] as const,
+    lists: () => [...queryKeys.employeeDeduction.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.employeeDeduction.all, "detail", id] as const,
+  },
+  payrollApprovalHistory: {
+    all: ["payrollApprovalHistory"] as const,
+    lists: () => [...queryKeys.payrollApprovalHistory.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.payrollApprovalHistory.all, "detail", id] as const,
+  },
+  payrollRun: {
+    all: ["payrollRun"] as const,
+    lists: () => [...queryKeys.payrollRun.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.payrollRun.all, "detail", id] as const,
+  },
+  schedule: {
+    all: ["schedule"] as const,
+    lists: () => [...queryKeys.schedule.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.schedule.all, "detail", id] as const,
+  },
+  scheduleShift: {
+    all: ["scheduleShift"] as const,
+    lists: () => [...queryKeys.scheduleShift.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.scheduleShift.all, "detail", id] as const,
   },
   timecardApproval: {
     all: ["timecardApproval"] as const,
@@ -1065,11 +1130,6 @@ export const queryKeys = {
     all: ["staffPerformance"] as const,
     lists: () => [...queryKeys.staffPerformance.all, "list"] as const,
     detail: (id: string) => [...queryKeys.staffPerformance.all, "detail", id] as const,
-  },
-  station: {
-    all: ["station"] as const,
-    lists: () => [...queryKeys.station.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.station.all, "detail", id] as const,
   },
   timeEntry: {
     all: ["timeEntry"] as const,
@@ -1166,71 +1226,22 @@ export const queryKeys = {
     lists: () => [...queryKeys.selOnboardingTrainingQuestion10Definition.all, "list"] as const,
     detail: (id: string) => [...queryKeys.selOnboardingTrainingQuestion10Definition.all, "detail", id] as const,
   },
-  user: {
-    all: ["user"] as const,
-    lists: () => [...queryKeys.user.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.user.all, "detail", id] as const,
-  },
-  vendorCatalog: {
-    all: ["vendorCatalog"] as const,
-    lists: () => [...queryKeys.vendorCatalog.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.vendorCatalog.all, "detail", id] as const,
-  },
-  vendorContract: {
-    all: ["vendorContract"] as const,
-    lists: () => [...queryKeys.vendorContract.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.vendorContract.all, "detail", id] as const,
-  },
-  vendor: {
-    all: ["vendor"] as const,
-    lists: () => [...queryKeys.vendor.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.vendor.all, "detail", id] as const,
-  },
-  versionedEntity: {
-    all: ["versionedEntity"] as const,
-    lists: () => [...queryKeys.versionedEntity.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.versionedEntity.all, "detail", id] as const,
-  },
-  entityVersion: {
-    all: ["entityVersion"] as const,
-    lists: () => [...queryKeys.entityVersion.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.entityVersion.all, "detail", id] as const,
-  },
-  versionApproval: {
-    all: ["versionApproval"] as const,
-    lists: () => [...queryKeys.versionApproval.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.versionApproval.all, "detail", id] as const,
-  },
-  wasteEntry: {
-    all: ["wasteEntry"] as const,
-    lists: () => [...queryKeys.wasteEntry.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.wasteEntry.all, "detail", id] as const,
-  },
-  workOrder: {
-    all: ["workOrder"] as const,
-    lists: () => [...queryKeys.workOrder.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.workOrder.all, "detail", id] as const,
-  },
-  workflow: {
-    all: ["workflow"] as const,
-    lists: () => [...queryKeys.workflow.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.workflow.all, "detail", id] as const,
-  },
-  workforceOptimization: {
-    all: ["workforceOptimization"] as const,
-    lists: () => [...queryKeys.workforceOptimization.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.workforceOptimization.all, "detail", id] as const,
-  },
-  performancePrediction: {
-    all: ["performancePrediction"] as const,
-    lists: () => [...queryKeys.performancePrediction.all, "list"] as const,
-    detail: (id: string) => [...queryKeys.performancePrediction.all, "detail", id] as const,
-  },
 } as const;
 
 // ============================================================
 // List hooks (useEntityList)
 // ============================================================
+
+export function useAiEventSetupSessionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<AiEventSetupSession>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.aiEventSetupSession.lists(),
+    queryFn: () => client.listAiEventSetupSessions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
 
 export function useAdminChatParticipantList(
   options?: Omit<UseQueryOptions<PaginatedResponse<AdminChatParticipant>, Error>, "queryKey" | "queryFn">,
@@ -1249,17 +1260,6 @@ export function useAdminTaskList(
   return useQuery({
     queryKey: queryKeys.adminTask.lists(),
     queryFn: () => client.listAdminTasks(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<AiEventSetupSession>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.aiEventSetupSession.lists(),
-    queryFn: () => client.listAiEventSetupSessions(),
     staleTime: 30_000,
     ...options,
   });
@@ -1298,188 +1298,12 @@ export function useBankAccountList(
   });
 }
 
-export function useBattleBoardList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<BattleBoard>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.battleBoard.lists(),
-    queryFn: () => client.listBattleBoards(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBudgetList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Budget>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.budget.lists(),
-    queryFn: () => client.listBudgets(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<BulkOrderRule>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.bulkOrderRule.lists(),
-    queryFn: () => client.listBulkOrderRules(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCateringOrderList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CateringOrder>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cateringOrder.lists(),
-    queryFn: () => client.listCateringOrders(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useChartOfAccountList(
   options?: Omit<UseQueryOptions<PaginatedResponse<ChartOfAccount>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
     queryKey: queryKeys.chartOfAccount.lists(),
     queryFn: () => client.listChartOfAccounts(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientInteractionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<ClientInteraction>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientInteraction.lists(),
-    queryFn: () => client.listClientInteractions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Client>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.client.lists(),
-    queryFn: () => client.listClients(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientContactList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<ClientContact>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientContact.lists(),
-    queryFn: () => client.listClientContacts(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientPreferenceList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<ClientPreference>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientPreference.lists(),
-    queryFn: () => client.listClientPreferences(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionCaseList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionCase>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionCase.lists(),
-    queryFn: () => client.listCollectionCases(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionActionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionAction>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionAction.lists(),
-    queryFn: () => client.listCollectionActions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionPaymentPlan>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionPaymentPlan.lists(),
-    queryFn: () => client.listCollectionPaymentPlans(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoard>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoard.lists(),
-    queryFn: () => client.listCommandBoards(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardCardList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardCard>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardCard.lists(),
-    queryFn: () => client.listCommandBoardCards(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardGroupList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardGroup>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardGroup.lists(),
-    queryFn: () => client.listCommandBoardGroups(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardConnectionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardConnection>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardConnection.lists(),
-    queryFn: () => client.listCommandBoardConnections(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardLayoutList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardLayout>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardLayout.lists(),
-    queryFn: () => client.listCommandBoardLayouts(),
     staleTime: 30_000,
     ...options,
   });
@@ -1573,50 +1397,6 @@ export function useAdminChatMessageList(
   });
 }
 
-export function useCycleCountSessionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CycleCountSession>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cycleCountSession.lists(),
-    queryFn: () => client.listCycleCountSessions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCycleCountRecordList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<CycleCountRecord>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cycleCountRecord.lists(),
-    queryFn: () => client.listCycleCountRecords(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVarianceReportList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<VarianceReport>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.varianceReport.lists(),
-    queryFn: () => client.listVarianceReports(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useDealList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Deal>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.deal.lists(),
-    queryFn: () => client.listDeals(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useDocumentVersionList(
   options?: Omit<UseQueryOptions<PaginatedResponse<DocumentVersion>, Error>, "queryKey" | "queryFn">,
 ) {
@@ -1661,23 +1441,166 @@ export function useEmployeeCertificationList(
   });
 }
 
-export function useEquipmentList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Equipment>, Error>, "queryKey" | "queryFn">,
+export function useClientInteractionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<ClientInteraction>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.equipment.lists(),
-    queryFn: () => client.listEquipments(),
+    queryKey: queryKeys.clientInteraction.lists(),
+    queryFn: () => client.listClientInteractions(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<MaintenanceWorkOrder>, Error>, "queryKey" | "queryFn">,
+export function useClientList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Client>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.maintenanceWorkOrder.lists(),
-    queryFn: () => client.listMaintenanceWorkOrders(),
+    queryKey: queryKeys.client.lists(),
+    queryFn: () => client.listClients(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useClientContactList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<ClientContact>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.clientContact.lists(),
+    queryFn: () => client.listClientContacts(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useClientPreferenceList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<ClientPreference>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.clientPreference.lists(),
+    queryFn: () => client.listClientPreferences(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useDealList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Deal>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.deal.lists(),
+    queryFn: () => client.listDeals(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLeadList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Lead>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.lead.lists(),
+    queryFn: () => client.listLeads(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useProposalList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Proposal>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.proposal.lists(),
+    queryFn: () => client.listProposals(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useProposalLineItemList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<ProposalLineItem>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.proposalLineItem.lists(),
+    queryFn: () => client.listProposalLineItems(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBattleBoardList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<BattleBoard>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.battleBoard.lists(),
+    queryFn: () => client.listBattleBoards(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCateringOrderList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CateringOrder>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cateringOrder.lists(),
+    queryFn: () => client.listCateringOrders(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoard>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoard.lists(),
+    queryFn: () => client.listCommandBoards(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardCardList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardCard>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardCard.lists(),
+    queryFn: () => client.listCommandBoardCards(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardGroupList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardGroup>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardGroup.lists(),
+    queryFn: () => client.listCommandBoardGroups(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardConnectionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardConnection>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardConnection.lists(),
+    queryFn: () => client.listCommandBoardConnections(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardLayoutList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CommandBoardLayout>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardLayout.lists(),
+    queryFn: () => client.listCommandBoardLayouts(),
     staleTime: 30_000,
     ...options,
   });
@@ -1892,56 +1815,188 @@ export function useNoteList(
   });
 }
 
-export function useFacilityAreaList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityArea>, Error>, "queryKey" | "queryFn">,
+export function useBudgetList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Budget>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityArea.lists(),
-    queryFn: () => client.listFacilityAreas(),
+    queryKey: queryKeys.budget.lists(),
+    queryFn: () => client.listBudgets(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityAssetList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityAsset>, Error>, "queryKey" | "queryFn">,
+export function useCollectionCaseList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionCase>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityAsset.lists(),
-    queryFn: () => client.listFacilityAssets(),
+    queryKey: queryKeys.collectionCase.lists(),
+    queryFn: () => client.listCollectionCases(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityScheduleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<FacilitySchedule>, Error>, "queryKey" | "queryFn">,
+export function useCollectionActionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionAction>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilitySchedule.lists(),
-    queryFn: () => client.listFacilitySchedules(),
+    queryKey: queryKeys.collectionAction.lists(),
+    queryFn: () => client.listCollectionActions(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityWorkOrderList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityWorkOrder>, Error>, "queryKey" | "queryFn">,
+export function useCollectionPaymentPlanList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CollectionPaymentPlan>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityWorkOrder.lists(),
-    queryFn: () => client.listFacilityWorkOrders(),
+    queryKey: queryKeys.collectionPaymentPlan.lists(),
+    queryFn: () => client.listCollectionPaymentPlans(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useIngredientList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Ingredient>, Error>, "queryKey" | "queryFn">,
+export function useInvoiceList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Invoice>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.ingredient.lists(),
-    queryFn: () => client.listIngredients(),
+    queryKey: queryKeys.invoice.lists(),
+    queryFn: () => client.listInvoices(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePaymentMethodList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PaymentMethod>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.paymentMethod.lists(),
+    queryFn: () => client.listPaymentMethods(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePaymentList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Payment>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payment.lists(),
+    queryFn: () => client.listPayments(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePricingTierList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PricingTier>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.pricingTier.lists(),
+    queryFn: () => client.listPricingTiers(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<RevenueRecognitionSchedule>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.revenueRecognitionSchedule.lists(),
+    queryFn: () => client.listRevenueRecognitionSchedules(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<RevenueRecognitionLine>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.revenueRecognitionLine.lists(),
+    queryFn: () => client.listRevenueRecognitionLines(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<SmsAutomationRule>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.smsAutomationRule.lists(),
+    queryFn: () => client.listSmsAutomationRules(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useEntityVersionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<EntityVersion>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.entityVersion.lists(),
+    queryFn: () => client.listEntityVersions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVersionApprovalList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<VersionApproval>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.versionApproval.lists(),
+    queryFn: () => client.listVersionApprovals(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<BulkOrderRule>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.bulkOrderRule.lists(),
+    queryFn: () => client.listBulkOrderRules(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCycleCountSessionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CycleCountSession>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cycleCountSession.lists(),
+    queryFn: () => client.listCycleCountSessions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCycleCountRecordList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<CycleCountRecord>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cycleCountRecord.lists(),
+    queryFn: () => client.listCycleCountRecords(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVarianceReportList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<VarianceReport>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.varianceReport.lists(),
+    queryFn: () => client.listVarianceReports(),
     staleTime: 30_000,
     ...options,
   });
@@ -2123,12 +2178,12 @@ export function useInventoryTransferList(
   });
 }
 
-export function useInvoiceList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Invoice>, Error>, "queryKey" | "queryFn">,
+export function useIngredientList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Ingredient>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.invoice.lists(),
-    queryFn: () => client.listInvoices(),
+    queryKey: queryKeys.ingredient.lists(),
+    queryFn: () => client.listIngredients(),
     staleTime: 30_000,
     ...options,
   });
@@ -2299,155 +2354,12 @@ export function useKitchenTaskList(
   });
 }
 
-export function useLaborBudgetList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<LaborBudget>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.laborBudget.lists(),
-    queryFn: () => client.listLaborBudgets(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBudgetAlertList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<BudgetAlert>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.budgetAlert.lists(),
-    queryFn: () => client.listBudgetAlerts(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLeadList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Lead>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.lead.lists(),
-    queryFn: () => client.listLeads(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useDriverList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Driver>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.driver.lists(),
-    queryFn: () => client.listDrivers(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVehicleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Vehicle>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vehicle.lists(),
-    queryFn: () => client.listVehicles(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLogisticsRouteList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<LogisticsRoute>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.logisticsRoute.lists(),
-    queryFn: () => client.listLogisticsRoutes(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useMenuList(
   options?: Omit<UseQueryOptions<PaginatedResponse<Menu>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
     queryKey: queryKeys.menu.lists(),
     queryFn: () => client.listMenus(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useNotificationList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Notification>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.notification.lists(),
-    queryFn: () => client.listNotifications(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useOverrideAuditList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<OverrideAudit>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.overrideAudit.lists(),
-    queryFn: () => client.listOverrideAudits(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePaymentMethodList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PaymentMethod>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.paymentMethod.lists(),
-    queryFn: () => client.listPaymentMethods(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePaymentList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Payment>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payment.lists(),
-    queryFn: () => client.listPayments(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePayrollPeriodList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PayrollPeriod>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payrollPeriod.lists(),
-    queryFn: () => client.listPayrollPeriods(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useEmployeeDeductionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<EmployeeDeduction>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.employeeDeduction.lists(),
-    queryFn: () => client.listEmployeeDeductions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePayrollRunList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PayrollRun>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payrollRun.lists(),
-    queryFn: () => client.listPayrollRuns(),
     staleTime: 30_000,
     ...options,
   });
@@ -2519,127 +2431,6 @@ export function usePrepTaskList(
   });
 }
 
-export function usePricingTierList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PricingTier>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.pricingTier.lists(),
-    queryFn: () => client.listPricingTiers(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseRequisition>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseRequisition.lists(),
-    queryFn: () => client.listPurchaseRequisitions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionItemList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseRequisitionItem>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseRequisitionItem.lists(),
-    queryFn: () => client.listPurchaseRequisitionItems(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useProposalList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Proposal>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.proposal.lists(),
-    queryFn: () => client.listProposals(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useProposalLineItemList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<ProposalLineItem>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.proposalLineItem.lists(),
-    queryFn: () => client.listProposalLineItems(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseOrderList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseOrder>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseOrder.lists(),
-    queryFn: () => client.listPurchaseOrders(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseOrderItemList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseOrderItem>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseOrderItem.lists(),
-    queryFn: () => client.listPurchaseOrderItems(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQACheckList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<QACheck>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qACheck.lists(),
-    queryFn: () => client.listQAChecks(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<QACorrectiveAction>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qACorrectiveAction.lists(),
-    queryFn: () => client.listQACorrectiveActions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQATemperatureLogList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<QATemperatureLog>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qATemperatureLog.lists(),
-    queryFn: () => client.listQATemperatureLogs(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useRateLimitConfigList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<RateLimitConfig>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.rateLimitConfig.lists(),
-    queryFn: () => client.listRateLimitConfigs(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useRecipeList(
   options?: Omit<UseQueryOptions<PaginatedResponse<Recipe>, Error>, "queryKey" | "queryFn">,
 ) {
@@ -2684,56 +2475,111 @@ export function useRecipeStepList(
   });
 }
 
-export function useRevenueRecognitionScheduleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<RevenueRecognitionSchedule>, Error>, "queryKey" | "queryFn">,
+export function useStationList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Station>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.revenueRecognitionSchedule.lists(),
-    queryFn: () => client.listRevenueRecognitionSchedules(),
+    queryKey: queryKeys.station.lists(),
+    queryFn: () => client.listStations(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<RevenueRecognitionLine>, Error>, "queryKey" | "queryFn">,
+export function useEquipmentList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Equipment>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.revenueRecognitionLine.lists(),
-    queryFn: () => client.listRevenueRecognitionLines(),
+    queryKey: queryKeys.equipment.lists(),
+    queryFn: () => client.listEquipments(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useSampleDataList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<SampleData>, Error>, "queryKey" | "queryFn">,
+export function useMaintenanceWorkOrderList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<MaintenanceWorkOrder>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.sampleData.lists(),
-    queryFn: () => client.listSampleDatas(),
+    queryKey: queryKeys.maintenanceWorkOrder.lists(),
+    queryFn: () => client.listMaintenanceWorkOrders(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useScheduleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Schedule>, Error>, "queryKey" | "queryFn">,
+export function useFacilityAreaList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityArea>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.schedule.lists(),
-    queryFn: () => client.listSchedules(),
+    queryKey: queryKeys.facilityArea.lists(),
+    queryFn: () => client.listFacilityAreas(),
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useScheduleShiftList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<ScheduleShift>, Error>, "queryKey" | "queryFn">,
+export function useFacilityAssetList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityAsset>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.scheduleShift.lists(),
-    queryFn: () => client.listScheduleShifts(),
+    queryKey: queryKeys.facilityAsset.lists(),
+    queryFn: () => client.listFacilityAssets(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useFacilityScheduleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<FacilitySchedule>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.facilitySchedule.lists(),
+    queryFn: () => client.listFacilitySchedules(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<FacilityWorkOrder>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.facilityWorkOrder.lists(),
+    queryFn: () => client.listFacilityWorkOrders(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useDriverList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Driver>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.driver.lists(),
+    queryFn: () => client.listDrivers(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVehicleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Vehicle>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vehicle.lists(),
+    queryFn: () => client.listVehicles(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLogisticsRouteList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<LogisticsRoute>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.logisticsRoute.lists(),
+    queryFn: () => client.listLogisticsRoutes(),
     staleTime: 30_000,
     ...options,
   });
@@ -2761,12 +2607,287 @@ export function useShipmentItemList(
   });
 }
 
-export function useSmsAutomationRuleList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<SmsAutomationRule>, Error>, "queryKey" | "queryFn">,
+export function useWorkOrderList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<WorkOrder>, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.smsAutomationRule.lists(),
-    queryFn: () => client.listSmsAutomationRules(),
+    queryKey: queryKeys.workOrder.lists(),
+    queryFn: () => client.listWorkOrders(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<WorkforceOptimization>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.workforceOptimization.lists(),
+    queryFn: () => client.listWorkforceOptimizations(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePerformancePredictionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PerformancePrediction>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.performancePrediction.lists(),
+    queryFn: () => client.listPerformancePredictions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useNotificationList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Notification>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.notification.lists(),
+    queryFn: () => client.listNotifications(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useOverrideAuditList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<OverrideAudit>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.overrideAudit.lists(),
+    queryFn: () => client.listOverrideAudits(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRateLimitConfigList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<RateLimitConfig>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.rateLimitConfig.lists(),
+    queryFn: () => client.listRateLimitConfigs(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useSampleDataList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<SampleData>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.sampleData.lists(),
+    queryFn: () => client.listSampleDatas(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useUserList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<User>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.user.lists(),
+    queryFn: () => client.listUsers(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useWorkflowList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Workflow>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.workflow.lists(),
+    queryFn: () => client.listWorkflows(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseRequisition>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseRequisition.lists(),
+    queryFn: () => client.listPurchaseRequisitions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionItemList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseRequisitionItem>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseRequisitionItem.lists(),
+    queryFn: () => client.listPurchaseRequisitionItems(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseOrderList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseOrder>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseOrder.lists(),
+    queryFn: () => client.listPurchaseOrders(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseOrderItemList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PurchaseOrderItem>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseOrderItem.lists(),
+    queryFn: () => client.listPurchaseOrderItems(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorCatalogList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<VendorCatalog>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendorCatalog.lists(),
+    queryFn: () => client.listVendorCatalogs(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorContractList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<VendorContract>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendorContract.lists(),
+    queryFn: () => client.listVendorContracts(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Vendor>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendor.lists(),
+    queryFn: () => client.listVendors(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQACheckList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<QACheck>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qACheck.lists(),
+    queryFn: () => client.listQAChecks(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<QACorrectiveAction>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qACorrectiveAction.lists(),
+    queryFn: () => client.listQACorrectiveActions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQATemperatureLogList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<QATemperatureLog>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qATemperatureLog.lists(),
+    queryFn: () => client.listQATemperatureLogs(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLaborBudgetList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<LaborBudget>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.laborBudget.lists(),
+    queryFn: () => client.listLaborBudgets(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBudgetAlertList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<BudgetAlert>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.budgetAlert.lists(),
+    queryFn: () => client.listBudgetAlerts(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePayrollPeriodList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PayrollPeriod>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payrollPeriod.lists(),
+    queryFn: () => client.listPayrollPeriods(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useEmployeeDeductionList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<EmployeeDeduction>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.employeeDeduction.lists(),
+    queryFn: () => client.listEmployeeDeductions(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePayrollRunList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<PayrollRun>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payrollRun.lists(),
+    queryFn: () => client.listPayrollRuns(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useScheduleList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<Schedule>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.schedule.lists(),
+    queryFn: () => client.listSchedules(),
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useScheduleShiftList(
+  options?: Omit<UseQueryOptions<PaginatedResponse<ScheduleShift>, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.scheduleShift.lists(),
+    queryFn: () => client.listScheduleShifts(),
     staleTime: 30_000,
     ...options,
   });
@@ -2948,17 +3069,6 @@ export function useStaffPerformanceList(
   });
 }
 
-export function useStationList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Station>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.station.lists(),
-    queryFn: () => client.listStations(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useTimecardEditRequestList(
   options?: Omit<UseQueryOptions<PaginatedResponse<TimecardEditRequest>, Error>, "queryKey" | "queryFn">,
 ) {
@@ -3003,119 +3113,35 @@ export function useTrainingAssignmentList(
   });
 }
 
-export function useUserList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<User>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.user.lists(),
-    queryFn: () => client.listUsers(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorCatalogList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<VendorCatalog>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendorCatalog.lists(),
-    queryFn: () => client.listVendorCatalogs(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorContractList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<VendorContract>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendorContract.lists(),
-    queryFn: () => client.listVendorContracts(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Vendor>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendor.lists(),
-    queryFn: () => client.listVendors(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useEntityVersionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<EntityVersion>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.entityVersion.lists(),
-    queryFn: () => client.listEntityVersions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVersionApprovalList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<VersionApproval>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.versionApproval.lists(),
-    queryFn: () => client.listVersionApprovals(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkOrderList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<WorkOrder>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workOrder.lists(),
-    queryFn: () => client.listWorkOrders(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkflowList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<Workflow>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workflow.lists(),
-    queryFn: () => client.listWorkflows(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<WorkforceOptimization>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workforceOptimization.lists(),
-    queryFn: () => client.listWorkforceOptimizations(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePerformancePredictionList(
-  options?: Omit<UseQueryOptions<PaginatedResponse<PerformancePrediction>, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.performancePrediction.lists(),
-    queryFn: () => client.listPerformancePredictions(),
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 // ============================================================
 // Detail hooks (useEntityDetail)
 // ============================================================
+
+export function useAiEventSetupSessionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<AiEventSetupSession | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.aiEventSetupSession.detail(id),
+    queryFn: () => client.getAiEventSetupSession(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<KnowledgeBaseEntry | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.knowledgeBaseEntry.detail(id),
+    queryFn: () => client.getKnowledgeBaseEntry(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
 
 export function useAdminChatParticipantDetail(
   id: string,
@@ -3137,19 +3163,6 @@ export function useAdminTaskDetail(
   return useQuery({
     queryKey: queryKeys.adminTask.detail(id),
     queryFn: () => client.getAdminTask(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<AiEventSetupSession | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.aiEventSetupSession.detail(id),
-    queryFn: () => client.getAiEventSetupSession(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -3182,19 +3195,6 @@ export function useAllergenWarningDetail(
   });
 }
 
-export function useApiKeyDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<ApiKey | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.apiKey.detail(id),
-    queryFn: () => client.getApiKey(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useBankAccountDetail(
   id: string,
   options?: Omit<UseQueryOptions<BankAccount | undefined, Error>, "queryKey" | "queryFn">,
@@ -3208,58 +3208,6 @@ export function useBankAccountDetail(
   });
 }
 
-export function useBattleBoardDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<BattleBoard | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.battleBoard.detail(id),
-    queryFn: () => client.getBattleBoard(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBudgetDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Budget | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.budget.detail(id),
-    queryFn: () => client.getBudget(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<BulkOrderRule | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.bulkOrderRule.detail(id),
-    queryFn: () => client.getBulkOrderRule(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCateringOrderDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CateringOrder | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cateringOrder.detail(id),
-    queryFn: () => client.getCateringOrder(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useChartOfAccountDetail(
   id: string,
   options?: Omit<UseQueryOptions<ChartOfAccount | undefined, Error>, "queryKey" | "queryFn">,
@@ -3267,162 +3215,6 @@ export function useChartOfAccountDetail(
   return useQuery({
     queryKey: queryKeys.chartOfAccount.detail(id),
     queryFn: () => client.getChartOfAccount(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientInteractionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<ClientInteraction | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientInteraction.detail(id),
-    queryFn: () => client.getClientInteraction(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Client | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.client.detail(id),
-    queryFn: () => client.getClient(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientContactDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<ClientContact | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientContact.detail(id),
-    queryFn: () => client.getClientContact(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useClientPreferenceDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<ClientPreference | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.clientPreference.detail(id),
-    queryFn: () => client.getClientPreference(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionCaseDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CollectionCase | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionCase.detail(id),
-    queryFn: () => client.getCollectionCase(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionActionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CollectionAction | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionAction.detail(id),
-    queryFn: () => client.getCollectionAction(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CollectionPaymentPlan | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.collectionPaymentPlan.detail(id),
-    queryFn: () => client.getCollectionPaymentPlan(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CommandBoard | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoard.detail(id),
-    queryFn: () => client.getCommandBoard(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardCardDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CommandBoardCard | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardCard.detail(id),
-    queryFn: () => client.getCommandBoardCard(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardGroupDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CommandBoardGroup | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardGroup.detail(id),
-    queryFn: () => client.getCommandBoardGroup(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardConnectionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CommandBoardConnection | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardConnection.detail(id),
-    queryFn: () => client.getCommandBoardConnection(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCommandBoardLayoutDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CommandBoardLayout | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.commandBoardLayout.detail(id),
-    queryFn: () => client.getCommandBoardLayout(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -3533,71 +3325,6 @@ export function useAdminChatMessageDetail(
   });
 }
 
-export function useCycleCountSessionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CycleCountSession | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cycleCountSession.detail(id),
-    queryFn: () => client.getCycleCountSession(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useCycleCountRecordDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<CycleCountRecord | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.cycleCountRecord.detail(id),
-    queryFn: () => client.getCycleCountRecord(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVarianceReportDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<VarianceReport | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.varianceReport.detail(id),
-    queryFn: () => client.getVarianceReport(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useDealDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Deal | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.deal.detail(id),
-    queryFn: () => client.getDeal(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useDishDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Dish | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.dish.detail(id),
-    queryFn: () => client.getDish(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useDocumentVersionDetail(
   id: string,
   options?: Omit<UseQueryOptions<DocumentVersion | undefined, Error>, "queryKey" | "queryFn">,
@@ -3663,26 +3390,195 @@ export function useEmployeeCertificationDetail(
   });
 }
 
-export function useEquipmentDetail(
+export function useClientInteractionDetail(
   id: string,
-  options?: Omit<UseQueryOptions<Equipment | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<ClientInteraction | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.equipment.detail(id),
-    queryFn: () => client.getEquipment(id),
+    queryKey: queryKeys.clientInteraction.detail(id),
+    queryFn: () => client.getClientInteraction(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderDetail(
+export function useClientDetail(
   id: string,
-  options?: Omit<UseQueryOptions<MaintenanceWorkOrder | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Client | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.maintenanceWorkOrder.detail(id),
-    queryFn: () => client.getMaintenanceWorkOrder(id),
+    queryKey: queryKeys.client.detail(id),
+    queryFn: () => client.getClient(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useClientContactDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<ClientContact | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.clientContact.detail(id),
+    queryFn: () => client.getClientContact(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useClientPreferenceDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<ClientPreference | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.clientPreference.detail(id),
+    queryFn: () => client.getClientPreference(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useDealDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Deal | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.deal.detail(id),
+    queryFn: () => client.getDeal(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLeadDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Lead | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.lead.detail(id),
+    queryFn: () => client.getLead(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useProposalDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Proposal | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.proposal.detail(id),
+    queryFn: () => client.getProposal(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useProposalLineItemDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<ProposalLineItem | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.proposalLineItem.detail(id),
+    queryFn: () => client.getProposalLineItem(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBattleBoardDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<BattleBoard | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.battleBoard.detail(id),
+    queryFn: () => client.getBattleBoard(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCateringOrderDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CateringOrder | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cateringOrder.detail(id),
+    queryFn: () => client.getCateringOrder(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CommandBoard | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoard.detail(id),
+    queryFn: () => client.getCommandBoard(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardCardDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CommandBoardCard | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardCard.detail(id),
+    queryFn: () => client.getCommandBoardCard(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardGroupDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CommandBoardGroup | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardGroup.detail(id),
+    queryFn: () => client.getCommandBoardGroup(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardConnectionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CommandBoardConnection | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardConnection.detail(id),
+    queryFn: () => client.getCommandBoardConnection(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCommandBoardLayoutDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CommandBoardLayout | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.commandBoardLayout.detail(id),
+    queryFn: () => client.getCommandBoardLayout(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -3988,78 +3884,234 @@ export function useNoteDetail(
   });
 }
 
-export function useFacilityDetail(
+export function useBudgetDetail(
   id: string,
-  options?: Omit<UseQueryOptions<Facility | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Budget | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facility.detail(id),
-    queryFn: () => client.getFacility(id),
+    queryKey: queryKeys.budget.detail(id),
+    queryFn: () => client.getBudget(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityAreaDetail(
+export function useCollectionCaseDetail(
   id: string,
-  options?: Omit<UseQueryOptions<FacilityArea | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<CollectionCase | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityArea.detail(id),
-    queryFn: () => client.getFacilityArea(id),
+    queryKey: queryKeys.collectionCase.detail(id),
+    queryFn: () => client.getCollectionCase(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityAssetDetail(
+export function useCollectionActionDetail(
   id: string,
-  options?: Omit<UseQueryOptions<FacilityAsset | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<CollectionAction | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityAsset.detail(id),
-    queryFn: () => client.getFacilityAsset(id),
+    queryKey: queryKeys.collectionAction.detail(id),
+    queryFn: () => client.getCollectionAction(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityScheduleDetail(
+export function useCollectionPaymentPlanDetail(
   id: string,
-  options?: Omit<UseQueryOptions<FacilitySchedule | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<CollectionPaymentPlan | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilitySchedule.detail(id),
-    queryFn: () => client.getFacilitySchedule(id),
+    queryKey: queryKeys.collectionPaymentPlan.detail(id),
+    queryFn: () => client.getCollectionPaymentPlan(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useFacilityWorkOrderDetail(
+export function useInvoiceDetail(
   id: string,
-  options?: Omit<UseQueryOptions<FacilityWorkOrder | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Invoice | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.facilityWorkOrder.detail(id),
-    queryFn: () => client.getFacilityWorkOrder(id),
+    queryKey: queryKeys.invoice.detail(id),
+    queryFn: () => client.getInvoice(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useIngredientDetail(
+export function usePaymentMethodDetail(
   id: string,
-  options?: Omit<UseQueryOptions<Ingredient | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<PaymentMethod | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.ingredient.detail(id),
-    queryFn: () => client.getIngredient(id),
+    queryKey: queryKeys.paymentMethod.detail(id),
+    queryFn: () => client.getPaymentMethod(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePaymentDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Payment | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payment.detail(id),
+    queryFn: () => client.getPayment(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePricingTierDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PricingTier | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.pricingTier.detail(id),
+    queryFn: () => client.getPricingTier(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<RevenueRecognitionSchedule | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.revenueRecognitionSchedule.detail(id),
+    queryFn: () => client.getRevenueRecognitionSchedule(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<RevenueRecognitionLine | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.revenueRecognitionLine.detail(id),
+    queryFn: () => client.getRevenueRecognitionLine(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<SmsAutomationRule | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.smsAutomationRule.detail(id),
+    queryFn: () => client.getSmsAutomationRule(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVersionedEntityDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<VersionedEntity | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.versionedEntity.detail(id),
+    queryFn: () => client.getVersionedEntity(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useEntityVersionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<EntityVersion | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.entityVersion.detail(id),
+    queryFn: () => client.getEntityVersion(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVersionApprovalDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<VersionApproval | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.versionApproval.detail(id),
+    queryFn: () => client.getVersionApproval(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<BulkOrderRule | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.bulkOrderRule.detail(id),
+    queryFn: () => client.getBulkOrderRule(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCycleCountSessionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CycleCountSession | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cycleCountSession.detail(id),
+    queryFn: () => client.getCycleCountSession(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useCycleCountRecordDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<CycleCountRecord | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.cycleCountRecord.detail(id),
+    queryFn: () => client.getCycleCountRecord(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVarianceReportDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<VarianceReport | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.varianceReport.detail(id),
+    queryFn: () => client.getVarianceReport(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -4274,13 +4326,26 @@ export function useInventoryTransferDetail(
   });
 }
 
-export function useInvoiceDetail(
+export function useDishDetail(
   id: string,
-  options?: Omit<UseQueryOptions<Invoice | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Dish | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.invoice.detail(id),
-    queryFn: () => client.getInvoice(id),
+    queryKey: queryKeys.dish.detail(id),
+    queryFn: () => client.getDish(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useIngredientDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Ingredient | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.ingredient.detail(id),
+    queryFn: () => client.getIngredient(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -4495,110 +4560,6 @@ export function useKitchenTaskDetail(
   });
 }
 
-export function useKnowledgeBaseEntryDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<KnowledgeBaseEntry | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.knowledgeBaseEntry.detail(id),
-    queryFn: () => client.getKnowledgeBaseEntry(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLaborBudgetDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<LaborBudget | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.laborBudget.detail(id),
-    queryFn: () => client.getLaborBudget(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useBudgetAlertDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<BudgetAlert | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.budgetAlert.detail(id),
-    queryFn: () => client.getBudgetAlert(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLeadDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Lead | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.lead.detail(id),
-    queryFn: () => client.getLead(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useDriverDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Driver | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.driver.detail(id),
-    queryFn: () => client.getDriver(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVehicleDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Vehicle | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vehicle.detail(id),
-    queryFn: () => client.getVehicle(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLogisticsRouteDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<LogisticsRoute | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.logisticsRoute.detail(id),
-    queryFn: () => client.getLogisticsRoute(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<LogisticsDispatch | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.logisticsDispatch.detail(id),
-    queryFn: () => client.getLogisticsDispatch(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useMenuDetail(
   id: string,
   options?: Omit<UseQueryOptions<Menu | undefined, Error>, "queryKey" | "queryFn">,
@@ -4619,110 +4580,6 @@ export function useMenuDishDetail(
   return useQuery({
     queryKey: queryKeys.menuDish.detail(id),
     queryFn: () => client.getMenuDish(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useNotificationDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Notification | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.notification.detail(id),
-    queryFn: () => client.getNotification(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useOverrideAuditDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<OverrideAudit | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.overrideAudit.detail(id),
-    queryFn: () => client.getOverrideAudit(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePaymentMethodDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PaymentMethod | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.paymentMethod.detail(id),
-    queryFn: () => client.getPaymentMethod(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePaymentDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Payment | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payment.detail(id),
-    queryFn: () => client.getPayment(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePayrollPeriodDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PayrollPeriod | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payrollPeriod.detail(id),
-    queryFn: () => client.getPayrollPeriod(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useEmployeeDeductionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<EmployeeDeduction | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.employeeDeduction.detail(id),
-    queryFn: () => client.getEmployeeDeduction(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePayrollApprovalHistoryDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PayrollApprovalHistory | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payrollApprovalHistory.detail(id),
-    queryFn: () => client.getPayrollApprovalHistory(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePayrollRunDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PayrollRun | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.payrollRun.detail(id),
-    queryFn: () => client.getPayrollRun(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -4807,149 +4664,6 @@ export function usePrepTaskDetail(
   });
 }
 
-export function usePricingTierDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PricingTier | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.pricingTier.detail(id),
-    queryFn: () => client.getPricingTier(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PurchaseRequisition | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseRequisition.detail(id),
-    queryFn: () => client.getPurchaseRequisition(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionItemDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PurchaseRequisitionItem | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseRequisitionItem.detail(id),
-    queryFn: () => client.getPurchaseRequisitionItem(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useProposalDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Proposal | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.proposal.detail(id),
-    queryFn: () => client.getProposal(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useProposalLineItemDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<ProposalLineItem | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.proposalLineItem.detail(id),
-    queryFn: () => client.getProposalLineItem(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseOrderDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PurchaseOrder | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseOrder.detail(id),
-    queryFn: () => client.getPurchaseOrder(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePurchaseOrderItemDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PurchaseOrderItem | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.purchaseOrderItem.detail(id),
-    queryFn: () => client.getPurchaseOrderItem(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQACheckDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<QACheck | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qACheck.detail(id),
-    queryFn: () => client.getQACheck(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<QACorrectiveAction | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qACorrectiveAction.detail(id),
-    queryFn: () => client.getQACorrectiveAction(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useQATemperatureLogDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<QATemperatureLog | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.qATemperatureLog.detail(id),
-    queryFn: () => client.getQATemperatureLog(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useRateLimitConfigDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<RateLimitConfig | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.rateLimitConfig.detail(id),
-    queryFn: () => client.getRateLimitConfig(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useRecipeDetail(
   id: string,
   options?: Omit<UseQueryOptions<Recipe | undefined, Error>, "queryKey" | "queryFn">,
@@ -5002,78 +4716,156 @@ export function useRecipeStepDetail(
   });
 }
 
-export function useRevenueRecognitionScheduleDetail(
+export function useStationDetail(
   id: string,
-  options?: Omit<UseQueryOptions<RevenueRecognitionSchedule | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Station | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.revenueRecognitionSchedule.detail(id),
-    queryFn: () => client.getRevenueRecognitionSchedule(id),
+    queryKey: queryKeys.station.detail(id),
+    queryFn: () => client.getStation(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineDetail(
+export function useEquipmentDetail(
   id: string,
-  options?: Omit<UseQueryOptions<RevenueRecognitionLine | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Equipment | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.revenueRecognitionLine.detail(id),
-    queryFn: () => client.getRevenueRecognitionLine(id),
+    queryKey: queryKeys.equipment.detail(id),
+    queryFn: () => client.getEquipment(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useRolePolicyDetail(
+export function useMaintenanceWorkOrderDetail(
   id: string,
-  options?: Omit<UseQueryOptions<RolePolicy | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<MaintenanceWorkOrder | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.rolePolicy.detail(id),
-    queryFn: () => client.getRolePolicy(id),
+    queryKey: queryKeys.maintenanceWorkOrder.detail(id),
+    queryFn: () => client.getMaintenanceWorkOrder(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useSampleDataDetail(
+export function useFacilityDetail(
   id: string,
-  options?: Omit<UseQueryOptions<SampleData | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<Facility | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.sampleData.detail(id),
-    queryFn: () => client.getSampleData(id),
+    queryKey: queryKeys.facility.detail(id),
+    queryFn: () => client.getFacility(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useScheduleDetail(
+export function useFacilityAreaDetail(
   id: string,
-  options?: Omit<UseQueryOptions<Schedule | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<FacilityArea | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.schedule.detail(id),
-    queryFn: () => client.getSchedule(id),
+    queryKey: queryKeys.facilityArea.detail(id),
+    queryFn: () => client.getFacilityArea(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
   });
 }
 
-export function useScheduleShiftDetail(
+export function useFacilityAssetDetail(
   id: string,
-  options?: Omit<UseQueryOptions<ScheduleShift | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<FacilityAsset | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.scheduleShift.detail(id),
-    queryFn: () => client.getScheduleShift(id),
+    queryKey: queryKeys.facilityAsset.detail(id),
+    queryFn: () => client.getFacilityAsset(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useFacilityScheduleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<FacilitySchedule | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.facilitySchedule.detail(id),
+    queryFn: () => client.getFacilitySchedule(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<FacilityWorkOrder | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.facilityWorkOrder.detail(id),
+    queryFn: () => client.getFacilityWorkOrder(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useDriverDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Driver | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.driver.detail(id),
+    queryFn: () => client.getDriver(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVehicleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Vehicle | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vehicle.detail(id),
+    queryFn: () => client.getVehicle(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLogisticsRouteDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<LogisticsRoute | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.logisticsRoute.detail(id),
+    queryFn: () => client.getLogisticsRoute(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<LogisticsDispatch | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.logisticsDispatch.detail(id),
+    queryFn: () => client.getLogisticsDispatch(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -5106,13 +4898,390 @@ export function useShipmentItemDetail(
   });
 }
 
-export function useSmsAutomationRuleDetail(
+export function useWorkOrderDetail(
   id: string,
-  options?: Omit<UseQueryOptions<SmsAutomationRule | undefined, Error>, "queryKey" | "queryFn">,
+  options?: Omit<UseQueryOptions<WorkOrder | undefined, Error>, "queryKey" | "queryFn">,
 ) {
   return useQuery({
-    queryKey: queryKeys.smsAutomationRule.detail(id),
-    queryFn: () => client.getSmsAutomationRule(id),
+    queryKey: queryKeys.workOrder.detail(id),
+    queryFn: () => client.getWorkOrder(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<WorkforceOptimization | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.workforceOptimization.detail(id),
+    queryFn: () => client.getWorkforceOptimization(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePerformancePredictionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PerformancePrediction | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.performancePrediction.detail(id),
+    queryFn: () => client.getPerformancePrediction(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useApiKeyDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<ApiKey | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.apiKey.detail(id),
+    queryFn: () => client.getApiKey(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useNotificationDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Notification | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.notification.detail(id),
+    queryFn: () => client.getNotification(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useOverrideAuditDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<OverrideAudit | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.overrideAudit.detail(id),
+    queryFn: () => client.getOverrideAudit(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRateLimitConfigDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<RateLimitConfig | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.rateLimitConfig.detail(id),
+    queryFn: () => client.getRateLimitConfig(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useRolePolicyDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<RolePolicy | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.rolePolicy.detail(id),
+    queryFn: () => client.getRolePolicy(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useSampleDataDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<SampleData | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.sampleData.detail(id),
+    queryFn: () => client.getSampleData(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useUserDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<User | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.user.detail(id),
+    queryFn: () => client.getUser(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useWorkflowDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Workflow | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.workflow.detail(id),
+    queryFn: () => client.getWorkflow(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PurchaseRequisition | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseRequisition.detail(id),
+    queryFn: () => client.getPurchaseRequisition(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionItemDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PurchaseRequisitionItem | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseRequisitionItem.detail(id),
+    queryFn: () => client.getPurchaseRequisitionItem(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseOrderDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PurchaseOrder | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseOrder.detail(id),
+    queryFn: () => client.getPurchaseOrder(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePurchaseOrderItemDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PurchaseOrderItem | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.purchaseOrderItem.detail(id),
+    queryFn: () => client.getPurchaseOrderItem(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorCatalogDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<VendorCatalog | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendorCatalog.detail(id),
+    queryFn: () => client.getVendorCatalog(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorContractDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<VendorContract | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendorContract.detail(id),
+    queryFn: () => client.getVendorContract(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useVendorDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Vendor | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.vendor.detail(id),
+    queryFn: () => client.getVendor(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQACheckDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<QACheck | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qACheck.detail(id),
+    queryFn: () => client.getQACheck(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<QACorrectiveAction | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qACorrectiveAction.detail(id),
+    queryFn: () => client.getQACorrectiveAction(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useQATemperatureLogDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<QATemperatureLog | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.qATemperatureLog.detail(id),
+    queryFn: () => client.getQATemperatureLog(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useWasteEntryDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<WasteEntry | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.wasteEntry.detail(id),
+    queryFn: () => client.getWasteEntry(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useLaborBudgetDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<LaborBudget | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.laborBudget.detail(id),
+    queryFn: () => client.getLaborBudget(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useBudgetAlertDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<BudgetAlert | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.budgetAlert.detail(id),
+    queryFn: () => client.getBudgetAlert(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePayrollPeriodDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PayrollPeriod | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payrollPeriod.detail(id),
+    queryFn: () => client.getPayrollPeriod(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useEmployeeDeductionDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<EmployeeDeduction | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.employeeDeduction.detail(id),
+    queryFn: () => client.getEmployeeDeduction(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePayrollApprovalHistoryDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PayrollApprovalHistory | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payrollApprovalHistory.detail(id),
+    queryFn: () => client.getPayrollApprovalHistory(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function usePayrollRunDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<PayrollRun | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.payrollRun.detail(id),
+    queryFn: () => client.getPayrollRun(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useScheduleDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<Schedule | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.schedule.detail(id),
+    queryFn: () => client.getSchedule(id),
+    enabled: !!id,
+    staleTime: 30_000,
+    ...options,
+  });
+}
+
+export function useScheduleShiftDetail(
+  id: string,
+  options?: Omit<UseQueryOptions<ScheduleShift | undefined, Error>, "queryKey" | "queryFn">,
+) {
+  return useQuery({
+    queryKey: queryKeys.scheduleShift.detail(id),
+    queryFn: () => client.getScheduleShift(id),
     enabled: !!id,
     staleTime: 30_000,
     ...options,
@@ -5327,19 +5496,6 @@ export function useStaffPerformanceDetail(
   });
 }
 
-export function useStationDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Station | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.station.detail(id),
-    queryFn: () => client.getStation(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 export function useTimeEntryDetail(
   id: string,
   options?: Omit<UseQueryOptions<TimeEntry | undefined, Error>, "queryKey" | "queryFn">,
@@ -5405,165 +5561,152 @@ export function useTrainingAssignmentDetail(
   });
 }
 
-export function useUserDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<User | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.user.detail(id),
-    queryFn: () => client.getUser(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorCatalogDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<VendorCatalog | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendorCatalog.detail(id),
-    queryFn: () => client.getVendorCatalog(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorContractDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<VendorContract | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendorContract.detail(id),
-    queryFn: () => client.getVendorContract(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVendorDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Vendor | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.vendor.detail(id),
-    queryFn: () => client.getVendor(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVersionedEntityDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<VersionedEntity | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.versionedEntity.detail(id),
-    queryFn: () => client.getVersionedEntity(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useEntityVersionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<EntityVersion | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.entityVersion.detail(id),
-    queryFn: () => client.getEntityVersion(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useVersionApprovalDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<VersionApproval | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.versionApproval.detail(id),
-    queryFn: () => client.getVersionApproval(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWasteEntryDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<WasteEntry | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.wasteEntry.detail(id),
-    queryFn: () => client.getWasteEntry(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkOrderDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<WorkOrder | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workOrder.detail(id),
-    queryFn: () => client.getWorkOrder(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkflowDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<Workflow | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workflow.detail(id),
-    queryFn: () => client.getWorkflow(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<WorkforceOptimization | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.workforceOptimization.detail(id),
-    queryFn: () => client.getWorkforceOptimization(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
-export function usePerformancePredictionDetail(
-  id: string,
-  options?: Omit<UseQueryOptions<PerformancePrediction | undefined, Error>, "queryKey" | "queryFn">,
-) {
-  return useQuery({
-    queryKey: queryKeys.performancePrediction.detail(id),
-    queryFn: () => client.getPerformancePrediction(id),
-    enabled: !!id,
-    staleTime: 30_000,
-    ...options,
-  });
-}
-
 // ============================================================
 // Command mutation hooks (useEntityCommandNameMutation)
 // ============================================================
+
+export function useAiEventSetupSessionParseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "parse", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useAiEventSetupSessionConfirmMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "confirm", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useAiEventSetupSessionMarkCreatedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "markCreated", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useAiEventSetupSessionCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useAiEventSetupSessionUpdateConfidenceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "updateConfidence", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryPublishEntryMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "publishEntry", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryUnpublishMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "unpublish", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useKnowledgeBaseEntryRecordViewMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "recordView", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
+    },
+    ...options,
+  });
+}
 
 export function useAdminChatParticipantCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<AdminChatParticipant>, Error, Record<string, unknown>>, "mutationFn">,
@@ -5721,71 +5864,6 @@ export function useAdminTaskSoftDeleteMutation(
   });
 }
 
-export function useAiEventSetupSessionParseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "parse", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionConfirmMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "confirm", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionMarkCreatedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "markCreated", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useAiEventSetupSessionUpdateConfidenceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<AiEventSetupSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<AiEventSetupSession>("AiEventSetupSession", "updateConfidence", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.aiEventSetupSession.all });
-    },
-    ...options,
-  });
-}
-
 export function useAlertsConfigCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<AlertsConfig>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -5903,84 +5981,6 @@ export function useAllergenWarningSoftDeleteMutation(
   });
 }
 
-export function useApiKeyCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
-export function useApiKeyUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
-export function useApiKeyRotateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "rotate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
-export function useApiKeyRevokeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "revoke", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
-export function useApiKeySoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
-export function useApiKeyRecordUsageMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "recordUsage", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
-    },
-    ...options,
-  });
-}
-
 export function useBankAccountCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<BankAccount>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -6072,422 +6072,6 @@ export function useBankAccountRetryVerificationMutation(
   });
 }
 
-export function useBattleBoardCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardOpenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "open", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardStartVotingMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "startVoting", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardAddDishMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "addDish", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardRemoveDishMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "removeDish", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardVoteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "vote", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardFinalizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "finalize", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBattleBoardRecordImportMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "recordImport", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetLockMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "lock", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetAddLineItemMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "addLineItem", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetRecordVarianceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "recordVariance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetRefreshMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Budget>("Budget", "refresh", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleAdjustPriorityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "adjustPriority", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useBulkOrderRuleSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderConfirmMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "confirm", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderRecordDepositMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "recordDeposit", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderScheduleDeliveryMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "scheduleDelivery", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderStartPrepMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "startPrep", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderDeliverMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "deliver", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useCateringOrderMarkCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "markComplete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
-    },
-    ...options,
-  });
-}
-
 export function useChartOfAccountCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<ChartOfAccount>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -6522,812 +6106,6 @@ export function useChartOfAccountDeactivateMutation(
     mutationFn: (input) => executeCommand<ChartOfAccount>("ChartOfAccount", "deactivate", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.chartOfAccount.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionScheduleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "schedule", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionMarkOverdueMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "markOverdue", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionEscalateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "escalate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientInteractionSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Client>("Client", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Client>("Client", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientArchiveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Client>("Client", "archive", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientReactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Client>("Client", "reactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientContactCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientContactUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientContactRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientContactSetPrimaryMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "setPrimary", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientPreferenceCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientPreferenceUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
-    },
-    ...options,
-  });
-}
-
-export function useClientPreferenceRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseAssignToMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "assignTo", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseUpdateStatusMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "updateStatus", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseSettleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "settle", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseRecordPaymentMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "recordPayment", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseMarkResolvedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "markResolved", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseEscalateDunningMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateDunning", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseEscalateToLegalMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateToLegal", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseSetUrgentPriorityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setUrgentPriority", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseSetHighPriorityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setHighPriority", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseResetDunningMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "resetDunning", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseCreatePaymentPlanMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "createPaymentPlan", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseMarkDisputedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "markDisputed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseResolveDisputeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "resolveDispute", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseEscalateToLegalWithDetailsMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateToLegalWithDetails", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseWriteOffMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "writeOff", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseUpdateAgingMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "updateAging", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseSetPriorityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setPriority", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionCaseCloseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "close", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionActionCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionActionFailMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "fail", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionActionSkipMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "skip", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionActionRescheduleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "reschedule", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanRecordInstallmentMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "recordInstallment", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanMarkCompletedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markCompleted", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanMarkDefaultedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markDefaulted", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
-    },
-    ...options,
-  });
-}
-
-export function useCollectionPaymentPlanModifyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "modify", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCardCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCardUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCardMoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "move", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCardResizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "resize", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardCardRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardGroupCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardGroupUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardGroupRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardConnectionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardConnection>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardConnection>("CommandBoardConnection", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardConnection.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardConnectionRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardConnection>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardConnection>("CommandBoardConnection", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardConnection.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardLayoutCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardLayoutUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
-    },
-    ...options,
-  });
-}
-
-export function useCommandBoardLayoutRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
     },
     ...options,
   });
@@ -7723,461 +6501,6 @@ export function useAdminChatMessageRemoveMutation(
   });
 }
 
-export function useCycleCountSessionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "start", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionFinalizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "finalize", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionReopenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "reopen", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountSessionSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountRecordCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountRecordUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountRecordVerifyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "verify", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
-    },
-    ...options,
-  });
-}
-
-export function useCycleCountRecordRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
-    },
-    ...options,
-  });
-}
-
-export function useVarianceReportCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
-    },
-    ...options,
-  });
-}
-
-export function useVarianceReportRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
-    },
-    ...options,
-  });
-}
-
-export function useVarianceReportReviewMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "review", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
-    },
-    ...options,
-  });
-}
-
-export function useVarianceReportApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
-    },
-    ...options,
-  });
-}
-
-export function useVarianceReportUpdateDiscrepancyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "updateDiscrepancy", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealUpdateStageMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "updateStage", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealUpdateValueMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "updateValue", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealUpdateProbabilityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "updateProbability", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "assign", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealCloseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "close", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealAbandonMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "abandon", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDealReopenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Deal>("Deal", "reopen", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishUpdatePricingMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "updatePricing", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishUpdateLeadTimeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "updateLeadTime", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishMarkSeasonalMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "markSeasonal", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishUnmarkSeasonalMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "unmarkSeasonal", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishEightySixMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "eightySix", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
-export function useDishReinstateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Dish>("Dish", "reinstate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
-    },
-    ...options,
-  });
-}
-
 export function useDocumentVersionCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<DocumentVersion>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -8503,157 +6826,1028 @@ export function useEmployeeCertificationSoftDeleteMutation(
   });
 }
 
-export function useEquipmentScheduleMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "scheduleMaintenance", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentRecordMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "recordMaintenance", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "update", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentUpdateStatusMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "updateStatus", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "complete", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentUpdateConditionMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionScheduleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "updateCondition", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "schedule", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentRecordUsageMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionMarkOverdueMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "recordUsage", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "markOverdue", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionEscalateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "create", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "escalate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useEquipmentRetireMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientInteractionSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientInteraction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Equipment>("Equipment", "retire", input),
+    mutationFn: (input) => executeCommand<ClientInteraction>("ClientInteraction", "softDelete", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientInteraction.all });
     },
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "assign", input),
+    mutationFn: (input) => executeCommand<Client>("Client", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
     },
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderStartWorkMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "startWork", input),
+    mutationFn: (input) => executeCommand<Client>("Client", "update", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
     },
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderCompleteWorkMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientArchiveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "completeWork", input),
+    mutationFn: (input) => executeCommand<Client>("Client", "archive", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
     },
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderUpdateStatusMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientReactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Client>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "updateStatus", input),
+    mutationFn: (input) => executeCommand<Client>("Client", "reactivate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.client.all });
     },
     ...options,
   });
 }
 
-export function useMaintenanceWorkOrderCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useClientContactCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "create", input),
+    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientContactUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientContactRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientContactSetPrimaryMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientContact>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientContact>("ClientContact", "setPrimary", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientContact.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientPreferenceCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientPreferenceUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
+    },
+    ...options,
+  });
+}
+
+export function useClientPreferenceRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ClientPreference>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ClientPreference>("ClientPreference", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.clientPreference.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealUpdateStageMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "updateStage", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealUpdateValueMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "updateValue", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealUpdateProbabilityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "updateProbability", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "assign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealCloseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "close", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealAbandonMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "abandon", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useDealReopenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Deal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Deal>("Deal", "reopen", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.deal.all });
+    },
+    ...options,
+  });
+}
+
+export function useLeadCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Lead>("Lead", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
+    },
+    ...options,
+  });
+}
+
+export function useLeadUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Lead>("Lead", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
+    },
+    ...options,
+  });
+}
+
+export function useLeadConvertToClientMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Lead>("Lead", "convertToClient", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
+    },
+    ...options,
+  });
+}
+
+export function useLeadDisqualifyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Lead>("Lead", "disqualify", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
+    },
+    ...options,
+  });
+}
+
+export function useLeadArchiveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Lead>("Lead", "archive", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalSendMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "send", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalMarkViewedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "markViewed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalAcceptMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "accept", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalWithdrawMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "withdraw", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalGeneratePublicLinkMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Proposal>("Proposal", "generatePublicLink", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalLineItemCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalLineItemUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useProposalLineItemRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardOpenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "open", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardStartVotingMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "startVoting", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardAddDishMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "addDish", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardRemoveDishMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "removeDish", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardVoteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "vote", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardFinalizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "finalize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardSyncFromEventMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "syncFromEvent", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useBattleBoardRecordImportMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BattleBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BattleBoard>("BattleBoard", "recordImport", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.battleBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderConfirmMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "confirm", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderRecordDepositMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "recordDeposit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderScheduleDeliveryMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "scheduleDelivery", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderStartPrepMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "startPrep", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderDeliverMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "deliver", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCateringOrderMarkCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CateringOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CateringOrder>("CateringOrder", "markComplete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cateringOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoard>("CommandBoard", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCardCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCardUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCardMoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "move", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCardResizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "resize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardCardRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardCard>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardCard>("CommandBoardCard", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardCard.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardGroupCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardGroupUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardGroupRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardGroup>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardGroup>("CommandBoardGroup", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardGroup.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardConnectionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardConnection>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardConnection>("CommandBoardConnection", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardConnection.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardConnectionRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardConnection>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardConnection>("CommandBoardConnection", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardConnection.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardLayoutCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardLayoutUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
+    },
+    ...options,
+  });
+}
+
+export function useCommandBoardLayoutRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CommandBoardLayout>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CommandBoardLayout>("CommandBoardLayout", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.commandBoardLayout.all });
     },
     ...options,
   });
@@ -9868,6 +9062,19 @@ export function useEventSummaryRefreshMutation(
   });
 }
 
+export function useEventStaffCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EventStaff>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EventStaff>("EventStaff", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.eventStaff.all });
+    },
+    ...options,
+  });
+}
+
 export function useEventStaffAssignMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<EventStaff>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -10453,495 +9660,1691 @@ export function useNoteRemoveMutation(
   });
 }
 
-export function useFacilityCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Facility>("Facility", "create", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Facility>("Facility", "remove", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "remove", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityEditMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Facility>("Facility", "edit", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "update", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilitySendToMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Facility>("Facility", "sendToMaintenance", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "approve", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityRestoreFromMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetLockMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Facility>("Facility", "restoreFromMaintenance", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "lock", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAreaCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetAddLineItemMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "create", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "addLineItem", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAreaRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetRecordVarianceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "remove", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "recordVariance", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAreaEditMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+export function useBudgetRefreshMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Budget>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "edit", input),
+    mutationFn: (input) => executeCommand<Budget>("Budget", "refresh", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.budget.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAreaCloseForMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseAssignToMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "closeForMaintenance", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "assignTo", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAreaReopenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseUpdateStatusMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "reopen", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "updateStatus", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseSettleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "create", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "settle", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseRecordPaymentMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "remove", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "recordPayment", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseMarkResolvedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "update", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "markResolved", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetSendToMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseEscalateDunningMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "sendToMaintenance", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateDunning", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetReturnFromMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseEscalateToLegalMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "returnFromMaintenance", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateToLegal", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityAssetRetireMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseSetUrgentPriorityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "retire", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setUrgentPriority", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseSetHighPriorityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "create", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setHighPriority", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseResetDunningMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "remove", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "resetDunning", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleEditMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseCreatePaymentPlanMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "edit", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "createPaymentPlan", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseMarkDisputedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "start", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "markDisputed", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseResolveDisputeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "complete", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "resolveDispute", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityScheduleCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseEscalateToLegalWithDetailsMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "cancel", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "escalateToLegalWithDetails", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityWorkOrderCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseWriteOffMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "create", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "writeOff", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityWorkOrderAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseUpdateAgingMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "assign", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "updateAging", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityWorkOrderStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseSetPriorityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "start", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "setPriority", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityWorkOrderCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionCaseCloseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionCase>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "complete", input),
+    mutationFn: (input) => executeCommand<CollectionCase>("CollectionCase", "close", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionCase.all });
     },
     ...options,
   });
 }
 
-export function useFacilityWorkOrderCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionActionCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "cancel", input),
+    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "complete", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
     },
     ...options,
   });
 }
 
-export function useIngredientCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionActionFailMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "create", input),
+    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "fail", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
     },
     ...options,
   });
 }
 
-export function useIngredientUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionActionSkipMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "update", input),
+    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "skip", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
     },
     ...options,
   });
 }
 
-export function useIngredientDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionActionRescheduleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionAction>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "deactivate", input),
+    mutationFn: (input) => executeCommand<CollectionAction>("CollectionAction", "reschedule", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionAction.all });
     },
     ...options,
   });
 }
 
-export function useIngredientReactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionPaymentPlanRecordInstallmentMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "reactivate", input),
+    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "recordInstallment", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
     },
     ...options,
   });
 }
 
-export function useIngredientUpdateAllergensMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionPaymentPlanMarkCompletedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "updateAllergens", input),
+    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markCompleted", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
     },
     ...options,
   });
 }
 
-export function useIngredientUpdateShelfLifeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionPaymentPlanMarkDefaultedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "updateShelfLife", input),
+    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "markDefaulted", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
     },
     ...options,
   });
 }
 
-export function useIngredientLinkInventoryItemMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionPaymentPlanCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "linkInventoryItem", input),
+    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "cancel", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
     },
     ...options,
   });
 }
 
-export function useIngredientUnlinkInventoryItemMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useCollectionPaymentPlanModifyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CollectionPaymentPlan>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "unlinkInventoryItem", input),
+    mutationFn: (input) => executeCommand<CollectionPaymentPlan>("CollectionPaymentPlan", "modify", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.collectionPaymentPlan.all });
     },
     ...options,
   });
 }
 
-export function useIngredientRecordLotMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useInvoiceUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "recordLot", input),
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "update", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
     },
     ...options,
   });
 }
 
-export function useIngredientFlagRecallMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useInvoiceSendMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "flagRecall", input),
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "send", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
     },
     ...options,
   });
 }
 
-export function useIngredientClearRecallMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+export function useInvoiceMarkViewedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "clearRecall", input),
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markViewed", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceApplyPaymentMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "applyPayment", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceMarkAsPaidMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markAsPaid", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceRecordRefundMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "recordRefund", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceMarkOverdueMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markOverdue", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceSendReminderMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "sendReminder", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceVoidInvoiceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "voidInvoice", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceWriteOffMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "writeOff", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function useInvoiceUpdateLineItemsMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Invoice>("Invoice", "updateLineItems", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodMarkAsDefaultMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markAsDefault", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodMarkNotDefaultMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markNotDefault", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodMarkExpiredMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markExpired", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodMarkInvalidMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markInvalid", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodFlagForFraudMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "flagForFraud", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodVerifyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "verify", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodMarkVerificationFailedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markVerificationFailed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodUpdateTokenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "updateToken", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMethodRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentProcessMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "process", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentProcessFailedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "processFailed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentRefundMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "refund", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentPartialRefundMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "partialRefund", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMarkChargebackMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "markChargeback", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentUpdateFraudStatusMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "updateFraudStatus", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMarkFraudReviewedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudReviewed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMarkFraudPassedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudPassed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMarkFraudFailedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudFailed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePaymentMarkAcceptedNotAppliedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Payment>("Payment", "markAcceptedNotApplied", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
+    },
+    ...options,
+  });
+}
+
+export function usePricingTierCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
+    },
+    ...options,
+  });
+}
+
+export function usePricingTierUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
+    },
+    ...options,
+  });
+}
+
+export function usePricingTierActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
+    },
+    ...options,
+  });
+}
+
+export function usePricingTierDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
+    },
+    ...options,
+  });
+}
+
+export function usePricingTierSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleStartRecognitionMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "startRecognition", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleRecognizeAmountMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeAmount", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleCompleteIfFullyRecognizedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfFullyRecognized", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleRecognizeMilestoneMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeMilestone", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleCompleteIfAllMilestonesMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfAllMilestones", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleRecognizePercentageMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizePercentage", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleCompleteIfPercentageFullMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfPercentageFull", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionSchedulePauseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "pause", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleResumeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "resume", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleAdjustScheduleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "adjustSchedule", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionScheduleReverseRecognitionMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "reverseRecognition", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineRecognizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "recognize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineSkipMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "skip", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+    },
+    ...options,
+  });
+}
+
+export function useRevenueRecognitionLineReverseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "reverse", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+    },
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useSmsAutomationRuleSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionedEntityRegisterMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "register", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionedEntityLockMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "lock", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionedEntityUnlockMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "unlock", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionedEntityUpdateNameMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "updateName", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
+    },
+    ...options,
+  });
+}
+
+export function useEntityVersionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
+    },
+    ...options,
+  });
+}
+
+export function useEntityVersionApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
+    },
+    ...options,
+  });
+}
+
+export function useEntityVersionRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
+    },
+    ...options,
+  });
+}
+
+export function useEntityVersionRestoreMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "restore", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionApprovalCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionApprovalApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionApprovalRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
+    },
+    ...options,
+  });
+}
+
+export function useVersionApprovalCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleAdjustPriorityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "adjustPriority", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useBulkOrderRuleSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BulkOrderRule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BulkOrderRule>("BulkOrderRule", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.bulkOrderRule.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionFinalizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "finalize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionReopenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "reopen", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountSessionSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountSession>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountSession>("CycleCountSession", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountSession.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountRecordCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountRecordUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountRecordVerifyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "verify", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
+    },
+    ...options,
+  });
+}
+
+export function useCycleCountRecordRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<CycleCountRecord>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<CycleCountRecord>("CycleCountRecord", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.cycleCountRecord.all });
+    },
+    ...options,
+  });
+}
+
+export function useVarianceReportCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
+    },
+    ...options,
+  });
+}
+
+export function useVarianceReportRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
+    },
+    ...options,
+  });
+}
+
+export function useVarianceReportReviewMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "review", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
+    },
+    ...options,
+  });
+}
+
+export function useVarianceReportApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
+    },
+    ...options,
+  });
+}
+
+export function useVarianceReportUpdateDiscrepancyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VarianceReport>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VarianceReport>("VarianceReport", "updateDiscrepancy", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.varianceReport.all });
     },
     ...options,
   });
@@ -11779,144 +12182,274 @@ export function useInventoryTransferFlagDiscrepancyMutation(
   });
 }
 
-export function useInvoiceUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "update", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceSendMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "send", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "update", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceMarkViewedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markViewed", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "activate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceApplyPaymentMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "applyPayment", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "deactivate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceMarkAsPaidMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishUpdatePricingMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markAsPaid", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "updatePricing", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceRecordRefundMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishUpdateLeadTimeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "recordRefund", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "updateLeadTime", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceMarkOverdueMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishMarkSeasonalMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "markOverdue", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "markSeasonal", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceSendReminderMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishUnmarkSeasonalMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "sendReminder", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "unmarkSeasonal", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceVoidInvoiceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishEightySixMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "voidInvoice", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "eightySix", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceWriteOffMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useDishReinstateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Dish>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "writeOff", input),
+    mutationFn: (input) => executeCommand<Dish>("Dish", "reinstate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dish.all });
     },
     ...options,
   });
 }
 
-export function useInvoiceUpdateLineItemsMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Invoice>, Error, Record<string, unknown>>, "mutationFn">,
+export function useIngredientCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<Invoice>("Invoice", "updateLineItems", input),
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.invoice.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientReactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "reactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientUpdateAllergensMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "updateAllergens", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientUpdateShelfLifeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "updateShelfLife", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientLinkInventoryItemMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "linkInventoryItem", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientUnlinkInventoryItemMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "unlinkInventoryItem", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientRecordLotMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "recordLot", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientFlagRecallMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "flagRecall", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
+    },
+    ...options,
+  });
+}
+
+export function useIngredientClearRecallMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Ingredient>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Ingredient>("Ingredient", "clearRecall", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.ingredient.all });
     },
     ...options,
   });
@@ -12624,604 +13157,6 @@ export function useKitchenTaskCreateMutation(
   });
 }
 
-export function useKnowledgeBaseEntryCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useKnowledgeBaseEntryRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useKnowledgeBaseEntryUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useKnowledgeBaseEntryPublishEntryMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "publishEntry", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useKnowledgeBaseEntryUnpublishMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "unpublish", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useKnowledgeBaseEntryRecordViewMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<KnowledgeBaseEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<KnowledgeBaseEntry>("KnowledgeBaseEntry", "recordView", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.knowledgeBaseEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetRecordActualMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "recordActual", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetCloseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "close", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useLaborBudgetSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetAlertCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetAlertAcknowledgeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "acknowledge", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
-    },
-    ...options,
-  });
-}
-
-export function useBudgetAlertMarkResolvedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "markResolved", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
-    },
-    ...options,
-  });
-}
-
-export function useLeadCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Lead>("Lead", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
-    },
-    ...options,
-  });
-}
-
-export function useLeadUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Lead>("Lead", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
-    },
-    ...options,
-  });
-}
-
-export function useLeadConvertToClientMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Lead>("Lead", "convertToClient", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
-    },
-    ...options,
-  });
-}
-
-export function useLeadDisqualifyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Lead>("Lead", "disqualify", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
-    },
-    ...options,
-  });
-}
-
-export function useLeadArchiveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Lead>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Lead>("Lead", "archive", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.lead.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverRenewLicenseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "renewLicense", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverSetOffDutyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "setOffDuty", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useDriverReactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Driver>("Driver", "reactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleSendToMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "sendToMaintenance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleReturnFromMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "returnFromMaintenance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useVehicleDecommissionMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "decommission", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "start", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteCompleteStopMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "completeStop", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteRecordDelayMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "recordDelay", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsRouteOptimizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "optimize", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "assign", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchDepartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "depart", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchDeliverMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "deliver", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchFailMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "fail", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
-    },
-    ...options,
-  });
-}
-
-export function useLogisticsDispatchReassignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "reassign", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
-    },
-    ...options,
-  });
-}
-
 export function useMenuCreateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<Menu>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -13373,526 +13308,6 @@ export function useMenuDishRemoveMutation(
     mutationFn: (input) => executeCommand<MenuDish>("MenuDish", "remove", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.menuDish.all });
-    },
-    ...options,
-  });
-}
-
-export function useNotificationCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Notification>("Notification", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
-    },
-    ...options,
-  });
-}
-
-export function useNotificationMarkReadMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Notification>("Notification", "markRead", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
-    },
-    ...options,
-  });
-}
-
-export function useNotificationMarkDismissedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Notification>("Notification", "markDismissed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
-    },
-    ...options,
-  });
-}
-
-export function useNotificationRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Notification>("Notification", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
-    },
-    ...options,
-  });
-}
-
-export function useOverrideAuditCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<OverrideAudit>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<OverrideAudit>("OverrideAudit", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.overrideAudit.all });
-    },
-    ...options,
-  });
-}
-
-export function useOverrideAuditAuthorizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<OverrideAudit>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<OverrideAudit>("OverrideAudit", "authorize", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.overrideAudit.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodMarkAsDefaultMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markAsDefault", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodMarkNotDefaultMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markNotDefault", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodMarkExpiredMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markExpired", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodMarkInvalidMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markInvalid", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodFlagForFraudMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "flagForFraud", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodVerifyMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "verify", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodMarkVerificationFailedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "markVerificationFailed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodUpdateTokenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "updateToken", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMethodRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PaymentMethod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PaymentMethod>("PaymentMethod", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.paymentMethod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentProcessMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "process", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentProcessFailedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "processFailed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentRefundMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "refund", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentPartialRefundMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "partialRefund", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMarkChargebackMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "markChargeback", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentUpdateFraudStatusMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "updateFraudStatus", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMarkFraudReviewedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudReviewed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMarkFraudPassedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudPassed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMarkFraudFailedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "markFraudFailed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePaymentMarkAcceptedNotAppliedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Payment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Payment>("Payment", "markAcceptedNotApplied", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payment.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollPeriodCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollPeriodCloseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "close", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollPeriodReopenMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "reopen", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollPeriodLockMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "lock", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
-    },
-    ...options,
-  });
-}
-
-export function useEmployeeDeductionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
-    },
-    ...options,
-  });
-}
-
-export function useEmployeeDeductionUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
-    },
-    ...options,
-  });
-}
-
-export function useEmployeeDeductionDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollApprovalHistoryCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollApprovalHistory>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollApprovalHistory>("PayrollApprovalHistory", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollApprovalHistory.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollRunCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollRunProcessMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "process", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollRunApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollRunRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
-    },
-    ...options,
-  });
-}
-
-export function usePayrollRunMarkPaidMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "markPaid", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
     },
     ...options,
   });
@@ -14613,734 +14028,6 @@ export function usePrepTaskUpdateDetailsMutation(
   });
 }
 
-export function usePricingTierCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
-    },
-    ...options,
-  });
-}
-
-export function usePricingTierUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
-    },
-    ...options,
-  });
-}
-
-export function usePricingTierActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
-    },
-    ...options,
-  });
-}
-
-export function usePricingTierDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
-    },
-    ...options,
-  });
-}
-
-export function usePricingTierSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PricingTier>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PricingTier>("PricingTier", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.pricingTier.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionCompleteDraftFromPrepDemandMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "completeDraftFromPrepDemand", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionSubmitMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "submit", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionApproveManagerMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveManager", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionApproveFinanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveFinance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionConvertToPoMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "convertToPo", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionItemCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionItemUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseRequisitionItemRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalSendMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "send", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalMarkViewedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "markViewed", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalAcceptMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "accept", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalWithdrawMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "withdraw", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalGeneratePublicLinkMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Proposal>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Proposal>("Proposal", "generatePublicLink", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposal.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalLineItemCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalLineItemUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useProposalLineItemRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ProposalLineItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ProposalLineItem>("ProposalLineItem", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.proposalLineItem.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderSubmitMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "submit", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderMarkOrderedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "markOrdered", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderMarkReceivedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "markReceived", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderUpdateTotalsMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "updateTotals", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderItemCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderItemUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
-    },
-    ...options,
-  });
-}
-
-export function usePurchaseOrderItemRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACheckCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACheck>("QACheck", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACheckCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACheck>("QACheck", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACheckFailMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACheck>("QACheck", "fail", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACheckRequireReinspectionMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACheck>("QACheck", "requireReinspection", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACheckReinspectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACheck>("QACheck", "reinspect", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "assign", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionEscalateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "escalate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionMarkResolvedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "markResolved", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useQACorrectiveActionDismissMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "dismiss", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
-    },
-    ...options,
-  });
-}
-
-export function useQATemperatureLogLogMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<QATemperatureLog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<QATemperatureLog>("QATemperatureLog", "log", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.qATemperatureLog.all });
-    },
-    ...options,
-  });
-}
-
-export function useRateLimitConfigCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
-    },
-    ...options,
-  });
-}
-
-export function useRateLimitConfigUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
-    },
-    ...options,
-  });
-}
-
-export function useRateLimitConfigSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
-    },
-    ...options,
-  });
-}
-
-export function useRateLimitConfigTurnOnMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "turnOn", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
-    },
-    ...options,
-  });
-}
-
-export function useRateLimitConfigTurnOffMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "turnOff", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
-    },
-    ...options,
-  });
-}
-
 export function useRecipeUpdateMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<Recipe>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -15562,235 +14249,1483 @@ export function useRecipeStepRemoveMutation(
   });
 }
 
-export function useRevenueRecognitionScheduleCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "create", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleStartRecognitionMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationAssignTaskMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "startRecognition", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "assignTask", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleRecognizeAmountMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationRemoveTaskMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeAmount", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "removeTask", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleCompleteIfFullyRecognizedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationUpdateCapacityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfFullyRecognized", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "updateCapacity", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleRecognizeMilestoneMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizeMilestone", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "deactivate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleCompleteIfAllMilestonesMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfAllMilestones", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "activate", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleRecognizePercentageMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationUpdateEquipmentMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "recognizePercentage", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "updateEquipment", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleCompleteIfPercentageFullMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationStartMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "completeIfPercentageFull", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "startMaintenance", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionSchedulePauseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useStationEndMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "pause", input),
+    mutationFn: (input) => executeCommand<Station>("Station", "endMaintenance", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleResumeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentScheduleMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "resume", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "scheduleMaintenance", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentRecordMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "cancel", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "recordMaintenance", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleAdjustScheduleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentUpdateStatusMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "adjustSchedule", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "updateStatus", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionScheduleReverseRecognitionMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionSchedule>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentUpdateConditionMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionSchedule>("RevenueRecognitionSchedule", "reverseRecognition", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "updateCondition", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionSchedule.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentRecordUsageMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "create", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "recordUsage", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineRecognizeMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "recognize", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "create", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineSkipMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+export function useEquipmentRetireMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Equipment>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "skip", input),
+    mutationFn: (input) => executeCommand<Equipment>("Equipment", "retire", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+export function useMaintenanceWorkOrderAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "cancel", input),
+    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "assign", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
     },
     ...options,
   });
 }
 
-export function useRevenueRecognitionLineReverseMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<RevenueRecognitionLine>, Error, Record<string, unknown>>, "mutationFn">,
+export function useMaintenanceWorkOrderStartWorkMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input) => executeCommand<RevenueRecognitionLine>("RevenueRecognitionLine", "reverse", input),
+    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "startWork", input),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.revenueRecognitionLine.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useMaintenanceWorkOrderCompleteWorkMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "completeWork", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useMaintenanceWorkOrderUpdateStatusMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "updateStatus", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useMaintenanceWorkOrderCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<MaintenanceWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<MaintenanceWorkOrder>("MaintenanceWorkOrder", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Facility>("Facility", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Facility>("Facility", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityEditMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Facility>("Facility", "edit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilitySendToMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Facility>("Facility", "sendToMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityRestoreFromMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Facility>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Facility>("Facility", "restoreFromMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facility.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAreaCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAreaRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAreaEditMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "edit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAreaCloseForMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "closeForMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAreaReopenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityArea>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityArea>("FacilityArea", "reopen", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityArea.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetSendToMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "sendToMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetReturnFromMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "returnFromMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityAssetRetireMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityAsset>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityAsset>("FacilityAsset", "retire", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityAsset.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleEditMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "edit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityScheduleCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilitySchedule>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilitySchedule>("FacilitySchedule", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilitySchedule.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "assign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useFacilityWorkOrderCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<FacilityWorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<FacilityWorkOrder>("FacilityWorkOrder", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.facilityWorkOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverRenewLicenseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "renewLicense", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverSetOffDutyMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "setOffDuty", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useDriverReactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Driver>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Driver>("Driver", "reactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.driver.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleSendToMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "sendToMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleReturnFromMaintenanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "returnFromMaintenance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useVehicleDecommissionMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vehicle>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vehicle>("Vehicle", "decommission", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vehicle.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteCompleteStopMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "completeStop", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteRecordDelayMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "recordDelay", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsRouteOptimizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsRoute>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsRoute>("LogisticsRoute", "optimize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsRoute.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "assign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchDepartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "depart", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchDeliverMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "deliver", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchFailMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "fail", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
+    },
+    ...options,
+  });
+}
+
+export function useLogisticsDispatchReassignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LogisticsDispatch>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LogisticsDispatch>("LogisticsDispatch", "reassign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.logisticsDispatch.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentScheduleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "schedule", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentStartPreparingMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "startPreparing", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentShipMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "ship", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentMarkDeliveredMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "markDelivered", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Shipment>("Shipment", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentItemCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentItemUpdateReceivedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "updateReceived", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentItemUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useShipmentItemSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "assign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderUpdatePriorityMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "updatePriority", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkOrderRescheduleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "reschedule", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationStartMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "start", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkforceOptimizationFailMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "fail", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
+    },
+    ...options,
+  });
+}
+
+export function usePerformancePredictionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PerformancePrediction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PerformancePrediction>("PerformancePrediction", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.performancePrediction.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeyCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeyUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeyRotateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "rotate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeyRevokeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "revoke", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeySoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useApiKeyRecordUsageMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<ApiKey>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<ApiKey>("ApiKey", "recordUsage", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.apiKey.all });
+    },
+    ...options,
+  });
+}
+
+export function useNotificationCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Notification>("Notification", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
+    },
+    ...options,
+  });
+}
+
+export function useNotificationMarkReadMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Notification>("Notification", "markRead", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
+    },
+    ...options,
+  });
+}
+
+export function useNotificationMarkDismissedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Notification>("Notification", "markDismissed", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
+    },
+    ...options,
+  });
+}
+
+export function useNotificationRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Notification>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Notification>("Notification", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.notification.all });
+    },
+    ...options,
+  });
+}
+
+export function useOverrideAuditCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<OverrideAudit>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<OverrideAudit>("OverrideAudit", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.overrideAudit.all });
+    },
+    ...options,
+  });
+}
+
+export function useOverrideAuditAuthorizeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<OverrideAudit>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<OverrideAudit>("OverrideAudit", "authorize", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.overrideAudit.all });
+    },
+    ...options,
+  });
+}
+
+export function useRateLimitConfigCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
+    },
+    ...options,
+  });
+}
+
+export function useRateLimitConfigUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
+    },
+    ...options,
+  });
+}
+
+export function useRateLimitConfigSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
+    },
+    ...options,
+  });
+}
+
+export function useRateLimitConfigTurnOnMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "turnOn", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
+    },
+    ...options,
+  });
+}
+
+export function useRateLimitConfigTurnOffMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<RateLimitConfig>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<RateLimitConfig>("RateLimitConfig", "turnOff", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rateLimitConfig.all });
     },
     ...options,
   });
@@ -15882,6 +15817,1254 @@ export function useSampleDataReseedMutation(
     mutationFn: (input) => executeCommand<SampleData>("SampleData", "reseed", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.sampleData.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserTerminateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "terminate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserUpdateRoleMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "updateRole", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserReactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "reactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useUserSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<User>("User", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkflowCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Workflow>("Workflow", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkflowUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Workflow>("Workflow", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkflowActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Workflow>("Workflow", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
+    },
+    ...options,
+  });
+}
+
+export function useWorkflowDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Workflow>("Workflow", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionCompleteDraftFromPrepDemandMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "completeDraftFromPrepDemand", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionSubmitMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "submit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionApproveManagerMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveManager", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionApproveFinanceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "approveFinance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionConvertToPoMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "convertToPo", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisition>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisition>("PurchaseRequisition", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisition.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionItemCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionItemUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseRequisitionItemRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseRequisitionItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseRequisitionItem>("PurchaseRequisitionItem", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseRequisitionItem.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderSubmitMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "submit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderCancelMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "cancel", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderMarkOrderedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "markOrdered", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderMarkReceivedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "markReceived", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderUpdateTotalsMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrder>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrder>("PurchaseOrder", "updateTotals", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrder.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderItemCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderItemUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
+    },
+    ...options,
+  });
+}
+
+export function usePurchaseOrderItemRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PurchaseOrderItem>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PurchaseOrderItem>("PurchaseOrderItem", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.purchaseOrderItem.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogUpdatePriceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "updatePrice", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogReactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "reactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCatalogSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractSubmitMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "submit", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractActivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "activate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractTerminateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "terminate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractRenewMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "renew", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractUpdateComplianceMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "updateCompliance", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorContractRecordSlaBreachMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "recordSlaBreach", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorRemoveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "remove", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorSuspendMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "suspend", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorBlacklistMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "blacklist", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorAddContactMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "addContact", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useVendorRateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<Vendor>("Vendor", "rate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACheckCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACheck>("QACheck", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACheckCompleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACheck>("QACheck", "complete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACheckFailMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACheck>("QACheck", "fail", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACheckRequireReinspectionMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACheck>("QACheck", "requireReinspection", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACheckReinspectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACheck>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACheck>("QACheck", "reinspect", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACheck.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionAssignMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "assign", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionEscalateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "escalate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionMarkResolvedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "markResolved", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
+    },
+    ...options,
+  });
+}
+
+export function useQACorrectiveActionDismissMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QACorrectiveAction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QACorrectiveAction>("QACorrectiveAction", "dismiss", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qACorrectiveAction.all });
+    },
+    ...options,
+  });
+}
+
+export function useQATemperatureLogLogMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<QATemperatureLog>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<QATemperatureLog>("QATemperatureLog", "log", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.qATemperatureLog.all });
+    },
+    ...options,
+  });
+}
+
+export function useWasteEntryCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useWasteEntryApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useWasteEntryVoidEntryMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "voidEntry", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useWasteEntryUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useWasteEntrySoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetRecordActualMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "recordActual", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetCloseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "close", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useLaborBudgetSoftDeleteMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<LaborBudget>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<LaborBudget>("LaborBudget", "softDelete", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.laborBudget.all });
+    },
+    ...options,
+  });
+}
+
+export function useBudgetAlertCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
+    },
+    ...options,
+  });
+}
+
+export function useBudgetAlertAcknowledgeMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "acknowledge", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
+    },
+    ...options,
+  });
+}
+
+export function useBudgetAlertMarkResolvedMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<BudgetAlert>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<BudgetAlert>("BudgetAlert", "markResolved", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.budgetAlert.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollPeriodCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollPeriodCloseMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "close", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollPeriodReopenMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "reopen", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollPeriodLockMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollPeriod>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollPeriod>("PayrollPeriod", "lock", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollPeriod.all });
+    },
+    ...options,
+  });
+}
+
+export function useEmployeeDeductionCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
+    },
+    ...options,
+  });
+}
+
+export function useEmployeeDeductionUpdateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "update", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
+    },
+    ...options,
+  });
+}
+
+export function useEmployeeDeductionDeactivateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<EmployeeDeduction>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<EmployeeDeduction>("EmployeeDeduction", "deactivate", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.employeeDeduction.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollApprovalHistoryCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollApprovalHistory>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollApprovalHistory>("PayrollApprovalHistory", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollApprovalHistory.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollRunCreateMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "create", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollRunProcessMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "process", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollRunApproveMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "approve", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollRunRejectMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "reject", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
+    },
+    ...options,
+  });
+}
+
+export function usePayrollRunMarkPaidMutation(
+  options?: Omit<UseMutationOptions<CommandEnvelope<PayrollRun>, Error, Record<string, unknown>>, "mutationFn">,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input) => executeCommand<PayrollRun>("PayrollRun", "markPaid", input),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.payrollRun.all });
     },
     ...options,
   });
@@ -16051,214 +17234,6 @@ export function useScheduleShiftRemoveMutation(
     mutationFn: (input) => executeCommand<ScheduleShift>("ScheduleShift", "remove", input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.scheduleShift.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentScheduleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "schedule", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentStartPreparingMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "startPreparing", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentShipMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "ship", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentMarkDeliveredMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "markDelivered", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Shipment>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Shipment>("Shipment", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipment.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentItemCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentItemUpdateReceivedMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "updateReceived", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentItemUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useShipmentItemSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<ShipmentItem>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<ShipmentItem>("ShipmentItem", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.shipmentItem.all });
-    },
-    ...options,
-  });
-}
-
-export function useSmsAutomationRuleCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useSmsAutomationRuleUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useSmsAutomationRuleActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useSmsAutomationRuleDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
-    },
-    ...options,
-  });
-}
-
-export function useSmsAutomationRuleSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<SmsAutomationRule>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<SmsAutomationRule>("SmsAutomationRule", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.smsAutomationRule.all });
     },
     ...options,
   });
@@ -17018,123 +17993,6 @@ export function useStaffPerformanceRemoveMutation(
   });
 }
 
-export function useStationCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationAssignTaskMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "assignTask", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationRemoveTaskMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "removeTask", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationUpdateCapacityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "updateCapacity", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationUpdateEquipmentMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "updateEquipment", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationStartMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "startMaintenance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
-export function useStationEndMaintenanceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Station>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Station>("Station", "endMaintenance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.station.all });
-    },
-    ...options,
-  });
-}
-
 export function useTimeEntryClockInMutation(
   options?: Omit<UseMutationOptions<CommandEnvelope<TimeEntry>, Error, Record<string, unknown>>, "mutationFn">,
 ) {
@@ -17720,844 +18578,12 @@ export function useSelOnboardingTrainingQuestion10DefinitionCreateMutation(
   });
 }
 
-export function useUserCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserTerminateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "terminate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserUpdateRoleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "updateRole", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserReactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "reactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useUserSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<User>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<User>("User", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogUpdatePriceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "updatePrice", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogReactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "reactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCatalogSoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorCatalog>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorCatalog>("VendorCatalog", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorCatalog.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractSubmitMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "submit", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractTerminateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "terminate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractRenewMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "renew", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractUpdateComplianceMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "updateCompliance", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorContractRecordSlaBreachMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VendorContract>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VendorContract>("VendorContract", "recordSlaBreach", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendorContract.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorRemoveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "remove", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorSuspendMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "suspend", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorBlacklistMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "blacklist", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorAddContactMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "addContact", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVendorRateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Vendor>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Vendor>("Vendor", "rate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.vendor.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionedEntityRegisterMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "register", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionedEntityLockMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "lock", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionedEntityUnlockMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "unlock", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionedEntityUpdateNameMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionedEntity>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionedEntity>("VersionedEntity", "updateName", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionedEntity.all });
-    },
-    ...options,
-  });
-}
-
-export function useEntityVersionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
-    },
-    ...options,
-  });
-}
-
-export function useEntityVersionApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
-    },
-    ...options,
-  });
-}
-
-export function useEntityVersionRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
-    },
-    ...options,
-  });
-}
-
-export function useEntityVersionRestoreMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<EntityVersion>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<EntityVersion>("EntityVersion", "restore", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.entityVersion.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionApprovalCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionApprovalApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionApprovalRejectMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "reject", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
-    },
-    ...options,
-  });
-}
-
-export function useVersionApprovalCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<VersionApproval>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<VersionApproval>("VersionApproval", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.versionApproval.all });
-    },
-    ...options,
-  });
-}
-
-export function useWasteEntryCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useWasteEntryApproveMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "approve", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useWasteEntryVoidEntryMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "voidEntry", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useWasteEntryUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useWasteEntrySoftDeleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WasteEntry>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WasteEntry>("WasteEntry", "softDelete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.wasteEntry.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderAssignMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "assign", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "start", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderCancelMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "cancel", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderUpdatePriorityMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "updatePriority", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkOrderRescheduleMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkOrder>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkOrder>("WorkOrder", "reschedule", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workOrder.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkflowCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Workflow>("Workflow", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkflowUpdateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Workflow>("Workflow", "update", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkflowActivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Workflow>("Workflow", "activate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkflowDeactivateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<Workflow>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<Workflow>("Workflow", "deactivate", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workflow.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationStartMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "start", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationCompleteMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "complete", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
-    },
-    ...options,
-  });
-}
-
-export function useWorkforceOptimizationFailMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<WorkforceOptimization>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<WorkforceOptimization>("WorkforceOptimization", "fail", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.workforceOptimization.all });
-    },
-    ...options,
-  });
-}
-
-export function usePerformancePredictionCreateMutation(
-  options?: Omit<UseMutationOptions<CommandEnvelope<PerformancePrediction>, Error, Record<string, unknown>>, "mutationFn">,
-) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (input) => executeCommand<PerformancePrediction>("PerformancePrediction", "create", input),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.performancePrediction.all });
-    },
-    ...options,
-  });
-}
-
 // ============================================================
 // Summary
 // ============================================================
 // Entities: 202
-// List hooks: 171 (skipped 31: ApiKey, Dish, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, RolePolicy, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, VersionedEntity, WasteEntry)
+// List hooks: 171 (skipped 31: KnowledgeBaseEntry, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, VersionedEntity, Dish, KitchenTaskProgress, MenuDish, Facility, LogisticsDispatch, ApiKey, RolePolicy, WasteEntry, PayrollApprovalHistory, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition)
 // Detail hooks: 188 (skipped 14: TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition)
-// Command mutation hooks: 999
-// Total exports: 1358
-// Skipped list hooks (no list fn in client): ApiKey, Dish, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, Facility, KitchenTaskProgress, KnowledgeBaseEntry, LogisticsDispatch, MenuDish, PayrollApprovalHistory, RolePolicy, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition, VersionedEntity, WasteEntry
+// Command mutation hooks: 1001
+// Total exports: 1360
+// Skipped list hooks (no list fn in client): KnowledgeBaseEntry, EmployeeAvailability, EventWaitlistEntry, EventDish, EventProfitability, EventSummary, VersionedEntity, Dish, KitchenTaskProgress, MenuDish, Facility, LogisticsDispatch, ApiKey, RolePolicy, WasteEntry, PayrollApprovalHistory, TimeEntry, TrainingQuestion, TrainingAttempt, StaffTrainingSignal, SelOnboardingTrainingModuleDefinition, SelOnboardingTrainingQuestion01Definition, SelOnboardingTrainingQuestion02Definition, SelOnboardingTrainingQuestion03Definition, SelOnboardingTrainingQuestion04Definition, SelOnboardingTrainingQuestion05Definition, SelOnboardingTrainingQuestion06Definition, SelOnboardingTrainingQuestion07Definition, SelOnboardingTrainingQuestion08Definition, SelOnboardingTrainingQuestion09Definition, SelOnboardingTrainingQuestion10Definition

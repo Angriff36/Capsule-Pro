@@ -41,6 +41,20 @@ entity EventStaff {
   relationship belongsTo staffMember: StaffMember fields [tenantId, staffMemberId] references [tenantId, id]
 
   default policy EventStaffDefaultAccess execute: user.role in ["staff", "event_coordinator", "catering_manager", "event_manager", "manager", "admin"] "Event and event-related entity management"
+  command create(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: datetime, shiftEnd: datetime) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"
+
+    mutate eventId = eventId
+    mutate staffMemberId = staffMemberId
+    mutate role = role
+    mutate notes = notes
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+
+    emit EventStaffAssigned
+  }
+
   command assign(eventId: string, staffMemberId: string, role: string, notes: string, shiftStart: datetime, shiftEnd: datetime) {
     guard eventId != null and eventId != "" "Event ID is required"
     guard staffMemberId != null and staffMemberId != "" "Staff member ID is required"

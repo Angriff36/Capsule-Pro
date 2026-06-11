@@ -274,12 +274,12 @@ export async function setupEventCompletely(
 
         if (alreadyAssigned.length > 0) continue;
 
-        // Route through Manifest runtime (EventStaff.assign) instead of raw SQL.
+        // Route through Manifest runtime (EventStaff.create) instead of raw SQL.
         // Placeholder shift = event date (no real shift schedule at setup time).
         const shiftPlaceholder = (event.event_date ?? new Date()).toISOString();
         const assignResult = await runManifestCommand({
           entity: "EventStaff",
-          command: "assign",
+          command: "create",
           body: {
             eventId,
             staffMemberId: emp.id,

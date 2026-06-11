@@ -1,11 +1,11 @@
 {
   "version": "1.0",
   "provenance": {
-    "contentHash": "2294e71bec74dd48238425adc236f5e7b646cc50c96d91447972035f85e7a1fb",
-    "irHash": "4b750fef2976b70151f268d8dcd24fd5cfab0a78931ec54ac5bcd4e2ee70f865",
+    "contentHash": "a4ae12221b1b83f6227c8febf9cfa32a53aa217664f203ee341b78b278c62260",
+    "irHash": "3adb8a172c800ce3add8e36f63e158ce439f14d3bcd892f7473c1d1fe7380e45",
     "compilerVersion": "2.4.1",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-06-10T18:32:42.803Z"
+    "compiledAt": "2026-06-11T16:15:32.494Z"
   },
   "tenant": {
     "property": "tenantId",
@@ -497,6 +497,7 @@
         }
       ],
       "commands": [
+        "create",
         "assign",
         "confirm",
         "updateShift",
@@ -1135,6 +1136,205 @@
     }
   ],
   "commands": [
+    {
+      "name": "create",
+      "entity": "EventStaff",
+      "parameters": [
+        {
+          "name": "eventId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftStart",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shiftEnd",
+          "type": {
+            "name": "datetime",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "staffMemberId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "staffMemberId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "policies": [
+        "EventStaffDefaultAccess"
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Event ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Staff member ID is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventId",
+          "expression": {
+            "kind": "identifier",
+            "name": "eventId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "staffMemberId",
+          "expression": {
+            "kind": "identifier",
+            "name": "staffMemberId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "role",
+          "expression": {
+            "kind": "identifier",
+            "name": "role"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shiftStart",
+          "expression": {
+            "kind": "identifier",
+            "name": "shiftStart"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shiftEnd",
+          "expression": {
+            "kind": "identifier",
+            "name": "shiftEnd"
+          }
+        }
+      ],
+      "emits": [
+        "EventStaffAssigned"
+      ]
+    },
     {
       "name": "assign",
       "entity": "EventStaff",

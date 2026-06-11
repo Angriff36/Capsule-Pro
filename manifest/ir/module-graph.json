@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "compiledAt": "2026-06-10T18:32:43.156Z",
-  "contentHash": "71a5f0e41655d18d1908ff318f1cfbf566b131616727e56fdbd2eb90793ab6ca",
+  "compiledAt": "2026-06-11T16:15:32.649Z",
+  "contentHash": "826d98878e2e1ab086469d3fb07b9a72c0d1ce91ad172ecfd1331855a3aecd7c",
   "sources": [
     {
       "path": "ai/ai-event-setup-rules.manifest",
@@ -224,7 +224,7 @@
       "path": "events/event-staff-rules.manifest",
       "domain": "events",
       "entities": 1,
-      "commands": 8,
+      "commands": 9,
       "events": 8
     },
     {
@@ -665,7 +665,7 @@
   "merged": {
     "path": "kitchen.ir.json",
     "entities": 202,
-    "commands": 1000,
+    "commands": 1001,
     "events": 982
   }
 }

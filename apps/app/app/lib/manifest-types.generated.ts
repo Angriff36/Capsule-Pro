@@ -2,6 +2,44 @@
 // Auto-generated TypeScript types from Manifest IR
 // DO NOT EDIT - This file is generated from .manifest source
 
+export interface AiEventSetupSession {
+  id: string;
+  tenantId: string;
+  userId: string;
+  originalInput?: string;
+  parsedTitle?: string;
+  parsedEventType?: string;
+  parsedEventDate?: string;
+  parsedGuestCount?: number;
+  parsedVenueName?: string;
+  parsedVenueAddress?: string;
+  parsedNotes?: string;
+  parsedTags?: string;
+  status?: string;
+  confidence?: number;
+  missingFields?: string;
+  suggestions?: string;
+  createdEventId?: string;
+  completedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeBaseEntry {
+  id: string;
+  tenantId: string;
+  title: string;
+  category?: string;
+  content?: string;
+  tags?: string;
+  status?: string;
+  authorId?: string;
+  publishedAt: string;
+  viewCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface AdminChatParticipant {
   id: string;
   tenantId: string;
@@ -26,29 +64,6 @@ export interface AdminTask {
   dueDate: string;
   createdBy?: string;
   deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface AiEventSetupSession {
-  id: string;
-  tenantId: string;
-  userId: string;
-  originalInput?: string;
-  parsedTitle?: string;
-  parsedEventType?: string;
-  parsedEventDate?: string;
-  parsedGuestCount?: number;
-  parsedVenueName?: string;
-  parsedVenueAddress?: string;
-  parsedNotes?: string;
-  parsedTags?: string;
-  status?: string;
-  confidence?: number;
-  missingFields?: string;
-  suggestions?: string;
-  createdEventId?: string;
-  completedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -85,22 +100,6 @@ export interface AllergenWarning {
   updatedAt: string;
 }
 
-export interface ApiKey {
-  id: string;
-  tenantId: string;
-  name?: string;
-  keyPrefix?: string;
-  hashedKey?: string;
-  scopes: unknown[];
-  lastUsedAt: string;
-  expiresAt: string;
-  revokedAt: string;
-  createdByUserId?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface BankAccount {
   id: string;
   tenantId: string;
@@ -119,113 +118,6 @@ export interface BankAccount {
   updatedAt: string;
 }
 
-export interface BattleBoard {
-  id: string;
-  tenantId: string;
-  eventId?: string;
-  boardName?: string;
-  boardType?: string;
-  schemaVersion?: string;
-  boardData?: string;
-  documentUrl?: string;
-  sourceDocumentType?: string;
-  documentImportedAt: string;
-  status?: string;
-  isTemplate?: boolean;
-  description?: string;
-  notes?: string;
-  tags?: string;
-  dishCount?: number;
-  deletedAt: string;
-  eventDate: string;
-  clientId?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  locationId?: string;
-  inheritedContext?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Budget {
-  id: string;
-  tenantId: string;
-  name: string;
-  description?: string;
-  fiscalYear?: number;
-  totalAmount?: number;
-  allocatedAmount?: number;
-  spentAmount?: number;
-  status?: string;
-  category?: string;
-  departmentId?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  lockedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BulkOrderRule {
-  id: string;
-  tenantId: string;
-  catalogEntryId: string;
-  ruleName?: string;
-  minimumQuantity?: number;
-  ruleType?: string;
-  thresholdQuantity?: number;
-  action?: string;
-  discountPercent?: number;
-  freeItemQuantity?: number;
-  shippingIncluded?: boolean;
-  priority?: number;
-  effectiveFrom: string;
-  effectiveTo: string;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CateringOrder {
-  id: string;
-  tenantId: string;
-  orderNumber: string;
-  customerId?: string;
-  eventId?: string;
-  orderStatus?: string;
-  orderDate: string;
-  deliveryDate: string;
-  deliveryTime?: string;
-  subtotalAmount?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  serviceChargeAmount?: number;
-  totalAmount?: number;
-  depositRequired?: boolean;
-  depositAmount?: number;
-  depositPaid?: boolean;
-  depositPaidAt: string;
-  deliveredAt: string;
-  prepStartedAt: string;
-  venueName?: string;
-  venueAddress?: string;
-  venueCity?: string;
-  venueState?: string;
-  venueZip?: string;
-  venueContactName?: string;
-  venueContactPhone?: string;
-  guestCount?: number;
-  specialInstructions?: string;
-  dietaryRestrictions?: string;
-  staffRequired?: number;
-  staffAssigned?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface ChartOfAccount {
   id: string;
   tenantId: string;
@@ -235,257 +127,6 @@ export interface ChartOfAccount {
   parentId?: string;
   description?: string;
   isActive?: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ClientInteraction {
-  id: string;
-  tenantId: string;
-  clientId?: string;
-  leadId?: string;
-  employeeId?: string;
-  interactionType?: string;
-  interactionDate: string;
-  subject?: string;
-  description?: string;
-  followUpDate: string;
-  followUpCompleted?: boolean;
-  status?: string;
-  priority?: string;
-  escalatedAt: string;
-  escalatedTo?: string;
-  correlationId?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Client {
-  id: string;
-  tenantId: string;
-  clientType?: string;
-  companyName?: string;
-  firstName?: string;
-  lastName?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  stateProvince?: string;
-  postalCode?: string;
-  countryCode?: string;
-  defaultPaymentTerms?: number;
-  taxExempt?: boolean;
-  taxId?: string;
-  notes?: string;
-  tags: unknown[];
-  source?: string;
-  assignedTo?: string;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ClientContact {
-  id: string;
-  tenantId: string;
-  clientId: string;
-  firstName?: string;
-  lastName?: string;
-  title?: string;
-  email?: string;
-  phone?: string;
-  phoneMobile?: string;
-  isPrimary?: boolean;
-  isBillingContact?: boolean;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ClientPreference {
-  id: string;
-  tenantId: string;
-  clientId: string;
-  preferenceType?: string;
-  preferenceKey?: string;
-  preferenceValue?: string;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CollectionCase {
-  id: string;
-  tenantId: string;
-  invoiceId?: string;
-  invoiceNumber?: string;
-  eventId?: string;
-  clientId?: string;
-  clientName?: string;
-  originalAmount?: number;
-  outstandingAmount?: number;
-  collectedAmount?: number;
-  status?: string;
-  priority?: string;
-  dunningStage?: string;
-  daysOverdue?: number;
-  agingBucket?: string;
-  assignedTo?: string;
-  assignedAt: string;
-  hasPaymentPlan?: boolean;
-  paymentPlanId?: string;
-  nextPaymentDue: string;
-  isDisputed?: boolean;
-  disputeReason?: string;
-  disputeResolvedAt: string;
-  isEscalatedToLegal?: boolean;
-  legalCaseNumber?: string;
-  legalFirm?: string;
-  notes?: string;
-  internalNotes?: string;
-  lastActivityAt: string;
-  metadata?: string;
-  resolvedAt: string;
-  closedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CollectionAction {
-  id: string;
-  tenantId: string;
-  caseId?: string;
-  actionType?: string;
-  direction?: string;
-  status?: string;
-  contactedBy?: string;
-  contactName?: string;
-  contactMethod?: string;
-  subject?: string;
-  description?: string;
-  outcome?: string;
-  nextActionDate: string;
-  promiseAmount?: number;
-  promiseDate: string;
-  notes?: string;
-  metadata?: string;
-  scheduledFor: string;
-  completedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CollectionPaymentPlan {
-  id: string;
-  tenantId: string;
-  caseId?: string;
-  totalAmount?: number;
-  installmentAmount?: number;
-  installmentCount?: number;
-  completedInstallments?: number;
-  status?: string;
-  startDate: string;
-  endDate: string;
-  frequency?: string;
-  nextPaymentDate: string;
-  notes?: string;
-  metadata?: string;
-  completedAt: string;
-  defaultedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommandBoard {
-  id: string;
-  tenantId: string;
-  eventId?: string;
-  name?: string;
-  description?: string;
-  status?: string;
-  isTemplate?: boolean;
-  tags?: unknown[];
-  autoPopulate?: boolean;
-  scope?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommandBoardCard {
-  id: string;
-  tenantId: string;
-  boardId: string;
-  title?: string;
-  content?: string;
-  cardType?: string;
-  status?: string;
-  positionX?: number;
-  positionY?: number;
-  width?: number;
-  height?: number;
-  zIndex?: number;
-  color?: string;
-  metadata?: string;
-  groupId?: string;
-  entityId?: string;
-  entityType?: string;
-  version?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommandBoardGroup {
-  id: string;
-  tenantId: string;
-  boardId: string;
-  name?: string;
-  color?: string;
-  collapsed?: boolean;
-  positionX?: number;
-  positionY?: number;
-  width?: number;
-  height?: number;
-  zIndex?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommandBoardConnection {
-  id: string;
-  tenantId: string;
-  boardId: string;
-  fromCardId: string;
-  toCardId: string;
-  relationshipType?: string;
-  label?: string;
-  visible?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CommandBoardLayout {
-  id: string;
-  tenantId: string;
-  boardId: string;
-  userId: string;
-  name?: string;
-  viewport?: string;
-  visibleCards?: string;
-  gridSize?: number;
-  showGrid?: boolean;
-  snapToGrid?: boolean;
-  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -614,135 +255,6 @@ export interface AdminChatMessage {
   updatedAt: string;
 }
 
-export interface CycleCountSession {
-  id: string;
-  tenantId: string;
-  locationId: string;
-  sessionId: string;
-  sessionName: string;
-  countType?: string;
-  scheduledDate: string;
-  startedAt: string;
-  completedAt: string;
-  finalizedAt: string;
-  status?: string;
-  totalItems?: number;
-  countedItems?: number;
-  totalVariance?: number;
-  variancePercentage?: number;
-  notes?: string;
-  createdById?: string;
-  approvedById?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CycleCountRecord {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  storageLocationId: string;
-  expectedQuantity?: number;
-  countedQuantity?: number;
-  variance?: number;
-  variancePct?: number;
-  countDate: string;
-  countedById?: string;
-  barcode?: string;
-  notes?: string;
-  isVerified?: boolean;
-  verifiedById?: string;
-  verifiedAt: string;
-  syncStatus?: string;
-  offlineId?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VarianceReport {
-  id: string;
-  tenantId: string;
-  sessionId: string;
-  reportType: string;
-  itemId: string;
-  itemNumber: string;
-  itemName: string;
-  expectedQuantity?: number;
-  countedQuantity?: number;
-  variance?: number;
-  variancePct?: number;
-  accuracyScore?: number;
-  status?: string;
-  adjustmentType?: string;
-  adjustmentAmount?: number;
-  adjustmentDate: string;
-  rejectedAt: string;
-  rejectedBy?: string;
-  rejectionReason?: string;
-  notes?: string;
-  rootCause?: string;
-  resolutionNotes?: string;
-  resolvedById?: string;
-  resolvedAt: string;
-  generatedAt: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Deal {
-  id: string;
-  tenantId: string;
-  leadId: string;
-  title: string;
-  value?: number;
-  currency?: string;
-  stage?: string;
-  status?: string;
-  probability?: number;
-  expectedCloseDate: string;
-  actualCloseDate: string;
-  assignedTo?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Dish {
-  id: string;
-  tenantId: string;
-  recipeId: string;
-  name: string;
-  description?: string;
-  category?: string;
-  serviceStyle?: string;
-  defaultContainerId?: string;
-  presentationImageUrl?: string;
-  minPrepLeadDays?: number;
-  maxPrepLeadDays?: number;
-  portionSizeDescription?: string;
-  dietaryTags?: string;
-  allergens?: string;
-  pricePerPerson?: number;
-  costPerPerson?: number;
-  isActive?: boolean;
-  isSeasonal?: boolean;
-  seasonLabel?: string;
-  seasonStartMonth?: number;
-  seasonEndMonth?: number;
-  isEightySix?: boolean;
-  eightySixReason?: string;
-  eightySixAt: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface DocumentVersion {
   id: string;
   tenantId: string;
@@ -827,51 +339,330 @@ export interface EmployeeCertification {
   updatedAt: string;
 }
 
-export interface Equipment {
+export interface ClientInteraction {
   id: string;
   tenantId: string;
-  locationId: string;
-  name: string;
-  type?: string;
+  clientId?: string;
+  leadId?: string;
+  employeeId?: string;
+  interactionType?: string;
+  interactionDate: string;
+  subject?: string;
+  description?: string;
+  followUpDate: string;
+  followUpCompleted?: boolean;
   status?: string;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  purchaseDate: string;
-  warrantyExpiry: string;
-  lastMaintenanceDate: string;
-  nextMaintenanceDate: string;
-  maintenanceIntervalDays?: number;
-  usageHours?: number;
-  maxUsageHours?: number;
-  condition?: string;
-  notes?: string;
-  isActive?: boolean;
+  priority?: string;
+  escalatedAt: string;
+  escalatedTo?: string;
+  correlationId?: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface MaintenanceWorkOrder {
+export interface Client {
   id: string;
   tenantId: string;
-  workOrderNumber?: string;
-  areaId?: string;
-  equipmentId?: string;
-  equipmentName?: string;
-  title: string;
-  type?: string;
-  priority?: string;
-  status?: string;
-  description?: string;
-  reportedBy?: string;
-  assignedTo?: string;
-  scheduledDate: string;
-  completedDate: string;
-  estimatedCost?: number;
-  actualCost?: number;
-  partsUsed?: string;
-  vendorId?: string;
+  clientType?: string;
+  companyName?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  countryCode?: string;
+  defaultPaymentTerms?: number;
+  taxExempt?: boolean;
+  taxId?: string;
   notes?: string;
+  tags: unknown[];
+  source?: string;
+  assignedTo?: string;
+  isActive?: boolean;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientContact {
+  id: string;
+  tenantId: string;
+  clientId: string;
+  firstName?: string;
+  lastName?: string;
+  title?: string;
+  email?: string;
+  phone?: string;
+  phoneMobile?: string;
+  isPrimary?: boolean;
+  isBillingContact?: boolean;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ClientPreference {
+  id: string;
+  tenantId: string;
+  clientId: string;
+  preferenceType?: string;
+  preferenceKey?: string;
+  preferenceValue?: string;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Deal {
+  id: string;
+  tenantId: string;
+  leadId: string;
+  title: string;
+  value?: number;
+  currency?: string;
+  stage?: string;
+  status?: string;
+  probability?: number;
+  expectedCloseDate: string;
+  actualCloseDate: string;
+  assignedTo?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Lead {
+  id: string;
+  tenantId: string;
+  source?: string;
+  companyName?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  eventType?: string;
+  eventDate: string;
+  estimatedGuests?: number;
+  estimatedValue?: number;
+  status?: string;
+  assignedTo?: string;
+  notes?: string;
+  convertedToClientId?: string;
+  convertedAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Proposal {
+  id: string;
+  tenantId: string;
+  proposalNumber?: string;
+  clientId?: string;
+  leadId?: string;
+  eventId?: string;
+  title?: string;
+  eventDate: string;
+  eventType?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  total?: number;
+  status?: string;
+  validUntil: string;
+  sentAt: string;
+  viewedAt: string;
+  acceptedAt: string;
+  rejectedAt: string;
+  notes?: string;
+  termsAndConditions?: string;
+  lineItemCount?: number;
+  publicToken?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProposalLineItem {
+  id: string;
+  tenantId: string;
+  proposalId: string;
+  itemType?: string;
+  category?: string;
+  description?: string;
+  quantity?: number;
+  unitOfMeasure?: string;
+  unitPrice?: number;
+  total?: number;
+  totalPrice?: number;
+  sortOrder?: number;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BattleBoard {
+  id: string;
+  tenantId: string;
+  eventId?: string;
+  boardName?: string;
+  boardType?: string;
+  schemaVersion?: string;
+  boardData?: string;
+  documentUrl?: string;
+  sourceDocumentType?: string;
+  documentImportedAt: string;
+  status?: string;
+  isTemplate?: boolean;
+  description?: string;
+  notes?: string;
+  tags?: string;
+  dishCount?: number;
+  deletedAt: string;
+  eventDate: string;
+  clientId?: string;
+  guestCount?: number;
+  venueName?: string;
+  venueAddress?: string;
+  locationId?: string;
+  inheritedContext?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CateringOrder {
+  id: string;
+  tenantId: string;
+  orderNumber: string;
+  customerId?: string;
+  eventId?: string;
+  orderStatus?: string;
+  orderDate: string;
+  deliveryDate: string;
+  deliveryTime?: string;
+  subtotalAmount?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  serviceChargeAmount?: number;
+  totalAmount?: number;
+  depositRequired?: boolean;
+  depositAmount?: number;
+  depositPaid?: boolean;
+  depositPaidAt: string;
+  deliveredAt: string;
+  prepStartedAt: string;
+  venueName?: string;
+  venueAddress?: string;
+  venueCity?: string;
+  venueState?: string;
+  venueZip?: string;
+  venueContactName?: string;
+  venueContactPhone?: string;
+  guestCount?: number;
+  specialInstructions?: string;
+  dietaryRestrictions?: string;
+  staffRequired?: number;
+  staffAssigned?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommandBoard {
+  id: string;
+  tenantId: string;
+  eventId?: string;
+  name?: string;
+  description?: string;
+  status?: string;
+  isTemplate?: boolean;
+  tags?: unknown[];
+  autoPopulate?: boolean;
+  scope?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommandBoardCard {
+  id: string;
+  tenantId: string;
+  boardId: string;
+  title?: string;
+  content?: string;
+  cardType?: string;
+  status?: string;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  zIndex?: number;
+  color?: string;
+  metadata?: string;
+  groupId?: string;
+  entityId?: string;
+  entityType?: string;
+  version?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommandBoardGroup {
+  id: string;
+  tenantId: string;
+  boardId: string;
+  name?: string;
+  color?: string;
+  collapsed?: boolean;
+  positionX?: number;
+  positionY?: number;
+  width?: number;
+  height?: number;
+  zIndex?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommandBoardConnection {
+  id: string;
+  tenantId: string;
+  boardId: string;
+  fromCardId: string;
+  toCardId: string;
+  relationshipType?: string;
+  label?: string;
+  visible?: boolean;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommandBoardLayout {
+  id: string;
+  tenantId: string;
+  boardId: string;
+  userId: string;
+  name?: string;
+  viewport?: string;
+  visibleCards?: string;
+  gridSize?: number;
+  showGrid?: boolean;
+  snapToGrid?: boolean;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1104,6 +895,7 @@ export interface Event {
   venueAddress?: string;
   notes?: string;
   tags: unknown[];
+  templateId?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -1302,122 +1094,423 @@ export interface Note {
   updatedAt: string;
 }
 
-export interface Facility {
+export interface Budget {
   id: string;
   tenantId: string;
   name: string;
-  code?: string;
-  facilityType?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-  phone?: string;
-  status?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface FacilityArea {
-  id: string;
-  tenantId: string;
-  venueId?: string;
-  name: string;
-  code?: string;
-  areaType?: string;
-  floor?: string;
   description?: string;
-  squareFeet?: number;
+  fiscalYear?: number;
+  totalAmount?: number;
+  allocatedAmount?: number;
+  spentAmount?: number;
   status?: string;
+  category?: string;
+  departmentId?: string;
+  approvedBy?: string;
+  approvedAt: string;
+  lockedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface FacilityAsset {
+export interface CollectionCase {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
-  name: string;
-  assetType?: string;
-  assetClass?: string;
+  invoiceId?: string;
+  invoiceNumber?: string;
+  eventId?: string;
+  clientId?: string;
+  clientName?: string;
+  originalAmount?: number;
+  outstandingAmount?: number;
+  collectedAmount?: number;
   status?: string;
-  purchaseDate: string;
-  purchasePrice?: number;
-  currentValue?: number;
-  depreciationRate?: number;
-  serialNumber?: string;
-  manufacturer?: string;
-  model?: string;
-  warrantyExpiry: string;
-  lastMaintenanceAt: string;
-  nextMaintenanceAt: string;
+  priority?: string;
+  dunningStage?: string;
+  daysOverdue?: number;
+  agingBucket?: string;
+  assignedTo?: string;
+  assignedAt: string;
+  hasPaymentPlan?: boolean;
+  paymentPlanId?: string;
+  nextPaymentDue: string;
+  isDisputed?: boolean;
+  disputeReason?: string;
+  disputeResolvedAt: string;
+  isEscalatedToLegal?: boolean;
+  legalCaseNumber?: string;
+  legalFirm?: string;
   notes?: string;
+  internalNotes?: string;
+  lastActivityAt: string;
+  metadata?: string;
+  resolvedAt: string;
+  closedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface FacilitySchedule {
+export interface CollectionAction {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
-  title: string;
+  caseId?: string;
+  actionType?: string;
+  direction?: string;
+  status?: string;
+  contactedBy?: string;
+  contactName?: string;
+  contactMethod?: string;
+  subject?: string;
   description?: string;
-  scheduleType?: string;
+  outcome?: string;
+  nextActionDate: string;
+  promiseAmount?: number;
+  promiseDate: string;
+  notes?: string;
+  metadata?: string;
+  scheduledFor: string;
+  completedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CollectionPaymentPlan {
+  id: string;
+  tenantId: string;
+  caseId?: string;
+  totalAmount?: number;
+  installmentAmount?: number;
+  installmentCount?: number;
+  completedInstallments?: number;
   status?: string;
   startDate: string;
   endDate: string;
-  assignedTo?: string;
+  frequency?: string;
+  nextPaymentDate: string;
+  notes?: string;
+  metadata?: string;
   completedAt: string;
-  notes?: string;
+  defaultedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface FacilityWorkOrder {
+export interface Invoice {
   id: string;
   tenantId: string;
-  facilityId?: string;
-  areaId?: string;
-  assetId?: string;
-  title: string;
-  description?: string;
-  priority?: string;
+  invoiceNumber?: string;
+  type?: string;
   status?: string;
-  category?: string;
-  requestedBy?: string;
-  assignedTo?: string;
-  estimatedCost?: number;
-  actualCost?: number;
-  scheduledDate: string;
-  completedDate: string;
+  clientId?: string;
+  eventId?: string;
+  subtotal?: number;
+  taxAmount?: number;
+  discountAmount?: number;
+  total?: number;
+  amountPaid?: number;
+  amountDue?: number;
+  paymentTerms?: number;
+  dueDate: string;
+  paidAt: string;
+  depositPercentage?: number;
+  depositRequired?: number;
+  depositPaid?: number;
+  issuedAt: string;
+  sentAt: string;
+  viewedAt: string;
+  overdueSince: string;
+  reminderCount?: number;
+  lastReminderAt: string;
+  quickBooksId?: string;
+  goodshuffleId?: string;
+  externalSyncStatus?: string;
   notes?: string;
+  internalNotes?: string;
+  lineItems?: string;
+  metadata?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Ingredient {
+export interface PaymentMethod {
   id: string;
   tenantId: string;
-  name: string;
-  category?: string;
-  defaultUnitId?: number;
-  densityGPerMl?: number;
-  shelfLifeDays?: number;
-  storageInstructions?: string;
-  allergens?: string;
+  clientId?: string;
+  externalMethodId?: string;
+  type?: string;
+  cardLastFour?: string;
+  cardNetwork?: string;
+  cardExpiryMonth?: number;
+  cardExpiryYear?: number;
+  cardHolderName?: string;
+  bankAccountLastFour?: string;
+  bankAccountType?: string;
+  bankRoutingNumber?: string;
+  walletProvider?: string;
+  walletEmail?: string;
+  status?: string;
+  isDefault?: boolean;
+  fraudFlagged?: boolean;
+  verifiedAt: string;
+  verificationMethod?: string;
+  nickname?: string;
+  metadata?: string;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Payment {
+  id: string;
+  tenantId: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  methodType?: string;
+  invoiceId?: string;
+  eventId?: string;
+  clientId?: string;
+  gatewayTransactionId?: string;
+  gatewayPaymentMethodId?: string;
+  processor?: string;
+  processorResponseCode?: string;
+  processorResponseMessage?: string;
+  processedAt: string;
+  completedAt: string;
+  refundedAt: string;
+  chargebackAt: string;
+  fraudStatus?: string;
+  fraudScore?: number;
+  reviewedAt: string;
+  reviewedBy?: string;
+  description?: string;
+  externalReference?: string;
+  metadata?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PricingTier {
+  id: string;
+  tenantId: string;
+  catalogEntryId: string;
+  tierName?: string;
+  minQuantity?: number;
+  maxQuantity?: number;
+  unitCost?: number;
+  discountPercent?: number;
+  effectiveFrom: string;
+  effectiveTo: string;
   isActive?: boolean;
-  inventoryItemId?: string;
-  currentLotNumber?: string;
-  currentLotReceivedAt: string;
-  currentLotExpiresAt: string;
-  isRecalled?: boolean;
-  recallReason?: string;
-  recalledAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RevenueRecognitionSchedule {
+  id: string;
+  tenantId: string;
+  invoiceId: string;
+  eventId: string;
+  contractId: string;
+  clientId: string;
+  totalAmount?: number;
+  recognizedAmount?: number;
+  remainingAmount?: number;
+  method?: string;
+  status?: string;
+  startDate: string;
+  endDate: string;
+  recognitionPeriod?: number;
+  serviceStartDate: string;
+  serviceEndDate: string;
+  totalMilestones?: number;
+  completedMilestones?: number;
+  description?: string;
+  notes?: string;
+  metadata?: string;
+  completedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RevenueRecognitionLine {
+  id: string;
+  tenantId: string;
+  scheduleId: string;
+  sequence?: number;
+  amount?: number;
+  recognizedAmount?: number;
+  status?: string;
+  dueDate: string;
+  recognizedAt: string;
+  milestoneId?: string;
+  milestoneName?: string;
+  milestoneDescription?: string;
+  description?: string;
+  notes?: string;
+  metadata?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SmsAutomationRule {
+  id: string;
+  tenantId: string;
+  name?: string;
+  description?: string;
+  triggerType?: string;
+  triggerConfig?: string;
+  templateId?: string;
+  customMessage?: string;
+  recipientType?: string;
+  recipientConfig?: string;
+  isActive?: boolean;
+  priority?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VersionedEntity {
+  id: string;
+  tenantId: string;
+  entityType: string;
+  entityId: string;
+  entityName: string;
+  isLocked?: boolean;
+  currentVersionId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EntityVersion {
+  id: string;
+  tenantId: string;
+  versionedEntityId: string;
+  versionNumber: number;
+  changeReason?: string;
+  changeSummary?: string;
+  changeType: string;
+  snapshotData?: string;
+  metadata?: string;
+  isApproved?: boolean;
+  approvedAt: string;
+  approvedBy?: string;
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VersionApproval {
+  id: string;
+  tenantId: string;
+  entityVersionId: string;
+  approverId: string;
+  status: string;
+  comments?: string;
+  reviewedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BulkOrderRule {
+  id: string;
+  tenantId: string;
+  catalogEntryId: string;
+  ruleName?: string;
+  minimumQuantity?: number;
+  ruleType?: string;
+  thresholdQuantity?: number;
+  action?: string;
+  discountPercent?: number;
+  freeItemQuantity?: number;
+  shippingIncluded?: boolean;
+  priority?: number;
+  effectiveFrom: string;
+  effectiveTo: string;
+  isActive?: boolean;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CycleCountSession {
+  id: string;
+  tenantId: string;
+  locationId: string;
+  sessionId: string;
+  sessionName: string;
+  countType?: string;
+  scheduledDate: string;
+  startedAt: string;
+  completedAt: string;
+  finalizedAt: string;
+  status?: string;
+  totalItems?: number;
+  countedItems?: number;
+  totalVariance?: number;
+  variancePercentage?: number;
+  notes?: string;
+  createdById?: string;
+  approvedById?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CycleCountRecord {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  itemId: string;
+  itemNumber: string;
+  itemName: string;
+  storageLocationId: string;
+  expectedQuantity?: number;
+  countedQuantity?: number;
+  variance?: number;
+  variancePct?: number;
+  countDate: string;
+  countedById?: string;
+  barcode?: string;
+  notes?: string;
+  isVerified?: boolean;
+  verifiedById?: string;
+  verifiedAt: string;
+  syncStatus?: string;
+  offlineId?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VarianceReport {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  reportType: string;
+  itemId: string;
+  itemNumber: string;
+  itemName: string;
+  expectedQuantity?: number;
+  countedQuantity?: number;
+  variance?: number;
+  variancePct?: number;
+  accuracyScore?: number;
+  status?: string;
+  adjustmentType?: string;
+  adjustmentAmount?: number;
+  adjustmentDate: string;
+  rejectedAt: string;
+  rejectedBy?: string;
+  rejectionReason?: string;
+  notes?: string;
+  rootCause?: string;
+  resolutionNotes?: string;
+  resolvedById?: string;
+  resolvedAt: string;
+  generatedAt: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -1672,39 +1765,55 @@ export interface InventoryTransfer {
   updatedAt: string;
 }
 
-export interface Invoice {
+export interface Dish {
   id: string;
   tenantId: string;
-  invoiceNumber?: string;
-  type?: string;
-  status?: string;
-  clientId?: string;
-  eventId?: string;
-  subtotal?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  total?: number;
-  amountPaid?: number;
-  amountDue?: number;
-  paymentTerms?: number;
-  dueDate: string;
-  paidAt: string;
-  depositPercentage?: number;
-  depositRequired?: number;
-  depositPaid?: number;
-  issuedAt: string;
-  sentAt: string;
-  viewedAt: string;
-  overdueSince: string;
-  reminderCount?: number;
-  lastReminderAt: string;
-  quickBooksId?: string;
-  goodshuffleId?: string;
-  externalSyncStatus?: string;
-  notes?: string;
-  internalNotes?: string;
-  lineItems?: string;
-  metadata?: string;
+  recipeId: string;
+  name: string;
+  description?: string;
+  category?: string;
+  serviceStyle?: string;
+  defaultContainerId?: string;
+  presentationImageUrl?: string;
+  minPrepLeadDays?: number;
+  maxPrepLeadDays?: number;
+  portionSizeDescription?: string;
+  dietaryTags?: string;
+  allergens?: string;
+  pricePerPerson?: number;
+  costPerPerson?: number;
+  isActive?: boolean;
+  isSeasonal?: boolean;
+  seasonLabel?: string;
+  seasonStartMonth?: number;
+  seasonEndMonth?: number;
+  isEightySix?: boolean;
+  eightySixReason?: string;
+  eightySixAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Ingredient {
+  id: string;
+  tenantId: string;
+  name: string;
+  category?: string;
+  defaultUnitId?: number;
+  densityGPerMl?: number;
+  shelfLifeDays?: number;
+  storageInstructions?: string;
+  allergens?: string;
+  isActive?: boolean;
+  inventoryItemId?: string;
+  currentLotNumber?: string;
+  currentLotReceivedAt: string;
+  currentLotExpiresAt: string;
+  isRecalled?: boolean;
+  recallReason?: string;
+  recalledAt: string;
+  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -1924,152 +2033,6 @@ export interface KitchenTask {
   updatedAt: string;
 }
 
-export interface KnowledgeBaseEntry {
-  id: string;
-  tenantId: string;
-  title: string;
-  category?: string;
-  content?: string;
-  tags?: string;
-  status?: string;
-  authorId?: string;
-  publishedAt: string;
-  viewCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LaborBudget {
-  id: string;
-  tenantId: string;
-  locationId?: string;
-  periodStart?: string;
-  periodEnd?: string;
-  budgetAmount?: number;
-  actualAmount?: number;
-  budgetType?: string;
-  status?: string;
-  notes?: string;
-  createdBy?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BudgetAlert {
-  id: string;
-  tenantId: string;
-  budgetId?: string;
-  alertType?: string;
-  thresholdPct?: number;
-  actualPct?: number;
-  message?: string;
-  isAcknowledged?: boolean;
-  acknowledgedBy?: string;
-  acknowledgedAt: string;
-  resolved?: boolean;
-  resolvedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Lead {
-  id: string;
-  tenantId: string;
-  source?: string;
-  companyName?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  eventType?: string;
-  eventDate: string;
-  estimatedGuests?: number;
-  estimatedValue?: number;
-  status?: string;
-  assignedTo?: string;
-  notes?: string;
-  convertedToClientId?: string;
-  convertedAt: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Driver {
-  id: string;
-  tenantId: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  licenseNumber?: string;
-  licenseExpiry: string;
-  vehicleId?: string;
-  status?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Vehicle {
-  id: string;
-  tenantId: string;
-  make: string;
-  model: string;
-  year?: number;
-  plateNumber?: string;
-  vin?: string;
-  capacityWeight?: number;
-  capacityVolume?: number;
-  fuelType?: string;
-  mileage?: number;
-  status?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LogisticsRoute {
-  id: string;
-  tenantId: string;
-  name: string;
-  status?: string;
-  vehicleId?: string;
-  driverId?: string;
-  startLocation?: string;
-  endLocation?: string;
-  distance?: number;
-  estimatedDuration?: number;
-  scheduledStart: string;
-  scheduledEnd: string;
-  actualStart: string;
-  actualEnd: string;
-  stops?: number;
-  completedStops?: number;
-  delayMinutes?: number;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LogisticsDispatch {
-  id: string;
-  tenantId: string;
-  routeId: string;
-  driverId?: string;
-  vehicleId?: string;
-  status?: string;
-  priority?: string;
-  estimatedDeliveryTime: string;
-  actualDeliveryTime: string;
-  departedAt: string;
-  failureReason?: string;
-  notes?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Menu {
   id: string;
   tenantId: string;
@@ -2100,155 +2063,6 @@ export interface MenuDish {
   sortOrder?: number;
   isOptional?: boolean;
   priceOverride?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Notification {
-  id: string;
-  tenantId: string;
-  recipientEmployeeId: string;
-  notificationType?: string;
-  title?: string;
-  body?: string;
-  actionUrl?: string;
-  isRead?: boolean;
-  readAt: string;
-  correlationId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface OverrideAudit {
-  id: string;
-  tenantId: string;
-  entityType?: string;
-  entityId?: string;
-  constraintId?: string;
-  guardExpression?: string;
-  overriddenBy?: string;
-  overrideReason?: string;
-  authorizedBy?: string;
-  authorizedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PaymentMethod {
-  id: string;
-  tenantId: string;
-  clientId?: string;
-  externalMethodId?: string;
-  type?: string;
-  cardLastFour?: string;
-  cardNetwork?: string;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-  cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  bankRoutingNumber?: string;
-  walletProvider?: string;
-  walletEmail?: string;
-  status?: string;
-  isDefault?: boolean;
-  fraudFlagged?: boolean;
-  verifiedAt: string;
-  verificationMethod?: string;
-  nickname?: string;
-  metadata?: string;
-  expiresAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Payment {
-  id: string;
-  tenantId: string;
-  amount?: number;
-  currency?: string;
-  status?: string;
-  methodType?: string;
-  invoiceId?: string;
-  eventId?: string;
-  clientId?: string;
-  gatewayTransactionId?: string;
-  gatewayPaymentMethodId?: string;
-  processor?: string;
-  processorResponseCode?: string;
-  processorResponseMessage?: string;
-  processedAt: string;
-  completedAt: string;
-  refundedAt: string;
-  chargebackAt: string;
-  fraudStatus?: string;
-  fraudScore?: number;
-  reviewedAt: string;
-  reviewedBy?: string;
-  description?: string;
-  externalReference?: string;
-  metadata?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PayrollPeriod {
-  id: string;
-  tenantId: string;
-  periodStart?: string;
-  periodEnd?: string;
-  status?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmployeeDeduction {
-  id: string;
-  tenantId: string;
-  employeeId?: string;
-  type?: string;
-  name?: string;
-  amount?: number;
-  percentage?: number;
-  isPreTax?: boolean;
-  effectiveDate?: string;
-  endDate?: string;
-  maxAnnualAmount?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PayrollApprovalHistory {
-  id: string;
-  tenantId: string;
-  payrollRunId?: string;
-  action?: string;
-  previousStatus?: string;
-  newStatus?: string;
-  performedBy?: string;
-  performedAt: string;
-  reason?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PayrollRun {
-  id: string;
-  tenantId: string;
-  payrollPeriodId?: string;
-  runDate?: string;
-  status?: string;
-  totalGross?: number;
-  totalDeductions?: number;
-  totalNet?: number;
-  approvedBy?: string;
-  approvedAt: string;
-  rejectedBy?: string;
-  paidAt: string;
-  rejectReason?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -2387,234 +2201,6 @@ export interface PrepTask {
   updatedAt: string;
 }
 
-export interface PricingTier {
-  id: string;
-  tenantId: string;
-  catalogEntryId: string;
-  tierName?: string;
-  minQuantity?: number;
-  maxQuantity?: number;
-  unitCost?: number;
-  discountPercent?: number;
-  effectiveFrom: string;
-  effectiveTo: string;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PurchaseRequisition {
-  id: string;
-  tenantId: string;
-  requisitionNumber: string;
-  requestedBy?: string;
-  requestDate: string;
-  requiredBy: string;
-  locationId?: string;
-  department?: string;
-  justification?: string;
-  status?: string;
-  subtotal?: number;
-  estimatedTax?: number;
-  estimatedShipping?: number;
-  estimatedTotal?: number;
-  approvedBy?: string;
-  approvedAt: string;
-  managerApprovalBy?: string;
-  managerApprovalAt: string;
-  financeApprovalBy?: string;
-  financeApprovalAt: string;
-  convertedToPoId?: string;
-  convertedAt: string;
-  rejectionReason?: string;
-  notes?: string;
-  submittedAt: string;
-  itemCategory?: string;
-  priority?: string;
-  deletedAt: string;
-  itemCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PurchaseRequisitionItem {
-  id: string;
-  tenantId: string;
-  requisitionId: string;
-  itemId: string;
-  itemName?: string;
-  quantityRequested?: number;
-  unitId?: number;
-  estimatedUnitCost?: number;
-  estimatedTotalCost?: number;
-  suggestedVendorId?: string;
-  suggestedVendorName?: string;
-  specifications?: string;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Proposal {
-  id: string;
-  tenantId: string;
-  proposalNumber?: string;
-  clientId?: string;
-  leadId?: string;
-  eventId?: string;
-  title?: string;
-  eventDate: string;
-  eventType?: string;
-  guestCount?: number;
-  venueName?: string;
-  venueAddress?: string;
-  subtotal?: number;
-  taxRate?: number;
-  taxAmount?: number;
-  discountAmount?: number;
-  total?: number;
-  status?: string;
-  validUntil: string;
-  sentAt: string;
-  viewedAt: string;
-  acceptedAt: string;
-  rejectedAt: string;
-  notes?: string;
-  termsAndConditions?: string;
-  lineItemCount?: number;
-  publicToken?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ProposalLineItem {
-  id: string;
-  tenantId: string;
-  proposalId: string;
-  itemType?: string;
-  category?: string;
-  description?: string;
-  quantity?: number;
-  unitOfMeasure?: string;
-  unitPrice?: number;
-  total?: number;
-  totalPrice?: number;
-  sortOrder?: number;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PurchaseOrder {
-  id: string;
-  tenantId: string;
-  poNumber: string;
-  vendorId: string;
-  locationId: string;
-  orderDate: string;
-  expectedDeliveryDate: string;
-  actualDeliveryDate: string;
-  status?: string;
-  subtotal?: number;
-  taxAmount?: number;
-  shippingAmount?: number;
-  total?: number;
-  notes?: string;
-  submittedBy?: string;
-  submittedAt: string;
-  receivedBy?: string;
-  receivedAt: string;
-  deletedAt: string;
-  itemCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PurchaseOrderItem {
-  id: string;
-  tenantId: string;
-  purchaseOrderId: string;
-  itemId: string;
-  quantityOrdered?: number;
-  quantityReceived?: number;
-  unitId?: number;
-  unitCost?: number;
-  totalCost?: number;
-  qualityStatus?: string;
-  discrepancyType?: string;
-  discrepancyAmount?: number;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface QACheck {
-  id: string;
-  tenantId: string;
-  location?: string;
-  checkType: string;
-  result?: string;
-  status?: string;
-  inspector?: string;
-  notes?: string;
-  completedAt: string;
-  reinspectedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface QACorrectiveAction {
-  id: string;
-  tenantId: string;
-  checkId: string;
-  description: string;
-  assignedTo?: string;
-  priority?: string;
-  status?: string;
-  resolutionNotes?: string;
-  escalatedTo?: string;
-  escalationReason?: string;
-  dueDate: string;
-  resolvedAt: string;
-  escalatedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface QATemperatureLog {
-  id: string;
-  tenantId: string;
-  location: string;
-  temperature: number;
-  unit?: string;
-  equipment?: string;
-  recordedBy?: string;
-  notes?: string;
-  loggedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RateLimitConfig {
-  id: string;
-  tenantId: string;
-  name?: string;
-  endpointPattern?: string;
-  windowMs?: number;
-  maxRequests?: number;
-  burstAllowance?: number;
-  priority?: number;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 export interface Recipe {
   id: string;
   tenantId: string;
@@ -2693,113 +2279,240 @@ export interface RecipeStep {
   updatedAt: string;
 }
 
-export interface RevenueRecognitionSchedule {
+export interface Station {
   id: string;
   tenantId: string;
-  invoiceId: string;
-  eventId: string;
-  contractId: string;
-  clientId: string;
-  totalAmount?: number;
-  recognizedAmount?: number;
-  remainingAmount?: number;
-  method?: string;
+  locationId: string;
+  name: string;
+  stationType?: string;
+  capacitySimultaneousTasks?: number;
+  equipmentList?: string;
+  isActive?: boolean;
+  inMaintenance?: boolean;
+  maintenanceReason?: string;
+  maintenanceStartAt: string;
+  currentTaskCount?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Equipment {
+  id: string;
+  tenantId: string;
+  locationId: string;
+  name: string;
+  type?: string;
+  status?: string;
+  serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
+  purchaseDate: string;
+  warrantyExpiry: string;
+  lastMaintenanceDate: string;
+  nextMaintenanceDate: string;
+  maintenanceIntervalDays?: number;
+  usageHours?: number;
+  maxUsageHours?: number;
+  condition?: string;
+  notes?: string;
+  isActive?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MaintenanceWorkOrder {
+  id: string;
+  tenantId: string;
+  workOrderNumber?: string;
+  areaId?: string;
+  equipmentId?: string;
+  equipmentName?: string;
+  title: string;
+  type?: string;
+  priority?: string;
+  status?: string;
+  description?: string;
+  reportedBy?: string;
+  assignedTo?: string;
+  scheduledDate: string;
+  completedDate: string;
+  estimatedCost?: number;
+  actualCost?: number;
+  partsUsed?: string;
+  vendorId?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Facility {
+  id: string;
+  tenantId: string;
+  name: string;
+  code?: string;
+  facilityType?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  phone?: string;
+  status?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FacilityArea {
+  id: string;
+  tenantId: string;
+  venueId?: string;
+  name: string;
+  code?: string;
+  areaType?: string;
+  floor?: string;
+  description?: string;
+  squareFeet?: number;
+  status?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FacilityAsset {
+  id: string;
+  tenantId: string;
+  facilityId?: string;
+  areaId?: string;
+  name: string;
+  assetType?: string;
+  assetClass?: string;
+  status?: string;
+  purchaseDate: string;
+  purchasePrice?: number;
+  currentValue?: number;
+  depreciationRate?: number;
+  serialNumber?: string;
+  manufacturer?: string;
+  model?: string;
+  warrantyExpiry: string;
+  lastMaintenanceAt: string;
+  nextMaintenanceAt: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FacilitySchedule {
+  id: string;
+  tenantId: string;
+  facilityId?: string;
+  areaId?: string;
+  title: string;
+  description?: string;
+  scheduleType?: string;
   status?: string;
   startDate: string;
   endDate: string;
-  recognitionPeriod?: number;
-  serviceStartDate: string;
-  serviceEndDate: string;
-  totalMilestones?: number;
-  completedMilestones?: number;
-  description?: string;
-  notes?: string;
-  metadata?: string;
+  assignedTo?: string;
   completedAt: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface RevenueRecognitionLine {
+export interface FacilityWorkOrder {
   id: string;
   tenantId: string;
-  scheduleId: string;
-  sequence?: number;
-  amount?: number;
-  recognizedAmount?: number;
-  status?: string;
-  dueDate: string;
-  recognizedAt: string;
-  milestoneId?: string;
-  milestoneName?: string;
-  milestoneDescription?: string;
+  facilityId?: string;
+  areaId?: string;
+  assetId?: string;
+  title: string;
   description?: string;
-  notes?: string;
-  metadata?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RolePolicy {
-  id: string;
-  tenantId: string;
-  roleId: string;
-  roleName?: string;
-  permissions?: unknown[];
-  description?: string;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SampleData {
-  id: string;
-  tenantId: string;
-  seededAt: string;
-  clearedAt: string;
-  isSeeded?: boolean;
-  eventsCreated?: number;
-  clientsCreated?: number;
-  usersCreated?: number;
-  recipesCreated?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Schedule {
-  id: string;
-  tenantId: string;
-  locationId?: string;
-  scheduleDate: string;
+  priority?: string;
   status?: string;
-  publishedAt: string;
-  publishedBy?: string;
-  approvedBy?: string;
-  approvedAt: string;
+  category?: string;
+  requestedBy?: string;
+  assignedTo?: string;
+  estimatedCost?: number;
+  actualCost?: number;
+  scheduledDate: string;
+  completedDate: string;
   notes?: string;
-  shiftCount?: number;
-  deletedAt: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface ScheduleShift {
+export interface Driver {
   id: string;
   tenantId: string;
-  scheduleId: string;
-  employeeId: string;
-  locationId: string;
-  shiftStart?: string;
-  shiftEnd?: string;
-  roleDuringShift?: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  licenseNumber?: string;
+  licenseExpiry: string;
+  vehicleId?: string;
+  status?: string;
   notes?: string;
-  swapOfferedTo?: string;
-  swapStatus?: string;
-  swapOfferedAt: string;
-  swapAcceptedAt: string;
-  inheritedContext?: string;
-  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Vehicle {
+  id: string;
+  tenantId: string;
+  make: string;
+  model: string;
+  year?: number;
+  plateNumber?: string;
+  vin?: string;
+  capacityWeight?: number;
+  capacityVolume?: number;
+  fuelType?: string;
+  mileage?: number;
+  status?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LogisticsRoute {
+  id: string;
+  tenantId: string;
+  name: string;
+  status?: string;
+  vehicleId?: string;
+  driverId?: string;
+  startLocation?: string;
+  endLocation?: string;
+  distance?: number;
+  estimatedDuration?: number;
+  scheduledStart: string;
+  scheduledEnd: string;
+  actualStart: string;
+  actualEnd: string;
+  stops?: number;
+  completedStops?: number;
+  delayMinutes?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LogisticsDispatch {
+  id: string;
+  tenantId: string;
+  routeId: string;
+  driverId?: string;
+  vehicleId?: string;
+  status?: string;
+  priority?: string;
+  estimatedDeliveryTime: string;
+  actualDeliveryTime: string;
+  departedAt: string;
+  failureReason?: string;
+  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -2854,19 +2567,560 @@ export interface ShipmentItem {
   updatedAt: string;
 }
 
-export interface SmsAutomationRule {
+export interface WorkOrder {
+  id: string;
+  tenantId: string;
+  equipmentId: string;
+  equipmentName?: string;
+  title: string;
+  type?: string;
+  priority?: string;
+  status?: string;
+  description?: string;
+  scheduledDate: string;
+  assignedTo?: string;
+  completedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WorkforceOptimization {
+  id: string;
+  tenantId: string;
+  locationId?: string;
+  optimizationType?: string;
+  status?: string;
+  completedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PerformancePrediction {
+  id: string;
+  tenantId: string;
+  employeeId?: string;
+  predictionType?: string;
+  predictionHorizon?: number;
+  predictionScore?: number;
+  confidence?: string;
+  factors?: string;
+  expiresAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ApiKey {
+  id: string;
+  tenantId: string;
+  name?: string;
+  keyPrefix?: string;
+  hashedKey?: string;
+  scopes: unknown[];
+  lastUsedAt: string;
+  expiresAt: string;
+  revokedAt: string;
+  createdByUserId?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Notification {
+  id: string;
+  tenantId: string;
+  recipientEmployeeId: string;
+  notificationType?: string;
+  title?: string;
+  body?: string;
+  actionUrl?: string;
+  isRead?: boolean;
+  readAt: string;
+  correlationId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OverrideAudit {
+  id: string;
+  tenantId: string;
+  entityType?: string;
+  entityId?: string;
+  constraintId?: string;
+  guardExpression?: string;
+  overriddenBy?: string;
+  overrideReason?: string;
+  authorizedBy?: string;
+  authorizedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RateLimitConfig {
+  id: string;
+  tenantId: string;
+  name?: string;
+  endpointPattern?: string;
+  windowMs?: number;
+  maxRequests?: number;
+  burstAllowance?: number;
+  priority?: number;
+  isActive?: boolean;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RolePolicy {
+  id: string;
+  tenantId: string;
+  roleId: string;
+  roleName?: string;
+  permissions?: unknown[];
+  description?: string;
+  isActive?: boolean;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SampleData {
+  id: string;
+  tenantId: string;
+  seededAt: string;
+  clearedAt: string;
+  isSeeded?: boolean;
+  eventsCreated?: number;
+  clientsCreated?: number;
+  usersCreated?: number;
+  recipesCreated?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface User {
+  id: string;
+  tenantId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
+  authUserId?: string;
+  employeeNumber?: string;
+  phone?: string;
+  employmentType?: string;
+  hourlyRate?: number;
+  salaryAnnual?: number;
+  hireDate: string;
+  terminationDate: string;
+  isActive?: boolean;
+  avatarUrl?: string;
+  roleId?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Workflow {
   id: string;
   tenantId: string;
   name?: string;
   description?: string;
   triggerType?: string;
   triggerConfig?: string;
-  templateId?: string;
-  customMessage?: string;
-  recipientType?: string;
-  recipientConfig?: string;
   isActive?: boolean;
-  priority?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseRequisition {
+  id: string;
+  tenantId: string;
+  requisitionNumber: string;
+  requestedBy?: string;
+  requestDate: string;
+  requiredBy: string;
+  locationId?: string;
+  department?: string;
+  justification?: string;
+  status?: string;
+  subtotal?: number;
+  estimatedTax?: number;
+  estimatedShipping?: number;
+  estimatedTotal?: number;
+  approvedBy?: string;
+  approvedAt: string;
+  managerApprovalBy?: string;
+  managerApprovalAt: string;
+  financeApprovalBy?: string;
+  financeApprovalAt: string;
+  convertedToPoId?: string;
+  convertedAt: string;
+  rejectionReason?: string;
+  notes?: string;
+  submittedAt: string;
+  itemCategory?: string;
+  priority?: string;
+  deletedAt: string;
+  itemCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseRequisitionItem {
+  id: string;
+  tenantId: string;
+  requisitionId: string;
+  itemId: string;
+  itemName?: string;
+  quantityRequested?: number;
+  unitId?: number;
+  estimatedUnitCost?: number;
+  estimatedTotalCost?: number;
+  suggestedVendorId?: string;
+  suggestedVendorName?: string;
+  specifications?: string;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  tenantId: string;
+  poNumber: string;
+  vendorId: string;
+  locationId: string;
+  orderDate: string;
+  expectedDeliveryDate: string;
+  actualDeliveryDate: string;
+  status?: string;
+  subtotal?: number;
+  taxAmount?: number;
+  shippingAmount?: number;
+  total?: number;
+  notes?: string;
+  submittedBy?: string;
+  submittedAt: string;
+  receivedBy?: string;
+  receivedAt: string;
+  deletedAt: string;
+  itemCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  tenantId: string;
+  purchaseOrderId: string;
+  itemId: string;
+  quantityOrdered?: number;
+  quantityReceived?: number;
+  unitId?: number;
+  unitCost?: number;
+  totalCost?: number;
+  qualityStatus?: string;
+  discrepancyType?: string;
+  discrepancyAmount?: number;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VendorCatalog {
+  id: string;
+  tenantId: string;
+  supplierId: string;
+  itemNumber?: string;
+  itemName?: string;
+  description?: string;
+  category?: string;
+  baseUnitCost?: number;
+  currency?: string;
+  unitOfMeasure?: string;
+  leadTimeDays?: number;
+  leadTimeMinDays?: number;
+  leadTimeMaxDays?: number;
+  minimumOrderQuantity?: number;
+  orderMultiple?: number;
+  isActive?: boolean;
+  effectiveFrom: string;
+  effectiveTo: string;
+  supplierSku?: string;
+  notes?: string;
+  tags: unknown[];
+  lastCostUpdate: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VendorContract {
+  id: string;
+  tenantId: string;
+  contractNumber: string;
+  vendorId: string;
+  vendorName?: string;
+  contractType?: string;
+  status?: string;
+  startDate: string;
+  endDate: string;
+  autoRenew?: boolean;
+  renewalTermDays?: number;
+  noticeDaysBeforeRenewal?: number;
+  paymentTerms?: string;
+  deliveryTerms?: string;
+  minimumOrderQuantity?: number;
+  annualSpendCommitment?: number;
+  spendToPeriod?: number;
+  currencyCode?: string;
+  approvedBy?: string;
+  approvedAt: string;
+  terminatedBy?: string;
+  terminatedAt: string;
+  terminationReason?: string;
+  contractUrl?: string;
+  notes?: string;
+  complianceScore?: number;
+  lastComplianceReview: string;
+  slaBreachCount?: number;
+  onTimeDeliveryRate?: number;
+  qualityRating?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Vendor {
+  id: string;
+  tenantId: string;
+  name: string;
+  type?: string;
+  status?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+  taxId?: string;
+  paymentTerms?: string;
+  rating?: number;
+  ratingCount?: number;
+  notes?: string;
+  approvedAt: string;
+  approvedBy?: string;
+  suspendedAt: string;
+  suspendedReason?: string;
+  blacklistedAt: string;
+  blacklistedReason?: string;
+  lastContactAddedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QACheck {
+  id: string;
+  tenantId: string;
+  location?: string;
+  checkType: string;
+  result?: string;
+  status?: string;
+  inspector?: string;
+  notes?: string;
+  completedAt: string;
+  reinspectedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QACorrectiveAction {
+  id: string;
+  tenantId: string;
+  checkId: string;
+  description: string;
+  assignedTo?: string;
+  priority?: string;
+  status?: string;
+  resolutionNotes?: string;
+  escalatedTo?: string;
+  escalationReason?: string;
+  dueDate: string;
+  resolvedAt: string;
+  escalatedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QATemperatureLog {
+  id: string;
+  tenantId: string;
+  location: string;
+  temperature: number;
+  unit?: string;
+  equipment?: string;
+  recordedBy?: string;
+  notes?: string;
+  loggedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WasteEntry {
+  id: string;
+  tenantId: string;
+  inventoryItemId?: string;
+  reasonId?: number;
+  quantity?: number;
+  unitId?: number;
+  locationId?: string;
+  eventId?: string;
+  loggedBy?: string;
+  loggedAt: string;
+  approvedBy?: string;
+  approvedAt: string;
+  status?: string;
+  unitCost?: number;
+  totalCost?: number;
+  notes?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LaborBudget {
+  id: string;
+  tenantId: string;
+  locationId?: string;
+  periodStart?: string;
+  periodEnd?: string;
+  budgetAmount?: number;
+  actualAmount?: number;
+  budgetType?: string;
+  status?: string;
+  notes?: string;
+  createdBy?: string;
+  approvedBy?: string;
+  approvedAt: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BudgetAlert {
+  id: string;
+  tenantId: string;
+  budgetId?: string;
+  alertType?: string;
+  thresholdPct?: number;
+  actualPct?: number;
+  message?: string;
+  isAcknowledged?: boolean;
+  acknowledgedBy?: string;
+  acknowledgedAt: string;
+  resolved?: boolean;
+  resolvedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollPeriod {
+  id: string;
+  tenantId: string;
+  periodStart?: string;
+  periodEnd?: string;
+  status?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EmployeeDeduction {
+  id: string;
+  tenantId: string;
+  employeeId?: string;
+  type?: string;
+  name?: string;
+  amount?: number;
+  percentage?: number;
+  isPreTax?: boolean;
+  effectiveDate?: string;
+  endDate?: string;
+  maxAnnualAmount?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollApprovalHistory {
+  id: string;
+  tenantId: string;
+  payrollRunId?: string;
+  action?: string;
+  previousStatus?: string;
+  newStatus?: string;
+  performedBy?: string;
+  performedAt: string;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PayrollRun {
+  id: string;
+  tenantId: string;
+  payrollPeriodId?: string;
+  runDate?: string;
+  status?: string;
+  totalGross?: number;
+  totalDeductions?: number;
+  totalNet?: number;
+  approvedBy?: string;
+  approvedAt: string;
+  rejectedBy?: string;
+  paidAt: string;
+  rejectReason?: string;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Schedule {
+  id: string;
+  tenantId: string;
+  locationId?: string;
+  scheduleDate: string;
+  status?: string;
+  publishedAt: string;
+  publishedBy?: string;
+  approvedBy?: string;
+  approvedAt: string;
+  notes?: string;
+  shiftCount?: number;
+  deletedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ScheduleShift {
+  id: string;
+  tenantId: string;
+  scheduleId: string;
+  employeeId: string;
+  locationId: string;
+  shiftStart?: string;
+  shiftEnd?: string;
+  roleDuringShift?: string;
+  notes?: string;
+  swapOfferedTo?: string;
+  swapStatus?: string;
+  swapOfferedAt: string;
+  swapAcceptedAt: string;
+  inheritedContext?: string;
   deletedAt: string;
   createdAt: string;
   updatedAt: string;
@@ -3103,24 +3357,6 @@ export interface StaffPerformance {
   acknowledgementNotes?: string;
   completedAt: string;
   acknowledgedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Station {
-  id: string;
-  tenantId: string;
-  locationId: string;
-  name: string;
-  stationType?: string;
-  capacitySimultaneousTasks?: number;
-  equipmentList?: string;
-  isActive?: boolean;
-  inMaintenance?: boolean;
-  maintenanceReason?: string;
-  maintenanceStartAt: string;
-  currentTaskCount?: number;
-  notes?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -3492,241 +3728,6 @@ export interface SelOnboardingTrainingQuestion10Definition {
   correctOptionKey?: string;
   explanation?: string;
   whyItMatters?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface User {
-  id: string;
-  tenantId: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  role?: string;
-  authUserId?: string;
-  employeeNumber?: string;
-  phone?: string;
-  employmentType?: string;
-  hourlyRate?: number;
-  salaryAnnual?: number;
-  hireDate: string;
-  terminationDate: string;
-  isActive?: boolean;
-  avatarUrl?: string;
-  roleId?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VendorCatalog {
-  id: string;
-  tenantId: string;
-  supplierId: string;
-  itemNumber?: string;
-  itemName?: string;
-  description?: string;
-  category?: string;
-  baseUnitCost?: number;
-  currency?: string;
-  unitOfMeasure?: string;
-  leadTimeDays?: number;
-  leadTimeMinDays?: number;
-  leadTimeMaxDays?: number;
-  minimumOrderQuantity?: number;
-  orderMultiple?: number;
-  isActive?: boolean;
-  effectiveFrom: string;
-  effectiveTo: string;
-  supplierSku?: string;
-  notes?: string;
-  tags: unknown[];
-  lastCostUpdate: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VendorContract {
-  id: string;
-  tenantId: string;
-  contractNumber: string;
-  vendorId: string;
-  vendorName?: string;
-  contractType?: string;
-  status?: string;
-  startDate: string;
-  endDate: string;
-  autoRenew?: boolean;
-  renewalTermDays?: number;
-  noticeDaysBeforeRenewal?: number;
-  paymentTerms?: string;
-  deliveryTerms?: string;
-  minimumOrderQuantity?: number;
-  annualSpendCommitment?: number;
-  spendToPeriod?: number;
-  currencyCode?: string;
-  approvedBy?: string;
-  approvedAt: string;
-  terminatedBy?: string;
-  terminatedAt: string;
-  terminationReason?: string;
-  contractUrl?: string;
-  notes?: string;
-  complianceScore?: number;
-  lastComplianceReview: string;
-  slaBreachCount?: number;
-  onTimeDeliveryRate?: number;
-  qualityRating?: number;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Vendor {
-  id: string;
-  tenantId: string;
-  name: string;
-  type?: string;
-  status?: string;
-  email?: string;
-  phone?: string;
-  website?: string;
-  address?: string;
-  city?: string;
-  state?: string;
-  zip?: string;
-  taxId?: string;
-  paymentTerms?: string;
-  rating?: number;
-  ratingCount?: number;
-  notes?: string;
-  approvedAt: string;
-  approvedBy?: string;
-  suspendedAt: string;
-  suspendedReason?: string;
-  blacklistedAt: string;
-  blacklistedReason?: string;
-  lastContactAddedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VersionedEntity {
-  id: string;
-  tenantId: string;
-  entityType: string;
-  entityId: string;
-  entityName: string;
-  isLocked?: boolean;
-  currentVersionId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EntityVersion {
-  id: string;
-  tenantId: string;
-  versionedEntityId: string;
-  versionNumber: number;
-  changeReason?: string;
-  changeSummary?: string;
-  changeType: string;
-  snapshotData?: string;
-  metadata?: string;
-  isApproved?: boolean;
-  approvedAt: string;
-  approvedBy?: string;
-  createdBy?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VersionApproval {
-  id: string;
-  tenantId: string;
-  entityVersionId: string;
-  approverId: string;
-  status: string;
-  comments?: string;
-  reviewedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WasteEntry {
-  id: string;
-  tenantId: string;
-  inventoryItemId?: string;
-  reasonId?: number;
-  quantity?: number;
-  unitId?: number;
-  locationId?: string;
-  eventId?: string;
-  loggedBy?: string;
-  loggedAt: string;
-  approvedBy?: string;
-  approvedAt: string;
-  status?: string;
-  unitCost?: number;
-  totalCost?: number;
-  notes?: string;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WorkOrder {
-  id: string;
-  tenantId: string;
-  equipmentId: string;
-  equipmentName?: string;
-  title: string;
-  type?: string;
-  priority?: string;
-  status?: string;
-  description?: string;
-  scheduledDate: string;
-  assignedTo?: string;
-  completedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Workflow {
-  id: string;
-  tenantId: string;
-  name?: string;
-  description?: string;
-  triggerType?: string;
-  triggerConfig?: string;
-  isActive?: boolean;
-  deletedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WorkforceOptimization {
-  id: string;
-  tenantId: string;
-  locationId?: string;
-  optimizationType?: string;
-  status?: string;
-  completedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface PerformancePrediction {
-  id: string;
-  tenantId: string;
-  employeeId?: string;
-  predictionType?: string;
-  predictionHorizon?: number;
-  predictionScore?: number;
-  confidence?: string;
-  factors?: string;
-  expiresAt: string;
   createdAt: string;
   updatedAt: string;
 }

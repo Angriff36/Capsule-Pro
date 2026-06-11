@@ -480,10 +480,10 @@ export async function addEventStaff(
   if (eventRow.length === 0) throw new Error("Event not found");
   const shiftPlaceholder = (eventRow[0]?.event_date ?? new Date()).toISOString();
 
-  // Route through Manifest runtime (EventStaff.assign) instead of raw SQL
+  // Route through Manifest runtime (EventStaff.create) instead of raw SQL
   const result = await runManifestCommand({
     entity: "EventStaff",
-    command: "assign",
+    command: "create",
     body: {
       eventId,
       staffMemberId: employeeId,

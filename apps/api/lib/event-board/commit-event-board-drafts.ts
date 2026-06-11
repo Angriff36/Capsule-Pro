@@ -1,7 +1,7 @@
 /**
  * Event Tree Command Board — atomic commit orchestrator.
  *
- * Executes every draft card's governed command (EventStaff.assign) AND flips
+ * Executes every draft card's governed command (EventStaff.create) AND flips
  * the card's draft envelope to "committed" — all inside ONE database
  * transaction supplied by the caller via `deps.transact`. Any failure throws
  * out of the transaction callback so EVERYTHING rolls back (no half-committed
@@ -187,10 +187,12 @@ export async function commitEventBoardDrafts(
           continue;
         }
 
-        // 1. Governed domain write: EventStaff.assign.
+        // 1. Governed domain write: EventStaff.create (auto-creates the row;
+        //    the engine only auto-instantiates commands named `create` —
+        //    `assign` without an existing row was a silent no-op).
         const assign = await deps.runCommand(tx, {
           entity: "EventStaff",
-          command: "assign",
+          command: "create",
           body: {
             eventId,
             staffMemberId: envelope.draftAction.entityId,
@@ -203,7 +205,7 @@ export async function commitEventBoardDrafts(
         });
         if (!assign.success) {
           throw new CommitError(
-            `EventStaff.assign failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
+            `EventStaff.create failed for card ${card.id}: ${assign.error ?? "unknown error"}`,
             card.id
           );
         }

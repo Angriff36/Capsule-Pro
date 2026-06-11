@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-06-10T12:39:38.049Z",
+  "generatedAt": "2026-06-11T16:16:55.066Z",
   "basePath": "/api",
   "routes": [
     {
@@ -7725,6 +7725,56 @@
       "tenant": true
     },
     {
+      "id": "BattleBoard.syncFromEvent",
+      "path": "/api/manifest/BattleBoard/commands/sync-from-event",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "guestCount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "venueName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "venueAddress",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BattleBoard",
+        "command": "syncFromEvent"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BattleBoard.update",
       "path": "/api/manifest/BattleBoard/commands/update",
       "method": "POST",
@@ -14797,6 +14847,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "templateId",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -16778,6 +16834,56 @@
         "kind": "command",
         "entity": "EventStaff",
         "command": "confirm"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventStaff.create",
+      "path": "/api/manifest/EventStaff/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "staffMemberId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shiftStart",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shiftEnd",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventStaff",
+        "command": "create"
       },
       "auth": true,
       "tenant": true

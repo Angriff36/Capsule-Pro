@@ -43,11 +43,11 @@ function makeDeps(overrides: Partial<Record<string, unknown>> = {}) {
 }
 
 describe("commitEventBoardDrafts", () => {
-  it("runs EventStaff.assign per draft and flips each card inside the transaction", async () => {
+  it("runs EventStaff.create per draft and flips each card inside the transaction", async () => {
     const { deps, calls } = makeDeps();
     const result = await commitEventBoardDrafts(deps as never, { boardId: "b1", eventId: "e1", user: USER });
     expect(result.success).toBe(true);
-    const assigns = calls.filter((c) => c.entity === "EventStaff" && c.command === "assign");
+    const assigns = calls.filter((c) => c.entity === "EventStaff" && c.command === "create");
     expect(assigns).toHaveLength(2);
     expect(assigns[0].body).toMatchObject({ eventId: "e1", staffMemberId: "s1", role: "server" });
     const flips = calls.filter((c) => c.entity === "CommandBoardCard" && c.command === "update");
@@ -117,7 +117,7 @@ describe("commitEventBoardDrafts", () => {
     expect(deps.runCommand).not.toHaveBeenCalled();
   });
 
-  it("surfaces failedCardId when an assign fails", async () => {
+  it("surfaces failedCardId when an EventStaff.create fails", async () => {
     const { deps } = makeDeps({
       runCommand: vi.fn(async (_tx: unknown, p: { entity: string }) => {
         if (p.entity === "EventStaff") return { success: false as const, error: "policy denied" };

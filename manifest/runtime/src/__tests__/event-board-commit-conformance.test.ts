@@ -3,14 +3,15 @@
  *
  * WHY: The board commit path relies on three governed commands executing
  * correctly against the compiled IR:
- *   1. EventStaff.assign  — mutates an existing EventStaff row to status "assigned"
+ *   1. EventStaff.create — auto-creates and persists a new event_staff row
  *   2. CommandBoardCard.create — auto-persists a draft card with metadata envelope
  *   3. CommandBoardCard.update — flips the envelope to draftState "committed"
  *
- * EventStaff has no `create` command (assign IS the initial mutation), so the
- * runtime does not auto-persist for it.  The test seeds a bare EventStaff row
- * directly into the in-memory store, then runs `assign` with instanceId —
- * exactly the pattern the governed commit endpoint uses.
+ * The Manifest engine auto-instantiates ONLY commands named `create`
+ * (runtime-engine.js: shouldAutoCreateInstance = commandName === 'create').
+ * EventStaff.assign was create-semantics but never persisted a new row — a
+ * silent no-op without an existing instance. Test A pins the fix: running
+ * `create` with NO seeded row and NO instanceId must persist the row.
  *
  * An additional negative test pins the `validCardType` constraint that forced
  * the metadata-envelope design (i.e. "event-tree-draft" is NOT a valid cardType).
@@ -121,10 +122,12 @@ function makeProvider(): (entity: string) => Store & { getAll(): Promise<Record<
 }
 
 describe("Event board commit path — IR conformance", () => {
-  it("Test A: EventStaff.assign mutates the row to status 'assigned'", async () => {
-    // EventStaff has no `create` command — the engine does not auto-persist for it.
-    // Seed a bare row directly into the store before running `assign`, matching
-    // what the governed commit endpoint does (it creates the row then assigns it).
+  it("Test A: EventStaff.create auto-creates and persists the row with status 'assigned'", async () => {
+    // No seeded row and no instanceId: the engine must auto-instantiate
+    // (shouldAutoCreateInstance fires only for commands named `create`) and
+    // persist the new row. status is NOT mutated by the command — the body
+    // seed applies the schema default "assigned" (mutating it would trip the
+    // no-op self-transition bug on the status state machine).
     const provider = makeProvider();
     const engine = new ManifestRuntimeEngine(
       ir,
@@ -132,27 +135,11 @@ describe("Event board commit path — IR conformance", () => {
       { storeProvider: provider, customBuiltins: createCustomBuiltins() },
     );
 
-    const staffId = "es-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
-
-    // Seed a minimal EventStaff row with a valid initial status ("unassigned").
-    // The validStatus constraint accepts: assigned/confirmed/checked_in/checked_out/no_show/unassigned.
-    await provider("EventStaff").create({
-      id: staffId,
-      tenantId: TENANT,
-      eventId: EVENT_ID,
-      staffMemberId: STAFF_MEMBER_ID,
-      role: "",
-      notes: "",
-      status: "unassigned",
-      shiftStart: 0,
-      shiftEnd: 0,
-    });
-
     const result = await runManifestCommandCore(
       { createRuntime: async () => engine },
       {
         entity: "EventStaff",
-        command: "assign",
+        command: "create",
         body: {
           eventId: EVENT_ID,
           staffMemberId: STAFF_MEMBER_ID,
@@ -162,16 +149,20 @@ describe("Event board commit path — IR conformance", () => {
           shiftEnd: SHIFT_END,
         },
         user: { ...USER },
-        instanceId: staffId,
       },
     );
 
     expect(result.ok, result.ok ? "" : (result as { message?: string }).message).toBe(true);
 
-    // Read back the full updated row via the store
+    // The result must carry the created instance id.
+    const created = result.ok ? (result.result as { id?: string }) : null;
+    expect(created?.id).toBeTruthy();
+
+    // Read back the persisted row via the store: the engine auto-created it.
     const rows = await provider("EventStaff").getAll();
     expect(rows).toHaveLength(1);
     const stored = rows[0];
+    expect(stored?.id).toBe(created?.id);
     expect(stored?.status).toBe("assigned");
     expect(stored?.staffMemberId).toBe(STAFF_MEMBER_ID);
     expect(stored?.eventId).toBe(EVENT_ID);
